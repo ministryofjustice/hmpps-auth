@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
@@ -11,12 +12,24 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.GlobalAuthenticationConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
@@ -31,14 +44,15 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.CompositeFilter;
 
 import javax.servlet.Filter;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static java.util.stream.Collectors.toList;
 
 @SpringBootApplication
 @RestController
@@ -70,8 +84,6 @@ public class OAuth2Application extends WebSecurityConfigurerAdapter {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
                 .addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
         // @formatter:on
-
-
     }
 
 
@@ -99,11 +111,46 @@ public class OAuth2Application extends WebSecurityConfigurerAdapter {
     @Configuration
     protected static class AuthenticationManagerConfiguration extends GlobalAuthenticationConfigurerAdapter {
 
+        RestTemplate restTemplate = new RestTemplate();
+        @Value("${elite2-api.endpoint.url:http://localhost:8080/api/}")
+        private String authEndpoint;
+
         @Override
         public void init(AuthenticationManagerBuilder auth) throws Exception {
-            auth.inMemoryAuthentication().withUser("keyworkeruser").password("kwpassword").roles("USER");
-        }
+            auth.authenticationProvider(new AbstractUserDetailsAuthenticationProvider() {
+                @Override
+                protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
 
+                }
+
+                @Override
+                protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
+                    Map<String, Object> credentials = new HashMap<>();
+                    credentials.put("username", username);
+                    credentials.put("password", authentication.getCredentials());
+                    try {
+                        ResponseEntity<Map> response = restTemplate.exchange(authEndpoint + "users/login", HttpMethod.POST, new HttpEntity<>(credentials), Map.class);
+
+                        HttpHeaders headers = new HttpHeaders();
+                        final String token = response.getBody().get("token").toString();
+                        headers.add("Authorization", token);
+
+                        ResponseEntity<List<Map>> roleResponse = restTemplate.exchange(
+                                authEndpoint + "users/me/roles",
+                                HttpMethod.GET,
+                                new HttpEntity<>(null, headers),
+                                new ParameterizedTypeReference<List<Map>>() {
+                                });
+
+                        final List<SimpleGrantedAuthority> roles = roleResponse.getBody().stream().map(r -> new SimpleGrantedAuthority("ROLE_"+r.get("roleCode").toString())).collect(toList());
+                        return new User(username, authentication.getCredentials().toString(), roles);
+
+                    } catch (RestClientException ex) {
+                        throw new BadCredentialsException("Invalid Creds");
+                    }
+                }
+            });
+        }
     }
 
     @Bean
