@@ -12,6 +12,9 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configurers.GlobalAuthenticationConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -47,6 +50,9 @@ public class OAuth2Application extends WebSecurityConfigurerAdapter {
     @Autowired
     OAuth2ClientContext oauth2ClientContext;
 
+    @Autowired
+    AuthenticationManager authenticationManager;
+
     @RequestMapping({ "/user", "/me" })
     public Map<String, String> user(Principal principal) {
         Map<String, String> map = new LinkedHashMap<>();
@@ -64,7 +70,10 @@ public class OAuth2Application extends WebSecurityConfigurerAdapter {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
                 .addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
         // @formatter:on
+
+
     }
+
 
     @Configuration
     @EnableResourceServer
@@ -85,6 +94,16 @@ public class OAuth2Application extends WebSecurityConfigurerAdapter {
         registration.setFilter(filter);
         registration.setOrder(-100);
         return registration;
+    }
+
+    @Configuration
+    protected static class AuthenticationManagerConfiguration extends GlobalAuthenticationConfigurerAdapter {
+
+        @Override
+        public void init(AuthenticationManagerBuilder auth) throws Exception {
+            auth.inMemoryAuthentication().withUser("keyworkeruser").password("kwpassword").roles("USER");
+        }
+
     }
 
     @Bean
