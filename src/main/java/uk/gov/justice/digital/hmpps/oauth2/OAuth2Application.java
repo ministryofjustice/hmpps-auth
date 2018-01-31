@@ -5,13 +5,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpEntity;
@@ -27,28 +24,32 @@ import org.springframework.security.config.annotation.authentication.configurers
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
-import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
-import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.*;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.client.InMemoryClientDetailsService;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.filter.CompositeFilter;
 
-import javax.servlet.Filter;
 import java.security.Principal;
 import java.util.*;
 
@@ -62,17 +63,20 @@ import static java.util.stream.Collectors.toList;
 public class OAuth2Application extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    OAuth2ClientContext oauth2ClientContext;
-
-    @Autowired
     AuthenticationManager authenticationManager;
 
     @RequestMapping({ "/user", "/me" })
-    public Map<String, String> user(Principal principal) {
-        Map<String, String> map = new LinkedHashMap<>();
-        map.put("name", principal.getName());
-        return map;
+    public Map<String, Object> user(OAuth2Authentication user) {
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put(
+                "user",
+                user.getUserAuthentication()
+                        .getPrincipal());
+        userInfo.put(
+                "authorities", AuthorityUtils.authorityListToSet( user.getUserAuthentication()
+                        .getAuthorities())); return userInfo;
     }
+
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -81,31 +85,111 @@ public class OAuth2Application extends WebSecurityConfigurerAdapter {
                 .authenticated().and().exceptionHandling()
                 .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/")).and().logout()
                 .logoutSuccessUrl("/").permitAll().and().csrf()
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
-                .addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
         // @formatter:on
     }
 
+    @Override
+    @Bean
+    public UserDetailsService userDetailsServiceBean() throws Exception {
+        return super.userDetailsServiceBean();
+    }
+
+    @Configuration
+    protected static class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
+
+        @Autowired
+        private AuthenticationManager authManager;
+
+        @Value("${jwt.signing.key}")
+        private String jwtSigningKey;
+
+        @Autowired
+        private UserDetailsService userDetailsService;
+
+
+        @Override
+        public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+
+            TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+            tokenEnhancerChain.setTokenEnhancers(Arrays.asList(
+                                            accessTokenConverter()));
+            endpoints
+                    .tokenStore(tokenStore())
+                    .accessTokenConverter(accessTokenConverter())
+                    .authenticationManager(authManager)
+                    .userDetailsService(userDetailsService);
+        }
+
+        @Override
+        public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+            clients.inMemory()
+                    .withClient("keyworker").secret("keyworkersecret").scopes("read","write").autoApprove(".*")
+                    .and().withClient("notm").secret("notmsecret").scopes("read","write").autoApprove(".*");
+        }
+        @Bean
+        public TokenStore tokenStore() {
+            return new JwtTokenStore(accessTokenConverter());
+        }
+
+        @Bean
+        public JwtAccessTokenConverter accessTokenConverter() {
+            JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+            converter.setSigningKey(jwtSigningKey);
+            return converter;
+        }
+
+        @Bean
+        @Primary
+        public DefaultTokenServices tokenServices() {
+            DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+            defaultTokenServices.setTokenStore(tokenStore());
+            defaultTokenServices.setSupportRefreshToken(true);
+            defaultTokenServices.setAccessTokenValiditySeconds(60*30);
+            defaultTokenServices.setRefreshTokenValiditySeconds(60*60);
+            return defaultTokenServices;
+        }
+
+    }
 
     @Configuration
     @EnableResourceServer
     protected static class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
+        @Value("${jwt.signing.key}")
+        private String jwtSigningKey;
+
         @Override
         public void configure(HttpSecurity http) throws Exception {
             http.antMatcher("/me").authorizeRequests().anyRequest().authenticated();
+        }
+        @Override
+        public void configure(ResourceServerSecurityConfigurer config) {
+            config.tokenServices(tokenServices());
+        }
+
+        @Bean
+        public TokenStore tokenStore() {
+            return new JwtTokenStore(accessTokenConverter());
+        }
+
+        @Bean
+        public JwtAccessTokenConverter accessTokenConverter() {
+            JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+            converter.setSigningKey(jwtSigningKey);
+            return converter;
+        }
+
+        @Bean
+        @Primary
+        public DefaultTokenServices tokenServices() {
+            DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+            defaultTokenServices.setTokenStore(tokenStore());
+            return defaultTokenServices;
         }
     }
 
     public static void main(String[] args) {
         SpringApplication.run(OAuth2Application.class, args);
-    }
-
-    @Bean
-    public FilterRegistrationBean oauth2ClientFilterRegistration(OAuth2ClientContextFilter filter) {
-        FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(filter);
-        registration.setOrder(-100);
-        return registration;
     }
 
     @Configuration
@@ -114,6 +198,7 @@ public class OAuth2Application extends WebSecurityConfigurerAdapter {
         RestTemplate restTemplate = new RestTemplate();
         @Value("${elite2-api.endpoint.url:http://localhost:8080/api/}")
         private String authEndpoint;
+
 
         @Override
         public void init(AuthenticationManagerBuilder auth) throws Exception {
@@ -153,46 +238,4 @@ public class OAuth2Application extends WebSecurityConfigurerAdapter {
         }
     }
 
-    @Bean
-    @ConfigurationProperties("github")
-    public ClientResources github() {
-        return new ClientResources();
-    }
-
-    private Filter ssoFilter() {
-        CompositeFilter filter = new CompositeFilter();
-        List<Filter> filters = new ArrayList<>();
-        filters.add(ssoFilter(github(), "/login/github"));
-        filter.setFilters(filters);
-        return filter;
-    }
-
-    private Filter ssoFilter(ClientResources client, String path) {
-        OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter(
-                path);
-        OAuth2RestTemplate template = new OAuth2RestTemplate(client.getClient(), oauth2ClientContext);
-        filter.setRestTemplate(template);
-        UserInfoTokenServices tokenServices = new UserInfoTokenServices(
-                client.getResource().getUserInfoUri(), client.getClient().getClientId());
-        tokenServices.setRestTemplate(template);
-        filter.setTokenServices(tokenServices);
-        return filter;
-    }
-}
-
-class ClientResources {
-
-    @NestedConfigurationProperty
-    private AuthorizationCodeResourceDetails client = new AuthorizationCodeResourceDetails();
-
-    @NestedConfigurationProperty
-    private ResourceServerProperties resource = new ResourceServerProperties();
-
-    public AuthorizationCodeResourceDetails getClient() {
-        return client;
-    }
-
-    public ResourceServerProperties getResource() {
-        return resource;
-    }
 }
