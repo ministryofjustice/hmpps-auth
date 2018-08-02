@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    jpa:
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.Oracle10gDialect
+
+    properties:
+      hibernate:
+        show_sql: true
