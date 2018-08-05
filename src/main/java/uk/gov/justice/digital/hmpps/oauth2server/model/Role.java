@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "OMS_ROLES")
@@ -11,7 +12,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"code"})
-public class Role {
+@ToString(of = { "id", "code", "name"})
+public class Role implements Serializable {
 
     @Id()
     @Column(name = "ROLE_ID", nullable = false)
@@ -25,6 +27,12 @@ public class Role {
 
     @Column(name = "ROLE_SEQ", nullable = false)
     private int sequence;
+
+    @Column(name = "ROLE_TYPE")
+    private String type;
+
+    @Column(name = "ROLE_FUNCTION", nullable = false)
+    private String function;
 
     @ManyToOne
     @JoinColumn(name = "PARENT_ROLE_CODE", referencedColumnName = "ROLE_CODE")

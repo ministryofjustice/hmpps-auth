@@ -37,8 +37,6 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor('org.projectlombok:lombok:1.18.2')
 
-    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.8.0'
-    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.0'
     compile files('lib/ojdbc8-12.2.0.1.jar')
 
     compile 'org.springframework.boot:spring-boot-starter-web'
@@ -47,7 +45,6 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-security'
     compile 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure'
 
-//    compile('org.springframework.cloud:spring-cloud-starter-oauth2')
     compile("org.springframework.boot:spring-boot-starter-data-jpa")
     compile("org.hibernate:hibernate-java8")
     compile 'org.springframework.boot:spring-boot-starter-actuator'

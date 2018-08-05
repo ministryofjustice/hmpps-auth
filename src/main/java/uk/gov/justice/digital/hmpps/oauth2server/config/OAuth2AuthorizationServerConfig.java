@@ -7,12 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.config.annotation.builders.ClientDetailsServiceBuilder;
 import org.springframework.security.oauth2.config.annotation.builders.InMemoryClientDetailsServiceBuilder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -20,7 +21,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
@@ -43,14 +43,16 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final String keystorePassword;
     private final String keystoreAlias;
 
-    @Autowired
-    private ClientDetailsService clientDetailsService;
 
-//    @Autowired
-//    private AuthenticationManager authManager;
+    private final AuthenticationManager authenticationManager;
+
+    private final UserDetailsService userDetailsService;
+
 
     @Autowired
-    public OAuth2AuthorizationServerConfig(@Value("${jwt.signing.key.pair}") String privateKeyPair,
+    public OAuth2AuthorizationServerConfig(@Lazy AuthenticationManager authenticationManager,
+                                           UserDetailsService userDetailsService,
+                                           @Value("${jwt.signing.key.pair}") String privateKeyPair,
                                            @Value("${jwt.keystore.password}") String keystorePassword,
                                            @Value("${jwt.keystore.alias:elite2api}") String keystoreAlias,
                                            @Value("${oauth.client.data}") String clientData,
@@ -60,7 +62,10 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.keystorePassword = keystorePassword;
         this.keystoreAlias = keystoreAlias;
         this.oauthClientConfig = clientConfigExtractor.getClientConfigurations(clientData);
+        this.userDetailsService = userDetailsService;
+        this.authenticationManager = authenticationManager;
     }
+
 
     @Bean
     public TokenStore tokenStore() {
@@ -93,24 +98,12 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                 .tokenStore(tokenStore())
                 .accessTokenConverter(accessTokenConverter())
                 .tokenEnhancer(tokenEnhancerChain())
-//                .authenticationManager(authManager)
+                .authenticationManager(authenticationManager)
+                .userDetailsService(userDetailsService)
                 .tokenServices(tokenServices());
-
     }
 
-    @Bean
-    public PasswordEncoder delegatingPasswordEncoder() {
-        PasswordEncoder defaultEncoder = NoOpPasswordEncoder.getInstance();
-//        Map<String, PasswordEncoder> encoders = new HashMap<>();
-//        encoders.put("bcrypt", new BCryptPasswordEncoder());
-//        encoders.put("scrypt", new SCryptPasswordEncoder());
-//
-//        DelegatingPasswordEncoder passworEncoder = new DelegatingPasswordEncoder(
-//                "bcrypt", encoders);
-//        passworEncoder.setDefaultPasswordEncoderForMatches(defaultEncoder);
 
-        return defaultEncoder;
-    }
 
     @Bean
     public TokenEnhancerChain tokenEnhancerChain() {
@@ -127,8 +120,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         defaultTokenServices.setTokenStore(tokenStore());
         defaultTokenServices.setReuseRefreshToken(false);
         defaultTokenServices.setSupportRefreshToken(true);
-//        defaultTokenServices.setAuthenticationManager(authManager);
-        defaultTokenServices.setClientDetailsService(clientDetailsService);
+        defaultTokenServices.setAuthenticationManager(authenticationManager);
         return defaultTokenServices;
     }
 

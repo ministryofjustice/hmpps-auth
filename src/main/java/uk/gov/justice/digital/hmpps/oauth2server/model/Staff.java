@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"staffId"})
+@ToString(of = { "staffId", "firstName", "lastName"})
 public class Staff {
 
     @Id()

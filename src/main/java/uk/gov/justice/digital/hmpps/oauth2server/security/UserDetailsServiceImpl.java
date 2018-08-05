@@ -11,10 +11,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.justice.digital.hmpps.oauth2server.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserCaseloadRole;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,7 +33,12 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
 	@Cacheable("loadUserByUsername")
 	public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
 
-		userService.getUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+		Optional<StaffUserAccount> userByUsername = userService.getUserByUsername(username);
+
+		if (!userByUsername.isPresent()) {
+			throw new UsernameNotFoundException(username);
+		}
+
 		List<UserCaseloadRole> roles = userService.getRolesByUsername(username, false);
 
 		Set<GrantedAuthority> authorities = roles.stream()

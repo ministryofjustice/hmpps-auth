@@ -3,15 +3,17 @@ package uk.gov.justice.digital.hmpps.oauth2server.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
-@Table(name = "USER_CASELOAD_ROLE")
+@Table(name = "USER_CASELOAD_ROLES")
 @Data()
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"id"})
-public class UserCaseloadRole {
+@ToString(of = "id")
+public class UserCaseloadRole implements Serializable {
 
     @EmbeddedId
     private UserCaseloadRoleIdentity id;

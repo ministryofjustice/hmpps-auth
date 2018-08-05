@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"username"})
+@ToString(of = { "username", "type"})
 public class StaffUserAccount {
 
     @Id()

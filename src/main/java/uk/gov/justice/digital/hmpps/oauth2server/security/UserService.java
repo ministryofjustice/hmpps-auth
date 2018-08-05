@@ -20,7 +20,7 @@ public class UserService {
 	private final String apiCaseloadId;
 
 	public UserService(StaffUserAccountRepository userRepository,
-					   @Value("${application.caseload.id:NEWB}") String apiCaseloadId) {
+					   @Value("${application.caseload.id:NWEB}") String apiCaseloadId) {
 		this.userRepository = userRepository;
 		this.apiCaseloadId = apiCaseloadId;
 	}
