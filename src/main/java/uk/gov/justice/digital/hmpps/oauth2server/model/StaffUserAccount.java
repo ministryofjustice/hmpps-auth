@@ -31,8 +31,18 @@ public class StaffUserAccount {
     @JoinColumn(name = "USERNAME")
     private List<UserCaseloadRole> roles;
 
+    @OneToMany
+    @JoinColumn(name = "USERNAME")
+    private List<UserAccessibleCaseload> caseloads;
+
     public List<UserCaseloadRole> filterRolesByCaseload(String caseload) {
         return roles.stream()
+                .filter(r -> r.getId().getCaseload().equals(caseload))
+                .collect(Collectors.toList());
+    }
+
+    public List<UserAccessibleCaseload> filterByCaseload(String caseload) {
+        return caseloads.stream()
                 .filter(r -> r.getId().getCaseload().equals(caseload))
                 .collect(Collectors.toList());
     }

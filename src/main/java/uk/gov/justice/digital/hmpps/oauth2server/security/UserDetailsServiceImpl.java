@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -8,15 +9,13 @@ import org.springframework.security.core.userdetails.AuthenticationUserDetailsSe
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.common.exceptions.UnapprovedClientAuthenticationException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.model.StaffUserAccount;
-import uk.gov.justice.digital.hmpps.oauth2server.model.UserCaseloadRole;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,8 +23,11 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class UserDetailsServiceImpl implements UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
 	private final UserService userService;
+	private final String apiCaseloadId;
 
-	public UserDetailsServiceImpl(UserService userService) {
+	public UserDetailsServiceImpl(UserService userService,
+								  @Value("${application.caseload.id}") String apiCaseloadId) {
+		this.apiCaseloadId = apiCaseloadId;
 		this.userService = userService;
 	}
 
@@ -33,15 +35,12 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
 	@Cacheable("loadUserByUsername")
 	public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
 
-		Optional<StaffUserAccount> userByUsername = userService.getUserByUsername(username);
-
-		if (!userByUsername.isPresent()) {
-			throw new UsernameNotFoundException(username);
+		StaffUserAccount userByUsername = userService.getUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+		if (userByUsername.filterByCaseload(apiCaseloadId).isEmpty()) {
+			throw new UnapprovedClientAuthenticationException("User does not have access to system");
 		}
 
-		List<UserCaseloadRole> roles = userService.getRolesByUsername(username, false);
-
-		Set<GrantedAuthority> authorities = roles.stream()
+		Set<GrantedAuthority> authorities = userByUsername.filterRolesByCaseload(apiCaseloadId).stream()
 				.filter(Objects::nonNull)
 				.map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(StringUtils.replaceAll(role.getRole().getCode(),"-", "_"))))
 				.collect(Collectors.toSet());

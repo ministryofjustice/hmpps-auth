@@ -20,7 +20,7 @@ public class UserService {
 	private final String apiCaseloadId;
 
 	public UserService(StaffUserAccountRepository userRepository,
-					   @Value("${application.caseload.id:NWEB}") String apiCaseloadId) {
+					   @Value("${application.caseload.id}") String apiCaseloadId) {
 		this.userRepository = userRepository;
 		this.apiCaseloadId = apiCaseloadId;
 	}
@@ -57,4 +57,8 @@ public class UserService {
 		return null;
 	}
 
+	public boolean isSystemAccessDenied(String username) {
+		StaffUserAccount user = getUserByUsername(username).orElseThrow(EntityNotFoundException::new);
+		return user.filterByCaseload(apiCaseloadId).isEmpty();
+	}
 }
