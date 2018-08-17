@@ -56,7 +56,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .authorizeRequests()
                 .antMatchers("/h2-console/**", "/v2/api-docs", "/configuration/ui", "/swagger-resources", "/configuration/security",
                         "/swagger-ui.html", "/webjars/**", "/swagger-resources/configuration/ui", "/swagger-ui.html",
-                        "/swagger-resources/configuration/security").permitAll()
+                        "/swagger-resources/configuration/security", "/health", "/info").permitAll()
                 .anyRequest()
                 .authenticated();
 

@@ -13,13 +13,9 @@ buildscript {
 }
 
 apply plugin: 'java'
-apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
-group = 'uk.gov.justice.digital.hmpps'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 10
 
 repositories {
     mavenCentral()
@@ -27,6 +23,34 @@ repositories {
 
 ext {
     springCloudVersion = 'Finchley.RELEASE'
+}
+
+def today = java.time.Instant.now()
+group = 'uk.gov.justice.digital.hmpps'
+project.sourceCompatibility = 10
+project.targetCompatibility = 10
+
+def todayDate = java.time.LocalDate.now()
+def formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
+version todayDate.format(formatter)
+
+
+springBoot {
+    buildInfo {
+        properties {
+            artifact = rootProject.name
+            version = System.getenv('CI') ? "${version}.${System.getenv('CIRCLE_BUILD_NUM')}" : version
+            group = 'uk.gov.justice.digital.hmpps'
+            name = rootProject.name
+            time = today
+            additional = [
+                    by                   : System.properties['user.name'],
+                    operatingSystem      : "${System.properties['os.name']} (${System.properties['os.version']})",
+                    continuousIntegration: System.getenv('CI') ? true : false,
+                    machine              : InetAddress.localHost.hostName
+                ]
+        }
+    }
 }
 
 configurations {

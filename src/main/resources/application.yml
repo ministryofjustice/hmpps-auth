@@ -19,3 +19,7 @@ security:
       login-path: /login
 
 logging.level.uk.gov: INFO
+management:
+  endpoints:
+    web:
+      base-path: /

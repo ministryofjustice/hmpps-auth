@@ -40,9 +40,9 @@ jobs:
       - run:
           name: Build container and publish to docker hub
           command: |
-            jar xvf build/libs/oauth2server-*.jar META-INF/build-info.properties
-            API_VERSION=$(grep 'build.version=' META-INF/build-info.properties | awk -F= '{print $2}')
-            rm META-INF/build-info.properties
+            jar xvf build/libs/oauth2server-*.jar BOOT-INF/classes/META-INF/build-info.properties
+            API_VERSION=$(grep 'build.version=' BOOT-INF/classes/META-INF/build-info.properties | awk -F= '{print $2}')
+            rm BOOT-INF/classes/META-INF/build-info.properties
 
             # make up a good version name
             TAG=${API_VERSION}.${CIRCLE_BRANCH}
