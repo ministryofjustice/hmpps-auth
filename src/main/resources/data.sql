@@ -1,10 +1,12 @@
 CREATE USER ITAG_USER password 'password';
 CREATE USER OLD_NOMIS_USER password 'password';
 
-INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (1, 'ITAG', 'USER');
+INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME, STATUS) VALUES (1, 'ITAG', 'USER', 'ACTIVE');
 INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('ITAG_USER', 'GENERAL', 1);
 INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
 VALUES ('ITAG_USER', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
+
+INSERT INTO PERSONNEL_IDENTIFICATIONS (STAFF_ID, IDENTIFICATION_TYPE, IDENTIFICATION_NUMBER) VALUES (1, 'YJAF', 'test@yjaf.gov.uk');
 
 INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (2, 'OLD', 'NOMIS USER');
 INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('OLD_NOMIS_USER', 'GENERAL', 2);

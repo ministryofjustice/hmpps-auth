@@ -8,7 +8,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -29,10 +28,10 @@ public class AccountDetail {
     private String accountStatus;
 
     @Column(name = "LOCK_DATE")
-    private LocalDate lockDate;
+    private LocalDateTime lockDate;
 
     @Column(name = "EXPIRY_DATE")
-    private LocalDate expiryDate;
+    private LocalDateTime expiryDate;
 
     @Column(name = "CREATED", nullable = false)
     private LocalDateTime createdDate;

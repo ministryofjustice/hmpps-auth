@@ -15,6 +15,8 @@ import java.util.List;
 @ToString(of = { "staffId", "firstName", "lastName"})
 public class Staff {
 
+    private final String STAFF_STATUS_ACTIVE = "ACTIVE";
+
     @Id()
     @Column(name = "STAFF_ID", nullable = false)
     private Long staffId;
@@ -25,7 +27,29 @@ public class Staff {
     @Column(name = "LAST_NAME", nullable = false)
     private String lastName;
 
+    @Column(name = "STATUS")
+    private String status;
+
     @OneToMany(mappedBy = "staff")
     private List<StaffUserAccount> users;
 
+    @OneToMany
+    @JoinColumn(name = "STAFF_ID")
+    private List<StaffIdentifier> identifiers;
+
+    public StaffIdentifier findIdentifier(String type) {
+        return identifiers.stream()
+                .filter(r -> r.getId().getType().equals(type))
+                .findFirst().orElse(null);
+    }
+
+    public StaffUserAccount getAccountByType(String type) {
+        return users.stream()
+                .filter(r -> r.getType().equals(type))
+                .findFirst().orElse(null);
+    }
+
+    public boolean isActive() {
+        return STAFF_STATUS_ACTIVE.equals(status);
+    }
 }
