@@ -15,7 +15,7 @@ import java.util.List;
 @ToString(of = { "staffId", "firstName", "lastName"})
 public class Staff {
 
-    private final String STAFF_STATUS_ACTIVE = "ACTIVE";
+    private static final String STAFF_STATUS_ACTIVE = "ACTIVE";
 
     @Id()
     @Column(name = "STAFF_ID", nullable = false)
