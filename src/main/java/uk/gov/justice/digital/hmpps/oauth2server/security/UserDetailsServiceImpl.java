@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
+
 @Service("userDetailsService")
 @Transactional(readOnly = true)
 public class UserDetailsServiceImpl implements UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
@@ -37,7 +39,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
 
 		StaffUserAccount userByUsername = userService.getUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
 		if (userByUsername.filterByCaseload(apiCaseloadId).isEmpty()) {
-			throw new UnapprovedClientAuthenticationException("User does not have access to system");
+			throw new UnapprovedClientAuthenticationException(format("User does not have access to caseload %s", apiCaseloadId));
 		}
 
 		Set<GrantedAuthority> authorities = userByUsername.filterRolesByCaseload(apiCaseloadId).stream()
