@@ -35,6 +35,10 @@ public class StaffUserAccount {
     @JoinColumn(name = "USERNAME")
     private List<UserAccessibleCaseload> caseloads;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private AccountDetail accountDetail;
+
     public List<UserCaseloadRole> filterRolesByCaseload(String caseload) {
         return roles.stream()
                 .filter(r -> r.getId().getCaseload().equals(caseload))

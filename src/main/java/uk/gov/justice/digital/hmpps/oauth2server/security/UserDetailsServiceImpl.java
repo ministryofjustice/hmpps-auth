@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.common.exceptions.UnapprovedClientAut
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.justice.digital.hmpps.oauth2server.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.StaffUserAccount;
 
 import java.util.Objects;
@@ -47,7 +48,38 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
 				.map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(StringUtils.replaceAll(role.getRole().getCode(),"-", "_"))))
 				.collect(Collectors.toSet());
 
-		return new UserDetailsImpl(username, null, authorities);
+		UserDetailsImpl userDetails = new UserDetailsImpl(username, authorities);
+
+		AccountDetail accountDetail = userByUsername.getAccountDetail();
+		userDetails.setAccountNonExpired(!accountDetail.isExpired());
+		userDetails.setAccountNonLocked(!accountDetail.isLocked());
+		userDetails.setCredentialsNonExpired(true);
+
+		AccountStatus status = accountDetail.getStatus();
+		switch(status) {
+
+			case LOCKED:
+				userDetails.setAccountNonLocked(false);
+				break;
+			case EXPIRED_GRACE:
+				userDetails.setCredentialsNonExpired(false);
+				break;
+			case OPEN:
+				userDetails.setEnabled(true);
+				break;
+			case EXPIRED:
+				userDetails.setAccountNonExpired(false);
+				break;
+			case EXPIRED_LOCKED:
+				userDetails.setAccountNonExpired(false);
+				userDetails.setAccountNonLocked(false);
+				break;
+			case LOCKED_TIMED:
+				userDetails.setCredentialsNonExpired(false);
+				break;
+		}
+
+		return userDetails;
 	}
 
     @Override
