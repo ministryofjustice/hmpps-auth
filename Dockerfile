@@ -1,6 +1,7 @@
 FROM openjdk:10-slim
 MAINTAINER HMPPS Digital Studio <info@digital.justice.gov.uk>
 
+RUN apt-get update && apt-get install -y curl
 WORKDIR /app
 
 COPY build/libs/oauth2server*.jar /app/app.jar
