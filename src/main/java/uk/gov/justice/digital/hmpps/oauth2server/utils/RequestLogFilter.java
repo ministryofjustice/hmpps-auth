@@ -56,6 +56,7 @@ public class RequestLogFilter implements Filter {
         try {
             LocalDateTime start = LocalDateTime.now();
             MDC.put(REQUEST_ID, mdcUtility.generateUUID());
+            MDC.put(USERNAME, getUser(req));
             if (isLoggingAllowed()) {
                 log.debug("Request: {} {}", req.getMethod(), req.getRequestURI());
             }
@@ -67,14 +68,19 @@ public class RequestLogFilter implements Filter {
             int status = res.getStatus();
             MDC.put(RESPONSE_STATUS, String.valueOf(status));
             if (isLoggingAllowed()) {
-                log.debug("Response: {} {} - Status {} - Start {}, Duration {} ms", req.getMethod(), req.getRequestURI(), status, start.format(formatter), duration);
+                log.debug("Response: {} {} - Status {} - Start {}, User {}, Duration {} ms", req.getMethod(), req.getRequestURI(), status, start.format(formatter), getUser(req), duration);
             }
         } finally {
             MDC.remove(REQUEST_DURATION);
             MDC.remove(RESPONSE_STATUS);
             MDC.remove(REQUEST_ID);
+            MDC.remove(USERNAME);
             MDC.remove(SKIP_LOGGING);
         }
+    }
+
+    private String getUser(HttpServletRequest req) {
+        return req.getUserPrincipal() != null ? req.getUserPrincipal().getName() : "anonymous";
     }
 
     @Override

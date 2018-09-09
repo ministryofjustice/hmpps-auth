@@ -2,22 +2,21 @@ package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ApiAuthenticationProvider;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
 
 @Configuration
-@EnableWebSecurity
+@Order(1)
 public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAdapter {
 
 
@@ -34,35 +33,30 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     }
 
     @Bean
-    public PasswordEncoder delegatingPasswordEncoder() {
-        PasswordEncoder defaultEncoder = NoOpPasswordEncoder.getInstance();
-//        Map<String, PasswordEncoder> encoders = new HashMap<>();
-//        encoders.put("bcrypt", new BCryptPasswordEncoder());
-//        encoders.put("scrypt", new SCryptPasswordEncoder());
-//
-//        DelegatingPasswordEncoder passworEncoder = new DelegatingPasswordEncoder(
-//                "bcrypt", encoders);
-//        passworEncoder.setDefaultPasswordEncoderForMatches(defaultEncoder);
-
-        return defaultEncoder;
+    public BCryptPasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
     }
-
 
     @Override
-    public void configure(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable().antMatcher("/**")
-                .cors().disable().antMatcher("/**")
-                .authorizeRequests()
+    protected void configure(HttpSecurity http) throws Exception { // @formatter:off
+        http.
+                 requestMatchers()
                 .antMatchers("/h2-console/**", "/v2/api-docs", "/configuration/ui", "/swagger-resources", "/configuration/security",
                         "/swagger-ui.html", "/webjars/**", "/swagger-resources/configuration/ui", "/swagger-ui.html",
-                        "/swagger-resources/configuration/security", "/health", "/info").permitAll()
+                        "/swagger-resources/configuration/security", "/health", "/info")
+                .and().anonymous()
+                .and()
+                .requestMatchers()
+                .antMatchers("/login", "/oauth/authorize")
+                .and()
+                .authorizeRequests()
                 .anyRequest()
-                .authenticated();
-
-        http.headers().frameOptions().disable();
-
-    }
+                .authenticated()
+                .and()
+                .formLogin()
+                .permitAll()
+        ;
+    } // @formatter:on
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {

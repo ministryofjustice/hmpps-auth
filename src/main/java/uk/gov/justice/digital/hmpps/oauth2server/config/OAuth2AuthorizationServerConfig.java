@@ -14,6 +14,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.builders.ClientDetailsServiceBuilder;
 import org.springframework.security.oauth2.config.annotation.builders.InMemoryClientDetailsServiceBuilder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -48,10 +49,12 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     private final UserDetailsService userDetailsService;
 
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy AuthenticationManager authenticationManager,
                                            UserDetailsService userDetailsService,
+                                           PasswordEncoder passwordEncoder,
                                            @Value("${jwt.signing.key.pair}") String privateKeyPair,
                                            @Value("${jwt.keystore.password}") String keystorePassword,
                                            @Value("${jwt.keystore.alias:elite2api}") String keystoreAlias,
@@ -64,6 +67,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.oauthClientConfig = clientConfigExtractor.getClientConfigurations(clientData);
         this.userDetailsService = userDetailsService;
         this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -81,10 +85,9 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     }
 
     @Override
-    public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
-            oauthServer
-                .tokenKeyAccess("isAnonymous() || hasRole('ROLE_SYSTEM_USER')") // permitAll()
-                .checkTokenAccess("hasRole('SYSTEM_USER')"); // isAuthenticated()
+    public void configure(final AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
+        oauthServer.tokenKeyAccess("permitAll()")
+                .checkTokenAccess("isAuthenticated()");
     }
 
     @Bean
@@ -137,11 +140,11 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                 }
                 log.info("Initialising OAUTH2 Client ID {}", client.getClientId());
                 clientBuilder = clientBuilder
-                        .secret(client.getClientSecret())
+                        .secret(passwordEncoder.encode(client.getClientSecret()))
                         .accessTokenValiditySeconds(client.getAccessTokenValidity())
                         .refreshTokenValiditySeconds(client.getRefreshTokenValidity())
-                        .redirectUris(client.getWebServerRedirectUri());
-
+                        .redirectUris(client.getWebServerRedirectUri())
+                        .autoApprove(true);
                 if (client.getScope() != null) {
                     clientBuilder = clientBuilder.scopes(toArray(client.getScope()));
                 }

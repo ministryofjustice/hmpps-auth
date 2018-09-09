@@ -53,10 +53,6 @@ springBoot {
     }
 }
 
-configurations {
-    compile.exclude module: "spring-boot-starter-tomcat"
-}
-
 dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor('org.projectlombok:lombok:1.18.2')
@@ -64,14 +60,12 @@ dependencies {
     compile files('lib/ojdbc8-12.2.0.1.jar')
 
     compile 'org.springframework.boot:spring-boot-starter-web'
-    compile 'org.springframework.boot:spring-boot-starter-jetty'
-    compile('org.springframework.boot:spring-boot-starter-security')
-    compile 'org.springframework.boot:spring-boot-starter-security'
-    compile 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure'
+    compile group: 'org.springframework.security', name: 'spring-security-jwt', version: '1.0.9.RELEASE'
+    compile 'org.springframework.security.oauth:spring-security-oauth2:2.3.3.RELEASE'
+    compile 'org.springframework.boot:spring-boot-starter-actuator'
 
     compile("org.springframework.boot:spring-boot-starter-data-jpa")
     compile("org.hibernate:hibernate-java8")
-    compile 'org.springframework.boot:spring-boot-starter-actuator'
 
     compile("net.logstash.logback:logstash-logback-encoder:5.2")
 
