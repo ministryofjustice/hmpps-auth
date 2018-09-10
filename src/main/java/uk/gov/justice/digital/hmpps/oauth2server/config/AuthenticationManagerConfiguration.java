@@ -39,7 +39,9 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     @Override
     protected void configure(HttpSecurity http) throws Exception { // @formatter:off
-        http
+        http.requiresChannel()
+                .antMatchers("/login*").requiresSecure()
+                .and()
                 .requestMatchers()
                 .antMatchers("/login", "/oauth/authorize","/oauth/confirm_access")
                 .and()
