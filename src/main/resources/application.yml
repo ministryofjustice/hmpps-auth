@@ -21,3 +21,6 @@ management:
 
 server:
   use-forward-headers: true
+  tomcat:
+    remote-ip-header: x-forwarded-for
+    protocol_header: x-forwarded-proto
