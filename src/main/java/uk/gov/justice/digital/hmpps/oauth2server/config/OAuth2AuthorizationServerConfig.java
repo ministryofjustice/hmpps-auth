@@ -143,8 +143,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                         .secret(passwordEncoder.encode(client.getClientSecret()))
                         .accessTokenValiditySeconds(client.getAccessTokenValidity())
                         .refreshTokenValiditySeconds(client.getRefreshTokenValidity())
-                        .redirectUris(client.getWebServerRedirectUri())
-                        .autoApprove(true);
+                        .autoApprove(client.isAutoApproved());
                 if (client.getScope() != null) {
                     clientBuilder = clientBuilder.scopes(toArray(client.getScope()));
                 }
@@ -156,6 +155,9 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                 }
                 if (client.getAuthorizedGrantTypes() != null) {
                     clientBuilder = clientBuilder.authorizedGrantTypes(toArray(client.getAuthorizedGrantTypes()));
+                }
+                if (client.getWebServerRedirectUri() != null) {
+                    clientBuilder = clientBuilder.redirectUris(toArray(client.getWebServerRedirectUri()));
                 }
             }
         }
