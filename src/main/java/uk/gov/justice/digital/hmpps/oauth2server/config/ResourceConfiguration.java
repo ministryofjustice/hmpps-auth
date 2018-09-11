@@ -1,17 +1,24 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
+import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
 @Configuration
 @Order(2)
-public class ResourceConfiguration extends WebSecurityConfigurerAdapter {
+@EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
+public class ResourceConfiguration extends ResourceServerConfigurerAdapter {
 
+    @Autowired
+    private ResourceServerTokenServices tokenServices;
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception { // @formatter:off
+    public void configure(HttpSecurity http) throws Exception { // @formatter:off
         http
                 .csrf().disable().antMatcher("/**")
                 .cors().disable().antMatcher("/**")
@@ -19,11 +26,16 @@ public class ResourceConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/h2-console/**", "/v2/api-docs", "/configuration/ui", "/swagger-resources", "/configuration/security",
                         "/swagger-ui.html", "/webjars/**", "/swagger-resources/configuration/ui", "/swagger-ui.html",
                         "/swagger-resources/configuration/security", "/health", "/info").permitAll()
+                .antMatchers("/**").authenticated()
                 .anyRequest()
-                .authenticated();
+                .permitAll();
 
         http.headers().frameOptions().disable();
     } // @formatter:on
 
+    @Override
+    public void configure(ResourceServerSecurityConfigurer config) {
+        config.tokenServices(tokenServices);
+    }
 
 }
