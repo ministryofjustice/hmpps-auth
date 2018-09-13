@@ -8,7 +8,7 @@ import java.util.UUID;
 @Component
 public class MdcUtility {
 
-    static final String USERNAME = "username";
+    static final String USER_ID = "userId";
     static final String REQUEST_ID = "requestId";
     static final String REQUEST_DURATION = "duration";
     static final String RESPONSE_STATUS = "status";

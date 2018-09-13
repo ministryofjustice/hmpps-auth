@@ -56,7 +56,7 @@ public class RequestLogFilter implements Filter {
         try {
             LocalDateTime start = LocalDateTime.now();
             MDC.put(REQUEST_ID, mdcUtility.generateUUID());
-            MDC.put(USERNAME, getUser(req));
+            MDC.put(USER_ID, getUser(req));
             if (isLoggingAllowed()) {
                 log.debug("Request: {} {}", req.getMethod(), req.getRequestURI());
             }
@@ -74,7 +74,7 @@ public class RequestLogFilter implements Filter {
             MDC.remove(REQUEST_DURATION);
             MDC.remove(RESPONSE_STATUS);
             MDC.remove(REQUEST_ID);
-            MDC.remove(USERNAME);
+            MDC.remove(USER_ID);
             MDC.remove(SKIP_LOGGING);
         }
     }
