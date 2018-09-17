@@ -12,6 +12,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ApiAuthenticationProvider;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
 
@@ -19,11 +21,14 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl
 @Order(1)
 public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAdapter {
 
-
     private final UserDetailsService userDetailsService;
 
-    public AuthenticationManagerConfiguration(UserDetailsService userDetailsService) {
+    private final LoggingAccessDeniedHandler accessDeniedHandler;
+
+    public AuthenticationManagerConfiguration(UserDetailsService userDetailsService,
+                                              LoggingAccessDeniedHandler accessDeniedHandler) {
         this.userDetailsService = userDetailsService;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
@@ -47,8 +52,26 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .anyRequest()
                 .authenticated()
                 .and()
+                .requestMatchers()
+                .antMatchers("/ui/**")
+                .and()
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated()
+                .and()
                 .formLogin()
+                    .loginPage("/login")
+                    .permitAll()
+                .and()
+                  .logout()
+                    .invalidateHttpSession(true)
+                    .clearAuthentication(true)
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                    .logoutSuccessUrl("/login?logout")
                 .permitAll()
+             .and()
+                .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler);
         ;
     } // @formatter:on
 

@@ -25,8 +25,12 @@ public class ResourceConfiguration extends ResourceServerConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/h2-console/**", "/v2/api-docs", "/configuration/ui", "/swagger-resources", "/configuration/security",
                         "/swagger-ui.html", "/webjars/**", "/swagger-resources/configuration/ui", "/swagger-ui.html",
-                        "/swagger-resources/configuration/security", "/health", "/info").permitAll()
-                .antMatchers("/**").authenticated()
+                        "/swagger-resources/configuration/security",
+                        "/health", "/info",
+                        "/css/**",
+                        "/img/**",
+                        "/webjars/**").permitAll()
+                .antMatchers("/api/**").authenticated()
                 .anyRequest()
                 .permitAll();
 

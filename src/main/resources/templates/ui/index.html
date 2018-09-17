@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Login Success</title>
+</head>
+<body>
+<div layout:fragment="content" th:remove="tag">
+    <h1>You have logged in</h1>
+
+    <p>
+    Logged user: <span sec:authentication="name"></span>
+    </p>
+
+    <p>
+    Roles: <span sec:authentication="principal.authorities"></span>
+    </p>
+
+    <p><a href="/" th:href="@{/logout}">Logout</a></p>
+</div>
+</body>
+</html>
