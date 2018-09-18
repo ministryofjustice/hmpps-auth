@@ -12,6 +12,7 @@
                 <Pattern>${LOG_PATTERN}</Pattern>
             </layout>
         </appender>
+        <appender name="aiAppender" class="ch.qos.logback.core.helpers.NOPAppender"/>
     </springProfile>
 
     <springProfile name="logstash">
@@ -20,25 +21,32 @@
                 <includeCallerInfo>true</includeCallerInfo>
             </encoder>
         </appender>
+
+        <appender name="aiAppender" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender"/>
     </springProfile>
 
     <logger name="uk.gov.justice.digital.hmpps" additivity="false" level="DEBUG">
         <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="aiAppender"/>
     </logger>
 
     <logger name="org.springframework" additivity="false" level="INFO" >
         <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="aiAppender"/>
     </logger>
 
     <logger name="springfox.documentation.spring" additivity="false" level="INFO" >
         <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="aiAppender"/>
     </logger>
 
     <logger name="com.zaxxer.hikari" additivity="false" level="WARN" >
         <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="aiAppender"/>
     </logger>
 
     <root level="INFO">
         <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="aiAppender"/>
     </root>
 </configuration>
