@@ -62,7 +62,8 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
 				userDetails.setAccountNonLocked(false);
 				break;
 			case EXPIRED_GRACE:
-				userDetails.setCredentialsNonExpired(false);
+				userDetails.setAccountNonExpired(true);
+				userDetails.setEnabled(true);
 				break;
 			case OPEN:
 				userDetails.setEnabled(true);
