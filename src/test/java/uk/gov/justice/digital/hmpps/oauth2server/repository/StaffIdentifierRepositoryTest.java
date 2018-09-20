@@ -21,6 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 public class StaffIdentifierRepositoryTest {
 
+    public static final long STAFF_ID = 3L;
+
     @Autowired
     private StaffRepository staffRepository;
 
@@ -30,19 +32,19 @@ public class StaffIdentifierRepositoryTest {
     @Test
     public void givenATransientEntityItCanBePeristed() {
 
-        Staff staff = staffRepository.findById(1L).orElseThrow();
-        assertThat(staff.getIdentifiers()).hasSize(1);
+        Staff staff = staffRepository.findById(STAFF_ID).orElseThrow();
+        assertThat(staff.getIdentifiers()).hasSize(0);
 
         StaffIdentifier newStaffId = staff.addIdentifier("WIBBLE", "WOBBLE");
 
         TestTransaction.flagForCommit();
         TestTransaction.end();
 
-        assertThat(staff.getIdentifiers()).hasSize(2);
+        assertThat(staff.getIdentifiers()).hasSize(1);
 
         TestTransaction.start();
 
-        var retrievedEntity = staffRepository.findById(1L).orElseThrow();
+        var retrievedEntity = staffRepository.findById(STAFF_ID).orElseThrow();
 
         assertThat(retrievedEntity.findIdentifier("WIBBLE")).isEqualTo(newStaffId);
 
@@ -61,13 +63,4 @@ public class StaffIdentifierRepositoryTest {
         assertThat(staff.findIdentifier("YJAF").getId().getIdentificationNumber()).isEqualTo("test@yjaf.gov.uk");
     }
 
-    private Staff transientEntity() {
-        return Staff
-                .builder()
-                .firstName("TEST-FIRSTNAME")
-                .lastName("TEST-LASTNAME")
-                .status("ACTIVE")
-                .staffId(-1L)
-                .build();
-    }
 }
