@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -33,9 +34,25 @@ public class Staff {
     @OneToMany(mappedBy = "staff")
     private List<StaffUserAccount> users;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "STAFF_ID")
     private List<StaffIdentifier> identifiers;
+
+    public StaffIdentifier addIdentifier(String type, String identificationNumber) {
+        if (identifiers == null) {
+            identifiers = new ArrayList<>();
+        }
+        StaffIdentifier id = StaffIdentifier.builder()
+                .id(StaffIdentifierIdentity.builder()
+                        .type(type)
+                        .identificationNumber(identificationNumber)
+                        .staffId(getStaffId())
+                        .build())
+                .staff(this)
+                .build();
+        identifiers.add(id);
+        return id;
+    }
 
     public StaffIdentifier findIdentifier(String type) {
         return identifiers.stream()
