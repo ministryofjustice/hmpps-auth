@@ -15,11 +15,11 @@ import java.io.Serializable;
 @ToString(of = { "username", "roleId", "caseload"})
 public class UserCaseloadRoleIdentity implements Serializable {
 
+    @Column(name = "role_id")
+    private Long roleId;
+
     @Column(name = "username")
     private String username;
-
-    @Column(name = "role_id")
-    private String roleId;
 
     @Column(name = "caseload_id")
     private String caseload;

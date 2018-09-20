@@ -75,9 +75,6 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
 				userDetails.setAccountNonExpired(false);
 				userDetails.setAccountNonLocked(false);
 				break;
-			case LOCKED_TIMED:
-				userDetails.setCredentialsNonExpired(false);
-				break;
 		}
 
 		return userDetails;
