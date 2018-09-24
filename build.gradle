@@ -15,7 +15,7 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
-
+apply plugin: 'groovy'
 
 repositories {
     mavenCentral()
@@ -98,6 +98,12 @@ dependencies {
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.springframework.security:spring-security-test')
     testRuntime 'com.h2database:h2:1.4.196'
+
+    testCompile 'org.assertj:assertj-core:3.8.0'
+    testCompile 'org.codehaus.groovy:groovy-all:2.4.7'
+    testCompile 'org.spockframework:spock-spring:1.1-groovy-2.4'
+    testCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
+
 }
 
 dependencyManagement {
