@@ -84,7 +84,7 @@ abstract class TestSpecification extends Specification {
         new OAuth2RestTemplate(resource, new DefaultOAuth2ClientContext(new DefaultAccessTokenRequest()))
     }
 
-    private BaseOAuth2ProtectedResourceDetails ownerPasswordResource(String username, String password, String clientId, String clientSecret) {
+    private static BaseOAuth2ProtectedResourceDetails ownerPasswordResource(String username, String password, String clientId, String clientSecret) {
         ResourceOwnerPasswordResourceDetails resource = new ResourceOwnerPasswordResourceDetails()
         resource.setClientId(clientId)
         resource.setClientSecret(clientSecret)
@@ -93,7 +93,7 @@ abstract class TestSpecification extends Specification {
         resource
     }
 
-    private BaseOAuth2ProtectedResourceDetails clientCredentialsResource(String clientId, String clientSecret) {
+    private static BaseOAuth2ProtectedResourceDetails clientCredentialsResource(String clientId, String clientSecret) {
         ClientCredentialsResourceDetails resource = new ClientCredentialsResourceDetails()
         resource.setClientId(clientId);
         resource.setClientSecret(clientSecret);
