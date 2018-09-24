@@ -7,7 +7,7 @@ Spring Boot 2, Java 10 OAUTH2 Server integrating with NOMIS DB
 ```bash
 ./gradlew assemble
 docker build -t mojdigitalstudio/nomis-oauth2-server .
-docker run -p8080:8080 --name nomis-oauth2-server --env SPRING_PROFILES_ACTIVE=dev mojdigitalstudio/nomis-oauth2-server:latest
+docker run -p9090:8080 --name nomis-oauth2-server --env SPRING_PROFILES_ACTIVE=dev mojdigitalstudio/nomis-oauth2-server:latest
 ``` 
 
 #### Run in docker-compose

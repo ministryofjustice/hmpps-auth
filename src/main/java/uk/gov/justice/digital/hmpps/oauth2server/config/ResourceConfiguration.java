@@ -30,9 +30,7 @@ public class ResourceConfiguration extends ResourceServerConfigurerAdapter {
                         "/css/**",
                         "/img/**",
                         "/webjars/**").permitAll()
-                .antMatchers("/api/**").authenticated()
-                .anyRequest()
-                .permitAll();
+                .antMatchers("/api/**").authenticated();
 
         http.headers().frameOptions().disable();
     } // @formatter:on

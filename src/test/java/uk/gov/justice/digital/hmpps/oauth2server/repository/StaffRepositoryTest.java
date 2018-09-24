@@ -71,7 +71,7 @@ public class StaffRepositoryTest {
                 .firstName("TEST-FIRSTNAME")
                 .lastName("TEST-LASTNAME")
                 .status("ACTIVE")
-                .staffId(-1L)
+                .staffId(-2L)
                 .build();
     }
 }

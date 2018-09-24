@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -25,10 +27,15 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     private final LoggingAccessDeniedHandler accessDeniedHandler;
 
+    private final boolean requireSsl;
+
+    @Autowired
     public AuthenticationManagerConfiguration(UserDetailsService userDetailsService,
-                                              LoggingAccessDeniedHandler accessDeniedHandler) {
+                                              LoggingAccessDeniedHandler accessDeniedHandler,
+                                              @Value("${application.requires.ssl:false}") boolean requireSsl) {
         this.userDetailsService = userDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.requireSsl = requireSsl;
     }
 
     @Bean
@@ -44,6 +51,9 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     @Override
     protected void configure(HttpSecurity http) throws Exception { // @formatter:off
+
+        if (requireSsl) http.requiresChannel().antMatchers("/**").requiresSecure();
+
         http
                 .requestMatchers()
                 .antMatchers("/login", "/oauth/authorize","/oauth/confirm_access")
@@ -58,6 +68,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .authorizeRequests()
                 .anyRequest()
                 .authenticated()
+                .antMatchers("/**").permitAll()
                 .and()
                 .formLogin()
                     .loginPage("/login")
@@ -68,7 +79,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                     .clearAuthentication(true)
                     .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                     .logoutSuccessUrl("/login?logout")
-                .permitAll()
+                    .permitAll()
              .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler);
