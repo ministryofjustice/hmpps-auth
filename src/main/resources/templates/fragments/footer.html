@@ -3,16 +3,15 @@
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
 <body>
 <th:block th:fragment="footer">
-    <footer>
-        <div class="container">
-            <p>
-                HMPPS
-                <span sec:authorize="isAuthenticated()" style="display: inline-block;">
-                    | Logged user: <span sec:authentication="name"></span> |
-                    Roles: <span sec:authentication="principal.authorities"></span> |
-                    <a th:href="@{/logout}">Sign Out</a>
-                </span>
-            </p>
+    <footer class="FooterContainer">
+        <div class="footer-content">
+            <div class="FooterLinksContainer">
+                <div class="FooterLink"><a th:href="@{/terms}">Terms and conditions</a></div>
+                <div class="FooterLink"><a th:href="@{mailto:feedback@digital.justice.gov.uk}">Contact us: feedback@digital.justice.gov.uk</a></div>
+                <div class="FooterLink" sec:authorize="isAuthenticated()">User: <span sec:authentication="name"></span></div>
+                <div class="FooterLink" sec:authorize="isAuthenticated()"><a th:href="@{/logout}">Sign Out</a></div>
+            </div>
+            <div class="FooterSignature"></div>
         </div>
     </footer>
 
