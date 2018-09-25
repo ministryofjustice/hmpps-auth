@@ -6,7 +6,3 @@ spring:
         show_sql: false
   profiles:
     include: logstash
-
-application:
-  requires:
-    ssl: true

@@ -10,74 +10,49 @@
 
     <h1 class="heading-large">Login</h1>
     <div class="pure-u-md-8-12">
-        <% if (!apiUp || authError) { %>
-        <div class="row">
-            <% if (apiUp) { %>
-            <div class="error-summary col-sm-6"><%=  authErrorText %></div>
-            <% } else { %>
-            <div class="error-summary col-sm-6">Service unavailable. Please try again later.</div>
-            <% } %>
-        </div>
-        <% } %>
-        <form method="POST" action="/login">
+
+        <form th:action="@{/login}" method="post">
+
+            <div th:if="${param.error}" class="row">
+                <div class="alert alert-danger error-summary col-sm-6">
+                    Invalid username or password.
+                </div>
+            </div>
+            <div th:if="${param.logout}" class="row">
+                <div class="alert alert-info error-summary col-sm-6">
+                    You have been logged out.
+                </div>
+            </div>
+
             <div class="form-group">
                 <label class="form-label" for="username">Username</label>
-                <input class="form-control" id="username" name="username" type="text" value="" autocomplete="off" />
+                <input type="text"
+                       id="username"
+                       name="username"
+                       class="form-control"
+                       autofocus="autofocus"
+                       placeholder="Username">
             </div>
             <div class="form-group">
                 <label class="form-label" for="password">Password</label>
-                <input class="form-control" id="password" name="password" type="password" value="" autocomplete="off">
+                <input type="password"
+                       id="password"
+                       name="password"
+                       class="form-control"
+                       placeholder="Password">
             </div>
-            <button class="button pure-u-md-3-12" type="submit">Sign in</button>
+            <div class="form-group">
+                <div class="row">
+                    <input type="submit"
+                           name="login-submit"
+                           id="login-submit"
+                           class="form-control button pure-u-md-3-12"
+                           value="Log In">
+                </div>
+            </div>
         </form>
     </div>
-
-    <div class="row">
-        <div class="col-md-6 col-md-offset-3">
-            <h1>Login page</h1>
-            <form th:action="@{/login}" method="post">
-                <div th:if="${param.error}">
-                    <div class="alert alert-danger">
-                        Invalid username or password.
-                    </div>
-                </div>
-                <div th:if="${param.logout}">
-                    <div class="alert alert-info">
-                        You have been logged out.
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="username">Username</label>:
-                    <input type="text"
-                           id="username"
-                           name="username"
-                           class="form-control"
-                           autofocus="autofocus"
-                           placeholder="Username">
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>:
-                    <input type="password"
-                           id="password"
-                           name="password"
-                           class="form-control"
-                           placeholder="Password">
-                </div>
-                <div class="form-group">
-                    <div class="row">
-                        <div class="col-sm-6 col-sm-offset-3">
-                            <input type="submit"
-                                   name="login-submit"
-                                   id="login-submit"
-                                   class="form-control btn btn-info"
-                                   value="Log In">
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
 </div>
+
 </body>
 </html>

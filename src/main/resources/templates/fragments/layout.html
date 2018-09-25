@@ -6,27 +6,27 @@
         <!-- The first thing in any HTML file should be the charset -->
         <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
         <!-- Allow installing the app to the homescreen -->
-        <link rel="manifest" href="/manifest.json">
+        <link rel="manifest" th:href="@{/manifest.json}">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <meta name="mobile-web-app-capable" content="yes">
         <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">Nomis Login</title>
 
         <meta content="#000000" name="theme-color">
-        <link href="/css/grid.css" rel="stylesheet">
+        <link th:href="@{/css/grid.css}" rel="stylesheet">
         <!--<![endif]--><!--[if gt IE 8 ]>
-        <link rel='stylesheet' href='/css/grid.css' type='text/css'>
+        <link rel='stylesheet' th:href="@{/css/grid.css}" type='text/css'>
         <![endif]--><!--[if lt IE 9]>
-        <link rel='stylesheet' href='/css/grid-old-ie.css' type='text/css'>
+        <link rel='stylesheet' th:href="@{/css/grid-old-ie.css}" type='text/css'>
         <![endif]-->
-        <link href="/css/gov-uk.css" rel="stylesheet">
-        <link href="/css/app.css" rel="stylesheet">
+        <link th:href="@{/css/gov-uk.css}" rel="stylesheet">
+        <link th:href="@{/css/app.css}" rel="stylesheet">
 </head>
 <body>
     <th:block th:replace="fragments/header :: header"/>
     <div class="inner-content">
         <div class="pure-g">
             <div>
-
+                <th:block layout:fragment="content"/>
             </div>
         </div>
     </div>

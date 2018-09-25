@@ -5,12 +5,11 @@
     <header class="page-header">
         <div class="header-content">
             <div class="left-content">
-                <a class="link" href="/" id="header_logo_home_link" title="Home link">
-                    <div class="logo"><img src="@{/img/Crest@2x.png}" alt="" width="42" height="35"/></div>
+                <a class="link" th:href="@{/}" id="header_logo_home_link" title="Home link">
+                    <div class="logo"><img th:src="@{/img/Crest@2x.png}" alt="HMPPS" width="42" height="35"/></div>
                 </a>
-                <a class="unstyled-link" href="/" id="header_logo_text_home_link" title="Home link">
-                    <span class="logo-text">HMPPS</span>
-                    <span class="title">Prison-NOMIS</span>
+                <a class="unstyled-link" th:href="@{/}" id="header_logo_text_home_link" title="Home link">
+                    <span class="title">NOMIS Login</span>
                 </a>
             </div>
         </div>
