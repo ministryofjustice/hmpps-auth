@@ -8,6 +8,30 @@
 <body>
 <div layout:fragment="content" th:remove="tag">
 
+    <h1 class="heading-large">Login</h1>
+    <div class="pure-u-md-8-12">
+        <% if (!apiUp || authError) { %>
+        <div class="row">
+            <% if (apiUp) { %>
+            <div class="error-summary col-sm-6"><%=  authErrorText %></div>
+            <% } else { %>
+            <div class="error-summary col-sm-6">Service unavailable. Please try again later.</div>
+            <% } %>
+        </div>
+        <% } %>
+        <form method="POST" action="/login">
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input class="form-control" id="username" name="username" type="text" value="" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input class="form-control" id="password" name="password" type="password" value="" autocomplete="off">
+            </div>
+            <button class="button pure-u-md-3-12" type="submit">Sign in</button>
+        </form>
+    </div>
+
     <div class="row">
         <div class="col-md-6 col-md-offset-3">
             <h1>Login page</h1>

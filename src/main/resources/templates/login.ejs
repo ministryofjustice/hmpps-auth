@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <!-- The first thing in any HTML file should be the charset -->
+      <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+      <!-- Allow installing the app to the homescreen -->
+      <link rel="manifest" href="/manifest.json">
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+      <meta name="mobile-web-app-capable" content="yes">
+      <title>Prison-NOMIS</title>
+
+      <meta content="#000000" name="theme-color">
+      <link href="/styles/grid.css" rel="stylesheet">
+      <!--<![endif]--><!--[if gt IE 8 ]>
+          <link rel='stylesheet' href='/styles/grid.css' type='text/css'>
+      <![endif]--><!--[if lt IE 9]>
+          <link rel='stylesheet' href='/styles/grid-old-ie.css' type='text/css'>
+      <![endif]-->
+      <link href="/styles/gov-uk.css" rel="stylesheet">
+      <link href="/styles/app.css" rel="stylesheet">
+  </head>
+  <body>
+    <div id="app">
+      <div class="content">
+        <header class="page-header">
+          <div class="header-content">
+            <div class="left-content">
+              <a class="link" href="/" id="header_logo_home_link" title="Home link">
+                <div class="logo"><img src="/images/Crest@2x.png" alt="" width="42" height="35"/></div>
+              </a>
+              <a class="unstyled-link" href="/" id="header_logo_text_home_link" title="Home link">
+                <span class="logo-text">HMPPS</span>
+                <span class="title">Prison-NOMIS</span>
+              </a>
+            </div>
+          </div>
+        </header>
+        <div class="inner-content">
+          <div class="pure-g">
+            <div>
+              <h1 class="heading-large">Login</h1>
+              <div class="pure-u-md-8-12">
+                <% if (!apiUp || authError) { %>
+                  <div class="row">
+                    <% if (apiUp) { %>
+                      <div class="error-summary col-sm-6"><%=  authErrorText %></div>
+                    <% } else { %>
+                      <div class="error-summary col-sm-6">Service unavailable. Please try again later.</div>
+                    <% } %>
+                  </div>
+                <% } %>
+                <form method="POST" action="/login">
+                  <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input class="form-control" id="username" name="username" type="text" value="" autocomplete="off" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input class="form-control" id="password" name="password" type="password" value="" autocomplete="off">
+                  </div>
+                  <button class="button pure-u-md-3-12" type="submit">Sign in</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <footer class="FooterContainer">
+          <div class="footer-content">
+            <div class="FooterLinksContainer">
+              <div class="FooterLink"><a href="terms">Terms and conditions</a></div>
+              <div class="FooterLink"><a href="mailto:<%= mailTo %>">Contact us: <%= mailTo %></a></div>
+            </div>
+            <div class="FooterSignature"></div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
