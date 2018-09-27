@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
+package uk.gov.justice.digital.hmpps.oauth2server.api.specs
 
 import groovy.json.JsonSlurper
 import org.springframework.http.HttpMethod

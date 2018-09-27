@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
+package uk.gov.justice.digital.hmpps.oauth2server.api.specs
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.util.logging.Slf4j

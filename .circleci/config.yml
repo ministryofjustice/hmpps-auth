@@ -28,6 +28,42 @@ jobs:
             - build/libs
             - build.gradle
 
+  integration_tests:
+    working_directory: ~/app
+    docker:
+    - image: circleci/openjdk:10-jdk-browsers
+    steps:
+    - checkout
+    - attach_workspace:
+        at: ~/app
+    - run:
+        name: Run the java app.
+        command: env spring.profiles.active=dev java -jar build/libs/oauth2server-*.jar
+        background: true
+    - restore_cache:
+        key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+    - restore_cache:
+        key: gradle-cache-{{ checksum "prisonstaffhub-specs/build.gradle" }}
+    - run:
+        name: Run Integration Tests
+        command: ./gradlew testIntegration
+    - save_cache:
+        key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+        paths:
+        - /home/circleci/.gradle/wrapper
+    - save_cache:
+        key: gradle-cache-{{ checksum "prisonstaffhub-specs/build.gradle" }}
+        paths:
+        - /home/circleci/.gradle/caches
+    - store_artifacts:
+        path: prisonstaffhub-specs/build/reports
+        destination: integration/spock
+    - store_artifacts:
+        path: prisonstaffhub-specs/build/geb-reports
+        destination: integration/geb
+    - store_test_results:
+        path: prisonstaffhub-specs/build/test-results
+
   build_docker:
     <<: *defaults
     docker:
@@ -76,6 +112,9 @@ workflows:
           filters:
             tags:
               ignore: /.*/
+      - integration_tests:
+          requires:
+          - build
       - build_docker:
           requires:
-            - build
+            - integration_tests
