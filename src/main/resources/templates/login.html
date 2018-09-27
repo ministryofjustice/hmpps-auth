@@ -3,7 +3,7 @@
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>NOMIS Login</title>
+    <title>Login</title>
 </head>
 <body>
 <div layout:fragment="content" th:remove="tag">
@@ -41,15 +41,7 @@
                        class="form-control"
                        placeholder="Password">
             </div>
-            <div class="form-group">
-                <div class="row">
-                    <input type="submit"
-                           name="login-submit"
-                           id="login-submit"
-                           class="form-control button pure-u-md-3-12"
-                           value="Log In">
-                </div>
-            </div>
+            <button class="button pure-u-md-1-6" name="login-submit" type="submit" value="Sign In">Sign in</button>
         </form>
     </div>
 </div>

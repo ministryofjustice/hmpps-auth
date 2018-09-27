@@ -52,38 +52,40 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     @Override
     protected void configure(HttpSecurity http) throws Exception { // @formatter:off
 
-        if (requireSsl) http.requiresChannel().antMatchers("/**").requiresSecure();
-
         http
-                .requestMatchers()
+            .csrf().disable().antMatcher("/**")
+            .cors().disable().antMatcher("/**")
+
+            .requestMatchers()
                 .antMatchers("/login", "/oauth/authorize","/oauth/confirm_access")
-                .and()
+            .and()
                 .authorizeRequests()
                 .anyRequest()
                 .authenticated()
-                .and()
+            .and()
                 .requestMatchers()
                 .antMatchers("/ui/**")
-                .and()
+            .and()
                 .authorizeRequests()
                 .anyRequest()
                 .authenticated()
                 .antMatchers("/**").permitAll()
-                .and()
+            .and()
                 .formLogin()
-                    .loginPage("/login")
-                    .permitAll()
-                .and()
-                  .logout()
-                    .invalidateHttpSession(true)
-                    .clearAuthentication(true)
-                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                    .logoutSuccessUrl("/login?logout")
-                    .permitAll()
+                .loginPage("/login")
+                .permitAll()
+            .and()
+                .logout()
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/login?logout")
+                .permitAll()
              .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler);
-        ;
+
+        http.headers().frameOptions().disable();
     } // @formatter:on
 
     @Override

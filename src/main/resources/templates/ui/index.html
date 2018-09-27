@@ -3,21 +3,16 @@
       xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>Login Success</title>
+    <title>Welcome</title>
 </head>
 <body>
 <div layout:fragment="content" th:remove="tag">
-    <h1>You have logged in</h1>
-
-    <p>
-    Logged user: <span sec:authentication="name"></span>
-    </p>
-
-    <p>
-    Roles: <span sec:authentication="principal.authorities"></span>
-    </p>
-
-    <p><a href="/" th:href="@{/logout}">Sign Out</a></p>
+    <h1 class="heading-large">Welcome <span sec:authentication="name"></span></h1>
+    <div class="pure-u-md-8-12">
+        Roles: <span sec:authentication="principal.authorities"></span>
+        <br/>
+        <a href="/" th:href="@{/logout}">Sign Out</a>
+    </div>
 </div>
 </body>
 </html>
