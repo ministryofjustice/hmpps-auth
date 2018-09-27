@@ -12,7 +12,7 @@ public class LoginController {
     }
 
     @GetMapping("/access-denied") public String accessDenied() {
-        return "/error/access-denied";
+        return "error/access-denied";
     }
 
 }
