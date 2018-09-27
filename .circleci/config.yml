@@ -10,14 +10,18 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys:
-            - gradle-{{ checksum "build.gradle" }}
-            - gradle-
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: gradle-cache-{{ checksum "build.gradle" }}
       - run: ./gradlew build
       - save_cache:
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
-            - ~/.gradle
-          key: gradle-{{ checksum "build.gradle" }}
+          - /home/circleci/.gradle/wrapper
+      - save_cache:
+          key: gradle-cache-{{ checksum "build.gradle" }}
+          paths:
+          - /home/circleci/.gradle/caches
       - store_test_results:
           path: build/test-results/test
       - store_artifacts:
@@ -40,6 +44,9 @@ jobs:
         name: Run the java app.
         command: env spring.profiles.active=dev java -jar build/libs/oauth2server-*.jar
         background: true
+    - run:
+        name: Wait for java app to start
+        command: sleep 15
     - restore_cache:
         key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
     - restore_cache:
