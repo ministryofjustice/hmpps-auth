@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 public class StaffUserAccountRepositoryTest {
 
-    private static final Staff DEFAULT_STAFF = Staff.builder().staffId(1L).build();
+    private static final Staff DEFAULT_STAFF = Staff.builder().staffId(5L).build();
 
     @Autowired
     private StaffUserAccountRepository repository;

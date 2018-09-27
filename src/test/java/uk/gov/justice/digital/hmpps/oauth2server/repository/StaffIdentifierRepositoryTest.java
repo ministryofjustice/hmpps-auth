@@ -51,16 +51,16 @@ public class StaffIdentifierRepositoryTest {
     }
 
     @Test
-    public void givenAnExistingStaffMemberTheyCanBeRetrieved() {
+    public void givenAnExistingStaffMemberTheyCanBeRetrievedByIdentification() {
 
-        var retrievedEntity = repository.findById_TypeAndId_IdentificationNumber("YJAF", "test@yjaf.gov.uk");
+        var retrievedEntity = repository.findById_TypeAndId_IdentificationNumber("YJAF", "olduser@yjaf.gov.uk");
 
         var staff = retrievedEntity.getStaff();
         assertThat(staff).isNotNull();
 
-        assertThat(staff.getFirstName()).isEqualTo("ITAG");
+        assertThat(staff.getFirstName()).isEqualTo("OLD");
         assertThat(staff.getIdentifiers()).hasSize(1);
-        assertThat(staff.findIdentifier("YJAF").getId().getIdentificationNumber()).isEqualTo("test@yjaf.gov.uk");
+        assertThat(staff.findIdentifier("YJAF").getId().getIdentificationNumber()).isEqualTo("olduser@yjaf.gov.uk");
     }
 
 }
