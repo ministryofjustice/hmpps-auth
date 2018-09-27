@@ -12,7 +12,20 @@ docker run -p9090:8080 --name nomis-oauth2-server -d --health-cmd='curl -f http:
 
 ### Run against oracle DB (T3 example)
 ```bash
-docker run -p9090:8080 --name nomis-oauth2-server -d --health-cmd='curl -f http://localhost:8080/auth/health' --env SPRING_PROFILES_ACTIVE=oracle --env SPRING_DATASOURCE_PASSWORD=************ --env SPRING_DATASOURCE_URL=jdbc:oracle:thin:@localhost:1521/CNOMT3 --env SPRING_DATASOURCE_USERNAME=API_PROXY_USER mojdigitalstudio/nomis-oauth2-server:latest
+docker run -p9090:8080 --name nomis-oauth2-server -d --health-cmd='curl -f http://localhost:8080/auth/health' \
+ --env SPRING_PROFILES_ACTIVE=oracle --env SPRING_DATASOURCE_PASSWORD=************ --env SPRING_DATASOURCE_URL=jdbc:oracle:thin:@docker.for.mac.localhost:1521/CNOMT3 --env SPRING_DATASOURCE_USERNAME=API_PROXY_USER \
+ mojdigitalstudio/nomis-oauth2-server:latest
+```
+Or, where 'docker.for.mac.localhost' or its windows equivalent is not available e.g. Ubuntu, we can connect to the host network instead of publishing the port:
+```
+docker run --network=host --name nomis-oauth2-server-oracle -d \
+ --health-cmd='curl -f http://localhost:9090/auth/health' \
+ --env SPRING_DATASOURCE_USERNAME=API_PROXY_USER \
+ --env SPRING_DATASOURCE_PASSWORD=xxxxxxxxxx  \
+ --env SPRING_PROFILES_ACTIVE=oracle \
+ --env SPRING_DATASOURCE_URL=jdbc:oracle:thin:@localhost:1521:CNOMT3 \
+ --env SERVER_PORT=9090 \
+ mojdigitalstudio/nomis-oauth2-server:latest
 ```
 
 #### Run in docker-compose
