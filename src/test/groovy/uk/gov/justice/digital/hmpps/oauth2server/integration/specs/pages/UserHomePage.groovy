@@ -1,0 +1,16 @@
+package uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages
+
+import geb.Page
+
+class UserHomePage extends Page {
+
+    static url = "/auth/ui"
+
+    static at = {
+        headingText == 'Welcome ITAG_USER'
+    }
+
+    static content = {
+        headingText { $('h1').text() }
+    }
+}

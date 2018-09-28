@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
+package uk.gov.justice.digital.hmpps.oauth2server.api.specs
 
 import groovy.json.JsonSlurper
 import org.springframework.http.HttpMethod
@@ -106,6 +106,30 @@ class OauthSpecification extends TestSpecification {
 
         when:
         def token = oauthRestTemplate.getAccessToken()
+
+        then:
+        OAuth2AccessDeniedException ex = thrown()
+    }
+
+    def "Password Credentials Login with Expired Login"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("EXPIRED_USER", "password123456","elite2apiclient", "clientsecret")
+
+        when:
+        oauthRestTemplate.getAccessToken()
+
+        then:
+        OAuth2AccessDeniedException ex = thrown()
+    }
+
+    def "Password Credentials Login with Locked Login"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("LOCKED_USER", "password123456","elite2apiclient", "clientsecret")
+
+        when:
+        oauthRestTemplate.getAccessToken()
 
         then:
         OAuth2AccessDeniedException ex = thrown()

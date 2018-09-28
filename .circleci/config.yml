@@ -10,23 +10,66 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys:
-            - gradle-{{ checksum "build.gradle" }}
-            - gradle-
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: gradle-cache-{{ checksum "build.gradle" }}
       - run: ./gradlew build
       - save_cache:
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
-            - ~/.gradle
-          key: gradle-{{ checksum "build.gradle" }}
+          - /home/circleci/.gradle/wrapper
+      - save_cache:
+          key: gradle-cache-{{ checksum "build.gradle" }}
+          paths:
+          - /home/circleci/.gradle/caches
       - store_test_results:
-          path: build/test-results
+          path: build/test-results/test
       - store_artifacts:
-          path: build/reports/tests
+          path: build/reports/tests/test
       - persist_to_workspace:
           root: .
           paths:
             - build/libs
             - build.gradle
+
+  integration_tests:
+    working_directory: ~/app
+    docker:
+    - image: circleci/openjdk:10-jdk-browsers
+    steps:
+    - checkout
+    - attach_workspace:
+        at: ~/app
+    - run:
+        name: Run the java app.
+        command: env spring.profiles.active=dev java -jar build/libs/oauth2server-*.jar
+        background: true
+    - run:
+        name: Wait for java app to start
+        command: sleep 15
+    - restore_cache:
+        key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+    - restore_cache:
+        key: gradle-cache-{{ checksum "build.gradle" }}
+    - run:
+        name: Run Integration Tests
+        command: ./gradlew testIntegration
+    - save_cache:
+        key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+        paths:
+        - /home/circleci/.gradle/wrapper
+    - save_cache:
+        key: gradle-cache-{{ checksum "build.gradle" }}
+        paths:
+        - /home/circleci/.gradle/caches
+    - store_artifacts:
+        path: build/reports/test
+        destination: integration/spock
+    - store_artifacts:
+        path: build/geb-reports
+        destination: integration/geb
+    - store_test_results:
+        path: build/test-results/testIntegration
 
   build_docker:
     <<: *defaults
@@ -76,6 +119,9 @@ workflows:
           filters:
             tags:
               ignore: /.*/
+      - integration_tests:
+          requires:
+          - build
       - build_docker:
           requires:
-            - build
+            - integration_tests

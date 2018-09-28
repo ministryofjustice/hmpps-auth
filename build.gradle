@@ -23,6 +23,12 @@ repositories {
 
 ext {
     springCloudVersion = 'Finchley.RELEASE'
+
+    ext {
+        drivers = [
+                'chromeHeadless'
+        ]
+    }
 }
 
 def today = java.time.Instant.now()
@@ -100,10 +106,24 @@ dependencies {
     testRuntime 'com.h2database:h2:1.4.196'
 
     testCompile 'org.assertj:assertj-core:3.8.0'
-    testCompile 'org.codehaus.groovy:groovy-all:2.4.7'
+    testCompile 'org.codehaus.groovy:groovy-all:2.4.14'
     testCompile 'org.spockframework:spock-spring:1.1-groovy-2.4'
-    testCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
+    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
+        exclude group: "org.codehaus.groovy"
+    }
 
+    testCompile 'org.gebish:geb-core:2.2'
+    testCompile 'org.gebish:geb-spock:2.2'
+    testCompile 'org.seleniumhq.selenium:selenium-support:3.12.0'
+    testCompile 'org.seleniumhq.selenium:selenium-chrome-driver:3.12.0'
+    testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.12.0'
+    testCompile 'io.github.http-builder-ng:http-builder-ng-apache:1.0.3'
+
+    testCompile 'com.github.tomakehurst:wiremock-standalone:2.15.0'
+    testCompile 'com.github.tomjankes:wiremock-groovy:0.2.0'
+    testCompile 'org.slf4j:slf4j-api:1.7.25'
+    testCompile 'com.auth0:java-jwt:3.3.0'
+    
 }
 
 dependencyManagement {
@@ -111,3 +131,25 @@ dependencyManagement {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
     }
 }
+
+
+drivers.each { driver ->
+    task "${driver}Test"(type: Test) {
+        group JavaBasePlugin.VERIFICATION_GROUP
+
+        outputs.upToDateWhen { false } // Always run tests
+
+        systemProperty 'geb.build.reportsDir', reporting.file("geb/${name}")
+        systemProperty 'geb.env', driver
+    }
+}
+
+
+test {
+    exclude '**/integration/*'
+}
+
+task testIntegration(type: Test) {
+    include 'uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*'
+}
+
