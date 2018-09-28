@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAcc
 
 class LoginPage extends Page {
 
-    static url = '/auth/ui'
+    static url = '/auth/login'
 
     static at = {
         title == 'Nomis Authentication - Login'
