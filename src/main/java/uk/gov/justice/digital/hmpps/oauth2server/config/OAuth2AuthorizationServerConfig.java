@@ -22,6 +22,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
@@ -44,6 +45,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final String keystorePassword;
     private final String keystoreAlias;
 
+    private final ClientDetailsService clientDetailsService;
 
     private final AuthenticationManager authenticationManager;
 
@@ -53,6 +55,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy AuthenticationManager authenticationManager,
+                                           @Lazy ClientDetailsService clientDetailsService,
                                            UserDetailsService userDetailsService,
                                            PasswordEncoder passwordEncoder,
                                            @Value("${jwt.signing.key.pair}") String privateKeyPair,
@@ -67,6 +70,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.oauthClientConfig = clientConfigExtractor.getClientConfigurations(clientData);
         this.userDetailsService = userDetailsService;
         this.authenticationManager = authenticationManager;
+        this.clientDetailsService = clientDetailsService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -123,6 +127,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         defaultTokenServices.setTokenStore(tokenStore());
         defaultTokenServices.setReuseRefreshToken(false);
         defaultTokenServices.setSupportRefreshToken(true);
+        defaultTokenServices.setClientDetailsService(clientDetailsService);
         defaultTokenServices.setAuthenticationManager(authenticationManager);
         return defaultTokenServices;
     }

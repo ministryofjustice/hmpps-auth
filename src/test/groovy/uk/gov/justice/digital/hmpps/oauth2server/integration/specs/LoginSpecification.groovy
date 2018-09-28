@@ -10,6 +10,8 @@ import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.
 
 class LoginSpecification extends GebReportingSpec {
 
+    public static final String clientBaseUrl = 'http://localhost:8081/login'
+
     def "The login page is present"() {
         when: 'I go to the login page'
         to LoginPage
@@ -44,17 +46,32 @@ class LoginSpecification extends GebReportingSpec {
     def "I can sign in from another client"() {
         given: 'I am using SSO auth token to login'
         def state = RandomStringUtils.random(6, true, true)
-        browser.go('/auth/oauth/authorize?client_id=elite2apiclient&redirect_uri=http://localhost:8081/login&response_type=code&state='+ state)
+        browser.go('/auth/oauth/authorize?client_id=elite2apiclient&redirect_uri=' + clientBaseUrl + '&response_type=code&state=' + state)
         at LoginPage
 
         when: "I login using valid credentials"
         loginAs ITAG_USER, 'password'
 
         then: 'I am redirected back'
-        browser.getCurrentUrl() startsWith('http://localhost:8081/login?code')
+        browser.getCurrentUrl() startsWith(clientBaseUrl + '?code')
 
-        then: 'and state is returned'
+        and: 'state is returned'
         browser.getCurrentUrl() contains('state='+state)
 
+        and: 'auth code is returned'
+        def params = splitQuery(new URL(browser.getCurrentUrl()))
+        def authCode = params.get('code');
+        authCode != null
+    }
+
+    private static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+        Map<String, String> queryPairs = new LinkedHashMap<String, String>();
+        String query = url.getQuery();
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+        }
+        queryPairs;
     }
 }
