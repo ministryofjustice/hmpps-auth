@@ -12,13 +12,16 @@ class OauthSpecification extends TestSpecification {
     def "Client Credentials Login"() {
 
         given:
-        def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret")
+        def oauthRestTemplate = getOauthClientGrant("deliusnewtech", "clientsecret")
 
         when:
         def token = oauthRestTemplate.getAccessToken()
 
         then:
         token.value != null
+
+        and:
+        token.expiresIn <= 3600
     }
 
     def "Client Credentials Login With Identifier"() {
@@ -61,6 +64,9 @@ class OauthSpecification extends TestSpecification {
 
         then:
         token.value != null
+
+        and:
+        token.expiresIn >= 28790
     }
 
     def "Refresh token can be obtained"() {
