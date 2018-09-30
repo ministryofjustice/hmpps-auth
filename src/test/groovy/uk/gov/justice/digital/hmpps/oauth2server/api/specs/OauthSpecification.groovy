@@ -22,6 +22,9 @@ class OauthSpecification extends TestSpecification {
 
         and:
         token.expiresIn <= 3600
+
+        and: 'refresh token deos not exist'
+        token.refreshToken == null
     }
 
     def "Client Credentials Login With Identifier"() {
@@ -65,20 +68,28 @@ class OauthSpecification extends TestSpecification {
         then:
         token.value != null
 
-        and:
+        and: 'expiry is in 8 hours'
         token.expiresIn >= 28790
+
+        and: 'refresh token exists'
+        token.refreshToken.value != null
     }
 
     def "Refresh token can be obtained"() {
 
-        given:
+        given: 'I create an access token'
         def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password","elite2apiclient", "clientsecret")
+        def accessToken = oauthRestTemplate.getAccessToken()
 
-        when:
-        def token = refresh(oauthRestTemplate)
+        when: 'I request a refresh token'
+        def newAccessToken = refresh(oauthRestTemplate)
 
-        then:
-        token.value != null
+        then: 'refresh token is returned'
+        newAccessToken.refreshToken.value != null
+
+        and: 'access tokens are different'
+        accessToken.getRefreshToken().value != newAccessToken.getRefreshToken().value
+        accessToken.value != newAccessToken.value
     }
 
     def "Password Credentials Login with Bad password credentials"() {
