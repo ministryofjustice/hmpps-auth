@@ -14,8 +14,8 @@ public class OauthClientConfig {
     private List<String> authorizedGrantTypes;
     private List<String> webServerRedirectUri;
     private List<String> authorities;
-    private int accessTokenValidity;
-    private int refreshTokenValidity;
+    private Integer accessTokenValidity;
+    private Integer refreshTokenValidity;
     private String additionalInformation;
     private List<String> autoApprove;
     private boolean autoApproved;

@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,6 +35,7 @@ import java.util.List;
 @EnableAuthorizationServer
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @Slf4j
+@Profile("!dbconfig")
 public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
     private static final int HOUR_IN_SECS = 60 * 60;
@@ -149,9 +147,14 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                 log.info("Initialising OAUTH2 Client ID {}", client.getClientId());
                 clientBuilder = clientBuilder
                         .secret(passwordEncoder.encode(client.getClientSecret()))
-                        .accessTokenValiditySeconds(client.getAccessTokenValidity())
-                        .refreshTokenValiditySeconds(client.getRefreshTokenValidity())
                         .autoApprove(client.isAutoApproved());
+
+                if (client.getAccessTokenValidity() != null) {
+                    clientBuilder = clientBuilder.accessTokenValiditySeconds(client.getAccessTokenValidity());
+                }
+                if (client.getRefreshTokenValidity() != null) {
+                    clientBuilder = clientBuilder.refreshTokenValiditySeconds(client.getRefreshTokenValidity());
+                }
                 if (client.getScope() != null) {
                     clientBuilder = clientBuilder.scopes(toArray(client.getScope()));
                 }
