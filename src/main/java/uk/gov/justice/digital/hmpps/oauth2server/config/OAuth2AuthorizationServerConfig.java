@@ -40,6 +40,7 @@ import java.util.List;
 @Slf4j
 public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
+    private static final int HOUR_IN_SECS = 60 * 60;
     private final Resource privateKeyPair;
     private final List<OauthClientConfig> oauthClientConfig;
     private final String keystorePassword;
@@ -125,8 +126,10 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
         defaultTokenServices.setTokenEnhancer(tokenEnhancerChain());
         defaultTokenServices.setTokenStore(tokenStore());
-        defaultTokenServices.setReuseRefreshToken(false);
+        defaultTokenServices.setReuseRefreshToken(false);  // change to true once refresh period increased.
         defaultTokenServices.setSupportRefreshToken(true);
+        defaultTokenServices.setAccessTokenValiditySeconds(HOUR_IN_SECS); // default 1 hours
+        defaultTokenServices.setRefreshTokenValiditySeconds(HOUR_IN_SECS * 12); // default 12 hours
         defaultTokenServices.setClientDetailsService(clientDetailsService);
         defaultTokenServices.setAuthenticationManager(authenticationManager);
         return defaultTokenServices;
