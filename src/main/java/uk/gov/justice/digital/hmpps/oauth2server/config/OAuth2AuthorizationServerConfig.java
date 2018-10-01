@@ -109,8 +109,6 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                 .tokenServices(tokenServices());
     }
 
-
-
     @Bean
     public TokenEnhancerChain tokenEnhancerChain() {
         TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
