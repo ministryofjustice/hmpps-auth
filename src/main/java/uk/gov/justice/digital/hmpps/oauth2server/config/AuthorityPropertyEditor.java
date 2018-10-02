@@ -7,9 +7,7 @@ import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 
-/**
- * Created by ahmed on 21.5.18.
- */
+
 public class AuthorityPropertyEditor implements PropertyEditor {
 
     private GrantedAuthority grantedAuthority;

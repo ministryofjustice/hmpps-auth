@@ -29,6 +29,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 @Configuration
@@ -38,7 +39,7 @@ import java.util.List;
 @Profile("!dbconfig")
 public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
-    private static final int HOUR_IN_SECS = 60 * 60;
+    public static final int HOUR_IN_SECS = 60 * 60;
     private final Resource privateKeyPair;
     private final List<OauthClientConfig> oauthClientConfig;
     private final String keystorePassword;
@@ -172,7 +173,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         }
     }
 
-    private String[] toArray(List<String> array) {
+    private String[] toArray(Collection<String> array) {
         if (array != null) {
             return array.toArray(new String[0]);
         }

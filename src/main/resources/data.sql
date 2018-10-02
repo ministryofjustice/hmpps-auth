@@ -63,6 +63,8 @@ INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES
 INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'NOMIS_BATCHLOAD', now());
 INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'LOCKED_USER', now());
 INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'EXPIRED_USER', now());
+INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'ITAG_USER_ADM', now());
+
 
 INSERT INTO OMS_ROLES (ROLE_ID, ROLE_CODE, ROLE_NAME, ROLE_SEQ, ROLE_TYPE, ROLE_FUNCTION) VALUES (1, 'OMIC_ADMIN', 'Omic Administrator', 1, 'APP', 'GENERAL');
 INSERT INTO OMS_ROLES (ROLE_ID, ROLE_CODE, ROLE_NAME, ROLE_SEQ, ROLE_TYPE, ROLE_FUNCTION) VALUES (-1, '900', 'Some Old Role', 99, 'INST', 'GENERAL');
@@ -75,6 +77,8 @@ INSERT INTO OMS_ROLES (ROLE_ID, ROLE_CODE, ROLE_NAME, ROLE_SEQ, ROLE_TYPE, ROLE_
 INSERT INTO OMS_ROLES (ROLE_ID, ROLE_CODE, ROLE_NAME, ROLE_SEQ, ROLE_TYPE, ROLE_FUNCTION) VALUES (12, 'LICENCE_RO', 'Licence Responsible Officer', 2, 'APP', 'GENERAL');
 INSERT INTO OMS_ROLES (ROLE_ID, ROLE_CODE, ROLE_NAME, ROLE_SEQ, ROLE_TYPE, ROLE_FUNCTION) VALUES (13, 'LICENCE_DM', 'Licence Decision Maker', 3, 'APP', 'GENERAL');
 
+INSERT INTO OMS_ROLES (ROLE_ID, ROLE_CODE, ROLE_NAME, ROLE_SEQ, ROLE_TYPE, ROLE_FUNCTION) VALUES (14, 'OAUTH_ADMIN', 'Oauth Admin', 99, 'APP', 'ADMIN');
+
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (-1, 'MDI', 'ITAG_USER');
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (-1, 'MDI', 'OLD_NOMIS_USER');
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (1, 'NWEB', 'ITAG_USER');
@@ -85,5 +89,47 @@ INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (3, 'CAD
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (11, 'NWEB', 'CA_USER');
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (12, 'NWEB', 'RO_USER');
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (13, 'NWEB', 'DM_USER');
+INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (14, 'NWEB', 'ITAG_USER_ADM');
+
+create table oauth_client_token (
+  token_id          VARCHAR2(255),
+  token             BLOB,
+  authentication_id varchar2(255),
+  user_name         varchar2(255),
+  client_id         varchar2(255)
+);
+
+CREATE TABLE oauth_client_details (
+  client_id               varchar2(255) NOT NULL,
+  resource_ids            varchar2(255) DEFAULT NULL,
+  client_secret           varchar2(255) DEFAULT NULL,
+  scope                   varchar2(255) DEFAULT NULL,
+  authorized_grant_types  varchar2(255) DEFAULT NULL,
+  web_server_redirect_uri varchar2(255) DEFAULT NULL,
+  authorities             varchar2(255) DEFAULT NULL,
+  access_token_validity   NUMBER(11, 0) DEFAULT NULL,
+  refresh_token_validity  NUMBER(11, 0) DEFAULT NULL,
+  additional_information  varchar2(255) DEFAULT NULL,
+  autoapprove             varchar2(255) DEFAULT NULL
+);
+
+create table oauth_access_token (
+  token_id          varchar2(255),
+  token             BLOB,
+  authentication_id varchar2(255),
+  user_name         varchar2(255),
+  client_id         varchar2(255),
+  authentication    BLOB,
+  refresh_token     varchar2(255)
+);
+
+create table oauth_refresh_token (
+  token_id       varchar2(255),
+  token          BLOB,
+  authentication BLOB
+);
+
+
+
 
 

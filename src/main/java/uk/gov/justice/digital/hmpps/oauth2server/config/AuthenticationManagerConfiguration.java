@@ -27,15 +27,11 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     private final LoggingAccessDeniedHandler accessDeniedHandler;
 
-    private final boolean requireSsl;
-
     @Autowired
     public AuthenticationManagerConfiguration(UserDetailsService userDetailsService,
-                                              LoggingAccessDeniedHandler accessDeniedHandler,
-                                              @Value("${application.requires.ssl:false}") boolean requireSsl) {
+                                              LoggingAccessDeniedHandler accessDeniedHandler) {
         this.userDetailsService = userDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
-        this.requireSsl = requireSsl;
     }
 
     @Bean
@@ -53,9 +49,6 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     protected void configure(HttpSecurity http) throws Exception { // @formatter:off
 
         http
-            .csrf().disable().antMatcher("/**")
-            .cors().disable().antMatcher("/**")
-
             .requestMatchers()
                 .antMatchers("/login", "/oauth/authorize","/oauth/confirm_access")
             .and()
@@ -85,7 +78,6 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler);
 
-        http.headers().frameOptions().disable();
     } // @formatter:on
 
     @Override

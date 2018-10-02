@@ -16,65 +16,57 @@ import uk.gov.justice.digital.hmpps.oauth2server.config.SplitCollectionEditor;
 import java.util.Collection;
 import java.util.Set;
 
-/**
- * Created by ahmed on 21.5.18.
- */
 @Controller
-@RequestMapping("/ui/admin")
+@RequestMapping("ui/clients")
 public class ClientsController {
 
     @Autowired
     private JdbcClientDetailsService clientsDetailsService;
 
     @InitBinder
-    public void initBinder(WebDataBinder binder){
-
-        binder.registerCustomEditor(Collection.class,new SplitCollectionEditor(Set.class,","));
-        binder.registerCustomEditor(GrantedAuthority.class,new AuthorityPropertyEditor());
-
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(Collection.class, new SplitCollectionEditor(Set.class, ","));
+        binder.registerCustomEditor(GrantedAuthority.class, new AuthorityPropertyEditor());
     }
 
-
-    @RequestMapping(value="/form",method= RequestMethod.GET)
+    @GetMapping(value = "/form")
     @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
-    public String showEditForm(@RequestParam(value="client",required=false) String clientId, Model model){
+    public String showEditForm(@RequestParam(value = "client", required = false) String clientId, Model model) {
 
         ClientDetails clientDetails;
-        if(clientId !=null){
-            clientDetails=clientsDetailsService.loadClientByClientId(clientId);
-        }
-        else{
-            clientDetails =new BaseClientDetails();
+        if (clientId != null) {
+            clientDetails = clientsDetailsService.loadClientByClientId(clientId);
+        } else {
+            clientDetails = new BaseClientDetails();
         }
 
-        model.addAttribute("clientDetails",clientDetails);
-        return "form";
+        model.addAttribute("clientDetails", clientDetails);
+        return "ui/form";
     }
 
 
-    @RequestMapping(value = "/edit", method = RequestMethod.POST)
+    @PostMapping(value = "/edit")
     @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
     public String editClient(
             @ModelAttribute BaseClientDetails clientDetails,
-            @RequestParam(value = "newClient", required = false) String newClient
-    ) {
-        if (newClient == null) {
+            @RequestParam(value = "newClient", required = false) String newClient) {
 
+        if (newClient == null) {
             clientsDetailsService.updateClientDetails(clientDetails);
         } else {
             clientsDetailsService.addClientDetails(clientDetails);
         }
 
-
         if (!clientDetails.getClientSecret().isEmpty()) {
             clientsDetailsService.updateClientSecret(clientDetails.getClientId(), clientDetails.getClientSecret());
         }
-        return "redirect:/";
+        return "redirect:/ui";
     }
 
-    @RequestMapping(value="{client.clientId}/delete",method = RequestMethod.POST)
-    public String deleteClient(@ModelAttribute BaseClientDetails ClientDetails, @PathVariable("client.clientId") String id){
-        clientsDetailsService.removeClientDetails(clientsDetailsService.loadClientByClientId(id).toString());
-        return "redirect:/";
+    @GetMapping(value = "/{clientId}/delete")
+    @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
+    public String deleteClient(@PathVariable String clientId) {
+        clientsDetailsService.removeClientDetails(clientId);
+        return "redirect:/ui";
     }
 }

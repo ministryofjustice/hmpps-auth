@@ -3,16 +3,54 @@
       xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>Welcome</title>
+    <title>OAuth Server Administration Dashboard</title>
 </head>
 <body>
-<div layout:fragment="content" th:remove="tag">
-    <h1 class="heading-large">Welcome <span sec:authentication="name"></span></h1>
-    <div class="pure-u-md-8-12">
-        Roles: <span sec:authentication="principal.authorities"></span>
-        <br/>
-        <a href="/" th:href="@{/logout}">Sign Out</a>
+    <div layout:fragment="content" th:remove="tag">
+        <h1 class="heading-large">OAuth Server Administration Dashboard</h1>
+        <div class="pure-u-md-8-12">
+            <span sec:authorize="isAuthenticated()" style="display: inline-block;">
+                <a th:href="@{/logout}">Sign Out</a>
+            </span>
+        </div>
+
+        <div class="pure-u-md-12-12">
+            <div class="pure-u-md-10 pure-u-md-offset-1" sec:authorize="hasRole('ROLE_OAUTH_ADMIN')">
+                <h2 class="heading-medium">Clients</h2>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Client ID</th>
+                        <th>Resource IDs</th>
+                        <th>Scopes</th>
+                        <th>Grant Types</th>
+                        <th>Roles</th>
+                        <th>Actions</th>
+                    </tr>
+                    <tr th:each="client : ${clientDetails}">
+                        <td th:text="${client.clientId}"></td>
+                        <td th:text="${client.resourceIds}"></td>
+                        <td th:text="${client.scope}"></td>
+                        <td th:text="${client.authorizedGrantTypes}"></td>
+                        <td th:text="${client.authorities}"></td>
+                        <td>
+                            <a class="btn btn-default btn-xs" th:href="@{/ui/clients/form?client=__${client.clientId}__}">
+                                Edit<span class="glyphicon glyphicon-edit"></span>
+                            </a>
+                            <a class="btn btn-default btn-xs" th:href="@{/ui/clients/__${client.clientId}__/delete}">
+                                Delete<span class="glyphicon glyphicon-trash"></span>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="6">
+                            <a class="btn btn-default btn-xs pull-right" th:href="@{/ui/clients/form}">
+                                Add<span class="glyphicon glyphicon-plus"></span>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 </body>
 </html>
