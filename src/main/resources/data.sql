@@ -91,15 +91,7 @@ INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (12, 'NW
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (13, 'NWEB', 'DM_USER');
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (14, 'NWEB', 'ITAG_USER_ADM');
 
-create table oauth_client_token (
-  token_id          VARCHAR2(255),
-  token             BLOB,
-  authentication_id varchar2(255),
-  user_name         varchar2(255),
-  client_id         varchar2(255)
-);
-
-CREATE TABLE oauth_client_details (
+CREATE TABLE IF NOT EXISTS oauth_client_details (
   client_id               varchar2(255) NOT NULL,
   resource_ids            varchar2(255) DEFAULT NULL,
   client_secret           varchar2(255) DEFAULT NULL,
@@ -113,21 +105,6 @@ CREATE TABLE oauth_client_details (
   autoapprove             varchar2(255) DEFAULT NULL
 );
 
-create table oauth_access_token (
-  token_id          varchar2(255),
-  token             BLOB,
-  authentication_id varchar2(255),
-  user_name         varchar2(255),
-  client_id         varchar2(255),
-  authentication    BLOB,
-  refresh_token     varchar2(255)
-);
-
-create table oauth_refresh_token (
-  token_id       varchar2(255),
-  token          BLOB,
-  authentication BLOB
-);
 
 
 
