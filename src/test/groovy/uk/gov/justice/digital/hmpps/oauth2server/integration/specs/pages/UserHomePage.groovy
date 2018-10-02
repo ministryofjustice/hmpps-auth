@@ -7,7 +7,7 @@ class UserHomePage extends Page {
     static url = "/auth/ui"
 
     static at = {
-        headingText == 'Welcome ITAG_USER'
+        headingText == 'OAuth Server Administration Dashboard'
     }
 
     static content = {

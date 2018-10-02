@@ -26,8 +26,8 @@ import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 
 import javax.sql.DataSource;
@@ -42,15 +42,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
-    private final static int HOUR_IN_SECS = 60 * 60;
+    private static final int HOUR_IN_SECS = 60 * 60;
     private final Resource privateKeyPair;
+    private final List<OauthClientConfig> oauthClientConfig;
     private final String keystorePassword;
     private final String keystoreAlias;
     private final DataSource dataSource;
     private final AuthenticationManager authenticationManager;
-    private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
-    private final List<OauthClientConfig> oauthClientConfig;
+    private final PasswordEncoder passwordEncoder;
+
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy AuthenticationManager authenticationManager,
@@ -63,16 +64,76 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                                            @Value("${oauth.client.data}") String clientData,
                                            ClientConfigExtractor clientConfigExtractor) {
 
+        this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.keystorePassword = keystorePassword;
-        this.dataSource = dataSource;
         this.keystoreAlias = keystoreAlias;
+        this.oauthClientConfig = clientConfigExtractor.getClientConfigurations(clientData);
         this.userDetailsService = userDetailsService;
         this.authenticationManager = authenticationManager;
-        this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
+        this.dataSource = dataSource;
         this.passwordEncoder = passwordEncoder;
+    }
 
-        this.oauthClientConfig = clientConfigExtractor.getClientConfigurations(clientData);
+    @Bean
+    public TokenStore tokenStore() {
+        return new JwtTokenStore(accessTokenConverter());
+    }
 
+    @Override
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+        clients.withClientDetails(clientDetailsService());
+    }
+
+    @Bean
+    public JwtAccessTokenConverter accessTokenConverter() {
+        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+        KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(privateKeyPair, keystorePassword.toCharArray());
+        converter.setKeyPair(keyStoreKeyFactory.getKeyPair(keystoreAlias));
+        return converter;
+    }
+
+    @Override
+    public void configure(final AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
+        oauthServer.tokenKeyAccess("permitAll()")
+                .checkTokenAccess("isAuthenticated()");
+    }
+
+    @Bean
+    public TokenEnhancer jwtTokenEnhancer() {
+        return new JWTTokenEnhancer();
+    }
+
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+        endpoints
+                .tokenStore(tokenStore())
+                .accessTokenConverter(accessTokenConverter())
+                .tokenEnhancer(tokenEnhancerChain())
+                .authenticationManager(authenticationManager)
+                .userDetailsService(userDetailsService)
+                .tokenServices(tokenServices());
+    }
+
+    @Bean
+    public TokenEnhancerChain tokenEnhancerChain() {
+        TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(jwtTokenEnhancer(), accessTokenConverter()));
+        return tokenEnhancerChain;
+    }
+
+    @Bean
+    @Primary
+    public DefaultTokenServices tokenServices() {
+        DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+        defaultTokenServices.setTokenEnhancer(tokenEnhancerChain());
+        defaultTokenServices.setTokenStore(tokenStore());
+        defaultTokenServices.setReuseRefreshToken(false);  // change to true once refresh period increased.
+        defaultTokenServices.setSupportRefreshToken(true);
+        defaultTokenServices.setAccessTokenValiditySeconds(HOUR_IN_SECS); // default 1 hours
+        defaultTokenServices.setRefreshTokenValiditySeconds(HOUR_IN_SECS * 12); // default 12 hours
+        defaultTokenServices.setClientDetailsService(clientDetailsService());
+        defaultTokenServices.setAuthenticationManager(authenticationManager);
+        return defaultTokenServices;
     }
 
     @Bean
@@ -115,68 +176,5 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         }
 
         return jdbcClientDetailsService;
-    }
-
-    @Bean
-    public TokenStore tokenStore() {
-        return new JdbcTokenStore(dataSource);
-    }
-
-
-    @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.withClientDetails(clientDetailsService());
-    }
-
-    @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints
-                .tokenStore(tokenStore())
-                .accessTokenConverter(accessTokenConverter())
-                .tokenEnhancer(tokenEnhancerChain())
-                .authenticationManager(authenticationManager)
-                .userDetailsService(userDetailsService)
-                .tokenServices(tokenServices());
-    }
-
-    @Bean
-    public JwtAccessTokenConverter accessTokenConverter() {
-        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(privateKeyPair, keystorePassword.toCharArray());
-        converter.setKeyPair(keyStoreKeyFactory.getKeyPair(keystoreAlias));
-        return converter;
-    }
-
-    @Override
-    public void configure(final AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
-        oauthServer.tokenKeyAccess("permitAll()")
-                .checkTokenAccess("isAuthenticated()");
-    }
-
-    @Bean
-    public TokenEnhancer jwtTokenEnhancer() {
-        return new JWTTokenEnhancer();
-    }
-
-    @Bean
-    public TokenEnhancerChain tokenEnhancerChain() {
-        TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
-        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(jwtTokenEnhancer(), accessTokenConverter()));
-        return tokenEnhancerChain;
-    }
-
-    @Bean
-    @Primary
-    public DefaultTokenServices tokenServices() {
-        DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-        defaultTokenServices.setTokenEnhancer(tokenEnhancerChain());
-        defaultTokenServices.setTokenStore(tokenStore());
-        defaultTokenServices.setReuseRefreshToken(false);  // change to true once refresh period increased.
-        defaultTokenServices.setSupportRefreshToken(true);
-        defaultTokenServices.setAccessTokenValiditySeconds(HOUR_IN_SECS); // default 1 hours
-        defaultTokenServices.setRefreshTokenValiditySeconds(HOUR_IN_SECS * 12); // default 12 hours
-        defaultTokenServices.setClientDetailsService(clientDetailsService());
-        defaultTokenServices.setAuthenticationManager(authenticationManager);
-        return defaultTokenServices;
     }
 }
