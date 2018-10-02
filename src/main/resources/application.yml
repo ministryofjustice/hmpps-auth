@@ -11,9 +11,6 @@ spring:
     url: 'jdbc:h2:mem:testdb;Mode=Oracle'
     type: com.zaxxer.hikari.HikariDataSource
 
-  h2:
-    console:
-      enabled: true
   jpa:
     hibernate:
       ddl-auto: none
