@@ -1,61 +1,60 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.config.annotation.builders.ClientDetailsServiceBuilder;
-import org.springframework.security.oauth2.config.annotation.builders.InMemoryClientDetailsServiceBuilder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.client.BaseClientDetails;
+import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 
+import javax.sql.DataSource;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Configuration
 @EnableAuthorizationServer
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @Slf4j
-@Profile("!dbconfig")
 public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
-    public static final int HOUR_IN_SECS = 60 * 60;
+    private final static int HOUR_IN_SECS = 60 * 60;
     private final Resource privateKeyPair;
-    private final List<OauthClientConfig> oauthClientConfig;
     private final String keystorePassword;
     private final String keystoreAlias;
-
-    private final ClientDetailsService clientDetailsService;
-
+    private final DataSource dataSource;
     private final AuthenticationManager authenticationManager;
-
-    private final UserDetailsService userDetailsService;
-
     private final PasswordEncoder passwordEncoder;
+    private final UserDetailsService userDetailsService;
+    private final List<OauthClientConfig> oauthClientConfig;
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy AuthenticationManager authenticationManager,
-                                           @Lazy ClientDetailsService clientDetailsService,
+                                           @Lazy DataSource dataSource,
                                            UserDetailsService userDetailsService,
                                            PasswordEncoder passwordEncoder,
                                            @Value("${jwt.signing.key.pair}") String privateKeyPair,
@@ -64,20 +63,80 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                                            @Value("${oauth.client.data}") String clientData,
                                            ClientConfigExtractor clientConfigExtractor) {
 
-        this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.keystorePassword = keystorePassword;
+        this.dataSource = dataSource;
         this.keystoreAlias = keystoreAlias;
-        this.oauthClientConfig = clientConfigExtractor.getClientConfigurations(clientData);
         this.userDetailsService = userDetailsService;
         this.authenticationManager = authenticationManager;
-        this.clientDetailsService = clientDetailsService;
+        this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.passwordEncoder = passwordEncoder;
+
+        this.oauthClientConfig = clientConfigExtractor.getClientConfigurations(clientData);
+
     }
 
+    @Bean
+    public JdbcClientDetailsService clientDetailsService() {
+        JdbcClientDetailsService jdbcClientDetailsService = new JdbcClientDetailsService(dataSource);
+        jdbcClientDetailsService.setPasswordEncoder(passwordEncoder);
+
+        if (oauthClientConfig != null && jdbcClientDetailsService.listClientDetails().size() == 0) {
+            for (OauthClientConfig client : oauthClientConfig) {
+                log.info("Initialising OAUTH2 Client ID {}", client.getClientId());
+
+                BaseClientDetails cd = new BaseClientDetails();
+                cd.setClientId(client.getClientId());
+                cd.setClientSecret(client.getClientSecret());
+
+                if (client.getAccessTokenValidity() != null) {
+                    cd.setAccessTokenValiditySeconds(client.getAccessTokenValidity());
+                }
+                if (client.getRefreshTokenValidity() != null) {
+                    cd.setRefreshTokenValiditySeconds(client.getRefreshTokenValidity());
+                }
+                if (client.getScope() != null) {
+                    cd.setScope(client.getScope());
+                }
+                if (client.getAutoApprove() != null) {
+                    cd.setAutoApproveScopes(client.getAutoApprove());
+                }
+                if (client.getAuthorities() != null) {
+                    cd.setAuthorities(client.getAuthorities().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+                }
+                if (client.getAuthorizedGrantTypes() != null) {
+                    cd.setAuthorizedGrantTypes(client.getAuthorizedGrantTypes());
+                }
+                if (client.getWebServerRedirectUri() != null) {
+                    cd.setRegisteredRedirectUri(client.getWebServerRedirectUri());
+                }
+
+                jdbcClientDetailsService.addClientDetails(cd);
+            }
+        }
+
+        return jdbcClientDetailsService;
+    }
 
     @Bean
     public TokenStore tokenStore() {
-        return new JwtTokenStore(accessTokenConverter());
+        return new JdbcTokenStore(dataSource);
+    }
+
+
+    @Override
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+        clients.withClientDetails(clientDetailsService());
+    }
+
+    @Override
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+        endpoints
+                .tokenStore(tokenStore())
+                .accessTokenConverter(accessTokenConverter())
+                .tokenEnhancer(tokenEnhancerChain())
+                .authenticationManager(authenticationManager)
+                .userDetailsService(userDetailsService)
+                .tokenServices(tokenServices());
     }
 
     @Bean
@@ -99,17 +158,6 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         return new JWTTokenEnhancer();
     }
 
-    @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints
-                .tokenStore(tokenStore())
-                .accessTokenConverter(accessTokenConverter())
-                .tokenEnhancer(tokenEnhancerChain())
-                .authenticationManager(authenticationManager)
-                .userDetailsService(userDetailsService)
-                .tokenServices(tokenServices());
-    }
-
     @Bean
     public TokenEnhancerChain tokenEnhancerChain() {
         TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
@@ -127,57 +175,8 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         defaultTokenServices.setSupportRefreshToken(true);
         defaultTokenServices.setAccessTokenValiditySeconds(HOUR_IN_SECS); // default 1 hours
         defaultTokenServices.setRefreshTokenValiditySeconds(HOUR_IN_SECS * 12); // default 12 hours
-        defaultTokenServices.setClientDetailsService(clientDetailsService);
+        defaultTokenServices.setClientDetailsService(clientDetailsService());
         defaultTokenServices.setAuthenticationManager(authenticationManager);
         return defaultTokenServices;
     }
-
-    @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-
-        if (oauthClientConfig != null) {
-            ClientDetailsServiceBuilder<InMemoryClientDetailsServiceBuilder>.ClientBuilder clientBuilder = null;
-            for (OauthClientConfig client : oauthClientConfig) {
-                if (clientBuilder == null) {
-                    clientBuilder = clients.inMemory().withClient(client.getClientId());
-                } else {
-                    clientBuilder = clientBuilder.and().withClient(client.getClientId());
-                }
-                log.info("Initialising OAUTH2 Client ID {}", client.getClientId());
-                clientBuilder = clientBuilder
-                        .secret(passwordEncoder.encode(client.getClientSecret()))
-                        .autoApprove(client.isAutoApproved());
-
-                if (client.getAccessTokenValidity() != null) {
-                    clientBuilder = clientBuilder.accessTokenValiditySeconds(client.getAccessTokenValidity());
-                }
-                if (client.getRefreshTokenValidity() != null) {
-                    clientBuilder = clientBuilder.refreshTokenValiditySeconds(client.getRefreshTokenValidity());
-                }
-                if (client.getScope() != null) {
-                    clientBuilder = clientBuilder.scopes(toArray(client.getScope()));
-                }
-                if (client.getAutoApprove() != null) {
-                    clientBuilder = clientBuilder.autoApprove(toArray(client.getAutoApprove()));
-                }
-                if (client.getAuthorities() != null) {
-                    clientBuilder = clientBuilder.authorities(toArray(client.getAuthorities()));
-                }
-                if (client.getAuthorizedGrantTypes() != null) {
-                    clientBuilder = clientBuilder.authorizedGrantTypes(toArray(client.getAuthorizedGrantTypes()));
-                }
-                if (client.getWebServerRedirectUri() != null) {
-                    clientBuilder = clientBuilder.redirectUris(toArray(client.getWebServerRedirectUri()));
-                }
-            }
-        }
-    }
-
-    private String[] toArray(Collection<String> array) {
-        if (array != null) {
-            return array.toArray(new String[0]);
-        }
-        return null;
-    }
-
 }
