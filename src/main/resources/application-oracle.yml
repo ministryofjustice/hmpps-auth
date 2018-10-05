@@ -4,5 +4,14 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.Oracle10gDialect
         show_sql: false
-  profiles:
-    include: logstash
+#  profiles:
+#    include: logstash
+
+
+auth:
+  jpa:
+    hibernate:
+      dialect: org.hibernate.dialect.H2Dialect
+      show_sql: false
+      hbm2ddl:
+        auto: create

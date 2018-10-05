@@ -13,8 +13,9 @@ import org.springframework.security.oauth2.common.exceptions.UnapprovedClientAut
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.model.AccountDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 
 import java.util.Objects;
 import java.util.Set;

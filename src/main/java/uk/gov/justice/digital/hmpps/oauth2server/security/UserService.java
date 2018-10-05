@@ -3,9 +3,11 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.model.StaffIdentifier;
-import uk.gov.justice.digital.hmpps.oauth2server.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffIdentifier;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.Optional;

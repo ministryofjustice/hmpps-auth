@@ -5,7 +5,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.digital.hmpps.oauth2server.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.Map;

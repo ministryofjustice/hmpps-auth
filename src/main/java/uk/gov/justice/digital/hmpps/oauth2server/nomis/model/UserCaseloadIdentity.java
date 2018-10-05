@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.model;
+package uk.gov.justice.digital.hmpps.oauth2server.nomis.model;
 
 import lombok.*;
 
@@ -10,13 +10,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-@EqualsAndHashCode(of = {"username", "roleId", "caseload"})
+@EqualsAndHashCode(of = {"username", "caseload"})
 @Embeddable
-@ToString(of = { "username", "roleId", "caseload"})
-public class UserCaseloadRoleIdentity implements Serializable {
-
-    @Column(name = "role_id")
-    private Long roleId;
+@ToString(of = { "username", "caseload"})
+public class UserCaseloadIdentity implements Serializable {
 
     @Column(name = "username")
     private String username;

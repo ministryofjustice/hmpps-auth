@@ -8,16 +8,30 @@ server:
 
 spring:
   datasource:
-    url: 'jdbc:h2:mem:testdb;Mode=Oracle'
+    url: 'jdbc:h2:mem:testdb;MODE=Oracle'
     type: com.zaxxer.hikari.HikariDataSource
 
   jpa:
     hibernate:
-      ddl-auto: none
+      hbm2ddl:
+         auto: none
     properties:
       hibernate:
         show_sql: true
     open-in-view: false
+    database: default
+
+# PostgreSQL DB - "auth"
+auth:
+  datasource:
+    url: 'jdbc:h2:mem:testdb;MODE=PostgreSQL'
+  jpa:
+    hibernate:
+      hbm2ddl:
+        auto: none
+    properties:
+      hibernate:
+        show_sql: true
 
 logging.level.uk.gov: INFO
 management:

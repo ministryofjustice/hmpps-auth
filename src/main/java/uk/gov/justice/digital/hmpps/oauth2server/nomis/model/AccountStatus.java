@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.security;
+package uk.gov.justice.digital.hmpps.oauth2server.nomis.model;
 
 import java.util.Arrays;
 

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,7 +48,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final List<OauthClientConfig> oauthClientConfig;
     private final String keystorePassword;
     private final String keystoreAlias;
-    private final DataSource dataSource;
+    private final DataSource authDataSource;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
@@ -55,8 +56,8 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy AuthenticationManager authenticationManager,
-                                           @Lazy DataSource dataSource,
-                                           UserDetailsService userDetailsService,
+                                           @Lazy @Qualifier("authDataSource") DataSource authDataSource,
+                                           @Lazy UserDetailsService userDetailsService,
                                            PasswordEncoder passwordEncoder,
                                            @Value("${jwt.signing.key.pair}") String privateKeyPair,
                                            @Value("${jwt.keystore.password}") String keystorePassword,
@@ -70,7 +71,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.oauthClientConfig = clientConfigExtractor.getClientConfigurations(clientData);
         this.userDetailsService = userDetailsService;
         this.authenticationManager = authenticationManager;
-        this.dataSource = dataSource;
+        this.authDataSource = authDataSource;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -138,7 +139,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     @Bean
     public JdbcClientDetailsService clientDetailsService() {
-        JdbcClientDetailsService jdbcClientDetailsService = new JdbcClientDetailsService(dataSource);
+        JdbcClientDetailsService jdbcClientDetailsService = new JdbcClientDetailsService(authDataSource);
         jdbcClientDetailsService.setPasswordEncoder(passwordEncoder);
 
         if (oauthClientConfig != null && jdbcClientDetailsService.listClientDetails().size() == 0) {
