@@ -94,6 +94,7 @@ dependencies {
     compile 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.3.0'
     compile 'org.webjars:bootstrap:3.3.7'
 
+    compile 'org.flywaydb:flyway-core:5.2.0'
     compile 'com.zaxxer:HikariCP:2.7.6'
     compile("org.apache.commons:commons-lang3")
     runtime 'com.h2database:h2:1.4.196'

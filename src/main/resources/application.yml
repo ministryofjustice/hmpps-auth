@@ -8,8 +8,10 @@ server:
 
 spring:
   datasource:
-    url: 'jdbc:h2:mem:testdb;MODE=Oracle'
+    url: 'jdbc:h2:mem:nomis;MODE=Oracle'
     type: com.zaxxer.hikari.HikariDataSource
+  flyway:
+    enabled: false
 
   jpa:
     hibernate:
@@ -24,7 +26,7 @@ spring:
 # PostgreSQL DB - "auth"
 auth:
   datasource:
-    url: 'jdbc:h2:mem:testdb;MODE=PostgreSQL'
+    url: 'jdbc:h2:mem:auth;MODE=PostgreSQL'
   jpa:
     hibernate:
       hbm2ddl:
