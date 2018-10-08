@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head lang="en">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Maintain Client Configuration</title>
+</head>
+<body>
+    <div layout:fragment="content" th:remove="tag">
+        <div class="pure-u-md-8-12">
+            <h1 th:if="!${param.client}" class="heading-large">Add client</h1>
+            <h1 th:if="${param.client}" class="heading-large">Edit client '<span th:text="${param.client[0]}"></span>'</h1>
+        </div>
+        <div class="pure-u-md-12-12">
+            <div class="pure-u-xs-12 pure-u-md-12">
+                <form th:action="@{/ui/clients/edit}" method="post">
+                    <!-- signalize new client -->
+                    <input type="hidden" th:if="!${param.client}" name="newClient" value="true"/>
+
+                    <div class="pure-u-md-12">
+
+                        <div class="form-group">
+                            <div class="form-group">
+                            <label class="form-label" for="clientId">Client ID</label>
+                            <input class="form-control" id="clientId" type="text" name="clientId" th:value="${clientDetails.clientId}"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="clientSecret">Client Secret</label>
+                            <input class="form-control" id="clientSecret" type="password" name="clientSecret"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="registeredRedirectUri">Registered redirect URIs</label>
+                            <input class="form-control" id="registeredRedirectUri" name="registeredRedirectUri" type="text"
+                                   th:value="${clientDetails.registeredRedirectUri} ? ${#strings.setJoin(clientDetails.registeredRedirectUri, ',')} : ''"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="accessTokenValiditySeconds">Access token validity</label>
+                            <input class="form-control" id="accessTokenValiditySeconds" name="accessTokenValiditySeconds" type="text"
+                                   th:value="${clientDetails.accessTokenValiditySeconds}"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="refreshTokenValiditySeconds">Refresh token validity</label>
+                            <input class="form-control" id="refreshTokenValiditySeconds" name="refreshTokenValiditySeconds" type="text"
+                                   th:value="${clientDetails.refreshTokenValiditySeconds}"/>
+                        </div>
+                    </div>
+
+                    <div class="pure-u-xs-12 pure-u-md-3">
+                        <div class="form-group">
+                            <label class="form-label" for="resourceIds">Resource IDs</label>
+                            <input class="form-control" id="resourceIds" type="text" name="resourceIds" th:value="${#strings.setJoin(clientDetails.resourceIds, ',')}"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="scopes">Scopes</label>
+                            <input class="form-control" id="scopes" type="text" name="scope" th:value="${#strings.setJoin(clientDetails.scope, ',')}"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="autoApproveScopes">Auto Approve Scopes</label>
+                            <input class="form-control" id="autoApproveScopes" type="text" name="autoApproveScopes" th:value="${#strings.setJoin(clientDetails.autoApproveScopes, ',')}"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="authorities">Authorities</label>
+                            <input class="form-control" id="authorities" type="text" name="authorities" th:value="${#strings.setJoin(clientDetails.authorities, ',')}"/>
+                        </div>
+                    </div>
+
+                    <div class="pure-u-xs-12 pure-u-md-5">
+                        <label class="form-label">Grant Types</label>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" name="authorizedGrantTypes" value="client_credentials" th:field="*{clientDetails.authorizedGrantTypes}"/>
+                                client_credentials
+                            </label>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" name="authorizedGrantTypes" value="implicit" th:field="*{clientDetails.authorizedGrantTypes}"/>
+                                implicit
+                            </label>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" name="authorizedGrantTypes" value="authorization_code" th:field="*{clientDetails.authorizedGrantTypes}"/>
+                                authorization_code
+                            </label>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" name="authorizedGrantTypes" value="refresh_token" th:field="*{clientDetails.authorizedGrantTypes}"/>
+                                refresh_token
+                            </label>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" name="authorizedGrantTypes" value="password" th:field="*{clientDetails.authorizedGrantTypes}"/>
+                                password
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="button pure-u-md-1-6" name="client-submit" type="submit" value="Submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

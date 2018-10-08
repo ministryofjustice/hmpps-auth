@@ -6,3 +6,10 @@ spring:
         show_sql: false
   profiles:
     include: logstash
+
+
+auth:
+  jpa:
+    hibernate:
+      dialect: org.hibernate.dialect.H2Dialect
+      show_sql: false

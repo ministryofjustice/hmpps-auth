@@ -5,7 +5,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.digital.hmpps.oauth2server.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.Map;
@@ -58,7 +58,7 @@ public class ExternalIdAuthenticationHelper {
                 throw new OAuth2AccessDeniedException("Invalid username identifier details.");
             }
 
-            StaffUserAccount userDetail = userService.getUserByUsername(username).orElseThrow( () -> new OAuth2AccessDeniedException("No user found matching username."));
+            StaffUserAccount userDetail = userService.getUserByUsername(username).orElseThrow(() -> new OAuth2AccessDeniedException("No user found matching username."));
             // Get full user details, with authorities, etc.
             userDetails = userDetailsService.loadUserByUsername(userDetail.getUsername());
         }

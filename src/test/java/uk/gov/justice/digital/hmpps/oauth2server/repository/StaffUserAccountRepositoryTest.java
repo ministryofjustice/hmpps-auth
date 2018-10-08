@@ -8,9 +8,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.model.StaffUserAccount;
-import uk.gov.justice.digital.hmpps.oauth2server.security.StaffUserAccountRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

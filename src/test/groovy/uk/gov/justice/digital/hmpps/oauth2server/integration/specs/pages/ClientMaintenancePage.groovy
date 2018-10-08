@@ -2,12 +2,13 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages
 
 import geb.Page
 
-class UserHomePage extends Page {
+class ClientMaintenancePage extends Page {
 
-    static url = "/auth/ui"
+    static url = "/auth/ui/clients/form"
 
     static at = {
-        headingText == 'OAuth Server Administration Dashboard'
+        browser.currentUrl.contains(url)
+        headingText startsWith('Edit client')
     }
 
     static content = {

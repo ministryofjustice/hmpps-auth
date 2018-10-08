@@ -1,8 +1,7 @@
-package uk.gov.justice.digital.hmpps.oauth2server.model;
+package uk.gov.justice.digital.hmpps.oauth2server.nomis.model;
 
 import lombok.*;
 import org.hibernate.annotations.Type;
-import uk.gov.justice.digital.hmpps.oauth2server.security.AccountStatus;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"username"})
-@ToString(of = { "username" })
+@ToString(of = {"username"})
 public class AccountDetail {
 
     @Id

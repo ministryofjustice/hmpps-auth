@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.model;
+package uk.gov.justice.digital.hmpps.oauth2server.nomis.model;
 
 import lombok.*;
 
@@ -14,7 +14,7 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"id"})
-@ToString(of = { "id", "name", "type"})
+@ToString(of = {"id", "name", "type"})
 public class Caseload {
 
     @Id()

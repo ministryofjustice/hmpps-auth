@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -27,15 +26,11 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     private final LoggingAccessDeniedHandler accessDeniedHandler;
 
-    private final boolean requireSsl;
-
     @Autowired
     public AuthenticationManagerConfiguration(UserDetailsService userDetailsService,
-                                              LoggingAccessDeniedHandler accessDeniedHandler,
-                                              @Value("${application.requires.ssl:false}") boolean requireSsl) {
+                                              LoggingAccessDeniedHandler accessDeniedHandler) {
         this.userDetailsService = userDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
-        this.requireSsl = requireSsl;
     }
 
     @Bean
@@ -45,7 +40,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     }
 
     @Bean
-    public BCryptPasswordEncoder passwordEncoder(){
+    public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -53,39 +48,35 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     protected void configure(HttpSecurity http) throws Exception { // @formatter:off
 
         http
-            .csrf().disable().antMatcher("/**")
-            .cors().disable().antMatcher("/**")
-
-            .requestMatchers()
-                .antMatchers("/login", "/oauth/authorize","/oauth/confirm_access")
-            .and()
+                .requestMatchers()
+                .antMatchers("/login", "/oauth/authorize", "/oauth/confirm_access")
+                .and()
                 .authorizeRequests()
                 .anyRequest()
                 .authenticated()
-            .and()
+                .and()
                 .requestMatchers()
                 .antMatchers("/ui/**")
-            .and()
+                .and()
                 .authorizeRequests()
                 .anyRequest()
                 .authenticated()
                 .antMatchers("/**").permitAll()
-            .and()
+                .and()
                 .formLogin()
                 .loginPage("/login")
                 .permitAll()
-            .and()
+                .and()
                 .logout()
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
-             .and()
+                .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler);
 
-        http.headers().frameOptions().disable();
     } // @formatter:on
 
     @Override
