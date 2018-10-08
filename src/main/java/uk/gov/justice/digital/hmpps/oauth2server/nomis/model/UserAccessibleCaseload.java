@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"caseload", "user"})
-@ToString(of = { "caseload", "user", "startDate"})
+@ToString(of = {"caseload", "user", "startDate"})
 public class UserAccessibleCaseload implements Serializable {
 
     @EmbeddedId

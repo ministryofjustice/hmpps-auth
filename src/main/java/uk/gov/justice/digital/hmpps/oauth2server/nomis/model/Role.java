@@ -12,7 +12,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"code"})
-@ToString(of = { "id", "code", "name"})
+@ToString(of = {"id", "code", "name"})
 public class Role implements Serializable {
 
     @Id()

@@ -14,7 +14,7 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"id"})
-@ToString(of = { "id", "name", "type"})
+@ToString(of = {"id", "name", "type"})
 public class Caseload {
 
     @Id()

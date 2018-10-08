@@ -11,11 +11,11 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"id"})
-@ToString(of = { "id"})
+@ToString(of = {"id"})
 public class StaffIdentifier {
 
-   @EmbeddedId
-   private StaffIdentifierIdentity id;
+    @EmbeddedId
+    private StaffIdentifierIdentity id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "STAFF_ID", updatable = false, insertable = false)

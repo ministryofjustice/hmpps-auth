@@ -14,23 +14,23 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"id"})
-@ToString(of = { "id", "authorizedGrantTypes"})
+@ToString(of = {"id", "authorizedGrantTypes"})
 public class ClientDetail {
 
     @Id()
-    @Column(name = "client_id", nullable = false, length = 64 )
+    @Column(name = "client_id", nullable = false, length = 64)
     private String id;
 
     @Column(name = "resource_ids")
     private String resourceIds;
 
-    @Column(name = "client_secret", nullable = false, length = 100 )
+    @Column(name = "client_secret", nullable = false, length = 100)
     private String clientSecret;
 
-    @Column(name = "scope", length = 200 )
+    @Column(name = "scope", length = 200)
     private String scope;
 
-    @Column(name = "authorized_grant_types", nullable = false, length = 200 )
+    @Column(name = "authorized_grant_types", nullable = false, length = 200)
     private String authorizedGrantTypes;
 
     @Column(name = "web_server_redirect_uri")
@@ -42,10 +42,10 @@ public class ClientDetail {
     @Column(name = "access_token_validity")
     private Long accessTokenValidity;
 
-    @Column(name = "refresh_token_validity" )
+    @Column(name = "refresh_token_validity")
     private Long refreshTokenValidity;
 
-    @Column(name = "autoapprove", length = 200 )
+    @Column(name = "autoapprove", length = 200)
     private String autoApprove;
 
     @Column(name = "additional_information")

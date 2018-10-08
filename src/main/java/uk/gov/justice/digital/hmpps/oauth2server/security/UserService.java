@@ -18,18 +18,18 @@ import java.util.Optional;
 public class UserService {
 
     private final StaffUserAccountRepository userRepository;
-	private final StaffIdentifierRepository staffIdentifierRepository;
+    private final StaffIdentifierRepository staffIdentifierRepository;
 
-	public UserService(StaffUserAccountRepository userRepository, StaffIdentifierRepository staffIdentifierRepository) {
-		this.userRepository = userRepository;
-		this.staffIdentifierRepository = staffIdentifierRepository;
-	}
+    public UserService(StaffUserAccountRepository userRepository, StaffIdentifierRepository staffIdentifierRepository) {
+        this.userRepository = userRepository;
+        this.staffIdentifierRepository = staffIdentifierRepository;
+    }
 
-	public Optional<StaffUserAccount> getUserByUsername(String username) {
-		return userRepository.findById(username);
-	}
+    public Optional<StaffUserAccount> getUserByUsername(String username) {
+        return userRepository.findById(username);
+    }
 
-	public StaffUserAccount getUserByExternalIdentifier(String idType, String id, boolean activeOnly) {
+    public StaffUserAccount getUserByExternalIdentifier(String idType, String id, boolean activeOnly) {
         StaffIdentifier staffIdentifier = staffIdentifierRepository.findById_TypeAndId_IdentificationNumber(idType, id);
         Optional<StaffUserAccount> userDetail = Optional.empty();
         if (staffIdentifier != null) {
@@ -42,8 +42,8 @@ public class UserService {
             }
         }
 
-		return userDetail.orElseThrow(() ->
+        return userDetail.orElseThrow(() ->
                 new EntityNotFoundException(String.format("User not found for external identifier with idType [%s] and id [%s].", idType, id)));
-	}
+    }
 
 }

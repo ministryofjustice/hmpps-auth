@@ -17,15 +17,17 @@ public class LoginController {
         return "login";
     }
 
-    @GetMapping(value="/logout")
-    public String logoutPage (HttpServletRequest request, HttpServletResponse response) {
+    @GetMapping(value = "/logout")
+    public String logoutPage(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null){
+        if (auth != null) {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
-        return "redirect:/login?logout";}
+        return "redirect:/login?logout";
+    }
 
-    @GetMapping("/access-denied") public String accessDenied() {
+    @GetMapping("/access-denied")
+    public String accessDenied() {
         return "error/access-denied";
     }
 

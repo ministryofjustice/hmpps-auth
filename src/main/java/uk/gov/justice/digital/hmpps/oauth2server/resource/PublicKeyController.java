@@ -33,10 +33,10 @@ public class PublicKeyController {
     }
 
     @ApiOperation(value = "Public JWT Key",
-                  notes = "formatted and base 64 encoded version",
-                  nickname="getFormattedKey")
-    @RequestMapping(value="jwt-public-key", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = Map.class) } )
+            notes = "formatted and base 64 encoded version",
+            nickname = "getFormattedKey")
+    @RequestMapping(value = "jwt-public-key", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = Map.class)})
     public Map<String, String> getJwtPublicKey() {
         String formattedKey = getFormattedKey(publicKey);
 

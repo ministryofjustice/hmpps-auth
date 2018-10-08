@@ -52,7 +52,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                                            @Value("${jwt.signing.key.pair}") String privateKeyPair,
                                            @Value("${jwt.keystore.password}") String keystorePassword,
                                            @Value("${jwt.keystore.alias:elite2api}") String keystoreAlias
-                                           ) {
+    ) {
 
         this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.keystorePassword = keystorePassword;

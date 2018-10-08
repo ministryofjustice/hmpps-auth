@@ -58,7 +58,7 @@ public class ExternalIdAuthenticationHelper {
                 throw new OAuth2AccessDeniedException("Invalid username identifier details.");
             }
 
-            StaffUserAccount userDetail = userService.getUserByUsername(username).orElseThrow( () -> new OAuth2AccessDeniedException("No user found matching username."));
+            StaffUserAccount userDetail = userService.getUserByUsername(username).orElseThrow(() -> new OAuth2AccessDeniedException("No user found matching username."));
             // Get full user details, with authorities, etc.
             userDetails = userDetailsService.loadUserByUsername(userDetail.getUsername());
         }

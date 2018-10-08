@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"username", "roleId", "caseload"})
 @Embeddable
-@ToString(of = { "username", "roleId", "caseload"})
+@ToString(of = {"username", "roleId", "caseload"})
 public class UserCaseloadRoleIdentity implements Serializable {
 
     @Column(name = "role_id")

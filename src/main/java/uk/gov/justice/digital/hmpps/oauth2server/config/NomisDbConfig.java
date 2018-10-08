@@ -21,7 +21,7 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = { "uk.gov.justice.digital.hmpps.oauth2server.nomis.repository" }
+        basePackages = {"uk.gov.justice.digital.hmpps.oauth2server.nomis.repository"}
 )
 @ConfigurationProperties(prefix = "spring")
 @Data

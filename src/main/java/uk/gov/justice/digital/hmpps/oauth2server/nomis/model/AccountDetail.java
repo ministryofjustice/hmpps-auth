@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"username"})
-@ToString(of = { "username" })
+@ToString(of = {"username"})
 public class AccountDetail {
 
     @Id

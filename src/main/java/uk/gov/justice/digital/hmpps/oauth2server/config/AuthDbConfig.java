@@ -22,7 +22,7 @@ import java.util.Map;
 @EnableJpaRepositories(
         entityManagerFactoryRef = "authEntityManagerFactory",
         transactionManagerRef = "authTransactionManager",
-        basePackages = { "uk.gov.justice.digital.hmpps.oauth2server.auth.repository"}
+        basePackages = {"uk.gov.justice.digital.hmpps.oauth2server.auth.repository"}
 )
 @ConfigurationProperties(prefix = "auth")
 @Data
@@ -45,7 +45,7 @@ public class AuthDbConfig {
     entityManagerFactory(
             EntityManagerFactoryBuilder builder,
             @Qualifier("authDataSource") DataSource dataSource
-            ) {
+    ) {
         return builder
                 .dataSource(dataSource)
                 .packages("uk.gov.justice.digital.hmpps.oauth2server.auth.model")

@@ -52,7 +52,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
         // Determine if both user_id_type and user_id request parameters exist.
         OAuth2Request request = authentication.getOAuth2Request();
 
-        Map<String,String> requestParams = request.getRequestParameters();
+        Map<String, String> requestParams = request.getRequestParameters();
 
         // Non-blank user_id_type and user_id to check - delegate to external identifier auth component
         UserDetails userDetails = externalIdAuthenticationHelper.getUserDetails(requestParams);
