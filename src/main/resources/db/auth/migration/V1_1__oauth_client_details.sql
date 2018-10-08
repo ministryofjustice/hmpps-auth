@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS OAUTH_CLIENT_DETAILS;
+DROP TABLE IF EXISTS oauth_client_details;
 
-create table OAUTH_CLIENT_DETAILS (
+create table oauth_client_details (
   client_id               varchar(64)  not null,
   access_token_validity   bigint,
   additional_information  varchar(255),

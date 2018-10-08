@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "OAUTH_CLIENT_DETAILS")
+@Table(name = "oauth_client_details")
 @Data()
 @NoArgsConstructor
 @AllArgsConstructor
