@@ -18,21 +18,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class JWTTokenEnhancer implements TokenEnhancer {
-    public static final String ADD_INFO_INTERNAL_USER = "internalUser";
-    public static final String ADD_INFO_USER_NAME = "user_name";
-    public static final String ADD_INFO_AUTHORITIES = "authorities";
+    private static final String ADD_INFO_INTERNAL_USER = "internalUser";
+    private static final String ADD_INFO_USER_NAME = "user_name";
+    private static final String ADD_INFO_AUTHORITIES = "authorities";
 
     @Autowired
     private ExternalIdAuthenticationHelper externalIdAuthenticationHelper;
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
-        Map<String, Object> additionalInfo = new HashMap<>();
+        final Map<String, Object> additionalInfo;
 
         if (authentication.isClientOnly()) {
-            additionalInfo.putAll(addUserFromExternalId(authentication, accessToken));
+            additionalInfo = addUserFromExternalId(authentication, accessToken);
         } else {
-            additionalInfo.put(ADD_INFO_INTERNAL_USER, Boolean.TRUE);
+            additionalInfo = Map.of(
+                    ADD_INFO_INTERNAL_USER, Boolean.TRUE,
+                    ADD_INFO_USER_NAME, authentication.getUserAuthentication().getName());
         }
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
