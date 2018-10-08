@@ -17,35 +17,34 @@
         <div class="pure-u-md-12-12">
             <div class="pure-u-md-10 pure-u-md-offset-1" sec:authorize="hasRole('ROLE_OAUTH_ADMIN')">
                 <h2 class="heading-medium">Clients</h2>
-                <table class="table table-bordered">
-                    <tr>
-                        <th>Client ID</th>
-                        <th>Resource IDs</th>
-                        <th>Scopes</th>
-                        <th>Grant Types</th>
-                        <th>Roles</th>
-                        <th>Actions</th>
-                    </tr>
-                    <tr th:each="client : ${clientDetails}">
-                        <td th:text="${client.clientId}"></td>
-                        <td th:text="${client.resourceIds}"></td>
-                        <td th:text="${client.scope}"></td>
-                        <td th:text="${client.authorizedGrantTypes}"></td>
-                        <td th:text="${client.authorities}"></td>
-                        <td>
-                            <a class="btn btn-default btn-xs" th:href="@{/ui/clients/form?client=__${client.clientId}__}">
-                                Edit<span class="glyphicon glyphicon-edit"></span>
-                            </a>
-                            <a class="btn btn-default btn-xs" th:href="@{/ui/clients/__${client.clientId}__/delete}">
-                                Delete<span class="glyphicon glyphicon-trash"></span>
-                            </a>
-                        </td>
-                    </tr>
+                <table class="table table-bordered row-gutters padding-bottom-40 padding-top">
+                    <thead>
+                        <tr>
+                            <th>Client ID</th>
+                            <th>Scopes</th>
+                            <th>Grant Types</th>
+                            <th>Roles</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="client : ${clientDetails}">
+                            <td th:text="${client.clientId}"></td>
+                            <td th:text="${client.scope}"></td>
+                            <td th:text="${client.authorizedGrantTypes}"></td>
+                            <td th:text="${client.authorities}"></td>
+                            <td>
+                                <a class="edit button pure-u-md-2-2" th:id="'edit-' + ${client.clientId}" th:href="@{/ui/clients/form?client=__${client.clientId}__}">Edit</a>
+                            </td>
+                            <td>
+                                <a class="del button pure-u-md-2-2" th:id="'del-' + ${client.clientId}" th:href="@{/ui/clients/__${client.clientId}__/delete}">Delete</a>
+                            </td>
+                        </tr>
+                    </tbody>
                     <tr>
                         <td colspan="6">
-                            <a class="btn btn-default btn-xs pull-right" th:href="@{/ui/clients/form}">
-                                Add<span class="glyphicon glyphicon-plus"></span>
-                            </a>
+                            <a class="button pure-u-md-2-2" id="edit-client" th:href="@{/ui/clients/form}">Add Client</a>
                         </td>
                     </tr>
                 </table>

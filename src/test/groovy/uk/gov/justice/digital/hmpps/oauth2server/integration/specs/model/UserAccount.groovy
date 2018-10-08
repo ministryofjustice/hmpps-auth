@@ -6,6 +6,7 @@ import groovy.transform.TupleConstructor
 enum UserAccount {
 
     ITAG_USER('ITAG_USER'),
+    ITAG_USER_ADM('ITAG_USER_ADM'),
     NOT_KNOWN('NOT_KNOWN')
 
     String username
