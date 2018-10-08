@@ -11,6 +11,7 @@ class ClientConfigSpecification extends GebReportingSpec {
 
     def "View Client Dashboard once logged in"() {
         given: 'I am trying to access the client dashboard page'
+        browser.go('/auth/logout')
         browser.go('/auth/ui')
         at LoginPage
 
@@ -26,6 +27,7 @@ class ClientConfigSpecification extends GebReportingSpec {
 
     def "I can edit a client credential"() {
         given: 'I am on the client dashboard page'
+        browser.go('/auth/logout')
         browser.go('/auth/ui')
         at LoginPage
         loginAs ITAG_USER_ADM, 'password123456'
