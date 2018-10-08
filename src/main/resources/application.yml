@@ -23,10 +23,10 @@ spring:
     open-in-view: false
     database: default
 
-# PostgreSQL DB - "auth"
+# SQL Server DB - "auth"
 auth:
   datasource:
-    url: 'jdbc:h2:mem:auth;MODE=PostgreSQL'
+    url: 'jdbc:h2:mem:auth;MODE=MSSQLServer'
   jpa:
     hibernate:
       hbm2ddl:

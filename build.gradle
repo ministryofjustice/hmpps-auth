@@ -98,6 +98,7 @@ dependencies {
     compile 'com.zaxxer:HikariCP:2.7.6'
     compile("org.apache.commons:commons-lang3")
     runtime 'com.h2database:h2:1.4.196'
+    compileClasspath 'com.microsoft.sqlserver:mssql-jdbc:7.0.0.jre10'
     runtime('org.springframework.boot:spring-boot-devtools')
 
     compileOnly('org.projectlombok:lombok:1.18.2')

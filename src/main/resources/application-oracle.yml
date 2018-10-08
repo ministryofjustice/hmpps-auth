@@ -5,11 +5,10 @@ spring:
         dialect: org.hibernate.dialect.Oracle10gDialect
         show_sql: false
   profiles:
-    include: logstash
-
+    include: ai
 
 auth:
   jpa:
     hibernate:
-      dialect: org.hibernate.dialect.H2Dialect
+      dialect: org.hibernate.dialect.SQLServer2012Dialect
       show_sql: false
