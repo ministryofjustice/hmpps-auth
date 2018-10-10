@@ -1,0 +1,47 @@
+package uk.gov.justice.digital.hmpps.oauth2server.resource;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.ClientDetails;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Set;
+
+@Component
+@Slf4j
+public class RedirectingLogoutSuccessHandler implements LogoutSuccessHandler {
+    private final ClientDetailsService clientDetailsService;
+    private final String servletContextPath;
+
+
+    public RedirectingLogoutSuccessHandler(final ClientDetailsService clientDetailsService,
+                                           @Value("#{servletContext.contextPath}") final String servletContextPath) {
+        this.clientDetailsService = clientDetailsService;
+        this.servletContextPath = servletContextPath;
+    }
+
+    @Override
+    public void onLogoutSuccess(final HttpServletRequest request, final HttpServletResponse response, final Authentication authentication) throws IOException {
+        final String client = request.getParameter("client_id");
+        // If we have asked for a redirect, check it is valid for the client
+        if (client != null) {
+            final ClientDetails clientDetails = clientDetailsService.loadClientByClientId(client);
+            if (clientDetails != null) {
+                final Set<String> redirectUris = clientDetails.getRegisteredRedirectUri();
+                final String redirect = request.getParameter("redirect_uri");
+                if (redirectUris.contains(redirect)) {
+                    response.sendRedirect(redirect);
+                    return;
+                }
+                log.info("Ignoring redirect {} as not valid for client {}", redirect, client);
+            }
+        }
+        response.sendRedirect(servletContextPath + "/login?logout");
+    }
+}

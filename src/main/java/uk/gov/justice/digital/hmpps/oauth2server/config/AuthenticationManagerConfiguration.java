@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
+import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ApiAuthenticationProvider;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
 
@@ -24,17 +25,19 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl
 public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
-
     private final LoggingAccessDeniedHandler accessDeniedHandler;
+    private final RedirectingLogoutSuccessHandler logoutSuccessHandler;
 
     private final boolean requireSsl;
 
     @Autowired
-    public AuthenticationManagerConfiguration(UserDetailsService userDetailsService,
-                                              LoggingAccessDeniedHandler accessDeniedHandler,
-                                              @Value("${application.requires.ssl:false}") boolean requireSsl) {
+    public AuthenticationManagerConfiguration(final UserDetailsService userDetailsService,
+                                              final LoggingAccessDeniedHandler accessDeniedHandler,
+                                              @Value("${application.requires.ssl:false}") final boolean requireSsl,
+                                              final RedirectingLogoutSuccessHandler logoutSuccessHandler) {
         this.userDetailsService = userDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.logoutSuccessHandler = logoutSuccessHandler;
         this.requireSsl = requireSsl;
     }
 
@@ -45,48 +48,39 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     }
 
     @Bean
-    public BCryptPasswordEncoder passwordEncoder(){
+    public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception { // @formatter:off
-
+    protected void configure(HttpSecurity http) throws Exception {
+        // @formatter:off
         http
-            .csrf().disable().antMatcher("/**")
-            .cors().disable().antMatcher("/**")
+            .authorizeRequests()
+                .antMatchers("/css/**", "/img/**","/font/**", "/webjars/**", "/favicon.ico").permitAll()
 
-            .requestMatchers()
-                .antMatchers("/login", "/oauth/authorize","/oauth/confirm_access")
-            .and()
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-            .and()
-                .requestMatchers()
-                .antMatchers("/ui/**")
-            .and()
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .antMatchers("/**").permitAll()
+                .anyRequest().authenticated()
+
             .and()
                 .formLogin()
                 .loginPage("/login")
                 .permitAll()
+
             .and()
                 .logout()
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessHandler(logoutSuccessHandler)
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
-             .and()
+
+            .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler);
 
-        http.headers().frameOptions().disable();
-    } // @formatter:on
+        // @formatter:on
+    }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
