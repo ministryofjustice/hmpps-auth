@@ -1,8 +1,6 @@
 server:
   servlet:
     context-path: /auth
-    session:
-      timeout: 40m
 
   use-forward-headers: true
   tomcat:
@@ -25,9 +23,6 @@ spring:
         show_sql: true
     open-in-view: false
     database: default
-
-  session:
-    store-type: none
 
 # SQL Server DB - "auth"
 auth:
