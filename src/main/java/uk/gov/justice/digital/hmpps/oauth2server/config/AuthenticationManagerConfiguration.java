@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -28,17 +27,13 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     private final LoggingAccessDeniedHandler accessDeniedHandler;
     private final RedirectingLogoutSuccessHandler logoutSuccessHandler;
 
-    private final boolean requireSsl;
-
     @Autowired
     public AuthenticationManagerConfiguration(final UserDetailsService userDetailsService,
                                               final LoggingAccessDeniedHandler accessDeniedHandler,
-                                              @Value("${application.requires.ssl:false}") final boolean requireSsl,
                                               final RedirectingLogoutSuccessHandler logoutSuccessHandler) {
         this.userDetailsService = userDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
-        this.requireSsl = requireSsl;
     }
 
     @Bean

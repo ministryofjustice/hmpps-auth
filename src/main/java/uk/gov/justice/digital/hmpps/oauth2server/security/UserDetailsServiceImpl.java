@@ -13,8 +13,9 @@ import org.springframework.security.oauth2.common.exceptions.UnapprovedClientAut
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.model.AccountDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 
 import java.util.Objects;
 import java.util.Set;
@@ -25,60 +26,60 @@ import static java.lang.String.format;
 @Service("userDetailsService")
 @Transactional(readOnly = true)
 public class UserDetailsServiceImpl implements UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
-	private final UserService userService;
-	private final String apiCaseloadId;
+    private final UserService userService;
+    private final String apiCaseloadId;
 
-	public UserDetailsServiceImpl(UserService userService,
-								  @Value("${application.caseload.id}") String apiCaseloadId) {
-		this.apiCaseloadId = apiCaseloadId;
-		this.userService = userService;
-	}
+    public UserDetailsServiceImpl(UserService userService,
+                                  @Value("${application.caseload.id}") String apiCaseloadId) {
+        this.apiCaseloadId = apiCaseloadId;
+        this.userService = userService;
+    }
 
-	@Override
-	@Cacheable("loadUserByUsername")
-	public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
+    @Override
+    @Cacheable("loadUserByUsername")
+    public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
 
-		StaffUserAccount userByUsername = userService.getUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
-		if (userByUsername.filterByCaseload(apiCaseloadId).isEmpty()) {
-			throw new UnapprovedClientAuthenticationException(format("User does not have access to caseload %s", apiCaseloadId));
-		}
+        StaffUserAccount userByUsername = userService.getUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+        if (userByUsername.filterByCaseload(apiCaseloadId).isEmpty()) {
+            throw new UnapprovedClientAuthenticationException(format("User does not have access to caseload %s", apiCaseloadId));
+        }
 
-		Set<GrantedAuthority> authorities = userByUsername.filterRolesByCaseload(apiCaseloadId).stream()
-				.filter(Objects::nonNull)
-				.map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(StringUtils.replaceAll(role.getRole().getCode(),"-", "_"))))
-				.collect(Collectors.toSet());
+        Set<GrantedAuthority> authorities = userByUsername.filterRolesByCaseload(apiCaseloadId).stream()
+                .filter(Objects::nonNull)
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(StringUtils.replaceAll(role.getRole().getCode(), "-", "_"))))
+                .collect(Collectors.toSet());
 
-		UserDetailsImpl userDetails = new UserDetailsImpl(username, authorities);
+        UserDetailsImpl userDetails = new UserDetailsImpl(username, authorities);
 
-		AccountDetail accountDetail = userByUsername.getAccountDetail();
-		userDetails.setAccountNonExpired(!accountDetail.isExpired());
-		userDetails.setAccountNonLocked(!accountDetail.isLocked());
-		userDetails.setCredentialsNonExpired(true);
+        AccountDetail accountDetail = userByUsername.getAccountDetail();
+        userDetails.setAccountNonExpired(!accountDetail.isExpired());
+        userDetails.setAccountNonLocked(!accountDetail.isLocked());
+        userDetails.setCredentialsNonExpired(true);
 
-		AccountStatus status = accountDetail.getStatus();
-		switch(status) {
+        AccountStatus status = accountDetail.getStatus();
+        switch (status) {
 
-			case LOCKED:
-				userDetails.setAccountNonLocked(false);
-				break;
-			case EXPIRED_GRACE:
-				userDetails.setAccountNonExpired(true);
-				userDetails.setEnabled(true);
-				break;
-			case OPEN:
-				userDetails.setEnabled(true);
-				break;
-			case EXPIRED:
-				userDetails.setAccountNonExpired(false);
-				break;
-			case EXPIRED_LOCKED:
-				userDetails.setAccountNonExpired(false);
-				userDetails.setAccountNonLocked(false);
-				break;
-		}
+            case LOCKED:
+                userDetails.setAccountNonLocked(false);
+                break;
+            case EXPIRED_GRACE:
+                userDetails.setAccountNonExpired(true);
+                userDetails.setEnabled(true);
+                break;
+            case OPEN:
+                userDetails.setEnabled(true);
+                break;
+            case EXPIRED:
+                userDetails.setAccountNonExpired(false);
+                break;
+            case EXPIRED_LOCKED:
+                userDetails.setAccountNonExpired(false);
+                userDetails.setAccountNonLocked(false);
+                break;
+        }
 
-		return userDetails;
-	}
+        return userDetails;
+    }
 
     @Override
     public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws UsernameNotFoundException {

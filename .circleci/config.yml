@@ -69,7 +69,7 @@ jobs:
         path: build/geb-reports
         destination: integration/geb
     - store_test_results:
-        path: build/test-results/testIntegration
+        path: build/test-results
 
   build_docker:
     <<: *defaults

@@ -3,16 +3,53 @@
       xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>Welcome</title>
+    <title>OAuth Server Administration Dashboard</title>
 </head>
 <body>
-<div layout:fragment="content" th:remove="tag">
-    <h1 class="heading-large">Welcome <span sec:authentication="name"></span></h1>
-    <div class="pure-u-md-8-12">
-        Roles: <span sec:authentication="principal.authorities"></span>
-        <br/>
-        <a href="/" th:href="@{/logout}">Sign Out</a>
+    <div layout:fragment="content" th:remove="tag">
+        <h1 class="heading-large">OAuth Server Administration Dashboard</h1>
+        <div class="pure-u-md-8-12">
+            <span sec:authorize="isAuthenticated()" style="display: inline-block;">
+                <a th:href="@{/logout}">Sign Out</a>
+            </span>
+        </div>
+
+        <div class="pure-u-md-12-12">
+            <div class="pure-u-md-10 pure-u-md-offset-1" sec:authorize="hasRole('ROLE_OAUTH_ADMIN')">
+                <h2 class="heading-medium">Clients</h2>
+                <table class="table table-bordered row-gutters padding-bottom-40 padding-top">
+                    <thead>
+                        <tr>
+                            <th>Client ID</th>
+                            <th>Scopes</th>
+                            <th>Grant Types</th>
+                            <th>Roles</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="client : ${clientDetails}">
+                            <td th:text="${client.clientId}"></td>
+                            <td th:text="${client.scope}"></td>
+                            <td th:text="${client.authorizedGrantTypes}"></td>
+                            <td th:text="${client.authorities}"></td>
+                            <td>
+                                <a class="edit button pure-u-md-2-2" th:id="'edit-' + ${client.clientId}" th:href="@{/ui/clients/form?client=__${client.clientId}__}">Edit</a>
+                            </td>
+                            <td>
+                                <a class="del button pure-u-md-2-2" onclick="return confirm('Are you sure you want to delete this client?');" th:id="'del-' + ${client.clientId}" th:href="@{/ui/clients/__${client.clientId}__/delete}">Delete</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tr>
+                        <td colspan="6">
+                            <a class="button pure-u-md-2-2" id="edit-client" th:href="@{/ui/clients/form}">Add Client</a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 </body>
 </html>

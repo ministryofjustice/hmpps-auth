@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.userdetails.UserDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.model.*;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,7 +15,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.digital.hmpps.oauth2server.security.AccountStatus.*;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.*;
 
 
 @RunWith(MockitoJUnitRunner.class)

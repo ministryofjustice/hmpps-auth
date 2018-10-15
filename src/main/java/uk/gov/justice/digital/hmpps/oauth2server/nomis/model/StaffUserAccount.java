@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.model;
+package uk.gov.justice.digital.hmpps.oauth2server.nomis.model;
 
 import lombok.*;
 
@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"username"})
-@ToString(of = { "username", "type"})
+@ToString(of = {"username", "type"})
 public class StaffUserAccount {
 
     @Id()

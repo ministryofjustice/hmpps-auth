@@ -1,23 +1,26 @@
-package uk.gov.justice.digital.hmpps.oauth2server.model;
+package uk.gov.justice.digital.hmpps.oauth2server.nomis.model;
 
 import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDate;
 
 @Entity
-@Table(name = "USER_ACCESSIBLE_CASELOADS")
+@Table(name = "USER_CASELOAD_ROLES")
 @Data()
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-@EqualsAndHashCode(of = {"caseload", "user"})
-@ToString(of = { "caseload", "user", "startDate"})
-public class UserAccessibleCaseload implements Serializable {
+@EqualsAndHashCode(of = {"id"})
+@ToString(of = "id")
+public class UserCaseloadRole implements Serializable {
 
     @EmbeddedId
-    private UserCaseloadIdentity id;
+    private UserCaseloadRoleIdentity id;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ROLE_ID", updatable = false, insertable = false)
+    private Role role;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CASELOAD_ID", updatable = false, insertable = false)
@@ -26,7 +29,4 @@ public class UserAccessibleCaseload implements Serializable {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USERNAME", updatable = false, insertable = false)
     private StaffUserAccount user;
-
-    @Column(name = "START_DATE")
-    private LocalDate startDate;
 }

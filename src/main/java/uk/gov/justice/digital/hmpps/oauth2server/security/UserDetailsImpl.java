@@ -11,18 +11,18 @@ import java.util.Set;
 @SuppressWarnings("serial")
 @Data
 public class UserDetailsImpl implements UserDetails {
-	private final String username;
-	private boolean enabled;
-	private boolean credentialsNonExpired;
-	private boolean accountNonLocked;
-	private boolean accountNonExpired;
-	private String password;
+    private final String username;
+    private boolean enabled;
+    private boolean credentialsNonExpired;
+    private boolean accountNonLocked;
+    private boolean accountNonExpired;
+    private String password;
 
-	private final Set<GrantedAuthority> authorities = new HashSet<>();
+    private final Set<GrantedAuthority> authorities = new HashSet<>();
 
-	public UserDetailsImpl(final String username,
-						   final Collection<GrantedAuthority> authorities) {
-		this.username = username;
-		this.authorities.addAll(authorities);
-	}
+    public UserDetailsImpl(final String username,
+                           final Collection<GrantedAuthority> authorities) {
+        this.username = username;
+        this.authorities.addAll(authorities);
+    }
 }
