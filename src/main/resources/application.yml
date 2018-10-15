@@ -24,6 +24,14 @@ spring:
     open-in-view: false
     database: default
 
+  session:
+    store-type: none
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+
 # SQL Server DB - "auth"
 auth:
   datasource:
