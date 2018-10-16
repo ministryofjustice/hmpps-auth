@@ -37,14 +37,14 @@ public class RedirectingLogoutSuccessHandlerTest {
     @Test
     public void onLogoutSuccess_NoClientId() throws IOException {
         redirectingLogoutSuccessHandler.onLogoutSuccess(request, response, null);
-        verify(response).sendRedirect("/path/login");
+        verify(response).sendRedirect("/path/login?logout");
     }
 
     @Test
     public void onLogoutSuccess_ClientIdNotMatched() throws IOException {
         when(request.getParameter("client_id")).thenReturn("joe");
         redirectingLogoutSuccessHandler.onLogoutSuccess(request, response, null);
-        verify(response).sendRedirect("/path/login");
+        verify(response).sendRedirect("/path/login?logout");
     }
 
     @Test
@@ -53,7 +53,7 @@ public class RedirectingLogoutSuccessHandlerTest {
         when(request.getParameter("redirect_uri")).thenReturn("http://some.where");
         when(clientDetailsService.loadClientByClientId("joe")).thenReturn(createClientDetails("http://tim.buk.tu"));
         redirectingLogoutSuccessHandler.onLogoutSuccess(request, response, null);
-        verify(response).sendRedirect("/path/login");
+        verify(response).sendRedirect("/path/login?logout");
     }
 
     @Test
