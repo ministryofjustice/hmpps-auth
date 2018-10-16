@@ -9,28 +9,31 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
+import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ApiAuthenticationProvider;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
 
 @Configuration
-@Order(1)
+@Order(4)
 public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
-
     private final LoggingAccessDeniedHandler accessDeniedHandler;
+    private final RedirectingLogoutSuccessHandler logoutSuccessHandler;
 
     @Autowired
-    public AuthenticationManagerConfiguration(UserDetailsService userDetailsService,
-                                              LoggingAccessDeniedHandler accessDeniedHandler) {
+    public AuthenticationManagerConfiguration(final UserDetailsService userDetailsService,
+                                              final LoggingAccessDeniedHandler accessDeniedHandler,
+                                              final RedirectingLogoutSuccessHandler logoutSuccessHandler) {
         this.userDetailsService = userDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.logoutSuccessHandler = logoutSuccessHandler;
     }
 
     @Bean
@@ -39,48 +42,47 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         return super.authenticationManagerBean();
     }
 
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
     @Override
-    protected void configure(HttpSecurity http) throws Exception { // @formatter:off
-
+    protected void configure(HttpSecurity http) throws Exception {
+        // @formatter:off
         http
-                .requestMatchers()
-                .antMatchers("/login", "/oauth/authorize", "/oauth/confirm_access")
-                .and()
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .requestMatchers()
-                .antMatchers("/ui/**")
-                .and()
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .antMatchers("/**").permitAll()
-                .and()
+            .authorizeRequests()
+                .anyRequest().authenticated()
+
+            .and()
                 .formLogin()
                 .loginPage("/login")
                 .permitAll()
-                .and()
+
+            .and()
                 .logout()
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessHandler(logoutSuccessHandler)
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
-                .and()
+
+            .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler);
 
-    } // @formatter:on
+        // @formatter:on
+    }
 
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    public void configure(WebSecurity web) {
+        web
+                .ignoring()
+                .antMatchers("/css/**", "/img/**", "/font/**", "/webjars/**", "/favicon.ico",
+                        "/health", "/info", "/error",
+                        "/h2-console/**", "/v2/api-docs",
+                        "/swagger-ui.html", "/swagger-resources", "/swagger-resources/configuration/ui",
+                        "/swagger-resources/configuration/security");
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(authenticationProvider());
         auth.authenticationProvider(preAuthProvider());
     }

@@ -5,35 +5,29 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
 @Configuration
-@Order(2)
+@Order(1)
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
+@EnableResourceServer
 public class ResourceConfiguration extends ResourceServerConfigurerAdapter {
 
     @Autowired
     private ResourceServerTokenServices tokenServices;
 
     @Override
-    public void configure(HttpSecurity http) throws Exception { // @formatter:off
+    public void configure(HttpSecurity http) throws Exception {
+        // @formatter:off
         http
-                .csrf().disable().antMatcher("/**")
-                .cors().disable().antMatcher("/**")
-                .authorizeRequests()
-                .antMatchers("/h2-console/**", "/v2/api-docs", "/configuration/ui", "/swagger-resources", "/configuration/security",
-                        "/swagger-ui.html", "/webjars/**", "/swagger-resources/configuration/ui", "/swagger-ui.html",
-                        "/swagger-resources/configuration/security",
-                        "/health", "/info",
-                        "/css/**",
-                        "/img/**",
-                        "/webjars/**").permitAll()
-                .antMatchers("/api/**").authenticated();
-
-        http.headers().frameOptions().disable();
-    } // @formatter:on
+            .antMatcher("/api/**")
+            .authorizeRequests()
+                .anyRequest().authenticated();
+        // @formatter:on
+    }
 
     @Override
     public void configure(ResourceServerSecurityConfigurer config) {
