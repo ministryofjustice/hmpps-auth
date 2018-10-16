@@ -2,8 +2,15 @@ CREATE USER IF NOT EXISTS ITAG_USER password 'password';
 CREATE USER IF NOT EXISTS OLD_NOMIS_USER password 'password';
 CREATE USER IF NOT EXISTS ITAG_USER_ADM password 'password123456';
 CREATE USER IF NOT EXISTS CA_USER password 'password123456';
+CREATE USER IF NOT EXISTS CA_USER_TEST password 'password123456';
+CREATE USER IF NOT EXISTS CA_USER_MULTI password 'password123456';
 CREATE USER IF NOT EXISTS RO_USER password 'password123456';
+CREATE USER IF NOT EXISTS RO_DEMO password 'password123456';
+CREATE USER IF NOT EXISTS RO_USER_TEST password 'password123456';
+CREATE USER IF NOT EXISTS RO_USER_MULTI password 'password123456';
 CREATE USER IF NOT EXISTS DM_USER password 'password123456';
+CREATE USER IF NOT EXISTS DM_USER_TEST password 'password123456';
+CREATE USER IF NOT EXISTS DM_USER_MULTI password 'password123456';
 CREATE USER IF NOT EXISTS NOMIS_BATCHLOAD password 'password123456';
 CREATE USER IF NOT EXISTS LOCKED_USER password 'password123456';
 CREATE USER IF NOT EXISTS EXPIRED_USER password 'password123456';
@@ -15,6 +22,13 @@ INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (4, 'Licence
 INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (5, 'Licence', 'Decision Maker');
 INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (6, 'Licence', 'Batchloader');
 INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (7, 'Expire', 'Locked');
+INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (8, 'Licence', 'Case Admin Test');
+INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (9, 'Licence', 'Case Admin Multi');
+INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (10, 'Licence', 'Responsible Officer Demo');
+INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (11, 'Licence', 'Responsible Officer Test');
+INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (12, 'Licence', 'Responsible Officer Multi');
+INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (13, 'Licence', 'Decision Maker Test');
+INSERT INTO  STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME) VALUES (14, 'Licence', 'Decision Maker Multi');
 
 INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('ITAG_USER', 'GENERAL', 1);
 INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('ITAG_USER_ADM', 'ADMIN', 1);
@@ -25,6 +39,13 @@ INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('D
 INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('NOMIS_BATCHLOAD', 'GENERAL', 6);
 INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('LOCKED_USER', 'GENERAL', 7);
 INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('EXPIRED_USER', 'GENERAL', 7);
+INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('CA_USER_TEST', 'GENERAL', 8);
+INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('CA_USER_MULTI', 'GENERAL', 9);
+INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('RO_DEMO', 'GENERAL', 10);
+INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('RO_USER_TEST', 'GENERAL', 11);
+INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('RO_USER_MULTI', 'GENERAL', 12);
+INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('DM_USER_TEST', 'GENERAL', 13);
+INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('DM_USER_MULTI', 'GENERAL', 14);
 
 INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
 VALUES ('ITAG_USER', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
@@ -44,6 +65,20 @@ INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, c
 VALUES ('LOCKED_USER', 'LOCKED', now(), now()+10000, now(), 'TAG_GENERAL', 'N', 'Y', 'N', 'General');
 INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
 VALUES ('EXPIRED_USER', 'EXPIRED', null, now(), now(), 'TAG_GENERAL', 'N', 'N', 'Y', 'General');
+INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
+VALUES ('CA_USER_TEST', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
+INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
+VALUES ('CA_USER_MULTI', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
+INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
+VALUES ('RO_DEMO', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
+INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
+VALUES ('RO_USER_TEST', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
+INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
+VALUES ('RO_USER_MULTI', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
+INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
+VALUES ('DM_USER_TEST', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
+INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
+VALUES ('DM_USER_MULTI', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
 
 
 INSERT INTO PERSONNEL_IDENTIFICATIONS (STAFF_ID, IDENTIFICATION_TYPE, IDENTIFICATION_NUMBER) VALUES (1, 'YJAF', 'test@yjaf.gov.uk');
@@ -64,6 +99,13 @@ INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES
 INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'LOCKED_USER', now());
 INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'EXPIRED_USER', now());
 INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'ITAG_USER_ADM', now());
+INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'CA_USER_TEST', now());
+INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'CA_USER_MULTI', now());
+INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'RO_DEMO', now());
+INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'RO_USER_TEST', now());
+INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'RO_USER_MULTI', now());
+INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'DM_USER_TEST', now());
+INSERT INTO USER_ACCESSIBLE_CASELOADS (CASELOAD_ID, USERNAME, START_DATE) VALUES ('NWEB', 'DM_USER_MULTI', now());
 
 
 INSERT INTO OMS_ROLES (ROLE_ID, ROLE_CODE, ROLE_NAME, ROLE_SEQ, ROLE_TYPE, ROLE_FUNCTION) VALUES (1, 'OMIC_ADMIN', 'Omic Administrator', 1, 'APP', 'GENERAL');
@@ -90,6 +132,13 @@ INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (11, 'NW
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (12, 'NWEB', 'RO_USER');
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (13, 'NWEB', 'DM_USER');
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (14, 'NWEB', 'ITAG_USER_ADM');
+INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (11, 'NWEB', 'CA_USER_TEST');
+INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (11, 'NWEB', 'CA_USER_MULTI');
+INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (12, 'NWEB', 'RO_DEMO');
+INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (12, 'NWEB', 'RO_USER_TEST');
+INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (12, 'NWEB', 'RO_USER_MULTI');
+INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (13, 'NWEB', 'DM_USER_TEST');
+INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME) VALUES (13, 'NWEB', 'DM_USER_MULTI');
 
 
 
