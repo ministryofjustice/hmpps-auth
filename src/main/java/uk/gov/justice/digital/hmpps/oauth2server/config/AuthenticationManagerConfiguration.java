@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
@@ -46,12 +47,6 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         // @formatter:off
         http
             .authorizeRequests()
-                .antMatchers("/css/**", "/img/**","/font/**", "/webjars/**", "/favicon.ico",
-                        "/health", "/info",
-                        "/h2-console/**", "/v2/api-docs", "/configuration/ui", "/configuration/security",
-                        "/swagger-ui.html", "/swagger-resources/configuration/ui",
-                        "/swagger-resources/configuration/security").permitAll()
-
                 .anyRequest().authenticated()
 
             .and()
@@ -73,6 +68,17 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .accessDeniedHandler(accessDeniedHandler);
 
         // @formatter:on
+    }
+
+    @Override
+    public void configure(WebSecurity web) {
+        web
+                .ignoring()
+                .antMatchers("/css/**", "/img/**", "/font/**", "/webjars/**", "/favicon.ico",
+                        "/health", "/info", "/error",
+                        "/h2-console/**", "/v2/api-docs",
+                        "/swagger-ui.html", "/swagger-resources", "/swagger-resources/configuration/ui",
+                        "/swagger-resources/configuration/security");
     }
 
     @Override

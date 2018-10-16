@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,7 +33,7 @@ public class RedirectingLogoutSuccessHandler implements LogoutSuccessHandler {
         // If we have asked for a redirect, check it is valid for the client
         if (client != null) {
             final ClientDetails clientDetails = clientDetailsService.loadClientByClientId(client);
-            if (clientDetails != null) {
+            if (clientDetails != null && !CollectionUtils.isEmpty(clientDetails.getRegisteredRedirectUri())) {
                 final Set<String> redirectUris = clientDetails.getRegisteredRedirectUri();
                 final String redirect = request.getParameter("redirect_uri");
                 if (redirectUris.contains(redirect)) {

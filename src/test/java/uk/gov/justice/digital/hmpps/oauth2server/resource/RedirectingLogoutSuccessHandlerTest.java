@@ -30,7 +30,7 @@ public class RedirectingLogoutSuccessHandlerTest {
     private RedirectingLogoutSuccessHandler redirectingLogoutSuccessHandler;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         redirectingLogoutSuccessHandler = new RedirectingLogoutSuccessHandler(clientDetailsService, "/path");
     }
 
@@ -56,6 +56,14 @@ public class RedirectingLogoutSuccessHandlerTest {
         verify(response).sendRedirect("/path/login?logout");
     }
 
+
+    @Test
+    public void onLogoutSuccess_NoRedirectUrisConfigured() throws IOException {
+        when(request.getParameter("client_id")).thenReturn("joe");
+        when(clientDetailsService.loadClientByClientId("joe")).thenReturn(new BaseClientDetails());
+        redirectingLogoutSuccessHandler.onLogoutSuccess(request, response, null);
+        verify(response).sendRedirect("/path/login?logout");
+    }
     @Test
     public void onLogoutSuccess_RedirectUriMatched() throws IOException {
         when(request.getParameter("client_id")).thenReturn("joe");
