@@ -18,11 +18,12 @@ public class JwtAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
     private final JwtAuthenticationHelper jwtAuthenticationHelper;
 
     @Autowired
-    public JwtAuthenticationSuccessHandler(
-            final JwtCookieHelper jwtCookieHelper,
-            final JwtAuthenticationHelper jwtAuthenticationHelper) {
+    public JwtAuthenticationSuccessHandler(final JwtCookieHelper jwtCookieHelper,
+                                           final JwtAuthenticationHelper jwtAuthenticationHelper,
+                                           final CookieRequestCache cookieRequestCache) {
         this.jwtCookieHelper = jwtCookieHelper;
         this.jwtAuthenticationHelper = jwtAuthenticationHelper;
+        setRequestCache(cookieRequestCache);
     }
 
     @Override

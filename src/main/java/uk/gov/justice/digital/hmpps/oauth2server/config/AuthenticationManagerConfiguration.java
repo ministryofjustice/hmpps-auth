@@ -21,10 +21,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ApiAuthenticationProvider;
-import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.JwtCookieAuthenticationFilter;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
+import uk.gov.justice.digital.hmpps.oauth2server.security.*;
 
 @Configuration
 @Order(4)
@@ -36,21 +33,23 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     private final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
     private final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter;
     private final String jwtCookieName;
+    private final CookieRequestCache cookieRequestCache;
 
-    @java.beans.ConstructorProperties({"userDetailsService", "accessDeniedHandler", "logoutSuccessHandler", "jwtAuthenticationSuccessHandler", "jwtCookieAuthenticationFilter"})
     @Autowired
     public AuthenticationManagerConfiguration(final UserDetailsService userDetailsService,
                                               final LoggingAccessDeniedHandler accessDeniedHandler,
                                               final RedirectingLogoutSuccessHandler logoutSuccessHandler,
                                               final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
                                               final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter,
-                                              @Value("${jwt.cookie.name}") final String jwtCookieName) {
+                                              @Value("${jwt.cookie.name}") final String jwtCookieName,
+                                              final CookieRequestCache cookieRequestCache) {
         this.userDetailsService = userDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
         this.jwtCookieAuthenticationFilter = jwtCookieAuthenticationFilter;
         this.jwtCookieName = jwtCookieName;
+        this.cookieRequestCache = cookieRequestCache;
     }
 
     @Override
@@ -87,7 +86,9 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .accessDeniedHandler(accessDeniedHandler)
 
             .and()
-                .addFilterAfter(jwtCookieAuthenticationFilter, BasicAuthenticationFilter.class);
+                .addFilterAfter(jwtCookieAuthenticationFilter, BasicAuthenticationFilter.class)
+
+                .requestCache().requestCache(cookieRequestCache);
         // @formatter:on
     }
 
@@ -109,7 +110,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     }
 
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) {
+    protected void configure(final AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(authenticationProvider());
         auth.authenticationProvider(preAuthProvider());
     }
@@ -117,14 +118,14 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new ApiAuthenticationProvider();
+        final DaoAuthenticationProvider provider = new ApiAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         return provider;
     }
 
     @Bean
     public PreAuthenticatedAuthenticationProvider preAuthProvider() {
-        PreAuthenticatedAuthenticationProvider preAuth = new PreAuthenticatedAuthenticationProvider();
+        final PreAuthenticatedAuthenticationProvider preAuth = new PreAuthenticatedAuthenticationProvider();
         preAuth.setPreAuthenticatedUserDetailsService((UserDetailsServiceImpl) userDetailsService);
         return preAuth;
     }
