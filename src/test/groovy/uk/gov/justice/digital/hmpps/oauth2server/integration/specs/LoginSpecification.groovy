@@ -65,13 +65,7 @@ class LoginSpecification extends GebReportingSpec {
     }
 
     private static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
-        Map<String, String> queryPairs = new LinkedHashMap<String, String>();
-        String query = url.getQuery();
-        String[] pairs = query.split("&");
-        for (String pair : pairs) {
-            int idx = pair.indexOf("=");
-            queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
-        }
-        queryPairs;
+        return url.query.split('&')
+                .collectEntries { it.split('=').collect { URLDecoder.decode(it, 'UTF-8') } };
     }
 }
