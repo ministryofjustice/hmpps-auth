@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -11,13 +13,15 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ApiAuthenticationProvider;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
+import uk.gov.justice.digital.hmpps.oauth2server.security.*;
 
 @Configuration
 @Order(4)
@@ -26,38 +30,52 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     private final UserDetailsService userDetailsService;
     private final LoggingAccessDeniedHandler accessDeniedHandler;
     private final RedirectingLogoutSuccessHandler logoutSuccessHandler;
+    private final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
+    private final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter;
+    private final String jwtCookieName;
+    private final CookieRequestCache cookieRequestCache;
 
     @Autowired
     public AuthenticationManagerConfiguration(final UserDetailsService userDetailsService,
                                               final LoggingAccessDeniedHandler accessDeniedHandler,
-                                              final RedirectingLogoutSuccessHandler logoutSuccessHandler) {
+                                              final RedirectingLogoutSuccessHandler logoutSuccessHandler,
+                                              final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
+                                              final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter,
+                                              @Value("${jwt.cookie.name}") final String jwtCookieName,
+                                              final CookieRequestCache cookieRequestCache) {
         this.userDetailsService = userDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
-    }
-
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
+        this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
+        this.jwtCookieAuthenticationFilter = jwtCookieAuthenticationFilter;
+        this.jwtCookieName = jwtCookieName;
+        this.cookieRequestCache = cookieRequestCache;
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    protected void configure(final HttpSecurity http) throws Exception {
         // @formatter:off
         http
+            .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
+            // Can't have CSRF protection as requires session
+            .and().csrf().disable()
+
             .authorizeRequests()
                 .anyRequest().authenticated()
 
             .and()
                 .formLogin()
                 .loginPage("/login")
+                .successHandler(jwtAuthenticationSuccessHandler)
                 .permitAll()
 
             .and()
                 .logout()
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
+                .deleteCookies(jwtCookieName)
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .logoutSuccessHandler(logoutSuccessHandler)
                 .logoutSuccessUrl("/login?logout")
@@ -65,13 +83,17 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
             .and()
                 .exceptionHandling()
-                .accessDeniedHandler(accessDeniedHandler);
+                .accessDeniedHandler(accessDeniedHandler)
 
+            .and()
+                .addFilterAfter(jwtCookieAuthenticationFilter, BasicAuthenticationFilter.class)
+
+                .requestCache().requestCache(cookieRequestCache);
         // @formatter:on
     }
 
     @Override
-    public void configure(WebSecurity web) {
+    public void configure(final WebSecurity web) {
         web
                 .ignoring()
                 .antMatchers("/css/**", "/img/**", "/font/**", "/webjars/**", "/favicon.ico",
@@ -81,8 +103,14 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                         "/swagger-resources/configuration/security");
     }
 
+    @Bean
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) {
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
+    @Override
+    protected void configure(final AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(authenticationProvider());
         auth.authenticationProvider(preAuthProvider());
     }
@@ -90,17 +118,28 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new ApiAuthenticationProvider();
+        final DaoAuthenticationProvider provider = new ApiAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         return provider;
     }
 
     @Bean
     public PreAuthenticatedAuthenticationProvider preAuthProvider() {
-        PreAuthenticatedAuthenticationProvider preAuth = new PreAuthenticatedAuthenticationProvider();
+        final PreAuthenticatedAuthenticationProvider preAuth = new PreAuthenticatedAuthenticationProvider();
         preAuth.setPreAuthenticatedUserDetailsService((UserDetailsServiceImpl) userDetailsService);
         return preAuth;
     }
 
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
 
+    @Bean
+    public FilterRegistrationBean registration(final JwtCookieAuthenticationFilter filter) {
+        // have to explicitly disable the filter otherwise it will be registered with spring as a global filter
+        final FilterRegistrationBean registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
 }

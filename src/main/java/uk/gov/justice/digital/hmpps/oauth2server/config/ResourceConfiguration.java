@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -14,13 +15,13 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 @Order(1)
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @EnableResourceServer
+@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ResourceConfiguration extends ResourceServerConfigurerAdapter {
 
-    @Autowired
-    private ResourceServerTokenServices tokenServices;
+    private final ResourceServerTokenServices tokenServices;
 
     @Override
-    public void configure(HttpSecurity http) throws Exception {
+    public void configure(final HttpSecurity http) throws Exception {
         // @formatter:off
         http
             .antMatcher("/api/**")
@@ -30,7 +31,7 @@ public class ResourceConfiguration extends ResourceServerConfigurerAdapter {
     }
 
     @Override
-    public void configure(ResourceServerSecurityConfigurer config) {
+    public void configure(final ResourceServerSecurityConfigurer config) {
         config.tokenServices(tokenServices);
     }
 
