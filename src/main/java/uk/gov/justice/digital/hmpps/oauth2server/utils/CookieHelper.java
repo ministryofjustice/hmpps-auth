@@ -14,12 +14,10 @@ import java.util.stream.Stream;
 public class CookieHelper {
     private final String name;
     private final Duration expiryTime;
-    private final boolean secure;
 
-    public CookieHelper(final String name, final Duration expiryTime, final boolean secure) {
+    public CookieHelper(final String name, final Duration expiryTime) {
         this.name = name;
         this.expiryTime = expiryTime;
-        this.secure = secure;
     }
 
     public void addCookieToResponse(final HttpServletRequest request, final HttpServletResponse response, final String value) {
@@ -30,7 +28,7 @@ public class CookieHelper {
         sessionCookie.setPath(request.getContextPath() + "/");
         sessionCookie.setMaxAge(Math.toIntExact(expiryTime.toSeconds()));
         sessionCookie.setHttpOnly(true);
-        sessionCookie.setSecure(request.isSecure() || secure);
+        sessionCookie.setSecure(request.isSecure());
         response.addCookie(sessionCookie);
     }
 

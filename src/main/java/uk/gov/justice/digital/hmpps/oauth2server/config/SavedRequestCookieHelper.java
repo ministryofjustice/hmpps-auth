@@ -13,14 +13,14 @@ public class SavedRequestCookieHelper extends CookieHelper {
 
     @Autowired
     public SavedRequestCookieHelper(final SavedRequestCookieConfigurationProperties properties) {
-        super(properties.getName(), properties.getExpiryTime(), properties.isSecure());
+        super(properties.getName(), properties.getExpiryTime());
     }
 
     void removeCookie(final HttpServletRequest request, final HttpServletResponse response) {
         final Cookie removeSavedRequestCookie = new Cookie(getName(), "");
         removeSavedRequestCookie.setPath(request.getContextPath() + "/");
         removeSavedRequestCookie.setMaxAge(0);
-        removeSavedRequestCookie.setSecure(request.isSecure() || isSecure());
+        removeSavedRequestCookie.setSecure(request.isSecure());
         removeSavedRequestCookie.setHttpOnly(true);
         response.addCookie(removeSavedRequestCookie);
     }

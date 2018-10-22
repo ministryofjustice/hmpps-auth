@@ -11,6 +11,5 @@ import java.time.Duration;
 @Data
 public class SavedRequestCookieConfigurationProperties {
     private String name;
-    private boolean secure = true;
     private Duration expiryTime;
 }

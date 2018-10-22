@@ -13,6 +13,3 @@ auth:
   jpa:
     hibernate:
       dialect: org.hibernate.dialect.H2Dialect
-
-jwt.cookie.secure: false
-saved-request.cookie.secure: false
