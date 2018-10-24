@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: custody-svc
+  labels:
+    app: custody-svc
+spec:
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 8080
+  selector:
+    app: custody
