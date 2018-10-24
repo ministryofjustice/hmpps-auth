@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
@@ -27,6 +29,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 
+import javax.sql.DataSource;
 import java.util.Arrays;
 
 
@@ -43,16 +46,17 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final ClientDetailsService clientDetailsService;
+    private final DataSource dataSource;
 
 
     @Autowired
-    public OAuth2AuthorizationServerConfig(@Lazy AuthenticationManager authenticationManager,
-                                           @Lazy UserDetailsService userDetailsService,
-                                           ClientDetailsService clientDetailsService,
-                                           @Value("${jwt.signing.key.pair}") String privateKeyPair,
-                                           @Value("${jwt.keystore.password}") String keystorePassword,
-                                           @Value("${jwt.keystore.alias:elite2api}") String keystoreAlias
-    ) {
+    public OAuth2AuthorizationServerConfig(@Lazy final AuthenticationManager authenticationManager,
+                                           @Lazy final UserDetailsService userDetailsService,
+                                           final ClientDetailsService clientDetailsService,
+                                           @Value("${jwt.signing.key.pair}") final String privateKeyPair,
+                                           @Value("${jwt.keystore.password}") final String keystorePassword,
+                                           @Value("${jwt.keystore.alias:elite2api}") final String keystoreAlias,
+                                           @Qualifier("authDataSource") final DataSource dataSource) {
 
         this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.keystorePassword = keystorePassword;
@@ -60,6 +64,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.userDetailsService = userDetailsService;
         this.authenticationManager = authenticationManager;
         this.clientDetailsService = clientDetailsService;
+        this.dataSource = dataSource;
     }
 
     @Bean
@@ -68,20 +73,20 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     }
 
     @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+    public void configure(final ClientDetailsServiceConfigurer clients) throws Exception {
         clients.withClientDetails(clientDetailsService);
     }
 
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
-        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(privateKeyPair, keystorePassword.toCharArray());
+        final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+        final KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(privateKeyPair, keystorePassword.toCharArray());
         converter.setKeyPair(keyStoreKeyFactory.getKeyPair(keystoreAlias));
         return converter;
     }
 
     @Override
-    public void configure(final AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
+    public void configure(final AuthorizationServerSecurityConfigurer oauthServer) {
         oauthServer.tokenKeyAccess("permitAll()")
                 .checkTokenAccess("isAuthenticated()");
     }
@@ -92,19 +97,20 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     }
 
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+    public void configure(final AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints
                 .tokenStore(tokenStore())
                 .accessTokenConverter(accessTokenConverter())
                 .tokenEnhancer(tokenEnhancerChain())
                 .authenticationManager(authenticationManager)
                 .userDetailsService(userDetailsService)
+                .authorizationCodeServices(new JdbcAuthorizationCodeServices(dataSource))
                 .tokenServices(tokenServices());
     }
 
     @Bean
     public TokenEnhancerChain tokenEnhancerChain() {
-        TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+        final TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
         tokenEnhancerChain.setTokenEnhancers(Arrays.asList(jwtTokenEnhancer(), accessTokenConverter()));
         return tokenEnhancerChain;
     }
@@ -112,7 +118,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     @Primary
     public DefaultTokenServices tokenServices() {
-        DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+        final DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
         defaultTokenServices.setTokenEnhancer(tokenEnhancerChain());
         defaultTokenServices.setTokenStore(tokenStore());
         defaultTokenServices.setReuseRefreshToken(false);  // change to true once refresh period increased.

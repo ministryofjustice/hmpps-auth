@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS oauth_client_details;
+DROP TABLE IF EXISTS oauth_code;
 
 create table oauth_client_details (
   client_id               varchar(64)  not null primary key,
@@ -12,4 +13,10 @@ create table oauth_client_details (
   resource_ids            varchar(255),
   scope                   varchar(200),
   web_server_redirect_uri varchar(255)
+);
+
+create table oauth_code (
+  code                    varchar(256)  not null primary key,
+  authentication          LONGVARBINARY,
+  created_date            TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );

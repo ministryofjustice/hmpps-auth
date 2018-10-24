@@ -8,7 +8,7 @@ server:
 
 spring:
   datasource:
-    url: 'jdbc:h2:mem:nomis;MODE=Oracle'
+    url: 'jdbc:h2:mem:nomisdb;MODE=Oracle'
     type: com.zaxxer.hikari.HikariDataSource
   flyway:
     enabled: false
@@ -26,7 +26,7 @@ spring:
 # SQL Server DB - "auth"
 auth:
   datasource:
-    url: 'jdbc:h2:mem:auth;MODE=MSSQLServer'
+    url: 'jdbc:h2:mem:authdb;MODE=MSSQLServer'
   jpa:
     hibernate:
       hbm2ddl:
