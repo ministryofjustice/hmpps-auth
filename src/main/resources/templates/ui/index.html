@@ -24,7 +24,7 @@
                             <th>Scopes</th>
                             <th>Grant Types</th>
                             <th>Roles</th>
-                            <th></th>
+                            <th>Token Duration</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -34,11 +34,9 @@
                             <td th:text="${client.scope}"></td>
                             <td th:text="${client.authorizedGrantTypes}"></td>
                             <td th:text="${client.authorities}"></td>
+                            <td th:text="${client.accessTokenValiditySeconds}"></td>
                             <td>
                                 <a class="edit button pure-u-md-2-2" th:id="'edit-' + ${client.clientId}" th:href="@{/ui/clients/form?client=__${client.clientId}__}">Edit</a>
-                            </td>
-                            <td>
-                                <a class="del button pure-u-md-2-2" onclick="return confirm('Are you sure you want to delete this client?');" th:id="'del-' + ${client.clientId}" th:href="@{/ui/clients/__${client.clientId}__/delete}">Delete</a>
                             </td>
                         </tr>
                     </tbody>
