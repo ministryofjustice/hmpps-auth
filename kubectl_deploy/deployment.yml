@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: custody
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: custody
+    spec:
+      containers:
+      - name: custody
+        image: 926803513772.dkr.ecr.eu-west-1.amazonaws.com/hmpps/custody:latest
+        ports:
+        - containerPort: 80
+        env:
+          - name: SPRING_PROFILES_ACTIVE
+            value: 'dev'
+          - name: SERVER_PORT
+            value: '8080'
+          - name: SERVER_TOMCAT_INTERNAL_PROXIES
+            value: '100\.(6[4-9]|[7-9]\d|[1-2]\d{2})\.\d{1,3}\.\d{1,3}'
