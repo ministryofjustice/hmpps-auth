@@ -63,18 +63,14 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             additionalInfo.put(ADD_INFO_INTERNAL_USER, Boolean.TRUE);
             additionalInfo.put(ADD_INFO_USER_NAME, userDetails.getUsername());
 
-            // Merge standard user credential scopes with those for client credentials
+            // TODO: remove once write credential has been added to clients
+            // Add "write" scope with those for client credentials
             Set<String> scope = new HashSet<>(request.getScope());
-
-            scope.add("read");
             scope.add("write");
-
             ((DefaultOAuth2AccessToken) accessToken).setScope(scope);
 
             // Merge user authorities with those associated with client credentials
             Set<GrantedAuthority> authorities = new HashSet<>(request.getAuthorities());
-
-            authorities.addAll(userDetails.getAuthorities());
 
             additionalInfo.put(ADD_INFO_AUTHORITIES,
                     authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()));
