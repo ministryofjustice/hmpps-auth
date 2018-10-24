@@ -17,6 +17,6 @@ create table oauth_client_details (
 
 create table oauth_code (
   code                    varchar(256)  not null primary key,
-  authentication          LONGVARBINARY,
-  created_date            TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+  authentication          varbinary(max),
+  created_date            TIMESTAMP
 );
