@@ -28,11 +28,11 @@ public class StaffUserAccountRepositoryTest {
     @Test
     public void givenATransientEntityItCanBePeristed() {
 
-        var transientEntity = transientEntity();
+        final var transientEntity = transientEntity();
 
-        var entity = transientEntity.toBuilder().build();
+        final var entity = transientEntity.toBuilder().build();
 
-        var persistedEntity = repository.save(entity);
+        final var persistedEntity = repository.save(entity);
 
         TestTransaction.flagForCommit();
         TestTransaction.end();
@@ -41,7 +41,7 @@ public class StaffUserAccountRepositoryTest {
 
         TestTransaction.start();
 
-        var retrievedEntity = repository.findById(entity.getUsername()).orElseThrow();
+        final var retrievedEntity = repository.findById(entity.getUsername()).orElseThrow();
 
         // equals only compares the business key columns
         assertThat(retrievedEntity).isEqualTo(transientEntity);
@@ -53,12 +53,19 @@ public class StaffUserAccountRepositoryTest {
 
     @Test
     public void givenAnExistingUserTheyCanBeRetrieved() {
-        var retrievedEntity = repository.findById("ITAG_USER").orElseThrow();
+        final var retrievedEntity = repository.findById("ITAG_USER").orElseThrow();
         assertThat(retrievedEntity.getUsername()).isEqualTo("ITAG_USER");
-        assertThat(retrievedEntity.getRoles()).hasSize(2);
-        assertThat(retrievedEntity.getCaseloads()).hasSize(2);
-        assertThat(retrievedEntity.filterRolesByCaseload("NWEB")).hasSize(1);
-        assertThat(retrievedEntity.getStaff().getIdentifiers()).hasSize(1);
+        assertThat(retrievedEntity.getRoles().stream().map(r -> r.getRole().getName()))
+                .containsExactly("Some Old Role", "Omic Administrator", "Maintain Access Roles Admin", "Global Search");
+
+        assertThat(retrievedEntity.getCaseloads().stream().map(c -> c.getCaseload().getName()))
+                .containsExactly("Magic API Caseload", "Moorlands");
+
+        assertThat(retrievedEntity.filterRolesByCaseload("NWEB").stream().map(r -> r.getRole().getName()))
+                .containsExactly("Omic Administrator", "Maintain Access Roles Admin", "Global Search");
+
+        assertThat(retrievedEntity.getStaff().getIdentifiers().stream().map(i -> i.getStaff().getFirstName()))
+                .containsExactly("ITAG");
     }
 
 
