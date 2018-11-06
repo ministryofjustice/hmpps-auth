@@ -63,13 +63,10 @@ jobs:
         paths:
         - /home/circleci/.gradle/caches
     - store_artifacts:
-        path: build/reports/test
+        path: build/reports/test/testIntegration
         destination: integration/spock
-    - store_artifacts:
-        path: build/geb-reports
-        destination: integration/geb
     - store_test_results:
-        path: build/test-results
+        path: build/test-results/testIntegration
 
   build_docker:
     <<: *defaults
