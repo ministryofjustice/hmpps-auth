@@ -23,16 +23,17 @@ public class ApiAuthenticationProvider extends DaoAuthenticationProvider {
     private String jdbcUrl;
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String username = authentication.getName().toUpperCase();
-        String password = authentication.getCredentials().toString();
+    public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
+        final var username = authentication.getName().toUpperCase();
+        final var password = authentication.getCredentials().toString();
 
-        try (Connection ignored = DriverManager.getConnection(jdbcUrl, username, password)) {
+        try (final var ignored = DriverManager.getConnection(jdbcUrl, username, password)) {
             logger.debug(String.format("Verified database connection for user: %s", username));
             // Username and credentials are now validated. Must set authentication in security context now
             // so that subsequent user details queries will work.
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (final SQLException ex) {
+            log.info("Caught {} with message {}", ex.getClass().getName(), ex.getMessage());
             throw new BadCredentialsException(ex.getMessage(), ex);
         }
 
@@ -40,7 +41,7 @@ public class ApiAuthenticationProvider extends DaoAuthenticationProvider {
     }
 
     @Override
-    protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
+    protected void additionalAuthenticationChecks(final UserDetails userDetails, final UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
         if (authentication.getCredentials() == null) {
             logger.debug("Authentication failed: no credentials provided");
 
