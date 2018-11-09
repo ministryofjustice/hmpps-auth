@@ -17,6 +17,7 @@ class LoginPage extends Page {
         headingText { $('#content h1').text() }
         signInButton { $("button", type: 'submit') }
         termsLink { $("a", id: 'terms') }
+        errorText { $('#content h2').text() }
     }
 
     void loginAs(UserAccount userAccount, String password) {

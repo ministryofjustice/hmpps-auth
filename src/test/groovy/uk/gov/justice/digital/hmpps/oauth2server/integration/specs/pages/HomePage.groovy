@@ -12,5 +12,13 @@ class HomePage extends Page {
 
     static content = {
         headingText { $('#content h1').text() }
+        userInfo { $('#userinfo') }
+        logoutLink { $("a", id: 'logout') }
+    }
+
+    void logout() {
+        assert logoutLink.text() == 'Sign out'
+
+        logoutLink.click()
     }
 }

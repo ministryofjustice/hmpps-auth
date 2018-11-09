@@ -1,5 +1,6 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
 <body>
 <th:block th:fragment="header">
     <div id="skiplink-container">
@@ -14,8 +15,21 @@
                         <a class="content hmppslogo" th:href="@{/}" title="Go to the homepage" id="logo">HMPPS</a>
                         <span>|</span>
                         <h1 class="heading-medium noMargin">
-                            <a th:href="@{/}" title="Go to the homepage" id="home">NOMIS Sign in</a>
+                            <a th:href="@{/}" title="Go to the homepage" id="home">NOMIS Authentication</a>
                         </h1>
+                    </div>
+                </div>
+
+                <div class="pure-u-1 pure-u-md-1-2" sec:authorize="isAuthenticated()">
+                    <div class="u-pad10 sm-pad15" id="header-user">
+                        <div class="u-padRight10 sm-padRight30 padLeft15 bold borderRight" id="userinfo">
+                            User: <span sec:authentication="name"></span>
+                        </div>
+                        <div class="u-padLeft10 sm-padLeft30 padRight15">
+                            <a th:href="@{/logout}" title="Sign out" aria-label="Sign out of NOMIS" id="logout">
+                                Sign out
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

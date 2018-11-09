@@ -2,34 +2,31 @@
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:th="http://www.thymeleaf.org">
 <head>
-       <meta charset="UTF-8">
-        <!-- The first thing in any HTML file should be the charset -->
-        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-        <meta name="mobile-web-app-capable" content="yes">
-        <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">Nomis Authentication</title>
+    <meta charset="UTF-8">
+    <!-- The first thing in any HTML file should be the charset -->
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">Nomis Authentication</title>
 
-        <meta content="#000000" name="theme-color">
-        <link th:href="@{/css/grid.css}" rel="stylesheet">
-        <!--<![endif]--><!--[if gt IE 8 ]>
-        <link rel='stylesheet' th:href="@{/css/grid.css}" type='text/css'>
-        <![endif]--><!--[if lt IE 9]>
-        <link rel='stylesheet' th:href="@{/css/grid-old-ie.css}" type='text/css'>
-        <![endif]-->
-        <link th:href="@{/css/govuk-template.css}" rel="stylesheet">
-        <link th:href="@{/css/licences-application.css}" rel="stylesheet">
-        <link th:href="@{/css/fonts.css}" rel="stylesheet">
-        <link th:href="@{/css/app.css}" rel="stylesheet">
+    <meta content="#000000" name="theme-color">
+    <link th:href="@{/css/pure.css}" rel="stylesheet">
+    <link th:href="@{/css/grid.css}" rel="stylesheet">
+    <!--<![endif]--><!--[if gt IE 8 ]>
+    <link rel='stylesheet' th:href="@{/css/grid.css}" type='text/css'>
+    <![endif]--><!--[if lt IE 9]>
+    <link rel='stylesheet' th:href="@{/css/grid-old-ie.css}" type='text/css'>
+    <![endif]-->
+    <link th:href="@{/css/govuk-template.css}" rel="stylesheet">
+    <link th:href="@{/css/licences-application.css}" rel="stylesheet">
+    <link th:href="@{/css/fonts.css}" rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
 </head>
 <body>
-    <th:block th:replace="fragments/header :: header"/>
-    <main class="app-container" role="main" id="content">
-        <div class="pure-g">
-            <div>
-                <th:block layout:fragment="content"/>
-            </div>
-        </div>
-    </main>
-    <th:block th:replace="fragments/footer :: footer"/>
+<th:block th:replace="fragments/header :: header"/>
+<main class="app-container" role="main" id="content">
+    <th:block layout:fragment="content"/>
+</main>
+<th:block th:replace="fragments/footer :: footer"/>
 </body>
 </html>

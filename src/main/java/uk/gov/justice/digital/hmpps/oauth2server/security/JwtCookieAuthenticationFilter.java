@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
+import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,7 +11,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
 
 @Slf4j
 @Configuration
@@ -28,10 +28,14 @@ public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
                                     final FilterChain filterChain) throws ServletException, IOException {
-        final Optional<String> jwt = jwtCookieHelper.readValueFromCookie(request);
+        final var jwt = jwtCookieHelper.readValueFromCookie(request);
 
-        jwt.flatMap(jwtAuthenticationHelper::readAuthenticationFromJwt)
-                .ifPresent(a -> SecurityContextHolder.getContext().setAuthentication(a));
+        try {
+            jwt.flatMap(jwtAuthenticationHelper::readAuthenticationFromJwt)
+                    .ifPresent(a -> SecurityContextHolder.getContext().setAuthentication(a));
+        } catch (final JwtException e) {
+            log.info("Unable to read authentication from JWT", e);
+        }
 
         filterChain.doFilter(request, response);
     }
