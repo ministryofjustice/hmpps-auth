@@ -9,13 +9,14 @@ class LoginPage extends Page {
     static url = '/auth/login'
 
     static at = {
-        title == 'Nomis Authentication - Login'
-        headingText == 'Login'
+        title == 'Nomis Authentication - Sign in'
+        headingText == 'Sign in'
     }
 
     static content = {
-        headingText { $('h1').text() }
-        signInButton{ $("button", type: 'submit') }
+        headingText { $('#content h1').text() }
+        signInButton { $("button", type: 'submit') }
+        termsLink { $("a", id: 'terms') }
     }
 
     void loginAs(UserAccount userAccount, String password) {
@@ -26,5 +27,11 @@ class LoginPage extends Page {
         assert signInButton.text() == 'Sign in'
 
         signInButton.click()
+    }
+
+    void viewTerms() {
+        assert termsLink.text() == 'Terms and conditions'
+
+        termsLink.click()
     }
 }

@@ -7,7 +7,7 @@
 </head>
 <body>
 <div layout:fragment="content" th:remove="tag">
-    <main id="content" class="inner-content">
+    <div>
         <div class="grid-row">
             <div class="column-two-thirds">
                 <h1 class="heading-large">Terms and conditions</h1>
@@ -42,9 +42,9 @@
                 Unauthorised access or attempts to alter, destroy, damage, disclose or otherwise interfere with the data
                 in Prison-NOMIS could result in disciplinary proceedings and / or criminal prosecution.
             </p>
-            <button class="button" onclick="location.href = 'login';">OK, continue</button>
+            <a class="button" th:href="@{/login}" id="login">OK, continue</a>
         </div>
-    </main>
+    </div>
 </div>
 </body>
 </html>

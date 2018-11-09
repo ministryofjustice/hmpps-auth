@@ -3,15 +3,12 @@
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>Login</title>
+    <title>Sign in</title>
 </head>
 <body>
 <div layout:fragment="content" th:remove="tag">
-
-    <h1 class="heading-large">Login</h1>
-    <div class="pure-u-md-8-12">
-
-        <form th:action="@{/login}" method="post">
+    <div class="pure-u-1 pure-u-md-1-3">
+        <form class="form" th:action="@{/login}" method="POST" id="loginForm">
             <div th:if="${param.error}" class="row">
                 <div class="alert alert-danger error-summary col-sm-6">
                     Invalid username or password.
@@ -23,27 +20,22 @@
                 </div>
             </div>
 
+            <h1 class="form-title heading-large">Sign in</h1>
+
             <div class="form-group">
                 <label class="form-label" for="username">Username</label>
-                <input type="text"
-                       id="username"
-                       name="username"
-                       class="form-control"
-                       autofocus="autofocus"
-                       placeholder="Username">
+                <input class="form-control" id="username" name="username" type="text" autofocus="autofocus"
+                       data-element-id="username">
             </div>
             <div class="form-group">
                 <label class="form-label" for="password">Password</label>
-                <input type="password"
-                       id="password"
-                       name="password"
-                       class="form-control"
-                       placeholder="Password">
+                <input class="form-control" id="password" name="password" type="password" data-element-id="password">
             </div>
-            <button class="button pure-u-md-1-6" name="login-submit" type="submit" value="Sign In">Sign in</button>
+            <button class="button largeMarginBottom" id="submit" type="submit" role="button"
+                    data-element-id="continue-button">Sign in
+            </button>
         </form>
     </div>
 </div>
-
 </body>
 </html>

@@ -11,6 +11,6 @@ class HomePage extends Page {
     }
 
     static content = {
-        headingText { $('h1').text() }
+        headingText { $('#content h1').text() }
     }
 }

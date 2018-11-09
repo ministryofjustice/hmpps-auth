@@ -16,18 +16,20 @@
         <![endif]--><!--[if lt IE 9]>
         <link rel='stylesheet' th:href="@{/css/grid-old-ie.css}" type='text/css'>
         <![endif]-->
-        <link th:href="@{/css/gov-uk.css}" rel="stylesheet">
+        <link th:href="@{/css/govuk-template.css}" rel="stylesheet">
+        <link th:href="@{/css/licences-application.css}" rel="stylesheet">
+        <link th:href="@{/css/fonts.css}" rel="stylesheet">
         <link th:href="@{/css/app.css}" rel="stylesheet">
 </head>
 <body>
     <th:block th:replace="fragments/header :: header"/>
-    <div class="inner-content">
+    <main class="app-container" role="main" id="content">
         <div class="pure-g">
             <div>
                 <th:block layout:fragment="content"/>
             </div>
         </div>
-    </div>
+    </main>
     <th:block th:replace="fragments/footer :: footer"/>
 </body>
 </html>
