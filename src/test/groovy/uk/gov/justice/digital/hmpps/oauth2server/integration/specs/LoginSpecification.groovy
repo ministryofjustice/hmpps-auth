@@ -43,6 +43,20 @@ class LoginSpecification extends GebReportingSpec {
         at UserHomePage
     }
 
+    def "I can logout once logged in"() {
+        given: 'I am logged in'
+        to LoginPage
+        loginAs ITAG_USER, 'password'
+        at HomePage
+
+        when: "I logout"
+        logout()
+
+        then: 'I am logged out'
+        at LoginPage
+        errorText == 'You have been logged out'
+    }
+
     def "I can sign in from another client"() {
         given: 'I am using SSO auth token to login'
         def state = RandomStringUtils.random(6, true, true)

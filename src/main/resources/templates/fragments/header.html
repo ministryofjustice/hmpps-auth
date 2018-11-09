@@ -1,16 +1,37 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
 <body>
 <th:block th:fragment="header">
-    <header class="page-header">
-        <div class="header-content">
-            <div class="left-content">
-                <a class="link" th:href="@{/}" id="header_logo_home_link" title="Home link">
-                    <div class="logo"><img th:src="@{/img/Crest@2x.png}" alt="HMPPS" width="42" height="35"/></div>
-                </a>
-                <a class="unstyled-link" th:href="@{/}" id="header_logo_text_home_link" title="Home link">
-                    <span class="title">NOMIS Login</span>
-                </a>
+    <div id="skiplink-container">
+        <div><a class="skiplink" href="#content">Skip to main content</a></div>
+    </div>
+
+    <header class="with-proposition" role="banner" id="global-header">
+        <div class="header-wrapper">
+            <div class="pure-g">
+                <div class="pure-u-1 pure-u-md-1-2">
+                    <div class="header-logo">
+                        <a class="content hmppslogo" th:href="@{/}" title="Go to the homepage" id="logo">HMPPS</a>
+                        <span>|</span>
+                        <h1 class="heading-medium noMargin">
+                            <a th:href="@{/}" title="Go to the homepage" id="home">NOMIS Authentication</a>
+                        </h1>
+                    </div>
+                </div>
+
+                <div class="pure-u-1 pure-u-md-1-2" sec:authorize="isAuthenticated()">
+                    <div class="u-pad10 sm-pad15" id="header-user">
+                        <div class="u-padRight10 sm-padRight30 padLeft15 bold borderRight" id="userinfo">
+                            User: <span sec:authentication="name"></span>
+                        </div>
+                        <div class="u-padLeft10 sm-padLeft30 padRight15">
+                            <a th:href="@{/logout}" title="Sign out" aria-label="Sign out of NOMIS" id="logout">
+                                Sign out
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </header>

@@ -6,22 +6,26 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.*;
+import uk.gov.justice.digital.hmpps.oauth2server.security.ApiAuthenticationProvider;
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtCookieAuthenticationFilter;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
 
 @Configuration
 @Order(4)
@@ -63,12 +67,15 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
             .and().csrf().disable()
 
             .authorizeRequests()
+                .antMatchers(HttpMethod.GET, "/login").permitAll()
+                .antMatchers(HttpMethod.POST, "/login").permitAll()
                 .anyRequest().authenticated()
 
             .and()
                 .formLogin()
                 .loginPage("/login")
                 .successHandler(jwtAuthenticationSuccessHandler)
+                .failureHandler(createFailureHandler())
                 .permitAll()
 
             .and()
@@ -78,7 +85,6 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .deleteCookies(jwtCookieName)
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .logoutSuccessHandler(logoutSuccessHandler)
-                .logoutSuccessUrl("/login?logout")
                 .permitAll()
 
             .and()
@@ -97,7 +103,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         web
                 .ignoring()
                 .antMatchers("/css/**", "/img/**", "/font/**", "/webjars/**", "/favicon.ico",
-                        "/health", "/info", "/error",
+                        "/health", "/info", "/error", "/terms",
                         "/h2-console/**", "/v2/api-docs",
                         "/swagger-ui.html", "/swagger-resources", "/swagger-resources/configuration/ui",
                         "/swagger-resources/configuration/security");
@@ -115,17 +121,16 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         auth.authenticationProvider(preAuthProvider());
     }
 
-
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        final DaoAuthenticationProvider provider = new ApiAuthenticationProvider();
+        final var provider = new ApiAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         return provider;
     }
 
     @Bean
     public PreAuthenticatedAuthenticationProvider preAuthProvider() {
-        final PreAuthenticatedAuthenticationProvider preAuth = new PreAuthenticatedAuthenticationProvider();
+        final var preAuth = new PreAuthenticatedAuthenticationProvider();
         preAuth.setPreAuthenticatedUserDetailsService((UserDetailsServiceImpl) userDetailsService);
         return preAuth;
     }
@@ -138,8 +143,14 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     @Bean
     public FilterRegistrationBean registration(final JwtCookieAuthenticationFilter filter) {
         // have to explicitly disable the filter otherwise it will be registered with spring as a global filter
-        final FilterRegistrationBean registration = new FilterRegistrationBean<>(filter);
+        final var registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;
+    }
+
+    private SimpleUrlAuthenticationFailureHandler createFailureHandler() {
+        final var failureHandler = new SimpleUrlAuthenticationFailureHandler("/login?error");
+        failureHandler.setAllowSessionCreation(false);
+        return failureHandler;
     }
 }
