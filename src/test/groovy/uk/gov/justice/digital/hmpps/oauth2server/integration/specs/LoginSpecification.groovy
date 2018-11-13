@@ -20,6 +20,18 @@ class LoginSpecification extends GebReportingSpec {
         at LoginPage
     }
 
+    def "Attempt login without credentials"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login without credentials"
+        loginAs ITAG_USER, ''
+
+        then: 'My credentials are rejected and I am still on the Login page'
+        at LoginPage
+        errorText == 'Missing credentials'
+    }
+
     def "Log in with valid credentials"() {
         given: 'I am on the Login page'
         to LoginPage
