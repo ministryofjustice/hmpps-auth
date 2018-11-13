@@ -9,7 +9,14 @@
 <div layout:fragment="content" th:remove="tag">
     <div th:if="${param.error}" class="error-summary" role="alert" aria-labelledby="error-summary-heading"
          tabindex="-1">
-        <h2 class="heading-medium error-summary-heading center noMargin">Invalid username or password</h2>
+        <th:block th:switch="${#httpServletRequest.getParameter('reason')}">
+            <h2 class="heading-medium error-summary-heading center noMargin">
+                <th:block th:case="'expired'">Your password has expired</th:block>
+                <th:block th:case="'locked'">Your user account is locked</th:block>
+                <th:block th:case="'missing'">Missing credentials</th:block>
+                <th:block th:case="*">Invalid username or password</th:block>
+            </h2>
+        </th:block>
     </div>
     <div th:if="${param.logout}" class="error-summary" role="alert" aria-labelledby="error-summary-heading"
          tabindex="-1">

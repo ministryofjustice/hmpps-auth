@@ -15,17 +15,13 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ApiAuthenticationProvider;
-import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.JwtCookieAuthenticationFilter;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
+import uk.gov.justice.digital.hmpps.oauth2server.security.*;
 
 @Configuration
 @Order(4)
@@ -75,7 +71,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .formLogin()
                 .loginPage("/login")
                 .successHandler(jwtAuthenticationSuccessHandler)
-                .failureHandler(createFailureHandler())
+                .failureHandler(new UserStateAuthenticationFailureHandler())
                 .permitAll()
 
             .and()
@@ -146,11 +142,5 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         final var registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;
-    }
-
-    private SimpleUrlAuthenticationFailureHandler createFailureHandler() {
-        final var failureHandler = new SimpleUrlAuthenticationFailureHandler("/login?error");
-        failureHandler.setAllowSessionCreation(false);
-        return failureHandler;
     }
 }
