@@ -9,7 +9,6 @@ import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.web.RedirectStrategy;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ApiAuthenticationProvider.MissingCredentialsException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

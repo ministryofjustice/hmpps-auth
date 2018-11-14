@@ -73,9 +73,4 @@ public class ApiAuthenticationProvider extends DaoAuthenticationProvider {
         }
     }
 
-    static class MissingCredentialsException extends AuthenticationException {
-        MissingCredentialsException() {
-            super("No credentials provided");
-        }
-    }
 }

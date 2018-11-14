@@ -52,28 +52,37 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
         UserDetailsImpl userDetails = new UserDetailsImpl(username, authorities);
 
         AccountDetail accountDetail = userByUsername.getAccountDetail();
-        userDetails.setAccountNonExpired(!accountDetail.isExpired());
-        userDetails.setAccountNonLocked(!accountDetail.isLocked());
+        userDetails.setAccountNonExpired(true);
+        userDetails.setAccountNonLocked(true);
+        userDetails.setEnabled(true);
         userDetails.setCredentialsNonExpired(true);
 
         AccountStatus status = accountDetail.getStatus();
         switch (status) {
 
-            case LOCKED:
-                userDetails.setAccountNonLocked(false);
+            case OPEN:
                 break;
             case EXPIRED_GRACE:
-                userDetails.setAccountNonExpired(true);
-                userDetails.setEnabled(true);
                 break;
-            case OPEN:
-                userDetails.setEnabled(true);
+            case LOCKED_TIMED:
+                userDetails.setAccountNonLocked(false);
+                break;
+            case LOCKED:
+                userDetails.setAccountNonLocked(false);
                 break;
             case EXPIRED:
                 userDetails.setAccountNonExpired(false);
                 break;
+            case EXPIRED_LOCKED_TIMED:
+                userDetails.setAccountNonLocked(false);
+                break;
+            case EXPIRED_GRACE_LOCKED_TIMED:
+                userDetails.setAccountNonLocked(false);
+                break;
             case EXPIRED_LOCKED:
-                userDetails.setAccountNonExpired(false);
+                userDetails.setAccountNonLocked(false);
+                break;
+            case EXPIRED_GRACE_LOCKED:
                 userDetails.setAccountNonLocked(false);
                 break;
         }
