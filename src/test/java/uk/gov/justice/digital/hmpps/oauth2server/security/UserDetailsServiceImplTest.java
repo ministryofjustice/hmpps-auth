@@ -184,7 +184,7 @@ public class UserDetailsServiceImplTest {
                 .expired(expired)
                 .locked(locked)
                 .loggedIn(false)
-                .accountStatus(status.getCode())
+                .accountStatus(status.getDesc())
                 .createdDate(LocalDateTime.now())
                 .expiryDate(LocalDateTime.now().plusDays(90))
                 .build();
