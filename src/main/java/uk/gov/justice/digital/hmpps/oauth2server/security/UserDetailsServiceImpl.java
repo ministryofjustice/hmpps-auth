@@ -61,30 +61,18 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
         switch (status) {
 
             case OPEN:
-                userDetails.setEnabled(true);
-                break;
             case EXPIRED_GRACE:
                 userDetails.setEnabled(true);
-                break;
-            case LOCKED_TIMED:
-                userDetails.setAccountNonLocked(false);
-                break;
-            case LOCKED:
-                userDetails.setAccountNonLocked(false);
                 break;
             case EXPIRED:
                 userDetails.setEnabled(true);
                 userDetails.setAccountNonExpired(false);
                 break;
+            case LOCKED:
+            case LOCKED_TIMED:
             case EXPIRED_LOCKED_TIMED:
-                userDetails.setAccountNonLocked(false);
-                break;
             case EXPIRED_GRACE_LOCKED_TIMED:
-                userDetails.setAccountNonLocked(false);
-                break;
             case EXPIRED_LOCKED:
-                userDetails.setAccountNonLocked(false);
-                break;
             case EXPIRED_GRACE_LOCKED:
                 userDetails.setAccountNonLocked(false);
                 break;

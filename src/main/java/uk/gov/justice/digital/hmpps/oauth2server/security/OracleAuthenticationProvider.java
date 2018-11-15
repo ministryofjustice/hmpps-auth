@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.SqlParameter;
@@ -17,10 +19,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
 
 import javax.sql.DataSource;
 import java.sql.CallableStatement;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +36,10 @@ import java.util.Map;
 public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
 
     private final JdbcTemplate jdbcTemplate;
-    private static final String GET_HASH_DETAIL = "SELECT spare4 FROM SYS.user$ WHERE name = ?";
-    private static final String GET_LCOUNT = "SELECT LCOUNT FROM SYS.user$ WHERE name = ?";
+    private static final String GET_USER_DETAIL = "SELECT spare4, LCOUNT retry_count, ASTATUS status_code FROM SYS.user$ WHERE name = ?";
     private static final String HASH = "{ ? = call SYS.DBMS_CRYPTO.hash(UTL_RAW.cast_to_raw (?) || HEXTORAW (?), DBMS_CRYPTO.hash_sh1) }";
-    private static final String UPDATE_LCOUNT = "UPDATE SYS.user$ SET LCOUNT = LCOUNT + 1,  WHERE name = ?";
-    private static final String RESET_LCOUNT = "UPDATE SYS.user$ SET LCOUNT = 0 WHERE name = ?";
+    private static final String UPDATE_LCOUNT = "UPDATE SYS.user$ SET LCOUNT = ? WHERE name = ?";
+    private static final String UPDATE_STATUS = "UPDATE SYS.user$ SET ASTATUS = ?, LTIME = ? WHERE name = ?";
 
     @Autowired
     public OracleAuthenticationProvider(DataSource dataSource, UserDetailsService userDetailsService) {
@@ -60,30 +64,26 @@ public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
         final var username = authentication.getName().toUpperCase();
         final var password = authentication.getCredentials().toString();
 
-        String userData = jdbcTemplate.queryForObject(GET_HASH_DETAIL, new Object[] { username }, String.class);
+        final UserData userData = jdbcTemplate.queryForObject(GET_USER_DETAIL, new Object[] { username }, new BeanPropertyRowMapper<>(UserData.class));
 
         if (userData != null) {
-            String salt = StringUtils.substring(userData, 42, 62);
-            String hash = StringUtils.substring(userData, 2, 42);
+            String encodedPassword = encode(password, userData.getSalt());
 
-            String encodedPassword = encode(password, salt);
-
-            if (encodedPassword.equals(hash)) {
+            if (encodedPassword.equals(userData.getHash())) {
                 // reset the retry count
-                jdbcTemplate.update(RESET_LCOUNT, username);  // reset retry count
+                jdbcTemplate.update(UPDATE_LCOUNT, 0, username);  // reset retry count
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } else {
+                jdbcTemplate.update(UPDATE_LCOUNT, userData.getRetryCount() + 1, username);
+
                 // check the number of retries
-                Long retryCount = jdbcTemplate.queryForObject(GET_LCOUNT, new Object[] { username }, Long.class);
-                if (retryCount != null && retryCount >= 3) {
+                if (userData.getRetryCount()+1 > 2) {
                     // Throw locked exception
+                    AccountStatus lockStatus = userData.getStatus().isGracePeriod() ? AccountStatus.EXPIRED_GRACE_LOCKED : AccountStatus.LOCKED;
+                    jdbcTemplate.update(UPDATE_STATUS, lockStatus.getCode(), Timestamp.valueOf(LocalDateTime.now()), username);
                     throw new LockedException("Account Locked, number of retries exceeded");
                 }
-
-                // update the retries
-                jdbcTemplate.update(UPDATE_LCOUNT, username);
-
                 throw new BadCredentialsException("Authentication failed: password does not match stored value");
             }
         } else {
@@ -110,4 +110,23 @@ public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
         return (String)results.get("encodedPassword");
     }
 
+    @Data
+    private static class UserData {
+        private String spare4;
+        private int retryCount;
+        private int statusCode;
+
+        AccountStatus getStatus() {
+            return AccountStatus.get(statusCode);
+        }
+
+        String getSalt() {
+            return StringUtils.substring(spare4, 42, 62);
+        }
+
+        String getHash() {
+            return StringUtils.substring(spare4, 2, 42);
+        }
+
+    }
 }
