@@ -77,7 +77,7 @@ public class UserDetailsServiceImplTest {
         assertThat(itagUser.isAccountNonExpired()).isFalse();
         assertThat(itagUser.isAccountNonLocked()).isTrue();
         assertThat(itagUser.isCredentialsNonExpired()).isTrue();
-        assertThat(itagUser.isEnabled()).isFalse();
+        assertThat(itagUser.isEnabled()).isTrue();
     }
 
     @Test
@@ -90,7 +90,7 @@ public class UserDetailsServiceImplTest {
 
         assertThat(itagUser).isNotNull();
         assertThat(itagUser.isAccountNonExpired()).isTrue();
-        assertThat(itagUser.isAccountNonLocked()).isFalse();
+        assertThat(itagUser.isAccountNonLocked()).isTrue();
         assertThat(itagUser.isCredentialsNonExpired()).isTrue();
         assertThat(itagUser.isEnabled()).isTrue();
     }
@@ -104,7 +104,6 @@ public class UserDetailsServiceImplTest {
         UserDetails itagUser = service.loadUserByUsername(user.getUsername());
 
         assertThat(itagUser).isNotNull();
-        assertThat(itagUser.isAccountNonExpired()).isFalse();
         assertThat(itagUser.isAccountNonLocked()).isFalse();
         assertThat(itagUser.isCredentialsNonExpired()).isTrue();
         assertThat(itagUser.isEnabled()).isFalse();
