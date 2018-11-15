@@ -2,8 +2,9 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
@@ -13,16 +14,24 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.stereotype.Component;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-@Configurable
+@Component
 @Slf4j
+@Profile("!oracle-auth")
 public class ApiAuthenticationProvider extends DaoAuthenticationProvider {
 
-    @Value("${spring.datasource.url}")
-    private String jdbcUrl;
+    private final String jdbcUrl;
+
+    @Autowired
+    public ApiAuthenticationProvider(UserDetailsService userDetailsService, @Value("${spring.datasource.url}") String jdbcUrl) {
+        setUserDetailsService(userDetailsService);
+        this.jdbcUrl = jdbcUrl;
+    }
 
     @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
@@ -64,9 +73,4 @@ public class ApiAuthenticationProvider extends DaoAuthenticationProvider {
         }
     }
 
-    static class MissingCredentialsException extends AuthenticationException {
-        MissingCredentialsException() {
-            super("No credentials provided");
-        }
-    }
 }

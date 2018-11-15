@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -21,7 +21,10 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.*;
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtCookieAuthenticationFilter;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler;
 
 @Configuration
 @Order(4)
@@ -34,6 +37,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     private final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter;
     private final String jwtCookieName;
     private final CookieRequestCache cookieRequestCache;
+    private final DaoAuthenticationProvider daoAuthenticationProvider;
 
     @Autowired
     public AuthenticationManagerConfiguration(final UserDetailsService userDetailsService,
@@ -42,7 +46,8 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                                               final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
                                               final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter,
                                               @Value("${jwt.cookie.name}") final String jwtCookieName,
-                                              final CookieRequestCache cookieRequestCache) {
+                                              final CookieRequestCache cookieRequestCache,
+                                              DaoAuthenticationProvider daoAuthenticationProvider) {
         this.userDetailsService = userDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
@@ -50,6 +55,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         this.jwtCookieAuthenticationFilter = jwtCookieAuthenticationFilter;
         this.jwtCookieName = jwtCookieName;
         this.cookieRequestCache = cookieRequestCache;
+        this.daoAuthenticationProvider = daoAuthenticationProvider;
     }
 
     @Override
@@ -113,16 +119,10 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     @Override
     protected void configure(final AuthenticationManagerBuilder auth) {
-        auth.authenticationProvider(authenticationProvider());
+        auth.authenticationProvider(daoAuthenticationProvider);
         auth.authenticationProvider(preAuthProvider());
     }
 
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        final var provider = new ApiAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        return provider;
-    }
 
     @Bean
     public PreAuthenticatedAuthenticationProvider preAuthProvider() {
