@@ -80,7 +80,7 @@ public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
                 // check the number of retries
                 if (userData.getRetryCount()+1 > 2) {
                     // Throw locked exception
-                    AccountStatus lockStatus = userData.getStatus().isGracePeriod() ? AccountStatus.EXPIRED_GRACE_LOCKED : AccountStatus.LOCKED;
+                    AccountStatus lockStatus = userData.getStatus().isGracePeriod() ? AccountStatus.EXPIRED_GRACE_LOCKED_TIMED : AccountStatus.LOCKED_TIMED;
                     jdbcTemplate.update(UPDATE_STATUS, lockStatus.getCode(), Timestamp.valueOf(LocalDateTime.now()), username);
                     throw new LockedException("Account Locked, number of retries exceeded");
                 }
