@@ -73,7 +73,7 @@ public class StaffUserAccountRepositoryTest {
         return StaffUserAccount
                 .builder()
                 .username("TEST_USER")
-                .type("GENERAL")
+                .type("ADMIN")
                 .staff(DEFAULT_STAFF)
                 .build();
     }

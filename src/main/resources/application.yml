@@ -29,6 +29,8 @@ spring:
 auth:
   datasource:
     url: 'jdbc:h2:mem:authdb;MODE=MSSQLServer'
+  flyway:
+    locations: db/auth
   jpa:
     hibernate:
       hbm2ddl:

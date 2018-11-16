@@ -6,11 +6,11 @@ spring:
 
 nomis:
   flyway:
-    locations: db/nomis
+    locations: db/nomis,db/dev/data/nomis
 
 auth:
   flyway:
-    locations: db/migration,db/data/sample
+    locations: db/auth,db/dev/data/auth
   jpa:
     hibernate:
       dialect: org.hibernate.dialect.H2Dialect

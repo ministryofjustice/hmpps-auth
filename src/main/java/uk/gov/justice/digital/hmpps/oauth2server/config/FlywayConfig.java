@@ -18,7 +18,7 @@ public class FlywayConfig {
     @Bean(name = "authFlyway", initMethod = "migrate")
     @FlywayDataSource
     public Flyway authFlyway(@Qualifier("authDataSource") DataSource authDataSource,
-        @Value("${auth.flyway.locations:db/migration}") List<String> flywayLocations) {
+        @Value("${auth.flyway.locations}") List<String> flywayLocations) {
         Flyway flyway = Flyway.configure()
                 .dataSource(authDataSource)
                 .locations(flywayLocations.toArray(new String[0]))

@@ -1,78 +1,111 @@
 create table CASELOADS (
-  CASELOAD_ID   varchar(255) not null,
-  DESCRIPTION   varchar(255) not null,
-  CASELOAD_TYPE varchar(255),
+  CASELOAD_ID   VARCHAR2(6)  not null,
+  DESCRIPTION   VARCHAR2(40) not null,
+  CASELOAD_TYPE VARCHAR2(12),
   primary key (CASELOAD_ID)
 );
-create table OMS_ROLES (
-  ROLE_ID          bigint       not null,
-  ROLE_CODE        varchar(255) not null,
-  ROLE_FUNCTION    varchar(255) not null,
-  ROLE_NAME        varchar(255),
-  ROLE_SEQ         integer      not null,
-  ROLE_TYPE        varchar(255),
-  PARENT_ROLE_CODE varchar(255),
-  primary key (ROLE_ID)
+
+CREATE INDEX "CASELOADS_NI1"
+  ON "CASELOADS" ("CASELOAD_TYPE", "CASELOAD_ID");
+
+CREATE TABLE "OMS_ROLES"
+(
+  "ROLE_ID"          NUMBER(10, 0)                  NOT NULL,
+  "ROLE_NAME"        VARCHAR2(30)                   NOT NULL,
+  "ROLE_SEQ"         NUMBER(3, 0)                   NOT NULL,
+  "ROLE_CODE"        VARCHAR2(30)                   NOT NULL,
+  "PARENT_ROLE_CODE" VARCHAR2(30),
+  "ROLE_TYPE"        VARCHAR2(12),
+  "ROLE_FUNCTION"    VARCHAR2(12) DEFAULT 'GENERAL' NOT NULL,
+  "SYSTEM_DATA_FLAG" VARCHAR2(1) DEFAULT 'N'        NOT NULL,
+  CONSTRAINT "OMS_ROLES_UK" UNIQUE ("ROLE_CODE"),
+  CONSTRAINT "USER_GROUPS_PK" PRIMARY KEY ("ROLE_ID"),
+  CONSTRAINT "OMS_ROLES_OMS_ROLES_FK" FOREIGN KEY ("PARENT_ROLE_CODE")
+  REFERENCES "OMS_ROLES" ("ROLE_CODE")
 );
-create table PERSONNEL_IDENTIFICATIONS (
-  IDENTIFICATION_NUMBER varchar(255) not null,
-  STAFF_ID              bigint       not null,
-  IDENTIFICATION_TYPE   varchar(255) not null,
-  primary key (IDENTIFICATION_NUMBER, STAFF_ID, IDENTIFICATION_TYPE)
-);
-create table STAFF_MEMBERS (
-  STAFF_ID   bigint       not null,
-  FIRST_NAME varchar(255) not null,
-  LAST_NAME  varchar(255) not null,
-  STATUS     varchar(255),
+
+CREATE INDEX "OMS_ROLES_NI1"
+  ON "OMS_ROLES" ("PARENT_ROLE_CODE");
+
+CREATE TABLE "STAFF_MEMBERS"
+(
+  "STAFF_ID"   NUMBER(10, 0) NOT NULL,
+  "LAST_NAME"  VARCHAR2(35)  NOT NULL,
+  "FIRST_NAME" VARCHAR2(35)  NOT NULL,
+  "STATUS"     VARCHAR2(12),
   primary key (STAFF_ID)
 );
-create table STAFF_USER_ACCOUNTS (
-  USERNAME        varchar(255) not null,
-  STAFF_USER_TYPE varchar(255) not null,
-  STAFF_ID        bigint,
-  primary key (USERNAME)
+
+CREATE TABLE PERSONNEL_IDENTIFICATIONS
+(
+  STAFF_ID              NUMBER(10)   NOT NULL
+    CONSTRAINT PERSONNEL_ID_STAFF
+    REFERENCES STAFF_MEMBERS,
+  IDENTIFICATION_TYPE   VARCHAR2(12) NOT NULL,
+  IDENTIFICATION_NUMBER VARCHAR2(32) NOT NULL,
+  TEXT_FROM             VARCHAR2(40),
+  CONSTRAINT PERSONNEL_IDENTIFICATION_PK
+  PRIMARY KEY (STAFF_ID, IDENTIFICATION_TYPE, IDENTIFICATION_NUMBER)
 );
-create table USER_ACCESSIBLE_CASELOADS (
-  caseload_id varchar(255) not null,
-  username    varchar(255) not null,
-  START_DATE  date,
-  primary key (caseload_id, username)
+
+CREATE TABLE "STAFF_USER_ACCOUNTS"
+(
+  "USERNAME"            VARCHAR2(30)  NOT NULL,
+  "STAFF_ID"            NUMBER(10, 0) NOT NULL,
+  "STAFF_USER_TYPE"     VARCHAR2(12)  NOT NULL,
+  "WORKING_CASELOAD_ID" VARCHAR2(6),
+  CONSTRAINT "STAFF_USER_ACCOUNT_PK" PRIMARY KEY ("USERNAME"),
+  CONSTRAINT "STAFF_USER_ACCOUNT_UK1" UNIQUE ("STAFF_ID", "STAFF_USER_TYPE"),
+  CONSTRAINT "STAFF_USER_ACCOUNTS_FK1" FOREIGN KEY ("STAFF_ID")
+  REFERENCES "STAFF_MEMBERS" ("STAFF_ID")
 );
-create table USER_CASELOAD_ROLES (
-  caseload_id varchar(255) not null,
-  role_id     bigint       not null,
-  username    varchar(255) not null,
-  primary key (caseload_id, role_id, username)
+
+CREATE INDEX "STAFF_USER_ACCOUNTS_FK1"
+  ON "STAFF_USER_ACCOUNTS" ("STAFF_ID");
+
+CREATE TABLE "USER_ACCESSIBLE_CASELOADS"
+(
+  "CASELOAD_ID" VARCHAR2(6)  NOT NULL,
+  "USERNAME"    VARCHAR2(30) NOT NULL,
+  "START_DATE"  DATE,
+  CONSTRAINT "USER_ACCESSIBLE_CASELOADS_PK" PRIMARY KEY ("CASELOAD_ID", "USERNAME"),
+  CONSTRAINT "STAFF_USER_ACCESSIBLE_CLS_FK1" FOREIGN KEY ("USERNAME") REFERENCES "STAFF_USER_ACCOUNTS" ("USERNAME"),
+  CONSTRAINT "STAFF_USER_ACCESSIBLE_CLS_FK2" FOREIGN KEY ("CASELOAD_ID") REFERENCES "CASELOADS" ("CASELOAD_ID")
 );
+
+CREATE INDEX "USER_ACCESSIBLE_CLS_FK1"
+  ON "USER_ACCESSIBLE_CASELOADS" ("USERNAME");
+CREATE INDEX "USER_ACCESSIBLE_CLS_FK2"
+  ON "USER_ACCESSIBLE_CASELOADS" ("CASELOAD_ID");
+
+
+CREATE TABLE "USER_CASELOAD_ROLES"
+(
+  "ROLE_ID"     NUMBER(10, 0) NOT NULL,
+  "USERNAME"    VARCHAR2(30)  NOT NULL,
+  "CASELOAD_ID" VARCHAR2(6)   NOT NULL,
+  CONSTRAINT "USER_CASELOAD_ROLES_PK" PRIMARY KEY ("USERNAME", "CASELOAD_ID", "ROLE_ID"),
+  CONSTRAINT "USER_CASELOAD_ROLES_FK1" FOREIGN KEY ("CASELOAD_ID", "USERNAME") REFERENCES "USER_ACCESSIBLE_CASELOADS" ("CASELOAD_ID", "USERNAME"),
+  CONSTRAINT "USER_CASELOAD_ROLES_FK2" FOREIGN KEY ("ROLE_ID") REFERENCES "OMS_ROLES" ("ROLE_ID")
+);
+
+CREATE INDEX "USER_CASELOAD_ROLES_FK1"
+  ON "USER_CASELOAD_ROLES" ("CASELOAD_ID", "USERNAME");
+CREATE INDEX "USER_CASELOAD_ROLES_FK2"
+  ON "USER_CASELOAD_ROLES" ("ROLE_ID");
+
+
 create table V_TAG_DBA_USERS (
-  USERNAME              varchar(255) not null,
-  ACCOUNT_STATUS        varchar(255) not null,
-  CREATED               timestamp    not null,
-  EXPIRED_FLAG          char(255)    not null,
+  USERNAME              VARCHAR2(30)  not null,
+  ACCOUNT_STATUS        VARCHAR2(255) not null,
+  CREATED               timestamp     not null,
+  EXPIRED_FLAG          char(1)       not null,
   EXPIRY_DATE           timestamp,
   LOCK_DATE             timestamp,
-  LOCKED_FLAG           char(255)    not null,
-  LOGGED_IN             char(255)    not null,
-  PROFILE               varchar(255),
-  USER_TYPE_DESCRIPTION varchar(255),
+  LOCKED_FLAG           char(1)       not null,
+  LOGGED_IN             char(1)       not null,
+  PROFILE               VARCHAR2(255),
+  USER_TYPE_DESCRIPTION VARCHAR2(255),
   primary key (USERNAME)
 );
-alter table OMS_ROLES
-  add constraint UK_lycfj54t0poe95kvu7t2i8ym unique (ROLE_CODE);
-alter table OMS_ROLES
-  add constraint FKtkg12mn5hmki1yng6cg21o9u foreign key (PARENT_ROLE_CODE) references OMS_ROLES (ROLE_CODE);
-alter table PERSONNEL_IDENTIFICATIONS
-  add constraint FKie8txceptgb707s5sayqyn8a8 foreign key (STAFF_ID) references STAFF_MEMBERS;
-alter table STAFF_USER_ACCOUNTS
-  add constraint FKoycmul6bokfc9slq6pho3atr4 foreign key (STAFF_ID) references STAFF_MEMBERS;
-alter table USER_ACCESSIBLE_CASELOADS
-  add constraint FKe53wbqi7yakqghee8dfcwikuy foreign key (CASELOAD_ID) references CASELOADS;
-alter table USER_ACCESSIBLE_CASELOADS
-  add constraint FKkkt1hw5uc1ht9stvhi3qf8yr9 foreign key (USERNAME) references STAFF_USER_ACCOUNTS;
-alter table USER_CASELOAD_ROLES
-  add constraint FKbw1poiecqk9rxpqy7hjcn1tra foreign key (CASELOAD_ID) references CASELOADS;
-alter table USER_CASELOAD_ROLES
-  add constraint FKnnq787g2pwue06n18rdy4pds7 foreign key (ROLE_ID) references OMS_ROLES;
-alter table USER_CASELOAD_ROLES
-  add constraint FKf6nmmym7g53rr6s8wxf787amd foreign key (USERNAME) references STAFF_USER_ACCOUNTS;
+
