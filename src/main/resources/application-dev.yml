@@ -4,10 +4,9 @@ spring:
     console:
       enabled: true
 
-  jpa:
-    hibernate:
-      hbm2ddl:
-        auto: create
+nomis:
+  flyway:
+    locations: db/nomis
 
 auth:
   flyway:
