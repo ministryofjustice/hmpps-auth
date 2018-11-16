@@ -7,6 +7,8 @@ server:
     protocol_header: x-forwarded-proto
 
 spring:
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     url: 'jdbc:h2:mem:nomisdb;MODE=Oracle'
     type: com.zaxxer.hikari.HikariDataSource

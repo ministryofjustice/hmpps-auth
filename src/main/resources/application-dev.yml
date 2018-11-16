@@ -10,6 +10,8 @@ spring:
         auto: create
 
 auth:
+  flyway:
+    locations: db/migration,db/data/sample
   jpa:
     hibernate:
       dialect: org.hibernate.dialect.H2Dialect

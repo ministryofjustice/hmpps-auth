@@ -6,7 +6,7 @@ jobs:
   build:
     <<: *defaults
     docker:
-      - image: circleci/openjdk:10-jdk-browsers
+      - image: circleci/openjdk:11-jdk-browsers
     steps:
       - checkout
       - restore_cache:
@@ -35,7 +35,7 @@ jobs:
   integration_tests:
     working_directory: ~/app
     docker:
-    - image: circleci/openjdk:10-jdk-browsers
+    - image: circleci/openjdk:11-jdk-browsers
     steps:
     - checkout
     - attach_workspace:
