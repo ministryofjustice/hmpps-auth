@@ -21,14 +21,14 @@ import org.springframework.security.oauth2.client.token.grant.client.ClientCrede
 import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordAccessTokenProvider
 import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordResourceDetails
 import org.springframework.security.oauth2.common.OAuth2AccessToken
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.TestPropertySource
 import spock.lang.Specification
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-@TestPropertySource(locations = "classpath:test-application-override.properties")
+@ActiveProfiles("dev")
 @ContextConfiguration
 @Slf4j
 abstract class TestSpecification extends Specification {

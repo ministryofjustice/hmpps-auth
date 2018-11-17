@@ -1,6 +1,6 @@
 # NOMIS Oauth2 Server
 
-Spring Boot 2, Java 10 OAUTH2 Server integrating with NOMIS DB
+Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS DB
 
 #### Run in docker
 

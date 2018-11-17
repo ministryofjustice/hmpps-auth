@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +24,7 @@ public class ClientDetailsConfig {
 
     public ClientDetailsConfig(ClientConfigExtractor clientConfigExtractor,
                                @Value("${oauth.client.data}") String clientData,
-                               Flyway flyway,
+                               @Qualifier("authFlyway") Flyway flyway,
                                PasswordEncoder passwordEncoder) {
         this.oauthClientConfig = clientConfigExtractor.getClientConfigurations(clientData);
         this.passwordEncoder = passwordEncoder;
