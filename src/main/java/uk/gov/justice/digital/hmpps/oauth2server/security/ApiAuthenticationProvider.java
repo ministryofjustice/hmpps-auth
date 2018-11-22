@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -28,13 +29,18 @@ public class ApiAuthenticationProvider extends DaoAuthenticationProvider {
     private final String jdbcUrl;
 
     @Autowired
-    public ApiAuthenticationProvider(UserDetailsService userDetailsService, @Value("${spring.datasource.url}") String jdbcUrl) {
+    public ApiAuthenticationProvider(final UserDetailsService userDetailsService, @Value("${spring.datasource.url}") final String jdbcUrl) {
         setUserDetailsService(userDetailsService);
         this.jdbcUrl = jdbcUrl;
     }
 
     @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
+        Assert.isInstanceOf(UsernamePasswordAuthenticationToken.class, authentication,
+                () -> messages.getMessage(
+                        "AbstractUserDetailsAuthenticationProvider.onlySupports",
+                        "Only UsernamePasswordAuthenticationToken is supported"));
+
         final var username = authentication.getName().toUpperCase();
         final var password = authentication.getCredentials().toString();
 
@@ -59,7 +65,12 @@ public class ApiAuthenticationProvider extends DaoAuthenticationProvider {
             }
         }
 
-        return super.authenticate(authentication);
+        // need to create a new authentication token with username in uppercase
+        final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
+        // copy across details from old token too
+        token.setDetails(authentication.getDetails());
+
+        return super.authenticate(token);
     }
 
     @Override

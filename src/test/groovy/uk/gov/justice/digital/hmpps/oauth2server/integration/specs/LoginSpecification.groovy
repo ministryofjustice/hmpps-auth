@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPa
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.UserHomePage
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.ITAG_USER
+import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.ITAG_USER_LOWERCASE
 
 class LoginSpecification extends GebReportingSpec {
 
@@ -38,6 +39,17 @@ class LoginSpecification extends GebReportingSpec {
 
         when: "I login using valid credentials"
         loginAs ITAG_USER, 'password'
+
+        then: 'My credentials are accepted and I am shown the Home page'
+        at HomePage
+    }
+
+    def "Log in with valid credentials in lower case"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login using valid credentials"
+        loginAs ITAG_USER_LOWERCASE, 'password'
 
         then: 'My credentials are accepted and I am shown the Home page'
         at HomePage

@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
 
 import javax.sql.DataSource;
@@ -42,13 +43,18 @@ public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
     private static final String UPDATE_STATUS = "UPDATE SYS.user$ SET ASTATUS = ?, LTIME = ? WHERE name = ?";
 
     @Autowired
-    public OracleAuthenticationProvider(DataSource dataSource, UserDetailsService userDetailsService) {
+    public OracleAuthenticationProvider(final DataSource dataSource, final UserDetailsService userDetailsService) {
         jdbcTemplate = new JdbcTemplate(dataSource);
         setUserDetailsService(userDetailsService);
     }
 
     @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
+        Assert.isInstanceOf(UsernamePasswordAuthenticationToken.class, authentication,
+                () -> messages.getMessage(
+                        "AbstractUserDetailsAuthenticationProvider.onlySupports",
+                        "Only UsernamePasswordAuthenticationToken is supported"));
+
         final var username = authentication.getName().toUpperCase();
         final var password = authentication.getCredentials().toString();
 
@@ -56,7 +62,12 @@ public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
             throw new MissingCredentialsException();
         }
 
-        return super.authenticate(authentication);
+        // need to create a new authentication token with username in uppercase
+        final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
+        // copy across details from old token too
+        token.setDetails(authentication.getDetails());
+
+        return super.authenticate(token);
     }
 
     @Override
@@ -67,7 +78,7 @@ public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
         final UserData userData = jdbcTemplate.queryForObject(GET_USER_DETAIL, new Object[] { username }, new BeanPropertyRowMapper<>(UserData.class));
 
         if (userData != null) {
-            String encodedPassword = encode(password, userData.getSalt());
+            final String encodedPassword = encode(password, userData.getSalt());
 
             if (encodedPassword.equals(userData.getHash())) {
                 // reset the retry count
@@ -80,7 +91,7 @@ public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
                 // check the number of retries
                 if (userData.getRetryCount()+1 > 2) {
                     // Throw locked exception
-                    AccountStatus lockStatus = userData.getStatus().isGracePeriod() ? AccountStatus.EXPIRED_GRACE_LOCKED_TIMED : AccountStatus.LOCKED_TIMED;
+                    final AccountStatus lockStatus = userData.getStatus().isGracePeriod() ? AccountStatus.EXPIRED_GRACE_LOCKED_TIMED : AccountStatus.LOCKED_TIMED;
                     jdbcTemplate.update(UPDATE_STATUS, lockStatus.getCode(), Timestamp.valueOf(LocalDateTime.now()), username);
                     throw new LockedException("Account Locked, number of retries exceeded");
                 }
@@ -91,15 +102,15 @@ public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
         }
     }
 
-    private String encode(String rawPassword, String salt) {
-        List<SqlParameter> params = new ArrayList<>();
+    private String encode(final String rawPassword, final String salt) {
+        final List<SqlParameter> params = new ArrayList<>();
         params.add(new SqlOutParameter("encodedPassword", Types.VARCHAR));
         params.add(new SqlParameter(Types.VARCHAR, salt));
         params.add(new SqlParameter(Types.VARCHAR, rawPassword));
 
-        Map<String, Object> results = jdbcTemplate.call(
+        final Map<String, Object> results = jdbcTemplate.call(
                 con -> {
-                    CallableStatement cs = con.prepareCall(HASH);
+                    final CallableStatement cs = con.prepareCall(HASH);
                     cs.registerOutParameter(1, Types.VARCHAR);
                     cs.setString(2, rawPassword);
                     cs.setString(3, salt);
