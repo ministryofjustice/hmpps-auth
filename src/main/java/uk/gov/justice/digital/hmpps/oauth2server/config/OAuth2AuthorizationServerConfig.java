@@ -14,12 +14,13 @@ import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
@@ -45,26 +46,26 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final String keystoreAlias;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
-    private final ClientDetailsService clientDetailsService;
     private final DataSource dataSource;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy final AuthenticationManager authenticationManager,
                                            @Lazy final UserDetailsService userDetailsService,
-                                           final ClientDetailsService clientDetailsService,
                                            @Value("${jwt.signing.key.pair}") final String privateKeyPair,
                                            @Value("${jwt.keystore.password}") final String keystorePassword,
                                            @Value("${jwt.keystore.alias:elite2api}") final String keystoreAlias,
-                                           @Qualifier("authDataSource") final DataSource dataSource) {
+                                           @Qualifier("authDataSource") final DataSource dataSource,
+                                           PasswordEncoder passwordEncoder) {
 
         this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.keystorePassword = keystorePassword;
         this.keystoreAlias = keystoreAlias;
         this.userDetailsService = userDetailsService;
         this.authenticationManager = authenticationManager;
-        this.clientDetailsService = clientDetailsService;
         this.dataSource = dataSource;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Bean
@@ -72,9 +73,16 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         return new JwtTokenStore(accessTokenConverter());
     }
 
+    @Bean
+    @Primary
+    public JdbcClientDetailsService jdbcClientDetailsService() {
+        JdbcClientDetailsService jdbcClientDetailsService = new JdbcClientDetailsService(dataSource);
+        jdbcClientDetailsService.setPasswordEncoder(passwordEncoder);
+        return jdbcClientDetailsService;
+    }
     @Override
     public void configure(final ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.withClientDetails(clientDetailsService);
+        clients.withClientDetails(jdbcClientDetailsService());
     }
 
     @Bean
@@ -125,7 +133,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         defaultTokenServices.setSupportRefreshToken(true);
         defaultTokenServices.setAccessTokenValiditySeconds(HOUR_IN_SECS); // default 1 hours
         defaultTokenServices.setRefreshTokenValiditySeconds(HOUR_IN_SECS * 12); // default 12 hours
-        defaultTokenServices.setClientDetailsService(clientDetailsService);
+        defaultTokenServices.setClientDetailsService(jdbcClientDetailsService());
         defaultTokenServices.setAuthenticationManager(authenticationManager);
         return defaultTokenServices;
     }
