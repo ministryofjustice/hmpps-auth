@@ -4,6 +4,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.Oracle10gDialect
         show_sql: false
+        jdbc:
+          fetch_size: 100
   profiles:
     include: logstash
 
