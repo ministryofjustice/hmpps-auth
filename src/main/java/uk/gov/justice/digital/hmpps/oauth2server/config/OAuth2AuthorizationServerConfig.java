@@ -129,7 +129,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         final DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
         defaultTokenServices.setTokenEnhancer(tokenEnhancerChain());
         defaultTokenServices.setTokenStore(tokenStore());
-        defaultTokenServices.setReuseRefreshToken(false);  // change to true once refresh period increased.
+        defaultTokenServices.setReuseRefreshToken(true);
         defaultTokenServices.setSupportRefreshToken(true);
         defaultTokenServices.setAccessTokenValiditySeconds(HOUR_IN_SECS); // default 1 hours
         defaultTokenServices.setRefreshTokenValiditySeconds(HOUR_IN_SECS * 12); // default 12 hours
