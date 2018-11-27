@@ -25,6 +25,7 @@ public class JwtAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
         this.jwtCookieHelper = jwtCookieHelper;
         this.jwtAuthenticationHelper = jwtAuthenticationHelper;
         setRequestCache(cookieRequestCache);
+        setDefaultTargetUrl("/ui");
     }
 
     @Override

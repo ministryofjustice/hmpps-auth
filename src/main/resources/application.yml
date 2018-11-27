@@ -40,7 +40,10 @@ auth:
         show_sql: true
 
 logging.level.uk.gov: INFO
+
 management:
   endpoints:
     web:
       base-path: /
+    health:
+      show-details: "ALWAYS"

@@ -41,7 +41,7 @@ class LoginSpecification extends GebReportingSpec {
         loginAs ITAG_USER, 'password'
 
         then: 'My credentials are accepted and I am shown the Home page'
-        at HomePage
+        at UserHomePage
     }
 
     def "Log in with valid credentials in lower case"() {
@@ -52,7 +52,7 @@ class LoginSpecification extends GebReportingSpec {
         loginAs ITAG_USER_LOWERCASE, 'password'
 
         then: 'My credentials are accepted and I am shown the Home page'
-        at HomePage
+        at UserHomePage
     }
 
     def "View User Home Page once logged in"() {
@@ -71,7 +71,7 @@ class LoginSpecification extends GebReportingSpec {
         given: 'I am logged in'
         to LoginPage
         loginAs ITAG_USER, 'password'
-        at HomePage
+        at UserHomePage
 
         when: "I logout"
         logout()
