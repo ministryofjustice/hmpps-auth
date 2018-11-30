@@ -108,10 +108,9 @@ dependencies {
     testCompile('org.springframework.security:spring-security-test')
     testRuntime 'com.h2database:h2:1.4.196'
 
-    testCompile 'org.assertj:assertj-core:3.8.0'
-    testCompile 'org.codehaus.groovy:groovy-all:2.4.14'
-    testCompile 'org.spockframework:spock-spring:1.1-groovy-2.4'
-    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
+    testCompile 'org.codehaus.groovy:groovy-all:2.5.4'
+    testCompile 'org.spockframework:spock-spring:1.2-groovy-2.5'
+    testCompile('org.spockframework:spock-core:1.2-groovy-2.5') {
         exclude group: "org.codehaus.groovy"
     }
 

@@ -2,12 +2,10 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
 import geb.spock.GebReportingSpec
 import org.apache.commons.lang3.RandomStringUtils
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.UserHomePage
 
-import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.ITAG_USER
-import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.ITAG_USER_LOWERCASE
+import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
 class LoginSpecification extends GebReportingSpec {
 
@@ -31,6 +29,18 @@ class LoginSpecification extends GebReportingSpec {
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginPage
         errorText == 'Missing credentials'
+    }
+
+    def "Attempt login with locked user"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login with locked user"
+        loginAs LOCKED_USER, 'password123456'
+
+        then: 'My credentials are rejected and I am still on the Login page'
+        at LoginPage
+        errorText == 'Your user account is locked'
     }
 
     def "Log in with valid credentials"() {

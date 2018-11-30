@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserStateAuthenticationFailureHandlerTest {
@@ -25,11 +26,11 @@ public class UserStateAuthenticationFailureHandlerTest {
     @Mock
     private RedirectStrategy redirectStrategy;
 
-    private final UserStateAuthenticationFailureHandler handler = new UserStateAuthenticationFailureHandler();
+    private UserStateAuthenticationFailureHandler handler;
 
     @Before
     public void setUp() {
-        handler.setRedirectStrategy(redirectStrategy);
+        setupHandler(false);
     }
 
     @Test
@@ -46,6 +47,14 @@ public class UserStateAuthenticationFailureHandlerTest {
         verify(redirectStrategy).sendRedirect(request, response, "/login?error&reason=expired");
     }
 
+    @Test
+    public void onAuthenticationFailure_expiredResetEnabled() throws IOException {
+        when(request.getParameter("username")).thenReturn("bob");
+        setupHandler(true);
+        handler.onAuthenticationFailure(request, response, new AccountExpiredException("msg"));
+
+        verify(redirectStrategy).sendRedirect(request, response, "/changePassword?username=BOB");
+    }
 
     @Test
     public void onAuthenticationFailure_missing() throws IOException {
@@ -59,5 +68,10 @@ public class UserStateAuthenticationFailureHandlerTest {
         handler.onAuthenticationFailure(request, response, new BadCredentialsException("msg"));
 
         verify(redirectStrategy).sendRedirect(request, response, "/login?error");
+    }
+
+    private void setupHandler(final boolean expiredReset) {
+        handler = new UserStateAuthenticationFailureHandler(expiredReset);
+        handler.setRedirectStrategy(redirectStrategy);
     }
 }

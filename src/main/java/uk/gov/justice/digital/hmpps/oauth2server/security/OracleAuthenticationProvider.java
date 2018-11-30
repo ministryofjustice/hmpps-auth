@@ -27,7 +27,6 @@ import java.sql.CallableStatement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +62,7 @@ public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
         }
 
         // need to create a new authentication token with username in uppercase
-        final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
+        final var token = new UsernamePasswordAuthenticationToken(username, password);
         // copy across details from old token too
         token.setDetails(authentication.getDetails());
 
@@ -75,38 +74,38 @@ public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
         final var username = authentication.getName().toUpperCase();
         final var password = authentication.getCredentials().toString();
 
-        final UserData userData = jdbcTemplate.queryForObject(GET_USER_DETAIL, new Object[] { username }, new BeanPropertyRowMapper<>(UserData.class));
+        final var userData = jdbcTemplate.queryForObject(GET_USER_DETAIL, new Object[]{username}, new BeanPropertyRowMapper<>(UserData.class));
 
-        if (userData != null) {
-            final String encodedPassword = encode(password, userData.getSalt());
-
-            if (encodedPassword.equals(userData.getHash())) {
-                // reset the retry count
-                jdbcTemplate.update(UPDATE_LCOUNT, 0, username);  // reset retry count
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            } else {
-                jdbcTemplate.update(UPDATE_LCOUNT, userData.getRetryCount() + 1, username);
-
-                // check the number of retries
-                if (userData.getRetryCount()+1 > 2) {
-                    // Throw locked exception
-                    final AccountStatus lockStatus = userData.getStatus().isGracePeriod() ? AccountStatus.EXPIRED_GRACE_LOCKED_TIMED : AccountStatus.LOCKED_TIMED;
-                    jdbcTemplate.update(UPDATE_STATUS, lockStatus.getCode(), Timestamp.valueOf(LocalDateTime.now()), username);
-                    throw new LockedException("Account Locked, number of retries exceeded");
-                }
-                throw new BadCredentialsException("Authentication failed: password does not match stored value");
-            }
-        } else {
+        if (userData == null) {
             throw new BadCredentialsException("Authentication failed: unable to check password value");
+        }
+
+        final var encodedPassword = encode(password, userData.getSalt());
+
+        if (encodedPassword.equals(userData.getHash())) {
+            // reset the retry count
+            jdbcTemplate.update(UPDATE_LCOUNT, 0, username);  // reset retry count
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        } else {
+            jdbcTemplate.update(UPDATE_LCOUNT, userData.getRetryCount() + 1, username);
+
+            // check the number of retries
+            if (userData.getRetryCount() + 1 > 2) {
+                // Throw locked exception
+                final var lockStatus = userData.getStatus().isGracePeriod() ? AccountStatus.EXPIRED_GRACE_LOCKED_TIMED : AccountStatus.LOCKED_TIMED;
+                jdbcTemplate.update(UPDATE_STATUS, lockStatus.getCode(), Timestamp.valueOf(LocalDateTime.now()), username);
+                throw new LockedException("Account Locked, number of retries exceeded");
+            }
+            throw new BadCredentialsException("Authentication failed: password does not match stored value");
         }
     }
 
     private String encode(final String rawPassword, final String salt) {
-        final List<SqlParameter> params = new ArrayList<>();
-        params.add(new SqlOutParameter("encodedPassword", Types.VARCHAR));
-        params.add(new SqlParameter(Types.VARCHAR, salt));
-        params.add(new SqlParameter(Types.VARCHAR, rawPassword));
+        final List<SqlParameter> params = List.of(
+                new SqlOutParameter("encodedPassword", Types.VARCHAR),
+                new SqlParameter(Types.VARCHAR),
+                new SqlParameter(Types.VARCHAR));
 
         final Map<String, Object> results = jdbcTemplate.call(
                 con -> {
@@ -118,7 +117,7 @@ public class OracleAuthenticationProvider extends DaoAuthenticationProvider {
                 },
                 params);
 
-        return (String)results.get("encodedPassword");
+        return (String) results.get("encodedPassword");
     }
 
     @Data
