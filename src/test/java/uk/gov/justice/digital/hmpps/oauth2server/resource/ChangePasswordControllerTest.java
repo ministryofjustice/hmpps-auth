@@ -11,10 +11,13 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,6 +35,8 @@ public class ChangePasswordControllerTest {
     @Mock
     private ChangePasswordService changePasswordService;
     @Mock
+    private UserService userService;
+    @Mock
     private HttpServletRequest request;
     @Mock
     private HttpServletResponse response;
@@ -40,7 +45,7 @@ public class ChangePasswordControllerTest {
 
     @Before
     public void setUp() {
-        controller = new ChangePasswordController(userStateAuthenticationFailureHandler, jwtAuthenticationSuccessHandler, daoAuthenticationProvider, changePasswordService);
+        controller = new ChangePasswordController(userStateAuthenticationFailureHandler, jwtAuthenticationSuccessHandler, daoAuthenticationProvider, changePasswordService, userService);
     }
 
     @Test
@@ -68,14 +73,29 @@ public class ChangePasswordControllerTest {
 
     @Test
     public void changePassword_Blank() throws Exception {
-        final var redirect = controller.changePassword("d", "old", "", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=length");
+        setupGetUserCall(null);
+        final var redirect = controller.changePassword("d", "old", "", "", request, response);
+        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=alphanumeric");
     }
 
     @Test
     public void changePassword_Length() throws Exception {
-        final var redirect = controller.changePassword("d", "old", "qwerqwer", "new", request, response);
+        setupGetUserCall(null);
+        final var redirect = controller.changePassword("d", "old", "qwerqw12", "qwerqw12", request, response);
         assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=length");
+    }
+
+    @Test
+    public void changePassword_LengthAdmin() throws Exception {
+        setupGetUserCall("TAG_ADMIN");
+        final var redirect = controller.changePassword("d", "old", "qwerqwerqwe12", "qwerqwerqwe12", request, response);
+        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=length");
+    }
+
+    @Test
+    public void changePassword_UserNotFound() throws Exception {
+        final var redirect = controller.changePassword("user", "old", "qwerqwerqwe12", "qwerqwerqwe12", request, response);
+        assertThat(redirect).isEqualTo("redirect:/login?error&reason=missing");
     }
 
     @Test
@@ -117,6 +137,7 @@ public class ChangePasswordControllerTest {
     @Test
     public void changePassword_AccountLocked() throws Exception {
         final var lockedException = new LockedException("msg");
+        setupGetUserCall(null);
         when(daoAuthenticationProvider.authenticate(any())).thenThrow(lockedException);
         final var redirect = controller.changePassword("user", "old", "password1", "password1", request, response);
         assertThat(redirect).isNull();
@@ -125,6 +146,7 @@ public class ChangePasswordControllerTest {
 
     @Test
     public void changePassword_ValidationFailure() throws Exception {
+        setupGetUserCall(null);
         doThrow(new PasswordValidationFailureException()).when(changePasswordService).changePassword(anyString(), anyString());
         final var redirect = controller.changePassword("user", "old", "password1", "password1", request, response);
         assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=user&reason=validation");
@@ -132,14 +154,17 @@ public class ChangePasswordControllerTest {
 
     @Test
     public void changePassword_OtherException() {
+        setupGetUserCall(null);
         final var exception = new RuntimeException();
         doThrow(exception).when(changePasswordService).changePassword(anyString(), anyString());
-        assertThatThrownBy((() -> controller.changePassword("user", "old", "password1", "password1", request, response))
+        assertThatThrownBy(
+                () -> controller.changePassword("user", "old", "password1", "password1", request, response)
         ).isEqualTo(exception);
     }
 
     @Test
     public void changePassword_ReusedPassword() throws Exception {
+        setupGetUserCall(null);
         doThrow(new ReusedPasswordException()).when(changePasswordService).changePassword(anyString(), anyString());
         final var redirect = controller.changePassword("user", "old", "password1", "password1", request, response);
         assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=user&reason=reused");
@@ -148,6 +173,7 @@ public class ChangePasswordControllerTest {
     @Test
     public void changePassword_Success() throws Exception {
         final var token = new UsernamePasswordAuthenticationToken("bob", "pass");
+        setupGetUserCall(null);
         when(daoAuthenticationProvider.authenticate(any())).thenReturn(token);
         final var redirect = controller.changePassword("user", "old", "password1", "password1", request, response);
         assertThat(redirect).isNull();
@@ -162,6 +188,7 @@ public class ChangePasswordControllerTest {
 
     @Test
     public void changePassword_SuccessAccountExpired() throws Exception {
+        setupGetUserCall(null);
         when(daoAuthenticationProvider.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
         final var redirect = controller.changePassword("user", "old", "password1", "password1", request, response);
         assertThat(redirect).isEqualTo("redirect:/login?error&reason=changepassword");
@@ -171,5 +198,13 @@ public class ChangePasswordControllerTest {
         assertThat(value.getPrincipal()).isEqualTo("USER");
         assertThat(value.getCredentials()).isEqualTo("password1");
         verify(changePasswordService).changePassword("user", "password1");
+    }
+
+    private void setupGetUserCall(final String profile) {
+        final var user = Optional.of(new StaffUserAccount());
+        final var detail = new AccountDetail();
+        detail.setProfile(profile);
+        user.get().setAccountDetail(detail);
+        when(userService.getUserByUsername(anyString())).thenReturn(user);
     }
 }

@@ -57,4 +57,8 @@ public class AccountDetail {
         return AccountStatus.get(accountStatus);
     }
 
+    public AccountProfile getAccountProfile() {
+        return AccountProfile.get(profile);
+    }
+
 }

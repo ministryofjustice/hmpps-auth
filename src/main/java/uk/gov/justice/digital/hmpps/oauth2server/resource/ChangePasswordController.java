@@ -12,12 +12,15 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -27,13 +30,17 @@ public class ChangePasswordController {
     private final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
     private final DaoAuthenticationProvider daoAuthenticationProvider;
     private final ChangePasswordService changePasswordService;
+    private final UserService userService;
 
-    public ChangePasswordController(final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler, final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler, final DaoAuthenticationProvider daoAuthenticationProvider,
-                                    final ChangePasswordService changePasswordService) {
+    public ChangePasswordController(final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler,
+                                    final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
+                                    final DaoAuthenticationProvider daoAuthenticationProvider,
+                                    final ChangePasswordService changePasswordService, final UserService userService) {
         this.userStateAuthenticationFailureHandler = userStateAuthenticationFailureHandler;
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
         this.daoAuthenticationProvider = daoAuthenticationProvider;
         this.changePasswordService = changePasswordService;
+        this.userService = userService;
     }
 
     @GetMapping("/changePassword")
@@ -105,10 +112,6 @@ public class ChangePasswordController {
             return getChangePasswordRedirect(username, "missing");
         }
 
-        // TODO: need to calculate what type of user is changing password as admin has 14 characters instead
-        if (newPassword.length() < 9) {
-            return getChangePasswordRedirect(username, "length");
-        }
         // Ensuring alphanumeric will ensure that we can't get SQL Injection attacks - since for oracle the password
         // cannot be used in a prepared statement
         if (!StringUtils.isAlphanumeric(newPassword)) {
@@ -131,6 +134,20 @@ public class ChangePasswordController {
         if (!StringUtils.equals(newPassword, confirmPassword)) {
             return getChangePasswordRedirect(username, "mismatch");
         }
+
+        final Optional<StaffUserAccount> user = userService.getUserByUsername(username);
+        if (!user.isPresent()) {
+            return getLoginRedirect("missing");
+        }
+
+        if (user.get().getAccountDetail().getAccountProfile() == AccountProfile.TAG_ADMIN && newPassword.length() < 14) {
+            return getChangePasswordRedirect(username, "length");
+        }
+
+        if (newPassword.length() < 9) {
+            return getChangePasswordRedirect(username, "length");
+        }
+
         return null;
     }
 
