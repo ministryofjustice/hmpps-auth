@@ -82,14 +82,14 @@ public class ChangePasswordControllerTest {
     public void changePassword_Length() throws Exception {
         setupGetUserCall(null);
         final var redirect = controller.changePassword("d", "old", "qwerqw12", "qwerqw12", request, response);
-        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=length");
+        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=length9");
     }
 
     @Test
     public void changePassword_LengthAdmin() throws Exception {
         setupGetUserCall("TAG_ADMIN");
         final var redirect = controller.changePassword("d", "old", "qwerqwerqwe12", "qwerqwerqwe12", request, response);
-        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=length");
+        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=length14");
     }
 
     @Test
