@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -62,9 +63,10 @@ public class JwtAuthenticationHelper {
                     .getBody();
             final String username = body.getSubject();
             final String authoritiesString = body.get("authorities", String.class);
-            final Collection<? extends GrantedAuthority> authorities = Stream.of(authoritiesString.split(",")).
-                    map(SimpleGrantedAuthority::new).
-                    collect(Collectors.toList());
+            final Collection<? extends GrantedAuthority> authorities = Stream.of(authoritiesString.split(","))
+                    .filter(StringUtils::isNotEmpty)
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
 
             log.debug("Set authentication for {}", username);
             return Optional.of(new UsernamePasswordAuthenticationToken(username, null, authorities));

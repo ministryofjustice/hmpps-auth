@@ -14,6 +14,9 @@
                 <th:block th:case="'expired'">Your password has expired</th:block>
                 <th:block th:case="'locked'">Your user account is locked</th:block>
                 <th:block th:case="'missing'">Missing credentials</th:block>
+                <th:block th:case="'changepassword'">Your password has been successfully changed, but we were unable to
+                    sign you in. Please enter your username and new password to try again.
+                </th:block>
                 <th:block th:case="*">Invalid username or password</th:block>
             </h2>
         </th:block>

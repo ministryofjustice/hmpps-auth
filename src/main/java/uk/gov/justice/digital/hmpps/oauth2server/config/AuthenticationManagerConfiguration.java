@@ -38,6 +38,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     private final String jwtCookieName;
     private final CookieRequestCache cookieRequestCache;
     private final DaoAuthenticationProvider daoAuthenticationProvider;
+    private final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler;
 
     @Autowired
     public AuthenticationManagerConfiguration(final UserDetailsService userDetailsService,
@@ -47,7 +48,8 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                                               final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter,
                                               @Value("${jwt.cookie.name}") final String jwtCookieName,
                                               final CookieRequestCache cookieRequestCache,
-                                              DaoAuthenticationProvider daoAuthenticationProvider) {
+                                              final DaoAuthenticationProvider daoAuthenticationProvider,
+                                              final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler) {
         this.userDetailsService = userDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
@@ -56,6 +58,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         this.jwtCookieName = jwtCookieName;
         this.cookieRequestCache = cookieRequestCache;
         this.daoAuthenticationProvider = daoAuthenticationProvider;
+        this.userStateAuthenticationFailureHandler = userStateAuthenticationFailureHandler;
     }
 
     @Override
@@ -77,7 +80,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .formLogin()
                 .loginPage("/login")
                 .successHandler(jwtAuthenticationSuccessHandler)
-                .failureHandler(new UserStateAuthenticationFailureHandler())
+                .failureHandler(userStateAuthenticationFailureHandler)
                 .permitAll()
 
             .and()
@@ -105,7 +108,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         web
                 .ignoring()
                 .antMatchers("/css/**", "/img/**", "/font/**", "/webjars/**", "/favicon.ico",
-                        "/health", "/info", "/error", "/terms",
+                        "/health", "/info", "/error", "/terms", "/changePassword",
                         "/h2-console/**", "/v2/api-docs", "/jwt-public-key",
                         "/swagger-ui.html", "/swagger-resources", "/swagger-resources/configuration/ui",
                         "/swagger-resources/configuration/security");

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,9 +14,6 @@ import org.springframework.security.oauth2.common.exceptions.UnapprovedClientAut
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 
 import java.util.Objects;
 import java.util.Set;
@@ -29,8 +27,8 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
     private final UserService userService;
     private final String apiCaseloadId;
 
-    public UserDetailsServiceImpl(UserService userService,
-                                  @Value("${application.caseload.id}") String apiCaseloadId) {
+    public UserDetailsServiceImpl(final UserService userService,
+                                  @Value("${application.caseload.id}") final String apiCaseloadId) {
         this.apiCaseloadId = apiCaseloadId;
         this.userService = userService;
     }
@@ -39,25 +37,25 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
     @Cacheable("loadUserByUsername")
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
 
-        StaffUserAccount userByUsername = userService.getUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+        final var userByUsername = userService.getUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
         if (userByUsername.filterByCaseload(apiCaseloadId).isEmpty()) {
             throw new UnapprovedClientAuthenticationException(format("User does not have access to caseload %s", apiCaseloadId));
         }
 
-        Set<GrantedAuthority> authorities = userByUsername.filterRolesByCaseload(apiCaseloadId).stream()
+        final Set<GrantedAuthority> authorities = userByUsername.filterRolesByCaseload(apiCaseloadId).stream()
                 .filter(Objects::nonNull)
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(StringUtils.replaceAll(role.getRole().getCode(), "-", "_"))))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(RegExUtils.replaceAll(role.getRole().getCode(), "-", "_"))))
                 .collect(Collectors.toSet());
 
-        UserDetailsImpl userDetails = new UserDetailsImpl(username, authorities);
+        final var userDetails = new UserDetailsImpl(username, authorities);
 
-        AccountDetail accountDetail = userByUsername.getAccountDetail();
+        final var accountDetail = userByUsername.getAccountDetail();
         userDetails.setAccountNonExpired(true);
         userDetails.setAccountNonLocked(true);
         userDetails.setEnabled(false);
         userDetails.setCredentialsNonExpired(true);
 
-        AccountStatus status = accountDetail.getStatus();
+        final var status = accountDetail.getStatus();
         switch (status) {
 
             case OPEN:
@@ -82,7 +80,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
     }
 
     @Override
-    public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws UsernameNotFoundException {
+    public UserDetails loadUserDetails(final PreAuthenticatedAuthenticationToken token) throws UsernameNotFoundException {
         return loadUserByUsername(token.getName());
     }
 }

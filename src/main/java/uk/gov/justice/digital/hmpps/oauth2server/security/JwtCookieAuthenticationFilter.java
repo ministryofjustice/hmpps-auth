@@ -35,6 +35,10 @@ public class JwtCookieAuthenticationFilter extends OncePerRequestFilter {
                     .ifPresent(a -> SecurityContextHolder.getContext().setAuthentication(a));
         } catch (final JwtException e) {
             log.info("Unable to read authentication from JWT", e);
+        } catch (final Exception e) {
+            // filter errors don't get logged by spring boot, so log here
+            log.error("Failed to read authentication due to {}", e.getClass().getName(), e);
+            throw e;
         }
 
         filterChain.doFilter(request, response);
