@@ -141,11 +141,11 @@ public class ChangePasswordController {
         }
 
         if (user.get().getAccountDetail().getAccountProfile() == AccountProfile.TAG_ADMIN && newPassword.length() < 14) {
-            return getChangePasswordRedirect(username, "length");
+            return getChangePasswordRedirect(username, "length14");
         }
 
         if (newPassword.length() < 9) {
-            return getChangePasswordRedirect(username, "length");
+            return getChangePasswordRedirect(username, "length9");
         }
 
         return null;
