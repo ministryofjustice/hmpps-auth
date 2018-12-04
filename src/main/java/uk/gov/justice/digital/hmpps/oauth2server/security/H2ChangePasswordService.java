@@ -26,7 +26,7 @@ public class H2ChangePasswordService implements ChangePasswordService {
         jdbcTemplate.update(String.format("ALTER USER %s SET PASSWORD ?", username), password);
         // also update h2 password table so that we have access to the hash.
         final var hashedPassword = encoder.encode(password);
-        jdbcTemplate.update("UPDATE USER_PASSWORD SET password = ? where username = ?", hashedPassword, username);
+        jdbcTemplate.update("UPDATE dba_users SET password = ? where username = ?", hashedPassword, username);
 
     }
 }

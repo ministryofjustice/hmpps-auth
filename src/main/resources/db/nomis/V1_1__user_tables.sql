@@ -95,17 +95,13 @@ CREATE INDEX "USER_CASELOAD_ROLES_FK2"
   ON "USER_CASELOAD_ROLES" ("ROLE_ID");
 
 
-create table V_TAG_DBA_USERS (
-  USERNAME              VARCHAR2(30)  not null,
-  ACCOUNT_STATUS        VARCHAR2(255) not null,
-  CREATED               timestamp     not null,
-  EXPIRED_FLAG          char(1)       not null,
-  EXPIRY_DATE           timestamp,
-  LOCK_DATE             timestamp,
-  LOCKED_FLAG           char(1)       not null,
-  LOGGED_IN             char(1)       not null,
-  PROFILE               VARCHAR2(255),
-  USER_TYPE_DESCRIPTION VARCHAR2(255),
+
+create table DBA_USERS
+(
+  USERNAME       VARCHAR2(30)  not null,
+  PASSWORD       VARCHAR2(255) not null,
+  ACCOUNT_STATUS VARCHAR2(32)  not null,
+  PROFILE        VARCHAR2(30),
   primary key (USERNAME)
 );
 

@@ -51,40 +51,41 @@ INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('D
 INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('DM_USER_MULTI', 'GENERAL', 14);
 INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('OMIC_USER', 'GENERAL', 15);
 
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('ITAG_USER', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('ITAG_USER_ADM', 'OPEN', null, now() + 10000, now(), 'TAG_ADMIN', 'N', 'N', 'N', 'Admin');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('OLD_NOMIS_USER', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('CA_USER', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('RO_USER', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('DM_USER', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('NOMIS_BATCHLOAD', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('LOCKED_USER', 'LOCKED', now(), now()+10000, now(), 'TAG_GENERAL', 'N', 'Y', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('EXPIRED_USER', 'EXPIRED', null, now(), now(), 'TAG_GENERAL', 'N', 'N', 'Y', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('CA_USER_TEST', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('CA_USER_MULTI', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('RO_DEMO', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('RO_USER_TEST', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('RO_USER_MULTI', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('DM_USER_TEST', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('DM_USER_MULTI', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
-INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('OMIC_USER', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('ITAG_USER', '$2a$10$9rVgms..dZ3gnPSt4JWPA.Oan4MrDHvcx1c.HuYqeMD5rVFmf0C3G', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('ITAG_USER_ADM', '$2a$10$0zomTd5coSOKnSBMkCyEiei72HwBLJZrSpoqL1GVwr4LNp.KAq.FK', 'OPEN', 'TAG_ADMIN');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('OLD_NOMIS_USER', '$2a$10$EaaM7jp4e/Y1q8zR..eEYOwJOnGJmHIItZfIxR6gVgUP4xT8qXVEm', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('CA_USER', '$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('RO_USER', '$2a$10$ordeqG5gMJHWXm9SDsN0q.PgYbwRmC5idWoFTEWIe2hoIS8IKh3dK', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('DM_USER', '$2a$10$S0K9erqzMttMHhs5hdi8DuE8lk7F1ajsAD5pAMmgmJBc/8QsjzHzy', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('NOMIS_BATCHLOAD', '$2a$10$bAzE0xo8XsKMBchiKmnpEuPZqXV.0/RVVhya7v7kkGoRLTpt2Iwxa', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('LOCKED_USER', '$2a$10$BPCJlKWhaICns8ax5JHd8er8Ti6zy8VH3LiFKtt1M2A4iVyJv1NyW', 'LOCKED', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('EXPIRED_USER', '$2a$10$kJf5g6MQuORDouOnrlpoQOupk5ieUsgcp5v0TtHVzR3mn53b37vby', 'EXPIRED', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('CA_USER_TEST', '$2a$10$vgyF/EFvlol3pwwi0n6ZgeI6C90xY5exW6tETbdDBHB4xpDYzuV9q', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('CA_USER_MULTI', '$2a$10$.uXmUgIPCFv1c93IFzZ48.N3fUlY25YJcq74SPwvPzp93iwId4SzW', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('RO_DEMO', '$2a$10$Xtg49KDA5dBQ2kk3MqsG7erUsUV.vid.s9m2ikLMBWTGTynBG9v4K', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('RO_USER_TEST', '$2a$10$WIthoS9sIXg2mm3tXW6kd./w.xkmfwrSOIUDu.3KNLypCmIpltuvS', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('RO_USER_MULTI', '$2a$10$MGhfSUGrb9DbfMQ/RgxIpOepxw/.R53bZ.tgcTKrEgEHyOsL.VBj6', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('DM_USER_TEST', '$2a$10$3uLXHUVAN3TPp0l4FAlDXe/DTjxp9BsjkJ9WXnRAp2zQkbEVYmGuC', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('DM_USER_MULTI', '$2a$10$JPsL6m0wCXIq5Zdjo8yCx.kYUJBxkPb1gdsAsCqsqgMaJmqJpLiyS', 'OPEN', 'TAG_GENERAL');
+INSERT INTO DBA_USERS (username, password, account_status, profile)
+VALUES ('OMIC_USER', '$2a$10$8lRtC2ndt.nb004kZTNm6O2DqJmakSwKfcmWXB5adKMb9NUWkA1Tm', 'OPEN', 'TAG_GENERAL');
+
 
 INSERT INTO PERSONNEL_IDENTIFICATIONS (STAFF_ID, IDENTIFICATION_TYPE, IDENTIFICATION_NUMBER) VALUES (1, 'YJAF', 'test@yjaf.gov.uk');
 INSERT INTO PERSONNEL_IDENTIFICATIONS (STAFF_ID, IDENTIFICATION_TYPE, IDENTIFICATION_NUMBER) VALUES (2, 'YJAF', 'olduser@yjaf.gov.uk');
