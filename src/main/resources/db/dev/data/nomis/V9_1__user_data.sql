@@ -54,7 +54,7 @@ INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id) VALUES ('O
 INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
 VALUES ('ITAG_USER', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
 INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
-VALUES ('ITAG_USER_ADM', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'Admin');
+VALUES ('ITAG_USER_ADM', 'OPEN', null, now() + 10000, now(), 'TAG_ADMIN', 'N', 'N', 'N', 'Admin');
 INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
 VALUES ('OLD_NOMIS_USER', 'OPEN', null, now()+10000, now(), 'TAG_GENERAL', 'N', 'N', 'N', 'General');
 INSERT INTO V_TAG_DBA_USERS (username, account_status, lock_Date, expiry_date, created, profile, logged_in, locked_flag, expired_flag, user_type_description)
