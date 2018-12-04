@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -93,9 +94,10 @@ public class ChangePasswordControllerTest {
     }
 
     @Test
-    public void changePassword_UserNotFound() throws Exception {
+    public void changePassword_IncorrectCurrentPassword() throws Exception {
+        when(daoAuthenticationProvider.authenticate(any())).thenThrow(new BadCredentialsException("msg"));
         final var redirect = controller.changePassword("user", "old", "qwerqwerqwe12", "qwerqwerqwe12", request, response);
-        assertThat(redirect).isEqualTo("redirect:/login?error&reason=missing");
+        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=user&reason=invalid");
     }
 
     @Test
