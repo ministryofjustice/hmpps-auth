@@ -1,0 +1,41 @@
+create table USER_PASSWORD
+(
+  USERNAME VARCHAR2(30)  not null,
+  PASSWORD VARCHAR2(255) not null,
+  primary key (USERNAME)
+);
+
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('ITAG_USER', '$2a$10$9rVgms..dZ3gnPSt4JWPA.Oan4MrDHvcx1c.HuYqeMD5rVFmf0C3G');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('OLD_NOMIS_USER', '$2a$10$EaaM7jp4e/Y1q8zR..eEYOwJOnGJmHIItZfIxR6gVgUP4xT8qXVEm');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('ITAG_USER_ADM', '$2a$10$0zomTd5coSOKnSBMkCyEiei72HwBLJZrSpoqL1GVwr4LNp.KAq.FK');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('CA_USER', '$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('CA_USER_TEST', '$2a$10$vgyF/EFvlol3pwwi0n6ZgeI6C90xY5exW6tETbdDBHB4xpDYzuV9q');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('CA_USER_MULTI', '$2a$10$.uXmUgIPCFv1c93IFzZ48.N3fUlY25YJcq74SPwvPzp93iwId4SzW');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('RO_USER', '$2a$10$ordeqG5gMJHWXm9SDsN0q.PgYbwRmC5idWoFTEWIe2hoIS8IKh3dK');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('RO_DEMO', '$2a$10$Xtg49KDA5dBQ2kk3MqsG7erUsUV.vid.s9m2ikLMBWTGTynBG9v4K');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('RO_USER_TEST', '$2a$10$WIthoS9sIXg2mm3tXW6kd./w.xkmfwrSOIUDu.3KNLypCmIpltuvS');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('RO_USER_MULTI', '$2a$10$MGhfSUGrb9DbfMQ/RgxIpOepxw/.R53bZ.tgcTKrEgEHyOsL.VBj6');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('DM_USER', '$2a$10$S0K9erqzMttMHhs5hdi8DuE8lk7F1ajsAD5pAMmgmJBc/8QsjzHzy');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('DM_USER_TEST', '$2a$10$3uLXHUVAN3TPp0l4FAlDXe/DTjxp9BsjkJ9WXnRAp2zQkbEVYmGuC');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('DM_USER_MULTI', '$2a$10$JPsL6m0wCXIq5Zdjo8yCx.kYUJBxkPb1gdsAsCqsqgMaJmqJpLiyS');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('NOMIS_BATCHLOAD', '$2a$10$bAzE0xo8XsKMBchiKmnpEuPZqXV.0/RVVhya7v7kkGoRLTpt2Iwxa');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('LOCKED_USER', '$2a$10$BPCJlKWhaICns8ax5JHd8er8Ti6zy8VH3LiFKtt1M2A4iVyJv1NyW');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('EXPIRED_USER', '$2a$10$kJf5g6MQuORDouOnrlpoQOupk5ieUsgcp5v0TtHVzR3mn53b37vby');
+INSERT INTO USER_PASSWORD (username, password)
+VALUES ('OMIC_USER', '$2a$10$8lRtC2ndt.nb004kZTNm6O2DqJmakSwKfcmWXB5adKMb9NUWkA1Tm');
