@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -52,16 +53,16 @@ public class ChangePasswordController {
     public String changePassword(@RequestParam final String username, @RequestParam final String password,
                                  @RequestParam final String newPassword, @RequestParam final String confirmPassword,
                                  final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
-
-        final String validationResult = validate(username, password, newPassword, confirmPassword);
-        if (validationResult != null) {
-            return validationResult;
-        }
-
         try {
-            authenticate(username, password);
+            final String validationResult = validate(username, password, newPassword, confirmPassword);
+            if (validationResult != null) {
+                return validationResult;
+            }
             // also allow successful authenticate to change password
         } catch (final AuthenticationException e) {
+            if (e instanceof BadCredentialsException) {
+                return getChangePasswordRedirect(username, "invalid");
+            }
             // anything else apart from an account expired exception is unexpected
             if (!(e instanceof AccountExpiredException)) {
                 // some other authentication reason, so redirect and display on login page
@@ -112,6 +113,9 @@ public class ChangePasswordController {
             return getChangePasswordRedirect(username, "missing");
         }
 
+        // only way to check existing password is to try to authenticate the user
+        authenticate(username, password);
+
         // Ensuring alphanumeric will ensure that we can't get SQL Injection attacks - since for oracle the password
         // cannot be used in a prepared statement
         if (!StringUtils.isAlphanumeric(newPassword)) {
@@ -136,10 +140,7 @@ public class ChangePasswordController {
         }
 
         final Optional<StaffUserAccount> user = userService.getUserByUsername(username);
-        if (!user.isPresent()) {
-            return getLoginRedirect("missing");
-        }
-
+        //noinspection OptionalGetWithoutIsPresent
         if (user.get().getAccountDetail().getAccountProfile() == AccountProfile.TAG_ADMIN && newPassword.length() < 14) {
             return getChangePasswordRedirect(username, "length14");
         }

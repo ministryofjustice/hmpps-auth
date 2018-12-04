@@ -12,10 +12,10 @@ import java.sql.SQLException;
 
 @Service
 @Profile("oracle")
-public class OracleUserService implements ChangePasswordService {
+public class OracleChangePasswordService implements ChangePasswordService {
     private final JdbcTemplate jdbcTemplate;
 
-    public OracleUserService(@Qualifier("dataSource") final DataSource dataSource) {
+    public OracleChangePasswordService(@Qualifier("dataSource") final DataSource dataSource) {
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 

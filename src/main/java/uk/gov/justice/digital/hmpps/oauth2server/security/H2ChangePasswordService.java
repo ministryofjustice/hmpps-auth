@@ -10,10 +10,10 @@ import javax.sql.DataSource;
 
 @Service
 @Profile("!oracle")
-public class H2UserService implements ChangePasswordService {
+public class H2ChangePasswordService implements ChangePasswordService {
     private final JdbcTemplate jdbcTemplate;
 
-    public H2UserService(@Qualifier("dataSource") final DataSource dataSource) {
+    public H2ChangePasswordService(@Qualifier("dataSource") final DataSource dataSource) {
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
