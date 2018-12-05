@@ -28,9 +28,9 @@ public class H2AuthenticationProvider extends AbstractAuthenticationProvider {
 
     @Autowired
     public H2AuthenticationProvider(@Qualifier("dataSource") final DataSource dataSource,
-                                    @Qualifier("authDataSource") final DataSource authDataSource,
-                                    final UserDetailsService userDetailsService) {
-        super(userDetailsService, authDataSource);
+                                    final UserDetailsService userDetailsService,
+                                    final UserRetriesService userRetriesService) {
+        super(userDetailsService, userRetriesService);
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
