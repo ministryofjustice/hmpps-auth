@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -139,7 +138,7 @@ public class UserDetailsServiceImplTest {
                         .role(Role.builder().code("ROLE1").id(ROLE_ID).function("General").name("A Role").sequence(1).build())
                         .caseload(NWEB_CASELOAD)
                         .build()))
-                .accountDetail(buildAccountDetail(username, OPEN, false, false))
+                .accountDetail(buildAccountDetail(username, OPEN))
                 .build();
 
         userAccount.getRoles().forEach(r -> r.setUser(userAccount));
@@ -149,43 +148,39 @@ public class UserDetailsServiceImplTest {
 
     private StaffUserAccount buildExpiredUser(String username) {
         StaffUserAccount userAccount = buildStandardUser(username);
-        userAccount.setAccountDetail(buildAccountDetail(username, EXPIRED, true, false));
+        userAccount.setAccountDetail(buildAccountDetail(username, EXPIRED));
         return userAccount;
     }
 
     private StaffUserAccount buildLockedUser(String username) {
         StaffUserAccount userAccount = buildStandardUser(username);
-        userAccount.setAccountDetail(buildAccountDetail(username, LOCKED, false, true));
+        userAccount.setAccountDetail(buildAccountDetail(username, LOCKED));
         return userAccount;
     }
 
     private StaffUserAccount buildExpiredLockedUser(String username) {
         StaffUserAccount userAccount = buildStandardUser(username);
-        userAccount.setAccountDetail(buildAccountDetail(username, EXPIRED_LOCKED, true, true));
+        userAccount.setAccountDetail(buildAccountDetail(username, EXPIRED_LOCKED));
         return userAccount;
     }
 
     private StaffUserAccount buildLockedTimedUser(String username) {
         StaffUserAccount userAccount = buildStandardUser(username);
-        userAccount.setAccountDetail(buildAccountDetail(username, LOCKED_TIMED, false, true));
+        userAccount.setAccountDetail(buildAccountDetail(username, LOCKED_TIMED));
         return userAccount;
     }
 
     private StaffUserAccount buildExpiredGraceUser(String username) {
         StaffUserAccount userAccount = buildStandardUser(username);
-        userAccount.setAccountDetail(buildAccountDetail(username, EXPIRED_GRACE, true, true));
+        userAccount.setAccountDetail(buildAccountDetail(username, EXPIRED_GRACE));
         return userAccount;
     }
 
-    private AccountDetail buildAccountDetail(String username, AccountStatus status, boolean expired, boolean locked) {
+    private AccountDetail buildAccountDetail(String username, AccountStatus status) {
         return AccountDetail.builder()
                 .username(username)
-                .expired(expired)
-                .locked(locked)
-                .loggedIn(false)
                 .accountStatus(status.getDesc())
-                .createdDate(LocalDateTime.now())
-                .expiryDate(LocalDateTime.now().plusDays(90))
+                .profile("TAG_GENERAL")
                 .build();
     }
 
