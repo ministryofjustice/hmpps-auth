@@ -3,8 +3,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,19 +15,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.Assert;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
 
-import javax.sql.DataSource;
-
 @Slf4j
 public abstract class AbstractAuthenticationProvider extends DaoAuthenticationProvider {
-    private static final String SELECT_RETRY_COUNT = "SELECT retry_count FROM user_retries WHERE username = ?";
-    private static final String UPDATE_RETRY_COUNT = "UPDATE user_retries SET retry_count = ? WHERE username = ?";
-    private static final String INSERT_RETRY_COUNT = "INSERT INTO user_retries (retry_count, username) VALUES(?,?)";
+    private final UserRetriesService userRetriesService;
 
-    private final JdbcTemplate authJdbcTemplate;
-
-    public AbstractAuthenticationProvider(final UserDetailsService userDetailsService, final DataSource authDataSource) {
+    public AbstractAuthenticationProvider(final UserDetailsService userDetailsService, final UserRetriesService userRetriesService) {
+        this.userRetriesService = userRetriesService;
         setUserDetailsService(userDetailsService);
-        authJdbcTemplate = new JdbcTemplate(authDataSource);
     }
 
     @Override
@@ -68,11 +60,11 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
         final var encodedPassword = encode(password, userData.getSalt());
 
         if (encodedPassword.equals(userData.getHash())) {
-            resetRetryCount(username);
+            userRetriesService.resetRetries(username);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } else {
-            final var newRetryCount = incrementRetryCount(username, userData.getRetryCount());
+            final var newRetryCount = userRetriesService.incrementRetries(username, userData.getRetryCount());
 
             // check the number of retries
             if (newRetryCount > 2) {
@@ -81,7 +73,7 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
                 lockAccount(lockStatus, username);
 
                 // need to reset the retry count otherwise when the user is then unlocked they will have to get the password right first time
-                resetRetryCount(username);
+                userRetriesService.resetRetries(username);
 
                 throw new LockedException("Account Locked, number of retries exceeded");
             }
@@ -90,32 +82,6 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
     }
 
     protected abstract UserData getUserData(final String username);
-
-    private void resetRetryCount(final String username) {
-        final var results = authJdbcTemplate.queryForList(SELECT_RETRY_COUNT, new Object[]{username}, Integer.class);
-        if (results.isEmpty()) {
-            // no row exists, so insert from other table
-            authJdbcTemplate.update(INSERT_RETRY_COUNT, 0, username);
-        } else {
-            // we have a row, so reset the value
-            authJdbcTemplate.update(UPDATE_RETRY_COUNT, 0, username);
-        }
-    }
-
-    private int incrementRetryCount(final String username, final int retryCount) {
-        final var results = authJdbcTemplate.queryForList(SELECT_RETRY_COUNT, new Object[]{username}, Integer.class);
-        final int newCount;
-        if (results.isEmpty()) {
-            // no row exists, so insert from other table
-            newCount = retryCount + 1;
-            authJdbcTemplate.update(INSERT_RETRY_COUNT, newCount, username);
-        } else {
-            newCount = DataAccessUtils.intResult(results) + 1;
-            // we have a row, so increment that value instead and ignore value in oracle
-            authJdbcTemplate.update(UPDATE_RETRY_COUNT, newCount, username);
-        }
-        return newCount;
-    }
 
     protected abstract void lockAccount(final AccountStatus status, final String username);
 
