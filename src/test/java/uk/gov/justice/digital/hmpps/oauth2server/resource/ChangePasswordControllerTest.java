@@ -147,6 +147,16 @@ public class ChangePasswordControllerTest {
     }
 
     @Test
+    public void changePassword_AccountExpiredPasswordMismatch() throws Exception {
+        final var expiredException = new AccountExpiredException("msg");
+        setupGetUserCall(null);
+        when(daoAuthenticationProvider.authenticate(any())).thenThrow(expiredException);
+        final var redirect = controller.changePassword("user", "old", "password1", "new", request, response);
+        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=user&reason=mismatch");
+        verifyZeroInteractions(userStateAuthenticationFailureHandler);
+    }
+
+    @Test
     public void changePassword_ValidationFailure() throws Exception {
         setupGetUserCall(null);
         doThrow(new PasswordValidationFailureException()).when(changePasswordService).changePassword(anyString(), anyString());
