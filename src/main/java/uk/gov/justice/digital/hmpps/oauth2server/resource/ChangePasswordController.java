@@ -14,14 +14,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -54,21 +52,14 @@ public class ChangePasswordController {
                                  @RequestParam final String newPassword, @RequestParam final String confirmPassword,
                                  final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
         try {
-            final String validationResult = validate(username, password, newPassword, confirmPassword);
+            final var validationResult = validate(username, password, newPassword, confirmPassword);
             if (validationResult != null) {
                 return validationResult;
             }
-            // also allow successful authenticate to change password
         } catch (final AuthenticationException e) {
-            if (e instanceof BadCredentialsException) {
-                return getChangePasswordRedirect(username, "invalid");
-            }
-            // anything else apart from an account expired exception is unexpected
-            if (!(e instanceof AccountExpiredException)) {
-                // some other authentication reason, so redirect and display on login page
-                userStateAuthenticationFailureHandler.onAuthenticationFailure(request, response, e);
-                return null;
-            }
+            // unhandled authentication exception, so redirect and display on login page
+            userStateAuthenticationFailureHandler.onAuthenticationFailure(request, response, e);
+            return null;
         }
 
         try {
@@ -114,14 +105,26 @@ public class ChangePasswordController {
         }
 
         // only way to check existing password is to try to authenticate the user
-        authenticate(username, password);
+        try {
+            authenticate(username, password);
+
+            // also allow successful authenticate to change password
+        } catch (final AuthenticationException e) {
+            if (e instanceof BadCredentialsException) {
+                return getChangePasswordRedirect(username, "invalid");
+            }
+            // anything else apart from an account expired exception is unexpected
+            if (!(e instanceof AccountExpiredException)) {
+                throw e;
+            }
+        }
 
         // Ensuring alphanumeric will ensure that we can't get SQL Injection attacks - since for oracle the password
         // cannot be used in a prepared statement
         if (!StringUtils.isAlphanumeric(newPassword)) {
             return getChangePasswordRedirect(username, "alphanumeric");
         }
-        final String digits = StringUtils.getDigits(newPassword);
+        final var digits = StringUtils.getDigits(newPassword);
         if (digits.length() == 0) {
             return getChangePasswordRedirect(username, "digits");
         }
@@ -139,7 +142,7 @@ public class ChangePasswordController {
             return getChangePasswordRedirect(username, "mismatch");
         }
 
-        final Optional<StaffUserAccount> user = userService.getUserByUsername(username);
+        final var user = userService.getUserByUsername(username);
         //noinspection OptionalGetWithoutIsPresent
         if (user.get().getAccountDetail().getAccountProfile() == AccountProfile.TAG_ADMIN && newPassword.length() < 14) {
             return getChangePasswordRedirect(username, "length14");

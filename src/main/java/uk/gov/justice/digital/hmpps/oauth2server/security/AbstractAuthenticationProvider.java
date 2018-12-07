@@ -9,7 +9,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.Assert;
@@ -38,6 +37,17 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
             throw new MissingCredentialsException();
         }
 
+        final var userData = getUserData(username);
+
+        if (userData == null) {
+            throw new BadCredentialsException("Authentication failed: unable to check password value");
+        }
+        if (userData.getStatus().isLocked()) {
+            throw new LockedException("User account is locked");
+        }
+
+        checkPasswordWithAccountLock(username, password, userData);
+
         // need to create a new authentication token with username in uppercase
         final var token = new UsernamePasswordAuthenticationToken(username, password);
         // copy across details from old token too
@@ -48,20 +58,20 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
 
     @Override
     protected void additionalAuthenticationChecks(final UserDetails userDetails, final UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-        final var username = authentication.getName().toUpperCase();
-        final var password = authentication.getCredentials().toString();
+        if (authentication.getCredentials() == null) {
+            logger.debug("Authentication failed: no credentials provided");
 
-        final var userData = getUserData(username);
-
-        if (userData == null) {
-            throw new BadCredentialsException("Authentication failed: unable to check password value");
+            throw new BadCredentialsException(messages.getMessage(
+                    "AbstractUserDetailsAuthenticationProvider.badCredentials",
+                    "Bad credentials"));
         }
+    }
 
+    private void checkPasswordWithAccountLock(final String username, final String password, final UserData userData) {
         final var encodedPassword = encode(password, userData.getSalt());
 
         if (encodedPassword.equals(userData.getHash())) {
             userRetriesService.resetRetries(username);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } else {
             final var newRetryCount = userRetriesService.incrementRetries(username, userData.getRetryCount());
