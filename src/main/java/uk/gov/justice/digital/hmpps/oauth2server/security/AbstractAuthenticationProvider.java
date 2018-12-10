@@ -69,7 +69,7 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
         try {
             return super.authenticate(token);
         } catch (final AuthenticationException e) {
-            final var reason = e.getClass().getName();
+            final var reason = e.getClass().getSimpleName();
             log.info("Authenticate failed for user {} with reason {}", username, reason);
             trackFailure(username, reason);
             throw e;

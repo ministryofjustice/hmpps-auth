@@ -92,7 +92,7 @@ public class ChangePasswordController {
             // return here is not required, since the success handler will have redirected
             return null;
         } catch (final AuthenticationException e) {
-            final String reason = e.getClass().getName();
+            final String reason = e.getClass().getSimpleName();
             log.info("Caught unexpected {} after change password", reason, e);
             telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", reason), null);
             // this should have succeeded, but unable to login
