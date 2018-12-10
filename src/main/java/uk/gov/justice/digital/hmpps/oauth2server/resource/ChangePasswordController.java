@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AccountExpiredException;
@@ -20,6 +21,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 
 @Slf4j
 @Controller
@@ -30,16 +32,20 @@ public class ChangePasswordController {
     private final DaoAuthenticationProvider daoAuthenticationProvider;
     private final ChangePasswordService changePasswordService;
     private final UserService userService;
+    private final TelemetryClient telemetryClient;
 
     public ChangePasswordController(final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler,
                                     final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
                                     final DaoAuthenticationProvider daoAuthenticationProvider,
-                                    final ChangePasswordService changePasswordService, final UserService userService) {
+                                    final ChangePasswordService changePasswordService,
+                                    final UserService userService,
+                                    final TelemetryClient telemetryClient) {
         this.userStateAuthenticationFailureHandler = userStateAuthenticationFailureHandler;
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
         this.daoAuthenticationProvider = daoAuthenticationProvider;
         this.changePasswordService = changePasswordService;
         this.userService = userService;
+        this.telemetryClient = telemetryClient;
     }
 
     @GetMapping("/changePassword")
@@ -81,11 +87,14 @@ public class ChangePasswordController {
         try {
             final var successToken = authenticate(username, newPassword);
             // success, so forward on
+            telemetryClient.trackEvent("ChangePasswordSuccess", Map.of("username", username), null);
             jwtAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, successToken);
             // return here is not required, since the success handler will have redirected
             return null;
         } catch (final AuthenticationException e) {
-            log.info("Caught unexpected {} after change password", e.getClass().getName(), e);
+            final String reason = e.getClass().getSimpleName();
+            log.info("Caught unexpected {} after change password", reason, e);
+            telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", reason), null);
             // this should have succeeded, but unable to login
             // need to tell user that the change password request has been successful though
             //noinspection SpellCheckingInspection
@@ -156,6 +165,7 @@ public class ChangePasswordController {
     }
 
     private String getChangePasswordRedirect(final String username, final String reason) {
+        telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", reason), null);
         return String.format("redirect:/changePassword?error&username=%s&reason=%s", username, reason);
     }
 

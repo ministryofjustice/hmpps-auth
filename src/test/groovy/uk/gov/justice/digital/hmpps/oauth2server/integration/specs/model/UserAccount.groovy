@@ -10,7 +10,8 @@ enum UserAccount {
     ITAG_USER_ADM('ITAG_USER_ADM'),
     NOT_KNOWN('NOT_KNOWN'),
     CA_USER('CA_USER'),
-    LOCKED_USER('LOCKED_USER')
+    LOCKED_USER('LOCKED_USER'),
+    EXPIRED_USER('EXPIRED_USER')
 
     String username
 }
