@@ -19,6 +19,18 @@ class LoginSpecification extends GebReportingSpec {
         at LoginPage
     }
 
+    def "Attempt login with unknown user"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login without credentials"
+        loginAs NOT_KNOWN, 'password1'
+
+        then: 'My credentials are rejected and I am still on the Login page'
+        at LoginPage
+        errorText == 'Invalid username or password'
+    }
+
     def "Attempt login without credentials"() {
         given: 'I am on the Login page'
         to LoginPage
@@ -31,6 +43,18 @@ class LoginSpecification extends GebReportingSpec {
         errorText == 'Missing credentials'
     }
 
+    def "Attempt login with invalid credentials"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login without credentials"
+        loginAs ITAG_USER, 'wrong'
+
+        then: 'My credentials are rejected and I am still on the Login page'
+        at LoginPage
+        errorText == 'Invalid username or password'
+    }
+
     def "Attempt login with locked user"() {
         given: 'I am on the Login page'
         to LoginPage
@@ -41,6 +65,30 @@ class LoginSpecification extends GebReportingSpec {
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginPage
         errorText == 'Your user account is locked'
+    }
+
+    def "Attempt login with expired user wrong password"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login with expired user"
+        loginAs EXPIRED_USER, 'wrong'
+
+        then: 'My credentials are rejected and I am still on the Login page'
+        at LoginPage
+        errorText == 'Invalid username or password'
+    }
+
+    def "Attempt login with expired user"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login with locked user"
+        loginAs EXPIRED_USER, 'password123456'
+
+        then: 'My credentials are rejected and I am still on the Login page'
+        at LoginPage
+        errorText == 'Your password has expired'
     }
 
     def "Log in with valid credentials"() {

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +39,8 @@ public class ChangePasswordControllerTest {
     @Mock
     private UserService userService;
     @Mock
+    private TelemetryClient telemetryClient;
+    @Mock
     private HttpServletRequest request;
     @Mock
     private HttpServletResponse response;
@@ -46,7 +49,8 @@ public class ChangePasswordControllerTest {
 
     @Before
     public void setUp() {
-        controller = new ChangePasswordController(userStateAuthenticationFailureHandler, jwtAuthenticationSuccessHandler, daoAuthenticationProvider, changePasswordService, userService);
+        controller = new ChangePasswordController(userStateAuthenticationFailureHandler, jwtAuthenticationSuccessHandler,
+                daoAuthenticationProvider, changePasswordService, userService, telemetryClient);
     }
 
     @Test

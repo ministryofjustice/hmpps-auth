@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -14,12 +15,18 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.Assert;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
 
+import java.util.Map;
+
 @Slf4j
 public abstract class AbstractAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserRetriesService userRetriesService;
+    private final TelemetryClient telemetryClient;
 
-    public AbstractAuthenticationProvider(final UserDetailsService userDetailsService, final UserRetriesService userRetriesService) {
+    public AbstractAuthenticationProvider(final UserDetailsService userDetailsService,
+                                          final UserRetriesService userRetriesService,
+                                          final TelemetryClient telemetryClient) {
         this.userRetriesService = userRetriesService;
+        this.telemetryClient = telemetryClient;
         setUserDetailsService(userDetailsService);
     }
 
@@ -34,15 +41,21 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
         final var password = authentication.getCredentials().toString();
 
         if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
+            log.info("Credentials missing for user {}", username);
+            trackFailure(username, "credentials", "missing");
             throw new MissingCredentialsException();
         }
 
         final var userData = getUserData(username);
 
         if (userData == null) {
+            log.info("User data missing for user {}", username);
+            trackFailure(username, "credentials", "usermissing");
             throw new BadCredentialsException("Authentication failed: unable to check password value");
         }
         if (userData.getStatus().isLocked()) {
+            log.info("Locked account for user {}", username);
+            trackFailure(username, "locked", "already");
             throw new LockedException("User account is locked");
         }
 
@@ -53,24 +66,36 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
         // copy across details from old token too
         token.setDetails(authentication.getDetails());
 
-        return super.authenticate(token);
+        try {
+            return super.authenticate(token);
+        } catch (final AuthenticationException e) {
+            final var reason = e.getClass().getName();
+            log.info("Authenticate failed for user {} with reason {}", username, reason);
+            trackFailure(username, reason);
+            throw e;
+        }
     }
 
     @Override
     protected void additionalAuthenticationChecks(final UserDetails userDetails, final UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
+        final var username = authentication.getName();
         if (authentication.getCredentials() == null) {
-            logger.debug("Authentication failed: no credentials provided");
+            log.info("No credentials for user {}", username);
+            trackFailure(username, "credentials", "null");
 
             throw new BadCredentialsException(messages.getMessage(
                     "AbstractUserDetailsAuthenticationProvider.badCredentials",
                     "Bad credentials"));
         }
+        log.info("Successful login for user {}", username);
+        telemetryClient.trackEvent("AuthenticateSuccess", Map.of("username", username), null);
     }
 
     private void checkPasswordWithAccountLock(final String username, final String password, final UserData userData) {
         final var encodedPassword = encode(password, userData.getSalt());
 
         if (encodedPassword.equals(userData.getHash())) {
+            log.info("Resetting retries for user {}", username);
             userRetriesService.resetRetries(username);
 
         } else {
@@ -85,10 +110,22 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
                 // need to reset the retry count otherwise when the user is then unlocked they will have to get the password right first time
                 userRetriesService.resetRetries(username);
 
-                throw new LockedException("Account Locked, number of retries exceeded");
+                log.info("Locking account for user {}", username);
+                trackFailure(username, "locked", "exceeded");
+                throw new LockedException("Account is locked, number of retries exceeded");
             }
+            log.info("Credentials incorrect for user {}", username);
+            trackFailure(username, "credentials", "incorrect");
             throw new BadCredentialsException("Authentication failed: password does not match stored value");
         }
+    }
+
+    private void trackFailure(final String username, final String type) {
+        telemetryClient.trackEvent("AuthenticateFailure", Map.of("username", username, "type", type), null);
+    }
+
+    private void trackFailure(final String username, final String type, final String subType) {
+        telemetryClient.trackEvent("AuthenticateFailure", Map.of("username", username, "type", type, "subType", subType), null);
     }
 
     protected abstract UserData getUserData(final String username);
