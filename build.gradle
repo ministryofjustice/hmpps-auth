@@ -19,7 +19,6 @@ apply plugin: 'groovy'
 
 repositories {
     mavenCentral()
-    maven { url "https://dl.bintray.com/gov-uk-notify/maven" }
 }
 
 ext {
@@ -95,7 +94,6 @@ dependencies {
     compile 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
     compile 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.3.0'
     compile 'org.webjars:bootstrap:4.1.3'
-    compile 'uk.gov.service.notify:notifications-java-client:3.12.0-RELEASE'
 
     compile 'org.flywaydb:flyway-core:5.2.0'
     compile 'com.zaxxer:HikariCP:2.7.6'
