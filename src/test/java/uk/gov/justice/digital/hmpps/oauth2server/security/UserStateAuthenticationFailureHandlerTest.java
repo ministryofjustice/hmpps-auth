@@ -53,7 +53,7 @@ public class UserStateAuthenticationFailureHandlerTest {
         setupHandler(true);
         handler.onAuthenticationFailure(request, response, new AccountExpiredException("msg"));
 
-        verify(redirectStrategy).sendRedirect(request, response, "/changePassword?username=BOB");
+        verify(redirectStrategy).sendRedirect(request, response, "/change-password?username=BOB");
     }
 
     @Test
