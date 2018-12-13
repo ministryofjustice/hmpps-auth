@@ -135,10 +135,10 @@ public class ChangePasswordController {
         }
         final var digits = StringUtils.getDigits(newPassword);
         if (digits.length() == 0) {
-            return getChangePasswordRedirect(username, "digits");
+            return getChangePasswordRedirect(username, "nodigits");
         }
         if (digits.length() == newPassword.length()) {
-            return getChangePasswordRedirect(username, "digits");
+            return getChangePasswordRedirect(username, "alldigits");
         }
         if (StringUtils.contains(newPassword, username)) {
             return getChangePasswordRedirect(username, "username");

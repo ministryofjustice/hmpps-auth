@@ -125,13 +125,13 @@ public class ChangePasswordControllerTest {
     @Test
     public void changePassword_MissingDigits() throws Exception {
         final var redirect = controller.changePassword("d", "old", "asdasdasdb", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=digits");
+        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=nodigits");
     }
 
     @Test
     public void changePassword_OnlyDigits() throws Exception {
         final var redirect = controller.changePassword("d", "old", "1231231234", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=digits");
+        assertThat(redirect).isEqualTo("redirect:/changePassword?error&username=d&reason=alldigits");
     }
 
     @Test
