@@ -14,3 +14,9 @@ auth:
   jpa:
     hibernate:
       dialect: org.hibernate.dialect.H2Dialect
+
+application:
+  smoketest:
+    enabled: true
+  verify-email:
+    enabled: true
