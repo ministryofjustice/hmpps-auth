@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
 public class ReferenceCodesService {
 
     private static final String EMAIL_DOMAINS_SQL =
