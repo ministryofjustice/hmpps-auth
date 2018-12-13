@@ -4,7 +4,7 @@ import geb.Page
 
 class ChangePasswordPage extends Page {
 
-    static url = '/auth/changePassword'
+    static url = '/auth/change-password'
 
     static at = {
         title == 'Nomis Authentication - Change Password'
