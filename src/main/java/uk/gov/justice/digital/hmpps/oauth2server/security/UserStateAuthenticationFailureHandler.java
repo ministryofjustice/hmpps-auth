@@ -35,7 +35,7 @@ public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticati
             // special handling for expired users and feature switch turned on
             if (expiredReset) {
                 final var username = request.getParameter("username").toUpperCase();
-                getRedirectStrategy().sendRedirect(request, response, "/changePassword?username=" + username);
+                getRedirectStrategy().sendRedirect(request, response, "/change-password?username=" + username);
                 return;
             }
             reason = Optional.of("expired");

@@ -48,12 +48,12 @@ public class ChangePasswordController {
         this.telemetryClient = telemetryClient;
     }
 
-    @GetMapping("/changePassword")
+    @GetMapping("/change-password")
     public String changePasswordRequest() {
         return "changePassword";
     }
 
-    @PostMapping("/changePassword")
+    @PostMapping("/change-password")
     public String changePassword(@RequestParam final String username, @RequestParam final String password,
                                  @RequestParam final String newPassword, @RequestParam final String confirmPassword,
                                  final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
@@ -166,7 +166,7 @@ public class ChangePasswordController {
 
     private String getChangePasswordRedirect(final String username, final String reason) {
         telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", reason), null);
-        return String.format("redirect:/changePassword?error&username=%s&reason=%s", username, reason);
+        return String.format("redirect:/change-password?error&username=%s&reason=%s", username, reason);
     }
 
     private String getLoginRedirect(final String reason) {
