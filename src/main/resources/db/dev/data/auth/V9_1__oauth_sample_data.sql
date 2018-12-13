@@ -16,4 +16,8 @@ INSERT INTO user_retries (username, retry_count) VALUES ('LOCKED_USER', 5);
 INSERT INTO user_email (username, email, reset_token, verification_token, verified, token_expiry)
   VALUES ('LOCKED_USER', 'locked@somewhere.com', 'reset', 'validate', 'true', '2018-12-10 08:55:45');
 INSERT INTO user_email (username, email, reset_token, verification_token, verified)
-  VALUES ('CA_USER', 'joe@bloggs.com', 'reset', 'validate', 'false');
+  VALUES ('CA_USER', 'ca_user@digital.justice.gov.uk', null, null, 'true');
+INSERT INTO user_email (username, email, reset_token, verification_token, verified)
+  VALUES ('ITAG_USER', 'itag_user@digital.justice.gov.uk', null, null, 'true');
+INSERT INTO user_email (username, email, reset_token, verification_token, verified)
+  VALUES ('ITAG_USER_ADM', 'itag_user_adm@digital.justice.gov.uk', null, null, 'true');
