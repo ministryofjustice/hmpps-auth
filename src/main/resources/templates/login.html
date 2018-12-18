@@ -26,23 +26,43 @@
         <h2 class="heading-medium error-summary-heading center noMargin">You have been logged out</h2>
     </div>
     <div class="pure-g">
-        <div class="pure-u-1 pure-u-md-1-3">
+        <div class="pure-u-1">
             <form class="form" th:action="@{/login}" method="POST" id="loginForm">
                 <h1 class="form-title heading-large">Sign in</h1>
 
-                <div class="form-group">
-                    <label class="form-label" for="username">Username</label>
-                    <input class="form-control" id="username" name="username" type="text" autofocus="autofocus"
-                           data-element-id="username">
+                <div class="pure-u-md-1-3">
+                    <div class="form-group">
+                        <label class="form-label" for="username">Username</label>
+                        <input class="form-control" id="username" name="username" type="text" autofocus="autofocus"
+                               data-element-id="username">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" id="password" name="password" type="password"
+                               data-element-id="password">
+                    </div>
                 </div>
+                <details class="govuk-details form-group">
+                    <summary class="govuk-details__summary">
+                       <span class="govuk-details__summary-text">
+                         Why won’t my classic NOMIS password work on NOMIS?
+                       </span>
+                    </summary>
+                    <div class="govuk-details__text">
+                        <p>NOMIS is case sensitive which means you must enter your password exactly as you first
+                            created it. For example if your password is <strong class="bold">H3LloWorlD</strong> you
+                            must enter it exactly like that in NOMIS.</p>
+                        <p>Classic NOMIS will let you enter your password using upper or lower case letters regardless
+                            of how you originally created it. For example if your password is <strong class="bold">H3LloWorlD</strong>
+                            you could enter <strong class="bold">H3LLOWORLD</strong> or <strong
+                                    class="bold">h3lloworld</strong> or <strong class="bold">H3lloWorld</strong>.</p>
+                    </div>
+                </details>
                 <div class="form-group">
-                    <label class="form-label" for="password">Password</label>
-                    <input class="form-control" id="password" name="password" type="password"
-                           data-element-id="password">
+                    <button class="button largeMarginBottom" id="submit" type="submit" role="button"
+                            data-element-id="continue-button">Sign in
+                    </button>
                 </div>
-                <button class="button largeMarginBottom" id="submit" type="submit" role="button"
-                        data-element-id="continue-button">Sign in
-                </button>
             </form>
         </div>
     </div>
