@@ -29,7 +29,7 @@ class ChangePasswordSpecification extends GebReportingSpec {
 
         then: 'My credentials are rejected and I am still on the Change Password page'
         at ChangePasswordPage
-        errorText == 'Please enter your current password'
+        errorText == 'Enter your current password'
     }
 
     // this test changes CA_USER password

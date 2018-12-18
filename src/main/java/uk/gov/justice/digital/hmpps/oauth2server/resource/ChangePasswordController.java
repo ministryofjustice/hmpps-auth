@@ -72,10 +72,10 @@ public class ChangePasswordController {
             changePasswordService.changePassword(username, newPassword);
         } catch (final Exception e) {
             if (e instanceof PasswordValidationFailureException) {
-                return getChangePasswordRedirect(username, "validation");
+                return getChangePasswordRedirect(username, "new", "validation");
             }
             if (e instanceof ReusedPasswordException) {
-                return getChangePasswordRedirect(username, "reused");
+                return getChangePasswordRedirect(username, "new", "reused");
             }
             // let any other exception bubble up
             throw e;
@@ -110,7 +110,7 @@ public class ChangePasswordController {
         }
 
         if (StringUtils.isBlank(password)) {
-            return getChangePasswordRedirect(username, "missing");
+            return getChangePasswordRedirect(username, "current", "missing");
         }
 
         // only way to check existing password is to try to authenticate the user
@@ -120,7 +120,7 @@ public class ChangePasswordController {
             // also allow successful authenticate to change password
         } catch (final AuthenticationException e) {
             if (e instanceof BadCredentialsException) {
-                return getChangePasswordRedirect(username, "invalid");
+                return getChangePasswordRedirect(username, "current", "invalid");
             }
             // anything else apart from an account expired exception is unexpected
             if (!(e instanceof AccountExpiredException)) {
@@ -131,42 +131,42 @@ public class ChangePasswordController {
         // Ensuring alphanumeric will ensure that we can't get SQL Injection attacks - since for oracle the password
         // cannot be used in a prepared statement
         if (!StringUtils.isAlphanumeric(newPassword)) {
-            return getChangePasswordRedirect(username, "alphanumeric");
+            return getChangePasswordRedirect(username, "new", "alphanumeric");
         }
         final var digits = StringUtils.getDigits(newPassword);
         if (digits.length() == 0) {
-            return getChangePasswordRedirect(username, "nodigits");
+            return getChangePasswordRedirect(username, "new", "nodigits");
         }
         if (digits.length() == newPassword.length()) {
-            return getChangePasswordRedirect(username, "alldigits");
+            return getChangePasswordRedirect(username, "new", "alldigits");
         }
         if (StringUtils.contains(newPassword, username)) {
-            return getChangePasswordRedirect(username, "username");
+            return getChangePasswordRedirect(username, "new", "username");
         }
         if (newPassword.chars().distinct().count() < 4) {
-            return getChangePasswordRedirect(username, "four");
+            return getChangePasswordRedirect(username, "new", "four");
         }
 
         if (!StringUtils.equals(newPassword, confirmPassword)) {
-            return getChangePasswordRedirect(username, "mismatch");
+            return getChangePasswordRedirect(username, "new", "mismatch");
         }
 
         final var user = userService.getUserByUsername(username);
         //noinspection OptionalGetWithoutIsPresent
         if (user.get().getAccountDetail().getAccountProfile() == AccountProfile.TAG_ADMIN && newPassword.length() < 14) {
-            return getChangePasswordRedirect(username, "length14");
+            return getChangePasswordRedirect(username, "new", "length14");
         }
 
         if (newPassword.length() < 9) {
-            return getChangePasswordRedirect(username, "length9");
+            return getChangePasswordRedirect(username, "new", "length9");
         }
 
         return null;
     }
 
-    private String getChangePasswordRedirect(final String username, final String reason) {
+    private String getChangePasswordRedirect(final String username, final String field, final String reason) {
         telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", reason), null);
-        return String.format("redirect:/change-password?error&username=%s&reason=%s", username, reason);
+        return String.format("redirect:/change-password?error%s=%s&username=%s", field, reason, username);
     }
 
     private String getLoginRedirect(final String reason) {

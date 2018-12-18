@@ -8,13 +8,13 @@ class ChangePasswordPage extends Page {
 
     static at = {
         title == 'Nomis Authentication - Change Password'
-        headingText == 'Change Password'
+        headingText == 'Your password has expired'
     }
 
     static content = {
         headingText { $('#content h1').text() }
-        changePasswordButton { $("button", type: 'submit') }
-        errorText { $('#errors').text() }
+        changePasswordButton { $("input", type: 'submit') }
+        errorText { $('#errorcurrent').text() }
     }
 
     void changePasswordAs(String existingPassword, String newPassword, String confirmNewPassword) {
@@ -23,7 +23,7 @@ class ChangePasswordPage extends Page {
         $('form').newPassword = newPassword
         $('form').confirmPassword = confirmNewPassword
 
-        assert changePasswordButton.text() == 'Change Password'
+        assert changePasswordButton.value() == 'Save new password'
 
         changePasswordButton.click()
     }

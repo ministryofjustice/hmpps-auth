@@ -1381,7 +1381,6 @@ input[type=number] {
   width: 70px; }
 
 .form-group-error {
-  margin-right: 15px;
   border-left: 4px solid #b10e1e;
   padding-left: 10px; }
   @media (min-width: 641px) {
