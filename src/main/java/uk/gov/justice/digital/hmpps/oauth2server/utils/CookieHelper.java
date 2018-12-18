@@ -26,7 +26,11 @@ public class CookieHelper {
 
         // path has to match exactly the path defined in spring's CookieClearingLogoutHandler
         sessionCookie.setPath(request.getContextPath() + "/");
-        sessionCookie.setMaxAge(Math.toIntExact(expiryTime.toSeconds()));
+
+        // expiry time of 0 means that cookie never expires
+        if (expiryTime.toSeconds() != 0) {
+            sessionCookie.setMaxAge(Math.toIntExact(expiryTime.toSeconds()));
+        }
         sessionCookie.setHttpOnly(true);
         sessionCookie.setSecure(request.isSecure());
         response.addCookie(sessionCookie);
