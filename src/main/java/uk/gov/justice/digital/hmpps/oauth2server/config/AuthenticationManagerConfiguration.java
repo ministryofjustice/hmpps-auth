@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Configuration
 @Order(4)
@@ -69,7 +70,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
 
-        final String whitelistAccess = buildWhitelistRestrictions();
+        var whitelistAccess = buildWhitelistRestrictions();
 
         // @formatter:off
         http
@@ -113,11 +114,10 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     }
 
     private String buildWhitelistRestrictions() {
-        final StringBuilder whitelistAccess = new StringBuilder();
-        whitelist.forEach( ip ->
-            whitelistAccess.append(whitelistAccess.length() != 0 ? " or " : "").append("hasIpAddress('").append(ip).append("')")
-        );
-        return "isAuthenticated()" + (whitelist.size() > 0 ? " and ("+whitelistAccess.toString()+ ")" : "");
+
+        return "isAuthenticated()" + whitelist.stream().
+                map(s -> String.format("hasIpAddress('%s')", s)).
+                collect(Collectors.collectingAndThen(Collectors.joining(" or "), s -> s.isEmpty() ? "" : String.format(" and (%s)", s)));
     }
 
     @Override
