@@ -1159,7 +1159,7 @@ textarea {
   color: #6f777b;
   font-weight: normal;
   margin-top: -2px;
-  padding-bottom: 2px; }
+  padding-bottom: 7px; }
   @media (min-width: 641px) {
     .form-hint {
       font-size: 19px;
