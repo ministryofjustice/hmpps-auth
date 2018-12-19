@@ -21,3 +21,5 @@ INSERT INTO user_email (username, email, reset_token, verification_token, verifi
   VALUES ('ITAG_USER', 'itag_user@digital.justice.gov.uk', null, null, 'true');
 INSERT INTO user_email (username, email, reset_token, verification_token, verified)
   VALUES ('ITAG_USER_ADM', 'itag_user_adm@digital.justice.gov.uk', null, null, 'true');
+INSERT INTO user_email (username, email, reset_token, verification_token, verified)
+  VALUES ('DM_USER', 'dm_user@digital.justice.gov.uk', null, null, 'false');

@@ -107,7 +107,9 @@ public class VerifyEmailService {
 
         final var userEmail = userEmailOptional.get();
         if (userEmail.isVerified()) {
-            return trackAndReturnFailureForInvalidToken(username, "verifiedAlready");
+            log.info("Verify email succeeded due to already verified");
+            telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
+            return Optional.empty();
         }
         if (!verificationToken.equals(userEmail.getVerificationToken())) {
             return trackAndReturnFailureForInvalidToken(username, "tokenMismatch");
