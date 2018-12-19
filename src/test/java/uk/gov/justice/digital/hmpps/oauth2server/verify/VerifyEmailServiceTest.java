@@ -164,7 +164,7 @@ public class VerifyEmailServiceTest {
         userEmail.setVerified(true);
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         final var result = verifyEmailService.confirmEmail(USER_TOKEN_BASE64);
-        assertThat(result).get().isEqualTo("verifiedAlready");
+        assertThat(result).isEmpty();
     }
 
     @Test

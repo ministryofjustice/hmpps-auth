@@ -11,7 +11,9 @@ enum UserAccount {
     NOT_KNOWN('NOT_KNOWN'),
     CA_USER('CA_USER'),
     LOCKED_USER('LOCKED_USER'),
-    EXPIRED_USER('EXPIRED_USER')
+    EXPIRED_USER('EXPIRED_USER'),
+    RO_USER('RO_USER'),
+    DM_USER('DM_USER')
 
     String username
 }
