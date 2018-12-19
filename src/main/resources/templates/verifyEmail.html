@@ -11,19 +11,11 @@
          tabindex="-1">
         <th:block th:switch="${error}">
             <h2 class="heading-medium error-summary-heading center noMargin" id="errors">
-                <th:block th:case="'alphanumeric'">Please only enter letters and numbers for the new password</th:block>
-                <th:block th:case="'digits'">The new password must contain a combination of both letters and numbers
+                <th:block th:case="'format'">Enter your email address in 'name@domain.ext' format</th:block>
+                <th:block th:case="'characters'">Email address can only contain the following characters: 0-9A-Za-z@.'_-
                 </th:block>
-                <th:block th:case="'invalid'">Your current password is incorrect</th:block>
-                <th:block th:case="'length9'">The new password must be a minimum of 9 characters long</th:block>
-                <th:block th:case="'length14'">The new password must be a minimum of 14 characters long</th:block>
-                <th:block th:case="'username'">The new password cannot contain your username</th:block>
-                <th:block th:case="'four'">Please enter at least four unique characters in your new password</th:block>
-                <th:block th:case="'missing'">Please enter your current password</th:block>
-                <th:block th:case="'mismatch'">Your new password and confirm password do not match</th:block>
-                <th:block th:case="'validation'">Your new password does not comply with the password policy</th:block>
-                <th:block th:case="'reused'">You are not allowed to reuse previous passwords</th:block>
-                <th:block th:case="*">An error occurred during changing password. Please try again.</th:block>
+                <th:block th:case="'domain'">Email addresses must be to a approved email domain</th:block>
+                <th:block th:case="*">An error occurred during sending the verification email. Please try again.</th:block>
             </h2>
         </th:block>
     </div>
