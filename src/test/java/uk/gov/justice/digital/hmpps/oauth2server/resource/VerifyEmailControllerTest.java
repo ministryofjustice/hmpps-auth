@@ -149,7 +149,7 @@ public class VerifyEmailControllerTest {
     public void verifyEmailConfirm() {
         when(verifyEmailService.confirmEmail(anyString())).thenReturn(Optional.empty());
         final var modelAndView = verifyEmailController.verifyEmailConfirm("token");
-        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmailConfirm");
+        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmailSuccess");
         assertThat(modelAndView.getModel()).isEmpty();
     }
 
@@ -157,7 +157,7 @@ public class VerifyEmailControllerTest {
     public void verifyEmailConfirm_Failure() {
         when(verifyEmailService.confirmEmail(anyString())).thenReturn(Optional.of("failed"));
         final var modelAndView = verifyEmailController.verifyEmailConfirm("token");
-        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmailConfirm");
+        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmailFailure");
         assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("error", "failed"));
     }
 }

@@ -29,7 +29,7 @@ public class VerifyEmailServiceIntTest {
 
     @Test
     public void getExistingEmailAddresses() {
-        final var emails = verifyEmailService.getExistingEmailAddresses("ITAG_USER");
+        final var emails = verifyEmailService.getExistingEmailAddresses("RO_USER");
         assertThat(emails).containsExactlyInAnyOrder("phillips@bobjustice.gov.uk", "phillips@fredjustice.gov.uk");
     }
 

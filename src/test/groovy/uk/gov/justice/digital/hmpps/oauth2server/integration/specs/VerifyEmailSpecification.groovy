@@ -47,28 +47,4 @@ class VerifyEmailSpecification extends GebReportingSpec {
         then:
         at VerifyEmailConfirmPage
     }
-
-    def "A user can verify a chosen email"() {
-        given: 'I login with a non verified email user'
-        to LoginPage
-        loginAs DM_USER, 'password123456'
-
-        when: 'The Verify Email page is displayed'
-        at VerifyEmailPage
-        verifyExistingEmailAs 'dm_user@digital.justice.gov.uk'
-
-        and: 'The Verify Email sent page is displayed'
-        at VerifyEmailSentPage
-        String verifyLink = $('#verifyLink').@href
-        continueProcess()
-
-        and: 'The User Home page is displayed'
-        at UserHomePage
-
-        and: 'I can then verify my email address'
-        browser.go verifyLink
-
-        then:
-        at VerifyEmailConfirmPage
-    }
 }
