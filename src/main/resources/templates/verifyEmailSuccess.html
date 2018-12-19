@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Verify Email Confirmation</title>
+</head>
+<body>
+<div layout:fragment="content" th:remove="tag">
+    <div class="govuk-box-highlight pure-u-md-2-3" tabindex="-1">
+        <h1 class="heading-large">
+            Email Address Verification Success
+        </h1>
+    </div>
+    <p>
+        Your email address has now been verified.
+    </p>
+</div>
+</body>
+</html>
