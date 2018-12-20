@@ -88,14 +88,14 @@ public class ChangePasswordController {
         try {
             final var successToken = authenticate(upperUsername, newPassword);
             // success, so forward on
-            telemetryClient.trackEvent("ChangePasswordSuccess", Map.of("upperUsername", upperUsername), null);
+            telemetryClient.trackEvent("ChangePasswordSuccess", Map.of("username", upperUsername), null);
             jwtAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, successToken);
             // return here is not required, since the success handler will have redirected
             return null;
         } catch (final AuthenticationException e) {
             final String reason = e.getClass().getSimpleName();
             log.info("Caught unexpected {} after change password", reason, e);
-            telemetryClient.trackEvent("ChangePasswordFailure", Map.of("upperUsername", upperUsername, "reason", reason), null);
+            telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", upperUsername, "reason", reason), null);
             // this should have succeeded, but unable to login
             // need to tell user that the change password request has been successful though
             //noinspection SpellCheckingInspection
