@@ -1,32 +1,51 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org" class="govuk-template">
 <head>
-    <meta charset="UTF-8">
-    <!-- The first thing in any HTML file should be the charset -->
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">Nomis Authentication</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 
-    <meta content="#000000" name="theme-color">
-    <link th:href="@{/css/pure.css}" rel="stylesheet">
-    <link th:href="@{/css/grid.css}" rel="stylesheet">
-    <!--<![endif]--><!--[if gt IE 8 ]>
-    <link rel='stylesheet' th:href="@{/css/grid.css}" type='text/css'>
-    <![endif]--><!--[if lt IE 9]>
-    <link rel='stylesheet' th:href="@{/css/grid-old-ie.css}" type='text/css'>
-    <![endif]-->
-    <link th:href="@{/css/govuk-template.css}" rel="stylesheet">
-    <link th:href="@{/css/licences-application.css}" rel="stylesheet">
-    <link th:href="@{/css/fonts.css}" rel="stylesheet">
-    <link th:href="@{/css/app.css}" rel="stylesheet">
+  <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">Nomis Authentication</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="theme-color" content="#0b0c0c"/>
+
+  <link rel="shortcut icon" sizes="16x16 32x32 48x48" th:href="@{/images/favicon.ico}" type="image/x-icon"/>
+  <link rel="mask-icon" th:href="@{/images/govuk-mask-icon.svg}" color="#0b0c0c">
+  <link rel="apple-touch-icon" sizes="180x180" th:href="@{/images/govuk-apple-touch-icon-180x180.png}">
+  <link rel="apple-touch-icon" sizes="167x167" th:href="@{/images/govuk-apple-touch-icon-167x167.png}">
+  <link rel="apple-touch-icon" sizes="152x152" th:href="@{/images/govuk-apple-touch-icon-152x152.png}">
+  <link rel="apple-touch-icon" th:href="@{/images/govuk-apple-touch-icon.png}">
+
+  <!--[if !IE 8]><!-->
+  <link rel="stylesheet" th:href="@{/css/govuk-frontend-2.4.1.min.css}">
+  <!--<![endif]-->
+  <!--[if IE 8]>
+  <link rel="stylesheet" th:href="@{/css/govuk-frontend-ie8-2.4.1.min.css}">
+  <![endif]-->
+
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+
+  <meta property="og:image" th:content="@{/images/govuk-opengraph-image.png}">
 </head>
-<body>
+<body class="govuk-template__body">
+<script>
+  document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');
+</script>
+<a href="#main-content" class="govuk-skip-link">Skip to main content</a>
 <th:block th:replace="fragments/header :: header"/>
-<main class="app-container" role="main" id="content">
-    <th:block layout:fragment="content"/>
-</main>
+
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper" id="main-content" role="main">
+    <div class="govuk-grid-row">
+      <th:block layout:fragment="content"/>
+    </div>
+  </main>
+</div>
+
 <th:block th:replace="fragments/footer :: footer"/>
+
+<script th:src="@{js/govuk-frontend-2.4.1.min.js}"></script>
+<script>window.GOVUKFrontend.initAll();</script>
 </body>
 </html>

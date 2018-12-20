@@ -1,14 +1,25 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>Access Denied</title>
+  <title>Access Denied</title>
 </head>
 <body>
-<div layout:fragment="content" th:remove="tag">
-    <h1 class="heading-large">Access Denied</h1>
-    <p><a href="/" th:href="@{/login}">Back to login page</a></p>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <h1 class="govuk-heading-xl">Access Denied</h1>
+  <p class="govuk-body">
+    If you typed the web address, check it is correct.
+  </p>
+  <p class="govuk-body">
+    If you pasted the web address, check you copied the entire address.
+  </p>
+  <p class="govuk-body">
+    If the web address is correct or you selected a link or button, contact us at
+    <a href="mailto:feedback@digital.justice.gov.uk">feedback@digital.justice.gov.uk</a> to report the
+    issue.
+  </p>
+  <a class="govuk-button" th:href="@{/}" id="continue">OK, continue</a>
 </div>
 </body>
 </html>

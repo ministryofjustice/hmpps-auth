@@ -109,7 +109,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     public void configure(final WebSecurity web) {
         web
                 .ignoring()
-                .antMatchers("/css/**", "/img/**", "/font/**", "/webjars/**", "/favicon.ico",
+                .antMatchers("/css/**", "/js/**", "/images/**", "/fonts/**", "/webjars/**", "/favicon.ico",
                         "/health", "/info", "/error", "/terms", "/change-password", "/verify-email-confirm/*",
                         "/h2-console/**", "/v2/api-docs", "/jwt-public-key",
                         "/swagger-ui.html", "/swagger-resources", "/swagger-resources/configuration/ui",
