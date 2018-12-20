@@ -57,8 +57,9 @@ public class ChangePasswordController {
     public String changePassword(@RequestParam final String username, @RequestParam final String password,
                                  @RequestParam final String newPassword, @RequestParam final String confirmPassword,
                                  final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
+        final var upperUsername = StringUtils.upperCase(username);
         try {
-            final var validationResult = validate(username, password, newPassword, confirmPassword);
+            final var validationResult = validate(upperUsername, password, newPassword, confirmPassword);
             if (validationResult != null) {
                 return validationResult;
             }
@@ -69,32 +70,32 @@ public class ChangePasswordController {
         }
 
         try {
-            changePasswordService.changePassword(username, newPassword);
+            changePasswordService.changePassword(upperUsername, newPassword);
         } catch (final Exception e) {
             if (e instanceof PasswordValidationFailureException) {
-                return getChangePasswordRedirect(username, "new", "validation");
+                return getChangePasswordRedirect(upperUsername, "new", "validation");
             }
             if (e instanceof ReusedPasswordException) {
-                return getChangePasswordRedirect(username, "new", "reused");
+                return getChangePasswordRedirect(upperUsername, "new", "reused");
             }
             // let any other exception bubble up
             throw e;
         }
 
-        log.info("Successfully changed password for {}", username);
+        log.info("Successfully changed password for {}", upperUsername);
 
         // now try again authentication with new password
         try {
-            final var successToken = authenticate(username, newPassword);
+            final var successToken = authenticate(upperUsername, newPassword);
             // success, so forward on
-            telemetryClient.trackEvent("ChangePasswordSuccess", Map.of("username", username), null);
+            telemetryClient.trackEvent("ChangePasswordSuccess", Map.of("username", upperUsername), null);
             jwtAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, successToken);
             // return here is not required, since the success handler will have redirected
             return null;
         } catch (final AuthenticationException e) {
             final String reason = e.getClass().getSimpleName();
             log.info("Caught unexpected {} after change password", reason, e);
-            telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", reason), null);
+            telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", upperUsername, "reason", reason), null);
             // this should have succeeded, but unable to login
             // need to tell user that the change password request has been successful though
             //noinspection SpellCheckingInspection
@@ -140,7 +141,7 @@ public class ChangePasswordController {
         if (digits.length() == newPassword.length()) {
             return getChangePasswordRedirect(username, "new", "alldigits");
         }
-        if (StringUtils.contains(newPassword, username)) {
+        if (StringUtils.containsIgnoreCase(newPassword, username)) {
             return getChangePasswordRedirect(username, "new", "username");
         }
         if (newPassword.chars().distinct().count() < 4) {
