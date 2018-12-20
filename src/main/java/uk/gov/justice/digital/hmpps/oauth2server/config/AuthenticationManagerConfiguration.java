@@ -26,9 +26,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.JwtCookieAuthenticatio
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 @Configuration
 @Order(4)
 public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAdapter {
@@ -42,7 +39,6 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     private final CookieRequestCache cookieRequestCache;
     private final DaoAuthenticationProvider daoAuthenticationProvider;
     private final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler;
-    private final Set<String> whitelist;
 
     @Autowired
     public AuthenticationManagerConfiguration(final UserDetailsService userDetailsService,
@@ -53,7 +49,6 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                                               @Value("${jwt.cookie.name}") final String jwtCookieName,
                                               final CookieRequestCache cookieRequestCache,
                                               final DaoAuthenticationProvider daoAuthenticationProvider,
-                                              @Value("${application.authentication.ui.whitelist}") final Set<String> whitelist,
                                               final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler) {
         this.userDetailsService = userDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
@@ -63,14 +58,11 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         this.jwtCookieName = jwtCookieName;
         this.cookieRequestCache = cookieRequestCache;
         this.daoAuthenticationProvider = daoAuthenticationProvider;
-        this.whitelist = whitelist;
         this.userStateAuthenticationFailureHandler = userStateAuthenticationFailureHandler;
     }
 
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
-
-        var whitelistAccess = buildWhitelistRestrictions();
 
         // @formatter:off
         http
@@ -83,7 +75,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
             .authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/login").permitAll()
                 .antMatchers(HttpMethod.POST, "/login").permitAll()
-                .antMatchers("/ui/**").access(whitelistAccess)
+                .antMatchers("/ui/**").access("isAuthenticated() and @authIpSecurity.check(request)")
                 .anyRequest().authenticated()
 
             .and()
@@ -111,13 +103,6 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
                 .requestCache().requestCache(cookieRequestCache);
         // @formatter:on
-    }
-
-    private String buildWhitelistRestrictions() {
-
-        return "isAuthenticated()" + whitelist.stream().
-                map(s -> String.format("hasIpAddress('%s')", s)).
-                collect(Collectors.collectingAndThen(Collectors.joining(" or "), s -> s.isEmpty() ? "" : String.format(" and (%s)", s)));
     }
 
     @Override
