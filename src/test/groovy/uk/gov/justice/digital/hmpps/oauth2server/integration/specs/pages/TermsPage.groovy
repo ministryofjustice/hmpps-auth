@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages
 
 import geb.Page
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount
-
 
 class TermsPage extends Page {
 
@@ -14,8 +12,8 @@ class TermsPage extends Page {
     }
 
     static content = {
-        headingText { $('#content h1').text() }
-        continueButton { $('#login') }
+        headingText { $('#main-content h1').text() }
+        continueButton { $('#continue') }
     }
 
     void accept() {

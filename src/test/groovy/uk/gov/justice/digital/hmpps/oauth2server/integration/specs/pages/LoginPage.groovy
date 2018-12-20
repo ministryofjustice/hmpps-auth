@@ -14,10 +14,11 @@ class LoginPage extends Page {
     }
 
     static content = {
-        headingText { $('#content h1').text() }
-        signInButton { $("button", type: 'submit') }
+        headingText { $('#main-content h1').text() }
+        signInButton { $("input", type: 'submit') }
         termsLink { $("a", id: 'terms') }
-        errorText { $('#content h2').text() }
+        errorText { $('#error-detail').text() }
+        warning { $('#warning').text() }
     }
 
     void loginAs(UserAccount userAccount, String password) {
@@ -25,7 +26,7 @@ class LoginPage extends Page {
         $('form').username = userAccount.username
         $('form').password = password
 
-        assert signInButton.text() == 'Sign in'
+        assert signInButton.value() == 'Sign in'
 
         signInButton.click()
     }
