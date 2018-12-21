@@ -8,11 +8,11 @@ class ClientSummaryPage extends Page {
 
     static at = {
         browser.currentUrl.contains(url)
-        headingText == 'OAuth Server Administration Dashboard'
+        headingText == 'OAuth server administration dashboard'
     }
 
     static content = {
-        headingText { $('#content h1').text() }
+        headingText { $('#main-content h1').text() }
         table { $('table') }
         rows { $('table tbody tr') }
         editButton { $('#edit-apireporting') }

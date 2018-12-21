@@ -12,8 +12,8 @@ class ErrorPage extends Page {
     }
 
     static content = {
-        headingText { $('#content h1').text() }
-        continueButton { $('#login') }
+        headingText { $('#main-content h1').text() }
+        continueButton { $('#continue') }
     }
 
     void accept() {

@@ -1,53 +1,45 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
       xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>OAuth Server Administration Dashboard</title>
+  <title>Administration Dashboard</title>
 </head>
 <body>
-    <div layout:fragment="content" th:remove="tag">
-        <h1 class="heading-large">OAuth Server Administration Dashboard</h1>
-        <div class="pure-u-md-8-12">
-            <span sec:authorize="isAuthenticated()" style="display: inline-block;">
-                <a th:href="@{/logout}">Sign out</a>
-            </span>
-        </div>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <h1 class="govuk-heading-xl">OAuth server administration dashboard</h1>
 
-        <div class="pure-u-md-12-12">
-            <div class="pure-u-md-10 pure-u-md-offset-1" sec:authorize="hasRole('ROLE_OAUTH_ADMIN')">
-                <h2 class="heading-medium">Clients</h2>
-                <table class="table table-bordered row-gutters padding-bottom-40 padding-top">
-                    <thead>
-                        <tr>
-                            <th>Client ID</th>
-                            <th>Scopes</th>
-                            <th>Grant Types</th>
-                            <th>Roles</th>
-                            <th>Token Duration</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="client : ${clientDetails}">
-                            <td th:text="${client.clientId}"></td>
-                            <td th:text="${client.scope}"></td>
-                            <td th:text="${client.authorizedGrantTypes}"></td>
-                            <td th:text="${client.authorities}"></td>
-                            <td th:text="${client.accessTokenValiditySeconds}"></td>
-                            <td>
-                                <a class="edit button pure-u-md-2-2" th:id="'edit-' + ${client.clientId}" th:href="@{/ui/clients/form?client=__${client.clientId}__}">Edit</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                    <tr>
-                        <td colspan="6">
-                            <a class="button pure-u-md-2-2" id="edit-client" th:href="@{/ui/clients/form}">Add Client</a>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
+  <div sec:authorize="hasRole('ROLE_OAUTH_ADMIN')">
+    <h2 class="govuk-heading-m">Clients</h2>
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header" scope="col">Client ID</th>
+        <th class="govuk-table__header" scope="col">Scopes</th>
+        <th class="govuk-table__header" scope="col">Grant Types</th>
+        <th class="govuk-table__header" scope="col">Roles</th>
+        <th class="govuk-table__header" scope="col">Token Duration</th>
+        <th class="govuk-table__header" scope="col"></th>
+      </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+      <tr th:each="client : ${clientDetails}" class="govuk-table__row">
+        <td th:text="${client.clientId}" class="govuk-table__cell"></td>
+        <td th:text="${client.scope}" class="govuk-table__cell"></td>
+        <td th:text="${client.authorizedGrantTypes}" class="govuk-table__cell"></td>
+        <td th:text="${client.authorities}" class="govuk-table__cell"></td>
+        <td th:text="${client.accessTokenValiditySeconds}" class="govuk-table__cell"></td>
+        <td>
+          <a th:id="'edit-' + ${client.clientId}" role="button" class="govuk-button"
+             th:href="@{/ui/clients/form?client=__${client.clientId}__}">Edit</a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <p class="govuk-body">
+      <a class="govuk-button" role="button" id="edit-client" th:href="@{/ui/clients/form}">Add Client</a>
+    </p>
+  </div>
+</div>
 </body>
 </html>

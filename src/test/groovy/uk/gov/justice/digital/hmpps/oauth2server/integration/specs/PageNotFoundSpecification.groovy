@@ -9,8 +9,8 @@ import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.
 
 class PageNotFoundSpecification extends GebReportingSpec {
     def "Page not found page shown when page does not exist"() {
-        given: 'I go to the login page'
-        to LoginPage
+        given: 'I am logged out'
+        browser.go('/auth/logout')
 
         when: 'I go to a page that does not exist'
         browser.go("/auth/pagethatdoesntexist")

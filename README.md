@@ -57,3 +57,10 @@ d77af7e00910        mojdigitalstudio/nomis-oauth2-server:latest   "/bin/sh /app/
 ```bash
 TOKEN=$(curl -X POST "http://localhost:8080/oauth/token?grant_type=password&username=ITAG_USER&password=password" -H 'Authorization: Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA==' | grep access_token | awk -F"\"" '{print $4}')
 ```
+
+#### Update govuk toolkit:
+``` ./get-govuk-frontend.bash <version>```
+
+This will go to github to get the specified version of the front end toolkit.  Very noddy at present, so if the assets have changed at https://github.com/alphagov/govuk-frontend/tree/master/dist/assets/fonts for the specified version in question, then the list in the bash script will need updating to cope.
+
+It will sort out the css references to `/assets` as we run in a `/auth` context instead. 

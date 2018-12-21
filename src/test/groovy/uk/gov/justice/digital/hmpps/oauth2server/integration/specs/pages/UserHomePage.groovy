@@ -7,11 +7,11 @@ class UserHomePage extends Page {
     static url = "/auth/ui"
 
     static at = {
-        headingText == 'OAuth Server Administration Dashboard'
+        headingText == 'OAuth server administration dashboard'
     }
 
     static content = {
-        headingText { $('#content h1').text() }
+        headingText { $('#main-content h1').text() }
         logoutLink { $("a", id: 'logout') }
     }
 

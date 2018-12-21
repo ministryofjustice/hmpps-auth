@@ -12,6 +12,6 @@ class VerifyEmailConfirmPage extends Page {
     }
 
     static content = {
-        headingText { $('#content h1').text() }
+        headingText { $('#main-content h1').text() }
     }
 }
