@@ -1,33 +1,25 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>Page Not Found</title>
+  <title>Page Not Found</title>
 </head>
 <body>
-<div layout:fragment="content" th:remove="tag">
-    <div>
-        <div class="grid-row">
-            <div class="column-two-thirds">
-                <h1 class="heading-large">Page not found</h1>
-            </div>
-        </div>
-        <div>
-            <p>
-                If you typed the web address, check it is correct.
-            </p>
-            <p>
-                If you pasted the web address, check you copied the entire address.
-            </p>
-            <p>
-                If the web address is correct or you selected a link or button, contact us at
-                <a th:href="@{mailto:feedback@digital.justice.gov.uk}">feedback@digital.justice.gov.uk</a> to report the
-                issue.
-            </p>
-            <a class="button" th:href="@{/}" id="continue">OK, continue</a>
-        </div>
-    </div>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <h1 class="govuk-heading-xl">Page not found</h1>
+  <p class="govuk-body">
+    If you typed the web address, check it is correct.
+  </p>
+  <p class="govuk-body">
+    If you pasted the web address, check you copied the entire address.
+  </p>
+  <p class="govuk-body">
+    If the web address is correct or you selected a link or button, contact us at
+    <a href="mailto:feedback@digital.justice.gov.uk">feedback@digital.justice.gov.uk</a> to report the
+    issue.
+  </p>
+  <a class="govuk-button" th:href="@{/}" id="continue">OK, continue</a>
 </div>
 </body>
 </html>

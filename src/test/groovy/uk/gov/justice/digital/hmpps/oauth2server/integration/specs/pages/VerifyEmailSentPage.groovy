@@ -12,7 +12,7 @@ class VerifyEmailSentPage extends Page {
     }
 
     static content = {
-        headingText { $('#content h1').text() }
+        headingText { $('#main-content h1').text() }
         continueButton { $("a", role: 'button') }
         errorText { $('#errors').text() }
     }

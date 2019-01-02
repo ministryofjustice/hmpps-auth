@@ -1,13 +1,19 @@
-#global-header a {
-    border-bottom: 1px solid transparent;
+#navigation {
+  float: right;
 }
 
-#global-header a:focus, #global-header a:hover {
-    color: white;
-    text-decoration: none;
-    border-bottom-color: white;
+#navigation a {
+  color: white;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+#navigation a:focus, #navigation a:hover {
+  color: white;
+  text-decoration: none;
+  border-bottom-color: white;
 }
 
 #loginForm #username {
-    text-transform: uppercase;
+  text-transform: uppercase;
 }

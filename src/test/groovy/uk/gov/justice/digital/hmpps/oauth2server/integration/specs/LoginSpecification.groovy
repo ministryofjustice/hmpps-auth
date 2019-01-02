@@ -136,7 +136,7 @@ class LoginSpecification extends GebReportingSpec {
 
         then: 'I am logged out'
         at LoginPage
-        errorText == 'You have been logged out'
+        warning == 'Warning\nYou have been logged out'
     }
 
     def "I can sign in from another client"() {

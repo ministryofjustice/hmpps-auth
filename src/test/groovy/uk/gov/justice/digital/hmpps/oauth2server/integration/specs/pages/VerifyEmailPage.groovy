@@ -12,7 +12,7 @@ class VerifyEmailPage extends Page {
     }
 
     static content = {
-        headingText { $('#content h1').text() }
+        headingText { $('#main-content h1').text() }
         verifyEmailButton { $("input", type: 'submit') }
         emailInput { $('#email') }
         cancelButton { $("a", id: 'cancel') }

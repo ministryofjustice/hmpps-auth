@@ -1,25 +1,17 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>Error</title>
+  <title>Error</title>
 </head>
 <body>
-<div layout:fragment="content" th:remove="tag">
-    <div>
-        <div class="grid-row">
-            <div class="column-two-thirds">
-                <h1 class="heading-large">Sorry, there is a problem with the service</h1>
-            </div>
-        </div>
-        <div>
-            <p>
-                Try again later.
-            </p>
-            <a class="button" th:href="@{/login}" id="login">OK, continue</a>
-        </div>
-    </div>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <h1 class="govuk-heading-xl">Sorry, there is a problem with the service</h1>
+  <p class="govuk-body">
+    Try again later.
+  </p>
+  <a class="govuk-button" th:href="@{/}" id="continue">OK, continue</a>
 </div>
 </body>
 </html>
