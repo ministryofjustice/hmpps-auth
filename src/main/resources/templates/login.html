@@ -8,7 +8,7 @@
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
   <div th:if="${param.error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
-       tabindex="-1" data-module="error-summary">
+       data-module="error-summary">
     <h2 class="govuk-error-summary__title" id="error-summary">
       There is a problem
     </h2>
@@ -24,7 +24,7 @@
       </div>
     </th:block>
   </div>
-  <div th:if="${param.logout}" class="govuk-warning-text" role="alert" tabindex="-1">
+  <div th:if="${param.logout}" class="govuk-warning-text" role="alert">
     <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
     <strong class="govuk-warning-text__text" id="warning">
       <span class="govuk-warning-text__assistive">Warning</span>You have been logged out

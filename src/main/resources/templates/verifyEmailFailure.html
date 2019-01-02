@@ -7,7 +7,7 @@
 </head>
 <body>
 <div layout:fragment="content" th:remove="tag">
-    <div class="error-summary" role="alert" aria-labelledby="error-summary-heading" tabindex="-1">
+    <div class="error-summary" role="alert" aria-labelledby="error-summary-heading">
         <th:block th:switch="${error}">
             <h2 class="heading-medium error-summary-heading center noMargin" id="errors">
                 <th:block th:case="'invalid'">The verification link is invalid.
