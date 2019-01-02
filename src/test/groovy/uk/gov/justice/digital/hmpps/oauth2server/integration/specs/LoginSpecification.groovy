@@ -28,7 +28,7 @@ class LoginSpecification extends GebReportingSpec {
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginPage
-        errorText == 'Invalid username or password'
+        errorText == 'The username or password you have entered is invalid'
     }
 
     def "Attempt login without credentials"() {
@@ -52,7 +52,7 @@ class LoginSpecification extends GebReportingSpec {
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginPage
-        errorText == 'Invalid username or password'
+        errorText == 'The username or password you have entered is invalid'
     }
 
     def "Attempt login with locked user"() {
@@ -76,7 +76,7 @@ class LoginSpecification extends GebReportingSpec {
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginPage
-        errorText == 'Invalid username or password'
+        errorText == 'The username or password you have entered is invalid'
     }
 
     def "Attempt login with expired user"() {

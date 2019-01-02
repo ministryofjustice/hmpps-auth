@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 
+@Log4j2
 @Service
 @Profile("oracle")
 public class OracleChangePasswordService implements ChangePasswordService {
@@ -28,13 +30,17 @@ public class OracleChangePasswordService implements ChangePasswordService {
                 final var sqlException = (SQLException) e.getCause();
                 if (sqlException.getErrorCode() == 28007) {
                     // password cannot be reused
+                    log.info("Password cannot be reused exception caught: {}", sqlException.getMessage());
                     throw new ReusedPasswordException();
                 }
                 if (sqlException.getErrorCode() == 28003) {
-                    // password validation failure
+                    // password validation failure - should be caught by the front end first
+                    log.error("Password passed controller validation but failed oracle validation: {}",
+                            sqlException.getMessage());
                     throw new PasswordValidationFailureException();
                 }
             }
+            log.error("Found error during changing password", e);
             throw e;
         }
     }
