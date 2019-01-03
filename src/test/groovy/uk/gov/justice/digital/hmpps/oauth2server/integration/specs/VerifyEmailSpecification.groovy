@@ -17,7 +17,7 @@ class VerifyEmailSpecification extends GebReportingSpec {
         when: 'The Verify Email page is displayed'
         at VerifyEmailPage
 
-        and: 'I canncel the verification process'
+        and: 'I cancel the verification process'
         cancel()
 
         then: 'The User Home page is displayed'
@@ -26,7 +26,7 @@ class VerifyEmailSpecification extends GebReportingSpec {
 
     def "A user can verify a previously chosen email"() {
         given: 'I login with a non verified email user'
-        to LoginPage
+        to LoginPage;
         loginAs DM_USER, 'password123456'
 
         when: 'The Verify Email page is displayed'

@@ -56,7 +56,7 @@ public class VerifyEmailController {
                 return null;
             }
             // need to re-verify the email address
-            modelAndView.addObject("email", email.getEmail());
+            modelAndView.addObject("suggestion", email.getEmail());
             return modelAndView;
         }
 
@@ -74,38 +74,41 @@ public class VerifyEmailController {
     }
 
     @PostMapping("/verify-email")
-    public ModelAndView verifyEmail(@RequestParam final String email, final Principal principal, final HttpServletRequest request) {
+    public ModelAndView verifyEmail(@RequestParam(required = false) final String candidate, @RequestParam final String email,
+                                    final Principal principal, final HttpServletRequest request) {
         final var username = principal.getName();
 
-        final var atIndex = StringUtils.indexOf(email, '@');
-        if (atIndex == -1 || !email.matches(".*@.*\\..*") || StringUtils.countMatches(email, '@') > 1) {
-            final var modelAndView = new ModelAndView("verifyEmail", "email", email);
+        final var chosenEmail = (StringUtils.isBlank(candidate) || "other".equals(candidate)) ? email : candidate;
+
+        final var atIndex = StringUtils.indexOf(chosenEmail, '@');
+        if (atIndex == -1 || !chosenEmail.matches(".*@.*\\..*") || StringUtils.countMatches(chosenEmail, '@') > 1) {
+            final var modelAndView = new ModelAndView("verifyEmail", "email", chosenEmail);
             modelAndView.addObject("error", "format");
             return modelAndView;
         }
-        if (!email.matches("[0-9A-Za-z@.'_-]*")) {
-            final var modelAndView = new ModelAndView("verifyEmail", "email", email);
+        if (!chosenEmail.matches("[0-9A-Za-z@.'_-]*")) {
+            final var modelAndView = new ModelAndView("verifyEmail", "email", chosenEmail);
             modelAndView.addObject("error", "characters");
             return modelAndView;
         }
-        if (!referenceCodesService.isValidEmailDomain(email.substring(atIndex + 1))) {
-            final var modelAndView = new ModelAndView("verifyEmail", "email", email);
+        if (!referenceCodesService.isValidEmailDomain(chosenEmail.substring(atIndex + 1))) {
+            final var modelAndView = new ModelAndView("verifyEmail", "email", chosenEmail);
             modelAndView.addObject("error", "domain");
             return modelAndView;
         }
 
         try {
-            final var verifyLink = verifyEmailService.requestVerification(username, email, request.getRequestURL().append("-confirm").toString());
+            final var verifyLink = verifyEmailService.requestVerification(username, chosenEmail, request.getRequestURL().append("-confirm").toString());
 
             final var modelAndView = new ModelAndView("verifyEmailSent");
             if (smokeTestEnabled) {
                 modelAndView.addObject("verifyLink", verifyLink);
             }
-            modelAndView.addObject("email", email);
+            modelAndView.addObject("email", chosenEmail);
             return modelAndView;
         } catch (final NotificationClientException e) {
             log.error("Failed to send email due to", e);
-            final var modelAndView = new ModelAndView("verifyEmail", "email", email);
+            final var modelAndView = new ModelAndView("verifyEmail", "email", chosenEmail);
             modelAndView.addObject("error", "unknownerror");
             return modelAndView;
         }

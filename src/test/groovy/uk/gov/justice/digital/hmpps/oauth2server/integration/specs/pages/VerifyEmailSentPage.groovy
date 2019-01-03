@@ -8,7 +8,7 @@ class VerifyEmailSentPage extends Page {
 
     static at = {
         title == 'Nomis Authentication - Verify Email Sent'
-        headingText == 'Verification Email Sent'
+        headingText == 'Verification email sent'
     }
 
     static content = {
