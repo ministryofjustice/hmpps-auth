@@ -1,36 +1,34 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>Verify Email Sent</title>
+  <title>Verify Email Sent</title>
 </head>
 <body>
-<div layout:fragment="content" th:remove="tag">
-    <div class="pure-u-md-2-3 govuk-box-highlight">
-        <h1 class="heading-large">
-            Verification Email Sent
-        </h1>
-    </div>
-    <div class="pure-g">
-        <div class="pure-u-1 pure-u-md-2-3">
-            <p>
-                An email has been sent to <span id="email" th:text="${email}">email address</span>.
-            </p>
-            <h2 class="heading-small">What happens next</h2>
-            <p>
-                Please check your inbox and click the link in the email to confirm your email address.
-            </p>
-            <div class="pure-u-1 pure-u-md-1-3">
-                <a class="button button-primary" role="button" th:href="@{/verify-email-continue}">Continue</a>
-            </div>
-            <div th:if="${verifyLink}">
-                <br>
-                <code>application.smoketest.enabled</code> environment variable is set.
-                Link that was sent in the email is <a id="verifyLink" th:href="${verifyLink}">here</a>.
-            </div>
-        </div>
-    </div>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <div class="govuk-panel govuk-panel--confirmation">
+    <h1 class="govuk-panel__title">
+      Verification email sent
+    </h1>
+  </div>
+  <div>
+    <p class="govuk-body">
+      An email has been sent to: <strong id="email" th:text="${email}">email address</strong>.
+    </p>
+    <h2 class="govuk-heading-m">What happens next</h2>
+    <p class="govuk-body">
+      Please click the link in the email that we have sent to you to verify your email address.
+    </p>
+    <p class="govuk-body">
+      <a class="govuk-button" role="button" th:href="@{/verify-email-continue}">Continue</a>
+    </p>
+    <p th:if="${verifyLink}" class="govuk-body">
+      <br>
+      <code>application.smoketest.enabled</code> environment variable is set.
+      Link that was sent in the email is <a id="verifyLink" th:href="${verifyLink}">here</a>.
+    </p>
+  </div>
 </div>
 </body>
 </html>

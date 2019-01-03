@@ -63,7 +63,7 @@ public class VerifyEmailControllerTest {
         when(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(userEmail));
         final var modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response);
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
-        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("email", userEmail.getEmail()));
+        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("suggestion", userEmail.getEmail()));
     }
 
     @Test
@@ -86,7 +86,7 @@ public class VerifyEmailControllerTest {
 
     @Test
     public void verifyEmail() {
-        verifyEmailFailure(null, "format");
+        verifyEmailFailure("", "format");
     }
 
     @Test
@@ -120,7 +120,7 @@ public class VerifyEmailControllerTest {
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url"));
         when(verifyEmailService.requestVerification(anyString(), anyString(), anyString())).thenThrow(new NotificationClientException("something went wrong"));
-        final var modelAndView = verifyEmailController.verifyEmail("a@b.com", principal, request);
+        final var modelAndView = verifyEmailController.verifyEmail("a@b.com", null, principal, request);
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
         assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("email", "a@b.com"), MapEntry.entry("error", "unknownerror"));
     }
@@ -132,7 +132,7 @@ public class VerifyEmailControllerTest {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url"));
         final var email = "o'there@b-c.d";
 
-        final var modelAndView = verifyEmailController.verifyEmail(email, principal, request);
+        final var modelAndView = verifyEmailController.verifyEmail("other", email, principal, request);
 
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmailSent");
         assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("verifyLink", "link"), MapEntry.entry("email", email));
@@ -140,7 +140,7 @@ public class VerifyEmailControllerTest {
     }
 
     private void verifyEmailFailure(final String email, final String domain) {
-        final var modelAndView = verifyEmailController.verifyEmail(email, principal, request);
+        final var modelAndView = verifyEmailController.verifyEmail(email, "", principal, request);
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
         assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("email", email), MapEntry.entry("error", domain));
     }

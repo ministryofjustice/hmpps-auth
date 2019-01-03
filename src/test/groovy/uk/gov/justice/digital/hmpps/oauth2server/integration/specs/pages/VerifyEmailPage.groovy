@@ -33,7 +33,7 @@ class VerifyEmailPage extends Page {
 
     void cancel() {
         $('form').email = email
-        assert cancelButton.text() == 'Cancel'
+        assert cancelButton.text() == 'Skip for now'
         cancelButton.click()
     }
 }
