@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile;
 import uk.gov.justice.digital.hmpps.oauth2server.security.*;
 
@@ -49,8 +51,14 @@ public class ChangePasswordController {
     }
 
     @GetMapping("/change-password")
-    public String changePasswordRequest() {
-        return "changePassword";
+    public ModelAndView changePasswordRequest(@RequestParam(required = false) final String errorcurrent,
+                                              @RequestParam(required = false) final String errornew) {
+        final var modelAndView = new ModelAndView("changePassword");
+        // send bad request if password wrong so that browser won't offer to save the password
+        if (StringUtils.isNotBlank(errorcurrent) || StringUtils.isNotBlank(errornew)) {
+            modelAndView.setStatus(HttpStatus.BAD_REQUEST);
+        }
+        return modelAndView;
     }
 
     @PostMapping("/change-password")
@@ -93,7 +101,7 @@ public class ChangePasswordController {
             // return here is not required, since the success handler will have redirected
             return null;
         } catch (final AuthenticationException e) {
-            final String reason = e.getClass().getSimpleName();
+            final var reason = e.getClass().getSimpleName();
             log.info("Caught unexpected {} after change password", reason, e);
             telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", upperUsername, "reason", reason), null);
             // this should have succeeded, but unable to login
