@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
@@ -55,7 +56,23 @@ public class ChangePasswordControllerTest {
 
     @Test
     public void changePasswordRequest() {
-        assertThat(controller.changePasswordRequest()).isEqualTo("changePassword");
+        final var modelAndView = controller.changePasswordRequest(null, " ");
+        assertThat(modelAndView.getViewName()).isEqualTo("changePassword");
+        assertThat(modelAndView.getStatus()).isNull();
+    }
+
+    @Test
+    public void changePasswordRequest_CurrentError() {
+        final var modelAndView = controller.changePasswordRequest("bad", null);
+        assertThat(modelAndView.getViewName()).isEqualTo("changePassword");
+        assertThat(modelAndView.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void changePasswordRequest_NewError() {
+        final var modelAndView = controller.changePasswordRequest(null, "bad");
+        assertThat(modelAndView.getViewName()).isEqualTo("changePassword");
+        assertThat(modelAndView.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
