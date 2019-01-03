@@ -8,6 +8,11 @@
   border-bottom: 1px solid transparent;
 }
 
+/* needed to show navigation in header for ie8 */
+#navigation ul {
+  display: block;
+}
+
 #navigation a:focus, #navigation a:hover {
   color: white;
   text-decoration: none;
