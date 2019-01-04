@@ -43,7 +43,7 @@ public class JwtAuthenticationSuccessHandlerTest {
 
         handler.onAuthenticationSuccess(request, response, new UsernamePasswordAuthenticationToken("user", "pass"));
 
-        verify(redirectStrategy).sendRedirect(request, response, "/ui");
+        verify(redirectStrategy).sendRedirect(request, response, "/");
     }
 
     @Test
@@ -53,7 +53,7 @@ public class JwtAuthenticationSuccessHandlerTest {
         when(verifyEmailService.isNotVerified(anyString())).thenReturn(Boolean.FALSE);
         handler.onAuthenticationSuccess(request, response, new UsernamePasswordAuthenticationToken("user", "pass"));
 
-        verify(redirectStrategy).sendRedirect(request, response, "/ui");
+        verify(redirectStrategy).sendRedirect(request, response, "/");
     }
 
     @Test

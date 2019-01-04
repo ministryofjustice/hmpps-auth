@@ -33,7 +33,7 @@ public class JwtAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
         this.verifyEmailService = verifyEmailService;
         this.verifyEnabled = verifyEnabled;
         setRequestCache(cookieRequestCache);
-        setDefaultTargetUrl("/ui");
+        setDefaultTargetUrl("/");
     }
 
     @Override

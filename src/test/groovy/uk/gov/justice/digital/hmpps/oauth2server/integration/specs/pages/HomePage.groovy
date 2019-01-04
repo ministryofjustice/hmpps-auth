@@ -7,7 +7,7 @@ class HomePage extends Page {
     static url = "/auth"
 
     static at = {
-        headingText == 'Nomis Auth Server'
+        headingText == 'Auth server'
     }
 
     static content = {

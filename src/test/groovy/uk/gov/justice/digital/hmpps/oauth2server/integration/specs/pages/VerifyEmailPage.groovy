@@ -8,7 +8,7 @@ class VerifyEmailPage extends Page {
 
     static at = {
         title == 'Nomis Authentication - Verify Email'
-        headingText == 'Email Address Verification'
+        headingText == 'Email address verification'
     }
 
     static content = {
@@ -28,6 +28,13 @@ class VerifyEmailPage extends Page {
     void verifyExistingEmailAs(String email) {
         assert emailInput.value() == email
         assert verifyEmailButton.value() == 'Verify email'
+        verifyEmailButton.click()
+    }
+
+    void selectExistingEmailAs(String email) {
+        $('#verifyEmailForm').candidate = email
+        assert $('#verifyEmailForm').candidate == email
+        assert verifyEmailButton.value() == 'Save'
         verifyEmailButton.click()
     }
 
