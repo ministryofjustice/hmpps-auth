@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 import geb.spock.GebReportingSpec
 import org.apache.commons.lang3.RandomStringUtils
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangePasswordPage
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.UserHomePage
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.CA_USER
 
@@ -41,7 +41,7 @@ class ChangePasswordSpecification extends GebReportingSpec {
         changePasswordAs 'password123456', 'password1', 'password1'
 
         then: 'My credentials are accepted and I am shown the Home page'
-        at UserHomePage
+        at HomePage
     }
 
     // this test changes it back again so requires previous test to succeed

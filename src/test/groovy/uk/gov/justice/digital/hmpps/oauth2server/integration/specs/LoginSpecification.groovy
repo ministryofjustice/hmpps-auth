@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
 import geb.spock.GebReportingSpec
 import org.apache.commons.lang3.RandomStringUtils
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.UserHomePage
 
@@ -99,7 +100,7 @@ class LoginSpecification extends GebReportingSpec {
         loginAs ITAG_USER, 'password'
 
         then: 'My credentials are accepted and I am shown the Home page'
-        at UserHomePage
+        at HomePage
     }
 
     def "Log in with valid credentials in lower case"() {
@@ -110,7 +111,7 @@ class LoginSpecification extends GebReportingSpec {
         loginAs ITAG_USER_LOWERCASE, 'password'
 
         then: 'My credentials are accepted and I am shown the Home page'
-        at UserHomePage
+        at HomePage
     }
 
     def "View User Home Page once logged in"() {
@@ -129,7 +130,7 @@ class LoginSpecification extends GebReportingSpec {
         given: 'I am logged in'
         to LoginPage
         loginAs ITAG_USER, 'password'
-        at UserHomePage
+        at HomePage
 
         when: "I logout"
         logout()
