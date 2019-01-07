@@ -10,10 +10,10 @@
   <h1 class="govuk-heading-xl">Auth server</h1>
 
   <div class="govuk-grid-row">
-    <h3 class="govuk-heading-m">
-      <a th:href="@{nnUrl}">New NOMIS</a>
+    <h3 class="govuk-heading-m" th:if="${nnUrl}">
+      <a th:href="${nnUrl}">New NOMIS</a>
     </h3>
-    <h3 class="govuk-heading-m">
+    <h3 class="govuk-heading-m" th:if="${hdcUrl}">
       <a th:href="${hdcUrl}">Home Detention Curfew</a>
     </h3>
     <h3 class="govuk-heading-m">
