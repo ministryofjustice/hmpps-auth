@@ -14,13 +14,8 @@
     <th:block th:switch="${error}">
       <div class="govuk-error-summary__body" id="error-detail">
         <th:block th:case="'invalid'">The verification link is invalid.</th:block>
-        <th:block th:case="'notfound'">The verification link is invalid.</th:block>
-        <th:block th:case="'username'">The verification link is invalid.</th:block>
         <th:block th:case="'expired'">The verification link in the email has expired. It is only valid for 24
           hours.
-        </th:block>
-        <th:block th:case="'tokenMismatch'">The verification link is invalid. Only the last verification link
-          will work.
         </th:block>
       </div>
     </th:block>

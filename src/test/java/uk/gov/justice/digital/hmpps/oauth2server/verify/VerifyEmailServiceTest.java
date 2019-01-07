@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
@@ -18,7 +19,6 @@ import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
@@ -27,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.digital.hmpps.oauth2server.verify.UsernameTokenHelperTest.USER_TOKEN_BASE64;
 
 @RunWith(MockitoJUnitRunner.class)
 public class VerifyEmailServiceTest {
@@ -99,20 +98,11 @@ public class VerifyEmailServiceTest {
     }
 
     @Test
-    public void requestVerification_verifyUserInToken() throws NotificationClientException {
-        final var verification = verifyEmailService.requestVerification("user", "email", "url");
-        assertThat(verification).startsWith("url/");
-        final var usernameToken = new UsernameTokenHelper().readUsernameTokenFromEncodedString(verification.substring("url/".length()));
-        assertThat(usernameToken).get().extracting("username").isEqualTo(Collections.singletonList("user"));
-    }
-
-    @Test
     public void requestVerification_verifyToken() throws NotificationClientException {
         final var userEmail = new UserEmail("someuser");
         when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
         final var verification = verifyEmailService.requestVerification("user", "email", "url");
-        final var usernameToken = new UsernameTokenHelper().readUsernameTokenFromEncodedString(verification);
-        assertThat(usernameToken).get().extracting("token").isEqualTo(Collections.singletonList(userEmail.getVerificationToken()));
+        assertThat(verification).isEqualTo(String.format("url/%s", userEmail.getToken()));
     }
 
     @Test
@@ -133,23 +123,17 @@ public class VerifyEmailServiceTest {
     @Test
     public void confirmEmail_happyPath() {
         final var userEmail = new UserEmail("bob");
-        userEmail.setVerificationToken("token");
+        userEmail.setToken(TokenType.VERIFIED, "token");
         userEmail.setTokenExpiry(LocalDateTime.now().plusHours(1));
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
-        final var result = verifyEmailService.confirmEmail(USER_TOKEN_BASE64);
+        when(userEmailRepository.findByTokenTypeAndToken(any(), anyString())).thenReturn(Optional.of(userEmail));
+        final var result = verifyEmailService.confirmEmail("token");
 
         assertThat(result).isEmpty();
         verify(userEmailRepository).save(userEmail);
         assertThat(userEmail.isVerified()).isTrue();
-        assertThat(userEmail.getVerificationToken()).isNull();
+        assertThat(userEmail.getToken()).isNull();
+        assertThat(userEmail.getTokenType()).isNull();
         assertThat(userEmail.getTokenExpiry()).isNull();
-    }
-
-    @Test
-    public void confirmEmail_userNotFound() {
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.empty());
-        final var result = verifyEmailService.confirmEmail(USER_TOKEN_BASE64);
-        assertThat(result).get().isEqualTo("notfound");
     }
 
     @Test
@@ -162,28 +146,18 @@ public class VerifyEmailServiceTest {
     public void confirmEmail_userAlreadyVerified() {
         final var userEmail = new UserEmail("bob");
         userEmail.setVerified(true);
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
-        final var result = verifyEmailService.confirmEmail(USER_TOKEN_BASE64);
+        when(userEmailRepository.findByTokenTypeAndToken(any(), anyString())).thenReturn(Optional.of(userEmail));
+        final var result = verifyEmailService.confirmEmail("retrievedEntity");
         assertThat(result).isEmpty();
-    }
-
-    @Test
-    public void confirmEmail_tokenMismatch() {
-        final var userEmail = new UserEmail("bob");
-        userEmail.setVerificationToken("wrong");
-        userEmail.setTokenExpiry(LocalDateTime.now().plusHours(1));
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
-        final var result = verifyEmailService.confirmEmail(USER_TOKEN_BASE64);
-        assertThat(result).get().isEqualTo("tokenMismatch");
     }
 
     @Test
     public void confirmEmail_expired() {
         final var userEmail = new UserEmail("bob");
-        userEmail.setVerificationToken("token");
+        userEmail.setToken(TokenType.VERIFIED, "token");
         userEmail.setTokenExpiry(LocalDateTime.now().minusSeconds(1));
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
-        final var result = verifyEmailService.confirmEmail(USER_TOKEN_BASE64);
+        when(userEmailRepository.findByTokenTypeAndToken(any(), anyString())).thenReturn(Optional.of(userEmail));
+        final var result = verifyEmailService.confirmEmail("token");
         assertThat(result).get().isEqualTo("expired");
     }
 }
