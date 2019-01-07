@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
@@ -30,7 +31,6 @@ public class VerifyEmailService {
     private final UserService userService;
     private final JdbcTemplate jdbcTemplate;
     private final TelemetryClient telemetryClient;
-    private final UsernameTokenHelper usernameTokenHelper = new UsernameTokenHelper();
     private final NotificationClientApi notificationClient;
     private final String notifyTemplateId;
 
@@ -65,11 +65,9 @@ public class VerifyEmailService {
         final var optionalUserEmail = userEmailRepository.findById(username);
         final var userEmail = optionalUserEmail.orElseGet(() -> new UserEmail(username));
         userEmail.setEmail(email);
-        userEmail.setVerificationToken(UUID.randomUUID().toString());
-        userEmail.setTokenExpiry(LocalDateTime.now().plusDays(1));
+        userEmail.setToken(TokenType.VERIFIED, UUID.randomUUID().toString());
 
-        final var jwt = usernameTokenHelper.createUsernameTokenEncodedString(username, userEmail.getVerificationToken());
-        final var verifyLink = String.format("%s/%s", url, jwt);
+        final var verifyLink = String.format("%s/%s", url, userEmail.getToken());
         final var parameters = Map.of("firstName", firstName, "verifyLink", verifyLink);
 
         try {
@@ -93,29 +91,20 @@ public class VerifyEmailService {
     }
 
     public Optional<String> confirmEmail(final String token) {
-        final var usernameTokenOptional = usernameTokenHelper.readUsernameTokenFromEncodedString(token);
+        final var usernameTokenOptional = userEmailRepository.findByTokenTypeAndToken(TokenType.VERIFIED, token);
         if (usernameTokenOptional.isEmpty()) {
             return trackAndReturnFailureForInvalidToken();
         }
+        final var userEmail = usernameTokenOptional.get();
         final var username = usernameTokenOptional.get().getUsername();
-        final var verificationToken = usernameTokenOptional.get().getToken();
 
-        final var userEmailOptional = userEmailRepository.findById(username);
-        if (userEmailOptional.isEmpty()) {
-            return trackAndReturnFailureForInvalidToken(username, "notfound");
-        }
-
-        final var userEmail = userEmailOptional.get();
         if (userEmail.isVerified()) {
             log.info("Verify email succeeded due to already verified");
             telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
             return Optional.empty();
         }
-        if (!verificationToken.equals(userEmail.getVerificationToken())) {
-            return trackAndReturnFailureForInvalidToken(username, "tokenMismatch");
-        }
         if (userEmail.getTokenExpiry().isBefore(LocalDateTime.now())) {
-            return trackAndReturnFailureForInvalidToken(username, "expired");
+            return trackAndReturnFailureForExpiredToken(username);
         }
 
         markEmailAsVerified(userEmail);
@@ -126,8 +115,7 @@ public class VerifyEmailService {
         // verification token match
         userEmail.setVerified(true);
         // and clear token
-        userEmail.setVerificationToken(null);
-        userEmail.setTokenExpiry(null);
+        userEmail.clearToken();
 
         userEmailRepository.save(userEmail);
 
@@ -141,9 +129,9 @@ public class VerifyEmailService {
         return Optional.of("invalid");
     }
 
-    private Optional<String> trackAndReturnFailureForInvalidToken(final String username, final String reason) {
-        log.info("Verify email failed due to {}", reason);
-        telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", reason, "username", username), null);
-        return Optional.of(reason);
+    private Optional<String> trackAndReturnFailureForExpiredToken(final String username) {
+        log.info("Verify email failed due to expired token");
+        telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", "expired", "username", username), null);
+        return Optional.of("expired");
     }
 }

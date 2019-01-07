@@ -5,10 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -29,16 +26,34 @@ public class UserEmail {
     @Column(name = "verified", nullable = false)
     private boolean verified;
 
-    @Column(name = "verification_token")
-    private String verificationToken;
+    @Column(name = "token")
+    private String token;
 
-    @Column(name = "reset_token")
-    private String resetToken;
+    @Column(name = "token_type")
+    @Enumerated(EnumType.STRING)
+    private TokenType tokenType;
 
     @Column(name = "token_expiry")
     private LocalDateTime tokenExpiry;
 
     public UserEmail(final String username) {
         this.username = username;
+    }
+
+    public enum TokenType {
+        RESET,
+        VERIFIED
+    }
+
+    public void setToken(final TokenType tokenType, final String token) {
+        this.tokenType = tokenType;
+        this.token = token;
+        this.tokenExpiry = LocalDateTime.now().plusDays(1);
+    }
+
+    public void clearToken() {
+        this.tokenType = null;
+        this.token = null;
+        this.tokenExpiry = null;
     }
 }

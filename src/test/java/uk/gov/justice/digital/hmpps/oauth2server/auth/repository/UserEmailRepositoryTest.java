@@ -9,6 +9,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail.TokenType;
 
 import java.time.LocalDateTime;
 
@@ -30,7 +31,7 @@ public class UserEmailRepositoryTest {
         final var entity = new UserEmail();
         entity.setUsername(transientEntity.getUsername());
         entity.setEmail(transientEntity.getEmail());
-        entity.setResetToken(transientEntity.getResetToken());
+        entity.setToken(TokenType.RESET, transientEntity.getToken());
 
         final var persistedEntity = repository.save(entity);
 
@@ -48,7 +49,8 @@ public class UserEmailRepositoryTest {
 
         assertThat(retrievedEntity.getUsername()).isEqualTo(transientEntity.getUsername());
         assertThat(retrievedEntity.getEmail()).isEqualTo(transientEntity.getEmail());
-        assertThat(retrievedEntity.getResetToken()).isEqualTo(transientEntity.getResetToken());
+        assertThat(retrievedEntity.getToken()).isEqualTo(transientEntity.getToken());
+        assertThat(retrievedEntity.getTokenType()).isEqualTo(transientEntity.getTokenType());
     }
 
     @Test
@@ -56,17 +58,26 @@ public class UserEmailRepositoryTest {
         final var retrievedEntity = repository.findById("LOCKED_USER").orElseThrow();
         assertThat(retrievedEntity.getUsername()).isEqualTo("LOCKED_USER");
         assertThat(retrievedEntity.getEmail()).isEqualTo("locked@somewhere.com");
-        assertThat(retrievedEntity.getResetToken()).isEqualTo("reset");
-        assertThat(retrievedEntity.getVerificationToken()).isEqualTo("validate");
+        assertThat(retrievedEntity.getToken()).isEqualTo("reset");
+        assertThat(retrievedEntity.getTokenType()).isEqualTo(TokenType.RESET);
         assertThat(retrievedEntity.getTokenExpiry()).isEqualTo(LocalDateTime.of(2018, 12, 10, 8, 55, 45));
         assertThat(retrievedEntity.isVerified()).isTrue();
+    }
+
+    @Test
+    public void testFindByTokenAndTokenType() {
+        final var retrievedEntity = repository.findByTokenTypeAndToken(TokenType.RESET, "reset").orElseThrow();
+        assertThat(retrievedEntity.getUsername()).isEqualTo("LOCKED_USER");
+        assertThat(retrievedEntity.getEmail()).isEqualTo("locked@somewhere.com");
+        assertThat(retrievedEntity.getToken()).isEqualTo("reset");
+        assertThat(retrievedEntity.getTokenType()).isEqualTo(TokenType.RESET);
     }
 
     private UserEmail transientEntity() {
         final var email = new UserEmail();
         email.setUsername("user");
         email.setEmail("a@b.com");
-        email.setResetToken("reset");
+        email.setToken(TokenType.RESET, "reset");
         return email;
     }
 }
