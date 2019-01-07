@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
-      xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+      xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
   <title>Home</title>
@@ -10,11 +10,15 @@
   <h1 class="govuk-heading-xl">Auth server</h1>
 
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-one-third" sec:authorize="hasRole('ROLE_OAUTH_ADMIN')">
-      <h3 class="govuk-heading-m">
-        <a th:href="@{/ui}">Client Administration</a>
-      </h3>
-    </div>
+    <h3 class="govuk-heading-m">
+      <a th:href="@{nnUrl}">New NOMIS</a>
+    </h3>
+    <h3 class="govuk-heading-m">
+      <a th:href="${hdcUrl}">Home Detention Curfew</a>
+    </h3>
+    <h3 class="govuk-heading-m">
+      <a th:href="@{/ui}">Client Administration</a>
+    </h3>
   </div>
 </div>
 </body>
