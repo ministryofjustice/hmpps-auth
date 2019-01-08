@@ -4,6 +4,27 @@
       layout:decorate="~{fragments/layout}">
 <head>
   <title>Sign in</title>
+
+  <!--[if !IE 8]><!-->
+  <script type="text/javascript">
+    function showHide() {
+      var pwd = document.getElementById('password');
+      var showButton = document.getElementById('show-password');
+      if (pwd.getAttribute('type') === 'password') {
+        pwd.setAttribute('type', 'text');
+        showButton.innerHTML = 'hide';
+      } else {
+        pwd.setAttribute('type', 'password');
+        showButton.innerHTML = 'show';
+      }
+    }
+
+    window.addEventListener('load', function() {
+      document.getElementById('show-password').style.display = 'inline-block';
+    });
+  </script>
+  <!--<![endif]-->
+
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
@@ -41,8 +62,11 @@
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="password">Password</label>
-        <input class="govuk-input govuk-input--width-20" id="password" name="password" type="password"
-               data-element-id="password">
+        <div class="show-password-parent">
+          <input class="govuk-input govuk-input--width-20" id="password" name="password" type="password"
+                 data-element-id="password">
+          <button type="button" onclick="showHide()" id="show-password" class="show-password govuk-button">show</button>
+        </div>
       </div>
     </div>
     <div class="govuk-form-group">
