@@ -7,7 +7,7 @@ class HomePage extends Page {
     static url = "/auth"
 
     static at = {
-        headingText == 'Auth server'
+        headingText == 'Select service'
     }
 
     static content = {

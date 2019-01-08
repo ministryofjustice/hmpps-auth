@@ -6,18 +6,15 @@
   <title>Home</title>
 </head>
 <body>
-<div layout:fragment="content">
-  <h1 class="govuk-heading-xl">Auth server</h1>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <h1 class="govuk-heading-xl">Select service</h1>
 
-  <div class="govuk-grid-row">
+  <div>
     <h3 class="govuk-heading-m" th:if="${nnUrl}">
       <a th:href="${nnUrl}">New NOMIS</a>
     </h3>
     <h3 class="govuk-heading-m" th:if="${hdcUrl}">
       <a th:href="${hdcUrl}">Home Detention Curfew</a>
-    </h3>
-    <h3 class="govuk-heading-m">
-      <a th:href="@{/ui}">Client Administration</a>
     </h3>
   </div>
 </div>
