@@ -26,5 +26,30 @@
 #cancel {
   background-color: #dee0e2;
   color: #0b0c0c;
-  margin-left: 15px;
+}
+
+@media (min-width: 40.0625em) {
+  #cancel {
+    margin-left: 15px;
+  }
+}
+
+.show-password-parent {
+  display: flex;
+}
+
+.show-password {
+  display: none;
+  font-size: 16px;
+  background-color: #dee0e2;
+  color: #0b0c0c;
+  padding: 3px;
+  margin-top: 5px;
+  margin-left: 10px;
+  width: auto;
+}
+
+.show-password:focus, .show-password:hover {
+  background-color: #dee0e2;
+  color: #0b0c0c;
 }
