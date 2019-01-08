@@ -7,7 +7,7 @@ class VerifyEmailConfirmPage extends Page {
     static url = '/auth/verify-email-confirm.'
 
     static at = {
-        title == 'Nomis Authentication - Verify Email Confirmation'
+        title == 'HMPPS Digital Services - Verify Email Confirmation'
         headingText == 'Verification email success'
     }
 

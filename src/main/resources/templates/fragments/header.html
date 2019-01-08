@@ -4,9 +4,9 @@
 <body>
 <th:block th:fragment="header">
   <header class="govuk-header" role="banner" data-module="header">
-    <div class="govuk-header__container govuk-width-container">
-      <div class="govuk-header__logo">
-        <a href="#" class="govuk-header__link govuk-header__link--homepage">
+    <div class="govuk-header__container govuk-width-container" id="header-container">
+      <div class="govuk-header__logo" id="header-logo">
+        <a th:href="@{/}" class="govuk-header__link govuk-header__link--homepage">
           <span class="govuk-header__logotype">
 
             <svg role="presentation" focusable="false" class="govuk-header__logotype-crown"
@@ -18,24 +18,17 @@
                      class="govuk-header__logotype-crown-fallback-image"></image>
             </svg>
             <span class="govuk-header__logotype-text">
-              HMPPS
+              HMPPS Digital Services
             </span>
           </span>
         </a>
       </div>
 
-      <div class="govuk-header__content">
-        <a th:href="@{/}" class="govuk-header__link govuk-header__link--service-name" title="Go to the homepage"
-           id="home">
-          NOMIS Authentication
-        </a>
-
+      <div class="govuk-header__content" id="header-content">
         <nav id="navigation" sec:authorize="isAuthenticated()">
           <ul class="govuk-header__navigation " aria-label="Top Level Navigation">
             <li class="govuk-header__navigation-item govuk-header__navigation-item--active">
-              <span sec:authentication="name"></span>
-            </li>
-            <li class="govuk-header__navigation-item">
+              <span sec:authentication="name" style="margin-right: 5px;"></span>
               <a th:href="@{/logout}" title="Sign out" aria-label="Sign out of NOMIS" id="logout">
                 Sign out
               </a>

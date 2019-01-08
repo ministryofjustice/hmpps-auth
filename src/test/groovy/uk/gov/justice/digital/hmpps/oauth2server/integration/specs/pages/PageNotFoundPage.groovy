@@ -7,7 +7,7 @@ class PageNotFoundPage extends Page {
     static url = '/auth/error/404'
 
     static at = {
-        title == 'Nomis Authentication - Page Not Found'
+        title == 'HMPPS Digital Services - Page Not Found'
         headingText == 'Page not found'
     }
 
