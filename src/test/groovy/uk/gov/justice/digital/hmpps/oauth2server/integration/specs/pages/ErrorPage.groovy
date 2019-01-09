@@ -7,7 +7,7 @@ class ErrorPage extends Page {
     static url = '/auth/error'
 
     static at = {
-        title == 'Nomis Authentication - Error'
+        title == 'HMPPS Digital Services - Error'
         headingText == 'Sorry, there is a problem with the service'
     }
 

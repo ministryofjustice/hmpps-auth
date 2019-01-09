@@ -9,7 +9,7 @@ class LoginPage extends Page {
     static url = '/auth/login'
 
     static at = {
-        title == 'Nomis Authentication - Sign in'
+        title == 'HMPPS Digital Services - Sign in'
         headingText == 'Sign in'
     }
 

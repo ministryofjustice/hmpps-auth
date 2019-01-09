@@ -7,7 +7,7 @@ class VerifyEmailSentPage extends Page {
     static url = '/auth/verify-email'
 
     static at = {
-        title == 'Nomis Authentication - Verify Email Sent'
+        title == 'HMPPS Digital Services - Verify Email Sent'
         headingText == 'Verification email sent'
     }
 

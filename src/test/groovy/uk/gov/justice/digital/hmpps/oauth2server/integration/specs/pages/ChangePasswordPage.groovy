@@ -7,7 +7,7 @@ class ChangePasswordPage extends Page {
     static url = '/auth/change-password'
 
     static at = {
-        title == 'Nomis Authentication - Change Password'
+        title == 'HMPPS Digital Services - Change Password'
         headingText == 'Your password has expired'
     }
 

@@ -7,7 +7,7 @@ class TermsPage extends Page {
     static url = '/auth/terms'
 
     static at = {
-        title == 'Nomis Authentication - Terms and conditions'
+        title == 'HMPPS Digital Services - Terms and conditions'
         headingText == 'Terms and conditions'
     }
 
