@@ -30,10 +30,10 @@ class ChangePasswordSpecification extends GebReportingSpec {
 
         then: 'My credentials are rejected and I am still on the Change Password page'
         at ChangePasswordErrorPage
-        errorText == 'Enter your current password\nEnter a new password\nEnter a confirm new password'
+        errorText == 'Enter your current password\nEnter your new password\nEnter your new password again'
         errorCurrentText == 'Enter your current password'
-        errorNewText == 'Enter a new password'
-        errorConfirmText == 'Enter a confirm new password'
+        errorNewText == 'Enter your new password'
+        errorConfirmText == 'Enter your new password again'
     }
 
     def "Attempt change password with invalid new password"() {
