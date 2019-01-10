@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
 import geb.spock.GebReportingSpec
 import org.apache.commons.lang3.RandomStringUtils
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangePasswordErrorPage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangePasswordPage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
@@ -28,8 +29,28 @@ class ChangePasswordSpecification extends GebReportingSpec {
         changePasswordAs '', '', ''
 
         then: 'My credentials are rejected and I am still on the Change Password page'
-        at ChangePasswordPage
-        errorText == 'Enter your current password'
+        at ChangePasswordErrorPage
+        errorText == 'Enter your current password\nEnter your new password\nEnter your new password again'
+        errorCurrentText == 'Enter your current password'
+        errorNewText == 'Enter your new password'
+        errorConfirmText == 'Enter your new password again'
+    }
+
+    def "Attempt change password with invalid new password"() {
+        given: 'I am on the Change Password page'
+        to username: CA_USER.username, ChangePasswordPage
+
+        when: "I change password without credentials"
+        changePasswordAs 'password123456', 'somepass', 'd'
+
+        then: 'My credentials are rejected and I am still on the Change Password page'
+        at ChangePasswordErrorPage
+        errorText == 'Your password must have both letters and numbers\n' +
+                'Your password must have at least 9 characters\n' +
+                'Your passwords do not match. Enter matching passwords.';
+        errorNewText == 'Your password must have both letters and numbers\n' +
+                'Your password must have at least 9 characters'
+        errorConfirmText == 'Your passwords do not match. Enter matching passwords.'
     }
 
     // this test changes CA_USER password

@@ -78,89 +78,109 @@ public class ChangePasswordControllerTest {
     @Test
     public void changePassword_MissingUsername() throws Exception {
         final var redirect = controller.changePassword("", "pass", "new", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/login?error&reason=missing");
+        assertThat(redirect).isEqualTo("redirect:/login?error=missinguser");
     }
 
     @Test
     public void changePassword_MissingPassword() throws Exception {
         final var redirect = controller.changePassword("bob", "    ", "new", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errorcurrent=missing&username=BOB");
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=BOB&error&errorcurrent=missing");
+    }
+
+    @Test
+    public void changePassword_MissingAllPassword() throws Exception {
+        final var redirect = controller.changePassword("bob", "    ", "", "", request, response);
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=BOB&error&errornew=newmissing&errorconfirm=confirmmissing&errorcurrent=missing");
     }
 
     @Test
     public void changePassword_NotAlphanumeric() throws Exception {
-        final var redirect = controller.changePassword("d", "old", "@fewfewfew", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=alphanumeric&username=D");
+        setupGetUserCallForProfile(null);
+        final var redirect = controller.changePassword("d", "old", "@fewfewfew1", "@fewfewfew1", request, response);
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=D&error&errornew=alphanumeric");
     }
 
     @Test
-    public void changePassword_Blank() throws Exception {
-        setupGetUserCall(null);
+    public void changePassword_NewBlank() throws Exception {
+        setupGetUserCallForProfile(null);
         final var redirect = controller.changePassword("d", "old", "", "", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=alphanumeric&username=D");
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=D&error&errornew=newmissing&errorconfirm=confirmmissing");
+    }
+
+    @Test
+    public void changePassword_ConfirmNewBlank() throws Exception {
+        setupGetUserCallForProfile(null);
+        final var redirect = controller.changePassword("d", "old", "a", "", request, response);
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=D&error&errorconfirm=confirmmissing");
     }
 
     @Test
     public void changePassword_Length() throws Exception {
-        setupGetUserCall(null);
+        setupGetUserCallForProfile(null);
         final var redirect = controller.changePassword("d", "old", "qwerqw12", "qwerqw12", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=length9&username=D");
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=D&error&errornew=length9");
     }
 
     @Test
     public void changePassword_LengthAdmin() throws Exception {
-        setupGetUserCall("TAG_ADMIN");
+        setupGetUserCallForProfile("TAG_ADMIN");
         final var redirect = controller.changePassword("d", "old", "qwerqwerqwe12", "qwerqwerqwe12", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=length14&username=D");
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=D&error&errornew=length14");
     }
 
     @Test
     public void changePassword_IncorrectCurrentPassword() throws Exception {
         when(daoAuthenticationProvider.authenticate(any())).thenThrow(new BadCredentialsException("msg"));
         final var redirect = controller.changePassword("user", "old", "qwerqwerqwe12", "qwerqwerqwe12", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errorcurrent=invalid&username=USER");
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=USER&error&errorcurrent=invalid");
     }
 
     @Test
     public void changePassword_SameAsUsername() throws Exception {
-        final var redirect = controller.changePassword("someuser1", "old", "someuser1", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=username&username=SOMEUSER1");
+        setupGetUserCallForProfile(null);
+        final var redirect = controller.changePassword("someuser1", "old", "someuser1", "someuser1", request, response);
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=SOMEUSER1&error&errornew=username");
     }
 
     @Test
     public void changePassword_ContainsUsername() throws Exception {
-        final var redirect = controller.changePassword("someuser1", "old", "someuser12", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=username&username=SOMEUSER1");
+        setupGetUserCallForProfile(null);
+        final var redirect = controller.changePassword("someuser1", "old", "someuser12", "someuser12", request, response);
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=SOMEUSER1&error&errornew=username");
     }
 
     @Test
     public void changePassword_FourDistinct() throws Exception {
-        final var redirect = controller.changePassword("d", "old", "as1as1as1", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=four&username=D");
+        setupGetUserCallForProfile(null);
+        final var redirect = controller.changePassword("d", "old", "as1as1as1", "as1as1as1", request, response);
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=D&error&errornew=four");
     }
 
     @Test
     public void changePassword_MissingDigits() throws Exception {
-        final var redirect = controller.changePassword("d", "old", "asdasdasdb", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=nodigits&username=D");
+        setupGetUserCallForProfile(null);
+        final var redirect = controller.changePassword("daaa", "old", "asdasdasdb", "asdasdasdb", request, response);
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=DAAA&error&errornew=nodigits");
     }
 
     @Test
     public void changePassword_OnlyDigits() throws Exception {
-        final var redirect = controller.changePassword("d", "old", "1231231234", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=alldigits&username=D");
+        setupGetUserCallForProfile(null);
+        final var redirect = controller.changePassword("d", "old", "1231231234", "1231231234", request, response);
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=D&error&errornew=alldigits");
     }
 
     @Test
     public void changePassword_Mismatch() throws Exception {
+        setupGetUserCallForProfile(null);
         final var redirect = controller.changePassword("user", "old", "password1", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=mismatch&username=USER");
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=USER&error&errorconfirm=mismatch");
     }
 
     @Test
     public void changePassword_AccountLocked() throws Exception {
         final var lockedException = new LockedException("msg");
-        setupGetUserCall(null);
+        setupGetUserCallForProfile(null);
         when(daoAuthenticationProvider.authenticate(any())).thenThrow(lockedException);
         final var redirect = controller.changePassword("user", "old", "password1", "password1", request, response);
         assertThat(redirect).isNull();
@@ -170,24 +190,24 @@ public class ChangePasswordControllerTest {
     @Test
     public void changePassword_AccountExpiredPasswordMismatch() throws Exception {
         final var expiredException = new AccountExpiredException("msg");
-        setupGetUserCall(null);
+        setupGetUserCallForProfile(null);
         when(daoAuthenticationProvider.authenticate(any())).thenThrow(expiredException);
         final var redirect = controller.changePassword("user", "old", "password1", "new", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=mismatch&username=USER");
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=USER&error&errorconfirm=mismatch");
         verifyZeroInteractions(userStateAuthenticationFailureHandler);
     }
 
     @Test
     public void changePassword_ValidationFailure() throws Exception {
-        setupGetUserCall(null);
+        setupGetUserCallForProfile(null);
         doThrow(new PasswordValidationFailureException()).when(changePasswordService).changePassword(anyString(), anyString());
         final var redirect = controller.changePassword("user", "old", "password1", "password1", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=validation&username=USER");
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=USER&error&errornew=validation");
     }
 
     @Test
     public void changePassword_OtherException() {
-        setupGetUserCall(null);
+        setupGetUserCallForProfile(null);
         final var exception = new RuntimeException();
         doThrow(exception).when(changePasswordService).changePassword(anyString(), anyString());
         assertThatThrownBy(
@@ -197,16 +217,16 @@ public class ChangePasswordControllerTest {
 
     @Test
     public void changePassword_ReusedPassword() throws Exception {
-        setupGetUserCall(null);
+        setupGetUserCallForProfile(null);
         doThrow(new ReusedPasswordException()).when(changePasswordService).changePassword(anyString(), anyString());
         final var redirect = controller.changePassword("user", "old", "password1", "password1", request, response);
-        assertThat(redirect).isEqualTo("redirect:/change-password?errornew=reused&username=USER");
+        assertThat(redirect).isEqualTo("redirect:/change-password?username=USER&error&errornew=reused");
     }
 
     @Test
     public void changePassword_Success() throws Exception {
         final var token = new UsernamePasswordAuthenticationToken("bob", "pass");
-        setupGetUserCall(null);
+        setupGetUserCallForProfile(null);
         when(daoAuthenticationProvider.authenticate(any())).thenReturn(token);
         final var redirect = controller.changePassword("user", "old", "password1", "password1", request, response);
         assertThat(redirect).isNull();
@@ -221,10 +241,10 @@ public class ChangePasswordControllerTest {
 
     @Test
     public void changePassword_SuccessAccountExpired() throws Exception {
-        setupGetUserCall(null);
+        setupGetUserCallForProfile(null);
         when(daoAuthenticationProvider.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
         final var redirect = controller.changePassword("user", "old", "password1", "password1", request, response);
-        assertThat(redirect).isEqualTo("redirect:/login?error&reason=changepassword");
+        assertThat(redirect).isEqualTo("redirect:/login?error=changepassword");
         final var authCapture = ArgumentCaptor.forClass(Authentication.class);
         verify(daoAuthenticationProvider, times(2)).authenticate(authCapture.capture());
         final var value = authCapture.getValue();
@@ -233,7 +253,7 @@ public class ChangePasswordControllerTest {
         verify(changePasswordService).changePassword("USER", "password1");
     }
 
-    private void setupGetUserCall(final String profile) {
+    private void setupGetUserCallForProfile(final String profile) {
         final var user = Optional.of(new StaffUserAccount());
         final var detail = new AccountDetail();
         detail.setProfile(profile);

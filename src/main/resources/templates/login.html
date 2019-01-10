@@ -24,43 +24,53 @@
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
-  <div th:if="${param.error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
+  <div th:unless="${#arrays.isEmpty(param.error)}" class="govuk-error-summary" aria-labelledby="error-summary-title"
+       role="alert"
        data-module="error-summary">
     <h2 class="govuk-error-summary__title" id="error-summary">
       There is a problem
     </h2>
-    <th:block th:switch="${#httpServletRequest.getParameter('reason')}">
-      <div class="govuk-error-summary__body" id="error-detail">
-        <th:block th:case="'expired'">Your password has expired</th:block>
-        <th:block th:case="'locked'">Your user account is locked</th:block>
-        <th:block th:case="'missing'">Missing credentials</th:block>
-        <th:block th:case="'changepassword'">Your password has been successfully changed, but we were unable to
-          sign you in. Enter your username and new password to try again.
-        </th:block>
-        <th:block th:case="*">The username or password you have entered is invalid</th:block>
-      </div>
-    </th:block>
+    <div class="govuk-error-summary__body" id="error-detail">
+      <ul class="govuk-list govuk-error-summary__list">
+        <li th:each="error: ${param.error}" th:switch="${error}">
+          <a th:case="'missingpass'" href="#password" th:text="#{login.missingpass}">Missing password</a>
+          <a th:case="*" href="#username" th:text="#{${'login.' + error}}">Username message</a>
+        </li>
+      </ul>
+    </div>
   </div>
   <div th:if="${param.logout}" class="govuk-warning-text" role="alert">
     <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
     <strong class="govuk-warning-text__text" id="warning">
-      <span class="govuk-warning-text__assistive">Warning</span>You have been logged out
+      <span class="govuk-warning-text__assistive">Warning</span>You have been signed out
     </strong>
   </div>
   <form th:action="@{/login}" method="POST" id="loginForm" class="govuk-grid-column-two-thirds">
     <h1 class="govuk-heading-xl">Sign in</h1>
 
     <div>
-      <div class="govuk-form-group">
+      <div th:with="missinguser=${param.error != null and #arrays.contains(param.error, 'missinguser')}"
+           th:class="'govuk-form-group' + (${missinguser} ? ' govuk-form-group--error' : '')">
         <label class="govuk-label" for="username">Username</label>
-        <input class="govuk-input" id="username" name="username" type="text" autofocus="autofocus"
-               data-element-id="username">
+        <span th:if="${missinguser}" id="username-error" class="govuk-error-message" th:text="#{login.missinguser}">
+          Missing user
+        </span>
+        <input
+            th:class="'govuk-input' + (${missinguser} ? ' govuk-input--error' : '')"
+            id="username" name="username" type="text" autofocus="autofocus"
+            data-element-id="username" aria-describedby="username-error">
       </div>
-      <div class="govuk-form-group">
+      <div th:with="missingpass=${param.error != null and #arrays.contains(param.error, 'missingpass')}"
+           th:class="'govuk-form-group' + (${missingpass} ? ' govuk-form-group--error' : '')">
         <label class="govuk-label" for="password">Password</label>
+        <span th:if="${missingpass}" id="password-error" class="govuk-error-message" th:text="#{login.missingpass}">
+          Missing password
+        </span>
         <div class="show-password">
-          <input class="govuk-input" id="password" name="password" type="password"
-                 data-element-id="password">
+          <input
+              th:class="'govuk-input' + (${missingpass} ? ' govuk-input--error' : '')"
+              id="password" name="password" type="password"
+              data-element-id="password" aria-describedby="password-error">
           <button type="button" onclick="showHide()" id="show-password" class="govuk-button">show</button>
         </div>
       </div>
