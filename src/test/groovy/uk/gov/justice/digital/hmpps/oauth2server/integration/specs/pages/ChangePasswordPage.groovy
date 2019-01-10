@@ -14,7 +14,6 @@ class ChangePasswordPage extends Page {
     static content = {
         headingText { $('#main-content h1').text() }
         changePasswordButton { $("input", type: 'submit') }
-        errorText { $('#errorcurrent').text() }
     }
 
     void changePasswordAs(String existingPassword, String newPassword, String confirmNewPassword) {

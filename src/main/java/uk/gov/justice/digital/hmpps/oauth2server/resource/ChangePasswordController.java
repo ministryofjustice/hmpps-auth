@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
+import java.util.StringJoiner;
 
 @Slf4j
 @Controller
@@ -81,10 +82,10 @@ public class ChangePasswordController {
             changePasswordService.changePassword(upperUsername, newPassword);
         } catch (final Exception e) {
             if (e instanceof PasswordValidationFailureException) {
-                return getChangePasswordRedirect(upperUsername, "new", "validation");
+                return getChangePasswordRedirect(upperUsername, "validation");
             }
             if (e instanceof ReusedPasswordException) {
-                return getChangePasswordRedirect(upperUsername, "new", "reused");
+                return getChangePasswordRedirect(upperUsername, "reused");
             }
             // let any other exception bubble up
             throw e;
@@ -115,11 +116,22 @@ public class ChangePasswordController {
         if (StringUtils.isBlank(username)) {
             // something went wrong with login - get them to start again
             log.info("Missing required username for change password");
-            return getLoginRedirect("missing");
+            return getLoginRedirect("missinguser");
+        }
+
+        final var builder = new StringJoiner("&error", "error", "");
+        builder.setEmptyValue("");
+        if (StringUtils.isBlank(newPassword)) {
+            builder.add("new=newmissing");
+        }
+        if (StringUtils.isBlank(confirmPassword)) {
+            builder.add("confirm=confirmmissing");
         }
 
         if (StringUtils.isBlank(password)) {
-            return getChangePasswordRedirect(username, "current", "missing");
+            builder.add("current=missing");
+
+            return getChangePasswordRedirect(username, builder);
         }
 
         // only way to check existing password is to try to authenticate the user
@@ -129,7 +141,7 @@ public class ChangePasswordController {
             // also allow successful authenticate to change password
         } catch (final AuthenticationException e) {
             if (e instanceof BadCredentialsException) {
-                return getChangePasswordRedirect(username, "current", "invalid");
+                return getChangePasswordRedirect(username, builder.add("current=invalid"));
             }
             // anything else apart from an account expired exception is unexpected
             if (!(e instanceof AccountExpiredException)) {
@@ -137,49 +149,62 @@ public class ChangePasswordController {
             }
         }
 
+        // Bomb out now as either new password or confirm new password is missing
+        if (builder.length() > 0) {
+            return getChangePasswordRedirect(username, builder);
+        }
+
+        // user must be present in order for authenticate to work above
+        //noinspection OptionalGetWithoutIsPresent
+        final var user = userService.getUserByUsername(username).get();
+
         // Ensuring alphanumeric will ensure that we can't get SQL Injection attacks - since for oracle the password
         // cannot be used in a prepared statement
         if (!StringUtils.isAlphanumeric(newPassword)) {
-            return getChangePasswordRedirect(username, "new", "alphanumeric");
+            builder.add("new=alphanumeric");
         }
         final var digits = StringUtils.getDigits(newPassword);
         if (digits.length() == 0) {
-            return getChangePasswordRedirect(username, "new", "nodigits");
+            builder.add("new=nodigits");
         }
         if (digits.length() == newPassword.length()) {
-            return getChangePasswordRedirect(username, "new", "alldigits");
+            builder.add("new=alldigits");
         }
         if (StringUtils.containsIgnoreCase(newPassword, username)) {
-            return getChangePasswordRedirect(username, "new", "username");
+            builder.add("new=username");
         }
         if (newPassword.chars().distinct().count() < 4) {
-            return getChangePasswordRedirect(username, "new", "four");
+            builder.add("new=four");
         }
 
         if (!StringUtils.equals(newPassword, confirmPassword)) {
-            return getChangePasswordRedirect(username, "new", "mismatch");
+            builder.add("confirm=mismatch");
+        }
+        if (user.getAccountDetail().getAccountProfile() == AccountProfile.TAG_ADMIN) {
+            if (newPassword.length() < 14) {
+                builder.add("new=length14");
+            }
+        } else if (newPassword.length() < 9) {
+            builder.add("new=length9");
         }
 
-        final var user = userService.getUserByUsername(username);
-        //noinspection OptionalGetWithoutIsPresent
-        if (user.get().getAccountDetail().getAccountProfile() == AccountProfile.TAG_ADMIN && newPassword.length() < 14) {
-            return getChangePasswordRedirect(username, "new", "length14");
-        }
-
-        if (newPassword.length() < 9) {
-            return getChangePasswordRedirect(username, "new", "length9");
-        }
-
-        return null;
+        return builder.length() > 0 ? getChangePasswordRedirect(username, builder) : null;
     }
 
-    private String getChangePasswordRedirect(final String username, final String field, final String reason) {
+    private String getChangePasswordRedirect(final String username, final String reason) {
         telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", reason), null);
-        return String.format("redirect:/change-password?error%s=%s&username=%s", field, reason, username);
+        return String.format("redirect:/change-password?username=%s&error&errornew=%s", username, reason);
+    }
+
+
+    private String getChangePasswordRedirect(final String username, final StringJoiner joiner) {
+        final var params = joiner.toString();
+        telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", params), null);
+        return String.format("redirect:/change-password?username=%s&error&%s", username, params);
     }
 
     private String getLoginRedirect(final String reason) {
-        return String.format("redirect:/login?error&reason=%s", reason);
+        return String.format("redirect:/login?error=%s", reason);
     }
 
     private Authentication authenticate(final String username, final String password) {

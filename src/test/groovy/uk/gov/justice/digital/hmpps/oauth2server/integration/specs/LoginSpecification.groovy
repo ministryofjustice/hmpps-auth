@@ -2,9 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
 import geb.spock.GebReportingSpec
 import org.apache.commons.lang3.RandomStringUtils
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.UserHomePage
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
@@ -28,8 +26,8 @@ class LoginSpecification extends GebReportingSpec {
         loginAs NOT_KNOWN, 'password1'
 
         then: 'My credentials are rejected and I am still on the Login page'
-        at LoginPage
-        errorText == 'The username or password you have entered is invalid'
+        at LoginErrorPage
+        errorText == 'Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.'
     }
 
     def "Attempt login without credentials"() {
@@ -40,8 +38,8 @@ class LoginSpecification extends GebReportingSpec {
         loginAs ITAG_USER, ''
 
         then: 'My credentials are rejected and I am still on the Login page'
-        at LoginPage
-        errorText == 'Missing credentials'
+        at LoginErrorPage
+        errorText == 'Enter your password'
     }
 
     def "Attempt login with invalid credentials"() {
@@ -52,8 +50,8 @@ class LoginSpecification extends GebReportingSpec {
         loginAs ITAG_USER, 'wrong'
 
         then: 'My credentials are rejected and I am still on the Login page'
-        at LoginPage
-        errorText == 'The username or password you have entered is invalid'
+        at LoginErrorPage
+        errorText == 'Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.'
     }
 
     def "Attempt login with locked user"() {
@@ -64,8 +62,8 @@ class LoginSpecification extends GebReportingSpec {
         loginAs LOCKED_USER, 'password123456'
 
         then: 'My credentials are rejected and I am still on the Login page'
-        at LoginPage
-        errorText == 'Your user account is locked'
+        at LoginErrorPage
+        errorText == 'Your account is locked. To unlock it, reset your password on Classic NOMIS.'
     }
 
     def "Attempt login with expired user wrong password"() {
@@ -76,8 +74,8 @@ class LoginSpecification extends GebReportingSpec {
         loginAs EXPIRED_USER, 'wrong'
 
         then: 'My credentials are rejected and I am still on the Login page'
-        at LoginPage
-        errorText == 'The username or password you have entered is invalid'
+        at LoginErrorPage
+        errorText == 'Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.'
     }
 
     def "Attempt login with expired user"() {
@@ -87,9 +85,8 @@ class LoginSpecification extends GebReportingSpec {
         when: "I login with locked user"
         loginAs EXPIRED_USER, 'password123456'
 
-        then: 'My credentials are rejected and I am still on the Login page'
-        at LoginPage
-        errorText == 'Your password has expired'
+        then: 'I am taken to the change password page'
+        at ChangePasswordPage
     }
 
     def "Log in with valid credentials"() {
@@ -137,7 +134,7 @@ class LoginSpecification extends GebReportingSpec {
 
         then: 'I am logged out'
         at LoginPage
-        warning == 'Warning\nYou have been logged out'
+        warning == 'Warning\nYou have been signed out'
     }
 
     def "I can sign in from another client"() {

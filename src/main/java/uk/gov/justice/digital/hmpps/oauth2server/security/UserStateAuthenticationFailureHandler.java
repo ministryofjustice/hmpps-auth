@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.LockedException;
@@ -10,11 +11,11 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
+import java.util.StringJoiner;
 
 @Component
 public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
-    private static final String FAILURE_URL = "/login?error";
+    private static final String FAILURE_URL = "/login";
 
     private final boolean expiredReset;
 
@@ -28,9 +29,9 @@ public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticati
     @Override
     public void onAuthenticationFailure(final HttpServletRequest request, final HttpServletResponse response,
                                         final AuthenticationException exception) throws IOException {
-        final Optional<String> reason;
+        final var builder = new StringJoiner("&error=", "?error=", "");
         if (exception instanceof LockedException) {
-            reason = Optional.of("locked");
+            builder.add("locked");
         } else if (exception instanceof AccountExpiredException) {
             // special handling for expired users and feature switch turned on
             if (expiredReset) {
@@ -38,15 +39,19 @@ public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticati
                 getRedirectStrategy().sendRedirect(request, response, "/change-password?username=" + username);
                 return;
             }
-            reason = Optional.of("expired");
+            builder.add("expired");
         } else if (exception instanceof MissingCredentialsException) {
-            reason = Optional.of("missing");
+            if (StringUtils.isBlank(request.getParameter("username"))) {
+                builder.add("missinguser");
+            }
+            if (StringUtils.isBlank(request.getParameter("password"))) {
+                builder.add("missingpass");
+            }
         } else {
-            reason = Optional.empty();
+            builder.add("invalid");
         }
 
-        final String redirectUrl = FAILURE_URL + reason.map(r -> "&reason=" + r).orElse("");
-
+        final var redirectUrl = FAILURE_URL + builder.toString();
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 }
