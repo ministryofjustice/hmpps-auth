@@ -37,7 +37,7 @@ public class JwtAuthenticationHelper {
         final var keyStoreKeyFactory = new KeyStoreKeyFactory(new ByteArrayResource(Base64.decodeBase64(privateKeyPair)),
                 keystorePassword.toCharArray());
         keyPair = keyStoreKeyFactory.getKeyPair(keystoreAlias);
-        this.expiryTime = properties.getExpiryTime();
+        expiryTime = properties.getExpiryTime();
     }
 
     String createJwt(final Authentication authentication) {
