@@ -8,7 +8,7 @@ class VerifyEmailPage extends Page {
 
     static at = {
         title == 'HMPPS Digital Services - Verify Email'
-        headingText == 'Email address verification'
+        headingText == 'Verify your email address'
     }
 
     static content = {
@@ -21,13 +21,13 @@ class VerifyEmailPage extends Page {
 
     void verifyEmailAs(String email) {
         emailInput = email
-        assert verifyEmailButton.value() == 'Verify email'
+        assert verifyEmailButton.value() == 'Save'
         verifyEmailButton.click()
     }
 
     void verifyExistingEmailAs(String email) {
         assert emailInput.value() == email
-        assert verifyEmailButton.value() == 'Verify email'
+        assert verifyEmailButton.value() == 'Save'
         verifyEmailButton.click()
     }
 
