@@ -13,7 +13,7 @@
 }
 
 /* needed to show navigation in header for ie8 */
-#navigation ul {
+#navigation {
   display: block;
 }
 
