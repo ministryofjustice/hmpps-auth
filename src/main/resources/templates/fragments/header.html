@@ -27,7 +27,7 @@
         <nav>
           <ul id="navigation" class="govuk-header__navigation " aria-label="Top Level Navigation">
             <li class="govuk-header__navigation-item govuk-header__navigation-item--active">
-              <span sec:authentication="name" style="margin-right: 5px;">Name</span>
+              <span sec:authentication="principal.name" id="principal-name">Name</span>
             </li>
             <li class="govuk-header__navigation-item">
               <a th:href="@{/logout}" title="Sign out" aria-label="Sign out of NOMIS" id="logout">Sign out</a>

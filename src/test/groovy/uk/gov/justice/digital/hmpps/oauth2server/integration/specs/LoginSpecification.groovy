@@ -98,6 +98,7 @@ class LoginSpecification extends GebReportingSpec {
 
         then: 'My credentials are accepted and I am shown the Home page'
         at HomePage
+        principalName == 'Itag User'
     }
 
     def "Log in with valid credentials in lower case"() {

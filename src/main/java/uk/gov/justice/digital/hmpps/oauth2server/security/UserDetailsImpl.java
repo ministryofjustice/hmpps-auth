@@ -12,6 +12,7 @@ import java.util.Set;
 @Data
 public class UserDetailsImpl implements UserDetails {
     private final String username;
+    private final String name;
     private boolean enabled;
     private boolean credentialsNonExpired;
     private boolean accountNonLocked;
@@ -20,9 +21,10 @@ public class UserDetailsImpl implements UserDetails {
 
     private final Set<GrantedAuthority> authorities = new HashSet<>();
 
-    public UserDetailsImpl(final String username,
+    public UserDetailsImpl(final String username, final String name,
                            final Collection<GrantedAuthority> authorities) {
         this.username = username;
+        this.name = name;
         this.authorities.addAll(authorities);
     }
 }

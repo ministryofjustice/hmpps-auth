@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.WordUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.GrantedAuthority;
@@ -47,7 +48,9 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(RegExUtils.replaceAll(role.getRole().getCode(), "-", "_"))))
                 .collect(Collectors.toSet());
 
-        final var userDetails = new UserDetailsImpl(username, authorities);
+        final var staff = userByUsername.getStaff();
+        final var name = String.format("%s %s", staff.getFirstName(), staff.getLastName());
+        final var userDetails = new UserDetailsImpl(username, WordUtils.capitalizeFully(name), authorities);
 
         final var accountDetail = userByUsername.getAccountDetail();
         userDetails.setAccountNonExpired(true);

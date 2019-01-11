@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -35,21 +34,22 @@ public class JwtAuthenticationHelper {
                                    @Value("${jwt.keystore.alias:elite2api}") final String keystoreAlias,
                                    final JwtCookieConfigurationProperties properties) {
 
-        final KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(new ByteArrayResource(Base64.decodeBase64(privateKeyPair)),
+        final var keyStoreKeyFactory = new KeyStoreKeyFactory(new ByteArrayResource(Base64.decodeBase64(privateKeyPair)),
                 keystorePassword.toCharArray());
         keyPair = keyStoreKeyFactory.getKeyPair(keystoreAlias);
-        this.expiryTime = properties.getExpiryTime();
+        expiryTime = properties.getExpiryTime();
     }
 
     String createJwt(final Authentication authentication) {
-        final String username = ((UserDetailsImpl) authentication.getPrincipal()).getUsername();
+        final var userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        final var username = userDetails.getUsername();
         log.debug("Creating jwt cookie for user {}", username);
-        final Collection<? extends GrantedAuthority> authorities = Optional.ofNullable(authentication.getAuthorities()).orElse(Collections.emptyList());
-        final String authoritiesAsString = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
+        final var authorities = Optional.ofNullable(authentication.getAuthorities()).orElse(Collections.emptyList());
+        final var authoritiesAsString = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
         return Jwts.builder()
                 .setId(UUID.randomUUID().toString())
                 .setSubject(username)
-                .addClaims(Map.of("authorities", authoritiesAsString))
+                .addClaims(Map.of("authorities", authoritiesAsString, "name", userDetails.getName()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiryTime.toMillis()))
                 .signWith(SignatureAlgorithm.RS256, keyPair.getPrivate())
                 .compact();
@@ -57,19 +57,20 @@ public class JwtAuthenticationHelper {
 
     Optional<UsernamePasswordAuthenticationToken> readAuthenticationFromJwt(final String jwt) {
         try {
-            final Claims body = Jwts.parser()
+            final var body = Jwts.parser()
                     .setSigningKey(keyPair.getPublic())
                     .parseClaimsJws(jwt)
                     .getBody();
-            final String username = body.getSubject();
-            final String authoritiesString = body.get("authorities", String.class);
-            final Collection<? extends GrantedAuthority> authorities = Stream.of(authoritiesString.split(","))
+            final var username = body.getSubject();
+            final var authoritiesString = body.get("authorities", String.class);
+            final var name = Optional.ofNullable(body.get("name", String.class)).orElse(username);
+            final Collection<GrantedAuthority> authorities = Stream.of(authoritiesString.split(","))
                     .filter(StringUtils::isNotEmpty)
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
 
             log.debug("Set authentication for {}", username);
-            return Optional.of(new UsernamePasswordAuthenticationToken(username, null, authorities));
+            return Optional.of(new UsernamePasswordAuthenticationToken(new UserDetailsImpl(username, name, authorities), null, authorities));
         } catch (final ExpiredJwtException eje) {
             // cookie set to expire at same time as JWT so unlikely really get an expired one
             log.info("Expired JWT found for user {}", eje.getClaims().getSubject());
