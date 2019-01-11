@@ -14,6 +14,7 @@ class HomePage extends Page {
         headingText { $('#main-content h1').text() }
         userInfo { $('#userinfo') }
         logoutLink { $("a", id: 'logout') }
+        principalName { $('#principal-name').text() }
     }
 
     void logout() {

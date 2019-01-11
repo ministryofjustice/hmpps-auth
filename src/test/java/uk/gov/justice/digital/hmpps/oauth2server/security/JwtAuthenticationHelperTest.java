@@ -16,17 +16,17 @@ public class JwtAuthenticationHelperTest {
 
     @Test
     public void testReadAndWriteWithoutAuthorities() {
-        final JwtCookieConfigurationProperties properties = new JwtCookieConfigurationProperties();
+        final var properties = new JwtCookieConfigurationProperties();
         properties.setExpiryTime(Duration.ofHours(1));
         final var helper = new JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties);
 
-        final UserDetailsImpl user = new UserDetailsImpl("user", Collections.emptyList());
+        final var user = new UserDetailsImpl("user", "name", Collections.emptyList());
         final var token = new UsernamePasswordAuthenticationToken(user, "pass");
         final var jwt = helper.createJwt(token);
         final var auth = helper.readAuthenticationFromJwt(jwt);
 
         assertThat(auth).isPresent();
-        assertThat(auth.get().getPrincipal()).isEqualTo("user");
+        assertThat(auth.get().getPrincipal()).extracting("username", "name").containsExactly("user", "name");
         assertThat(auth.get().getAuthorities()).isEmpty();
     }
 }

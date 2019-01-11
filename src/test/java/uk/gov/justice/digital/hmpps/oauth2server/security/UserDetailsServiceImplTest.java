@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.security.core.userdetails.UserDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.*;
 
 import java.time.LocalDate;
@@ -37,25 +36,27 @@ public class UserDetailsServiceImplTest {
     @Test
     public void testHappyUserPath() {
 
-        StaffUserAccount user = buildStandardUser("ITAG_USER");
+        final var user = buildStandardUser("ITAG_USER");
         when(userService.getUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
-        UserDetails itagUser = service.loadUserByUsername(user.getUsername());
+        final var itagUser = service.loadUserByUsername(user.getUsername());
 
         assertThat(itagUser).isNotNull();
         assertThat(itagUser.isAccountNonExpired()).isTrue();
         assertThat(itagUser.isAccountNonLocked()).isTrue();
         assertThat(itagUser.isCredentialsNonExpired()).isTrue();
         assertThat(itagUser.isEnabled()).isTrue();
+
+        assertThat(((UserDetailsImpl) itagUser).getName()).isEqualTo("Itag User");
     }
 
     @Test
     public void testLockedUser() {
 
-        StaffUserAccount user = buildLockedUser("LOCKED_USER");
+        final var user = buildLockedUser();
         when(userService.getUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
-        UserDetails itagUser = service.loadUserByUsername(user.getUsername());
+        final var itagUser = service.loadUserByUsername(user.getUsername());
 
         assertThat(itagUser).isNotNull();
         assertThat(itagUser.isAccountNonExpired()).isTrue();
@@ -67,10 +68,10 @@ public class UserDetailsServiceImplTest {
     @Test
     public void testExpiredUser() {
 
-        StaffUserAccount user = buildExpiredUser("EXPIRED_USER");
+        final var user = buildExpiredUser();
         when(userService.getUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
-        UserDetails itagUser = service.loadUserByUsername(user.getUsername());
+        final var itagUser = service.loadUserByUsername(user.getUsername());
 
         assertThat(itagUser).isNotNull();
         assertThat(itagUser.isAccountNonExpired()).isFalse();
@@ -82,10 +83,10 @@ public class UserDetailsServiceImplTest {
     @Test
     public void testExpiredGraceUser() {
 
-        StaffUserAccount user = buildExpiredGraceUser("EXPIRED_USER");
+        final var user = buildExpiredGraceUser();
         when(userService.getUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
-        UserDetails itagUser = service.loadUserByUsername(user.getUsername());
+        final var itagUser = service.loadUserByUsername(user.getUsername());
 
         assertThat(itagUser).isNotNull();
         assertThat(itagUser.isAccountNonExpired()).isTrue();
@@ -97,10 +98,10 @@ public class UserDetailsServiceImplTest {
     @Test
     public void testExpiredLockedUser() {
 
-        StaffUserAccount user = buildExpiredLockedUser("EXPIRED_USER");
+        final var user = buildExpiredLockedUser();
         when(userService.getUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
-        UserDetails itagUser = service.loadUserByUsername(user.getUsername());
+        final var itagUser = service.loadUserByUsername(user.getUsername());
 
         assertThat(itagUser).isNotNull();
         assertThat(itagUser.isAccountNonLocked()).isFalse();
@@ -111,10 +112,10 @@ public class UserDetailsServiceImplTest {
     @Test
     public void testLockedTimedUser() {
 
-        StaffUserAccount user = buildLockedTimedUser("LOCKED_USER");
+        final var user = buildLockedTimedUser();
         when(userService.getUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
-        UserDetails itagUser = service.loadUserByUsername(user.getUsername());
+        final var itagUser = service.loadUserByUsername(user.getUsername());
 
         assertThat(itagUser).isNotNull();
         assertThat(itagUser.isEnabled()).isFalse();
@@ -123,10 +124,10 @@ public class UserDetailsServiceImplTest {
         assertThat(itagUser.isCredentialsNonExpired()).isTrue();
     }
 
-    private StaffUserAccount buildStandardUser(String username) {
-        Staff staff = buildStaff();
+    private StaffUserAccount buildStandardUser(final String username) {
+        final var staff = buildStaff();
 
-        StaffUserAccount userAccount = StaffUserAccount.builder()
+        final var userAccount = StaffUserAccount.builder()
                 .username(username)
                 .type("GENERAL")
                 .caseloads(List.of(
@@ -146,37 +147,37 @@ public class UserDetailsServiceImplTest {
         return userAccount;
     }
 
-    private StaffUserAccount buildExpiredUser(String username) {
-        StaffUserAccount userAccount = buildStandardUser(username);
-        userAccount.setAccountDetail(buildAccountDetail(username, EXPIRED));
+    private StaffUserAccount buildExpiredUser() {
+        final var userAccount = buildStandardUser("EXPIRED_USER");
+        userAccount.setAccountDetail(buildAccountDetail("EXPIRED_USER", EXPIRED));
         return userAccount;
     }
 
-    private StaffUserAccount buildLockedUser(String username) {
-        StaffUserAccount userAccount = buildStandardUser(username);
-        userAccount.setAccountDetail(buildAccountDetail(username, LOCKED));
+    private StaffUserAccount buildLockedUser() {
+        final var userAccount = buildStandardUser("LOCKED_USER");
+        userAccount.setAccountDetail(buildAccountDetail("LOCKED_USER", LOCKED));
         return userAccount;
     }
 
-    private StaffUserAccount buildExpiredLockedUser(String username) {
-        StaffUserAccount userAccount = buildStandardUser(username);
-        userAccount.setAccountDetail(buildAccountDetail(username, EXPIRED_LOCKED));
+    private StaffUserAccount buildExpiredLockedUser() {
+        final var userAccount = buildStandardUser("EXPIRED_USER");
+        userAccount.setAccountDetail(buildAccountDetail("EXPIRED_USER", EXPIRED_LOCKED));
         return userAccount;
     }
 
-    private StaffUserAccount buildLockedTimedUser(String username) {
-        StaffUserAccount userAccount = buildStandardUser(username);
-        userAccount.setAccountDetail(buildAccountDetail(username, LOCKED_TIMED));
+    private StaffUserAccount buildLockedTimedUser() {
+        final var userAccount = buildStandardUser("LOCKED_USER");
+        userAccount.setAccountDetail(buildAccountDetail("LOCKED_USER", LOCKED_TIMED));
         return userAccount;
     }
 
-    private StaffUserAccount buildExpiredGraceUser(String username) {
-        StaffUserAccount userAccount = buildStandardUser(username);
-        userAccount.setAccountDetail(buildAccountDetail(username, EXPIRED_GRACE));
+    private StaffUserAccount buildExpiredGraceUser() {
+        final var userAccount = buildStandardUser("EXPIRED_USER");
+        userAccount.setAccountDetail(buildAccountDetail("EXPIRED_USER", EXPIRED_GRACE));
         return userAccount;
     }
 
-    private AccountDetail buildAccountDetail(String username, AccountStatus status) {
+    private AccountDetail buildAccountDetail(final String username, final AccountStatus status) {
         return AccountDetail.builder()
                 .username(username)
                 .accountStatus(status.getDesc())
@@ -184,7 +185,7 @@ public class UserDetailsServiceImplTest {
                 .build();
     }
 
-    private UserAccessibleCaseload buildUserAccessibleCaseload(String caseloadId, Caseload caseload, String username) {
+    private UserAccessibleCaseload buildUserAccessibleCaseload(final String caseloadId, final Caseload caseload, final String username) {
         return UserAccessibleCaseload.builder()
                 .id(UserCaseloadIdentity.builder()
                         .username(username)
