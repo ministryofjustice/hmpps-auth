@@ -13,13 +13,12 @@
     </h1>
   </div>
   <div>
-    <p class="govuk-body">
-      An email has been sent to: <strong id="email" th:text="${email}">email address</strong>.
-    </p>
     <h2 class="govuk-heading-m">What happens next</h2>
-    <p class="govuk-body">
-      Please click the link in the email that we have sent to you to verify your email address.
-    </p>
+    <ol class="govuk-list govuk-list--number">
+      <li>We've sent an email to <strong id="email" th:text="${email}">email address</strong>.</li>
+      <li>You must click the link in this email to finish verifying your email address.</li>
+      <li>The link is valid for 24 hours.</li>
+    </ol>
     <p class="govuk-body">
       <a class="govuk-button" role="button" th:href="@{/verify-email-continue}">Continue</a>
     </p>

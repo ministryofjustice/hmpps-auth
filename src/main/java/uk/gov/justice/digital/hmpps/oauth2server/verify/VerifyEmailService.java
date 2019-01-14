@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.verify;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.WordUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,7 @@ public class VerifyEmailService {
 
     public String requestVerification(final String username, final String email, final String url) throws NotificationClientException {
         final var user = userService.getUserByUsername(username);
-        final var firstName = user.map(u -> u.getStaff().getFirstName()).orElse(username);
+        final var firstName = user.map(u -> WordUtils.capitalize(u.getStaff().getFirstName())).orElse(username);
         final var optionalUserEmail = userEmailRepository.findById(username);
         final var userEmail = optionalUserEmail.orElseGet(() -> new UserEmail(username));
         userEmail.setEmail(email);
