@@ -13,6 +13,22 @@
 
   <meta name="theme-color" content="#0b0c0c"/>
 
+  <!-- Google Tag Manager -->
+  <script th:if="${@environment.getProperty('application.google.tag.id')} != null">(function(w, d, s, l, i) {
+    w[l] = w[l] || [];
+    w[l].push({
+      'gtm.start':
+        new Date().getTime(), event: 'gtm.js',
+    });
+    var f = d.getElementsByTagName(s)[0],
+      j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+    j.async = true;
+    j.src =
+      'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+    f.parentNode.insertBefore(j, f);
+  })(window, document, 'script', 'dataLayer', '[[${@environment.getProperty("application.google.tag.id")}]]');</script>
+  <!-- End Google Tag Manager -->
+
   <link rel="shortcut icon" sizes="16x16 32x32 48x48" th:href="@{/images/favicon.ico}" type="image/x-icon"/>
   <link rel="apple-touch-icon" sizes="180x180" th:href="@{/images/govuk-apple-touch-icon-180x180.png}">
   <link rel="apple-touch-icon" sizes="167x167" th:href="@{/images/govuk-apple-touch-icon-167x167.png}">
@@ -32,6 +48,13 @@
   <meta property="og:image" th:content="@{/images/govuk-opengraph-image.png}">
 </head>
 <body class="govuk-template__body">
+<!-- Google Tag Manager (noscript) -->
+<noscript th:if="${@environment.getProperty('application.google.tag.id')} != null">
+  <iframe
+      th:src="'https://www.googletagmanager.com/ns.html?id=' + ${@environment.getProperty('application.google.tag.id')}"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<!-- End Google Tag Manager (noscript) -->
 <script>
   document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');
 </script>
