@@ -2,6 +2,20 @@
   border-bottom-color: white;
 }
 
+@media (min-width: 48.0625em) {
+  #header-logo {
+    width: 50%;
+  }
+
+  #header-content {
+    width: 50%;
+  }
+
+  #navigation {
+    float: right;
+  }
+}
+
 #navigation a {
   color: white;
   text-decoration: none;
