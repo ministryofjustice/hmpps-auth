@@ -78,23 +78,36 @@ public class VerifyEmailController {
                                     final Principal principal, final HttpServletRequest request) {
         final var username = principal.getName();
 
-        final var chosenEmail = (StringUtils.isBlank(candidate) || "other".equals(candidate)) ? email : candidate;
+        final var chosenEmail = StringUtils.trim(StringUtils.isBlank(candidate) || "other".equals(candidate) ? email : candidate);
+
+        if (StringUtils.isBlank(chosenEmail)) {
+            return createVerifyEmailError(chosenEmail, "blank");
+        }
 
         final var atIndex = StringUtils.indexOf(chosenEmail, '@');
-        if (atIndex == -1 || !chosenEmail.matches(".*@.*\\..*") || StringUtils.countMatches(chosenEmail, '@') > 1) {
-            final var modelAndView = new ModelAndView("verifyEmail", "email", chosenEmail);
-            modelAndView.addObject("error", "format");
-            return modelAndView;
+        if (atIndex == -1 || !chosenEmail.matches(".*@.*\\..*")) {
+            return createVerifyEmailError(chosenEmail, "format");
+        }
+        final var firstCharacter = chosenEmail.charAt(0);
+        final var lastCharacter = chosenEmail.charAt(chosenEmail.length() - 1);
+        if (firstCharacter == '.' || firstCharacter == '@' ||
+                lastCharacter == '.' || lastCharacter == '@') {
+            return createVerifyEmailError(chosenEmail, "firstlast");
+        }
+        if (chosenEmail.matches(".*\\.@.*") || chosenEmail.matches(".*@\\..*")) {
+            return createVerifyEmailError(chosenEmail, "together");
+        }
+        if (StringUtils.countMatches(chosenEmail, '@') > 1) {
+            return createVerifyEmailError(chosenEmail, "at");
+        }
+        if (StringUtils.containsWhitespace(chosenEmail)) {
+            return createVerifyEmailError(chosenEmail, "white");
         }
         if (!chosenEmail.matches("[0-9A-Za-z@.'_-]*")) {
-            final var modelAndView = new ModelAndView("verifyEmail", "email", chosenEmail);
-            modelAndView.addObject("error", "characters");
-            return modelAndView;
+            return createVerifyEmailError(chosenEmail, "characters");
         }
         if (!referenceCodesService.isValidEmailDomain(chosenEmail.substring(atIndex + 1))) {
-            final var modelAndView = new ModelAndView("verifyEmail", "email", chosenEmail);
-            modelAndView.addObject("error", "domain");
-            return modelAndView;
+            return createVerifyEmailError(chosenEmail, "domain");
         }
 
         try {
@@ -108,10 +121,14 @@ public class VerifyEmailController {
             return modelAndView;
         } catch (final NotificationClientException e) {
             log.error("Failed to send email due to", e);
-            final var modelAndView = new ModelAndView("verifyEmail", "email", chosenEmail);
-            modelAndView.addObject("error", "unknownerror");
-            return modelAndView;
+            return createVerifyEmailError(chosenEmail, "other");
         }
+    }
+
+    private ModelAndView createVerifyEmailError(final String chosenEmail, final String format) {
+        final var modelAndView = new ModelAndView("verifyEmail", "email", chosenEmail);
+        modelAndView.addObject("error", format);
+        return modelAndView;
     }
 
     private void proceedToOriginalUrl(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {

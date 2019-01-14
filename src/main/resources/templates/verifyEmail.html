@@ -12,69 +12,85 @@
     <h2 class="govuk-error-summary__title" id="error-summary">
       There is a problem
     </h2>
-    <div th:switch="${error}" class="govuk-error-summary__body" id="error-detail">
-      <th:block th:case="'format'">Enter your email address in 'name@domain.ext' format</th:block>
-      <th:block th:case="'characters'">Email address can only contain the following characters: 0-9A-Za-z@.'_-
-      </th:block>
-      <th:block th:case="'domain'">Email addresses must be to an approved email domain</th:block>
-      <th:block th:case="*">An error occurred during sending the verification email. Please try again.</th:block>
+    <div class="govuk-error-summary__body" id="error-detail">
+      <ul class="govuk-list govuk-error-summary__list">
+        <li>
+          <a href="#email" th:text="#{${'verifyemail.' + error}}">Verify email message</a>
+        </li>
+      </ul>
     </div>
   </div>
 
   <div role="alert">
-    <h1 class="govuk-heading-xl">Email address verification</h1>
+    <h1 class="govuk-heading-xl">Verify your email address</h1>
     <p class="govuk-body">
-      So that you can reset your own password in future and to send you emails, please verify your email
-      address<span th:unless="${#lists.isEmpty(candidates)}"> or enter a new one</span>.
+      <th:block th:text="${suggestion != null} ? 'Verify' : 'Provide'">Choose</th:block>
+      your email address so you can reset your password and receive emails about your account.
     </p>
   </div>
 
   <form class="form" th:action="@{/verify-email}" method="POST" id="verifyEmailForm">
-    <div th:unless="${#lists.isEmpty(candidates)}" class="govuk-form-group">
-      <div class="govuk-radios govuk-radios--conditional" data-module="radios">
-        <div th:each="candidate, iter: ${candidates}" class="govuk-radios__item">
-          <input th:id="${'candidate' + iter.index}" th:value="${candidate}" class="govuk-radios__input"
-                 name="candidate" type="radio">
-          <label th:for="${'candidate' + iter.index}" th:text="${candidate}" class="govuk-label govuk-radios__label">
-        </div>
-        <div class="govuk-radios__divider">or</div>
-        <div class="govuk-radios__item">
-          <input class="govuk-radios__input" id="candidate-other" name="candidate" type="radio" value="other"
-                 data-aria-controls="conditional-candidate-other">
-          <label class="govuk-label govuk-radios__label" for="candidate-other">
-            Provide a different email address
-          </label>
-        </div>
-        <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-candidate-other">
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="email">
-              Enter new email address
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl" th:unless="${#lists.isEmpty(candidates)}">
+        <h2 class="govuk-fieldset__legend--m">
+          Select your email address
+        </h2>
+      </legend>
+      <div th:unless="${#lists.isEmpty(candidates)}" class="govuk-form-group">
+        <div class="govuk-radios govuk-radios--conditional" data-module="radios">
+          <div th:each="candidate, iter: ${candidates}" class="govuk-radios__item">
+            <input th:id="${'candidate' + iter.index}" th:value="${candidate}" class="govuk-radios__input"
+                   name="candidate" type="radio">
+            <label th:for="${'candidate' + iter.index}" th:text="${candidate}" class="govuk-label govuk-radios__label">
+          </div>
+          <div class="govuk-radios__divider">or</div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="candidate-other" name="candidate" type="radio" value="other"
+                   data-aria-controls="conditional-candidate-other">
+            <label class="govuk-label govuk-radios__label" for="candidate-other">
+              I’d like to provide a different email address
             </label>
-            <input class="govuk-input" id="email" name="email" type="email">
+          </div>
+          <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-candidate-other">
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="email">
+                Enter email address
+              </label>
+              <input class="govuk-input" id="email" name="email" type="email">
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div th:if="${suggestion}">
-      <p class="govuk-body">
-        We've found an existing email address that hasn't been verified yet. Please amend the email
-        address if necessary and we'll send another verification email.
-      </p>
-    </div>
+      <div th:if="${suggestion}">
+        <p class="govuk-body">
+          The following email address is currently linked to your account - you can amend it if it’s wrong.
+        </p>
+      </div>
 
-    <div class="govuk-form-group" th:if="${#lists.isEmpty(candidates)}">
-      <label class="govuk-label" for="email">Email</label>
-      <input th:class="'govuk-input' + (${error} ? ' govuk-input--error' : '')" id="email" name="email" type="text"
-             data-element-id="email" autofocus="autofocus" th:value="${suggestion != null ? suggestion : email}">
-    </div>
+      <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')"
+           th:if="${#lists.isEmpty(candidates)}">
+        <label class="govuk-label" for="email">
+          <th:block th:text="${suggestion == null} ? 'Enter email' : 'Email'"/>
+          address
+        </label>
+        <span th:if="${error}" id="email-error" class="govuk-error-message"
+              th:text="#{${'verifyemail.' + error}}">
+        Missing user
+      </span>
+        <input th:class="'govuk-input' + (${error} ? ' govuk-input--error' : '')" id="email" name="email" type="text"
+               data-element-id="email" autofocus="autofocus" th:value="${suggestion != null ? suggestion : email}"
+               aria-describedby="email-error">
+      </div>
 
-    <div class="govuk-form-group">
-      <input class="govuk-button" id="submit" type="submit" role="button"
-             data-element-id="continue-button" th:value="${#lists.isEmpty(candidates) ? 'Verify email' : 'Save'}">
-      <a class="govuk-button" role="button" id="cancel"
-         th:href="@{/verify-email-continue}" th:text="${#lists.isEmpty(candidates) ? 'Skip for now' : 'Update later'}">Cancel</a>
-    </div>
+      <div class="govuk-form-group">
+        <input class="govuk-button" id="submit" type="submit" role="button"
+               data-element-id="continue-button" value="Save">
+        <a class="govuk-button" role="button" id="cancel"
+           th:href="@{/verify-email-continue}"
+           th:text="${#lists.isEmpty(candidates) ? 'Skip for now' : 'Update later'}">Cancel</a>
+      </div>
+    </fieldset>
   </form>
 </div>
 </body>

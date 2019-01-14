@@ -86,7 +86,7 @@ public class VerifyEmailControllerTest {
 
     @Test
     public void verifyEmail() {
-        verifyEmailFailure("", "format");
+        verifyEmailFailure("", "blank");
     }
 
     @Test
@@ -96,12 +96,47 @@ public class VerifyEmailControllerTest {
 
     @Test
     public void verifyEmail_MultipleAtSigns() {
-        verifyEmailFailure("a@b.@.com", "format");
+        verifyEmailFailure("a@b.fred@joe.com", "at");
     }
 
     @Test
     public void verifyEmail_NoExtension() {
         verifyEmailFailure("a@bee", "format");
+    }
+
+    @Test
+    public void verifyEmail_FirstLastStopFirst() {
+        verifyEmailFailure(".a@bee.com", "firstlast");
+    }
+
+    @Test
+    public void verifyEmail_FirstLastStopLast() {
+        verifyEmailFailure("a@bee.com.", "firstlast");
+    }
+
+    @Test
+    public void verifyEmail_FirstLastAtFirst() {
+        verifyEmailFailure("@a@bee.com", "firstlast");
+    }
+
+    @Test
+    public void verifyEmail_FirstLastAtLast() {
+        verifyEmailFailure("a@bee.com@", "firstlast");
+    }
+
+    @Test
+    public void verifyEmail_TogetherAtBefore() {
+        verifyEmailFailure("a@.com", "together");
+    }
+
+    @Test
+    public void verifyEmail_TogetherAtAfter() {
+        verifyEmailFailure("a.@joe.com", "together");
+    }
+
+    @Test
+    public void verifyEmail_White() {
+        verifyEmailFailure("a@be\te.com", "white");
     }
 
     @Test
@@ -122,7 +157,7 @@ public class VerifyEmailControllerTest {
         when(verifyEmailService.requestVerification(anyString(), anyString(), anyString())).thenThrow(new NotificationClientException("something went wrong"));
         final var modelAndView = verifyEmailController.verifyEmail("a@b.com", null, principal, request);
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
-        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("email", "a@b.com"), MapEntry.entry("error", "unknownerror"));
+        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("email", "a@b.com"), MapEntry.entry("error", "other"));
     }
 
     @Test
