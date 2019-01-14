@@ -94,7 +94,7 @@ public class VerifyEmailServiceTest {
         final var verification = verifyEmailService.requestVerification("user", "email", "url");
         verify(notificationClient).sendEmail(eq("templateId"), eq("email"), mapCaptor.capture(), eq(null));
         final var params = mapCaptor.getValue();
-        assertThat(params).containsEntry("firstName", "bob").containsEntry("verifyLink", verification);
+        assertThat(params).containsEntry("firstName", "Bob").containsEntry("verifyLink", verification);
     }
 
     @Test
