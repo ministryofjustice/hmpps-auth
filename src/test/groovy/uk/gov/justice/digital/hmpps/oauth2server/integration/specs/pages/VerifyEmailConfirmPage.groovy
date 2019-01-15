@@ -8,7 +8,7 @@ class VerifyEmailConfirmPage extends Page {
 
     static at = {
         title == 'HMPPS Digital Services - Verify Email Confirmation'
-        headingText == 'Verification email success'
+        headingText == 'Email address verified'
     }
 
     static content = {
