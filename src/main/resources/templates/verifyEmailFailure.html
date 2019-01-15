@@ -8,24 +8,17 @@
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
   <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="error-summary">
-    <h2 class="govuk-error-summary__title" id="error-summary">
-      There is a problem
-    </h2>
     <th:block th:switch="${error}">
       <div class="govuk-error-summary__body" id="error-detail">
-        <th:block th:case="'invalid'">We were unable to verify your email address. We cannot find your account from the
-          verification link.
+        <th:block th:case="'invalid'">This link is invalid. You'll need to sign in and confirm your email again so we
+          can send you a new link.
         </th:block>
-        <th:block th:case="'expired'">We were unable to verify your email address. The link in the email has now
-          expired. It is only valid for 24 hours.
+        <th:block th:case="'expired'">This link has expired. You'll need to sign in and confirm your email again so we
+          can send you a new link.
         </th:block>
       </div>
     </th:block>
   </div>
-
-  <p class="govuk-body">
-    Please sign in to confirm your email address and receive a new verification link.
-  </p>
 </div>
 </body>
 </html>
