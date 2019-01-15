@@ -48,6 +48,27 @@ public class UserEmailRepositoryTest {
     }
 
     @Test
+    public void persistUserWithoutEmail() {
+        final var transientEntity = new UserEmail("userb");
+        final var persistedEntity = repository.save(transientEntity);
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+
+        assertThat(persistedEntity.getUsername()).isNotNull();
+
+        TestTransaction.start();
+
+        final var retrievedEntity = repository.findById(transientEntity.getUsername()).orElseThrow();
+
+        // equals only compares the business key columns
+        assertThat(retrievedEntity).isEqualTo(transientEntity);
+
+        assertThat(retrievedEntity.getUsername()).isEqualTo(transientEntity.getUsername());
+        assertThat(retrievedEntity.getEmail()).isNull();
+    }
+
+    @Test
     public void givenAnExistingUserTheyCanBeRetrieved() {
         final var retrievedEntity = repository.findById("LOCKED_USER").orElseThrow();
         assertThat(retrievedEntity.getUsername()).isEqualTo("LOCKED_USER");

@@ -7,3 +7,5 @@ create table user_token
   token_expiry    DATETIME2,
   PRIMARY KEY (token)
 );
+
+alter table user_email alter column email VARCHAR (240) NULL;

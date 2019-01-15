@@ -22,7 +22,7 @@ public class UserEmail {
     @Column(name = "username", nullable = false)
     private String username;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email")
     private String email;
 
     @Column(name = "verified", nullable = false)
