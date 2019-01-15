@@ -21,7 +21,7 @@ public class UserRetriesRepositoryTest {
     private UserRetriesRepository repository;
 
     @Test
-    public void givenATransientEntityItCanBePeristed() {
+    public void givenATransientEntityItCanBePersisted() {
 
         final var transientEntity = transientEntity();
 

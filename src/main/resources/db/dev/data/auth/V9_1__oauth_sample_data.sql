@@ -13,12 +13,15 @@ INSERT INTO oauth_client_details (client_id, access_token_validity, additional_i
 
 INSERT INTO user_retries (username, retry_count) VALUES ('LOCKED_USER', 5);
 
-INSERT INTO user_email (username, email, token, token_type, verified, token_expiry)
-VALUES ('LOCKED_USER', 'locked@somewhere.com', 'reset', 'RESET', 'true', '2018-12-10 08:55:45');
 INSERT INTO user_email (username, email, verified)
-VALUES ('CA_USER', 'ca_user@digital.justice.gov.uk', 'true'),
+VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
+  ('CA_USER', 'ca_user@digital.justice.gov.uk', 'true')
+  ,
   ('ITAG_USER', 'itag_user@digital.justice.gov.uk', 'true')
   ,
   ('ITAG_USER_ADM', 'itag_user_adm@digital.justice.gov.uk', 'true')
   ,
   ('DM_USER', 'dm_user@digital.justice.gov.uk', 'false');
+
+INSERT INTO user_token (token, token_type, token_expiry, username)
+VALUES ('reset', 'RESET', '2018-12-10 08:55:45', 'LOCKED_USER');
