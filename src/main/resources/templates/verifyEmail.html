@@ -15,7 +15,8 @@
     <div class="govuk-error-summary__body" id="error-detail">
       <ul class="govuk-list govuk-error-summary__list">
         <li>
-          <a href="#email" th:text="#{${'verifyemail.' + error}}">Verify email message</a>
+          <a th:href="${error == 'noselection' ? '#candidate0' : '#email'}" th:text="#{${'verifyemail.' + error}}">Verify
+            email message</a>
         </li>
       </ul>
     </div>
@@ -36,8 +37,11 @@
           Select your email address
         </h2>
       </legend>
-      <div th:unless="${#lists.isEmpty(candidates)}" class="govuk-form-group">
+      <div th:unless="${#lists.isEmpty(candidates)}"
+           th:class="'govuk-form-group' + (${error == 'noselection'} ? ' govuk-form-group--error' : '')">
         <div class="govuk-radios govuk-radios--conditional" data-module="radios">
+          <span th:if="${error}" id="selection-error" class="govuk-error-message"
+                th:text="#{${'verifyemail.' + error}}">No error</span>
           <div th:each="candidate, iter: ${candidates}" class="govuk-radios__item">
             <input th:id="${'candidate' + iter.index}" th:value="${candidate}" class="govuk-radios__input"
                    name="candidate" type="radio">
@@ -70,6 +74,7 @@
 
       <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')"
            th:if="${#lists.isEmpty(candidates)}">
+        <input type="hidden" id="candidate" value="other" name="candidate"/>
         <label class="govuk-label" for="email">
           <th:block th:text="${suggestion == null} ? 'Enter email' : 'Email'"/>
           address
