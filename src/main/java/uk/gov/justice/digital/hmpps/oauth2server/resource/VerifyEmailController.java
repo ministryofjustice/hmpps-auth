@@ -113,7 +113,7 @@ public class VerifyEmailController {
         if (StringUtils.containsWhitespace(chosenEmail)) {
             return createVerifyEmailError(chosenEmail, "white");
         }
-        if (!chosenEmail.matches("[0-9A-Za-z@.'_-]*")) {
+        if (!chosenEmail.matches("[0-9A-Za-z@.'_\\-+]*")) {
             return createVerifyEmailError(chosenEmail, "characters");
         }
         if (!referenceCodesService.isValidEmailDomain(chosenEmail.substring(atIndex + 1))) {

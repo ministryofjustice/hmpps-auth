@@ -171,7 +171,7 @@ public class VerifyEmailControllerTest {
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         when(verifyEmailService.requestVerification(anyString(), anyString(), anyString())).thenReturn("link");
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url"));
-        final var email = "o'there@b-c.d";
+        final var email = "o'there+bob@b-c.d";
 
         final var modelAndView = verifyEmailController.verifyEmail("other", email, principal, request, response);
 
