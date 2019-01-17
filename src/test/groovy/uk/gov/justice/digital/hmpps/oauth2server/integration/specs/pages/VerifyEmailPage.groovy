@@ -27,7 +27,7 @@ class VerifyEmailPage extends Page {
 
     void verifyExistingEmailAs(String email) {
         assert emailInput.value() == email
-        assert verifyEmailButton.value() == 'Save'
+        assert verifyEmailButton.value() == 'Resend email'
         verifyEmailButton.click()
     }
 
