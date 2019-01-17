@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
@@ -17,12 +16,9 @@ import java.util.StringJoiner;
 public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
     private static final String FAILURE_URL = "/login";
 
-    private final boolean expiredReset;
 
-    public UserStateAuthenticationFailureHandler(
-            @Value("${application.expired-reset.enabled}") final boolean expiredReset) {
+    public UserStateAuthenticationFailureHandler() {
         super(FAILURE_URL);
-        this.expiredReset = expiredReset;
         setAllowSessionCreation(false);
     }
 
@@ -34,12 +30,9 @@ public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticati
             builder.add("locked");
         } else if (exception instanceof AccountExpiredException) {
             // special handling for expired users and feature switch turned on
-            if (expiredReset) {
-                final var username = request.getParameter("username").toUpperCase();
-                getRedirectStrategy().sendRedirect(request, response, "/change-password?username=" + username);
-                return;
-            }
-            builder.add("expired");
+            final var username = request.getParameter("username").toUpperCase();
+            getRedirectStrategy().sendRedirect(request, response, "/change-password?username=" + username);
+            return;
         } else if (exception instanceof MissingCredentialsException) {
             if (StringUtils.isBlank(request.getParameter("username"))) {
                 builder.add("missinguser");
