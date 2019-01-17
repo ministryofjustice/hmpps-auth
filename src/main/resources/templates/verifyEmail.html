@@ -68,7 +68,8 @@
 
       <div th:if="${suggestion}">
         <p class="govuk-body">
-          The following email address is currently linked to your account - you can amend it if it’s wrong.
+          We've found an existing email address that hasn't been verified yet. Please amend the email address if
+          necessary and we'll send another verification email.
         </p>
       </div>
 
@@ -89,8 +90,8 @@
       </div>
 
       <div class="govuk-form-group">
-        <input class="govuk-button" id="submit" type="submit" role="button"
-               data-element-id="continue-button" value="Save">
+        <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="continue-button"
+               th:value="${suggestion != null ? 'Resend email' : 'Save'}">
         <a class="govuk-button" role="button" id="cancel"
            th:href="@{/verify-email-continue}"
            th:text="${#lists.isEmpty(candidates) ? 'Skip for now' : 'Update later'}">Cancel</a>
