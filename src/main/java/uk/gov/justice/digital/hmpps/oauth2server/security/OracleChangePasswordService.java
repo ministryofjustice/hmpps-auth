@@ -24,7 +24,7 @@ public class OracleChangePasswordService implements ChangePasswordService {
     @Transactional
     public void changePassword(final String username, final String password) {
         try {
-            jdbcTemplate.update(String.format("ALTER USER %s IDENTIFIED BY %s", username, password));
+            jdbcTemplate.update(String.format("ALTER USER %s IDENTIFIED BY \"%s\"", username, password));
         } catch (final DataAccessException e) {
             if (e.getCause() instanceof SQLException) {
                 final var sqlException = (SQLException) e.getCause();

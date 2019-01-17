@@ -132,7 +132,7 @@ public class VerifyEmailServiceTest {
     private StaffUserAccount getStaffUserAccountForBob() {
         final var staffUserAccount = new StaffUserAccount();
         final var staff = new Staff();
-        staff.setFirstName("bob");
+        staff.setFirstName("bOb");
         staffUserAccount.setStaff(staff);
         return staffUserAccount;
     }

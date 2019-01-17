@@ -42,8 +42,13 @@ public class VerifyEmailController {
     }
 
     @GetMapping("/verify-email")
-    public ModelAndView verifyEmailRequest(final Principal principal, final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
+    public ModelAndView verifyEmailRequest(final Principal principal, final HttpServletRequest request, final HttpServletResponse response,
+                                           @RequestParam(required = false) final String error)
+            throws IOException, ServletException {
         final var modelAndView = new ModelAndView("verifyEmail");
+        if (StringUtils.isNotBlank(error)) {
+            modelAndView.addObject("error", error);
+        }
 
         // Firstly check to see if they have an email address
         final var username = principal.getName();
@@ -75,8 +80,13 @@ public class VerifyEmailController {
 
     @PostMapping("/verify-email")
     public ModelAndView verifyEmail(@RequestParam(required = false) final String candidate, @RequestParam final String email,
-                                    final Principal principal, final HttpServletRequest request) {
+                                    final Principal principal, final HttpServletRequest request, final HttpServletResponse response)
+            throws IOException, ServletException {
         final var username = principal.getName();
+
+        if (StringUtils.isEmpty(candidate)) {
+            return verifyEmailRequest(principal, request, response, "noselection");
+        }
 
         final var chosenEmail = StringUtils.trim(StringUtils.isBlank(candidate) || "other".equals(candidate) ? email : candidate);
 
@@ -103,7 +113,7 @@ public class VerifyEmailController {
         if (StringUtils.containsWhitespace(chosenEmail)) {
             return createVerifyEmailError(chosenEmail, "white");
         }
-        if (!chosenEmail.matches("[0-9A-Za-z@.'_-]*")) {
+        if (!chosenEmail.matches("[0-9A-Za-z@.'_\\-+]*")) {
             return createVerifyEmailError(chosenEmail, "characters");
         }
         if (!referenceCodesService.isValidEmailDomain(chosenEmail.substring(atIndex + 1))) {

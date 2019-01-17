@@ -70,4 +70,16 @@ class VerifyEmailSpecification extends GebReportingSpec {
         then:
         at VerifyEmailConfirmPage
     }
+
+    def "A user is asked to sign in again if the verification link is invalid"() {
+        given: 'I have a verify link'
+        String verifyLink = "/auth/verify-email-confirm/someinvalidtoken"
+
+        when: 'I browse to the link'
+        browser.go verifyLink
+
+        then:
+        at VerifyEmailErrorPage
+        errorDetail.startsWith('This link is invalid')
+    }
 }

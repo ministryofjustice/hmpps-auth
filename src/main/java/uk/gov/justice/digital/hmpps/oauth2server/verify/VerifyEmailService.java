@@ -66,7 +66,7 @@ public class VerifyEmailService {
 
     public String requestVerification(final String username, final String email, final String url) throws NotificationClientException {
         final var user = userService.getUserByUsername(username);
-        final var firstName = user.map(u -> WordUtils.capitalize(u.getStaff().getFirstName())).orElse(username);
+        final var firstName = user.map(u -> WordUtils.capitalizeFully(u.getStaff().getFirstName())).orElse(username);
         final var optionalUserEmail = userEmailRepository.findById(username);
         final var userEmail = optionalUserEmail.orElseGet(() -> new UserEmail(username));
         userEmail.setEmail(email);
