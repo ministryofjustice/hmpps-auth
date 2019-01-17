@@ -79,6 +79,12 @@
       <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="continue-button"
              value="Sign in">
     </div>
+    <div class="govuk-form-group" th:if="${resetPasswordEnabled}">
+      <h2 class="govuk-heading-m">Problems signing in</h2>
+      <ul class="govuk-list">
+        <li><a th:href="@{/reset-password}" id="forgotten-password">I have forgotten my password</a></li>
+      </ul>
+    </div>
   </form>
   <details class="govuk-details govuk-form-group">
     <summary class="govuk-details__summary">

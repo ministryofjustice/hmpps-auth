@@ -41,6 +41,10 @@ public class UserToken {
         this.tokenExpiry = tokenType == TokenType.CHANGE ? now.plusMinutes(30) : now.plusDays(1);
     }
 
+    public boolean hasTokenExpired() {
+        return tokenExpiry.isBefore(LocalDateTime.now());
+    }
+
     public enum TokenType {
         RESET,
         VERIFIED,

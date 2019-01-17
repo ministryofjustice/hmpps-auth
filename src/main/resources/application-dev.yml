@@ -20,6 +20,8 @@ application:
     enabled: true
   verify-email:
     enabled: true
+  reset-password:
+    enabled: true
 
   # test key which doesn't send emails, but is automatically accepted by notify
   notify:

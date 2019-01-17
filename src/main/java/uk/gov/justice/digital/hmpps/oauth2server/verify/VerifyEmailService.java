@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -114,7 +113,7 @@ public class VerifyEmailService {
             telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
             return Optional.empty();
         }
-        if (userToken.getTokenExpiry().isBefore(LocalDateTime.now())) {
+        if (userToken.hasTokenExpired()) {
             return trackAndReturnFailureForExpiredToken(username);
         }
 

@@ -15,6 +15,8 @@ import java.sql.SQLException;
 @Service
 @Profile("oracle")
 public class OracleChangePasswordService implements ChangePasswordService {
+    private static final String CHANGE_PASSWORD_SQL = "ALTER USER %s IDENTIFIED BY \"%s\"";
+    private static final String CHANGE_PASSWORD_UNLOCK_SQL = CHANGE_PASSWORD_SQL + " ACCOUNT UNLOCK";
     private final JdbcTemplate jdbcTemplate;
 
     public OracleChangePasswordService(@Qualifier("dataSource") final DataSource dataSource) {
@@ -22,9 +24,20 @@ public class OracleChangePasswordService implements ChangePasswordService {
     }
 
     @Transactional
+    @Override
     public void changePassword(final String username, final String password) {
+        changePassword(username, password, CHANGE_PASSWORD_SQL);
+    }
+
+    @Transactional
+    @Override
+    public void changePasswordWithUnlock(final String username, final String password) {
+        changePassword(username, password, CHANGE_PASSWORD_UNLOCK_SQL);
+    }
+
+    private void changePassword(final String username, final String password, final String template) {
         try {
-            jdbcTemplate.update(String.format("ALTER USER %s IDENTIFIED BY \"%s\"", username, password));
+            jdbcTemplate.update(String.format(template, username, password));
         } catch (final DataAccessException e) {
             if (e.getCause() instanceof SQLException) {
                 final var sqlException = (SQLException) e.getCause();

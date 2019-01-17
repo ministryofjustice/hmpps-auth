@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -14,6 +15,11 @@ import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class LoginController {
+    private final boolean resetPasswordEnabled;
+
+    public LoginController(@Value("${application.reset-password.enabled}") final boolean resetPasswordEnabled) {
+        this.resetPasswordEnabled = resetPasswordEnabled;
+    }
 
     @GetMapping("/login")
     public ModelAndView loginPage(@RequestParam(required = false) final String error) {
@@ -22,6 +28,7 @@ public class LoginController {
         if (StringUtils.isNotBlank(error)) {
             modelAndView.setStatus(HttpStatus.BAD_REQUEST);
         }
+        modelAndView.addObject("resetPasswordEnabled", resetPasswordEnabled);
         return modelAndView;
     }
 

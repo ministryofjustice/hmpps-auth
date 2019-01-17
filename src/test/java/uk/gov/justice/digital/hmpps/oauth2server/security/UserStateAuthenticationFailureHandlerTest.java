@@ -26,11 +26,11 @@ public class UserStateAuthenticationFailureHandlerTest {
     @Mock
     private RedirectStrategy redirectStrategy;
 
-    private UserStateAuthenticationFailureHandler handler;
+    private final UserStateAuthenticationFailureHandler handler = new UserStateAuthenticationFailureHandler();
 
     @Before
     public void setUp() {
-        setupHandler(false);
+        setupHandler();
     }
 
     @Test
@@ -41,16 +41,8 @@ public class UserStateAuthenticationFailureHandlerTest {
     }
 
     @Test
-    public void onAuthenticationFailure_expired() throws IOException {
-        handler.onAuthenticationFailure(request, response, new AccountExpiredException("msg"));
-
-        verify(redirectStrategy).sendRedirect(request, response, "/login?error=expired");
-    }
-
-    @Test
     public void onAuthenticationFailure_expiredResetEnabled() throws IOException {
         when(request.getParameter("username")).thenReturn("bob");
-        setupHandler(true);
         handler.onAuthenticationFailure(request, response, new AccountExpiredException("msg"));
 
         verify(redirectStrategy).sendRedirect(request, response, "/change-password?username=BOB");
@@ -88,8 +80,7 @@ public class UserStateAuthenticationFailureHandlerTest {
         verify(redirectStrategy).sendRedirect(request, response, "/login?error=invalid");
     }
 
-    private void setupHandler(final boolean expiredReset) {
-        handler = new UserStateAuthenticationFailureHandler(expiredReset);
+    private void setupHandler() {
         handler.setRedirectStrategy(redirectStrategy);
     }
 }
