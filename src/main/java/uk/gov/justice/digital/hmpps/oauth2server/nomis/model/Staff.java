@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.nomis.model;
 
 import lombok.*;
+import org.apache.commons.text.WordUtils;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -38,11 +39,11 @@ public class Staff {
     @JoinColumn(name = "STAFF_ID")
     private List<StaffIdentifier> identifiers;
 
-    public StaffIdentifier addIdentifier(String type, String identificationNumber) {
+    public StaffIdentifier addIdentifier(final String type, final String identificationNumber) {
         if (identifiers == null) {
             identifiers = new ArrayList<>();
         }
-        StaffIdentifier id = StaffIdentifier.builder()
+        final var id = StaffIdentifier.builder()
                 .id(StaffIdentifierIdentity.builder()
                         .type(type)
                         .identificationNumber(identificationNumber)
@@ -54,16 +55,24 @@ public class Staff {
         return id;
     }
 
-    public StaffIdentifier findIdentifier(String type) {
+    public StaffIdentifier findIdentifier(final String type) {
         return identifiers.stream()
                 .filter(r -> r.getId().getType().equals(type))
                 .findFirst().orElse(null);
     }
 
-    public StaffUserAccount getAccountByType(String type) {
+    public StaffUserAccount getAccountByType(final String type) {
         return users.stream()
                 .filter(r -> r.getType().equals(type))
                 .findFirst().orElse(null);
+    }
+
+    public String getFirstName() {
+        return WordUtils.capitalizeFully(firstName);
+    }
+
+    public String getName() {
+        return WordUtils.capitalizeFully(String.format("%s %s", firstName, lastName));
     }
 
     public boolean isActive() {

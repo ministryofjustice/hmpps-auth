@@ -58,7 +58,7 @@ public class StaffIdentifierRepositoryTest {
         var staff = retrievedEntity.getStaff();
         assertThat(staff).isNotNull();
 
-        assertThat(staff.getFirstName()).isEqualTo("OLD");
+        assertThat(staff.getFirstName()).isEqualTo("Old");
         assertThat(staff.getIdentifiers()).hasSize(1);
         assertThat(staff.findIdentifier("YJAF").getId().getIdentificationNumber()).isEqualTo("olduser@yjaf.gov.uk");
     }
