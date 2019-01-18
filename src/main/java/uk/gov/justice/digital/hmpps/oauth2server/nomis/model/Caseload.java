@@ -27,4 +27,7 @@ public class Caseload {
     @Column(name = "CASELOAD_TYPE")
     private String type;
 
+    @Column(name = "CASELOAD_FUNCTION")
+    private String function;
+
 }
