@@ -3,22 +3,29 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
 @Transactional
 public class UserRetriesService {
 
-    private final UserRetriesRepository repository;
+    private final UserRetriesRepository userRetriesRepository;
+    private final UserEmailRepository userEmailRepository;
 
-    public UserRetriesService(final UserRetriesRepository repository) {
-        this.repository = repository;
+
+    public UserRetriesService(final UserRetriesRepository userRetriesRepository, final UserEmailRepository userEmailRepository) {
+        this.userRetriesRepository = userRetriesRepository;
+        this.userEmailRepository = userEmailRepository;
     }
 
     public void resetRetries(final String username) {
-        repository.save(new UserRetries(username, 0));
+        userRetriesRepository.save(new UserRetries(username, 0));
     }
 
     /**
@@ -28,7 +35,7 @@ public class UserRetriesService {
      * @return incremented retry value
      */
     public int incrementRetries(final String username, final int existingRetryCount) {
-        final var retriesOptional = repository.findById(username);
+        final var retriesOptional = userRetriesRepository.findById(username);
         final UserRetries userRetries;
         if (retriesOptional.isEmpty()) {
             // no row exists, so create new from other table
@@ -37,7 +44,17 @@ public class UserRetriesService {
             userRetries = retriesOptional.get();
             userRetries.incrementRetryCount();
         }
-        repository.save(userRetries);
+        userRetriesRepository.save(userRetries);
         return userRetries.getRetryCount();
+    }
+
+    public void lockAccount(final String username) {
+        final Optional<UserEmail> userEmailOptional = userEmailRepository.findById(username);
+        final UserEmail userEmail = userEmailOptional.orElseGet(() -> new UserEmail(username));
+        userEmail.setLocked(true);
+        userEmailRepository.save(userEmail);
+
+        // reset retries otherwise if account is unlocked in c-nomis then user won't be allowed in
+        resetRetries(username);
     }
 }
