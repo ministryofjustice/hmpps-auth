@@ -28,6 +28,9 @@ public class UserEmail {
     @Column(name = "verified", nullable = false)
     private boolean verified;
 
+    @Column(name = "locked", nullable = false)
+    private boolean locked;
+
     public UserEmail(final String username) {
         this.username = username;
     }

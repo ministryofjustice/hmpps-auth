@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -34,8 +35,9 @@ public class OracleAuthenticationProvider extends AbstractAuthenticationProvider
     public OracleAuthenticationProvider(@Qualifier("dataSource") final DataSource dataSource,
                                         final UserDetailsService userDetailsService,
                                         final UserRetriesService userRetriesService,
-                                        final TelemetryClient telemetryClient) {
-        super(userDetailsService, userRetriesService, telemetryClient);
+                                        final TelemetryClient telemetryClient,
+                                        @Value("${application.authentication.lockout-count}") final int accountLockoutCount) {
+        super(userDetailsService, userRetriesService, telemetryClient, accountLockoutCount);
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
