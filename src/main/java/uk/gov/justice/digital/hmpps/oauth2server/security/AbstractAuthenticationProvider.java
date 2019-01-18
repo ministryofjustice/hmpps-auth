@@ -21,12 +21,15 @@ import java.util.Map;
 public abstract class AbstractAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserRetriesService userRetriesService;
     private final TelemetryClient telemetryClient;
+    private final int accountLockoutCount;
 
     public AbstractAuthenticationProvider(final UserDetailsService userDetailsService,
                                           final UserRetriesService userRetriesService,
-                                          final TelemetryClient telemetryClient) {
+                                          final TelemetryClient telemetryClient,
+                                          final int accountLockoutCount) {
         this.userRetriesService = userRetriesService;
         this.telemetryClient = telemetryClient;
+        this.accountLockoutCount = accountLockoutCount;
         setUserDetailsService(userDetailsService);
     }
 
@@ -102,7 +105,7 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
             final var newRetryCount = userRetriesService.incrementRetries(username, userData.getRetryCount());
 
             // check the number of retries
-            if (newRetryCount > 2) {
+            if (newRetryCount >= accountLockoutCount) {
                 // Throw locked exception
                 final var lockStatus = userData.getStatus().isGracePeriod() ? AccountStatus.EXPIRED_GRACE_LOCKED_TIMED : AccountStatus.LOCKED_TIMED;
                 lockAccount(lockStatus, username);
