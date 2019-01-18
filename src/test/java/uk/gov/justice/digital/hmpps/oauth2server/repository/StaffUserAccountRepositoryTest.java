@@ -65,7 +65,7 @@ public class StaffUserAccountRepositoryTest {
                 .containsExactly("Omic Administrator", "Maintain Access Roles Admin", "Global Search");
 
         assertThat(retrievedEntity.getStaff().getIdentifiers().stream().map(i -> i.getStaff().getFirstName()))
-                .containsExactly("ITAG");
+                .containsExactly("Itag");
     }
 
 
