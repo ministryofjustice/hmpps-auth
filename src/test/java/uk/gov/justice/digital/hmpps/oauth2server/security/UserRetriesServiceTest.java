@@ -6,7 +6,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
 
 import java.util.Optional;
@@ -19,38 +21,69 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class UserRetriesServiceTest {
     @Mock
-    private UserRetriesRepository repository;
+    private UserRetriesRepository userRetriesRepository;
+    @Mock
+    private UserEmailRepository userEmailRepository;
 
     private UserRetriesService service;
 
     @Before
     public void setUp() {
-        service = new UserRetriesService(repository);
+        service = new UserRetriesService(userRetriesRepository, userEmailRepository);
     }
 
     @Test
     public void resetRetries() {
         service.resetRetries("bob");
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
-        verify(repository).save(captor.capture());
+        verify(userRetriesRepository).save(captor.capture());
+        assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 0));
+    }
+
+
+    @Test
+    public void lockAccount_retriesTo0() {
+        service.lockAccount("bob");
+        final var captor = ArgumentCaptor.forClass(UserRetries.class);
+        verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 0));
     }
 
     @Test
+    public void lockAccount_lockUserEmailNoRecord() {
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.empty());
+        service.lockAccount("bob");
+        final var captor = ArgumentCaptor.forClass(UserEmail.class);
+        verify(userEmailRepository).save(captor.capture());
+        assertThat(captor.getValue().isLocked()).isEqualTo(true);
+    }
+
+    @Test
+    public void lockAccount_lockUserEmailExistingRecord() {
+        final UserEmail existingUserEmail = new UserEmail("username");
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(existingUserEmail));
+        service.lockAccount("bob");
+        final var captor = ArgumentCaptor.forClass(UserEmail.class);
+        verify(userEmailRepository).save(captor.capture());
+        assertThat(captor.getValue().isLocked()).isEqualTo(true);
+        assertThat(captor.getValue()).isSameAs(existingUserEmail);
+    }
+
+    @Test
     public void incrementRetries_NoExistingRow() {
-        when(repository.findById(anyString())).thenReturn(Optional.empty());
+        when(userRetriesRepository.findById(anyString())).thenReturn(Optional.empty());
         assertThat(service.incrementRetries("bob", 10)).isEqualTo(11);
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
-        verify(repository).save(captor.capture());
+        verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 11));
     }
 
     @Test
     public void incrementRetries_ExistingRow() {
-        when(repository.findById(anyString())).thenReturn(Optional.of(new UserRetries("bob", 5)));
+        when(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(new UserRetries("bob", 5)));
         assertThat(service.incrementRetries("bob", 10)).isEqualTo(6);
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
-        verify(repository).save(captor.capture());
+        verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 6));
     }
 }

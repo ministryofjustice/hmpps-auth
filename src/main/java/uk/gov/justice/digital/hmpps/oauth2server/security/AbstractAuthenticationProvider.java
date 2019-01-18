@@ -108,7 +108,7 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
                 lockAccount(lockStatus, username);
 
                 // need to reset the retry count otherwise when the user is then unlocked they will have to get the password right first time
-                userRetriesService.resetRetries(username);
+                userRetriesService.lockAccount(username);
 
                 log.info("Locking account for user {}", username);
                 trackFailure(username, "locked", "exceeded");
