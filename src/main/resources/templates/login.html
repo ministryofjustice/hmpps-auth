@@ -34,6 +34,9 @@
       <ul class="govuk-list govuk-error-summary__list">
         <li th:each="error: ${param.error}" th:switch="${error}">
           <a th:case="'missingpass'" href="#password" th:text="#{login.missingpass}">Missing password</a>
+          <a th:case="'invalid'" href="#username"
+             th:text="#{login.invalid(${@environment.getProperty('application.authentication.lockout-count')})}">
+            Invalid message</a>
           <a th:case="*" href="#username" th:text="#{${'login.' + error}}">Username message</a>
         </li>
       </ul>
