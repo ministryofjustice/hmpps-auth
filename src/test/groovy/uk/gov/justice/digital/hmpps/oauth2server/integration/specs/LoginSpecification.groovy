@@ -63,7 +63,7 @@ class LoginSpecification extends GebReportingSpec {
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
-        errorText == 'Your account is locked. To unlock it, reset your password on Classic NOMIS.'
+        errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
     }
 
     def "Attempt login with expired user wrong password"() {

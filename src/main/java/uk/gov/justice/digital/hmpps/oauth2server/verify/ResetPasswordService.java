@@ -3,13 +3,16 @@ package uk.gov.justice.digital.hmpps.oauth2server.verify;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.util.StringUtils;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
@@ -67,11 +70,10 @@ public class ResetPasswordService {
             parameters = Map.of("firstName", username);
         } else {
             final var staffUserAccount = userOptional.get();
-            final var status = staffUserAccount.getAccountDetail().getStatus();
             // only allow reset for active accounts that aren't locked
             // or are locked by getting password incorrect (in either c-nomis or auth)
             final var firstName = staffUserAccount.getStaff().getFirstName();
-            if (staffUserAccount.getStaff().isActive() && (!status.isLocked() || status.isUserLocked() || userEmail.isLocked())) {
+            if (passwordAllowedToBeReset(userEmail, staffUserAccount)) {
                 emailTemplate = resetTemplateId;
                 final var userTokenOptional = userTokenRepository.findByTokenTypeAndUserEmail(TokenType.RESET, userEmail);
                 // delete any existing token
@@ -107,6 +109,11 @@ public class ResetPasswordService {
         return Optional.ofNullable(parameters.get("resetLink"));
     }
 
+    private boolean passwordAllowedToBeReset(final UserEmail userEmail, final StaffUserAccount staffUserAccount) {
+        final var status = staffUserAccount.getAccountDetail().getStatus();
+        return staffUserAccount.getStaff().isActive() && (!status.isLocked() || status.isUserLocked() || userEmail.isLocked());
+    }
+
     public Optional<UserToken> getToken(final String token) {
         final var userTokenOptional = userTokenRepository.findById(token);
         return userTokenOptional.filter(t -> t.getTokenType() == TokenType.RESET);
@@ -132,6 +139,14 @@ public class ResetPasswordService {
     public void resetPassword(final String token, final String newPassword) {
         final var userToken = userTokenRepository.findById(token).orElseThrow();
         final var userEmail = userToken.getUserEmail();
+        final var userOptional = userService.getUserByUsername(userEmail.getUsername());
+
+        // before we reset, ensure user allowed to still reset password
+        if (userOptional.isEmpty() || !passwordAllowedToBeReset(userEmail, userOptional.get())) {
+            // failed, so let user know
+            throw new LockedException("locked");
+        }
+
         userEmail.setLocked(false);
         changePasswordService.changePasswordWithUnlock(userEmail.getUsername(), newPassword);
         userEmailRepository.save(userEmail);
