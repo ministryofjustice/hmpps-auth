@@ -159,7 +159,7 @@ public class ResetPasswordServiceTest {
     @Test
     public void requestResetPassword_verifyToken() throws NotificationClientException {
         final var userEmail = new UserEmail("someuser", "email", false, true);
-        when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         when(userService.getUserByUsername(anyString())).thenReturn(getStaffUserAccountForBob());
 
         final var optionalLink = resetPasswordService.requestResetPassword("user", "url");
@@ -169,9 +169,19 @@ public class ResetPasswordServiceTest {
     }
 
     @Test
+    public void requestResetPassword_uppercaseUsername() throws NotificationClientException {
+        final var userEmail = new UserEmail("someuser", "email", false, true);
+        when(userEmailRepository.findById(any())).thenReturn(Optional.of(userEmail));
+        when(userService.getUserByUsername(anyString())).thenReturn(getStaffUserAccountForBob());
+
+        resetPasswordService.requestResetPassword("someuser", "url");
+        verify(userEmailRepository).findById("SOMEUSER");
+    }
+
+    @Test
     public void requestResetPassword_verifyNotification() throws NotificationClientException {
         final var userEmail = new UserEmail("someuser", "email", false, true);
-        when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         when(userService.getUserByUsername(anyString())).thenReturn(getStaffUserAccountForBob());
         final var captor = ArgumentCaptor.forClass(UserToken.class);
 
@@ -186,7 +196,7 @@ public class ResetPasswordServiceTest {
     @Test
     public void requestResetPassword_sendFailure() throws NotificationClientException {
         final var userEmail = new UserEmail("someuser", "email", false, true);
-        when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         when(userService.getUserByUsername(anyString())).thenReturn(getStaffUserAccountForBob());
 
         when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), isNull())).thenThrow(new NotificationClientException("message"));

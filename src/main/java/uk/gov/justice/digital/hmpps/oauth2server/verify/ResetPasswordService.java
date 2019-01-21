@@ -53,7 +53,7 @@ public class ResetPasswordService {
     }
 
     public Optional<String> requestResetPassword(final String username, final String url) throws NotificationClientException {
-        final var optionalUserEmail = userEmailRepository.findById(username);
+        final var optionalUserEmail = userEmailRepository.findById(username.toUpperCase());
 
         if (optionalUserEmail.isEmpty() || StringUtils.isEmpty(optionalUserEmail.get().getEmail())) {
             // no user found or email address found, so nothing more we can do.  Bail
