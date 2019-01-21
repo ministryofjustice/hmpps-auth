@@ -4,6 +4,7 @@ import geb.spock.GebReportingSpec
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.CA_USER
+import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.CA_USER_LOWERCASE
 
 class ResetPasswordSpecification extends GebReportingSpec {
 
@@ -60,10 +61,10 @@ class ResetPasswordSpecification extends GebReportingSpec {
     }
 
     // need to change user password back again so that CA_USER can still login
-    def "A user can reset their password back again"() {
+    def "A user can reset their password back with lowercase username"() {
         given: 'I would like to reset my password'
         to ResetPasswordPage
-        resetPasswordAs CA_USER
+        resetPasswordAs CA_USER_LOWERCASE
 
         and: 'The Reset Password sent page is displayed'
         at ResetPasswordSentPage
