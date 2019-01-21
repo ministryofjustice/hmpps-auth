@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +21,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.service.notify.NotificationClientException;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -133,13 +134,13 @@ public class ResetPasswordController {
         return modelAndView;
     }
 
-    private Map<String, Object> validate(final String username, final String newPassword, final String confirmPassword) {
-        final Map<String, Object> builder = new HashMap<>();
+    private MultiValueMap<String, Object> validate(final String username, final String newPassword, final String confirmPassword) {
+        final var builder = new LinkedMultiValueMap<String, Object>();
         if (StringUtils.isBlank(newPassword)) {
-            builder.put("errornew", "newmissing");
+            builder.add("errornew", "newmissing");
         }
         if (StringUtils.isBlank(confirmPassword)) {
-            builder.put("errorconfirm", "confirmmissing");
+            builder.add("errorconfirm", "confirmmissing");
         }
 
         // Bomb out now as either new password or confirm new password is missing
@@ -154,31 +155,31 @@ public class ResetPasswordController {
         // Ensuring alphanumeric will ensure that we can't get SQL Injection attacks - since for oracle the password
         // cannot be used in a prepared statement
         if (!StringUtils.isAlphanumeric(newPassword)) {
-            builder.put("errornew", "alphanumeric");
+            builder.add("errornew", "alphanumeric");
         }
         final var digits = StringUtils.getDigits(newPassword);
         if (digits.length() == 0) {
-            builder.put("errornew", "nodigits");
+            builder.add("errornew", "nodigits");
         }
         if (digits.length() == newPassword.length()) {
-            builder.put("errornew", "alldigits");
+            builder.add("errornew", "alldigits");
         }
         if (StringUtils.containsIgnoreCase(newPassword, username)) {
-            builder.put("errornew", "username");
+            builder.add("errornew", "username");
         }
         if (newPassword.chars().distinct().count() < 4) {
-            builder.put("errornew", "four");
+            builder.add("errornew", "four");
         }
 
         if (!StringUtils.equals(newPassword, confirmPassword)) {
-            builder.put("errorconfirm", "mismatch");
+            builder.add("errorconfirm", "mismatch");
         }
         if (user.getAccountDetail().getAccountProfile() == AccountProfile.TAG_ADMIN) {
             if (newPassword.length() < 14) {
-                builder.put("errornew", "length14");
+                builder.add("errornew", "length14");
             }
         } else if (newPassword.length() < 9) {
-            builder.put("errornew", "length9");
+            builder.add("errornew", "length9");
         }
 
         return builder;

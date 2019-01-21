@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import org.assertj.core.data.MapEntry;
+import org.assertj.core.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,11 +20,12 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.service.notify.NotificationClientException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Optional;
 
+import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -149,7 +151,7 @@ public class ResetPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("d", "@fewfewfew1", "@fewfewfew1");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(MapEntry.entry("token", "d"), MapEntry.entry("error", Boolean.TRUE), MapEntry.entry("errornew", "alphanumeric"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "alphanumeric"));
     }
 
     @Test
@@ -157,7 +159,7 @@ public class ResetPasswordControllerTest {
         setupCheckAndGetTokenValid();
         final var modelAndView = controller.setPassword("d", "", "");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), entry("errornew", "newmissing"), entry("errorconfirm", "confirmmissing"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "newmissing"), listEntry("errorconfirm", "confirmmissing"));
     }
 
     @Test
@@ -165,7 +167,7 @@ public class ResetPasswordControllerTest {
         setupCheckAndGetTokenValid();
         final var modelAndView = controller.setPassword("d", "a", "");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), entry("errorconfirm", "confirmmissing"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errorconfirm", "confirmmissing"));
     }
 
     @Test
@@ -174,7 +176,7 @@ public class ResetPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("d", "qwerqw12", "qwerqw12");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), entry("errornew", "length9"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "length9"));
     }
 
     @Test
@@ -183,7 +185,7 @@ public class ResetPasswordControllerTest {
         setupGetUserCallForProfile("TAG_ADMIN");
         final var modelAndView = controller.setPassword("d", "qwerqwerqwe12", "qwerqwerqwe12");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), entry("errornew", "length14"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "length14"));
     }
 
     @Test
@@ -192,7 +194,7 @@ public class ResetPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("token", "someuser12", "someuser12");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "token"), entry("error", Boolean.TRUE), entry("errornew", "username"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "token"), entry("error", Boolean.TRUE), listEntry("errornew", "username"));
     }
 
     @Test
@@ -201,7 +203,7 @@ public class ResetPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("d", "as1as1as1", "as1as1as1");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), entry("errornew", "four"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "four"));
     }
 
     @Test
@@ -210,7 +212,7 @@ public class ResetPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("daaa", "asdasdasdb", "asdasdasdb");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "daaa"), entry("error", Boolean.TRUE), entry("errornew", "nodigits"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "daaa"), entry("error", Boolean.TRUE), listEntry("errornew", "nodigits"));
     }
 
     @Test
@@ -219,7 +221,16 @@ public class ResetPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("d", "1231231234", "1231231234");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), entry("errornew", "alldigits"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "alldigits"));
+    }
+
+    @Test
+    public void setPassword_MultipleFailures() {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile(null);
+        final var modelAndView = controller.setPassword("user", "password", "new");
+        assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), listEntry("errorconfirm", "mismatch"), listEntry("errornew", "nodigits", "length9"));
     }
 
     @Test
@@ -228,7 +239,7 @@ public class ResetPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("user", "password1", "new");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errorconfirm", "mismatch"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), listEntry("errorconfirm", "mismatch"));
     }
 
     @Test
@@ -278,5 +289,9 @@ public class ResetPasswordControllerTest {
         detail.setProfile(profile);
         user.get().setAccountDetail(detail);
         when(userService.getUserByUsername(anyString())).thenReturn(user);
+    }
+
+    private MapEntry<String, List<Object>> listEntry(final String key, final Object... values) {
+        return MapEntry.entry(key, Arrays.asList(values));
     }
 }
