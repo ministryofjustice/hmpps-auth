@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -118,6 +119,9 @@ public class ResetPasswordController {
             }
             if (e instanceof ReusedPasswordException) {
                 return trackAndReturnToSetPassword(username, modelAndView, "reused");
+            }
+            if (e instanceof LockedException) {
+                return trackAndReturnToSetPassword(username, modelAndView, "state");
             }
             // let any other exception bubble up
             throw e;

@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.authentication.LockedException;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
@@ -273,6 +274,15 @@ public class ResetPasswordControllerTest {
         assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "reused"));
     }
 
+    @Test
+    public void setPassword_LockedAccount() {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile(null);
+        doThrow(new LockedException("wrong")).when(resetPasswordService).resetPassword(anyString(), anyString());
+        final var modelAndView = controller.setPassword("user", "password1", "password1");
+        assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "state"));
+    }
 
     private void setupCheckTokenValid() {
         when(resetPasswordService.checkToken(anyString())).thenReturn(Optional.empty());

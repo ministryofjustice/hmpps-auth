@@ -9,6 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.authentication.LockedException;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
@@ -260,6 +261,7 @@ public class ResetPasswordServiceTest {
 
     @Test
     public void resetPassword() {
+        when(userService.getUserByUsername(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = new UserEmail("uesr");
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
@@ -272,6 +274,7 @@ public class ResetPasswordServiceTest {
 
     @Test
     public void resetPassword_UserUnlocked() {
+        when(userService.getUserByUsername(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = new UserEmail("uesr");
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -280,4 +283,19 @@ public class ResetPasswordServiceTest {
 
         assertThat(user.isLocked()).isFalse();
     }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    @Test
+    public void resetPasswordLockedAccount() {
+        final var staffUserAccount = getStaffUserAccountForBob();
+        staffUserAccount.get().getStaff().setStatus("inactive");
+        when(userService.getUserByUsername(anyString())).thenReturn(staffUserAccount);
+
+        final var user = new UserEmail("uesr");
+        final var userToken = new UserToken(TokenType.RESET, user);
+        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
+
+        assertThatThrownBy(() -> resetPasswordService.resetPassword("bob", "pass")).isInstanceOf(LockedException.class);
+    }
+
 }
