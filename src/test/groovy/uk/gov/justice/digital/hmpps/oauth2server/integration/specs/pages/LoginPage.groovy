@@ -17,6 +17,7 @@ class LoginPage extends Page {
         headingText { $('#main-content h1').text() }
         signInButton { $("input", type: 'submit') }
         termsLink { $("a", id: 'terms') }
+        resetPasswordLink { $("a", id: 'forgotten-password') }
         errorText { $('#error-detail').text() }
         warning { $('#warning').text() }
     }
@@ -35,5 +36,11 @@ class LoginPage extends Page {
         assert termsLink.text() == 'Terms and conditions'
 
         termsLink.click()
+    }
+
+    void resetPassword() {
+        assert resetPasswordLink.text() == 'I have forgotten my password'
+
+        resetPasswordLink.click()
     }
 }
