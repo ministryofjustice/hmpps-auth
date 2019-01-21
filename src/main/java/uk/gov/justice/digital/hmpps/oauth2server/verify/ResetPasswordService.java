@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -25,6 +26,7 @@ public class ResetPasswordService {
     private final UserEmailRepository userEmailRepository;
     private final UserTokenRepository userTokenRepository;
     private final UserService userService;
+    private final ChangePasswordService changePasswordService;
     private final TelemetryClient telemetryClient;
     private final NotificationClientApi notificationClient;
     private final String resetTemplateId;
@@ -32,7 +34,7 @@ public class ResetPasswordService {
 
     public ResetPasswordService(final UserEmailRepository userEmailRepository,
                                 final UserTokenRepository userTokenRepository, final UserService userService,
-                                final TelemetryClient telemetryClient,
+                                final ChangePasswordService changePasswordService, final TelemetryClient telemetryClient,
                                 final NotificationClientApi notificationClient,
                                 @Value("${application.notify.reset.template}") final String resetTemplateId,
                                 @Value("${application.notify.reset-unavailable.template}") final String resetUnavailableTemplateId
@@ -40,6 +42,7 @@ public class ResetPasswordService {
         this.userEmailRepository = userEmailRepository;
         this.userTokenRepository = userTokenRepository;
         this.userService = userService;
+        this.changePasswordService = changePasswordService;
         this.telemetryClient = telemetryClient;
         this.notificationClient = notificationClient;
         this.resetTemplateId = resetTemplateId;
@@ -124,5 +127,14 @@ public class ResetPasswordService {
             return Optional.of("expired");
         }
         return Optional.empty();
+    }
+
+    public void resetPassword(final String token, final String newPassword) {
+        final var userToken = userTokenRepository.findById(token).orElseThrow();
+        final var userEmail = userToken.getUserEmail();
+        userEmail.setLocked(false);
+        changePasswordService.changePasswordWithUnlock(userEmail.getUsername(), newPassword);
+        userEmailRepository.save(userEmail);
+        userTokenRepository.delete(userToken);
     }
 }

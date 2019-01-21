@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
@@ -28,16 +27,14 @@ import java.util.Map;
 @Validated
 public class ResetPasswordController {
     private final ResetPasswordService resetPasswordService;
-    private final ChangePasswordService changePasswordService;
     private final UserService userService;
     private final TelemetryClient telemetryClient;
     private final boolean smokeTestEnabled;
 
     public ResetPasswordController(final ResetPasswordService resetPasswordService,
-                                   final ChangePasswordService changePasswordService, final UserService userService,
+                                   final UserService userService,
                                    final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
         this.resetPasswordService = resetPasswordService;
-        this.changePasswordService = changePasswordService;
         this.userService = userService;
         this.telemetryClient = telemetryClient;
         this.smokeTestEnabled = smokeTestEnabled;
@@ -112,8 +109,8 @@ public class ResetPasswordController {
         }
 
         try {
-            changePasswordService.changePasswordWithUnlock(username, newPassword);
-            // TODO: reset locked status in auth
+            resetPasswordService.resetPassword(token, newPassword);
+
         } catch (final Exception e) {
             if (e instanceof PasswordValidationFailureException) {
                 return trackAndReturnToSetPassword(username, modelAndView, "validation");

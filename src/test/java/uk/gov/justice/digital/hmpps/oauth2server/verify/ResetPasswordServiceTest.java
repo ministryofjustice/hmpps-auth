@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenReposi
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -40,6 +41,8 @@ public class ResetPasswordServiceTest {
     @Mock
     private UserService userService;
     @Mock
+    private ChangePasswordService changePasswordService;
+    @Mock
     private TelemetryClient telemetryClient;
     @Mock
     private NotificationClientApi notificationClient;
@@ -50,7 +53,7 @@ public class ResetPasswordServiceTest {
 
     @Before
     public void setUp() {
-        resetPasswordService = new ResetPasswordService(userEmailRepository, userTokenRepository, userService, telemetryClient, notificationClient, "resetTemplate", "resetUnavailableTemplate");
+        resetPasswordService = new ResetPasswordService(userEmailRepository, userTokenRepository, userService, changePasswordService, telemetryClient, notificationClient, "resetTemplate", "resetUnavailableTemplate");
     }
 
     @Test
@@ -253,5 +256,28 @@ public class ResetPasswordServiceTest {
         userToken.setTokenExpiry(LocalDateTime.now().minusHours(1));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         assertThat(resetPasswordService.checkToken("token")).get().isEqualTo("expired");
+    }
+
+    @Test
+    public void resetPassword() {
+        final var user = new UserEmail("uesr");
+        final var userToken = new UserToken(TokenType.RESET, user);
+        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
+        resetPasswordService.resetPassword("bob", "pass");
+
+        verify(userTokenRepository).delete(userToken);
+        verify(userEmailRepository).save(user);
+        verify(changePasswordService).changePasswordWithUnlock("uesr", "pass");
+    }
+
+    @Test
+    public void resetPassword_UserUnlocked() {
+        final var user = new UserEmail("uesr");
+        user.setLocked(true);
+        final var userToken = new UserToken(TokenType.RESET, user);
+        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
+        resetPasswordService.resetPassword("bob", "pass");
+
+        assertThat(user.isLocked()).isFalse();
     }
 }
