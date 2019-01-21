@@ -103,4 +103,26 @@ public class ResetPasswordService {
 
         return Optional.ofNullable(parameters.get("resetLink"));
     }
+
+    public Optional<UserToken> getToken(final String token) {
+        final var userTokenOptional = userTokenRepository.findById(token);
+        return userTokenOptional.filter(t -> t.getTokenType() == TokenType.RESET);
+    }
+
+    public Optional<String> checkToken(final String token) {
+        final var userTokenOptional = getToken(token);
+        if (userTokenOptional.isEmpty()) {
+            log.info("Failed to reset password due to invalid token");
+            telemetryClient.trackEvent("ResetPasswordFailure", Map.of("reason", "invalid"), null);
+            return Optional.of("invalid");
+        }
+        final var userToken = userTokenOptional.get();
+        final var username = userToken.getUserEmail().getUsername();
+        if (userToken.hasTokenExpired()) {
+            log.info("Failed to reset password due to expired token");
+            telemetryClient.trackEvent("ResetPasswordFailure", Map.of("username", username, "reason", "expired"), null);
+            return Optional.of("expired");
+        }
+        return Optional.empty();
+    }
 }
