@@ -80,7 +80,7 @@ public class ResetPasswordServiceTest {
         final var optional = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), mapCaptor.capture(), isNull());
         assertThat(optional).isEmpty();
-        assertThat(mapCaptor.getValue()).containsExactly(MapEntry.entry("firstName", "user"));
+        assertThat(mapCaptor.getValue()).containsExactly(MapEntry.entry("firstName", "USER"));
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -176,6 +176,7 @@ public class ResetPasswordServiceTest {
 
         resetPasswordService.requestResetPassword("someuser", "url");
         verify(userEmailRepository).findById("SOMEUSER");
+        verify(userService).getUserByUsername("SOMEUSER");
     }
 
     @Test

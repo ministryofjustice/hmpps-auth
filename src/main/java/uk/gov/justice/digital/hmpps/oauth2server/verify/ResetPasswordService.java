@@ -52,8 +52,9 @@ public class ResetPasswordService {
         this.resetUnavailableTemplateId = resetUnavailableTemplateId;
     }
 
-    public Optional<String> requestResetPassword(final String username, final String url) throws NotificationClientException {
-        final var optionalUserEmail = userEmailRepository.findById(username.toUpperCase());
+    public Optional<String> requestResetPassword(final String inputUsername, final String url) throws NotificationClientException {
+        final var username = inputUsername.toUpperCase();
+        final var optionalUserEmail = userEmailRepository.findById(username);
 
         if (optionalUserEmail.isEmpty() || StringUtils.isEmpty(optionalUserEmail.get().getEmail())) {
             // no user found or email address found, so nothing more we can do.  Bail
