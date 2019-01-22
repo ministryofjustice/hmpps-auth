@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFail
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 import uk.gov.service.notify.NotificationClientException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -35,6 +37,8 @@ import static org.mockito.Mockito.when;
 public class ResetPasswordControllerTest {
     @Mock
     private ResetPasswordService resetPasswordService;
+    @Mock
+    private TokenService tokenService;
     @Mock
     private UserService userService;
     @Mock
@@ -46,7 +50,7 @@ public class ResetPasswordControllerTest {
 
     @Before
     public void setUp() {
-        controller = new ResetPasswordController(resetPasswordService, userService, telemetryClient, true);
+        controller = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, true);
     }
 
     @Test
@@ -88,7 +92,7 @@ public class ResetPasswordControllerTest {
     public void resetPasswordRequest_success() throws NotificationClientException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
-        final var modelAndView = new ResetPasswordController(resetPasswordService, userService, telemetryClient, false).resetPasswordRequest("user", request);
+        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, false).resetPasswordRequest("user", request);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPasswordSent");
         assertThat(modelAndView.getModel()).isEmpty();
     }
@@ -97,7 +101,7 @@ public class ResetPasswordControllerTest {
     public void resetPasswordRequest_failed() throws NotificationClientException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(new NotificationClientException("failure message"));
-        final var modelAndView = new ResetPasswordController(resetPasswordService, userService, telemetryClient, false).resetPasswordRequest("user", request);
+        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, false).resetPasswordRequest("user", request);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
         assertThat(modelAndView.getModel()).containsExactly(entry("error", "other"));
     }
@@ -118,14 +122,14 @@ public class ResetPasswordControllerTest {
 
     @Test
     public void resetPasswordConfirm_FailureCheckView() {
-        when(resetPasswordService.checkToken(anyString())).thenReturn(Optional.of("invalid"));
+        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"));
         final var modelAndView = controller.resetPasswordConfirm("token");
         assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
     }
 
     @Test
     public void resetPasswordConfirm_FailureCheckModel() {
-        when(resetPasswordService.checkToken(anyString())).thenReturn(Optional.of("expired"));
+        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
         final var modelAndView = controller.resetPasswordConfirm("sometoken");
         assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"));
     }
@@ -140,7 +144,7 @@ public class ResetPasswordControllerTest {
 
     @Test
     public void setPassword_Failure() {
-        when(resetPasswordService.checkToken(anyString())).thenReturn(Optional.of("expired"));
+        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
         final var modelAndView = controller.setPassword("sometoken", "new", "confirm");
         assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
         assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"));
@@ -247,7 +251,7 @@ public class ResetPasswordControllerTest {
     public void setPassword_ValidationFailure() {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile(null);
-        doThrow(new PasswordValidationFailureException()).when(resetPasswordService).resetPassword(anyString(), anyString());
+        doThrow(new PasswordValidationFailureException()).when(resetPasswordService).setPassword(anyString(), anyString());
         final var modelAndView = controller.setPassword("user", "password1", "password1");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
         assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "validation"));
@@ -258,7 +262,7 @@ public class ResetPasswordControllerTest {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile(null);
         final var exception = new RuntimeException();
-        doThrow(exception).when(resetPasswordService).resetPassword(anyString(), anyString());
+        doThrow(exception).when(resetPasswordService).setPassword(anyString(), anyString());
         assertThatThrownBy(
                 () -> controller.setPassword("user", "password1", "password1")
         ).isEqualTo(exception);
@@ -268,7 +272,7 @@ public class ResetPasswordControllerTest {
     public void setPassword_ReusedPassword() {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile(null);
-        doThrow(new ReusedPasswordException()).when(resetPasswordService).resetPassword(anyString(), anyString());
+        doThrow(new ReusedPasswordException()).when(resetPasswordService).setPassword(anyString(), anyString());
         final var modelAndView = controller.setPassword("user", "password1", "password1");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
         assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "reused"));
@@ -278,19 +282,19 @@ public class ResetPasswordControllerTest {
     public void setPassword_LockedAccount() {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile(null);
-        doThrow(new LockedException("wrong")).when(resetPasswordService).resetPassword(anyString(), anyString());
+        doThrow(new LockedException("wrong")).when(resetPasswordService).setPassword(anyString(), anyString());
         final var modelAndView = controller.setPassword("user", "password1", "password1");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
         assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "state"));
     }
 
     private void setupCheckTokenValid() {
-        when(resetPasswordService.checkToken(anyString())).thenReturn(Optional.empty());
+        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
     }
 
     private void setupCheckAndGetTokenValid() {
-        when(resetPasswordService.checkToken(anyString())).thenReturn(Optional.empty());
-        when(resetPasswordService.getToken(anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, new UserEmail("user"))));
+        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
+        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, new UserEmail("user"))));
     }
 
     private void setupGetUserCallForProfile(final String profile) {
