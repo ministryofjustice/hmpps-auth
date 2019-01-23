@@ -15,10 +15,12 @@ import java.util.StringJoiner;
 @Component
 public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
     private static final String FAILURE_URL = "/login";
+    private final ChangePasswordService changePasswordService;
 
 
-    public UserStateAuthenticationFailureHandler() {
+    public UserStateAuthenticationFailureHandler(final ChangePasswordService changePasswordService) {
         super(FAILURE_URL);
+        this.changePasswordService = changePasswordService;
         setAllowSessionCreation(false);
     }
 
@@ -31,7 +33,8 @@ public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticati
         } else if (exception instanceof AccountExpiredException) {
             // special handling for expired users and feature switch turned on
             final var username = request.getParameter("username").toUpperCase();
-            getRedirectStrategy().sendRedirect(request, response, "/change-password?username=" + username);
+            final var token = changePasswordService.createToken(username);
+            getRedirectStrategy().sendRedirect(request, response, "/change-password?token=" + token);
             return;
         } else if (exception instanceof MissingCredentialsException) {
             if (StringUtils.isBlank(request.getParameter("username"))) {

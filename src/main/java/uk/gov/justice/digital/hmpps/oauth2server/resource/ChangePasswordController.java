@@ -2,10 +2,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AccountExpiredException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -16,195 +12,75 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile;
-import uk.gov.justice.digital.hmpps.oauth2server.security.*;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
+import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
-import java.util.StringJoiner;
 
 @Slf4j
 @Controller
 @Validated
-public class ChangePasswordController {
-    private final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler;
+public class ChangePasswordController extends AbstractPasswordController {
     private final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
     private final DaoAuthenticationProvider daoAuthenticationProvider;
-    private final ChangePasswordService changePasswordService;
-    private final UserService userService;
+    private final TokenService tokenService;
     private final TelemetryClient telemetryClient;
 
-    public ChangePasswordController(final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler,
-                                    final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
+    public ChangePasswordController(final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
                                     final DaoAuthenticationProvider daoAuthenticationProvider,
                                     final ChangePasswordService changePasswordService,
-                                    final UserService userService,
+                                    final TokenService tokenService, final UserService userService,
                                     final TelemetryClient telemetryClient) {
-        this.userStateAuthenticationFailureHandler = userStateAuthenticationFailureHandler;
+        super(changePasswordService, tokenService, userService, telemetryClient, "redirect:/login?error=%s", "changePassword");
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
         this.daoAuthenticationProvider = daoAuthenticationProvider;
-        this.changePasswordService = changePasswordService;
-        this.userService = userService;
+        this.tokenService = tokenService;
         this.telemetryClient = telemetryClient;
     }
 
     @GetMapping("/change-password")
-    public ModelAndView changePasswordRequest(@RequestParam(required = false) final String errorcurrent,
-                                              @RequestParam(required = false) final String errornew) {
-        final var modelAndView = new ModelAndView("changePassword");
-        // send bad request if password wrong so that browser won't offer to save the password
-        if (StringUtils.isNotBlank(errorcurrent) || StringUtils.isNotBlank(errornew)) {
-            modelAndView.setStatus(HttpStatus.BAD_REQUEST);
-        }
-        return modelAndView;
+    public String changePasswordRequest() {
+        return "changePassword";
     }
 
     @PostMapping("/change-password")
-    public String changePassword(@RequestParam final String username, @RequestParam final String password,
-                                 @RequestParam final String newPassword, @RequestParam final String confirmPassword,
-                                 final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
-        final var upperUsername = StringUtils.upperCase(username);
-        try {
-            final var validationResult = validate(upperUsername, password, newPassword, confirmPassword);
-            if (validationResult != null) {
-                return validationResult;
-            }
-        } catch (final AuthenticationException e) {
-            // unhandled authentication exception, so redirect and display on login page
-            userStateAuthenticationFailureHandler.onAuthenticationFailure(request, response, e);
-            return null;
+    public ModelAndView changePassword(@RequestParam final String token,
+                                       @RequestParam final String newPassword, @RequestParam final String confirmPassword,
+                                       final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
+
+        final var userToken = tokenService.getToken(TokenType.CHANGE, token);
+
+        final var modelAndView = processSetPassword(TokenType.CHANGE, token, newPassword, confirmPassword);
+        if (modelAndView.isPresent()) {
+            return modelAndView.get();
         }
 
-        try {
-            changePasswordService.changePassword(upperUsername, newPassword);
-        } catch (final Exception e) {
-            if (e instanceof PasswordValidationFailureException) {
-                return getChangePasswordRedirect(upperUsername, "validation");
-            }
-            if (e instanceof ReusedPasswordException) {
-                return getChangePasswordRedirect(upperUsername, "reused");
-            }
-            // let any other exception bubble up
-            throw e;
-        }
+        // will be error if unable to get token here as set password process has been successful
+        final var username = userToken.orElseThrow().getUserEmail().getUsername();
 
-        log.info("Successfully changed password for {}", upperUsername);
-
-        // now try again authentication with new password
+        // authentication with new password
         try {
-            final var successToken = authenticate(upperUsername, newPassword);
+            final var successToken = authenticate(username, newPassword);
             // success, so forward on
-            telemetryClient.trackEvent("ChangePasswordSuccess", Map.of("username", upperUsername), null);
+            telemetryClient.trackEvent("ChangePasswordSuccess", Map.of("username", username), null);
             jwtAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, successToken);
             // return here is not required, since the success handler will have redirected
             return null;
         } catch (final AuthenticationException e) {
             final var reason = e.getClass().getSimpleName();
             log.info("Caught unexpected {} after change password", reason, e);
-            telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", upperUsername, "reason", reason), null);
+            telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", reason), null);
             // this should have succeeded, but unable to login
             // need to tell user that the change password request has been successful though
-            //noinspection SpellCheckingInspection
-            return getLoginRedirect("changepassword");
+            return new ModelAndView("redirect:/login?error=changepassword");
         }
-    }
-
-    private String validate(final String username, final String password, final String newPassword, final String confirmPassword) {
-        if (StringUtils.isBlank(username)) {
-            // something went wrong with login - get them to start again
-            log.info("Missing required username for change password");
-            return getLoginRedirect("missinguser");
-        }
-
-        final var builder = new StringJoiner("&error", "error", "");
-        builder.setEmptyValue("");
-        if (StringUtils.isBlank(newPassword)) {
-            builder.add("new=newmissing");
-        }
-        if (StringUtils.isBlank(confirmPassword)) {
-            builder.add("confirm=confirmmissing");
-        }
-
-        if (StringUtils.isBlank(password)) {
-            builder.add("current=missing");
-
-            return getChangePasswordRedirect(username, builder);
-        }
-
-        // only way to check existing password is to try to authenticate the user
-        try {
-            authenticate(username, password);
-
-            // also allow successful authenticate to change password
-        } catch (final AuthenticationException e) {
-            if (e instanceof BadCredentialsException) {
-                return getChangePasswordRedirect(username, builder.add("current=invalid"));
-            }
-            // anything else apart from an account expired exception is unexpected
-            if (!(e instanceof AccountExpiredException)) {
-                throw e;
-            }
-        }
-
-        // Bomb out now as either new password or confirm new password is missing
-        if (builder.length() > 0) {
-            return getChangePasswordRedirect(username, builder);
-        }
-
-        // user must be present in order for authenticate to work above
-        //noinspection OptionalGetWithoutIsPresent
-        final var user = userService.getUserByUsername(username).get();
-
-        // Ensuring alphanumeric will ensure that we can't get SQL Injection attacks - since for oracle the password
-        // cannot be used in a prepared statement
-        if (!StringUtils.isAlphanumeric(newPassword)) {
-            builder.add("new=alphanumeric");
-        }
-        final var digits = StringUtils.getDigits(newPassword);
-        if (digits.length() == 0) {
-            builder.add("new=nodigits");
-        }
-        if (digits.length() == newPassword.length()) {
-            builder.add("new=alldigits");
-        }
-        if (StringUtils.containsIgnoreCase(newPassword, username)) {
-            builder.add("new=username");
-        }
-        if (newPassword.chars().distinct().count() < 4) {
-            builder.add("new=four");
-        }
-
-        if (!StringUtils.equals(newPassword, confirmPassword)) {
-            builder.add("confirm=mismatch");
-        }
-        if (user.getAccountDetail().getAccountProfile() == AccountProfile.TAG_ADMIN) {
-            if (newPassword.length() < 14) {
-                builder.add("new=length14");
-            }
-        } else if (newPassword.length() < 9) {
-            builder.add("new=length9");
-        }
-
-        return builder.length() > 0 ? getChangePasswordRedirect(username, builder) : null;
-    }
-
-    private String getChangePasswordRedirect(final String username, final String reason) {
-        telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", reason), null);
-        return String.format("redirect:/change-password?username=%s&error&errornew=%s", username, reason);
-    }
-
-
-    private String getChangePasswordRedirect(final String username, final StringJoiner joiner) {
-        final var params = joiner.toString();
-        telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", params), null);
-        return String.format("redirect:/change-password?username=%s&error&%s", username, params);
-    }
-
-    private String getLoginRedirect(final String reason) {
-        return String.format("redirect:/login?error=%s", reason);
     }
 
     private Authentication authenticate(final String username, final String password) {
