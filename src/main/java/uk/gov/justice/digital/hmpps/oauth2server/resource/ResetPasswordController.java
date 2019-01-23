@@ -4,40 +4,38 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile;
-import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 import uk.gov.service.notify.NotificationClientException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
+import static uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET;
+
 @Slf4j
 @Controller
 @Validated
-public class ResetPasswordController {
+public class ResetPasswordController extends AbstractPasswordController {
     private final ResetPasswordService resetPasswordService;
-    private final UserService userService;
+    private final TokenService tokenService;
     private final TelemetryClient telemetryClient;
     private final boolean smokeTestEnabled;
 
     public ResetPasswordController(final ResetPasswordService resetPasswordService,
-                                   final UserService userService,
+                                   final TokenService tokenService, final UserService userService,
                                    final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
+        super(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "setPassword");
         this.resetPasswordService = resetPasswordService;
-        this.userService = userService;
+        this.tokenService = tokenService;
         this.telemetryClient = telemetryClient;
         this.smokeTestEnabled = smokeTestEnabled;
     }
@@ -83,7 +81,7 @@ public class ResetPasswordController {
 
     @GetMapping("/reset-password-confirm/{token}")
     public ModelAndView resetPasswordConfirm(@PathVariable final String token) {
-        final var userTokenOptional = resetPasswordService.checkToken(token);
+        final var userTokenOptional = tokenService.checkToken(RESET, token);
         return userTokenOptional.map(s -> new ModelAndView("resetPassword", "error", s)).
                 orElseGet(() -> new ModelAndView("setPassword", "token", token));
     }
@@ -91,101 +89,8 @@ public class ResetPasswordController {
     @PostMapping("/set-password")
     public ModelAndView setPassword(@RequestParam final String token,
                                     @RequestParam final String newPassword, @RequestParam final String confirmPassword) {
-        final var userTokenOptional = resetPasswordService.checkToken(token);
-        if (userTokenOptional.isPresent()) {
-            return new ModelAndView("resetPassword", "error", userTokenOptional.get());
-        }
-        // token checked already by service, so can just get it here
-        //noinspection OptionalGetWithoutIsPresent
-        final var userToken = resetPasswordService.getToken(token).get();
-        final var username = userToken.getUserEmail().getUsername();
+        final var modelAndView = processSetPassword(RESET, token, newPassword, confirmPassword);
 
-        final var modelAndView = new ModelAndView("setPassword", "token", token);
-
-        final var validationResult = validate(username, newPassword, confirmPassword);
-        if (!validationResult.isEmpty()) {
-            telemetryClient.trackEvent("ResetPasswordFailure", Map.of("username", username, "reason", validationResult.toString()), null);
-            modelAndView.addAllObjects(validationResult);
-            modelAndView.addObject("error", Boolean.TRUE);
-            return modelAndView;
-        }
-
-        try {
-            resetPasswordService.resetPassword(token, newPassword);
-
-        } catch (final Exception e) {
-            if (e instanceof PasswordValidationFailureException) {
-                return trackAndReturnToSetPassword(username, modelAndView, "validation");
-            }
-            if (e instanceof ReusedPasswordException) {
-                return trackAndReturnToSetPassword(username, modelAndView, "reused");
-            }
-            if (e instanceof LockedException) {
-                return trackAndReturnToSetPassword(username, modelAndView, "state");
-            }
-            // let any other exception bubble up
-            throw e;
-        }
-
-        log.info("Successfully changed password for {}", username);
-        return new ModelAndView("redirect:/reset-password-success");
-    }
-
-    private ModelAndView trackAndReturnToSetPassword(final String username, final ModelAndView modelAndView, final String reason) {
-        telemetryClient.trackEvent("ResetPasswordFailure", Map.of("username", username, "reason", reason), null);
-        modelAndView.addObject("errornew", reason);
-        modelAndView.addObject("error", Boolean.TRUE);
-        return modelAndView;
-    }
-
-    private MultiValueMap<String, Object> validate(final String username, final String newPassword, final String confirmPassword) {
-        final var builder = new LinkedMultiValueMap<String, Object>();
-        if (StringUtils.isBlank(newPassword)) {
-            builder.add("errornew", "newmissing");
-        }
-        if (StringUtils.isBlank(confirmPassword)) {
-            builder.add("errorconfirm", "confirmmissing");
-        }
-
-        // Bomb out now as either new password or confirm new password is missing
-        if (!builder.isEmpty()) {
-            return builder;
-        }
-
-        // user must be present in order for authenticate to work above
-        //noinspection OptionalGetWithoutIsPresent
-        final var user = userService.getUserByUsername(username).get();
-
-        // Ensuring alphanumeric will ensure that we can't get SQL Injection attacks - since for oracle the password
-        // cannot be used in a prepared statement
-        if (!StringUtils.isAlphanumeric(newPassword)) {
-            builder.add("errornew", "alphanumeric");
-        }
-        final var digits = StringUtils.getDigits(newPassword);
-        if (digits.length() == 0) {
-            builder.add("errornew", "nodigits");
-        }
-        if (digits.length() == newPassword.length()) {
-            builder.add("errornew", "alldigits");
-        }
-        if (StringUtils.containsIgnoreCase(newPassword, username)) {
-            builder.add("errornew", "username");
-        }
-        if (newPassword.chars().distinct().count() < 4) {
-            builder.add("errornew", "four");
-        }
-
-        if (!StringUtils.equals(newPassword, confirmPassword)) {
-            builder.add("errorconfirm", "mismatch");
-        }
-        if (user.getAccountDetail().getAccountProfile() == AccountProfile.TAG_ADMIN) {
-            if (newPassword.length() < 14) {
-                builder.add("errornew", "length14");
-            }
-        } else if (newPassword.length() < 9) {
-            builder.add("errornew", "length9");
-        }
-
-        return builder;
+        return modelAndView.orElse(new ModelAndView("redirect:/reset-password-success"));
     }
 }
