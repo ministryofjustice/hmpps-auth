@@ -1,9 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -45,9 +42,13 @@ public class UserToken {
         return tokenExpiry.isBefore(LocalDateTime.now());
     }
 
+    @Getter
+    @AllArgsConstructor
     public enum TokenType {
-        RESET,
-        VERIFIED,
-        CHANGE
+        RESET("Reset"),
+        VERIFIED("Verified"),
+        CHANGE("Change");
+
+        private final String description;
     }
 }
