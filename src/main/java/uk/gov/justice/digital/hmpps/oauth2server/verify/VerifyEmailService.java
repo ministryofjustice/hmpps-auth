@@ -125,9 +125,6 @@ public class VerifyEmailService {
         userEmail.setVerified(true);
         userEmailRepository.save(userEmail);
 
-        // and clear token
-        userTokenRepository.delete(userToken);
-
         log.info("Verify email succeeded for {}", userEmail.getUsername());
         telemetryClient.trackEvent("VerifyEmailConfirmSuccess", Map.of("username", userEmail.getUsername()), null);
     }

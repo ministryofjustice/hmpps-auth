@@ -146,7 +146,6 @@ public class VerifyEmailServiceTest {
 
         assertThat(result).isEmpty();
         verify(userEmailRepository).save(userEmail);
-        verify(userTokenRepository).delete(userToken);
         assertThat(userEmail.isVerified()).isTrue();
     }
 
