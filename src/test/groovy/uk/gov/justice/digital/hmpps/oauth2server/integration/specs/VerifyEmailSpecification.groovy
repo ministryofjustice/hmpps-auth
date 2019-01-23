@@ -43,7 +43,13 @@ class VerifyEmailSpecification extends GebReportingSpec {
         and: 'I can then verify my email address'
         browser.go verifyLink
 
-        then:
+        then: 'I am shown the success page'
+        at VerifyEmailConfirmPage
+
+        and: 'I can then verify my email address again'
+        browser.go verifyLink
+
+        then: 'I am shown the success page'
         at VerifyEmailConfirmPage
     }
 
