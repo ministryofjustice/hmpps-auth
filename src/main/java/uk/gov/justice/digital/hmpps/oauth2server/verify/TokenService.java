@@ -2,16 +2,11 @@ package uk.gov.justice.digital.hmpps.oauth2server.verify;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
-import uk.gov.service.notify.NotificationClientApi;
 
 import java.util.Map;
 import java.util.Optional;
@@ -21,30 +16,13 @@ import java.util.Optional;
 @Transactional
 public class TokenService {
 
-    private final UserEmailRepository userEmailRepository;
     private final UserTokenRepository userTokenRepository;
-    private final UserService userService;
-    private final ChangePasswordService changePasswordService;
     private final TelemetryClient telemetryClient;
-    private final NotificationClientApi notificationClient;
-    private final String resetTemplateId;
-    private final String resetUnavailableTemplateId;
 
-    public TokenService(final UserEmailRepository userEmailRepository,
-                        final UserTokenRepository userTokenRepository, final UserService userService,
-                        final ChangePasswordService changePasswordService, final TelemetryClient telemetryClient,
-                        final NotificationClientApi notificationClient,
-                        @Value("${application.notify.reset.template}") final String resetTemplateId,
-                        @Value("${application.notify.reset-unavailable.template}") final String resetUnavailableTemplateId
-    ) {
-        this.userEmailRepository = userEmailRepository;
+    public TokenService(final UserTokenRepository userTokenRepository,
+                        final TelemetryClient telemetryClient) {
         this.userTokenRepository = userTokenRepository;
-        this.userService = userService;
-        this.changePasswordService = changePasswordService;
         this.telemetryClient = telemetryClient;
-        this.notificationClient = notificationClient;
-        this.resetTemplateId = resetTemplateId;
-        this.resetUnavailableTemplateId = resetUnavailableTemplateId;
     }
 
     public Optional<UserToken> getToken(final TokenType tokenType, final String token) {

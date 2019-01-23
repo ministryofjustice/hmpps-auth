@@ -25,30 +25,35 @@ public class AbstractPasswordController {
     private final UserService userService;
     private final TelemetryClient telemetryClient;
 
-    private final String startAgainViewName;
+    private final String startAgainViewOrUrl;
     private final String failureViewName;
 
     public AbstractPasswordController(final PasswordService passwordService,
                                       final TokenService tokenService, final UserService userService,
                                       final TelemetryClient telemetryClient,
-                                      final String startAgainViewName, final String failureViewName) {
+                                      final String startAgainViewOrUrl, final String failureViewName) {
         this.passwordService = passwordService;
         this.tokenService = tokenService;
         this.userService = userService;
         this.telemetryClient = telemetryClient;
-        this.startAgainViewName = startAgainViewName;
+        this.startAgainViewOrUrl = startAgainViewOrUrl;
         this.failureViewName = failureViewName;
     }
 
-    protected Optional<ModelAndView> processSetPassword(final TokenType tokenType, final String token,
-                                                        final String newPassword, final String confirmPassword) {
+    Optional<ModelAndView> processSetPassword(final TokenType tokenType, final String token,
+                                              final String newPassword, final String confirmPassword) {
         final var userTokenOptional = tokenService.checkToken(tokenType, token);
         if (userTokenOptional.isPresent()) {
-            return Optional.of(new ModelAndView(startAgainViewName, "error", userTokenOptional.get()));
+            final ModelAndView modelAndView;
+            if (startAgainViewOrUrl.startsWith("redirect")) {
+                modelAndView = new ModelAndView(String.format(startAgainViewOrUrl, userTokenOptional.get()));
+            } else {
+                modelAndView = new ModelAndView(startAgainViewOrUrl, "error", userTokenOptional.get());
+            }
+            return Optional.of(modelAndView);
         }
         // token checked already by service, so can just get it here
-        //noinspection OptionalGetWithoutIsPresent
-        final var userToken = tokenService.getToken(tokenType, token).get();
+        final var userToken = tokenService.getToken(tokenType, token).orElseThrow();
         final var username = userToken.getUserEmail().getUsername();
 
         final var validationResult = validate(username, newPassword, confirmPassword);
@@ -95,8 +100,7 @@ public class AbstractPasswordController {
         }
 
         // user must be present in order for authenticate to work above
-        //noinspection OptionalGetWithoutIsPresent
-        final var user = userService.getUserByUsername(username).get();
+        final var user = userService.getUserByUsername(username).orElseThrow();
 
         // Ensuring alphanumeric will ensure that we can't get SQL Injection attacks - since for oracle the password
         // cannot be used in a prepared statement

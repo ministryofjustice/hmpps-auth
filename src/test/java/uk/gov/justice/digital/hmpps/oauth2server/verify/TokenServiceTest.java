@@ -12,11 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
-import uk.gov.service.notify.NotificationClientApi;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -30,17 +26,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class TokenServiceTest {
     @Mock
-    private UserEmailRepository userEmailRepository;
-    @Mock
     private UserTokenRepository userTokenRepository;
     @Mock
-    private UserService userService;
-    @Mock
-    private ChangePasswordService changePasswordService;
-    @Mock
     private TelemetryClient telemetryClient;
-    @Mock
-    private NotificationClientApi notificationClient;
     @Captor
     private ArgumentCaptor<Map<String, String>> mapCaptor;
 
@@ -48,7 +36,7 @@ public class TokenServiceTest {
 
     @Before
     public void setUp() {
-        tokenService = new TokenService(userEmailRepository, userTokenRepository, userService, changePasswordService, telemetryClient, notificationClient, "resetTemplate", "resetUnavailableTemplate");
+        tokenService = new TokenService(userTokenRepository, telemetryClient);
     }
 
     @Test
