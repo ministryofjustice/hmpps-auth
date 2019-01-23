@@ -121,7 +121,7 @@ public class VerifyEmailController {
         }
 
         try {
-            final var verifyLink = verifyEmailService.requestVerification(username, chosenEmail, request.getRequestURL().append("-confirm").toString());
+            final var verifyLink = verifyEmailService.requestVerification(username, chosenEmail, request.getRequestURL().append("-confirm?token=").toString());
 
             final var modelAndView = new ModelAndView("verifyEmailSent");
             if (smokeTestEnabled) {
@@ -146,7 +146,14 @@ public class VerifyEmailController {
     }
 
     @GetMapping("/verify-email-confirm/{token}")
-    public ModelAndView verifyEmailConfirm(@PathVariable final String token) {
+    @Deprecated
+    public ModelAndView verifyEmailConfirmInPath(@PathVariable final String token) {
+        // can be removed after go live on the below method instead
+        return verifyEmailConfirm(token);
+    }
+
+    @GetMapping("/verify-email-confirm")
+    public ModelAndView verifyEmailConfirm(@RequestParam final String token) {
         final var errorOptional = verifyEmailService.confirmEmail(token);
         if (errorOptional.isPresent()) {
             final var error = errorOptional.get();

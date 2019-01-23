@@ -132,7 +132,7 @@ class ResetPasswordSpecification extends GebReportingSpec {
 
     def "A user is asked to reset password again if the reset link is invalid"() {
         given: 'I have a reste link'
-        String resetLink = "/auth/reset-password-confirm/someinvalidtoken"
+        String resetLink = "/auth/reset-password-confirm?token=someinvalidtoken"
 
         when: 'I browse to the link'
         browser.go resetLink
