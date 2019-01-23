@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangeP
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
 
-import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.CA_USER
+import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
 class ChangePasswordSpecification extends GebReportingSpec {
 
@@ -23,7 +23,7 @@ class ChangePasswordSpecification extends GebReportingSpec {
 
     def "Attempt change password without credentials"() {
         given: 'I am on the Change Password page'
-        to username: CA_USER.username, ChangePasswordPage
+        to username: EXPIRED_TEST_USER.username, ChangePasswordPage
 
         when: "I change password without credentials"
         changePasswordAs '', '', ''
@@ -38,7 +38,7 @@ class ChangePasswordSpecification extends GebReportingSpec {
 
     def "Attempt change password with invalid new password"() {
         given: 'I am on the Change Password page'
-        to username: CA_USER.username, ChangePasswordPage
+        to username: EXPIRED_TEST_USER.username, ChangePasswordPage
 
         when: "I change password without credentials"
         changePasswordAs 'password123456', 'somepass', 'd'
@@ -53,10 +53,10 @@ class ChangePasswordSpecification extends GebReportingSpec {
         errorConfirmText == 'Your passwords do not match. Enter matching passwords.'
     }
 
-    // this test changes CA_USER password
+    // this test changes EXPIRED_TEST2_USER password
     def "Change password with valid credentials"() {
         given: 'I am on the Change Password page'
-        to username: CA_USER.username, ChangePasswordPage
+        to username: EXPIRED_TEST2_USER.username, ChangePasswordPage
 
         when: "I change password using valid credentials"
         changePasswordAs 'password123456', 'password1', 'password1'
@@ -65,16 +65,16 @@ class ChangePasswordSpecification extends GebReportingSpec {
         at HomePage
     }
 
-    // this test changes it back again so requires previous test to succeed
+    // this test changes EXPIRED_TEST3_USER password
     def "I can sign in from another client"() {
         given: 'I am using SSO auth token to change password'
         def state = RandomStringUtils.random(6, true, true)
         browser.go('/auth/oauth/authorize?client_id=elite2apiclient&redirect_uri=' + clientBaseUrl + '&response_type=code&state=' + state)
         at LoginPage
-        to username: CA_USER.username, ChangePasswordPage
+        to username: EXPIRED_TEST3_USER.username, ChangePasswordPage
 
         when: "I change password using valid credentials"
-        changePasswordAs 'password1', 'password123456', 'password123456'
+        changePasswordAs 'password123456', 'password1', 'password1'
 
         then: 'I am redirected back'
         browser.getCurrentUrl() startsWith(clientBaseUrl + '?code')

@@ -15,13 +15,13 @@ INSERT INTO user_retries (username, retry_count) VALUES ('LOCKED_USER', 5);
 
 INSERT INTO user_email (username, email, verified)
 VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
-  ('CA_USER', 'ca_user@digital.justice.gov.uk', 'true')
-  ,
-  ('ITAG_USER', 'itag_user@digital.justice.gov.uk', 'true')
-  ,
-  ('ITAG_USER_ADM', 'itag_user_adm@digital.justice.gov.uk', 'true')
-  ,
-  ('DM_USER', 'dm_user@digital.justice.gov.uk', 'false');
+  ('CA_USER', 'ca_user@digital.justice.gov.uk', 'true'),
+  ('ITAG_USER', 'itag_user@digital.justice.gov.uk', 'true'),
+  ('ITAG_USER_ADM', 'itag_user_adm@digital.justice.gov.uk', 'true'),
+  ('DM_USER', 'dm_user@digital.justice.gov.uk', 'false'),
+  ('EXPIRED_TEST_USER', 'expired_test_user@digital.justice.gov.uk', 'true'),
+  ('EXPIRED_TEST2_USER', 'expired_test2_user@digital.justice.gov.uk', 'true'),
+  ('EXPIRED_TEST3_USER', 'expired_test3_user@digital.justice.gov.uk', 'true'); 
 
 INSERT INTO user_token (token, token_type, token_expiry, username)
 VALUES ('reset', 'RESET', '2018-12-10 08:55:45', 'LOCKED_USER');
