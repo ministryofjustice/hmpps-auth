@@ -177,7 +177,7 @@ public class VerifyEmailControllerTest {
 
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmailSent");
         assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("verifyLink", "link"), MapEntry.entry("email", email));
-        verify(verifyEmailService).requestVerification("user", email, "http://some.url-confirm");
+        verify(verifyEmailService).requestVerification("user", email, "http://some.url-confirm?token=");
     }
 
     private void verifyEmailFailure(final String email, final String domain) throws IOException, ServletException {

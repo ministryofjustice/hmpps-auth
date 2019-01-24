@@ -74,7 +74,7 @@ public class VerifyEmailService {
         existingTokenOptional.ifPresent(userTokenRepository::delete);
 
         final var userToken = new UserToken(TokenType.VERIFIED, userEmail);
-        final var verifyLink = String.format("%s/%s", url, userToken.getToken());
+        final var verifyLink = url + userToken.getToken();
         final var parameters = Map.of("firstName", firstName, "verifyLink", verifyLink);
 
         try {

@@ -59,7 +59,7 @@ public class ResetPasswordController extends AbstractPasswordController {
         }
 
         try {
-            final var resetLink = resetPasswordService.requestResetPassword(username, request.getRequestURL().append("-confirm").toString());
+            final var resetLink = resetPasswordService.requestResetPassword(username, request.getRequestURL().append("-confirm?token=").toString());
             final var modelAndView = new ModelAndView("resetPasswordSent");
             if (smokeTestEnabled) {
                 if (resetLink.isPresent()) {
@@ -80,7 +80,14 @@ public class ResetPasswordController extends AbstractPasswordController {
     }
 
     @GetMapping("/reset-password-confirm/{token}")
-    public ModelAndView resetPasswordConfirm(@PathVariable final String token) {
+    @Deprecated
+    public ModelAndView resetPasswordConfirmInPath(@PathVariable final String token) {
+        // can be removed after go live on the below method instead
+        return resetPasswordConfirm(token);
+    }
+
+    @GetMapping("/reset-password-confirm")
+    public ModelAndView resetPasswordConfirm(@RequestParam final String token) {
         final var userTokenOptional = tokenService.checkToken(RESET, token);
         return userTokenOptional.map(s -> new ModelAndView("resetPassword", "error", s)).
                 orElseGet(() -> new ModelAndView("setPassword", "token", token));

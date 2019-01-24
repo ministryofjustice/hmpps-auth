@@ -83,7 +83,7 @@ public class ResetPasswordService implements PasswordService {
                 final var userToken = new UserToken(TokenType.RESET, userEmail);
                 userTokenRepository.save(userToken);
 
-                final var resetLink = String.format("%s/%s", url, userToken.getToken());
+                final var resetLink = url + userToken.getToken();
                 parameters = Map.of("firstName", firstName, "resetLink", resetLink);
             } else {
                 emailTemplate = resetUnavailableTemplateId;

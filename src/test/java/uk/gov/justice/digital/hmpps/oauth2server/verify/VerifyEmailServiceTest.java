@@ -119,7 +119,7 @@ public class VerifyEmailServiceTest {
         final var verification = verifyEmailService.requestVerification("user", "email", "url");
         verify(userTokenRepository).save(captor.capture());
         final var value = captor.getValue();
-        assertThat(verification).isEqualTo(String.format("url/%s", value.getToken()));
+        assertThat(verification).isEqualTo("url" + value.getToken());
     }
 
     @Test
