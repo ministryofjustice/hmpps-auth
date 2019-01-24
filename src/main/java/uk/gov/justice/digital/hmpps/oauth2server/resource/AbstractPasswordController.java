@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 public class AbstractPasswordController {
@@ -27,17 +28,20 @@ public class AbstractPasswordController {
 
     private final String startAgainViewOrUrl;
     private final String failureViewName;
+    private final Set<String> passwordBlacklist;
 
     public AbstractPasswordController(final PasswordService passwordService,
                                       final TokenService tokenService, final UserService userService,
                                       final TelemetryClient telemetryClient,
-                                      final String startAgainViewOrUrl, final String failureViewName) {
+                                      final String startAgainViewOrUrl, final String failureViewName,
+                                      final Set<String> passwordBlacklist) {
         this.passwordService = passwordService;
         this.tokenService = tokenService;
         this.userService = userService;
         this.telemetryClient = telemetryClient;
         this.startAgainViewOrUrl = startAgainViewOrUrl;
         this.failureViewName = failureViewName;
+        this.passwordBlacklist = passwordBlacklist;
     }
 
     Optional<ModelAndView> processSetPassword(final TokenType tokenType, final String token,
@@ -118,6 +122,9 @@ public class AbstractPasswordController {
         }
         if (digits.length() == newPassword.length()) {
             builder.add("errornew", "alldigits");
+        }
+        if (passwordBlacklist.contains(newPassword.toLowerCase())) {
+            builder.add("errornew", "blacklist");
         }
         if (StringUtils.containsIgnoreCase(newPassword, username)) {
             builder.add("errornew", "username");

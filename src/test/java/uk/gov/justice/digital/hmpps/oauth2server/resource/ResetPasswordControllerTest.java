@@ -18,6 +18,7 @@ import uk.gov.service.notify.NotificationClientException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +43,7 @@ public class ResetPasswordControllerTest {
 
     @Before
     public void setUp() {
-        controller = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, true);
+        controller = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, true, Set.of("password1"));
     }
 
     @Test
@@ -84,7 +85,7 @@ public class ResetPasswordControllerTest {
     public void resetPasswordRequest_success() throws NotificationClientException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
-        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, false).resetPasswordRequest("user", request);
+        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, false, null).resetPasswordRequest("user", request);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPasswordSent");
         assertThat(modelAndView.getModel()).isEmpty();
     }
@@ -93,7 +94,7 @@ public class ResetPasswordControllerTest {
     public void resetPasswordRequest_failed() throws NotificationClientException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(new NotificationClientException("failure message"));
-        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, false).resetPasswordRequest("user", request);
+        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, false, null).resetPasswordRequest("user", request);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
         assertThat(modelAndView.getModel()).containsExactly(entry("error", "other"));
     }

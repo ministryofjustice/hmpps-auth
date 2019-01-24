@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +47,7 @@ public class AbstractPasswordControllerTest {
 
     @Before
     public void setUp() {
-        controller = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, true);
+        controller = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, true, Set.of("password1"));
     }
 
     @Test
@@ -109,6 +110,15 @@ public class AbstractPasswordControllerTest {
     }
 
     @Test
+    public void setPassword_Blacklist() {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile(null);
+        final var modelAndView = controller.setPassword("token", "passWORD1", "passWORD1");
+        assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "token"), entry("error", Boolean.TRUE), listEntry("errornew", "blacklist"));
+    }
+
+    @Test
     public void setPassword_ContainsUsername() {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile(null);
@@ -157,7 +167,7 @@ public class AbstractPasswordControllerTest {
     public void setPassword_Mismatch() {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile(null);
-        final var modelAndView = controller.setPassword("user", "password1", "new");
+        final var modelAndView = controller.setPassword("user", "password2", "new");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
         assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), listEntry("errorconfirm", "mismatch"));
     }
@@ -167,7 +177,7 @@ public class AbstractPasswordControllerTest {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile(null);
         doThrow(new PasswordValidationFailureException()).when(resetPasswordService).setPassword(anyString(), anyString());
-        final var modelAndView = controller.setPassword("user", "password1", "password1");
+        final var modelAndView = controller.setPassword("user", "password2", "password2");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
         assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "validation"));
     }
@@ -179,7 +189,7 @@ public class AbstractPasswordControllerTest {
         final var exception = new RuntimeException();
         doThrow(exception).when(resetPasswordService).setPassword(anyString(), anyString());
         assertThatThrownBy(
-                () -> controller.setPassword("user", "password1", "password1")
+                () -> controller.setPassword("user", "password2", "password2")
         ).isEqualTo(exception);
     }
 
@@ -188,7 +198,7 @@ public class AbstractPasswordControllerTest {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile(null);
         doThrow(new ReusedPasswordException()).when(resetPasswordService).setPassword(anyString(), anyString());
-        final var modelAndView = controller.setPassword("user", "password1", "password1");
+        final var modelAndView = controller.setPassword("user", "password2", "password2");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
         assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "reused"));
     }
@@ -198,7 +208,7 @@ public class AbstractPasswordControllerTest {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile(null);
         doThrow(new LockedException("wrong")).when(resetPasswordService).setPassword(anyString(), anyString());
-        final var modelAndView = controller.setPassword("user", "password1", "password1");
+        final var modelAndView = controller.setPassword("user", "password2", "password2");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
         assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "state"));
     }
