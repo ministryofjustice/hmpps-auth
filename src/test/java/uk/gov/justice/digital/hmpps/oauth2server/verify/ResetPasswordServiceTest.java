@@ -188,7 +188,7 @@ public class ResetPasswordServiceTest {
         final var linkOptional = resetPasswordService.requestResetPassword("user", "url");
         verify(userTokenRepository).save(captor.capture());
         final var value = captor.getValue();
-        assertThat(linkOptional).get().isEqualTo(String.format("url/%s", value.getToken()));
+        assertThat(linkOptional).get().isEqualTo("url" + value.getToken());
         assertThat(value.getTokenType()).isEqualTo(TokenType.RESET);
         assertThat(value.getUserEmail().getEmail()).isEqualTo("email");
     }
