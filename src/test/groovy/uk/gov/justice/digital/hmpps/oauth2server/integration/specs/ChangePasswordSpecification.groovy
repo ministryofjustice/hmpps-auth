@@ -10,38 +10,36 @@ import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPa
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
 class ChangePasswordSpecification extends GebReportingSpec {
-
     public static final String clientBaseUrl = 'http://localhost:8081/login'
 
-    def "The change password page is present"() {
-        when: 'I go to the change password page'
-        to username: 'bob', ChangePasswordPage
-
-        then: 'The Change Password page is displayed'
-        at ChangePasswordPage
-    }
-
     def "Attempt change password without credentials"() {
-        given: 'I am on the Change Password page'
-        to username: EXPIRED_TEST_USER.username, ChangePasswordPage
+        given: 'I try to login with an expired user'
+        to LoginPage
+        loginAs EXPIRED_TEST_USER, 'password123456'
+
+        and: 'I am redirected to the change password page'
+        at ChangePasswordPage
 
         when: "I change password without credentials"
-        changePasswordAs '', '', ''
+        changePasswordAs '', ''
 
         then: 'My credentials are rejected and I am still on the Change Password page'
         at ChangePasswordErrorPage
-        errorText == 'Enter your current password\nEnter your new password\nEnter your new password again'
-        errorCurrentText == 'Enter your current password'
+        errorText == 'Enter your new password\nEnter your new password again'
         errorNewText == 'Enter your new password'
         errorConfirmText == 'Enter your new password again'
     }
 
     def "Attempt change password with invalid new password"() {
-        given: 'I am on the Change Password page'
-        to username: EXPIRED_TEST_USER.username, ChangePasswordPage
+        given: 'I try to login with an expired user'
+        to LoginPage
+        loginAs EXPIRED_TEST_USER, 'password123456'
+
+        and: 'I am redirected to the change password page'
+        at ChangePasswordPage
 
         when: "I change password without credentials"
-        changePasswordAs 'password123456', 'somepass', 'd'
+        changePasswordAs 'somepass', 'd'
 
         then: 'My credentials are rejected and I am still on the Change Password page'
         at ChangePasswordErrorPage
@@ -55,11 +53,15 @@ class ChangePasswordSpecification extends GebReportingSpec {
 
     // this test changes EXPIRED_TEST2_USER password
     def "Change password with valid credentials"() {
-        given: 'I am on the Change Password page'
-        to username: EXPIRED_TEST2_USER.username, ChangePasswordPage
+        given: 'I try to login with an expired user'
+        to LoginPage
+        loginAs EXPIRED_TEST2_USER, 'password123456'
+
+        and: 'I am redirected to the change password page'
+        at ChangePasswordPage
 
         when: "I change password using valid credentials"
-        changePasswordAs 'password123456', 'password1', 'password1'
+        changePasswordAs 'password1', 'password1'
 
         then: 'My credentials are accepted and I am shown the Home page'
         at HomePage
@@ -71,10 +73,13 @@ class ChangePasswordSpecification extends GebReportingSpec {
         def state = RandomStringUtils.random(6, true, true)
         browser.go('/auth/oauth/authorize?client_id=elite2apiclient&redirect_uri=' + clientBaseUrl + '&response_type=code&state=' + state)
         at LoginPage
-        to username: EXPIRED_TEST3_USER.username, ChangePasswordPage
+        loginAs EXPIRED_TEST3_USER, 'password123456'
+
+        and: 'I am redirected to the change password page'
+        at ChangePasswordPage
 
         when: "I change password using valid credentials"
-        changePasswordAs 'password123456', 'password1', 'password1'
+        changePasswordAs 'password123456', 'password123456'
 
         then: 'I am redirected back'
         browser.getCurrentUrl() startsWith(clientBaseUrl + '?code')

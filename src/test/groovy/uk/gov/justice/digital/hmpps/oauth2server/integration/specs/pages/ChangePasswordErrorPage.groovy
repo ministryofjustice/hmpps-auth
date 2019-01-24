@@ -8,7 +8,6 @@ class ChangePasswordErrorPage extends ChangePasswordPage {
 
     static content = {
         errorText { $('#error-detail').text() }
-        errorCurrentText { $('#errorcurrent').text() }
         errorNewText { $('#errornew').text() }
         errorConfirmText { $('#errorconfirm').text() }
     }

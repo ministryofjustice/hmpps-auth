@@ -16,9 +16,8 @@ class ChangePasswordPage extends Page {
         changePasswordButton { $("input", type: 'submit') }
     }
 
-    void changePasswordAs(String existingPassword, String newPassword, String confirmNewPassword) {
+    void changePasswordAs(String newPassword, String confirmNewPassword) {
 
-        $('form').password = existingPassword
         $('form').newPassword = newPassword
         $('form').confirmPassword = confirmNewPassword
 

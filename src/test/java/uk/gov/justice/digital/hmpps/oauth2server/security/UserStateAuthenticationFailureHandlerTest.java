@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,9 +25,11 @@ public class UserStateAuthenticationFailureHandlerTest {
     @Mock
     private HttpServletResponse response;
     @Mock
+    private ChangePasswordService changePasswordService;
+    @Mock
     private RedirectStrategy redirectStrategy;
 
-    private final UserStateAuthenticationFailureHandler handler = new UserStateAuthenticationFailureHandler();
+    private UserStateAuthenticationFailureHandler handler;
 
     @Before
     public void setUp() {
@@ -43,9 +46,11 @@ public class UserStateAuthenticationFailureHandlerTest {
     @Test
     public void onAuthenticationFailure_expiredResetEnabled() throws IOException {
         when(request.getParameter("username")).thenReturn("bob");
+        when(changePasswordService.createToken(anyString())).thenReturn("sometoken");
         handler.onAuthenticationFailure(request, response, new AccountExpiredException("msg"));
 
-        verify(redirectStrategy).sendRedirect(request, response, "/change-password?username=BOB");
+        verify(redirectStrategy).sendRedirect(request, response, "/change-password?token=sometoken");
+        verify(changePasswordService).createToken("BOB");
     }
 
     @Test
@@ -81,6 +86,7 @@ public class UserStateAuthenticationFailureHandlerTest {
     }
 
     private void setupHandler() {
+        handler = new UserStateAuthenticationFailureHandler(changePasswordService);
         handler.setRedirectStrategy(redirectStrategy);
     }
 }
