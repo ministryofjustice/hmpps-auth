@@ -35,7 +35,7 @@ public class UserToken {
         this.userEmail = userEmail;
 
         final var now = LocalDateTime.now();
-        this.tokenExpiry = tokenType == TokenType.CHANGE ? now.plusMinutes(30) : now.plusDays(1);
+        this.tokenExpiry = tokenType == TokenType.CHANGE ? now.plusMinutes(20) : now.plusDays(1);
     }
 
     public boolean hasTokenExpired() {
