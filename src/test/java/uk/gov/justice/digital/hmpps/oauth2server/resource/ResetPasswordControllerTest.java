@@ -4,6 +4,8 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
@@ -17,13 +19,14 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 import uk.gov.service.notify.NotificationClientException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -38,6 +41,8 @@ public class ResetPasswordControllerTest {
     private TelemetryClient telemetryClient;
     @Mock
     private HttpServletRequest request;
+    @Captor
+    private ArgumentCaptor<Map<String, String>> mapCaptor;
 
     private ResetPasswordController controller;
 
@@ -79,6 +84,24 @@ public class ResetPasswordControllerTest {
         final var modelAndView = controller.resetPasswordRequest("user", request);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPasswordSent");
         assertThat(modelAndView.getModel()).containsExactly(entry("resetLinkMissing", Boolean.TRUE));
+    }
+
+    @Test
+    public void resetPasswordRequest_successNoLinkTelemetry() throws NotificationClientException {
+        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
+        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
+        controller.resetPasswordRequest("user", request);
+        verify(telemetryClient).trackEvent(eq("ResetPasswordRequestFailure"), mapCaptor.capture(), isNull());
+        assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"), entry("error", "nolink"));
+    }
+
+    @Test
+    public void resetPasswordRequest_successLinkTelemetry() throws NotificationClientException {
+        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
+        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("somelink"));
+        final var modelAndView = controller.resetPasswordRequest("user", request);
+        verify(telemetryClient).trackEvent(eq("ResetPasswordRequestSuccess"), mapCaptor.capture(), isNull());
+        assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"));
     }
 
     @Test

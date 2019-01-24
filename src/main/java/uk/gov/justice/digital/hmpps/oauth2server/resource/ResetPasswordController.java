@@ -63,14 +63,17 @@ public class ResetPasswordController extends AbstractPasswordController {
         try {
             final var resetLink = resetPasswordService.requestResetPassword(username, request.getRequestURL().append("-confirm?token=").toString());
             final var modelAndView = new ModelAndView("resetPasswordSent");
-            if (smokeTestEnabled) {
-                if (resetLink.isPresent()) {
+            if (resetLink.isPresent()) {
+                telemetryClient.trackEvent("ResetPasswordRequestSuccess", Map.of("username", username), null);
+                if (smokeTestEnabled) {
                     modelAndView.addObject("resetLink", resetLink.get());
-                } else {
+                }
+            } else {
+                telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("username", username, "error", "nolink"), null);
+                if (smokeTestEnabled) {
                     modelAndView.addObject("resetLinkMissing", true);
                 }
             }
-            telemetryClient.trackEvent("ResetPasswordRequestSuccess", Map.of("username", username), null);
             return modelAndView;
 
         } catch (final NotificationClientException e) {
