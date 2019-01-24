@@ -45,10 +45,27 @@ class ChangePasswordSpecification extends GebReportingSpec {
         at ChangePasswordErrorPage
         errorText == 'Your password must have both letters and numbers\n' +
                 'Your password must have at least 9 characters\n' +
-                'Your passwords do not match. Enter matching passwords.';
+                'Your passwords do not match. Enter matching passwords.'
         errorNewText == 'Your password must have both letters and numbers\n' +
                 'Your password must have at least 9 characters'
         errorConfirmText == 'Your passwords do not match. Enter matching passwords.'
+    }
+
+    def "Attempt change password with password on blacklist"() {
+        given: 'I try to login with an expired user'
+        to LoginPage
+        loginAs EXPIRED_TEST_USER, 'password123456'
+
+        and: 'I am redirected to the change password page'
+        at ChangePasswordPage
+
+        when: "I change password without credentials"
+        changePasswordAs 'iLoveYou2', 'iLoveYou2'
+
+        then: 'My credentials are rejected and I am still on the Change Password page'
+        at ChangePasswordErrorPage
+        errorText == 'Your password is commonly used and may not be secure'
+        errorNewText == 'Your password is commonly used and may not be secure'
     }
 
     // this test changes EXPIRED_TEST2_USER password
@@ -61,9 +78,17 @@ class ChangePasswordSpecification extends GebReportingSpec {
         at ChangePasswordPage
 
         when: "I change password using valid credentials"
-        changePasswordAs 'password1', 'password1'
+        changePasswordAs 'helloworld2', 'helloworld2'
 
-        then: 'My credentials are accepted and I am shown the Home page'
+        and: 'My credentials are accepted and I am shown the Home page'
+        at HomePage
+
+        and: 'I can login with my new credentials'
+        logout()
+        at LoginPage
+        loginAs EXPIRED_TEST2_USER, 'helloworld2'
+
+        then: 'I am logged in'
         at HomePage
     }
 
@@ -89,12 +114,12 @@ class ChangePasswordSpecification extends GebReportingSpec {
 
         and: 'auth code is returned'
         def params = splitQuery(new URL(browser.getCurrentUrl()))
-        def authCode = params.get('code');
+        def authCode = params.get('code')
         authCode != null
     }
 
     private static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
         return url.query.split('&')
-                .collectEntries { it.split('=').collect { URLDecoder.decode(it, 'UTF-8') } };
+                .collectEntries { it.split('=').collect { URLDecoder.decode(it, 'UTF-8') } }
     }
 }

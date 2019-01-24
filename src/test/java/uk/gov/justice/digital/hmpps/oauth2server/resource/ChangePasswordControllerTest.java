@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import org.assertj.core.data.MapEntry;
-import org.assertj.core.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,13 +16,16 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
-import uk.gov.justice.digital.hmpps.oauth2server.security.*;
+import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
+import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,8 +35,6 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChangePasswordControllerTest {
-    @Mock
-    private UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler;
     @Mock
     private JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
     @Mock
@@ -58,7 +57,7 @@ public class ChangePasswordControllerTest {
     @Before
     public void setUp() {
         controller = new ChangePasswordController(jwtAuthenticationSuccessHandler,
-                daoAuthenticationProvider, changePasswordService, tokenService, userService, telemetryClient);
+                daoAuthenticationProvider, changePasswordService, tokenService, userService, telemetryClient, Set.of("password1"));
     }
 
     @Test
@@ -70,9 +69,9 @@ public class ChangePasswordControllerTest {
     @Test
     public void changePassword_ValidationFailure() throws Exception {
         setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile(null);
+        setupGetUserCallForProfile();
         doThrow(new PasswordValidationFailureException()).when(changePasswordService).setPassword(anyString(), anyString());
-        final var redirect = controller.changePassword("user", "password1", "password1", request, response);
+        final var redirect = controller.changePassword("user", "password2", "password2", request, response);
         assertThat(redirect.getViewName()).isEqualTo("changePassword");
         assertThat(redirect.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "validation"));
     }
@@ -80,11 +79,11 @@ public class ChangePasswordControllerTest {
     @Test
     public void changePassword_OtherException() {
         setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile(null);
+        setupGetUserCallForProfile();
         final var exception = new RuntimeException();
         doThrow(exception).when(changePasswordService).setPassword(anyString(), anyString());
         assertThatThrownBy(
-                () -> controller.changePassword("user", "password1", "password1", request, response)
+                () -> controller.changePassword("user", "password2", "password2", request, response)
         ).isEqualTo(exception);
     }
 
@@ -92,48 +91,42 @@ public class ChangePasswordControllerTest {
     public void changePassword_Success() throws Exception {
         final var token = new UsernamePasswordAuthenticationToken("bob", "pass");
         setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile(null);
+        setupGetUserCallForProfile();
         when(daoAuthenticationProvider.authenticate(any())).thenReturn(token);
-        final var redirect = controller.changePassword("user", "password1", "password1", request, response);
+        final var redirect = controller.changePassword("user", "password2", "password2", request, response);
         assertThat(redirect).isNull();
         final var authCapture = ArgumentCaptor.forClass(Authentication.class);
         verify(daoAuthenticationProvider).authenticate(authCapture.capture());
         final var value = authCapture.getValue();
         assertThat(value.getPrincipal()).isEqualTo("USER");
-        assertThat(value.getCredentials()).isEqualTo("password1");
-        verify(changePasswordService).setPassword("user", "password1");
+        assertThat(value.getCredentials()).isEqualTo("password2");
+        verify(changePasswordService).setPassword("user", "password2");
         verify(jwtAuthenticationSuccessHandler).onAuthenticationSuccess(request, response, token);
     }
 
     @Test
     public void changePassword_SuccessAccountExpired() throws Exception {
         setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile(null);
+        setupGetUserCallForProfile();
         when(daoAuthenticationProvider.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
-        final var redirect = controller.changePassword("user", "password1", "password1", request, response);
+        final var redirect = controller.changePassword("user", "password2", "password2", request, response);
         assertThat(redirect.getViewName()).isEqualTo("redirect:/login?error=changepassword");
         final var authCapture = ArgumentCaptor.forClass(Authentication.class);
         verify(daoAuthenticationProvider).authenticate(authCapture.capture());
         final var value = authCapture.getValue();
         assertThat(value.getPrincipal()).isEqualTo("USER");
-        assertThat(value.getCredentials()).isEqualTo("password1");
-        verify(changePasswordService).setPassword("user", "password1");
+        assertThat(value.getCredentials()).isEqualTo("password2");
+        verify(changePasswordService).setPassword("user", "password2");
     }
 
-    private void setupGetUserCallForProfile(final String profile) {
+    private void setupGetUserCallForProfile() {
         final var user = Optional.of(new StaffUserAccount());
-        final var detail = new AccountDetail();
-        detail.setProfile(profile);
-        user.get().setAccountDetail(detail);
+        user.get().setAccountDetail(new AccountDetail());
         when(userService.getUserByUsername(anyString())).thenReturn(user);
     }
 
     private void setupCheckAndGetTokenValid() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
         when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, new UserEmail("user"))));
-    }
-
-    private MapEntry<String, List<Object>> listEntry(final String key, final Object... values) {
-        return MapEntry.entry(key, Arrays.asList(values));
     }
 }

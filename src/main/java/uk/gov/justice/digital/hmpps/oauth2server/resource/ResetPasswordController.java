@@ -18,6 +18,7 @@ import uk.gov.service.notify.NotificationClientException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.Set;
 
 import static uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET;
 
@@ -32,8 +33,9 @@ public class ResetPasswordController extends AbstractPasswordController {
 
     public ResetPasswordController(final ResetPasswordService resetPasswordService,
                                    final TokenService tokenService, final UserService userService,
-                                   final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
-        super(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "setPassword");
+                                   final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled,
+                                   final @Value("${application.authentication.blacklist}") Set<String> passwordBlacklist) {
+        super(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "setPassword", passwordBlacklist);
         this.resetPasswordService = resetPasswordService;
         this.tokenService = tokenService;
         this.telemetryClient = telemetryClient;

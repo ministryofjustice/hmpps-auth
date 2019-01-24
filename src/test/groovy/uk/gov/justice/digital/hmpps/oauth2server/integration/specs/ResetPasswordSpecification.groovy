@@ -47,14 +47,14 @@ class ResetPasswordSpecification extends GebReportingSpec {
         at SetPasswordPage
 
         when: "I change password using valid credentials"
-        setPasswordAs 'password1', 'password1'
+        setPasswordAs 'helloworld2', 'helloworld2'
 
         and: 'My credentials are accepted and I am shown the confirmation page'
         at ResetPasswordSuccessPage
 
         and: 'I can try to login using new password'
         to LoginPage
-        loginAs CA_USER, 'password1'
+        loginAs CA_USER, 'helloworld2'
 
         then: 'I am logged in with new password'
         at HomePage

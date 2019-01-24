@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -23,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Controller
@@ -37,8 +39,9 @@ public class ChangePasswordController extends AbstractPasswordController {
                                     final DaoAuthenticationProvider daoAuthenticationProvider,
                                     final ChangePasswordService changePasswordService,
                                     final TokenService tokenService, final UserService userService,
-                                    final TelemetryClient telemetryClient) {
-        super(changePasswordService, tokenService, userService, telemetryClient, "redirect:/login?error=%s", "changePassword");
+                                    final TelemetryClient telemetryClient,
+                                    final @Value("${application.authentication.blacklist}") Set<String> passwordBlacklist) {
+        super(changePasswordService, tokenService, userService, telemetryClient, "redirect:/login?error=%s", "changePassword", passwordBlacklist);
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
         this.daoAuthenticationProvider = daoAuthenticationProvider;
         this.tokenService = tokenService;
