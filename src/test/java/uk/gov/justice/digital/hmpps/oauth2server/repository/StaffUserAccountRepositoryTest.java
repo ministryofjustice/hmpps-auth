@@ -56,13 +56,15 @@ public class StaffUserAccountRepositoryTest {
         final var retrievedEntity = repository.findById("ITAG_USER").orElseThrow();
         assertThat(retrievedEntity.getUsername()).isEqualTo("ITAG_USER");
         assertThat(retrievedEntity.getRoles().stream().map(r -> r.getRole().getName()))
-                .containsExactly("Some Old Role", "Omic Administrator", "Maintain Access Roles Admin", "Global Search");
+                .containsExactly("Some Old Role", "Omic Administrator", "Maintain Access Roles Admin", "Global Search",
+                        "Create Category assessments", "Approve Category assessments");
 
         assertThat(retrievedEntity.getCaseloads().stream().map(c -> c.getCaseload().getName()))
                 .containsExactly("Magic API Caseload", "Moorlands");
 
         assertThat(retrievedEntity.filterRolesByCaseload("NWEB").stream().map(r -> r.getRole().getName()))
-                .containsExactly("Omic Administrator", "Maintain Access Roles Admin", "Global Search");
+                .containsExactly("Omic Administrator", "Maintain Access Roles Admin", "Global Search",
+                        "Create Category assessments", "Approve Category assessments");
 
         assertThat(retrievedEntity.getStaff().getIdentifiers().stream().map(i -> i.getStaff().getFirstName()))
                 .containsExactly("Itag");
