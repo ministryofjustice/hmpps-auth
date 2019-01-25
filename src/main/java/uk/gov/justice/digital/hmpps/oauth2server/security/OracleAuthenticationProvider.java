@@ -13,7 +13,6 @@ import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
 
 import javax.sql.DataSource;
 import java.sql.CallableStatement;
@@ -25,7 +24,7 @@ import java.util.List;
 @Profile("oracle")
 public class OracleAuthenticationProvider extends AbstractAuthenticationProvider {
 
-    private static final String GET_USER_DETAIL = "SELECT spare4, LCOUNT retry_count, ASTATUS status_code FROM SYS.user$ WHERE name = ?";
+    private static final String GET_USER_DETAIL = "SELECT spare4, LCOUNT retry_count FROM SYS.user$ WHERE name = ?";
     private static final String HASH = "{ ? = call SYS.DBMS_CRYPTO.hash(UTL_RAW.cast_to_raw (?) || HEXTORAW (?), DBMS_CRYPTO.hash_sh1) }";
     private static final String UPDATE_STATUS = "ALTER USER %s ACCOUNT LOCK";
 
@@ -48,7 +47,7 @@ public class OracleAuthenticationProvider extends AbstractAuthenticationProvider
     }
 
     @Override
-    protected void lockAccount(final AccountStatus status, final String username) {
+    protected void lockAccount(final String username) {
         jdbcTemplate.update(String.format(UPDATE_STATUS, username));
     }
 

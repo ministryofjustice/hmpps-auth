@@ -5,8 +5,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.web.RedirectStrategy;
 
@@ -47,7 +47,7 @@ public class UserStateAuthenticationFailureHandlerTest {
     public void onAuthenticationFailure_expiredResetEnabled() throws IOException {
         when(request.getParameter("username")).thenReturn("bob");
         when(changePasswordService.createToken(anyString())).thenReturn("sometoken");
-        handler.onAuthenticationFailure(request, response, new AccountExpiredException("msg"));
+        handler.onAuthenticationFailure(request, response, new CredentialsExpiredException("msg"));
 
         verify(redirectStrategy).sendRedirect(request, response, "/change-password?token=sometoken");
         verify(changePasswordService).createToken("BOB");

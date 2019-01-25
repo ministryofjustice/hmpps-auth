@@ -74,9 +74,9 @@ public class UserDetailsServiceImplTest {
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
         assertThat(itagUser).isNotNull();
-        assertThat(itagUser.isAccountNonExpired()).isFalse();
+        assertThat(itagUser.isAccountNonExpired()).isTrue();
         assertThat(itagUser.isAccountNonLocked()).isTrue();
-        assertThat(itagUser.isCredentialsNonExpired()).isTrue();
+        assertThat(itagUser.isCredentialsNonExpired()).isFalse();
         assertThat(itagUser.isEnabled()).isTrue();
     }
 
