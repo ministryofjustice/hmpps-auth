@@ -4,8 +4,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
@@ -27,6 +27,13 @@ public class AbstractAuthenticationProviderTest {
     public void authenticate_Success() {
         final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "password"));
         assertThat(auth).isNotNull();
+    }
+
+    @Test
+    public void authenticate_NullUsername() {
+        assertThatThrownBy(() ->
+                provider.authenticate(new UsernamePasswordAuthenticationToken(null, "password"))
+        ).isInstanceOf(MissingCredentialsException.class);
     }
 
     @Test
@@ -88,6 +95,6 @@ public class AbstractAuthenticationProviderTest {
     public void authenticate_ExpiredUser() {
         assertThatThrownBy(() ->
                 provider.authenticate(new UsernamePasswordAuthenticationToken("EXPIRED_USER", "password123456"))
-        ).isInstanceOf(AccountExpiredException.class);
+        ).isInstanceOf(CredentialsExpiredException.class);
     }
 }

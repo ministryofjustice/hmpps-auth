@@ -13,7 +13,6 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
 
 import javax.sql.DataSource;
 
@@ -23,7 +22,7 @@ import javax.sql.DataSource;
 public class H2AuthenticationProvider extends AbstractAuthenticationProvider {
 
     private static final String GET_USER_DETAIL =
-            "SELECT password as spare4, 0 as retry_count, account_status FROM dba_users v WHERE v.username = ?";
+            "SELECT password as spare4, 0 as retry_count FROM dba_users v WHERE v.username = ?";
     private static final String UPDATE_STATUS = "UPDATE dba_users SET account_status = ? WHERE username = ?";
 
     private final JdbcTemplate jdbcTemplate;
@@ -45,8 +44,8 @@ public class H2AuthenticationProvider extends AbstractAuthenticationProvider {
     }
 
     @Override
-    protected void lockAccount(final AccountStatus status, final String username) {
-        jdbcTemplate.update(UPDATE_STATUS, status.getDesc(), username);
+    protected void lockAccount(final String username) {
+        jdbcTemplate.update(UPDATE_STATUS, "LOCKED", username);
     }
 
     @Data

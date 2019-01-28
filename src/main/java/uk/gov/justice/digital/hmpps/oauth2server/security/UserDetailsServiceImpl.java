@@ -36,7 +36,6 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
     @Override
     @Cacheable("loadUserByUsername")
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
-
         final var userByUsername = userService.getUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
         if (userByUsername.filterByCaseload(apiCaseloadId).isEmpty()) {
             throw new UnapprovedClientAuthenticationException(format("User does not have access to caseload %s", apiCaseloadId));
@@ -47,7 +46,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(RegExUtils.replaceAll(role.getRole().getCode(), "-", "_"))))
                 .collect(Collectors.toSet());
 
-        final var userDetails = new UserDetailsImpl(username, userByUsername.getStaff().getName(), authorities);
+        final var userDetails = new UserDetailsImpl(userByUsername.getUsername(), userByUsername.getStaff().getName(), authorities);
 
         final var accountDetail = userByUsername.getAccountDetail();
         userDetails.setAccountNonExpired(true);
@@ -64,7 +63,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
                 break;
             case EXPIRED:
                 userDetails.setEnabled(true);
-                userDetails.setAccountNonExpired(false);
+                userDetails.setCredentialsNonExpired(false);
                 break;
             case LOCKED:
             case LOCKED_TIMED:

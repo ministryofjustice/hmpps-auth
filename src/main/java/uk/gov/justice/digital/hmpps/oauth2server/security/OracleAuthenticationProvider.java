@@ -11,7 +11,6 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
 
 import javax.sql.DataSource;
 
@@ -42,7 +41,7 @@ public class OracleAuthenticationProvider extends AbstractAuthenticationProvider
     }
 
     @Override
-    protected void lockAccount(final AccountStatus status, final String username) {
+    protected void lockAccount(final String username) {
         jdbcTemplate.update(String.format(UPDATE_STATUS, username));
     }
 }
