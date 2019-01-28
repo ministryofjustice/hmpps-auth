@@ -24,12 +24,14 @@ public class UserRetriesServiceTest {
     private UserRetriesRepository userRetriesRepository;
     @Mock
     private UserEmailRepository userEmailRepository;
+    @Mock
+    private AlterUserService alterUserService;
 
     private UserRetriesService service;
 
     @Before
     public void setUp() {
-        service = new UserRetriesService(userRetriesRepository, userEmailRepository);
+        service = new UserRetriesService(userRetriesRepository, userEmailRepository, alterUserService);
     }
 
     @Test
@@ -39,7 +41,6 @@ public class UserRetriesServiceTest {
         verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 0));
     }
-
 
     @Test
     public void lockAccount_retriesTo0() {
@@ -60,13 +61,19 @@ public class UserRetriesServiceTest {
 
     @Test
     public void lockAccount_lockUserEmailExistingRecord() {
-        final UserEmail existingUserEmail = new UserEmail("username");
+        final var existingUserEmail = new UserEmail("username");
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(existingUserEmail));
         service.lockAccount("bob");
         final var captor = ArgumentCaptor.forClass(UserEmail.class);
         verify(userEmailRepository).save(captor.capture());
         assertThat(captor.getValue().isLocked()).isEqualTo(true);
         assertThat(captor.getValue()).isSameAs(existingUserEmail);
+    }
+
+    @Test
+    public void lockAccount_alterUser() {
+        service.lockAccount("bob");
+        verify(alterUserService).lockAccount("bob");
     }
 
     @Test

@@ -24,7 +24,6 @@ public class H2AuthenticationProvider extends AbstractAuthenticationProvider {
 
     private static final String GET_USER_DETAIL =
             "SELECT password as spare4, 0 as retry_count FROM dba_users v WHERE v.username = ?";
-    private static final String UPDATE_STATUS = "UPDATE dba_users SET account_status = ? WHERE username = ?";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -43,11 +42,6 @@ public class H2AuthenticationProvider extends AbstractAuthenticationProvider {
     protected UserData getUserData(final String username) {
         final var results = jdbcTemplate.query(GET_USER_DETAIL, new Object[]{username}, new BeanPropertyRowMapper<>(H2UserData.class));
         return DataAccessUtils.singleResult(results);
-    }
-
-    @Override
-    protected void lockAccount(final String username) {
-        jdbcTemplate.update(UPDATE_STATUS, "LOCKED", username);
     }
 
     @Data

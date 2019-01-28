@@ -20,8 +20,7 @@ import javax.sql.DataSource;
 @Profile("oracle")
 public class OracleAuthenticationProvider extends AbstractAuthenticationProvider {
 
-    private static final String GET_USER_DETAIL = "SELECT spare4, LCOUNT retry_count, ASTATUS status_code FROM SYS.user$ WHERE name = ?";
-    private static final String UPDATE_STATUS = "ALTER USER %s ACCOUNT LOCK";
+    private static final String GET_USER_DETAIL = "SELECT spare4, LCOUNT retry_count FROM SYS.user$ WHERE name = ?";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -40,10 +39,5 @@ public class OracleAuthenticationProvider extends AbstractAuthenticationProvider
     protected UserData getUserData(final String username) {
         final var results = jdbcTemplate.query(GET_USER_DETAIL, new Object[]{username}, new BeanPropertyRowMapper<>(UserData.class));
         return DataAccessUtils.singleResult(results);
-    }
-
-    @Override
-    protected void lockAccount(final String username) {
-        jdbcTemplate.update(String.format(UPDATE_STATUS, username));
     }
 }

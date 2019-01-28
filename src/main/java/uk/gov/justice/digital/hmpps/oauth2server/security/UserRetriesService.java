@@ -8,8 +8,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
 
-import java.util.Optional;
-
 @Service
 @Slf4j
 @Transactional
@@ -17,11 +15,13 @@ public class UserRetriesService {
 
     private final UserRetriesRepository userRetriesRepository;
     private final UserEmailRepository userEmailRepository;
+    private final AlterUserService alterUserService;
 
 
-    public UserRetriesService(final UserRetriesRepository userRetriesRepository, final UserEmailRepository userEmailRepository) {
+    public UserRetriesService(final UserRetriesRepository userRetriesRepository, final UserEmailRepository userEmailRepository, final AlterUserService alterUserService) {
         this.userRetriesRepository = userRetriesRepository;
         this.userEmailRepository = userEmailRepository;
+        this.alterUserService = alterUserService;
     }
 
     public void resetRetries(final String username) {
@@ -49,8 +49,10 @@ public class UserRetriesService {
     }
 
     public void lockAccount(final String username) {
-        final Optional<UserEmail> userEmailOptional = userEmailRepository.findById(username);
-        final UserEmail userEmail = userEmailOptional.orElseGet(() -> new UserEmail(username));
+        alterUserService.lockAccount(username);
+
+        final var userEmailOptional = userEmailRepository.findById(username);
+        final var userEmail = userEmailOptional.orElseGet(() -> new UserEmail(username));
         userEmail.setLocked(true);
         userEmailRepository.save(userEmail);
 
