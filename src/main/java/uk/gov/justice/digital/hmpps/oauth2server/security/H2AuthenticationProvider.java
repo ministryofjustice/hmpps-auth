@@ -12,6 +12,7 @@ import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -31,8 +32,9 @@ public class H2AuthenticationProvider extends AbstractAuthenticationProvider {
                                     final UserDetailsService userDetailsService,
                                     final UserRetriesService userRetriesService,
                                     final TelemetryClient telemetryClient,
+                                    final PasswordEncoder passwordEncoder,
                                     @Value("${application.authentication.lockout-count}") final int accountLockoutCount) {
-        super(userDetailsService, userRetriesService, telemetryClient, accountLockoutCount);
+        super(userDetailsService, userRetriesService, telemetryClient, passwordEncoder, accountLockoutCount);
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
