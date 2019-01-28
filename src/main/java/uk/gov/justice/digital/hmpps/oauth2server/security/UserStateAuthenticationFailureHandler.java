@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -30,7 +30,7 @@ public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticati
         final var builder = new StringJoiner("&error=", "?error=", "");
         if (exception instanceof LockedException) {
             builder.add("locked");
-        } else if (exception instanceof AccountExpiredException) {
+        } else if (exception instanceof CredentialsExpiredException) {
             // special handling for expired users and feature switch turned on
             final var username = request.getParameter("username").toUpperCase();
             final var token = changePasswordService.createToken(username);

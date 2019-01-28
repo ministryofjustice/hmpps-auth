@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
@@ -26,7 +27,7 @@ public class UserService {
     }
 
     public Optional<StaffUserAccount> getUserByUsername(String username) {
-        return userRepository.findById(username);
+        return userRepository.findById(StringUtils.upperCase(username));
     }
 
     public StaffUserAccount getUserByExternalIdentifier(String idType, String id, boolean activeOnly) {
