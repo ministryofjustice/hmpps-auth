@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,11 +13,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Slf4j
-public abstract class AbstractAuthenticationProvider extends DaoAuthenticationProvider {
+@Component
+public class AbstractAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserRetriesService userRetriesService;
     private final TelemetryClient telemetryClient;
     private final int accountLockoutCount;
@@ -26,7 +28,7 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
                                           final UserRetriesService userRetriesService,
                                           final TelemetryClient telemetryClient,
                                           final PasswordEncoder passwordEncoder,
-                                          final int accountLockoutCount) {
+                                          @Value("${application.authentication.lockout-count}") final int accountLockoutCount) {
         this.userRetriesService = userRetriesService;
         this.telemetryClient = telemetryClient;
         this.accountLockoutCount = accountLockoutCount;
@@ -59,27 +61,20 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
         final var username = userDetails.getUsername();
         final var password = authentication.getCredentials().toString();
 
-        final var userData = getUserData(username);
-
-        if (userData == null) {
-            log.info("User data missing for user {}", username);
-            trackFailure(username, "credentials", "usermissing");
-            throw new BadCredentialsException("Authentication failed: unable to check password value");
-        }
-
-        checkPasswordWithAccountLock(username, password, userData);
+        checkPasswordWithAccountLock(userDetails, password);
 
         log.info("Successful login for user {}", username);
         telemetryClient.trackEvent("AuthenticateSuccess", Map.of("username", username), null);
     }
 
-    private void checkPasswordWithAccountLock(final String username, final String password, final UserData userData) {
-        if (getPasswordEncoder().matches(password, userData.getPassword())) {
+    private void checkPasswordWithAccountLock(final UserDetails userDetails, final String password) {
+        final var username = userDetails.getUsername();
+        if (getPasswordEncoder().matches(password, userDetails.getPassword())) {
             log.info("Resetting retries for user {}", username);
             userRetriesService.resetRetries(username);
 
         } else {
-            final var newRetryCount = userRetriesService.incrementRetries(username, userData.getRetryCount());
+            final var newRetryCount = userRetriesService.incrementRetries(username);
 
             // check the number of retries
             if (newRetryCount >= accountLockoutCount) {
@@ -103,17 +98,5 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
 
     private void trackFailure(final String username, final String type, final String subType) {
         telemetryClient.trackEvent("AuthenticateFailure", Map.of("username", username, "type", type, "subType", subType), null);
-    }
-
-    protected abstract UserData getUserData(final String username);
-
-    @Data
-    static class UserData {
-        private String spare4;
-        private int retryCount;
-
-        String getPassword() {
-            return "{oracle}" + spare4;
-        }
     }
 }
