@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AlterUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -29,7 +29,7 @@ public class ResetPasswordService implements PasswordService {
     private final UserEmailRepository userEmailRepository;
     private final UserTokenRepository userTokenRepository;
     private final UserService userService;
-    private final ChangePasswordService changePasswordService;
+    private final AlterUserService alterUserService;
     private final TelemetryClient telemetryClient;
     private final NotificationClientApi notificationClient;
     private final String resetTemplateId;
@@ -37,7 +37,7 @@ public class ResetPasswordService implements PasswordService {
 
     public ResetPasswordService(final UserEmailRepository userEmailRepository,
                                 final UserTokenRepository userTokenRepository, final UserService userService,
-                                final ChangePasswordService changePasswordService, final TelemetryClient telemetryClient,
+                                final AlterUserService alterUserService, final TelemetryClient telemetryClient,
                                 final NotificationClientApi notificationClient,
                                 @Value("${application.notify.reset.template}") final String resetTemplateId,
                                 @Value("${application.notify.reset-unavailable.template}") final String resetUnavailableTemplateId
@@ -45,7 +45,7 @@ public class ResetPasswordService implements PasswordService {
         this.userEmailRepository = userEmailRepository;
         this.userTokenRepository = userTokenRepository;
         this.userService = userService;
-        this.changePasswordService = changePasswordService;
+        this.alterUserService = alterUserService;
         this.telemetryClient = telemetryClient;
         this.notificationClient = notificationClient;
         this.resetTemplateId = resetTemplateId;
@@ -128,7 +128,7 @@ public class ResetPasswordService implements PasswordService {
         }
 
         userEmail.setLocked(false);
-        changePasswordService.changePasswordWithUnlock(userEmail.getUsername(), newPassword);
+        alterUserService.changePasswordWithUnlock(userEmail.getUsername(), newPassword);
         userEmailRepository.save(userEmail);
         userTokenRepository.delete(userToken);
     }

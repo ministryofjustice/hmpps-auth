@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
@@ -8,8 +7,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -17,18 +14,14 @@ import java.sql.SQLException;
 @Log4j2
 @Service
 @Profile("oracle")
-public class OracleChangePasswordService extends ChangePasswordService {
+public class OracleAlterUserService implements AlterUserService {
     private static final String CHANGE_PASSWORD_SQL = "ALTER USER %s IDENTIFIED BY \"%s\"";
     private static final String CHANGE_PASSWORD_UNLOCK_SQL = CHANGE_PASSWORD_SQL + " ACCOUNT UNLOCK";
+    private static final String UPDATE_STATUS = "ALTER USER %s ACCOUNT LOCK";
 
     private final JdbcTemplate jdbcTemplate;
 
-    public OracleChangePasswordService(@Qualifier("dataSource") final DataSource dataSource,
-                                       final UserTokenRepository userTokenRepository,
-                                       final UserEmailRepository userEmailRepository,
-                                       final UserService userService,
-                                       final TelemetryClient telemetryClient) {
-        super(userTokenRepository, userEmailRepository, userService, telemetryClient);
+    public OracleAlterUserService(@Qualifier("dataSource") final DataSource dataSource) {
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
@@ -42,6 +35,11 @@ public class OracleChangePasswordService extends ChangePasswordService {
     @Override
     public void changePasswordWithUnlock(final String username, final String password) {
         changePassword(username, password, CHANGE_PASSWORD_UNLOCK_SQL);
+    }
+
+    @Override
+    public void lockAccount(final String username) {
+        jdbcTemplate.update(String.format(UPDATE_STATUS, username));
     }
 
     private void changePassword(final String username, final String password, final String template) {

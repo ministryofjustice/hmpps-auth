@@ -80,8 +80,6 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
 
             // check the number of retries
             if (newRetryCount >= accountLockoutCount) {
-                // Throw locked exception
-                lockAccount(username);
 
                 // need to reset the retry count otherwise when the user is then unlocked they will have to get the password right first time
                 userRetriesService.lockAccount(username);
@@ -105,8 +103,6 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
     }
 
     protected abstract UserData getUserData(final String username);
-
-    protected abstract void lockAccount(final String username);
 
     @Data
     static class UserData {

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.stereotype.Service;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
@@ -11,18 +12,21 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.PasswordService;
 
 import java.util.Map;
 
-public abstract class ChangePasswordService implements PasswordService {
+@Service
+public class ChangePasswordService implements PasswordService {
     private final UserTokenRepository userTokenRepository;
     private final UserEmailRepository userEmailRepository;
     private final UserService userService;
+    private final AlterUserService alterUserService;
     private final TelemetryClient telemetryClient;
 
     protected ChangePasswordService(final UserTokenRepository userTokenRepository,
                                     final UserEmailRepository userEmailRepository,
-                                    final UserService userService, final TelemetryClient telemetryClient) {
+                                    final UserService userService, final AlterUserService alterUserService, final TelemetryClient telemetryClient) {
         this.userTokenRepository = userTokenRepository;
         this.userEmailRepository = userEmailRepository;
         this.userService = userService;
+        this.alterUserService = alterUserService;
         this.telemetryClient = telemetryClient;
     }
 
@@ -54,13 +58,8 @@ public abstract class ChangePasswordService implements PasswordService {
         }
 
         userEmail.setLocked(false);
-        changePasswordWithUnlock(userEmail.getUsername(), password);
+        alterUserService.changePassword(userEmail.getUsername(), password);
         userEmailRepository.save(userEmail);
         userTokenRepository.delete(userToken);
     }
-
-
-    abstract void changePassword(String username, String password);
-
-    public abstract void changePasswordWithUnlock(String username, String password);
 }

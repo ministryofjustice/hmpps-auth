@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenReposi
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AlterUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -41,7 +41,7 @@ public class ResetPasswordServiceTest {
     @Mock
     private UserService userService;
     @Mock
-    private ChangePasswordService changePasswordService;
+    private AlterUserService alterUserService;
     @Mock
     private TelemetryClient telemetryClient;
     @Mock
@@ -53,7 +53,7 @@ public class ResetPasswordServiceTest {
 
     @Before
     public void setUp() {
-        resetPasswordService = new ResetPasswordService(userEmailRepository, userTokenRepository, userService, changePasswordService, telemetryClient, notificationClient, "resetTemplate", "resetUnavailableTemplate");
+        resetPasswordService = new ResetPasswordService(userEmailRepository, userTokenRepository, userService, alterUserService, telemetryClient, notificationClient, "resetTemplate", "resetUnavailableTemplate");
     }
 
     @Test
@@ -225,7 +225,7 @@ public class ResetPasswordServiceTest {
 
         verify(userTokenRepository).delete(userToken);
         verify(userEmailRepository).save(user);
-        verify(changePasswordService).changePasswordWithUnlock("uesr", "pass");
+        verify(alterUserService).changePasswordWithUnlock("uesr", "pass");
     }
 
     @Test
