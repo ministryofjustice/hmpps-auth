@@ -51,11 +51,6 @@ public class H2AuthenticationProvider extends AbstractAuthenticationProvider {
     @Data
     @EqualsAndHashCode(callSuper = true)
     static class H2UserData extends UserData {
-        private String accountStatus;
-
-        AccountStatus getStatus() {
-            return AccountStatus.get(accountStatus);
-        }
 
         String getPassword() {
             return getSpare4();
