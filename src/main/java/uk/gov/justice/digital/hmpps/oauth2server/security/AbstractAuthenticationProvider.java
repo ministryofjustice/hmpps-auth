@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Map;
 
@@ -24,11 +25,13 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
     public AbstractAuthenticationProvider(final UserDetailsService userDetailsService,
                                           final UserRetriesService userRetriesService,
                                           final TelemetryClient telemetryClient,
+                                          final PasswordEncoder passwordEncoder,
                                           final int accountLockoutCount) {
         this.userRetriesService = userRetriesService;
         this.telemetryClient = telemetryClient;
         this.accountLockoutCount = accountLockoutCount;
         setUserDetailsService(userDetailsService);
+        setPasswordEncoder(passwordEncoder);
     }
 
     @Override
