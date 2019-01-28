@@ -80,45 +80,51 @@ VALUES ('ITAG_USER', 'GENERAL', 1),
   ('OMIC_USER', 'GENERAL', 15);
 
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('ITAG_USER', '$2a$10$9rVgms..dZ3gnPSt4JWPA.Oan4MrDHvcx1c.HuYqeMD5rVFmf0C3G', 'OPEN', 'TAG_GENERAL');
+VALUES ('ITAG_USER', '{bcrypt}$2a$10$9rVgms..dZ3gnPSt4JWPA.Oan4MrDHvcx1c.HuYqeMD5rVFmf0C3G', 'OPEN', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('ITAG_USER_ADM', '$2a$10$0zomTd5coSOKnSBMkCyEiei72HwBLJZrSpoqL1GVwr4LNp.KAq.FK', 'OPEN', 'TAG_ADMIN');
+VALUES ('ITAG_USER_ADM', '{bcrypt}$2a$10$0zomTd5coSOKnSBMkCyEiei72HwBLJZrSpoqL1GVwr4LNp.KAq.FK', 'OPEN', 'TAG_ADMIN');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('OLD_NOMIS_USER', '$2a$10$EaaM7jp4e/Y1q8zR..eEYOwJOnGJmHIItZfIxR6gVgUP4xT8qXVEm', 'OPEN', 'TAG_GENERAL');
+VALUES ('OLD_NOMIS_USER', '{bcrypt}$2a$10$EaaM7jp4e/Y1q8zR..eEYOwJOnGJmHIItZfIxR6gVgUP4xT8qXVEm', 'OPEN',
+        'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('CA_USER', '$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'OPEN', 'TAG_GENERAL');
+VALUES ('CA_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'OPEN', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('RO_USER', '$2a$10$ordeqG5gMJHWXm9SDsN0q.PgYbwRmC5idWoFTEWIe2hoIS8IKh3dK', 'OPEN', 'TAG_GENERAL');
+VALUES ('RO_USER', '{bcrypt}$2a$10$ordeqG5gMJHWXm9SDsN0q.PgYbwRmC5idWoFTEWIe2hoIS8IKh3dK', 'OPEN', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('DM_USER', '$2a$10$S0K9erqzMttMHhs5hdi8DuE8lk7F1ajsAD5pAMmgmJBc/8QsjzHzy', 'OPEN', 'TAG_GENERAL');
+VALUES ('DM_USER', '{bcrypt}$2a$10$S0K9erqzMttMHhs5hdi8DuE8lk7F1ajsAD5pAMmgmJBc/8QsjzHzy', 'OPEN', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('NOMIS_BATCHLOAD', '$2a$10$bAzE0xo8XsKMBchiKmnpEuPZqXV.0/RVVhya7v7kkGoRLTpt2Iwxa', 'OPEN', 'TAG_GENERAL');
+VALUES ('NOMIS_BATCHLOAD', '{bcrypt}$2a$10$bAzE0xo8XsKMBchiKmnpEuPZqXV.0/RVVhya7v7kkGoRLTpt2Iwxa', 'OPEN',
+        'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('LOCKED_USER', '$2a$10$BPCJlKWhaICns8ax5JHd8er8Ti6zy8VH3LiFKtt1M2A4iVyJv1NyW', 'LOCKED', 'TAG_GENERAL');
+VALUES ('LOCKED_USER', '{bcrypt}$2a$10$BPCJlKWhaICns8ax5JHd8er8Ti6zy8VH3LiFKtt1M2A4iVyJv1NyW', 'LOCKED', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('EXPIRED_USER', '$2a$10$kJf5g6MQuORDouOnrlpoQOupk5ieUsgcp5v0TtHVzR3mn53b37vby', 'EXPIRED', 'TAG_GENERAL');
+VALUES ('EXPIRED_USER', '{bcrypt}$2a$10$kJf5g6MQuORDouOnrlpoQOupk5ieUsgcp5v0TtHVzR3mn53b37vby', 'EXPIRED',
+        'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('EXPIRED_TEST_USER', '$2a$10$kJf5g6MQuORDouOnrlpoQOupk5ieUsgcp5v0TtHVzR3mn53b37vby', 'EXPIRED', 'TAG_GENERAL');
+VALUES ('EXPIRED_TEST_USER', '{bcrypt}$2a$10$kJf5g6MQuORDouOnrlpoQOupk5ieUsgcp5v0TtHVzR3mn53b37vby', 'EXPIRED',
+        'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('EXPIRED_TEST2_USER', '$2a$10$kJf5g6MQuORDouOnrlpoQOupk5ieUsgcp5v0TtHVzR3mn53b37vby', 'EXPIRED', 'TAG_GENERAL');
+VALUES ('EXPIRED_TEST2_USER', '{bcrypt}$2a$10$kJf5g6MQuORDouOnrlpoQOupk5ieUsgcp5v0TtHVzR3mn53b37vby', 'EXPIRED',
+        'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('EXPIRED_TEST3_USER', '$2a$10$kJf5g6MQuORDouOnrlpoQOupk5ieUsgcp5v0TtHVzR3mn53b37vby', 'EXPIRED', 'TAG_GENERAL');
+VALUES ('EXPIRED_TEST3_USER', '{bcrypt}$2a$10$kJf5g6MQuORDouOnrlpoQOupk5ieUsgcp5v0TtHVzR3mn53b37vby', 'EXPIRED',
+        'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('CA_USER_TEST', '$2a$10$vgyF/EFvlol3pwwi0n6ZgeI6C90xY5exW6tETbdDBHB4xpDYzuV9q', 'OPEN', 'TAG_GENERAL');
+VALUES ('CA_USER_TEST', '{bcrypt}$2a$10$vgyF/EFvlol3pwwi0n6ZgeI6C90xY5exW6tETbdDBHB4xpDYzuV9q', 'OPEN', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('CA_USER_MULTI', '$2a$10$.uXmUgIPCFv1c93IFzZ48.N3fUlY25YJcq74SPwvPzp93iwId4SzW', 'OPEN', 'TAG_GENERAL');
+VALUES ('CA_USER_MULTI', '{bcrypt}$2a$10$.uXmUgIPCFv1c93IFzZ48.N3fUlY25YJcq74SPwvPzp93iwId4SzW', 'OPEN', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('RO_DEMO', '$2a$10$Xtg49KDA5dBQ2kk3MqsG7erUsUV.vid.s9m2ikLMBWTGTynBG9v4K', 'OPEN', 'TAG_GENERAL');
+VALUES ('RO_DEMO', '{bcrypt}$2a$10$Xtg49KDA5dBQ2kk3MqsG7erUsUV.vid.s9m2ikLMBWTGTynBG9v4K', 'OPEN', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('RO_USER_TEST', '$2a$10$WIthoS9sIXg2mm3tXW6kd./w.xkmfwrSOIUDu.3KNLypCmIpltuvS', 'OPEN', 'TAG_GENERAL');
+VALUES ('RO_USER_TEST', '{bcrypt}$2a$10$WIthoS9sIXg2mm3tXW6kd./w.xkmfwrSOIUDu.3KNLypCmIpltuvS', 'OPEN', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('RO_USER_MULTI', '$2a$10$MGhfSUGrb9DbfMQ/RgxIpOepxw/.R53bZ.tgcTKrEgEHyOsL.VBj6', 'OPEN', 'TAG_GENERAL');
+VALUES ('RO_USER_MULTI', '{bcrypt}$2a$10$MGhfSUGrb9DbfMQ/RgxIpOepxw/.R53bZ.tgcTKrEgEHyOsL.VBj6', 'OPEN', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('DM_USER_TEST', '$2a$10$3uLXHUVAN3TPp0l4FAlDXe/DTjxp9BsjkJ9WXnRAp2zQkbEVYmGuC', 'OPEN', 'TAG_GENERAL');
+VALUES ('DM_USER_TEST', '{bcrypt}$2a$10$3uLXHUVAN3TPp0l4FAlDXe/DTjxp9BsjkJ9WXnRAp2zQkbEVYmGuC', 'OPEN', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('DM_USER_MULTI', '$2a$10$JPsL6m0wCXIq5Zdjo8yCx.kYUJBxkPb1gdsAsCqsqgMaJmqJpLiyS', 'OPEN', 'TAG_GENERAL');
+VALUES ('DM_USER_MULTI', '{bcrypt}$2a$10$JPsL6m0wCXIq5Zdjo8yCx.kYUJBxkPb1gdsAsCqsqgMaJmqJpLiyS', 'OPEN', 'TAG_GENERAL');
 INSERT INTO DBA_USERS (username, password, account_status, profile)
-VALUES ('OMIC_USER', '$2a$10$8lRtC2ndt.nb004kZTNm6O2DqJmakSwKfcmWXB5adKMb9NUWkA1Tm', 'OPEN', 'TAG_GENERAL');
+VALUES ('OMIC_USER', '{bcrypt}$2a$10$8lRtC2ndt.nb004kZTNm6O2DqJmakSwKfcmWXB5adKMb9NUWkA1Tm', 'OPEN', 'TAG_GENERAL');
 
 
 INSERT INTO PERSONNEL_IDENTIFICATIONS (STAFF_ID, IDENTIFICATION_TYPE, IDENTIFICATION_NUMBER) VALUES (1, 'YJAF', 'test@yjaf.gov.uk');

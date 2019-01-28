@@ -12,7 +12,6 @@ import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
 
@@ -50,11 +49,6 @@ public class H2AuthenticationProvider extends AbstractAuthenticationProvider {
         jdbcTemplate.update(UPDATE_STATUS, status.getDesc(), username);
     }
 
-    @Override
-    protected String encode(final String rawPassword, final String salt) {
-        return BCrypt.hashpw(rawPassword, salt);
-    }
-
     @Data
     @EqualsAndHashCode(callSuper = true)
     static class H2UserData extends UserData {
@@ -64,11 +58,7 @@ public class H2AuthenticationProvider extends AbstractAuthenticationProvider {
             return AccountStatus.get(accountStatus);
         }
 
-        String getSalt() {
-            return getSpare4();
-        }
-
-        String getHash() {
+        String getPassword() {
             return getSpare4();
         }
     }

@@ -95,9 +95,7 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
     }
 
     private void checkPasswordWithAccountLock(final String username, final String password, final UserData userData) {
-        final var encodedPassword = encode(password, userData.getSalt());
-
-        if (encodedPassword.equals(userData.getHash())) {
+        if (getPasswordEncoder().matches(password, userData.getPassword())) {
             log.info("Resetting retries for user {}", username);
             userRetriesService.resetRetries(username);
 
@@ -135,8 +133,6 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
 
     protected abstract void lockAccount(final AccountStatus status, final String username);
 
-    protected abstract String encode(final String rawPassword, final String salt);
-
     @Data
     static class UserData {
         private String spare4;
@@ -147,12 +143,8 @@ public abstract class AbstractAuthenticationProvider extends DaoAuthenticationPr
             return AccountStatus.get(statusCode);
         }
 
-        String getSalt() {
-            return StringUtils.substring(spare4, 42, 62);
-        }
-
-        String getHash() {
-            return StringUtils.substring(spare4, 2, 42);
+        String getPassword() {
+            return "{oracle}" + spare4;
         }
     }
 }
