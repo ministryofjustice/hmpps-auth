@@ -1,24 +1,29 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@ActiveProfiles("dev")
 public class PasswordConfigTest {
-    @Autowired
-    private PasswordConfig passwordConfig;
+    private final PasswordEncoder passwordEncoder = new PasswordConfig().passwordEncoder();
 
     @Test
     public void encodePassword() {
-        final var encoded = passwordConfig.passwordEncoder().encode("some_password_123456");
-        assertThat(encoded.length()).isEqualTo(60);
+        final var encoded = passwordEncoder.encode("some_password_123456");
+        assertThat(encoded).hasSize(68).startsWith("{bcrypt}");
+    }
+
+    @Test
+    public void testMatchesWithNoDefaultPasswordEncoding() {
+        final var encodedPassword = new BCryptPasswordEncoder().encode("some_pass");
+        assertThat(passwordEncoder.matches("some_pass", encodedPassword)).isTrue();
+    }
+
+    @Test
+    public void testMatchesOraclePassword() {
+        final var encodePassword = "{oracle}S:39BA463D55E5C8936A6798CC37B1347BA8BEC37B6407397EB769BC356F0C";
+        assertThat(passwordEncoder.matches("somepass1", encodePassword)).isTrue();
     }
 }
