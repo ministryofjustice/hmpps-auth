@@ -1,19 +1,7 @@
 spring:
-
   h2:
     console:
       enabled: true
-
-nomis:
-  flyway:
-    locations: db/nomis,db/dev/data/nomis
-
-auth:
-  flyway:
-    locations: db/auth,db/dev/data/auth
-  jpa:
-    hibernate:
-      dialect: org.hibernate.dialect.H2Dialect
 
 application:
   smoketest:

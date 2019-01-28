@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@ActiveProfiles("dev")
+@ActiveProfiles("dev-seed")
 @Transactional
 public class ReferenceCodesServiceIntTest {
     @Autowired
