@@ -1,30 +1,27 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.User;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 @SuppressWarnings("serial")
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class UserDetailsImpl implements UserDetails {
-    private final String username;
+public class UserDetailsImpl extends User {
     private final String name;
-    private boolean enabled;
-    private boolean credentialsNonExpired;
-    private boolean accountNonLocked;
-    private boolean accountNonExpired;
-    private String password;
 
-    private final Set<GrantedAuthority> authorities = new HashSet<>();
-
-    public UserDetailsImpl(final String username, final String name,
-                           final Collection<GrantedAuthority> authorities) {
-        this.username = username;
+    public UserDetailsImpl(final String username, final String name, final String password,
+                           final boolean enabled, final boolean accountNonExpired, final boolean credentialsNonExpired,
+                           final boolean accountNonLocked, final Collection<? extends GrantedAuthority> authorities) {
+        super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
         this.name = name;
-        this.authorities.addAll(authorities);
+    }
+
+    public UserDetailsImpl(final String username, final String name, final Collection<GrantedAuthority> authorities) {
+        super(username, "", authorities);
+        this.name = name;
     }
 }

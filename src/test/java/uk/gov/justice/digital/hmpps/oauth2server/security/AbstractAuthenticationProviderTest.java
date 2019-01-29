@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class AbstractAuthenticationProviderTest {
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    private H2AuthenticationProvider provider;
+    private AbstractAuthenticationProvider provider;
 
     @Test
     public void authenticate_Success() {

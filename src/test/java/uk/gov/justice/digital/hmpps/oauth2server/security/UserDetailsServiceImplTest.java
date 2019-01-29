@@ -30,7 +30,7 @@ public class UserDetailsServiceImplTest {
 
     @Before
     public void setup() {
-        service = new UserDetailsServiceImpl(userService, "NWEB");
+        service = new UserDetailsServiceImpl(userService, "NWEB", true);
     }
 
     @Test
@@ -129,6 +129,7 @@ public class UserDetailsServiceImplTest {
 
         final var userAccount = StaffUserAccount.builder()
                 .username(username)
+                .password("pass")
                 .type("GENERAL")
                 .caseloads(List.of(
                         buildUserAccessibleCaseload("NWEB", NWEB_CASELOAD, username),
