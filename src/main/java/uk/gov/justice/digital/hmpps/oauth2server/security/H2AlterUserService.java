@@ -26,9 +26,10 @@ public class H2AlterUserService implements AlterUserService {
     @Transactional
     public void changePassword(final String username, final String password) {
         jdbcTemplate.update(String.format("ALTER USER %s SET PASSWORD ?", username), password);
-        // also update h2 password table so that we have access to the hash.
         final var hashedPassword = encoder.encode(password);
-        jdbcTemplate.update("UPDATE dba_users SET password = ?, account_status = 'OPEN' where username = ?", hashedPassword, username);
+        jdbcTemplate.update(UPDATE_STATUS, "OPEN", username);
+        // also update h2 password table so that we have access to the hash.
+        jdbcTemplate.update("UPDATE sys.user$ SET spare4 = ? WHERE name = ?", hashedPassword, username);
     }
 
     @Override

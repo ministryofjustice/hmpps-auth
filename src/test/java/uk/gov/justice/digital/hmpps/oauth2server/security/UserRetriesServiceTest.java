@@ -79,7 +79,7 @@ public class UserRetriesServiceTest {
     @Test
     public void incrementRetries_NoExistingRow() {
         when(userRetriesRepository.findById(anyString())).thenReturn(Optional.empty());
-        assertThat(service.incrementRetries("bob", 10)).isEqualTo(11);
+        assertThat(service.incrementRetries("bob")).isEqualTo(1);
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
         verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 11));
@@ -88,7 +88,7 @@ public class UserRetriesServiceTest {
     @Test
     public void incrementRetries_ExistingRow() {
         when(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(new UserRetries("bob", 5)));
-        assertThat(service.incrementRetries("bob", 10)).isEqualTo(6);
+        assertThat(service.incrementRetries("bob")).isEqualTo(6);
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
         verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 6));

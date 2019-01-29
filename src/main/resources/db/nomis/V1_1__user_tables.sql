@@ -96,15 +96,21 @@ CREATE INDEX "USER_CASELOAD_ROLES_FK1"
 CREATE INDEX "USER_CASELOAD_ROLES_FK2"
   ON "USER_CASELOAD_ROLES" ("ROLE_ID");
 
-
-
 create table DBA_USERS
 (
   USERNAME       VARCHAR2(30)  not null,
-  PASSWORD       VARCHAR2(255) not null,
   ACCOUNT_STATUS VARCHAR2(32)  not null,
   PROFILE        VARCHAR2(30),
   primary key (USERNAME)
+);
+
+create schema if not exists SYS;
+
+create table SYS.USER$
+(
+  NAME   VARCHAR2(30)  not null,
+  SPARE4 VARCHAR2(255) not null,
+  primary key (NAME)
 );
 
 CREATE TABLE INTERNET_ADDRESSES

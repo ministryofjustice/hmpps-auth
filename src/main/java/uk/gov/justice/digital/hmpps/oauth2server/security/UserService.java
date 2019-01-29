@@ -4,8 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffIdentifier;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
@@ -21,20 +19,20 @@ public class UserService {
     private final StaffUserAccountRepository userRepository;
     private final StaffIdentifierRepository staffIdentifierRepository;
 
-    public UserService(StaffUserAccountRepository userRepository, StaffIdentifierRepository staffIdentifierRepository) {
+    public UserService(final StaffUserAccountRepository userRepository, final StaffIdentifierRepository staffIdentifierRepository) {
         this.userRepository = userRepository;
         this.staffIdentifierRepository = staffIdentifierRepository;
     }
 
-    public Optional<StaffUserAccount> getUserByUsername(String username) {
+    public Optional<StaffUserAccount> getUserByUsername(final String username) {
         return userRepository.findById(StringUtils.upperCase(username));
     }
 
-    public StaffUserAccount getUserByExternalIdentifier(String idType, String id, boolean activeOnly) {
-        StaffIdentifier staffIdentifier = staffIdentifierRepository.findById_TypeAndId_IdentificationNumber(idType, id);
+    public StaffUserAccount getUserByExternalIdentifier(final String idType, final String id, final boolean activeOnly) {
+        final var staffIdentifier = staffIdentifierRepository.findById_TypeAndId_IdentificationNumber(idType, id);
         Optional<StaffUserAccount> userDetail = Optional.empty();
         if (staffIdentifier != null) {
-            Staff staff = staffIdentifier.getStaff();
+            final var staff = staffIdentifier.getStaff();
 
             if (activeOnly && !staff.isActive()) {
                 log.info("Staff member found for external identifier with idType [{}] and id [{}] but not active.", idType, id);

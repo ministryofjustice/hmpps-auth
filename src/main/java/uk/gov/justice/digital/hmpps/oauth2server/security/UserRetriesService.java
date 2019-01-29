@@ -29,21 +29,13 @@ public class UserRetriesService {
     }
 
     /**
-     * @param username           unique identifier of user
-     * @param existingRetryCount retry count from Oracle.  If we don't have a row for the user then copy that row over,
-     *                           otherwise ignore and use the existing value
+     * @param username unique identifier of user
      * @return incremented retry value
      */
-    public int incrementRetries(final String username, final int existingRetryCount) {
+    public int incrementRetries(final String username) {
         final var retriesOptional = userRetriesRepository.findById(username);
-        final UserRetries userRetries;
-        if (retriesOptional.isEmpty()) {
-            // no row exists, so create new from other table
-            userRetries = new UserRetries(username, existingRetryCount + 1);
-        } else {
-            userRetries = retriesOptional.get();
-            userRetries.incrementRetryCount();
-        }
+        final var userRetries = retriesOptional.orElse(new UserRetries(username, 0));
+        userRetries.incrementRetryCount();
         userRetriesRepository.save(userRetries);
         return userRetries.getRetryCount();
     }

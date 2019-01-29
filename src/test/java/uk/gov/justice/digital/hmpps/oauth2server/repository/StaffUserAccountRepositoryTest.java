@@ -48,7 +48,6 @@ public class StaffUserAccountRepositoryTest {
 
         assertThat(retrievedEntity.getUsername()).isEqualTo(transientEntity.getUsername());
         assertThat(retrievedEntity.getType()).isEqualTo(transientEntity.getType());
-
     }
 
     @Test
@@ -70,6 +69,11 @@ public class StaffUserAccountRepositoryTest {
                 .containsExactly("Itag");
     }
 
+    @Test
+    public void testSpare4MappedAsPasswordFromSysUserTable() {
+        final var entity = repository.findById("CA_USER").orElseThrow();
+        assertThat(entity.getPassword()).startsWith("{bcrypt}");
+    }
 
     private StaffUserAccount transientEntity() {
         return StaffUserAccount
