@@ -28,7 +28,7 @@ import spock.lang.Specification
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-@ActiveProfiles("dev-seed")
+@ActiveProfiles("dev")
 @ContextConfiguration
 @Slf4j
 abstract class TestSpecification extends Specification {

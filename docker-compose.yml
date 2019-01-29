@@ -10,4 +10,4 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/auth/health"]
     environment:
     - SERVER_PORT=8080
-    - SPRING_PROFILES_ACTIVE=dev-seed
+    - SPRING_PROFILES_ACTIVE=dev

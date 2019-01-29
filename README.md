@@ -7,7 +7,7 @@ Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS DB
 ```bash
 ./gradlew assemble
 docker build -t mojdigitalstudio/nomis-oauth2-server .
-docker run -p9090:8080 --name nomis-oauth2-server -d --health-cmd='curl -f http://localhost:8080/auth/health' --env SPRING_PROFILES_ACTIVE=dev-seed mojdigitalstudio/nomis-oauth2-server:latest
+docker run -p9090:8080 --name nomis-oauth2-server -d --health-cmd='curl -f http://localhost:8080/auth/health' --env SPRING_PROFILES_ACTIVE=dev mojdigitalstudio/nomis-oauth2-server:latest
 ``` 
 
 ### Run against oracle DB (T3 example)
@@ -49,10 +49,10 @@ d77af7e00910        mojdigitalstudio/nomis-oauth2-server:latest   "/bin/sh /app/
 ```docker logs nomis-oauth2-server```
 
 ### Profiles:
-- dev - development configuration
+- dev-config - development configuration
 - auth-seed - seed auth database with api clients and sample users
 - nomis-seed - create tables and seed nomis database with sample users
-- dev-seed - development configuration plus seeding of both databases
+- dev - development configuration plus seeding of both databases
 - oracle - oracle DB integration with NOMIS DB, specify datasource url, username and password
 
 ### Get a JWT token
