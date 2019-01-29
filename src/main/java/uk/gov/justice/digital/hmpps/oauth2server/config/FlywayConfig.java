@@ -17,9 +17,9 @@ public class FlywayConfig {
 
     @Bean(name = "authFlyway", initMethod = "migrate")
     @FlywayDataSource
-    public Flyway authFlyway(@Qualifier("authDataSource") DataSource authDataSource,
-        @Value("${auth.flyway.locations}") List<String> flywayLocations) {
-        Flyway flyway = Flyway.configure()
+    public Flyway authFlyway(@Qualifier("authDataSource") final DataSource authDataSource,
+                             @Value("${auth.flyway.locations}") final List<String> flywayLocations) {
+        final var flyway = Flyway.configure()
                 .dataSource(authDataSource)
                 .locations(flywayLocations.toArray(new String[0]))
                 .load();
@@ -30,13 +30,13 @@ public class FlywayConfig {
     @Bean(name = "nomisFlyway", initMethod = "migrate")
     @FlywayDataSource
     @Primary
-    @Profile("dev")
-    public Flyway nomisFlyway(@Qualifier("dataSource") DataSource dataSource,
-                                @Value("${nomis.flyway.locations}") List<String> flywayLocations) {
-        Flyway flyway = Flyway.configure()
+    @Profile("nomis-seed")
+    public Flyway nomisFlyway(@Qualifier("dataSource") final DataSource dataSource,
+                              @Value("${nomis.flyway.locations}") final List<String> flywayLocations) {
+        final var flyway = Flyway.configure()
                 .dataSource(dataSource)
                 .locations(flywayLocations.toArray(new String[0]))
-                .installedBy("dev")
+                .installedBy("nomis-seed")
                 .load();
         flyway.migrate();
         return flyway;
