@@ -104,7 +104,7 @@ class ChangePasswordSpecification extends GebReportingSpec {
         at ChangePasswordPage
 
         when: "I change password using valid credentials"
-        changePasswordAs 'password123456', 'password123456'
+        changePasswordAs 'dodgypass1', 'dodgypass1'
 
         then: 'I am redirected back'
         browser.getCurrentUrl() startsWith(clientBaseUrl + '?code')

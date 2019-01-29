@@ -75,7 +75,7 @@ class ResetPasswordSpecification extends GebReportingSpec {
 
         when: "I change password using valid credentials"
         at SetPasswordPage
-        setPasswordAs 'password123456', 'password123456'
+        setPasswordAs 'reset123456', 'reset123456'
 
         then: 'My credentials are accepted and I am shown the confirmation page'
         at ResetPasswordSuccessPage

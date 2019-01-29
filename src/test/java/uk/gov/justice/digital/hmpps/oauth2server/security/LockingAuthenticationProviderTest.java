@@ -18,10 +18,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("dev")
-public class AbstractAuthenticationProviderTest {
+public class LockingAuthenticationProviderTest {
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    private AbstractAuthenticationProvider provider;
+    private LockingAuthenticationProvider provider;
 
     @Test
     public void authenticate_Success() {

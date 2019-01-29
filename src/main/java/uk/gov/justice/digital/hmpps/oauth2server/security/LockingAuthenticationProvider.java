@@ -19,16 +19,16 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class AbstractAuthenticationProvider extends DaoAuthenticationProvider {
+public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserRetriesService userRetriesService;
     private final TelemetryClient telemetryClient;
     private final int accountLockoutCount;
 
-    public AbstractAuthenticationProvider(final UserDetailsService userDetailsService,
-                                          final UserRetriesService userRetriesService,
-                                          final TelemetryClient telemetryClient,
-                                          final PasswordEncoder passwordEncoder,
-                                          @Value("${application.authentication.lockout-count}") final int accountLockoutCount) {
+    public LockingAuthenticationProvider(final UserDetailsService userDetailsService,
+                                         final UserRetriesService userRetriesService,
+                                         final TelemetryClient telemetryClient,
+                                         final PasswordEncoder passwordEncoder,
+                                         @Value("${application.authentication.lockout-count}") final int accountLockoutCount) {
         this.userRetriesService = userRetriesService;
         this.telemetryClient = telemetryClient;
         this.accountLockoutCount = accountLockoutCount;
