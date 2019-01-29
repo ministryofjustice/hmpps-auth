@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.common.exceptions.UnapprovedClientAut
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 
 import java.util.Objects;
 import java.util.Set;
@@ -39,7 +40,17 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
     @Override
     @Cacheable("loadUserByUsername")
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
-        final var staffUserAccount = userService.getUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+        // try nomis first
+        final var staffUserAccountOptional = userService.getUserByUsername(username);
+        // otherwise try auth
+        return staffUserAccountOptional.map(this::getUserDetailsFromNomis).orElseGet(() -> getUserDetailsFromAuth(username));
+    }
+
+    private UserDetails getUserDetailsFromAuth(final String username) {
+        return userService.getAuthUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+    private UserDetails getUserDetailsFromNomis(final StaffUserAccount staffUserAccount) {
         if (staffUserAccount.filterByCaseload(apiCaseloadId).isEmpty()) {
             throw new UnapprovedClientAuthenticationException(format("User does not have access to caseload %s", apiCaseloadId));
         }

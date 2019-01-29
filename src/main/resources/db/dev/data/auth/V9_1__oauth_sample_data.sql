@@ -25,5 +25,17 @@ VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
   ('EXPIRED_TEST2_USER', 'expired_test2_user@digital.justice.gov.uk', 'true'),
   ('EXPIRED_TEST3_USER', 'expired_test3_user@digital.justice.gov.uk', 'true');
 
+INSERT INTO user_email (username, password, email, verified, enabled)
+VALUES ('AUTH_ONLY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'auth_only_user@digital.justice.gov.uk', 'true', 'true'),
+  ('AUTH_ONLY_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'auth_only_test@digital.justice.gov.uk', 'true', 'true');
+
 INSERT INTO user_token (token, token_type, token_expiry, username)
 VALUES ('reset', 'RESET', '2018-12-10 08:55:45', 'LOCKED_USER');
+
+INSERT INTO person (username, first_name, last_name)
+VALUES ('AUTH_ONLY_USER', 'Auth', 'Only'),
+  ('AUTH_ONLY_TEST', 'Auth', 'Test');
+
+INSERT INTO authority (authority_id, username, authority)
+VALUES ('36025454-e42d-49a1-9124-013577a7ed20', 'AUTH_ONLY_USER', 'ROLE_AUTH'),
+  ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3e', 'AUTH_ONLY_USER', 'ROLE_AUTH_RO');

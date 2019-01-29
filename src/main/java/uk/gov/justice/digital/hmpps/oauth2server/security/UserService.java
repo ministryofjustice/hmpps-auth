@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
@@ -18,10 +20,12 @@ public class UserService {
 
     private final StaffUserAccountRepository userRepository;
     private final StaffIdentifierRepository staffIdentifierRepository;
+    private final UserEmailRepository userEmailRepository;
 
-    public UserService(final StaffUserAccountRepository userRepository, final StaffIdentifierRepository staffIdentifierRepository) {
+    public UserService(final StaffUserAccountRepository userRepository, final StaffIdentifierRepository staffIdentifierRepository, final UserEmailRepository userEmailRepository) {
         this.userRepository = userRepository;
         this.staffIdentifierRepository = staffIdentifierRepository;
+        this.userEmailRepository = userEmailRepository;
     }
 
     public Optional<StaffUserAccount> getUserByUsername(final String username) {
@@ -43,6 +47,10 @@ public class UserService {
 
         return userDetail.orElseThrow(() ->
                 new EntityNotFoundException(String.format("User not found for external identifier with idType [%s] and id [%s].", idType, id)));
+    }
+
+    public Optional<UserEmail> getAuthUserByUsername(final String username) {
+        return userEmailRepository.findById(StringUtils.upperCase(username));
     }
 
 }

@@ -10,7 +10,7 @@ import java.util.Collection;
 @SuppressWarnings("serial")
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class UserDetailsImpl extends User {
+public class UserDetailsImpl extends User implements UserPersonDetails {
     private final String name;
 
     public UserDetailsImpl(final String username, final String name, final String password,
