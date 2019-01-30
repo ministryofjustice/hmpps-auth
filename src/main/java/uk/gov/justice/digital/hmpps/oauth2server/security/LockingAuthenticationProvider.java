@@ -12,7 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -27,13 +28,17 @@ public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
     public LockingAuthenticationProvider(final UserDetailsService userDetailsService,
                                          final UserRetriesService userRetriesService,
                                          final TelemetryClient telemetryClient,
-                                         final PasswordEncoder passwordEncoder,
                                          @Value("${application.authentication.lockout-count}") final int accountLockoutCount) {
         this.userRetriesService = userRetriesService;
         this.telemetryClient = telemetryClient;
         this.accountLockoutCount = accountLockoutCount;
         setUserDetailsService(userDetailsService);
-        setPasswordEncoder(passwordEncoder);
+
+        final var oracleSha1PasswordEncoder = new OracleSha1PasswordEncoder();
+        final var encoders = Map.of("bcrypt", new BCryptPasswordEncoder(), "oracle", oracleSha1PasswordEncoder);
+        final var delegatingPasswordEncoder = new DelegatingPasswordEncoder("bcrypt", encoders);
+        delegatingPasswordEncoder.setDefaultPasswordEncoderForMatches(oracleSha1PasswordEncoder);
+        setPasswordEncoder(delegatingPasswordEncoder);
     }
 
     @Override
