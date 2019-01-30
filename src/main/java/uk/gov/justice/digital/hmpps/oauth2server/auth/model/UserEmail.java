@@ -41,6 +41,12 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     @Column(name = "enabled", nullable = false)
     private boolean enabled;
 
+    /**
+     * Whether we are masters of this user record here in auth
+     */
+    @Column(name = "master", nullable = false)
+    private boolean master;
+
     @OneToOne(cascade = ALL)
     @JoinColumn(name = "username")
     @PrimaryKeyJoinColumn

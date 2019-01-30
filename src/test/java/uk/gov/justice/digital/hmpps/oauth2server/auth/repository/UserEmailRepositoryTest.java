@@ -148,6 +148,16 @@ public class UserEmailRepositoryTest {
         assertThat(retrievedEntity2.getAuthorities()).extracting("authority").containsOnly("ROLE_AUTH_RO");
     }
 
+    @Test
+    public void findByUsernameAndMasterIsTrue_AuthUser() {
+        assertThat(repository.findByUsernameAndMasterIsTrue("AUTH_ONLY_TEST")).isPresent();
+    }
+
+    @Test
+    public void findByUsernameAndMasterIsTrue_NomisUser() {
+        assertThat(repository.findByUsernameAndMasterIsTrue("ITAG_USER")).isEmpty();
+    }
+
     private UserEmail transientEntity() {
         final var email = new UserEmail();
         email.setUsername("user");

@@ -2,6 +2,8 @@ alter table user_email
   add password VARCHAR(100);
 alter table user_email
   add enabled BIT NOT NULL DEFAULT 0;
+alter table user_email
+  add master BIT NOT NULL DEFAULT 0;
 
 alter table user_email
   drop column token_expiry;

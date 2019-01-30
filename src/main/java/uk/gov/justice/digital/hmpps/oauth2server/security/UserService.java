@@ -50,7 +50,7 @@ public class UserService {
     }
 
     public Optional<UserEmail> getAuthUserByUsername(final String username) {
-        return userEmailRepository.findById(StringUtils.upperCase(username));
+        return userEmailRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(username));
     }
 
 }
