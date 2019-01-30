@@ -89,7 +89,6 @@ public class UserDetailsServiceImplTest {
     public void testAuthOnlyUser() {
 
         final var user = buildAuthUser();
-        when(userService.getUserByUsername(anyString())).thenReturn(Optional.empty());
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
