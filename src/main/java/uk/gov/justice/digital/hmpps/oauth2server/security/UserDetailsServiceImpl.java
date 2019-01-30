@@ -40,17 +40,13 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
     @Override
     @Cacheable("loadUserByUsername")
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
-        // try nomis first
-        final var staffUserAccountOptional = userService.getUserByUsername(username);
-        // otherwise try auth
-        return staffUserAccountOptional.map(this::getUserDetailsFromNomis).orElseGet(() -> getUserDetailsFromAuth(username));
+        // try auth first, then nomis
+        return userService.getAuthUserByUsername(username).map(UserPersonDetails.class::cast).
+                or(() -> userService.getUserByUsername(username).map(this::getUserDetailsFromNomis)).
+                orElseThrow(() -> new UsernameNotFoundException(username));
     }
 
-    private UserDetails getUserDetailsFromAuth(final String username) {
-        return userService.getAuthUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
-    }
-
-    private UserDetails getUserDetailsFromNomis(final StaffUserAccount staffUserAccount) {
+    private UserPersonDetails getUserDetailsFromNomis(final StaffUserAccount staffUserAccount) {
         if (staffUserAccount.filterByCaseload(apiCaseloadId).isEmpty()) {
             throw new UnapprovedClientAuthenticationException(format("User does not have access to caseload %s", apiCaseloadId));
         }
