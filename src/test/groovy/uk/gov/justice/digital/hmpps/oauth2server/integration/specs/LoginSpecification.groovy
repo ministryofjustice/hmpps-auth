@@ -101,6 +101,18 @@ class LoginSpecification extends GebReportingSpec {
         principalName == 'Itag User'
     }
 
+    def "Log in with valid auth credentials"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login using valid credentials"
+        loginAs AUTH_ONLY_USER, 'password123456'
+
+        then: 'My credentials are accepted and I am shown the Home page'
+        at HomePage
+        principalName == 'Auth Only'
+    }
+
     def "Log in with valid credentials in lower case"() {
         given: 'I am on the Login page'
         to LoginPage

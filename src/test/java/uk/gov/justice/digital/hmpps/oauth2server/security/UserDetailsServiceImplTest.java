@@ -5,6 +5,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.*;
 
 import java.time.LocalDate;
@@ -12,6 +15,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.*;
 
@@ -78,6 +83,30 @@ public class UserDetailsServiceImplTest {
         assertThat(itagUser.isAccountNonLocked()).isTrue();
         assertThat(itagUser.isCredentialsNonExpired()).isFalse();
         assertThat(itagUser.isEnabled()).isTrue();
+    }
+
+    @Test
+    public void testAuthOnlyUser() {
+
+        final var user = buildAuthUser();
+        when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(user));
+
+        final var itagUser = service.loadUserByUsername(user.getUsername());
+
+        assertThat(itagUser).isNotNull();
+        assertThat(itagUser.isAccountNonExpired()).isTrue();
+        assertThat(itagUser.isAccountNonLocked()).isTrue();
+        assertThat(itagUser.isCredentialsNonExpired()).isTrue();
+        assertThat(itagUser.isEnabled()).isTrue();
+    }
+
+    @Test
+    public void testUserNotFound() {
+
+        when(userService.getUserByUsername(anyString())).thenReturn(Optional.empty());
+        when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.loadUserByUsername("user")).isInstanceOf(UsernameNotFoundException.class);
     }
 
     @Test
@@ -203,5 +232,12 @@ public class UserDetailsServiceImplTest {
                 .lastName("USER")
                 .status("ACTIVE")
                 .build();
+    }
+
+    private UserEmail buildAuthUser() {
+        final var userEmail = new UserEmail("user", "email", true, false);
+        userEmail.setPerson(new Person("user", "first", "last"));
+        userEmail.setEnabled(true);
+        return userEmail;
     }
 }

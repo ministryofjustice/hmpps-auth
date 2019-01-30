@@ -17,7 +17,8 @@ enum UserAccount {
     EXPIRED_TEST2_USER('EXPIRED_TEST2_USER'),
     EXPIRED_TEST3_USER('EXPIRED_TEST3_USER'),
     RO_USER('RO_USER'),
-    DM_USER('DM_USER')
+    DM_USER('DM_USER'),
+    AUTH_ONLY_USER('AUTH_ONLY_USER')
 
     String username
 }

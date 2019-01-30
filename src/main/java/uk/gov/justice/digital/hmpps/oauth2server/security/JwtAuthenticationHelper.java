@@ -41,7 +41,7 @@ public class JwtAuthenticationHelper {
     }
 
     String createJwt(final Authentication authentication) {
-        final var userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        final var userDetails = (UserPersonDetails) authentication.getPrincipal();
         final var username = userDetails.getUsername();
         log.debug("Creating jwt cookie for user {}", username);
         final var authorities = Optional.ofNullable(authentication.getAuthorities()).orElse(Collections.emptyList());
