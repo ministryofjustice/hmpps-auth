@@ -20,10 +20,4 @@ public class PasswordConfigTest {
         final var encodedPassword = new BCryptPasswordEncoder().encode("some_pass");
         assertThat(passwordEncoder.matches("some_pass", encodedPassword)).isTrue();
     }
-
-    @Test
-    public void testMatchesOraclePassword() {
-        final var encodePassword = "{oracle}S:39BA463D55E5C8936A6798CC37B1347BA8BEC37B6407397EB769BC356F0C";
-        assertThat(passwordEncoder.matches("somepass1", encodePassword)).isTrue();
-    }
 }

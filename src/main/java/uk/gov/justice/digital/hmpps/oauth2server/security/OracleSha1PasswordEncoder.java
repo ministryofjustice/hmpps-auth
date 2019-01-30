@@ -46,6 +46,6 @@ public class OracleSha1PasswordEncoder implements PasswordEncoder {
     }
 
     private String extractSalt(final String prefixEncodedPassword) {
-        return prefixEncodedPassword.substring(42, 62);
+        return prefixEncodedPassword.length() >= 62 ? prefixEncodedPassword.substring(42, 62) : "";
     }
 }
