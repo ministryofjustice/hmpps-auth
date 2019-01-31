@@ -91,4 +91,9 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     public String getName() {
         return person != null ? person.getName() : username;
     }
+
+    @Override
+    public String getFirstName() {
+        return person != null ? person.getFirstName() : username;
+    }
 }

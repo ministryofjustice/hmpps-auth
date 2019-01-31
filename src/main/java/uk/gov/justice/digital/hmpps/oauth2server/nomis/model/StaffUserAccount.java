@@ -1,10 +1,19 @@
 package uk.gov.justice.digital.hmpps.oauth2server.nomis.model;
 
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import javax.persistence.*;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.*;
 
 @Entity
 @Table(name = "STAFF_USER_ACCOUNTS")
@@ -15,7 +24,7 @@ import java.util.stream.Collectors;
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"username"})
 @ToString(of = {"username", "type"})
-public class StaffUserAccount {
+public class StaffUserAccount implements UserPersonDetails {
 
     @Id()
     @Column(name = "USERNAME", nullable = false)
@@ -31,7 +40,7 @@ public class StaffUserAccount {
     @Column(name = "STAFF_USER_TYPE", nullable = false)
     private String type;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "USERNAME")
     private List<UserCaseloadRole> roles;
 
@@ -53,5 +62,44 @@ public class StaffUserAccount {
         return caseloads.stream()
                 .filter(r -> r.getId().getCaseload().equals(caseload))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getName() {
+        return getStaff().getName();
+    }
+
+    @Override
+    public String getFirstName() {
+        return getStaff().getFirstName();
+    }
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return filterRolesByCaseload("NWEB").stream()
+                .filter(Objects::nonNull)
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(role.getRole().getCode().replace('-', '_'))))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return EnumSet.of(OPEN, EXPIRED, EXPIRED_GRACE).contains(getAccountDetail().getStatus());
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return !EnumSet.of(EXPIRED, EXPIRED_LOCKED, EXPIRED_LOCKED_TIMED).contains(getAccountDetail().getStatus());
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return EnumSet.of(OPEN, EXPIRED, EXPIRED_GRACE).contains(getAccountDetail().getStatus());
     }
 }

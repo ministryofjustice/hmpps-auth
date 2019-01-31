@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
@@ -13,6 +15,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.PasswordService;
 import java.util.Map;
 
 @Service
+@Slf4j
+@Transactional
 public class ChangePasswordService implements PasswordService {
     private final UserTokenRepository userTokenRepository;
     private final UserEmailRepository userEmailRepository;
@@ -42,6 +46,7 @@ public class ChangePasswordService implements PasswordService {
 
         final var userToken = new UserToken(TokenType.CHANGE, userEmail);
         userTokenRepository.save(userToken);
+        log.info("Requesting change password for {}", username);
         telemetryClient.trackEvent("ChangePasswordRequest", Map.of("username", username), null);
         return userToken.getToken();
     }
@@ -49,10 +54,10 @@ public class ChangePasswordService implements PasswordService {
     public void setPassword(final String token, final String password) {
         final var userToken = userTokenRepository.findById(token).orElseThrow();
         final var userEmail = userToken.getUserEmail();
-        final var userOptional = userService.getUserByUsername(userEmail.getUsername());
+        final var userOptional = userService.findUser(userEmail.getUsername());
 
         // before we set, ensure user allowed to still change their password
-        if (userOptional.isEmpty() || userOptional.get().getAccountDetail().getStatus().isLocked()) {
+        if (userOptional.map(u -> !u.isEnabled() || !u.isAccountNonLocked()).orElse(Boolean.TRUE)) {
             // failed, so let user know
             throw new LockedException("locked");
         }

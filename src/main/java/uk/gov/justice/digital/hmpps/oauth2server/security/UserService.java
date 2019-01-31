@@ -53,4 +53,8 @@ public class UserService {
         return userEmailRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(username));
     }
 
+    public Optional<UserPersonDetails> findUser(final String username) {
+        return getAuthUserByUsername(username).map(UserPersonDetails.class::cast).
+                or(() -> getUserByUsername(username).map(UserPersonDetails.class::cast));
+    }
 }

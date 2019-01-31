@@ -12,16 +12,19 @@ import java.util.Collection;
 @Data
 public class UserDetailsImpl extends User implements UserPersonDetails {
     private final String name;
+    private final String firstName;
 
     public UserDetailsImpl(final String username, final String name, final String password,
                            final boolean enabled, final boolean accountNonExpired, final boolean credentialsNonExpired,
                            final boolean accountNonLocked, final Collection<? extends GrantedAuthority> authorities) {
         super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
         this.name = name;
+        this.firstName = name;
     }
 
     public UserDetailsImpl(final String username, final String name, final Collection<GrantedAuthority> authorities) {
         super(username, "", authorities);
         this.name = name;
+        this.firstName = name;
     }
 }
