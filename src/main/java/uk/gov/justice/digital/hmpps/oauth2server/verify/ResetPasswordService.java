@@ -95,11 +95,9 @@ public class ResetPasswordService implements PasswordService {
         try {
             log.info("Sending reset password to notify for user {}", username);
             notificationClient.sendEmail(emailTemplate, email, parameters, null);
-            telemetryClient.trackEvent("ResetPasswordRequestSuccess", Map.of("username", username), null);
         } catch (final NotificationClientException e) {
             final var reason = (e.getCause() != null ? e.getCause() : e).getClass().getSimpleName();
             log.warn("Failed to send reset password to notify for user {}", username, e);
-            telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("username", username, "reason", reason), null);
             if (e.getHttpResult() >= 500) {
                 // second time lucky
                 notificationClient.sendEmail(emailTemplate, email, parameters, null, null);

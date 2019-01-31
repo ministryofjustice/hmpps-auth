@@ -64,13 +64,13 @@ public class ResetPasswordController extends AbstractPasswordController {
             final var resetLink = resetPasswordService.requestResetPassword(username, request.getRequestURL().append("-confirm?token=").toString());
             final var modelAndView = new ModelAndView("resetPasswordSent");
             if (resetLink.isPresent()) {
-                log.info("Reset password success for {}", username);
+                log.info("Reset password request success for {}", username);
                 telemetryClient.trackEvent("ResetPasswordRequestSuccess", Map.of("username", username), null);
                 if (smokeTestEnabled) {
                     modelAndView.addObject("resetLink", resetLink.get());
                 }
             } else {
-                log.info("Reset password failed, no link provided for {}", username);
+                log.info("Reset password request failed, no link provided for {}", username);
                 telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("username", username, "error", "nolink"), null);
                 if (smokeTestEnabled) {
                     modelAndView.addObject("resetLinkMissing", true);

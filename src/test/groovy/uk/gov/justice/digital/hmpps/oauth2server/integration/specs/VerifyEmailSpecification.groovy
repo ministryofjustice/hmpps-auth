@@ -3,8 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 import geb.spock.GebReportingSpec
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
-import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.DM_USER
-import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.RO_USER
+import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
 class VerifyEmailSpecification extends GebReportingSpec {
 
@@ -61,6 +60,30 @@ class VerifyEmailSpecification extends GebReportingSpec {
         when: 'The Verify Email page is displayed'
         at VerifyEmailPage
         selectExistingEmailAs 'phillips@bobjustice.gov.uk'
+
+        and: 'The Verify Email sent page is displayed'
+        at VerifyEmailSentPage
+        String verifyLink = $('#verifyLink').@href
+        continueProcess()
+
+        and: 'The Home page is displayed'
+        at HomePage
+
+        and: 'I can then verify my email address'
+        browser.go verifyLink
+
+        then:
+        at VerifyEmailConfirmPage
+    }
+
+    def "A user can verify an email that exists in pnomis where the user has changed password in auth"() {
+        given: 'I login with a non verified email user'
+        to LoginPage
+        loginAs RO_DEMO, 'password123456'
+
+        when: 'The Verify Email page is displayed'
+        at VerifyEmailPage
+        selectExistingEmailAs 'ro_user@some.justice.gov.uk'
 
         and: 'The Verify Email sent page is displayed'
         at VerifyEmailSentPage
