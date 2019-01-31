@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.LockedException;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
@@ -50,7 +51,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_UserUnlocked() {
-        when(userService.getUserByUsername(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = new UserEmail("uesr");
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -62,7 +63,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_AlterUser() {
-        when(userService.getUserByUsername(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = new UserEmail("uesr");
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -74,7 +75,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_SaveAndDelete() {
-        when(userService.getUserByUsername(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = new UserEmail("uesr");
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -88,7 +89,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_NotFound() {
-        when(userService.getUserByUsername(anyString())).thenReturn(Optional.empty());
+        when(userService.findUser(anyString())).thenReturn(Optional.empty());
 
         final var user = new UserEmail("uesr");
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -97,12 +98,11 @@ public class ChangePasswordServiceTest {
         assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     public void setPassword_LockedAccount() {
         final var staffUserAccount = getStaffUserAccountForBob();
-        staffUserAccount.get().getAccountDetail().setAccountStatus("LOCKED");
-        when(userService.getUserByUsername(anyString())).thenReturn(staffUserAccount);
+        staffUserAccount.map(StaffUserAccount.class::cast).get().getAccountDetail().setAccountStatus("LOCKED");
+        when(userService.findUser(anyString())).thenReturn(staffUserAccount);
 
         final var user = new UserEmail("uesr");
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -111,7 +111,27 @@ public class ChangePasswordServiceTest {
         assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
     }
 
-    private Optional<StaffUserAccount> getStaffUserAccountForBob() {
+    @Test
+    public void setPassword_DisabledAccount() {
+        final var userEmail = buildAuthUser();
+        userEmail.map(UserEmail.class::cast).get().setEnabled(false);
+        when(userService.findUser(anyString())).thenReturn(userEmail);
+
+        final var user = new UserEmail("uesr");
+        final var userToken = new UserToken(TokenType.RESET, user);
+        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
+
+        assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
+    }
+
+    private Optional<UserPersonDetails> buildAuthUser() {
+        final var userEmail = new UserEmail("user", "email", true, false);
+        userEmail.setPerson(new Person("user", "first", "last"));
+        userEmail.setEnabled(true);
+        return Optional.of(userEmail);
+    }
+
+    private Optional<UserPersonDetails> getStaffUserAccountForBob() {
         final var staffUserAccount = new StaffUserAccount();
         final var staff = new Staff();
         staff.setFirstName("bOb");

@@ -102,7 +102,7 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void requestVerification_firstNamePresent() throws NotificationClientException {
-        when(userService.getUserByUsername(anyString())).thenReturn(Optional.of(getStaffUserAccountForBob()));
+        when(userService.findUser(anyString())).thenReturn(Optional.of(getStaffUserAccountForBob()));
         final var verification = verifyEmailService.requestVerification("user", "email", "url");
         verify(notificationClient).sendEmail(eq("templateId"), eq("email"), mapCaptor.capture(), eq(null));
         final var params = mapCaptor.getValue();

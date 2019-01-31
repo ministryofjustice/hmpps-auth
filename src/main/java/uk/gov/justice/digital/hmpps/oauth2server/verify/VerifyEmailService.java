@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -64,8 +65,8 @@ public class VerifyEmailService {
     }
 
     public String requestVerification(final String username, final String email, final String url) throws NotificationClientException {
-        final var user = userService.getUserByUsername(username);
-        final var firstName = user.map(u -> u.getStaff().getFirstName()).orElse(username);
+        final var user = userService.findUser(username);
+        final var firstName = user.map(UserPersonDetails::getFirstName).orElse(username);
         final var optionalUserEmail = userEmailRepository.findById(username);
         final var userEmail = optionalUserEmail.orElseGet(() -> new UserEmail(username));
         userEmail.setEmail(email);

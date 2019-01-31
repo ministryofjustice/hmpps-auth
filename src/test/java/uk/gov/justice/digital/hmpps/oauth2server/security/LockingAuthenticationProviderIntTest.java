@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("dev")
 public class LockingAuthenticationProviderIntTest {
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private LockingAuthenticationProvider provider;
 
@@ -27,6 +26,13 @@ public class LockingAuthenticationProviderIntTest {
     public void authenticate_Success() {
         final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "password"));
         assertThat(auth).isNotNull();
+    }
+
+    @Test
+    public void authenticate_SuccessWithAuthorities() {
+        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER_ADM", "password123456"));
+        assertThat(auth).isNotNull();
+        assertThat(auth.getAuthorities()).extracting("authority").containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_KW_MIGRATION");
     }
 
     @Test
