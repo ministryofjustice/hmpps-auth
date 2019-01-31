@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.verify;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -51,7 +52,7 @@ public class VerifyEmailService {
     }
 
     public Optional<UserEmail> getEmail(final String username) {
-        return userEmailRepository.findById(username);
+        return userEmailRepository.findById(username).filter(ue -> StringUtils.isNotBlank(ue.getEmail()));
     }
 
     public boolean isNotVerified(final String name) {
@@ -116,11 +117,11 @@ public class VerifyEmailService {
             return trackAndReturnFailureForExpiredToken(username);
         }
 
-        markEmailAsVerified(userEmail, userToken);
+        markEmailAsVerified(userEmail);
         return Optional.empty();
     }
 
-    private void markEmailAsVerified(final UserEmail userEmail, final UserToken userToken) {
+    private void markEmailAsVerified(final UserEmail userEmail) {
         // verification token match
         userEmail.setVerified(true);
         userEmailRepository.save(userEmail);

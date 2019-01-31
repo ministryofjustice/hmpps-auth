@@ -203,19 +203,18 @@ Insert into internet_addresses (INTERNET_ADDRESS_ID, OWNER_CLASS, OWNER_ID, OWNE
                                 MODIFY_DATETIME, MODIFY_USER_ID, AUDIT_TIMESTAMP, AUDIT_USER_ID, AUDIT_MODULE_NAME,
                                 AUDIT_CLIENT_USER_ID, AUDIT_CLIENT_IP_ADDRESS, AUDIT_CLIENT_WORKSTATION_NAME,
                                 AUDIT_ADDITIONAL_INFO)
-  values (138250, 'STF', 4, null, null, 'EMAIL', 'phillips@bobjustice.gov.uk',
-          to_timestamp('06-DEC-18 16.08.27.910960000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', null, null,
-          to_timestamp('06-DEC-18 16.08.27.911332000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', 'OUMPERSO',
-          'pphillips', '10.102.2.4', 'MGMRW0100', null);
-Insert into internet_addresses (INTERNET_ADDRESS_ID, OWNER_CLASS, OWNER_ID, OWNER_SEQ, OWNER_CODE,
-                                INTERNET_ADDRESS_CLASS, INTERNET_ADDRESS, CREATE_DATETIME, CREATE_USER_ID,
-                                MODIFY_DATETIME, MODIFY_USER_ID, AUDIT_TIMESTAMP, AUDIT_USER_ID, AUDIT_MODULE_NAME,
-                                AUDIT_CLIENT_USER_ID, AUDIT_CLIENT_IP_ADDRESS, AUDIT_CLIENT_WORKSTATION_NAME,
-                                AUDIT_ADDITIONAL_INFO)
-  values (138251, 'STF', 4, null, null, 'EMAIL', 'phillips@fredjustice.gov.uk',
-          to_timestamp('06-DEC-18 16.08.43.742506000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', null, null,
-          to_timestamp('06-DEC-18 16.08.43.742717000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', 'OUMPERSO',
-          'pphillips', '10.102.2.4', 'MGMRW0100', null);
+VALUES (138250, 'STF', 4, null, null, 'EMAIL', 'phillips@bobjustice.gov.uk',
+    to_timestamp('06-DEC-18 16.08.27.910960000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', null, null,
+    to_timestamp('06-DEC-18 16.08.27.911332000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', 'OUMPERSO',
+    'pphillips', '10.102.2.4', 'MGMRW0100', null),
+  (138251, 'STF', 4, null, null, 'EMAIL', 'phillips@fredjustice.gov.uk',
+    to_timestamp('06-DEC-18 16.08.43.742506000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', null, null,
+    to_timestamp('06-DEC-18 16.08.43.742717000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', 'OUMPERSO',
+    'pphillips', '10.102.2.4', 'MGMRW0100', null),
+  (138252, 'STF', 10, null, null, 'EMAIL', 'ro_user@some.justice.gov.uk',
+    to_timestamp('06-DEC-18 16.08.43.742506000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', null, null,
+    to_timestamp('06-DEC-18 16.08.43.742717000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', 'OUMPERSO',
+    'pphillips', '10.102.2.4', 'MGMRW0100', null);
 
 
 

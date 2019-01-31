@@ -56,10 +56,18 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void getEmail() {
-        final var userEmail = new UserEmail("bob");
+        final var userEmail = new UserEmail("bob", "joe@bob.com", false, false);
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         final var userEmailOptional = verifyEmailService.getEmail("user");
         assertThat(userEmailOptional).get().isEqualTo(userEmail);
+    }
+
+    @Test
+    public void getEmail_NoEmailSet() {
+        final var userEmail = new UserEmail("bob");
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
+        final var userEmailOptional = verifyEmailService.getEmail("user");
+        assertThat(userEmailOptional).isEmpty();
     }
 
     @Test
@@ -78,7 +86,7 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void isNotVerified_userFoundVerified() {
-        final var userEmail = new UserEmail("bob");
+        final var userEmail = new UserEmail("bob", "joe@bob.com", false, false);
         userEmail.setVerified(true);
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         assertThat(verifyEmailService.isNotVerified("user")).isFalse();
