@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -237,6 +238,7 @@ public class UserDetailsServiceImplTest {
         final var userEmail = new UserEmail("user", "email", true, false);
         userEmail.setPerson(new Person("user", "first", "last"));
         userEmail.setEnabled(true);
+        userEmail.setPasswordExpiry(LocalDateTime.now().plusDays(1));
         return userEmail;
     }
 }

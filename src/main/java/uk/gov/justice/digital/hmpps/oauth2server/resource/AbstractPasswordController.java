@@ -8,7 +8,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile;
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
@@ -109,7 +108,7 @@ public class AbstractPasswordController {
         }
 
         // user must be present in order for authenticate to work above
-        final var user = userService.getUserByUsername(username).orElseThrow();
+        final var user = userService.findUser(username).orElseThrow();
 
         // Ensuring alphanumeric will ensure that we can't get SQL Injection attacks - since for oracle the password
         // cannot be used in a prepared statement
@@ -136,7 +135,7 @@ public class AbstractPasswordController {
         if (!StringUtils.equals(newPassword, confirmPassword)) {
             builder.add("errorconfirm", "mismatch");
         }
-        if (user.getAccountDetail().getAccountProfile() == AccountProfile.TAG_ADMIN) {
+        if (user.isAdmin()) {
             if (newPassword.length() < 14) {
                 builder.add("errornew", "length14");
             }

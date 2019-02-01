@@ -8,6 +8,7 @@ import org.springframework.security.core.CredentialsContainer;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -47,6 +48,9 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     @Column(name = "master", nullable = false)
     private boolean master;
 
+    @Column(name = "password_expiry")
+    private LocalDateTime passwordExpiry = LocalDateTime.now();
+
     @OneToOne(cascade = ALL)
     @JoinColumn(name = "username")
     @PrimaryKeyJoinColumn
@@ -84,7 +88,7 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return passwordExpiry.isAfter(LocalDateTime.now());
     }
 
     @Override
@@ -95,5 +99,10 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     @Override
     public String getFirstName() {
         return person != null ? person.getFirstName() : username;
+    }
+
+    @Override
+    public boolean isAdmin() {
+        return false;
     }
 }

@@ -219,11 +219,11 @@ public class AbstractPasswordControllerTest {
     }
 
     private void setupGetUserCallForProfile(final String profile) {
-        final var user = Optional.of(new StaffUserAccount());
+        final var user = new StaffUserAccount();
         final var detail = new AccountDetail();
         detail.setProfile(profile);
-        user.get().setAccountDetail(detail);
-        when(userService.getUserByUsername(anyString())).thenReturn(user);
+        user.setAccountDetail(detail);
+        when(userService.findUser(anyString())).thenReturn(Optional.of(user));
     }
 
     private MapEntry<String, List<Object>> listEntry(final String key, final Object... values) {

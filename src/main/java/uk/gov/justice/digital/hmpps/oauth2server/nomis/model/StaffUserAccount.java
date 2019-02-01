@@ -74,6 +74,10 @@ public class StaffUserAccount implements UserPersonDetails {
         return getStaff().getFirstName();
     }
 
+    @Override
+    public boolean isAdmin() {
+        return accountDetail.getAccountProfile() == AccountProfile.TAG_ADMIN;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

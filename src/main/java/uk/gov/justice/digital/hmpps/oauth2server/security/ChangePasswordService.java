@@ -2,7 +2,9 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
@@ -12,7 +14,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailReposi
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.PasswordService;
 
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -22,16 +26,23 @@ public class ChangePasswordService implements PasswordService {
     private final UserEmailRepository userEmailRepository;
     private final UserService userService;
     private final AlterUserService alterUserService;
+    private final PasswordEncoder passwordEncoder;
     private final TelemetryClient telemetryClient;
+    private final long passwordAge;
 
     protected ChangePasswordService(final UserTokenRepository userTokenRepository,
                                     final UserEmailRepository userEmailRepository,
-                                    final UserService userService, final AlterUserService alterUserService, final TelemetryClient telemetryClient) {
+                                    final UserService userService, final AlterUserService alterUserService,
+                                    final PasswordEncoder passwordEncoder,
+                                    final TelemetryClient telemetryClient,
+                                    @Value("${application.authentication.password-age}") final long passwordAge) {
         this.userTokenRepository = userTokenRepository;
         this.userEmailRepository = userEmailRepository;
         this.userService = userService;
         this.alterUserService = alterUserService;
+        this.passwordEncoder = passwordEncoder;
         this.telemetryClient = telemetryClient;
+        this.passwordAge = passwordAge;
     }
 
     String createToken(final String username) {
@@ -54,7 +65,7 @@ public class ChangePasswordService implements PasswordService {
     public void setPassword(final String token, final String password) {
         final var userToken = userTokenRepository.findById(token).orElseThrow();
         final var userEmail = userToken.getUserEmail();
-        final var userOptional = userService.findUser(userEmail.getUsername());
+        final var userOptional = userEmail.isMaster() ? Optional.of(userEmail) : userService.findUser(userEmail.getUsername());
 
         // before we set, ensure user allowed to still change their password
         if (userOptional.map(u -> !u.isEnabled() || !u.isAccountNonLocked()).orElse(Boolean.TRUE)) {
@@ -62,8 +73,13 @@ public class ChangePasswordService implements PasswordService {
             throw new LockedException("locked");
         }
 
-        userEmail.setLocked(false);
-        alterUserService.changePassword(userEmail.getUsername(), password);
+        // if we're the master of this user record deal with the change of password here
+        if (userEmail.isMaster()) {
+            userEmail.setPassword(passwordEncoder.encode(password));
+            userEmail.setPasswordExpiry(LocalDateTime.now().plusDays(passwordAge));
+        } else {
+            alterUserService.changePassword(userEmail.getUsername(), password);
+        }
         userEmailRepository.save(userEmail);
         userTokenRepository.delete(userToken);
     }
