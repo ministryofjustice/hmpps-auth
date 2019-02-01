@@ -69,6 +69,13 @@ public class ResetPasswordControllerTest {
     }
 
     @Test
+    public void resetPasswordRequest_format() {
+        final var modelAndView = controller.resetPasswordRequest("joe@bloggs.com", request);
+        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
+        assertThat(modelAndView.getModel()).containsExactly(entry("error", "format"));
+    }
+
+    @Test
     public void resetPasswordRequest_successSmokeWithLink() throws NotificationClientException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("url"));

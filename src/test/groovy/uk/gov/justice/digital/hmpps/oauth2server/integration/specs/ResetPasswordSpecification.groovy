@@ -23,6 +23,18 @@ class ResetPasswordSpecification extends GebReportingSpec {
         at LoginPage
     }
 
+    def "A user must enter their username in correct format"() {
+        given: 'I would like to reset my password'
+        to ResetPasswordPage
+
+        when:
+        resetPasswordAs "joe@bloggs.com"
+
+        then: 'My username is rejected and I am still on the Reset Password page'
+        at ResetPasswordErrorPage
+        errorDetail == 'Enter your username - it should be your Quantum ID'
+    }
+
     def "A user can reset their password"() {
         given: 'I would like to reset my password'
         to LoginPage
