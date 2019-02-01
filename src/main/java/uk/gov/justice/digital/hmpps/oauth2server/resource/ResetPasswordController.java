@@ -59,6 +59,10 @@ public class ResetPasswordController extends AbstractPasswordController {
             telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("error", "missing"), null);
             return new ModelAndView("resetPassword", "error", "missing");
         }
+        if (username.indexOf('@') != -1) {
+            telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("error", "format", "username", username), null);
+            return new ModelAndView("resetPassword", "error", "format");
+        }
 
         try {
             final var resetLink = resetPasswordService.requestResetPassword(username, request.getRequestURL().append("-confirm?token=").toString());

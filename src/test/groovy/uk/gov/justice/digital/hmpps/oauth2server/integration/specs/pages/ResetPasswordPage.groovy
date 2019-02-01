@@ -26,6 +26,12 @@ class ResetPasswordPage extends Page {
         resetPasswordButton.click()
     }
 
+    void resetPasswordAs(String username) {
+        usernameInput = username
+        assert resetPasswordButton.value() == 'Continue'
+        resetPasswordButton.click()
+    }
+
     void back() {
         backLink.click()
     }
