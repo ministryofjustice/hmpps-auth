@@ -8,6 +8,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -32,7 +33,14 @@ public class LockingAuthenticationProviderIntTest {
     public void authenticate_SuccessWithAuthorities() {
         final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER_ADM", "password123456"));
         assertThat(auth).isNotNull();
-        assertThat(auth.getAuthorities()).extracting("authority").containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_KW_MIGRATION");
+        assertThat(auth.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_KW_MIGRATION");
+    }
+
+    @Test
+    public void authenticate_AuthUserSuccessWithAuthorities() {
+        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_ADM", "password123456"));
+        assertThat(auth).isNotNull();
+        assertThat(auth.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES");
     }
 
     @Test
@@ -72,6 +80,21 @@ public class LockingAuthenticationProviderIntTest {
     }
 
     @Test
+    public void authenticate_AuthUserLockAfterThreeFailures() {
+        assertThatThrownBy(() ->
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_TEST", "wrong"))
+        ).isInstanceOf(BadCredentialsException.class);
+
+        assertThatThrownBy(() ->
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_TEST", "wrong"))
+        ).isInstanceOf(BadCredentialsException.class);
+
+        assertThatThrownBy(() ->
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_TEST", "wrong"))
+        ).isInstanceOf(LockedException.class);
+    }
+
+    @Test
     public void authenticate_ResetAfterSuccess() {
         assertThatThrownBy(() ->
                 provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "wrong"))
@@ -87,6 +110,25 @@ public class LockingAuthenticationProviderIntTest {
 
         assertThatThrownBy(() ->
                 provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "wrong"))
+        ).isInstanceOf(BadCredentialsException.class);
+    }
+
+    @Test
+    public void authenticate_AuthUserResetAfterSuccess() {
+        assertThatThrownBy(() ->
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_USER", "wrong"))
+        ).isInstanceOf(BadCredentialsException.class);
+
+        assertThatThrownBy(() ->
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_USER", "wrong"))
+        ).isInstanceOf(BadCredentialsException.class);
+
+        // success in middle should cause reset of count
+        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_USER", "password123456"));
+        assertThat(auth).isNotNull();
+
+        assertThatThrownBy(() ->
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
     }
 

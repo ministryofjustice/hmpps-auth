@@ -66,6 +66,30 @@ class LoginSpecification extends GebReportingSpec {
         errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
     }
 
+    def "Attempt login with locked auth user"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login with locked auth user"
+        loginAs AUTH_ONLY_LOCKED, 'password123456'
+
+        then: 'My credentials are rejected and I am still on the Login page'
+        at LoginErrorPage
+        errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
+    }
+
+    def "Attempt login with disabled auth user"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login with disabled auth user"
+        loginAs AUTH_ONLY_DISABLED, 'password123456'
+
+        then: 'My credentials are rejected and I am still on the Login page'
+        at LoginErrorPage
+        errorText == 'Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.'
+    }
+
     def "Attempt login with expired user wrong password"() {
         given: 'I am on the Login page'
         to LoginPage
@@ -167,12 +191,12 @@ class LoginSpecification extends GebReportingSpec {
 
         and: 'auth code is returned'
         def params = splitQuery(new URL(browser.getCurrentUrl()))
-        def authCode = params.get('code');
+        def authCode = params.get('code')
         authCode != null
     }
 
     private static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
         return url.query.split('&')
-                .collectEntries { it.split('=').collect { URLDecoder.decode(it, 'UTF-8') } };
+                .collectEntries { it.split('=').collect { URLDecoder.decode(it, 'UTF-8') } }
     }
 }

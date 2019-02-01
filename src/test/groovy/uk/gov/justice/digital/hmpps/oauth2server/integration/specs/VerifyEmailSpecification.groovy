@@ -100,6 +100,30 @@ class VerifyEmailSpecification extends GebReportingSpec {
         at VerifyEmailConfirmPage
     }
 
+    def "An auth only user can verify their email address"() {
+        given: 'I login with a non verified email user'
+        to LoginPage
+        loginAs AUTH_ONLY_NO_EMAIL, 'password123456'
+
+        when: 'The Verify Email page is displayed'
+        at VerifyEmailPage
+        verifyEmailAs 'auth_no_email@digital.justice.gov.uk'
+
+        and: 'The Verify Email sent page is displayed'
+        at VerifyEmailSentPage
+        String verifyLink = $('#verifyLink').@href
+        continueProcess()
+
+        and: 'The Home page is displayed'
+        at HomePage
+
+        and: 'I can then verify my email address'
+        browser.go verifyLink
+
+        then:
+        at VerifyEmailConfirmPage
+    }
+
     def "A user is asked to sign in again if the verification link is invalid"() {
         given: 'I have a verify link'
         String verifyLink = "/auth/verify-email-confirm?token=someinvalidtoken"
