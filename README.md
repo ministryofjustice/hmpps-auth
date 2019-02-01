@@ -1,6 +1,6 @@
-# NOMIS Oauth2 Server
+# HMPPS Oauth2 / SSO Server
 
-Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS DB
+Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS DB and New Auth DB
 
 #### Run in docker
 
