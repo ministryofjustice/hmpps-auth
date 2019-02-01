@@ -120,9 +120,9 @@ public class ChangePasswordControllerTest {
     }
 
     private void setupGetUserCallForProfile() {
-        final var user = Optional.of(new StaffUserAccount());
-        user.get().setAccountDetail(new AccountDetail());
-        when(userService.getUserByUsername(anyString())).thenReturn(user);
+        final var user = new StaffUserAccount();
+        user.setAccountDetail(new AccountDetail());
+        when(userService.findUser(anyString())).thenReturn(Optional.of(user));
     }
 
     private void setupCheckAndGetTokenValid() {

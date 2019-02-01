@@ -92,6 +92,30 @@ class ChangePasswordSpecification extends GebReportingSpec {
         at HomePage
     }
 
+    // this test changes AUTH_ONLY_EXPIRED password
+    def "Change password for auth user with valid credentials"() {
+        given: 'I try to login with an expired user'
+        to LoginPage
+        loginAs AUTH_ONLY_EXPIRED, 'password123456'
+
+        and: 'I am redirected to the change password page'
+        at ChangePasswordPage
+
+        when: "I change password using valid credentials"
+        changePasswordAs 'helloworld2', 'helloworld2'
+
+        and: 'My credentials are accepted and I am shown the Home page'
+        at HomePage
+
+        and: 'I can login with my new credentials'
+        logout()
+        at LoginPage
+        loginAs AUTH_ONLY_EXPIRED, 'helloworld2'
+
+        then: 'I am logged in'
+        at HomePage
+    }
+
     // this test changes EXPIRED_TEST3_USER password
     def "I can sign in from another client"() {
         given: 'I am using SSO auth token to change password'

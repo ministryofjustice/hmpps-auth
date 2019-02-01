@@ -6,4 +6,6 @@ public interface UserPersonDetails extends UserDetails {
     String getName();
 
     String getFirstName();
+
+    boolean isAdmin();
 }

@@ -27,4 +27,9 @@ public class UserDetailsImpl extends User implements UserPersonDetails {
         this.name = name;
         this.firstName = name;
     }
+
+    @Override
+    public boolean isAdmin() {
+        return false;
+    }
 }
