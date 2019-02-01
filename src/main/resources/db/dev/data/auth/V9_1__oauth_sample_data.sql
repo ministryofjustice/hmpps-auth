@@ -26,18 +26,25 @@ VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
   ('EXPIRED_TEST3_USER', 'expired_test3_user@digital.justice.gov.uk', 'true'),
   ('RO_DEMO', null, 'false');
 
-INSERT INTO user_email (username, password, email, verified, enabled, master)
-VALUES ('AUTH_ONLY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy',
-        'auth_only_user@digital.justice.gov.uk', 'true', 'true', 'true'),
-  ('AUTH_ONLY_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'auth_only_test@digital.justice.gov.uk', 'true', 'true', 'true');
+INSERT INTO user_email (username, password, email, verified, enabled, locked, master)
+VALUES ('AUTH_ONLY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'auth_only_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
+  ('AUTH_ONLY_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'auth_only_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
+  ('AUTH_ONLY_NO_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', null, 'true', 'true', 'false', 'true'),
+  ('AUTH_ONLY_LOCKED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', null, 'true', 'true', 'true', 'true'),
+  ('AUTH_ONLY_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', null, 'true', 'false', 'false', 'true'),
+  ('AUTH_ONLY_ADM', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'auth_only_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true');
 
 INSERT INTO user_token (token, token_type, token_expiry, username)
 VALUES ('reset', 'RESET', '2018-12-10 08:55:45', 'LOCKED_USER');
 
 INSERT INTO person (username, first_name, last_name)
 VALUES ('AUTH_ONLY_USER', 'Auth', 'Only'),
-  ('AUTH_ONLY_TEST', 'Auth', 'Test');
+  ('AUTH_ONLY_TEST', 'Auth', 'Test'),
+  ('AUTH_ONLY_NO_EMAIL', 'Auth', 'NoEmail'),
+  ('AUTH_ONLY_LOCKED', 'Auth', 'Locked'),
+  ('AUTH_ONLY_DISABLED', 'Auth', 'Disabled'),
+  ('AUTH_ONLY_ADM', 'Auth', 'Adm');
 
 INSERT INTO authority (authority_id, username, authority)
-VALUES ('36025454-e42d-49a1-9124-013577a7ed20', 'AUTH_ONLY_USER', 'ROLE_AUTH'),
-  ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3e', 'AUTH_ONLY_USER', 'ROLE_AUTH_RO');
+VALUES ('36025454-e42d-49a1-9124-013577a7ed20', 'AUTH_ONLY_ADM', 'ROLE_OAUTH_ADMIN'),
+  ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3e', 'AUTH_ONLY_ADM', 'ROLE_MAINTAIN_ACCESS_ROLES');

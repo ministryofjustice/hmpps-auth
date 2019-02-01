@@ -41,12 +41,15 @@ public class UserRetriesService {
     }
 
     public void lockAccount(final String username) {
-        alterUserService.lockAccount(username);
-
         final var userEmailOptional = userEmailRepository.findById(username);
         final var userEmail = userEmailOptional.orElseGet(() -> new UserEmail(username));
         userEmail.setLocked(true);
         userEmailRepository.save(userEmail);
+
+        // if auth isn't the master of the data then call to oracle to lock the user account
+        if (!userEmail.isMaster()) {
+            alterUserService.lockAccount(username);
+        }
 
         // reset retries otherwise if account is unlocked in c-nomis then user won't be allowed in
         resetRetries(username);

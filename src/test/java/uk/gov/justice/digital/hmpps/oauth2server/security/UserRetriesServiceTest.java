@@ -15,8 +15,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserRetriesServiceTest {
@@ -68,6 +67,15 @@ public class UserRetriesServiceTest {
         verify(userEmailRepository).save(captor.capture());
         assertThat(captor.getValue().isLocked()).isEqualTo(true);
         assertThat(captor.getValue()).isSameAs(existingUserEmail);
+    }
+
+    @Test
+    public void lockAccount_NoAlterUserForAuthOnlyAccounts() {
+        final var existingUserEmail = new UserEmail("username");
+        existingUserEmail.setMaster(true);
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(existingUserEmail));
+        service.lockAccount("bob");
+        verify(alterUserService, never()).lockAccount(anyString());
     }
 
     @Test

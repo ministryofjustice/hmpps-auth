@@ -108,11 +108,11 @@ public class UserEmailRepositoryTest {
 
     @Test
     public void givenAnExistingAuthUserTheyCanBeRetrieved() {
-        final var retrievedEntity = repository.findById("AUTH_ONLY_USER").orElseThrow();
-        assertThat(retrievedEntity.getUsername()).isEqualTo("AUTH_ONLY_USER");
+        final var retrievedEntity = repository.findById("AUTH_ONLY_ADM").orElseThrow();
+        assertThat(retrievedEntity.getUsername()).isEqualTo("AUTH_ONLY_ADM");
         assertThat(retrievedEntity.getPerson().getFirstName()).isEqualTo("Auth");
-        assertThat(retrievedEntity.getAuthorities()).extracting("authority").containsOnly("ROLE_AUTH", "ROLE_AUTH_RO");
-        assertThat(retrievedEntity.getEmail()).isEqualTo("auth_only_user@digital.justice.gov.uk");
+        assertThat(retrievedEntity.getAuthorities()).extracting("authority").containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES");
+        assertThat(retrievedEntity.getEmail()).isEqualTo("auth_only_test@digital.justice.gov.uk");
         assertThat(retrievedEntity.isVerified()).isTrue();
     }
 
