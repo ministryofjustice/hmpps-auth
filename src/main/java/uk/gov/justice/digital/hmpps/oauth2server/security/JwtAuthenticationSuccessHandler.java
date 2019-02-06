@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -20,18 +19,15 @@ public class JwtAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
     private final JwtCookieHelper jwtCookieHelper;
     private final JwtAuthenticationHelper jwtAuthenticationHelper;
     private final VerifyEmailService verifyEmailService;
-    private final boolean verifyEnabled;
 
     @Autowired
     public JwtAuthenticationSuccessHandler(final JwtCookieHelper jwtCookieHelper,
                                            final JwtAuthenticationHelper jwtAuthenticationHelper,
                                            final CookieRequestCache cookieRequestCache,
-                                           final VerifyEmailService verifyEmailService,
-                                           @Value("${application.verify-email.enabled}") final boolean verifyEnabled) {
+                                           final VerifyEmailService verifyEmailService) {
         this.jwtCookieHelper = jwtCookieHelper;
         this.jwtAuthenticationHelper = jwtAuthenticationHelper;
         this.verifyEmailService = verifyEmailService;
-        this.verifyEnabled = verifyEnabled;
         setRequestCache(cookieRequestCache);
         setDefaultTargetUrl("/");
     }
@@ -44,7 +40,7 @@ public class JwtAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
         jwtCookieHelper.addCookieToResponse(request, response, jwt);
 
         // we have successfully authenticated and added the cookie.  Now need to check that they have a validated email address
-        if (verifyEnabled && verifyEmailService.isNotVerified(authentication.getName())) {
+        if (verifyEmailService.isNotVerified(authentication.getName())) {
             getRedirectStrategy().sendRedirect(request, response, "/verify-email");
             return;
         }

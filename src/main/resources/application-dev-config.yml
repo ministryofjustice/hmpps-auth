@@ -6,10 +6,6 @@ spring:
 application:
   smoketest:
     enabled: true
-  verify-email:
-    enabled: true
-  reset-password:
-    enabled: true
 
   authentication:
     lockout-count: 3
