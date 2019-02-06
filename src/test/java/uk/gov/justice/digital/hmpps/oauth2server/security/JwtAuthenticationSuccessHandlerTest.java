@@ -38,17 +38,8 @@ public class JwtAuthenticationSuccessHandlerTest {
     private JwtAuthenticationSuccessHandler handler;
 
     @Test
-    public void onAuthenticationSuccess() throws IOException, ServletException {
-        setupHandler(false);
-
-        handler.onAuthenticationSuccess(request, response, new UsernamePasswordAuthenticationToken("user", "pass"));
-
-        verify(redirectStrategy).sendRedirect(request, response, "/");
-    }
-
-    @Test
     public void onAuthenticationSuccess_verifyEnabledAlreadyVerified() throws IOException, ServletException {
-        setupHandler(true);
+        setupHandler();
 
         when(verifyEmailService.isNotVerified(anyString())).thenReturn(Boolean.FALSE);
         handler.onAuthenticationSuccess(request, response, new UsernamePasswordAuthenticationToken("user", "pass"));
@@ -58,7 +49,7 @@ public class JwtAuthenticationSuccessHandlerTest {
 
     @Test
     public void onAuthenticationSuccess_verifyEnabledNotVerified() throws IOException, ServletException {
-        setupHandler(true);
+        setupHandler();
 
         when(verifyEmailService.isNotVerified(anyString())).thenReturn(Boolean.TRUE);
         handler.onAuthenticationSuccess(request, response, new UsernamePasswordAuthenticationToken("user", "pass"));
@@ -66,9 +57,9 @@ public class JwtAuthenticationSuccessHandlerTest {
         verify(redirectStrategy).sendRedirect(request, response, "/verify-email");
     }
 
-    private void setupHandler(final boolean verifyEnabled) {
+    private void setupHandler() {
         handler = new JwtAuthenticationSuccessHandler(jwtCookieHelper, jwtAuthenticationHelper, cookieRequestCache,
-                verifyEmailService, verifyEnabled);
+                verifyEmailService);
         handler.setRedirectStrategy(redirectStrategy);
     }
 }
