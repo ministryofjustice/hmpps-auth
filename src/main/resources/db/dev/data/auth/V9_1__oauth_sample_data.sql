@@ -33,6 +33,8 @@ VALUES ('AUTH_ONLY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9
   ('AUTH_ONLY_NO_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'true', 'false', 'true'),
   ('AUTH_ONLY_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2013-01-28 13:23:19', 'auth_only_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
   ('AUTH_ONLY_LOCKED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'true', 'true', 'true'),
+('AUTH_ONLY_LOCKED2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_only_locked2@digital.justice.gov.uk', 'true', 'true', 'true', 'true')
+,
   ('AUTH_ONLY_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'false', 'false', 'true');
 
 INSERT INTO user_token (token, token_type, token_expiry, username)
@@ -45,6 +47,8 @@ VALUES ('AUTH_ONLY_USER', 'Auth', 'Only'),
   ('AUTH_ONLY_NO_EMAIL', 'Auth', 'NoEmail'),
   ('AUTH_ONLY_EXPIRED', 'Auth', 'Expired'),
   ('AUTH_ONLY_LOCKED', 'Auth', 'Locked'),
+  ('AUTH_ONLY_LOCKED2', 'Auth', 'Locked2')
+  ,
   ('AUTH_ONLY_DISABLED', 'Auth', 'Disabled');
 
 
