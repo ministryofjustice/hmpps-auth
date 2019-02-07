@@ -24,7 +24,10 @@ VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
   ('EXPIRED_TEST_USER', 'expired_test_user@digital.justice.gov.uk', 'true'),
   ('EXPIRED_TEST2_USER', 'expired_test2_user@digital.justice.gov.uk', 'true'),
   ('EXPIRED_TEST3_USER', 'expired_test3_user@digital.justice.gov.uk', 'true'),
-  ('RO_DEMO', null, 'false');
+  ('RO_DEMO', null, 'false'),
+  ('CA_USER_TEST', 'ca_user_test@digital.justice.gov.uk', 'true'),
+  ('RO_USER_TEST', 'ro_user_test@digital.justice.gov.uk', 'true'),
+  ('DM_USER_TEST', 'dm_user_test@digital.justice.gov.uk', 'true');
 
 INSERT INTO user_email (username, password, password_expiry, email, verified, enabled, locked, master)
 VALUES ('AUTH_ONLY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_only_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
