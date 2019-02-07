@@ -57,6 +57,50 @@ class OauthSpecification extends TestSpecification {
         userData.name == "CA_USER"
     }
 
+    def "Client Credentials Login access token"() {
+
+        given:
+        def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret", "username=CA_USER")
+
+        when:
+        def token = oauthRestTemplate.getAccessToken()
+
+        then:
+        token.value != null
+
+        and: 'expiry is in 1 hour'
+        token.expiresIn >= 3590
+        token.expiresIn <= 3600
+
+        and: 'refresh token does not exist'
+        token.refreshToken == null
+
+        and: 'authentication source is nomis'
+        token.additionalInformation.auth_source == 'nomis'
+    }
+
+    def "Client Credentials Login access token for auth user"() {
+
+        given:
+        def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret", "username=AUTH_ONLY_USER")
+
+        when:
+        def token = oauthRestTemplate.getAccessToken()
+
+        then:
+        token.value != null
+
+        and: 'expiry is in 1 hour'
+        token.expiresIn >= 3590
+        token.expiresIn <= 3600
+
+        and: 'refresh token does not exist'
+        token.refreshToken == null
+
+        and: 'authentication source is auth'
+        token.additionalInformation.auth_source == 'auth'
+    }
+
     def "Client Credentials Login With username identifier for auth user"() {
 
         given:
@@ -88,6 +132,10 @@ class OauthSpecification extends TestSpecification {
 
         and: 'refresh token exists'
         token.refreshToken.value != null
+
+        and: 'authentication source is nomis'
+        token.additionalInformation.auth_source == 'nomis'
+
     }
 
     def "Password Credentials Login for auth user"() {
@@ -106,6 +154,9 @@ class OauthSpecification extends TestSpecification {
 
         and: 'refresh token exists'
         token.refreshToken.value != null
+
+        and: 'authentication source is auth'
+        token.additionalInformation.auth_source == 'auth'
     }
 
     def "Refresh token can be obtained"() {

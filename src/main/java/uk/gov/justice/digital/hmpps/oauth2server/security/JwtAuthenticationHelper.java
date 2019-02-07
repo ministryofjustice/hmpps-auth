@@ -68,9 +68,10 @@ public class JwtAuthenticationHelper {
                     .filter(StringUtils::isNotEmpty)
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
+            final var authSource = body.get("auth_source", String.class);
 
             log.debug("Set authentication for {}", username);
-            return Optional.of(new UsernamePasswordAuthenticationToken(new UserDetailsImpl(username, name, authorities), null, authorities));
+            return Optional.of(new UsernamePasswordAuthenticationToken(new UserDetailsImpl(username, name, authorities, authSource), null, authorities));
         } catch (final ExpiredJwtException eje) {
             // cookie set to expire at same time as JWT so unlikely really get an expired one
             log.info("Expired JWT found for user {}", eje.getClaims().getSubject());

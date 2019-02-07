@@ -30,7 +30,7 @@ public class JwtAuthenticationHelperTest {
     @Test
     public void testReadAndWriteWithoutAuthorities() {
 
-        final var user = new UserDetailsImpl("user", "name", Collections.emptyList());
+        final var user = new UserDetailsImpl("user", "name", Collections.emptyList(), "test");
         final var token = new UsernamePasswordAuthenticationToken(user, "pass");
         final var jwt = helper.createJwt(token);
         final var auth = helper.readAuthenticationFromJwt(jwt);

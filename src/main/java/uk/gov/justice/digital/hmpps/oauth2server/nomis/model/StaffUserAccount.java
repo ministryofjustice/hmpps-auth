@@ -80,6 +80,11 @@ public class StaffUserAccount implements UserPersonDetails {
     }
 
     @Override
+    public String getAuthSource() {
+        return "nomis";
+    }
+
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return filterRolesByCaseload("NWEB").stream()
                 .filter(Objects::nonNull)

@@ -105,4 +105,9 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     public boolean isAdmin() {
         return false;
     }
+
+    @Override
+    public String getAuthSource() {
+        return "auth";
+    }
 }
