@@ -3,13 +3,12 @@ package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class JWTTokenEnhancer implements TokenEnhancer {
-    private static final String ADD_INFO_INTERNAL_USER = "internalUser";
+    private static final String ADD_INFO_AUTH_SOURCE = "auth_source";
     private static final String ADD_INFO_USER_NAME = "user_name";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
 
@@ -26,15 +25,17 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     private ExternalIdAuthenticationHelper externalIdAuthenticationHelper;
 
     @Override
-    public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
+    public OAuth2AccessToken enhance(final OAuth2AccessToken accessToken, final OAuth2Authentication authentication) {
         final Map<String, Object> additionalInfo;
 
         if (authentication.isClientOnly()) {
             additionalInfo = addUserFromExternalId(authentication, accessToken);
         } else {
+            final var userAuthentication = authentication.getUserAuthentication();
+            final var userDetails = (UserPersonDetails) userAuthentication.getPrincipal();
             additionalInfo = Map.of(
-                    ADD_INFO_INTERNAL_USER, Boolean.TRUE,
-                    ADD_INFO_USER_NAME, authentication.getUserAuthentication().getName());
+                    ADD_INFO_AUTH_SOURCE, userDetails.getAuthSource(),
+                    ADD_INFO_USER_NAME, userAuthentication.getName());
         }
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
@@ -48,34 +49,32 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     // authentication fails. If a system user account is identified, the user id will be added to the token,
     // the token's scope will be 'narrowed' to include 'write' scope and the system user's roles will be added
     // to token authorities.
-    private Map<String, Object> addUserFromExternalId(OAuth2Authentication authentication, OAuth2AccessToken accessToken) {
-        Map<String, Object> additionalInfo = new HashMap<>();
+    private Map<String, Object> addUserFromExternalId(final OAuth2Authentication authentication, final OAuth2AccessToken accessToken) {
+        final Map<String, Object> additionalInfo = new HashMap<>();
 
         // Determine if both user_id_type and user_id request parameters exist.
-        OAuth2Request request = authentication.getOAuth2Request();
+        final var request = authentication.getOAuth2Request();
 
-        Map<String, String> requestParams = request.getRequestParameters();
+        final var requestParams = request.getRequestParameters();
 
         // Non-blank user_id_type and user_id to check - delegate to external identifier auth component
-        UserDetails userDetails = externalIdAuthenticationHelper.getUserDetails(requestParams);
+        final var userDetails = externalIdAuthenticationHelper.getUserDetails(requestParams);
 
         if (userDetails != null) {
-            additionalInfo.put(ADD_INFO_INTERNAL_USER, Boolean.TRUE);
+            additionalInfo.put(ADD_INFO_AUTH_SOURCE, userDetails.getAuthSource());
             additionalInfo.put(ADD_INFO_USER_NAME, userDetails.getUsername());
 
             // TODO: remove once write credential has been added to clients
             // Add "write" scope with those for client credentials
-            Set<String> scope = new HashSet<>(request.getScope());
+            final Set<String> scope = new HashSet<>(request.getScope());
             scope.add("write");
             ((DefaultOAuth2AccessToken) accessToken).setScope(scope);
 
             // Merge user authorities with those associated with client credentials
-            Set<GrantedAuthority> authorities = new HashSet<>(request.getAuthorities());
-
             additionalInfo.put(ADD_INFO_AUTHORITIES,
-                    authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()));
+                    request.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()));
         } else {
-            additionalInfo.put(ADD_INFO_INTERNAL_USER, Boolean.FALSE);
+            additionalInfo.put(ADD_INFO_AUTH_SOURCE, "none");
         }
 
         return additionalInfo;
