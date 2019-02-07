@@ -57,6 +57,21 @@ class OauthSpecification extends TestSpecification {
         userData.name == "CA_USER"
     }
 
+    def "Client Credentials Login With username identifier for auth user"() {
+
+        given:
+        def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret", "username=AUTH_ONLY_USER")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/me", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData.name == "AUTH_ONLY_USER"
+    }
+
     def "Password Credentials Login"() {
 
         given:
@@ -75,10 +90,45 @@ class OauthSpecification extends TestSpecification {
         token.refreshToken.value != null
     }
 
+    def "Password Credentials Login for auth user"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("AUTH_ONLY_USER", "password123456", "elite2apiclient", "clientsecret")
+
+        when:
+        def token = oauthRestTemplate.getAccessToken()
+
+        then:
+        token.value != null
+
+        and: 'expiry is in 8 hours'
+        token.expiresIn >= 28790
+
+        and: 'refresh token exists'
+        token.refreshToken.value != null
+    }
+
     def "Refresh token can be obtained"() {
 
         given: 'I create an access token'
         def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password","elite2apiclient", "clientsecret")
+        def accessToken = oauthRestTemplate.getAccessToken()
+
+        when: 'I request a refresh token'
+        def newAccessToken = refresh(oauthRestTemplate)
+
+        then: 'refresh token is returned'
+        newAccessToken.refreshToken.value != null
+
+        and: 'access tokens are different'
+        accessToken.getRefreshToken().value != newAccessToken.getRefreshToken().value
+        accessToken.value != newAccessToken.value
+    }
+
+    def "Refresh token can be obtained for auth user"() {
+
+        given: 'I create an access token'
+        def oauthRestTemplate = getOauthPasswordGrant("AUTH_ONLY_USER", "password123456", "elite2apiclient", "clientsecret")
         def accessToken = oauthRestTemplate.getAccessToken()
 
         when: 'I request a refresh token'

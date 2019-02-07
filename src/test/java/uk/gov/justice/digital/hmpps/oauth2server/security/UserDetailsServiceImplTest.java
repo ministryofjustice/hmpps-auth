@@ -6,10 +6,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.*;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.*;
 
@@ -29,6 +32,10 @@ public class UserDetailsServiceImplTest {
 
     @Mock
     private UserService userService;
+    @Mock
+    private EntityManager nomisEntityManager;
+    @Mock
+    private EntityManager authEntityManager;
 
     private static final Caseload NWEB_CASELOAD = Caseload.builder().id("NWEB").type("APP").build();
     private static final Caseload MDI_CASELOAD = Caseload.builder().id("MDI").type("INST").build();
@@ -37,6 +44,8 @@ public class UserDetailsServiceImplTest {
     @Before
     public void setup() {
         service = new UserDetailsServiceImpl(userService);
+        ReflectionTestUtils.setField(service, "nomisEntityManager", nomisEntityManager);
+        ReflectionTestUtils.setField(service, "authEntityManager", authEntityManager);
     }
 
     @Test
@@ -54,6 +63,32 @@ public class UserDetailsServiceImplTest {
         assertThat(itagUser.isEnabled()).isTrue();
 
         assertThat(((UserPersonDetails) itagUser).getName()).isEqualTo("Itag User");
+    }
+
+    @Test
+    public void testEntityDetached() {
+
+        final var user = buildStandardUser("ITAG_USER");
+        when(userService.findUser(user.getUsername())).thenReturn(Optional.of(user));
+
+        final var itagUser = service.loadUserByUsername(user.getUsername());
+
+        verify(nomisEntityManager).detach(user);
+
+        assertThat(((UserPersonDetails) itagUser).getName()).isEqualTo("Itag User");
+    }
+
+    @Test
+    public void testAuthEntityDetached() {
+
+        final var user = buildAuthUser();
+        when(userService.findUser(user.getUsername())).thenReturn(Optional.of(user));
+
+        final var itagUser = service.loadUserByUsername(user.getUsername());
+
+        verify(authEntityManager).detach(user);
+
+        assertThat(((UserPersonDetails) itagUser).getName()).isEqualTo("first last");
     }
 
     @Test

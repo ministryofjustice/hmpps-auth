@@ -106,4 +106,9 @@ public class StaffUserAccount implements UserPersonDetails {
     public boolean isEnabled() {
         return EnumSet.of(OPEN, EXPIRED, EXPIRED_GRACE).contains(getAccountDetail().getStatus());
     }
+
+    @Override
+    public void eraseCredentials() {
+        password = null;
+    }
 }
