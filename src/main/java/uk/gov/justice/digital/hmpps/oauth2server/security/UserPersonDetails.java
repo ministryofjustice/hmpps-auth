@@ -9,4 +9,6 @@ public interface UserPersonDetails extends UserDetails, CredentialsContainer {
     String getFirstName();
 
     boolean isAdmin();
+
+    String getAuthSource();
 }
