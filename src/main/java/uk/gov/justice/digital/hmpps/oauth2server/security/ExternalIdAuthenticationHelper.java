@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
 import org.springframework.stereotype.Component;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
@@ -31,8 +31,6 @@ public class ExternalIdAuthenticationHelper {
     }
 
     public UserDetails getUserDetails(final Map<String, String> requestParameters) {
-        final UserDetails userDetails;
-
         if (requestParameters.containsKey(REQUEST_PARAM_USER_ID_TYPE) &&
                 requestParameters.containsKey(REQUEST_PARAM_USER_ID)) {
             // Extract values - if either are empty/null, throw auth failed exception
@@ -51,24 +49,21 @@ public class ExternalIdAuthenticationHelper {
                 throw new OAuth2AccessDeniedException("No user found matching external user identifier details.");
             }
             // Get full user details, with authorities, etc.
-            userDetails = userDetailsService.loadUserByUsername(userDetail.getUsername());
-        } else if (requestParameters.containsKey(REQUEST_PARAM_USER_NAME)) {
+            return userDetailsService.loadUserByUsername(userDetail.getUsername());
+        }
+        if (requestParameters.containsKey(REQUEST_PARAM_USER_NAME)) {
             final var username = requestParameters.get(REQUEST_PARAM_USER_NAME);
 
             if (StringUtils.isBlank(username)) {
                 throw new OAuth2AccessDeniedException("Invalid username identifier details.");
             }
 
-            final var userDetail = userService.getUserByUsername(username).orElseThrow(() -> new OAuth2AccessDeniedException("No user found matching username."));
-            // Get full user details, with authorities, etc.
-            userDetails = userDetailsService.loadUserByUsername(userDetail.getUsername());
-        } else {
-            userDetails = null;
+            try {
+                return userDetailsService.loadUserByUsername(username);
+            } catch (final UsernameNotFoundException e) {
+                throw new OAuth2AccessDeniedException("No user found matching username.");
+            }
         }
-
-        if (userDetails instanceof CredentialsContainer) {
-            ((CredentialsContainer) userDetails).eraseCredentials();
-        }
-        return userDetails;
+        return null;
     }
 }
