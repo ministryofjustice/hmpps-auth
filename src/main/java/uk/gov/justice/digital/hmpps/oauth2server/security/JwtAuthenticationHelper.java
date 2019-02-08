@@ -49,7 +49,7 @@ public class JwtAuthenticationHelper {
         return Jwts.builder()
                 .setId(UUID.randomUUID().toString())
                 .setSubject(username)
-                .addClaims(Map.of("authorities", authoritiesAsString, "name", userDetails.getName()))
+                .addClaims(Map.of("authorities", authoritiesAsString, "name", userDetails.getName(), "auth_source", userDetails.getAuthSource()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiryTime.toMillis()))
                 .signWith(SignatureAlgorithm.RS256, keyPair.getPrivate())
                 .compact();
@@ -68,7 +68,7 @@ public class JwtAuthenticationHelper {
                     .filter(StringUtils::isNotEmpty)
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
-            final var authSource = body.get("auth_source", String.class);
+            final var authSource = Optional.ofNullable(body.get("auth_source", String.class)).orElse("none");
 
             log.debug("Set authentication for {}", username);
             return Optional.of(new UsernamePasswordAuthenticationToken(new UserDetailsImpl(username, name, authorities, authSource), null, authorities));
