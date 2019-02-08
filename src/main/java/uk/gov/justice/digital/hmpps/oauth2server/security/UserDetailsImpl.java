@@ -11,6 +11,10 @@ import java.util.Collection;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class UserDetailsImpl extends User implements UserPersonDetails {
+    // This class is serialized to the database (oauth_code table) during /auth/oauth/authorize and then read back
+    // during /auth/oauth/token.  Therefore implemented serial version UID, although breaking changes should increment.
+    private static final long serialVersionUID = 1L;
+
     private final String name;
     private final String firstName;
     private final String authSource;
@@ -24,7 +28,7 @@ public class UserDetailsImpl extends User implements UserPersonDetails {
         this.authSource = authSource;
     }
 
-    UserDetailsImpl(final String username, final String name, final Collection<GrantedAuthority> authorities, final String authSource) {
+    public UserDetailsImpl(final String username, final String name, final Collection<GrantedAuthority> authorities, final String authSource) {
         super(username, "", authorities);
         this.name = name;
         this.firstName = name;
