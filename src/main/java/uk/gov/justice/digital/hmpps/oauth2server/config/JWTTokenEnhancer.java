@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
@@ -34,7 +35,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             final var userAuthentication = authentication.getUserAuthentication();
             final var userDetails = (UserPersonDetails) userAuthentication.getPrincipal();
             additionalInfo = Map.of(
-                    ADD_INFO_AUTH_SOURCE, userDetails.getAuthSource(),
+                    ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
                     ADD_INFO_USER_NAME, userAuthentication.getName());
         }
 

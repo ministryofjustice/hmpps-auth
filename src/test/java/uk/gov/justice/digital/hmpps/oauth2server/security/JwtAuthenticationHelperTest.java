@@ -36,7 +36,7 @@ public class JwtAuthenticationHelperTest {
         final var auth = helper.readAuthenticationFromJwt(jwt);
 
         assertThat(auth).isPresent();
-        assertThat(auth.get().getPrincipal()).extracting("username", "name").containsExactly("user", "name");
+        assertThat(auth.get().getPrincipal()).extracting("username", "name", "authSource").containsExactly("user", "name", "test");
         assertThat(auth.get().getAuthorities()).isEmpty();
     }
 
@@ -64,5 +64,26 @@ public class JwtAuthenticationHelperTest {
 
         final var token = helper.readAuthenticationFromJwt(cookie);
         assertThat(token).get().extracting("principal.name").isEqualTo(List.of("BOB"));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    public void testReadCookieWithoutAuthSourceField() {
+        final var properties = new JwtCookieConfigurationProperties();
+        properties.setExpiryTime(Duration.ofHours(1));
+        final var helper = new JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties);
+        final var expiryTime = (Duration) ReflectionTestUtils.getField(helper, "expiryTime");
+        final var keyPair = (KeyPair) ReflectionTestUtils.getField(helper, "keyPair");
+
+        final var cookie = Jwts.builder()
+                .setId(UUID.randomUUID().toString())
+                .setSubject("BOB")
+                .addClaims(Map.of("authorities", ""))
+                .setExpiration(new Date(System.currentTimeMillis() + expiryTime.toMillis()))
+                .signWith(SignatureAlgorithm.RS256, keyPair.getPrivate())
+                .compact();
+
+        final var token = helper.readAuthenticationFromJwt(cookie);
+        assertThat(token).get().extracting("principal.authSource").isEqualTo(List.of("none"));
     }
 }

@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages
 
+
 import geb.Page
+import io.jsonwebtoken.impl.DefaultJwtParser
 
 class HomePage extends Page {
 
@@ -21,5 +23,12 @@ class HomePage extends Page {
         assert logoutLink.text() == 'Sign out'
 
         logoutLink.click()
+    }
+
+    Object parseJwt() {
+        def token = browser.driver.manage().getCookieNamed("jwtSession").value
+        def (header, payload) = token.split('\\.')
+
+        new DefaultJwtParser().parse("$header.$payload.").body
     }
 }
