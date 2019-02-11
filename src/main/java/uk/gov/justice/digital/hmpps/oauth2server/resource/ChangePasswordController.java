@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
@@ -25,6 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+
+import static uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.CHANGE;
 
 @Slf4j
 @Controller
@@ -49,8 +50,8 @@ public class ChangePasswordController extends AbstractPasswordController {
     }
 
     @GetMapping("/change-password")
-    public String changePasswordRequest() {
-        return "changePassword";
+    public ModelAndView changePasswordRequest(@RequestParam final String token) {
+        return createModelWithTokenAndAddIsAdmin(CHANGE, token, "changePassword");
     }
 
     @PostMapping("/change-password")
@@ -58,9 +59,9 @@ public class ChangePasswordController extends AbstractPasswordController {
                                        @RequestParam final String newPassword, @RequestParam final String confirmPassword,
                                        final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
 
-        final var userToken = tokenService.getToken(TokenType.CHANGE, token);
+        final var userToken = tokenService.getToken(CHANGE, token);
 
-        final var modelAndView = processSetPassword(TokenType.CHANGE, token, newPassword, confirmPassword);
+        final var modelAndView = processSetPassword(CHANGE, token, newPassword, confirmPassword);
         if (modelAndView.isPresent()) {
             return modelAndView.get();
         }

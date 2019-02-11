@@ -7,9 +7,11 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.servlet.ModelAndView;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.PasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
@@ -43,6 +45,13 @@ public class AbstractPasswordController {
         this.passwordBlacklist = passwordBlacklist;
     }
 
+    ModelAndView createModelWithTokenAndAddIsAdmin(final TokenType tokenType, final String token, final String viewName) {
+        final var userToken = tokenService.getToken(tokenType, token);
+        final var modelAndView = new ModelAndView(viewName, "token", token);
+        addIsAdminToModel(userToken, modelAndView);
+        return modelAndView;
+    }
+
     Optional<ModelAndView> processSetPassword(final TokenType tokenType, final String token,
                                               final String newPassword, final String confirmPassword) {
         final var userTokenOptional = tokenService.checkToken(tokenType, token);
@@ -62,6 +71,7 @@ public class AbstractPasswordController {
         final var validationResult = validate(username, newPassword, confirmPassword);
         if (!validationResult.isEmpty()) {
             final var modelAndView = new ModelAndView(failureViewName, "token", token);
+            addIsAdminToModel(Optional.of(userToken), modelAndView);
             return trackAndReturn(tokenType, username, modelAndView, validationResult);
         }
 
@@ -70,6 +80,7 @@ public class AbstractPasswordController {
 
         } catch (final Exception e) {
             final var modelAndView = new ModelAndView(failureViewName, "token", token);
+            addIsAdminToModel(Optional.of(userToken), modelAndView);
 
             if (e instanceof PasswordValidationFailureException) {
                 return trackAndReturn(tokenType, username, modelAndView, "validation");
@@ -163,5 +174,13 @@ public class AbstractPasswordController {
         modelAndView.addObject("errornew", reason);
         modelAndView.addObject("error", Boolean.TRUE);
         return Optional.of(modelAndView);
+    }
+
+    private void addIsAdminToModel(@SuppressWarnings("OptionalUsedAsFieldOrParameterType") final Optional<UserToken> userToken,
+                                   final ModelAndView modelAndView) {
+        final boolean isAdmin = userToken.flatMap(ut -> userService.findUser(ut.getUserEmail().getUsername())).
+                map(UserPersonDetails::isAdmin).
+                orElse(Boolean.FALSE);
+        modelAndView.addObject("isAdmin", isAdmin);
     }
 }
