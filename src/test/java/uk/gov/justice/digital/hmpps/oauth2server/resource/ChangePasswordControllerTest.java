@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import org.assertj.core.data.MapEntry;
+import org.assertj.core.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,8 +24,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFail
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -62,8 +67,40 @@ public class ChangePasswordControllerTest {
 
     @Test
     public void changePasswordRequest() {
-        final var view = controller.changePasswordRequest();
-        assertThat(view).isEqualTo("changePassword");
+        final var view = controller.changePasswordRequest("token");
+        assertThat(view.getViewName()).isEqualTo("changePassword");
+    }
+
+    @Test
+    public void changePasswordRequest_adminUser() {
+        setupCheckAndGetTokenValid();
+        final var user = setupGetUserCallForProfile();
+        user.getAccountDetail().setProfile("TAG_ADMIN");
+        final var model = controller.changePasswordRequest("token");
+        assertThat(model.getModel().get("isAdmin")).isEqualTo(Boolean.TRUE);
+    }
+
+    @Test
+    public void changePasswordRequest_generalUser() {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile();
+        final var model = controller.changePasswordRequest("token");
+        assertThat(model.getModel().get("isAdmin")).isEqualTo(Boolean.FALSE);
+    }
+
+    @Test
+    public void changePasswordRequest_tokenInvalid() {
+        final var model = controller.changePasswordRequest("token");
+        assertThat(model.getModel().get("isAdmin")).isEqualTo(Boolean.FALSE);
+    }
+
+    @Test
+    public void changePasswordRequest_NotAlphanumeric() throws IOException, ServletException {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile();
+        final var modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response);
+        assertThat(modelAndView.getViewName()).isEqualTo("changePassword");
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "alphanumeric"), entry("isAdmin", Boolean.FALSE));
     }
 
     @Test
@@ -73,7 +110,7 @@ public class ChangePasswordControllerTest {
         doThrow(new PasswordValidationFailureException()).when(changePasswordService).setPassword(anyString(), anyString());
         final var redirect = controller.changePassword("user", "password2", "password2", request, response);
         assertThat(redirect.getViewName()).isEqualTo("changePassword");
-        assertThat(redirect.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "validation"));
+        assertThat(redirect.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "validation"), entry("isAdmin", Boolean.FALSE));
     }
 
     @Test
@@ -119,14 +156,19 @@ public class ChangePasswordControllerTest {
         verify(changePasswordService).setPassword("user", "password2");
     }
 
-    private void setupGetUserCallForProfile() {
+    private StaffUserAccount setupGetUserCallForProfile() {
         final var user = new StaffUserAccount();
         user.setAccountDetail(new AccountDetail());
         when(userService.findUser(anyString())).thenReturn(Optional.of(user));
+        return user;
     }
 
     private void setupCheckAndGetTokenValid() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
         when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, new UserEmail("user"))));
+    }
+
+    private MapEntry<String, List<Object>> listEntry(final String key, final Object... values) {
+        return MapEntry.entry(key, Arrays.asList(values));
     }
 }

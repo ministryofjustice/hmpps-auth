@@ -140,7 +140,16 @@ public class ResetPasswordControllerTest {
     public void resetPasswordConfirm_checkModel() {
         setupCheckTokenValid();
         final var modelAndView = controller.resetPasswordConfirm("sometoken");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.FALSE));
+    }
+
+    @Test
+    public void resetPasswordConfirm_checkModelAdminUser() {
+        final var user = setupGetUserCallForProfile();
+        user.getAccountDetail().setProfile("TAG_ADMIN");
+        setupCheckAndGetTokenValid();
+        final var modelAndView = controller.resetPasswordConfirm("sometoken");
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.TRUE));
     }
 
     @Test
@@ -182,9 +191,10 @@ public class ResetPasswordControllerTest {
         when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, new UserEmail("user"))));
     }
 
-    private void setupGetUserCallForProfile() {
+    private StaffUserAccount setupGetUserCallForProfile() {
         final var user = new StaffUserAccount();
         user.setAccountDetail(new AccountDetail());
         when(userService.findUser(anyString())).thenReturn(Optional.of(user));
+        return user;
     }
 }

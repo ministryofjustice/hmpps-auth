@@ -72,7 +72,7 @@ public class AbstractPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("d", "@fewfewfew1", "@fewfewfew1");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "alphanumeric"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errornew", "alphanumeric"));
     }
 
     @Test
@@ -80,7 +80,7 @@ public class AbstractPasswordControllerTest {
         setupCheckAndGetTokenValid();
         final var modelAndView = controller.setPassword("d", "", "");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "newmissing"), listEntry("errorconfirm", "confirmmissing"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errornew", "newmissing"), listEntry("errorconfirm", "confirmmissing"));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class AbstractPasswordControllerTest {
         setupCheckAndGetTokenValid();
         final var modelAndView = controller.setPassword("d", "a", "");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errorconfirm", "confirmmissing"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errorconfirm", "confirmmissing"));
     }
 
     @Test
@@ -97,7 +97,7 @@ public class AbstractPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("d", "qwerqw12", "qwerqw12");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "length9"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errornew", "length9"));
     }
 
     @Test
@@ -106,7 +106,7 @@ public class AbstractPasswordControllerTest {
         setupGetUserCallForProfile("TAG_ADMIN");
         final var modelAndView = controller.setPassword("d", "qwerqwerqwe12", "qwerqwerqwe12");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "length14"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("isAdmin", Boolean.TRUE), entry("error", Boolean.TRUE), listEntry("errornew", "length14"));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class AbstractPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("token", "passWORD1", "passWORD1");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "token"), entry("error", Boolean.TRUE), listEntry("errornew", "blacklist"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "token"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errornew", "blacklist"));
     }
 
     @Test
@@ -124,7 +124,7 @@ public class AbstractPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("token", "someuser12", "someuser12");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "token"), entry("error", Boolean.TRUE), listEntry("errornew", "username"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "token"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errornew", "username"));
     }
 
     @Test
@@ -133,7 +133,7 @@ public class AbstractPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("d", "as1as1as1", "as1as1as1");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "four"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errornew", "four"));
     }
 
     @Test
@@ -142,7 +142,7 @@ public class AbstractPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("daaa", "asdasdasdb", "asdasdasdb");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "daaa"), entry("error", Boolean.TRUE), listEntry("errornew", "nodigits"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "daaa"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errornew", "nodigits"));
     }
 
     @Test
@@ -151,7 +151,7 @@ public class AbstractPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("d", "1231231234", "1231231234");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "alldigits"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errornew", "alldigits"));
     }
 
     @Test
@@ -160,7 +160,7 @@ public class AbstractPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("user", "password", "new");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), listEntry("errorconfirm", "mismatch"), listEntry("errornew", "nodigits", "length9"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errorconfirm", "mismatch"), listEntry("errornew", "nodigits", "length9"));
     }
 
     @Test
@@ -169,7 +169,7 @@ public class AbstractPasswordControllerTest {
         setupGetUserCallForProfile(null);
         final var modelAndView = controller.setPassword("user", "password2", "new");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), listEntry("errorconfirm", "mismatch"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errorconfirm", "mismatch"));
     }
 
     @Test
@@ -179,7 +179,7 @@ public class AbstractPasswordControllerTest {
         doThrow(new PasswordValidationFailureException()).when(resetPasswordService).setPassword(anyString(), anyString());
         final var modelAndView = controller.setPassword("user", "password2", "password2");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "validation"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), entry("errornew", "validation"));
     }
 
     @Test
@@ -200,7 +200,7 @@ public class AbstractPasswordControllerTest {
         doThrow(new ReusedPasswordException()).when(resetPasswordService).setPassword(anyString(), anyString());
         final var modelAndView = controller.setPassword("user", "password2", "password2");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "reused"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), entry("errornew", "reused"));
     }
 
     @Test
@@ -210,7 +210,7 @@ public class AbstractPasswordControllerTest {
         doThrow(new LockedException("wrong")).when(resetPasswordService).setPassword(anyString(), anyString());
         final var modelAndView = controller.setPassword("user", "password2", "password2");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "state"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "user"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), entry("errornew", "state"));
     }
 
     private void setupCheckAndGetTokenValid() {
