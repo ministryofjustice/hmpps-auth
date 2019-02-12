@@ -60,9 +60,11 @@ VALUES (19, 'Change', 'Password3', 'ACTIVE');
 INSERT INTO STAFF_MEMBERS (STAFF_ID, FIRST_NAME, LAST_NAME, STATUS)
 VALUES (20, 'Local', 'Admin', 'ACTIVE');
 
+INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id, working_caseload_id)
+VALUES ('ITAG_USER', 'GENERAL', 1, 'MDI');
+
 INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id)
-VALUES ('ITAG_USER', 'GENERAL', 1),
-  ('ITAG_USER_ADM', 'ADMIN', 1),
+VALUES ('ITAG_USER_ADM', 'ADMIN', 1),
   ('OLD_NOMIS_USER', 'GENERAL', 2),
   ('CA_USER', 'GENERAL', 3),
   ('RO_USER', 'GENERAL', 4),

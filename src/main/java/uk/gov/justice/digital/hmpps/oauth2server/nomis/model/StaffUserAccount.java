@@ -40,6 +40,9 @@ public class StaffUserAccount implements UserPersonDetails {
     @Column(name = "STAFF_USER_TYPE", nullable = false)
     private String type;
 
+    @Column(name = "WORKING_CASELOAD_ID")
+    private String activeCaseLoadId;
+
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "USERNAME")
     private List<UserCaseloadRole> roles;

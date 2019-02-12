@@ -39,7 +39,7 @@ class OauthSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData.name == "ITAG_USER"
+        userData.name == "Itag User"
     }
 
     def "Client Credentials Login With username identifier"() {
@@ -54,7 +54,7 @@ class OauthSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData.name == "CA_USER"
+        userData.name == "Licence Case Admin"
     }
 
     def "Client Credentials Login access token"() {
@@ -113,7 +113,7 @@ class OauthSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData.name == "AUTH_ONLY_USER"
+        userData.name == "Auth Only"
     }
 
     def "Password Credentials Login"() {
@@ -265,7 +265,7 @@ class OauthSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData.name == "ITAG_USER"
+        userData.name == "Itag User"
 
     }
 
@@ -281,7 +281,7 @@ class OauthSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData.name == "omicadmin"
+        userData.username == "omicadmin"
 
     }
 }
