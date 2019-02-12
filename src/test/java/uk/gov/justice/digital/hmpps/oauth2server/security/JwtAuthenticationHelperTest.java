@@ -30,13 +30,13 @@ public class JwtAuthenticationHelperTest {
     @Test
     public void testReadAndWriteWithoutAuthorities() {
 
-        final var user = new UserDetailsImpl("user", "name", Collections.emptyList(), "test");
+        final var user = new UserDetailsImpl("user", "name", Collections.emptyList(), "none");
         final var token = new UsernamePasswordAuthenticationToken(user, "pass");
         final var jwt = helper.createJwt(token);
         final var auth = helper.readAuthenticationFromJwt(jwt);
 
         assertThat(auth).isPresent();
-        assertThat(auth.get().getPrincipal()).extracting("username", "name", "authSource").containsExactly("user", "name", "test");
+        assertThat(auth.get().getPrincipal()).extracting("username", "name", "authSource").containsExactly("user", "name", "none");
         assertThat(auth.get().getAuthorities()).isEmpty();
     }
 

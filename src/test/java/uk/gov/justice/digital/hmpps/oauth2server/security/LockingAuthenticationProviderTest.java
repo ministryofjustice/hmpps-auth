@@ -36,7 +36,7 @@ public class LockingAuthenticationProviderTest {
         final var password = "S:39BA463D55E5C8936A6798CC37B1347BA8BEC37B6407397EB769BC356F0C";
 
         final var userDetails = new UserDetailsImpl("user", "name", password,
-                true, true, true, true, Collections.emptyList(), "test");
+                true, true, true, true, Collections.emptyList(), "none");
 
         when(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails);
 
@@ -48,7 +48,7 @@ public class LockingAuthenticationProviderTest {
         final var password = "{bcrypt}" + new BCryptPasswordEncoder().encode("some_pass");
 
         final var userDetails = new UserDetailsImpl("user", "name", password,
-                true, true, true, true, Collections.emptyList(), "test");
+                true, true, true, true, Collections.emptyList(), "none");
 
         when(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails);
 
