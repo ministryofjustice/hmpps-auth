@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import com.google.common.collect.ImmutableMap;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
@@ -27,6 +30,18 @@ public class UserController {
         final var user = userService.findUser(principal.getName());
 
         return user.map(this::mapUser).orElse(Map.of("username", principal.getName()));
+    }
+
+
+    @GetMapping("/api/user/{username}")
+    public ResponseEntity<Map<String, Object>> user(@PathVariable final String username) {
+        final var user = userService.findUser(username);
+
+        return user.map(this::mapUser).map(ResponseEntity::ok).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(username)));
+    }
+
+    private Map<String, Object> notFoundBody(final String username) {
+        return Map.of("status", 404, "userMessage", String.format("Account for username %s not found", username));
     }
 
     private Map<String, Object> mapUser(final UserPersonDetails u) {
