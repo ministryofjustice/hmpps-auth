@@ -38,6 +38,44 @@ public class UserControllerTest {
     }
 
     @Test
+    public void user_userNotFound() {
+        final var responseEntity = userController.user("bob");
+        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
+        assertThat(responseEntity.getBody()).containsOnly(entry("status", 404), entry("userMessage", "Account for username bob not found"));
+    }
+
+    @Test
+    public void user_nomisUserNoCaseload() {
+        setupFindUserCallForNomis();
+        final var responseEntity = userController.user("joe");
+        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
+        assertThat(responseEntity.getBody()).containsOnly(entry("username", "principal"),
+                entry("active", Boolean.FALSE), entry("staffId", 5L), entry("name", "Joe Bloggs"),
+                entry("authSource", "nomis"));
+    }
+
+    @Test
+    public void user_nomisUser() {
+        final var staffUserAccount = setupFindUserCallForNomis();
+        staffUserAccount.setActiveCaseLoadId("somecase");
+        final var responseEntity = userController.user("joe");
+        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
+        assertThat(responseEntity.getBody()).containsOnly(entry("username", "principal"),
+                entry("active", Boolean.FALSE), entry("staffId", 5L), entry("name", "Joe Bloggs"),
+                entry("authSource", "nomis"), entry("activeCaseLoadId", "somecase"));
+    }
+
+    @Test
+    public void user_authUser() {
+        setupFindUserCallForAuth();
+        final var responseEntity = userController.user("joe");
+        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
+        assertThat(responseEntity.getBody()).containsOnly(entry("username", "principal"),
+                entry("active", Boolean.TRUE), entry("name", "Joe Bloggs"),
+                entry("authSource", "auth"));
+    }
+
+    @Test
     public void me_userNotFound() {
         final var principal = new TestingAuthenticationToken("principal", "credentials");
         assertThat(userController.me(principal)).containsOnly(entry("username", "principal"));

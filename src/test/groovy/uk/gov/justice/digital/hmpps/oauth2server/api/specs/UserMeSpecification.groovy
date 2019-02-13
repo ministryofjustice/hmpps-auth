@@ -38,13 +38,34 @@ class UserMeSpecification extends TestSpecification {
         userData == ["username": "AUTH_ONLY_USER", "active": true, "name": "Auth Only", "authSource": "auth"]
     }
 
-    def "User Me endpoint not accessible without valid token"() {
+    def "User username endpoint returns user data"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password", "elite2apiclient", "clientsecret")
 
         when:
-        def response = restTemplate.exchange("/api/user/me", HttpMethod.GET, null, String.class)
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/CA_USER", HttpMethod.GET, null, String.class)
 
         then:
-        response.statusCode == HttpStatus.UNAUTHORIZED
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ["username": "CA_USER", "active": true, "name": "Licence Case Admin", "staffId": 3, "authSource": "nomis"]
+    }
+
+    def "User username endpoint returns user data for auth user"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/AUTH_ONLY_USER", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ["username": "AUTH_ONLY_USER", "active": true, "name": "Auth Only", "authSource": "auth"]
     }
 
     def "User Roles endpoint returns principal user data"() {
@@ -77,5 +98,32 @@ class UserMeSpecification extends TestSpecification {
         def userData = jsonSlurper.parseText(response.body)
 
         assert userData.collect { it.roleCode }.sort() == ['MAINTAIN_ACCESS_ROLES', 'OAUTH_ADMIN']
+    }
+
+    def "User Me endpoint not accessible without valid token"() {
+
+        when:
+        def response = restTemplate.exchange("/api/user/me", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.UNAUTHORIZED
+    }
+
+    def "User Me Roles endpoint not accessible without valid token"() {
+
+        when:
+        def response = restTemplate.exchange("/api/user/me/roles", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.UNAUTHORIZED
+    }
+
+    def "User username endpoint not accessible without valid token"() {
+
+        when:
+        def response = restTemplate.exchange("/api/user/bob", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.UNAUTHORIZED
     }
 }
