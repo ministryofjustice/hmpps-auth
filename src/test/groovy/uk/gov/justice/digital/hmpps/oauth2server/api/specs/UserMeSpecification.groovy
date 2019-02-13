@@ -23,6 +23,21 @@ class UserMeSpecification extends TestSpecification {
         userData == ["username": "ITAG_USER", "active": true, "name": "Itag User", "staffId": 1, "activeCaseLoadId": "MDI", "authSource": "nomis"]
     }
 
+    def "User Me endpoint returns principal user data for client credentials grant"() {
+
+        given:
+        def oauthRestTemplate = getOauthClientGrant("deliusnewtech", "clientsecret", "username=ITAG_USER")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/me", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ["username": "ITAG_USER", "active": true, "name": "Itag User", "staffId": 1, "activeCaseLoadId": "MDI", "authSource": "nomis"]
+    }
+
     def "User Me endpoint returns principal user data for auth user"() {
 
         given:
@@ -44,13 +59,13 @@ class UserMeSpecification extends TestSpecification {
         def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password", "elite2apiclient", "clientsecret")
 
         when:
-        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/CA_USER", HttpMethod.GET, null, String.class)
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/RO_USER", HttpMethod.GET, null, String.class)
 
         then:
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "CA_USER", "active": true, "name": "Licence Case Admin", "staffId": 3, "authSource": "nomis"]
+        userData == ["username": "RO_USER", "active": true, "name": "Licence Responsible Officer", "authSource": "nomis", "staffId": 4]
     }
 
     def "User username endpoint returns user data for auth user"() {
