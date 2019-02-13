@@ -153,6 +153,21 @@ public class ChangePasswordServiceTest {
         assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
     }
 
+    @Test
+    public void setPassword_AuthPasswordSameAsCurrent() {
+        final var user = new UserEmail("uesr", null, false, false);
+        user.setEnabled(true);
+        user.setMaster(true);
+        user.setPassword("oldencryptedpassword");
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(Boolean.TRUE);
+        final var userToken = new UserToken(TokenType.RESET, user);
+        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
+
+        assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(ReusedPasswordException.class);
+
+        verify(passwordEncoder).matches("pass", "oldencryptedpassword");
+    }
+
     private Optional<UserPersonDetails> buildAuthUser() {
         final var userEmail = new UserEmail("user", "email", true, false);
         userEmail.setPerson(new Person("user", "first", "last"));
