@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AlterUserService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
@@ -234,7 +235,6 @@ public class ResetPasswordServiceTest {
         final var user = new UserEmail("uesr");
         user.setEnabled(true);
         user.setMaster(true);
-        when(userService.findUser(anyString())).thenReturn(Optional.of(user));
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         resetPasswordService.setPassword("bob", "pass");
@@ -261,7 +261,6 @@ public class ResetPasswordServiceTest {
         final var user = new UserEmail("uesr");
         user.setEnabled(true);
         user.setMaster(true);
-        when(userService.findUser(anyString())).thenReturn(Optional.of(user));
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
@@ -275,7 +274,6 @@ public class ResetPasswordServiceTest {
         final var user = new UserEmail("uesr");
         user.setEnabled(true);
         user.setMaster(true);
-        when(userService.findUser(anyString())).thenReturn(Optional.of(user));
         when(passwordEncoder.encode(anyString())).thenReturn("hashedpassword");
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -305,11 +303,26 @@ public class ResetPasswordServiceTest {
     public void resetPasswordLockedAccount_authUser() {
         final var user = new UserEmail("uesr");
         user.setMaster(true);
-        when(userService.findUser(anyString())).thenReturn(Optional.of(user));
 
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
         assertThatThrownBy(() -> resetPasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
+    }
+
+    @Test
+    public void resetPassword_authUserPasswordSameAsCurrent() {
+        final var user = new UserEmail("uesr", "email", true, false);
+        user.setMaster(true);
+        user.setEnabled(true);
+        user.setPassword("oldencryptedpassword");
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
+        final var userToken = new UserToken(TokenType.RESET, user);
+        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
+
+        assertThatThrownBy(() -> resetPasswordService.setPassword("bob", "pass")).isInstanceOf(ReusedPasswordException.class);
+
+        verify(passwordEncoder).matches("pass", "oldencryptedpassword");
     }
 }

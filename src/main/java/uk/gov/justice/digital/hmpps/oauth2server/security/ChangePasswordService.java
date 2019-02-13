@@ -14,21 +14,18 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailReposi
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.PasswordService;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
 @Service
 @Slf4j
 @Transactional
-public class ChangePasswordService implements PasswordService {
+public class ChangePasswordService extends PasswordService {
     private final UserTokenRepository userTokenRepository;
     private final UserEmailRepository userEmailRepository;
     private final UserService userService;
     private final AlterUserService alterUserService;
-    private final PasswordEncoder passwordEncoder;
     private final TelemetryClient telemetryClient;
-    private final long passwordAge;
 
     protected ChangePasswordService(final UserTokenRepository userTokenRepository,
                                     final UserEmailRepository userEmailRepository,
@@ -36,13 +33,12 @@ public class ChangePasswordService implements PasswordService {
                                     final PasswordEncoder passwordEncoder,
                                     final TelemetryClient telemetryClient,
                                     @Value("${application.authentication.password-age}") final long passwordAge) {
+        super(passwordEncoder, passwordAge);
         this.userTokenRepository = userTokenRepository;
         this.userEmailRepository = userEmailRepository;
         this.userService = userService;
         this.alterUserService = alterUserService;
-        this.passwordEncoder = passwordEncoder;
         this.telemetryClient = telemetryClient;
-        this.passwordAge = passwordAge;
     }
 
     String createToken(final String username) {
@@ -62,6 +58,7 @@ public class ChangePasswordService implements PasswordService {
         return userToken.getToken();
     }
 
+    @Override
     public void setPassword(final String token, final String password) {
         final var userToken = userTokenRepository.findById(token).orElseThrow();
         final var userEmail = userToken.getUserEmail();
@@ -75,8 +72,7 @@ public class ChangePasswordService implements PasswordService {
 
         // if we're the master of this user record deal with the change of password here
         if (userEmail.isMaster()) {
-            userEmail.setPassword(passwordEncoder.encode(password));
-            userEmail.setPasswordExpiry(LocalDateTime.now().plusDays(passwordAge));
+            changeAuthPassword(userEmail, password);
         } else {
             alterUserService.changePassword(userEmail.getUsername(), password);
         }

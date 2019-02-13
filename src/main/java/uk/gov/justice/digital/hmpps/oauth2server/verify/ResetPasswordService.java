@@ -19,14 +19,13 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
 @Service
 @Slf4j
 @Transactional
-public class ResetPasswordService implements PasswordService {
+public class ResetPasswordService extends PasswordService {
 
     private final UserEmailRepository userEmailRepository;
     private final UserTokenRepository userTokenRepository;
@@ -35,8 +34,6 @@ public class ResetPasswordService implements PasswordService {
     private final NotificationClientApi notificationClient;
     private final String resetTemplateId;
     private final String resetUnavailableTemplateId;
-    private final PasswordEncoder passwordEncoder;
-    private final long passwordAge;
 
     public ResetPasswordService(final UserEmailRepository userEmailRepository,
                                 final UserTokenRepository userTokenRepository, final UserService userService,
@@ -46,6 +43,7 @@ public class ResetPasswordService implements PasswordService {
                                 @Value("${application.notify.reset-unavailable.template}") final String resetUnavailableTemplateId,
                                 final PasswordEncoder passwordEncoder,
                                 @Value("${application.authentication.password-age}") final long passwordAge) {
+        super(passwordEncoder, passwordAge);
         this.userEmailRepository = userEmailRepository;
         this.userTokenRepository = userTokenRepository;
         this.userService = userService;
@@ -53,8 +51,6 @@ public class ResetPasswordService implements PasswordService {
         this.notificationClient = notificationClient;
         this.resetTemplateId = resetTemplateId;
         this.resetUnavailableTemplateId = resetUnavailableTemplateId;
-        this.passwordEncoder = passwordEncoder;
-        this.passwordAge = passwordAge;
     }
 
     public Optional<String> requestResetPassword(final String inputUsername, final String url) throws NotificationClientException {
@@ -127,10 +123,10 @@ public class ResetPasswordService implements PasswordService {
     public void setPassword(final String token, final String password) {
         final var userToken = userTokenRepository.findById(token).orElseThrow();
         final var userEmail = userToken.getUserEmail();
-        final var userOptional = userService.findUser(userEmail.getUsername());
+        final var userOptional = userEmail.isMaster() ? Optional.of(userEmail) : userService.findUser(userEmail.getUsername());
 
         // before we reset, ensure user allowed to still reset password
-        if (userOptional.isEmpty() || !passwordAllowedToBeReset(userEmail, userOptional.get())) {
+        if (userOptional.map(user -> !passwordAllowedToBeReset(userEmail, user)).orElse(Boolean.TRUE)) {
             // failed, so let user know
             throw new LockedException("locked");
         }
@@ -139,8 +135,7 @@ public class ResetPasswordService implements PasswordService {
 
         // if we're the master of this user record deal with the change of password here
         if (userEmail.isMaster()) {
-            userEmail.setPassword(passwordEncoder.encode(password));
-            userEmail.setPasswordExpiry(LocalDateTime.now().plusDays(passwordAge));
+            changeAuthPassword(userEmail, password);
         } else {
             alterUserService.changePasswordWithUnlock(userEmail.getUsername(), password);
         }
