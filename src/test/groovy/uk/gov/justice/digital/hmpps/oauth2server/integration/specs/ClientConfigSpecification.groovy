@@ -21,7 +21,7 @@ class ClientConfigSpecification extends GebReportingSpec {
 
         then: 'My credentials are accepted and I am shown the Client Dashboard'
         at ClientSummaryPage
-        rows.size() == 14
+        rows.size() == 15
         table.find("tr", 1).find("td", 0).text() == 'apireporting'
         table.find("tr", 1).find("td", 4).text() == '3600'
         table.find("tr", 1).find("td", 5).text() == 'Edit'
