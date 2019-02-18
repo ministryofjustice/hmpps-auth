@@ -212,7 +212,7 @@ public class ResetPasswordServiceTest {
         staff.setFirstName("bOb");
         staff.setStatus("ACTIVE");
         staffUserAccount.setStaff(staff);
-        final var detail = new AccountDetail("user", "OPEN", "profile");
+        final var detail = new AccountDetail("user", "OPEN", "profile", null);
         staffUserAccount.setAccountDetail(detail);
         return Optional.of(staffUserAccount);
     }
