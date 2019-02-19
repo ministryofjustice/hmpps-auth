@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -107,7 +108,10 @@ public class StaffUserAccount implements UserPersonDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return !EnumSet.of(EXPIRED, EXPIRED_LOCKED, EXPIRED_LOCKED_TIMED).contains(getAccountDetail().getStatus());
+        final var statusNonExpired = !EnumSet.of(EXPIRED, EXPIRED_LOCKED, EXPIRED_LOCKED_TIMED).contains(getAccountDetail().getStatus());
+
+        final var passwordExpiry = getAccountDetail().getPasswordExpiry();
+        return statusNonExpired && (passwordExpiry == null || passwordExpiry.isAfter(LocalDateTime.now()));
     }
 
     @Override
