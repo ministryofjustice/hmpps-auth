@@ -65,7 +65,7 @@ class UserMeSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "RO_USER", "active": true, "name": "Licence Responsible Officer", "authSource": "nomis", "staffId": 4]
+        userData == ["username": "RO_USER", "active": true, "name": "Licence Responsible Officer", "authSource": "nomis", "staffId": 4, "activeCaseLoadId": "BEL"]
     }
 
     def "User username endpoint returns user data for auth user"() {
