@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "DBA_USERS")
@@ -26,6 +27,9 @@ public class AccountDetail {
 
     @Column(name = "PROFILE")
     private String profile;
+
+    @Column(name = "expiry_date")
+    private LocalDateTime passwordExpiry;
 
     public AccountStatus getStatus() {
         return AccountStatus.get(accountStatus);
