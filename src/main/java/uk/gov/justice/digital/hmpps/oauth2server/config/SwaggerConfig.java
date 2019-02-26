@@ -38,6 +38,7 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.any())
                 .paths(Predicates.or(regex("(\\/info.*)"),
                         regex("(\\/oauth.*)"),
+                        regex("(\\/api.*)"),
                         regex("(\\/health.*)")))
                 .build();
 
