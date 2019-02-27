@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ClientM
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ClientSummaryPage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
 
-import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.AUTH_ONLY_ADM
+import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.AUTH_ADM
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.ITAG_USER_ADM
 
 class ClientConfigSpecification extends GebReportingSpec {
@@ -47,7 +47,7 @@ class ClientConfigSpecification extends GebReportingSpec {
         browser.go('/auth/logout')
         browser.go('/auth/ui')
         at LoginPage
-        loginAs AUTH_ONLY_ADM, 'password123456'
+        loginAs AUTH_ADM, 'password123456'
         at ClientSummaryPage
 
         when: "I edit a client"

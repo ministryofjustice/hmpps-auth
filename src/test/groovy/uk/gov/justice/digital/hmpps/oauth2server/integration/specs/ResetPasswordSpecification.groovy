@@ -78,7 +78,7 @@ class ResetPasswordSpecification extends GebReportingSpec {
 
         when: 'The Reset Password page is displayed'
         at ResetPasswordPage
-        resetPasswordAs AUTH_ONLY_LOCKED2
+        resetPasswordAs AUTH_LOCKED2
 
         and: 'The Reset Password sent page is displayed'
         at ResetPasswordSentPage
@@ -102,7 +102,7 @@ class ResetPasswordSpecification extends GebReportingSpec {
 
         and: 'I can try to login using new password'
         to LoginPage
-        loginAs AUTH_ONLY_LOCKED2, 'helloworld2'
+        loginAs AUTH_LOCKED2, 'helloworld2'
 
         then: 'I am logged in with new password'
         at HomePage

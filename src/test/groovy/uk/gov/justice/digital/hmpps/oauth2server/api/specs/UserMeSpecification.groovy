@@ -41,7 +41,7 @@ class UserMeSpecification extends TestSpecification {
     def "User Me endpoint returns principal user data for auth user"() {
 
         given:
-        def oauthRestTemplate = getOauthPasswordGrant("AUTH_ONLY_USER", "password123456", "elite2apiclient", "clientsecret")
+        def oauthRestTemplate = getOauthPasswordGrant("AUTH_USER", "password123456", "elite2apiclient", "clientsecret")
 
         when:
         def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/me", HttpMethod.GET, null, String.class)
@@ -50,7 +50,7 @@ class UserMeSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "AUTH_ONLY_USER", "active": true, "name": "Auth Only", "authSource": "auth"]
+        userData == ["username": "AUTH_USER", "active": true, "name": "Auth Only", "authSource": "auth"]
     }
 
     def "User username endpoint returns user data"() {
@@ -74,13 +74,13 @@ class UserMeSpecification extends TestSpecification {
         def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password", "elite2apiclient", "clientsecret")
 
         when:
-        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/AUTH_ONLY_USER", HttpMethod.GET, null, String.class)
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/AUTH_USER", HttpMethod.GET, null, String.class)
 
         then:
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "AUTH_ONLY_USER", "active": true, "name": "Auth Only", "authSource": "auth"]
+        userData == ["username": "AUTH_USER", "active": true, "name": "Auth Only", "authSource": "auth"]
     }
 
     def "User Roles endpoint returns principal user data"() {
@@ -103,7 +103,7 @@ class UserMeSpecification extends TestSpecification {
     def "User Roles endpoint returns principal user data for auth user"() {
 
         given:
-        def oauthRestTemplate = getOauthPasswordGrant("AUTH_ONLY_ADM", "password123456", "elite2apiclient", "clientsecret")
+        def oauthRestTemplate = getOauthPasswordGrant("AUTH_ADM", "password123456", "elite2apiclient", "clientsecret")
 
         when:
         def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/me/roles", HttpMethod.GET, null, String.class)

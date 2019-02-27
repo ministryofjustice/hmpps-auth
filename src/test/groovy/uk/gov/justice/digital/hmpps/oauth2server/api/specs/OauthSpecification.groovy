@@ -82,7 +82,7 @@ class OauthSpecification extends TestSpecification {
     def "Client Credentials Login access token for auth user"() {
 
         given:
-        def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret", "username=AUTH_ONLY_USER")
+        def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret", "username=AUTH_USER")
 
         when:
         def token = oauthRestTemplate.getAccessToken()
@@ -104,7 +104,7 @@ class OauthSpecification extends TestSpecification {
     def "Client Credentials Login With username identifier for auth user"() {
 
         given:
-        def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret", "username=AUTH_ONLY_USER")
+        def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret", "username=AUTH_USER")
 
         when:
         def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/me", HttpMethod.GET, null, String.class)
@@ -141,7 +141,7 @@ class OauthSpecification extends TestSpecification {
     def "Password Credentials Login for auth user"() {
 
         given:
-        def oauthRestTemplate = getOauthPasswordGrant("AUTH_ONLY_USER", "password123456", "elite2apiclient", "clientsecret")
+        def oauthRestTemplate = getOauthPasswordGrant("AUTH_USER", "password123456", "elite2apiclient", "clientsecret")
 
         when:
         def token = oauthRestTemplate.getAccessToken()
@@ -179,7 +179,7 @@ class OauthSpecification extends TestSpecification {
     def "Refresh token can be obtained for auth user"() {
 
         given: 'I create an access token'
-        def oauthRestTemplate = getOauthPasswordGrant("AUTH_ONLY_USER", "password123456", "elite2apiclient", "clientsecret")
+        def oauthRestTemplate = getOauthPasswordGrant("AUTH_USER", "password123456", "elite2apiclient", "clientsecret")
         def accessToken = oauthRestTemplate.getAccessToken()
 
         when: 'I request a refresh token'
