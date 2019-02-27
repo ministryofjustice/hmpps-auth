@@ -31,31 +31,37 @@ VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
   ('DM_USER_TEST', 'dm_user_test@digital.justice.gov.uk', 'true');
 
 INSERT INTO user_email (username, password, password_expiry, email, verified, enabled, locked, master)
-VALUES ('AUTH_ONLY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_only_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
-  ('AUTH_ONLY_ADM', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_only_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
-  ('AUTH_ONLY_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_only_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
-  ('AUTH_ONLY_NO_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'true', 'false', 'true'),
-  ('AUTH_ONLY_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2013-01-28 13:23:19', 'auth_only_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
-  ('AUTH_ONLY_LOCKED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'true', 'true', 'true'),
-('AUTH_ONLY_LOCKED2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_only_locked2@digital.justice.gov.uk', 'true', 'true', 'true', 'true')
-,
-  ('AUTH_ONLY_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'false', 'false', 'true');
+VALUES ('AUTH_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
+  ('AUTH_ADM', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
+  ('AUTH_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
+  ('AUTH_NO_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'true', 'false', 'true'),
+  ('AUTH_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2013-01-28 13:23:19', 'auth_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
+  ('AUTH_LOCKED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'true', 'true', 'true'),
+  ('AUTH_LOCKED2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_locked2@digital.justice.gov.uk', 'true', 'true', 'true', 'true'),
+  ('AUTH_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'false', 'false', 'true'),
+  ('AUTH_RO_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
+  ('AUTH_RO_USER_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true');
 
 INSERT INTO user_token (token, token_type, token_expiry, username)
 VALUES ('reset', 'RESET', '2018-12-10 08:55:45', 'LOCKED_USER');
 
 INSERT INTO person (username, first_name, last_name)
-VALUES ('AUTH_ONLY_USER', 'Auth', 'Only'),
-  ('AUTH_ONLY_ADM', 'Auth', 'Adm'),
-  ('AUTH_ONLY_TEST', 'Auth', 'Test'),
-  ('AUTH_ONLY_NO_EMAIL', 'Auth', 'NoEmail'),
-  ('AUTH_ONLY_EXPIRED', 'Auth', 'Expired'),
-  ('AUTH_ONLY_LOCKED', 'Auth', 'Locked'),
-  ('AUTH_ONLY_LOCKED2', 'Auth', 'Locked2')
-  ,
-  ('AUTH_ONLY_DISABLED', 'Auth', 'Disabled');
+VALUES ('AUTH_USER', 'Auth', 'Only'),
+  ('AUTH_ADM', 'Auth', 'Adm'),
+  ('AUTH_TEST', 'Auth', 'Test'),
+  ('AUTH_NO_EMAIL', 'Auth', 'NoEmail'),
+  ('AUTH_EXPIRED', 'Auth', 'Expired'),
+  ('AUTH_LOCKED', 'Auth', 'Locked'),
+  ('AUTH_LOCKED2', 'Auth', 'Locked2'),
+  ('AUTH_DISABLED', 'Auth', 'Disabled'),
+  ('AUTH_RO_USER', 'Ryan-Auth', 'Orton'),
+  ('AUTH_RO_USER_TEST', 'Ryan-Auth', 'Orton');
 
 
 INSERT INTO authority (authority_id, username, authority)
-VALUES ('36025454-e42d-49a1-9124-013577a7ed20', 'AUTH_ONLY_ADM', 'ROLE_OAUTH_ADMIN'),
-  ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3e', 'AUTH_ONLY_ADM', 'ROLE_MAINTAIN_ACCESS_ROLES');
+VALUES ('36025454-e42d-49a1-9124-013577a7ed20', 'AUTH_ADM', 'ROLE_OAUTH_ADMIN'),
+  ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3a', 'AUTH_ADM', 'ROLE_MAINTAIN_ACCESS_ROLES'),
+  ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3b', 'AUTH_RO_USER', 'ROLE_LICENCE_RO'),
+  ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3c', 'AUTH_RO_USER', 'ROLE_GLOBAL_SEARCH'),
+  ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3d', 'AUTH_RO_USER_TEST', 'ROLE_LICENCE_RO'),
+  ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3e', 'AUTH_RO_USER_TEST', 'ROLE_GLOBAL_SEARCH');

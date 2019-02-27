@@ -76,7 +76,7 @@ class LoginSpecification extends GebReportingSpec {
         to LoginPage
 
         when: "I login with locked auth user"
-        loginAs AUTH_ONLY_LOCKED, 'password123456'
+        loginAs AUTH_LOCKED, 'password123456'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
@@ -88,7 +88,7 @@ class LoginSpecification extends GebReportingSpec {
         to LoginPage
 
         when: "I login with disabled auth user"
-        loginAs AUTH_ONLY_DISABLED, 'password123456'
+        loginAs AUTH_DISABLED, 'password123456'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
@@ -153,7 +153,7 @@ class LoginSpecification extends GebReportingSpec {
         to LoginPage
 
         when: "I login using valid credentials"
-        loginAs AUTH_ONLY_USER, 'password123456'
+        loginAs AUTH_USER, 'password123456'
 
         then: 'My credentials are accepted and I am shown the Home page'
         at HomePage
@@ -165,7 +165,7 @@ class LoginSpecification extends GebReportingSpec {
         to LoginPage
 
         when: "I login using valid credentials"
-        loginAs AUTH_ONLY_USER, 'password123456'
+        loginAs AUTH_USER, 'password123456'
 
         then: 'My credentials are accepted and I have a cookie with my name and authentication source'
         at HomePage
@@ -247,7 +247,7 @@ class LoginSpecification extends GebReportingSpec {
         at LoginPage
 
         when: "I login using valid credentials"
-        loginAs AUTH_ONLY_USER, 'password123456'
+        loginAs AUTH_USER, 'password123456'
 
         then: 'I am redirected back'
         browser.getCurrentUrl() startsWith("$clientBaseUrl?code")
@@ -262,7 +262,7 @@ class LoginSpecification extends GebReportingSpec {
 
         and: 'auth code can be redeemed for access token'
         def response = getAccessToken(authCode)
-        response.user_name == AUTH_ONLY_USER.username
+        response.user_name == AUTH_USER.username
         response.auth_source == 'auth'
 
         cleanup:

@@ -108,18 +108,18 @@ public class UserEmailRepositoryTest {
 
     @Test
     public void givenAnExistingAuthUserTheyCanBeRetrieved() {
-        final var retrievedEntity = repository.findById("AUTH_ONLY_ADM").orElseThrow();
-        assertThat(retrievedEntity.getUsername()).isEqualTo("AUTH_ONLY_ADM");
+        final var retrievedEntity = repository.findById("AUTH_ADM").orElseThrow();
+        assertThat(retrievedEntity.getUsername()).isEqualTo("AUTH_ADM");
         assertThat(retrievedEntity.getPerson().getFirstName()).isEqualTo("Auth");
         assertThat(retrievedEntity.getAuthorities()).extracting("authority").containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES");
-        assertThat(retrievedEntity.getEmail()).isEqualTo("auth_only_test@digital.justice.gov.uk");
+        assertThat(retrievedEntity.getEmail()).isEqualTo("auth_test@digital.justice.gov.uk");
         assertThat(retrievedEntity.isVerified()).isTrue();
     }
 
     @Test
     public void testAuthorityMapping() {
-        final var entity = repository.findById("AUTH_ONLY_TEST").orElseThrow();
-        assertThat(entity.getUsername()).isEqualTo("AUTH_ONLY_TEST");
+        final var entity = repository.findById("AUTH_TEST").orElseThrow();
+        assertThat(entity.getUsername()).isEqualTo("AUTH_TEST");
         assertThat(entity.getName()).isEqualTo("Auth Test");
         assertThat(entity.getAuthorities()).isEmpty();
 
@@ -132,7 +132,7 @@ public class UserEmailRepositoryTest {
         TestTransaction.end();
         TestTransaction.start();
 
-        final var retrievedEntity = repository.findById("AUTH_ONLY_TEST").orElseThrow();
+        final var retrievedEntity = repository.findById("AUTH_TEST").orElseThrow();
         final var authorities = retrievedEntity.getAuthorities();
         assertThat(authorities).extracting("authority").containsOnly("ROLE_AUTH", "ROLE_AUTH_RO");
         authorities.removeIf(a -> "ROLE_AUTH".equals(a.getAuthority()));
@@ -144,13 +144,13 @@ public class UserEmailRepositoryTest {
         TestTransaction.end();
         TestTransaction.start();
 
-        final var retrievedEntity2 = repository.findById("AUTH_ONLY_TEST").orElseThrow();
+        final var retrievedEntity2 = repository.findById("AUTH_TEST").orElseThrow();
         assertThat(retrievedEntity2.getAuthorities()).extracting("authority").containsOnly("ROLE_AUTH_RO");
     }
 
     @Test
     public void findByUsernameAndMasterIsTrue_AuthUser() {
-        assertThat(repository.findByUsernameAndMasterIsTrue("AUTH_ONLY_TEST")).isPresent();
+        assertThat(repository.findByUsernameAndMasterIsTrue("AUTH_TEST")).isPresent();
     }
 
     @Test

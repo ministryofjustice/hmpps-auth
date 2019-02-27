@@ -103,7 +103,7 @@ class VerifyEmailSpecification extends GebReportingSpec {
     def "An auth only user can verify their email address"() {
         given: 'I login with a non verified email user'
         to LoginPage
-        loginAs AUTH_ONLY_NO_EMAIL, 'password123456'
+        loginAs AUTH_NO_EMAIL, 'password123456'
 
         when: 'The Verify Email page is displayed'
         at VerifyEmailPage

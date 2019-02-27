@@ -92,11 +92,11 @@ class ChangePasswordSpecification extends GebReportingSpec {
         at HomePage
     }
 
-    // this test changes AUTH_ONLY_EXPIRED password
+    // this test changes AUTH_EXPIRED password
     def "Change password for auth user with valid credentials"() {
         given: 'I try to login with an expired user'
         to LoginPage
-        loginAs AUTH_ONLY_EXPIRED, 'password123456'
+        loginAs AUTH_EXPIRED, 'password123456'
 
         and: 'I am redirected to the change password page'
         at ChangePasswordPage
@@ -110,7 +110,7 @@ class ChangePasswordSpecification extends GebReportingSpec {
         and: 'I can login with my new credentials'
         logout()
         at LoginPage
-        loginAs AUTH_ONLY_EXPIRED, 'helloworld2'
+        loginAs AUTH_EXPIRED, 'helloworld2'
 
         then: 'I am logged in'
         at HomePage

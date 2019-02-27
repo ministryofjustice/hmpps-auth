@@ -38,7 +38,7 @@ public class LockingAuthenticationProviderIntTest {
 
     @Test
     public void authenticate_AuthUserSuccessWithAuthorities() {
-        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_ADM", "password123456"));
+        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ADM", "password123456"));
         assertThat(auth).isNotNull();
         assertThat(auth.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES");
     }
@@ -82,15 +82,15 @@ public class LockingAuthenticationProviderIntTest {
     @Test
     public void authenticate_AuthUserLockAfterThreeFailures() {
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_TEST", "wrong"))
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_TEST", "wrong"))
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_TEST", "wrong"))
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
         ).isInstanceOf(LockedException.class);
     }
 
@@ -116,19 +116,19 @@ public class LockingAuthenticationProviderIntTest {
     @Test
     public void authenticate_AuthUserResetAfterSuccess() {
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_USER", "wrong"))
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_USER", "wrong"))
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         // success in middle should cause reset of count
-        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_USER", "password123456"));
+        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "password123456"));
         assertThat(auth).isNotNull();
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ONLY_USER", "wrong"))
+                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
     }
 
