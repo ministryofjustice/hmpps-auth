@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class JWTTokenEnhancer implements TokenEnhancer {
     private static final String ADD_INFO_AUTH_SOURCE = "auth_source";
-    private static final String ADD_INFO_USER_NAME = "user_name";
+    static final String ADD_INFO_USER_NAME = "user_name";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
 
     @Autowired
