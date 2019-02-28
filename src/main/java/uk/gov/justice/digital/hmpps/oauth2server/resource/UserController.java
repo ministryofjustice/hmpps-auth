@@ -1,23 +1,25 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
-import com.google.common.collect.ImmutableMap;
+import io.swagger.annotations.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
+import springfox.documentation.annotations.ApiIgnore;
+import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
 import java.security.Principal;
 import java.util.Collection;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
+@Api(tags = {"/api/user"})
 public class UserController {
     private final UserService userService;
 
@@ -26,45 +28,48 @@ public class UserController {
     }
 
     @GetMapping("/api/user/me")
-    public Map<String, Object> me(final Principal principal) {
+    @ApiOperation(value = "Current user detail.", notes = "Current user detail.", nickname = "getMyUserInformation",
+            consumes = "application/json", produces = "application/json")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
+            @ApiResponse(code = 401, message = "Unauthorized", response = ErrorDetail.class)})
+    public UserDetail me(@ApiIgnore final Principal principal) {
         final var user = userService.findUser(principal.getName());
 
-        return user.map(this::mapUser).orElse(Map.of("username", principal.getName()));
-    }
-
-
-    @GetMapping("/api/user/{username}")
-    public ResponseEntity<Map<String, Object>> user(@PathVariable final String username) {
-        final var user = userService.findUser(username);
-
-        return user.map(this::mapUser).map(ResponseEntity::ok).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(username)));
-    }
-
-    private Map<String, Object> notFoundBody(final String username) {
-        return Map.of("status", 404, "userMessage", String.format("Account for username %s not found", username));
-    }
-
-    private Map<String, Object> mapUser(final UserPersonDetails u) {
-        final var builder = ImmutableMap.<String, Object>builder().
-                put("username", u.getUsername()).
-                put("active", u.isEnabled()).
-                put("name", u.getName()).
-                put("authSource", u.getAuthSource());
-
-        if (AuthSource.fromNullableString(u.getAuthSource()) == AuthSource.NOMIS) {
-            final var staffUserAccount = (StaffUserAccount) u;
-            builder.put("staffId", staffUserAccount.getStaff().getStaffId());
-            if (staffUserAccount.getActiveCaseLoadId() != null) {
-                builder.put("activeCaseLoadId", staffUserAccount.getActiveCaseLoadId());
-            }
-        }
-        return builder.build();
+        return user.map(this::mapUser).orElse(UserDetail.fromUsername(principal.getName()));
     }
 
     @GetMapping("/api/user/me/roles")
-    public Collection<Map<String, String>> myRoles(final Authentication authentication) {
+    @ApiOperation(value = "List of roles for current user.", notes = "List of roles for current user.", nickname = "getMyRoles",
+            consumes = "application/json", produces = "application/json")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = UserRole.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized", response = ErrorDetail.class)})
+    public Collection<UserRole> myRoles(@ApiIgnore final Authentication authentication) {
         return authentication.getAuthorities().stream().
-                map(a -> Map.of("roleCode", a.getAuthority().substring(5))). // remove ROLE_
+                map(a -> new UserRole(a.getAuthority().substring(5))). // remove ROLE_
                 collect(Collectors.toList());
+    }
+
+    @GetMapping("/api/user/{username}")
+    @ApiOperation(value = "User detail.", notes = "User detail.", nickname = "getUserDetails",
+            consumes = "application/json", produces = "application/json")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
+            @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
+            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
+    public ResponseEntity<Object> user(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
+        final var user = userService.findUser(username);
+
+        return user.map(this::mapUser).map(Object.class::cast).map(ResponseEntity::ok).
+                orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(username)));
+    }
+
+    private Object notFoundBody(final String username) {
+        return new ErrorDetail("Not Found", String.format("Account for username %s not found", username));
+    }
+
+    private UserDetail mapUser(final UserPersonDetails u) {
+        return UserDetail.fromPerson(u);
     }
 }

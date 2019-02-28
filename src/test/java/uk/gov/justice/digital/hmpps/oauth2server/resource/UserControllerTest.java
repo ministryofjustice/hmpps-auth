@@ -10,17 +10,19 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -41,7 +43,7 @@ public class UserControllerTest {
     public void user_userNotFound() {
         final var responseEntity = userController.user("bob");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
-        assertThat(responseEntity.getBody()).containsOnly(entry("status", 404), entry("userMessage", "Account for username bob not found"));
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username bob not found"));
     }
 
     @Test
@@ -49,9 +51,7 @@ public class UserControllerTest {
         setupFindUserCallForNomis();
         final var responseEntity = userController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).containsOnly(entry("username", "principal"),
-                entry("active", Boolean.FALSE), entry("staffId", 5L), entry("name", "Joe Bloggs"),
-                entry("authSource", "nomis"));
+        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, null));
     }
 
     @Test
@@ -60,9 +60,7 @@ public class UserControllerTest {
         staffUserAccount.setActiveCaseLoadId("somecase");
         final var responseEntity = userController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).containsOnly(entry("username", "principal"),
-                entry("active", Boolean.FALSE), entry("staffId", 5L), entry("name", "Joe Bloggs"),
-                entry("authSource", "nomis"), entry("activeCaseLoadId", "somecase"));
+        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, "somecase"));
     }
 
     @Test
@@ -70,24 +68,20 @@ public class UserControllerTest {
         setupFindUserCallForAuth();
         final var responseEntity = userController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).containsOnly(entry("username", "principal"),
-                entry("active", Boolean.TRUE), entry("name", "Joe Bloggs"),
-                entry("authSource", "auth"));
+        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", true, "Joe Bloggs", AuthSource.AUTH, null, null));
     }
 
     @Test
     public void me_userNotFound() {
         final var principal = new TestingAuthenticationToken("principal", "credentials");
-        assertThat(userController.me(principal)).containsOnly(entry("username", "principal"));
+        assertThat(userController.me(principal)).isEqualTo(UserDetail.fromUsername("principal"));
     }
 
     @Test
     public void me_nomisUserNoCaseload() {
         setupFindUserCallForNomis();
         final var principal = new TestingAuthenticationToken("principal", "credentials");
-        assertThat(userController.me(principal)).containsOnly(entry("username", "principal"),
-                entry("active", Boolean.FALSE), entry("staffId", 5L), entry("name", "Joe Bloggs"),
-                entry("authSource", "nomis"));
+        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, null));
     }
 
     @Test
@@ -95,25 +89,21 @@ public class UserControllerTest {
         final var staffUserAccount = setupFindUserCallForNomis();
         staffUserAccount.setActiveCaseLoadId("somecase");
         final var principal = new TestingAuthenticationToken("principal", "credentials");
-        assertThat(userController.me(principal)).containsOnly(entry("username", "principal"),
-                entry("active", Boolean.FALSE), entry("staffId", 5L), entry("name", "Joe Bloggs"),
-                entry("authSource", "nomis"), entry("activeCaseLoadId", "somecase"));
+        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, "somecase"));
     }
 
     @Test
     public void me_authUser() {
         setupFindUserCallForAuth();
         final var principal = new TestingAuthenticationToken("principal", "credentials");
-        assertThat(userController.me(principal)).containsOnly(entry("username", "principal"),
-                entry("active", Boolean.TRUE), entry("name", "Joe Bloggs"),
-                entry("authSource", "auth"));
+        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", true, "Joe Bloggs", AuthSource.AUTH, null, null));
     }
 
     @Test
     public void myRoles() {
         final var authorities = List.of(new SimpleGrantedAuthority("ROLE_BOB"), new SimpleGrantedAuthority("ROLE_JOE_FRED"));
         final var token = new UsernamePasswordAuthenticationToken("principal", "credentials", authorities);
-        assertThat(userController.myRoles(token)).containsOnly(Map.of("roleCode", "BOB"), Map.of("roleCode", "JOE_FRED"));
+        assertThat(userController.myRoles(token)).containsOnly(new UserRole("BOB"), new UserRole("JOE_FRED"));
     }
 
     @Test
