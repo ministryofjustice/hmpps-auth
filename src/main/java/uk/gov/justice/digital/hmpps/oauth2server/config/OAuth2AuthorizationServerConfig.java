@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final UserDetailsService userDetailsService;
     private final DataSource dataSource;
     private final PasswordEncoder passwordEncoder;
+    private final TelemetryClient telemetryClient;
 
 
     @Autowired
@@ -57,7 +59,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                                            @Value("${jwt.keystore.password}") final String keystorePassword,
                                            @Value("${jwt.keystore.alias:elite2api}") final String keystoreAlias,
                                            @Qualifier("authDataSource") final DataSource dataSource,
-                                           PasswordEncoder passwordEncoder) {
+                                           final PasswordEncoder passwordEncoder, final TelemetryClient telemetryClient) {
 
         this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.keystorePassword = keystorePassword;
@@ -66,6 +68,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.authenticationManager = authenticationManager;
         this.dataSource = dataSource;
         this.passwordEncoder = passwordEncoder;
+        this.telemetryClient = telemetryClient;
     }
 
     @Bean
@@ -76,7 +79,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     @Primary
     public JdbcClientDetailsService jdbcClientDetailsService() {
-        JdbcClientDetailsService jdbcClientDetailsService = new JdbcClientDetailsService(dataSource);
+        final var jdbcClientDetailsService = new JdbcClientDetailsService(dataSource);
         jdbcClientDetailsService.setPasswordEncoder(passwordEncoder);
         return jdbcClientDetailsService;
     }
@@ -87,8 +90,8 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
-        final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        final KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(privateKeyPair, keystorePassword.toCharArray());
+        final var converter = new JwtAccessTokenConverter();
+        final var keyStoreKeyFactory = new KeyStoreKeyFactory(privateKeyPair, keystorePassword.toCharArray());
         converter.setKeyPair(keyStoreKeyFactory.getKeyPair(keystoreAlias));
         return converter;
     }
@@ -118,7 +121,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     @Bean
     public TokenEnhancerChain tokenEnhancerChain() {
-        final TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+        final var tokenEnhancerChain = new TokenEnhancerChain();
         tokenEnhancerChain.setTokenEnhancers(Arrays.asList(jwtTokenEnhancer(), accessTokenConverter()));
         return tokenEnhancerChain;
     }
@@ -126,15 +129,15 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     @Primary
     public DefaultTokenServices tokenServices() {
-        final DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-        defaultTokenServices.setTokenEnhancer(tokenEnhancerChain());
-        defaultTokenServices.setTokenStore(tokenStore());
-        defaultTokenServices.setReuseRefreshToken(true);
-        defaultTokenServices.setSupportRefreshToken(true);
-        defaultTokenServices.setAccessTokenValiditySeconds(HOUR_IN_SECS); // default 1 hours
-        defaultTokenServices.setRefreshTokenValiditySeconds(HOUR_IN_SECS * 12); // default 12 hours
-        defaultTokenServices.setClientDetailsService(jdbcClientDetailsService());
-        defaultTokenServices.setAuthenticationManager(authenticationManager);
-        return defaultTokenServices;
+        final var tokenServices = new LoggingTokenServices(telemetryClient);
+        tokenServices.setTokenEnhancer(tokenEnhancerChain());
+        tokenServices.setTokenStore(tokenStore());
+        tokenServices.setReuseRefreshToken(true);
+        tokenServices.setSupportRefreshToken(true);
+        tokenServices.setAccessTokenValiditySeconds(HOUR_IN_SECS); // default 1 hours
+        tokenServices.setRefreshTokenValiditySeconds(HOUR_IN_SECS * 12); // default 12 hours
+        tokenServices.setClientDetailsService(jdbcClientDetailsService());
+        tokenServices.setAuthenticationManager(authenticationManager);
+        return tokenServices;
     }
 }
