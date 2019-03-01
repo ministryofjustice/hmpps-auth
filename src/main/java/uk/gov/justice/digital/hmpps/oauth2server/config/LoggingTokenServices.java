@@ -23,7 +23,7 @@ public class LoggingTokenServices extends DefaultTokenServices {
     public OAuth2AccessToken createAccessToken(final OAuth2Authentication authentication) throws AuthenticationException {
         final var token = super.createAccessToken(authentication);
 
-        final var username = authentication.getPrincipal().toString();
+        final var username = retrieveUsernameFromToken(token);
         log.info("Created access token for {}", username);
 
         // not interested in tracking events for client credentials tokens, only proper user access tokens
