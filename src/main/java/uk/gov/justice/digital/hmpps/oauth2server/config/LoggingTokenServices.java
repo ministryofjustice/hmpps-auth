@@ -24,11 +24,12 @@ public class LoggingTokenServices extends DefaultTokenServices {
         final var token = super.createAccessToken(authentication);
 
         final var username = retrieveUsernameFromToken(token);
-        log.info("Created access token for {}", username);
+        final var clientId = authentication.getOAuth2Request().getClientId();
+        log.info("Created access token for {} and client {}", username, clientId);
 
         // not interested in tracking events for client credentials tokens, only proper user access tokens
         if (!authentication.isClientOnly()) {
-            telemetryClient.trackEvent("CreateAccessToken", Map.of("username", username), null);
+            telemetryClient.trackEvent("CreateAccessToken", Map.of("username", username, "clientId", clientId), null);
         }
         return token;
     }
@@ -37,8 +38,10 @@ public class LoggingTokenServices extends DefaultTokenServices {
     public OAuth2AccessToken refreshAccessToken(final String refreshTokenValue, final TokenRequest tokenRequest) throws AuthenticationException {
         final var token = super.refreshAccessToken(refreshTokenValue, tokenRequest);
         final var username = retrieveUsernameFromToken(token);
-        log.info("Created refresh token for {}", username);
-        telemetryClient.trackEvent("RefreshAccessToken", Map.of("username", username), null);
+        final var clientId = tokenRequest.getClientId();
+        log.info("Created refresh token for {} and client {}", username, clientId);
+
+        telemetryClient.trackEvent("RefreshAccessToken", Map.of("username", username, "clientId", clientId), null);
         return token;
     }
 
