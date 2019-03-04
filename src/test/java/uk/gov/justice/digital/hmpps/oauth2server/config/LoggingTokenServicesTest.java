@@ -7,8 +7,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.oauth2.common.DefaultOAuth2RefreshToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.security.oauth2.provider.TokenRequest;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper;
@@ -39,6 +41,7 @@ public class LoggingTokenServicesTest {
     @Before
     public void setUp() {
         loggingTokenServices = new LoggingTokenServices(telemetryClient);
+        loggingTokenServices.setSupportRefreshToken(true);
         loggingTokenServices.setTokenStore(tokenStore);
         final var tokenEnhancer = new JWTTokenEnhancer();
         ReflectionTestUtils.setField(tokenEnhancer, "externalIdAuthenticationHelper", externalIdAuthenticationHelper);
@@ -49,7 +52,7 @@ public class LoggingTokenServicesTest {
     public void createAccessToken() {
         final var userAuthentication = new UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials");
         loggingTokenServices.createAccessToken(new OAuth2Authentication(OAUTH_2_REQUEST, userAuthentication));
-        verify(telemetryClient).trackEvent("CreateAccessToken", Map.of("username", "authenticateduser"), null);
+        verify(telemetryClient).trackEvent("CreateAccessToken", Map.of("username", "authenticateduser", "clientId", "client"), null);
     }
 
     @Test
@@ -58,4 +61,13 @@ public class LoggingTokenServicesTest {
         loggingTokenServices.createAccessToken(new OAuth2Authentication(OAUTH_2_REQUEST, null));
         verify(telemetryClient, never()).trackEvent(any(), anyMap(), isNull());
     }
+
+    @Test
+    public void refreshAccessToken() {
+        when(tokenStore.readRefreshToken(anyString())).thenReturn(new DefaultOAuth2RefreshToken("newValue"));
+        when(tokenStore.readAuthenticationForRefreshToken(any())).thenReturn(new OAuth2Authentication(OAUTH_2_REQUEST, new UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")));
+        loggingTokenServices.refreshAccessToken("tokenValue", new TokenRequest(Collections.emptyMap(), "client", Collections.emptySet(), "refresh"));
+        verify(telemetryClient).trackEvent("RefreshAccessToken", Map.of("username", "authenticateduser", "clientId", "client"), null);
+    }
+
 }
