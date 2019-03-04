@@ -184,7 +184,7 @@ public class VerifyEmailService {
     public static class VerifyEmailException extends Exception {
         private final String reason;
 
-        VerifyEmailException(final String reason) {
+        public VerifyEmailException(final String reason) {
             super(String.format("Verify email failed with reason: %s", reason));
             this.reason = reason;
         }
