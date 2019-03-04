@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,7 @@ public class VerifyEmailService {
     private final JdbcTemplate jdbcTemplate;
     private final TelemetryClient telemetryClient;
     private final NotificationClientApi notificationClient;
+    private final ReferenceCodesService referenceCodesService;
     private final String notifyTemplateId;
 
     public VerifyEmailService(final UserEmailRepository userEmailRepository,
@@ -42,13 +44,14 @@ public class VerifyEmailService {
                               final UserService userService, final JdbcTemplate jdbcTemplate,
                               final TelemetryClient telemetryClient,
                               final NotificationClientApi notificationClient,
-                              @Value("${application.notify.verify.template}") final String notifyTemplateId) {
+                              final ReferenceCodesService referenceCodesService, @Value("${application.notify.verify.template}") final String notifyTemplateId) {
         this.userEmailRepository = userEmailRepository;
         this.userTokenRepository = userTokenRepository;
         this.userService = userService;
         this.jdbcTemplate = jdbcTemplate;
         this.telemetryClient = telemetryClient;
         this.notificationClient = notificationClient;
+        this.referenceCodesService = referenceCodesService;
         this.notifyTemplateId = notifyTemplateId;
     }
 
@@ -64,7 +67,9 @@ public class VerifyEmailService {
         return jdbcTemplate.queryForList(EXISTING_EMAIL_SQL, String.class, username);
     }
 
-    public String requestVerification(final String username, final String email, final String url) throws NotificationClientException {
+    public String requestVerification(final String username, final String email, final String url) throws NotificationClientException, VerifyEmailException {
+        validateEmailAddress(email);
+
         final var user = userService.findUser(username);
         final var firstName = user.map(UserPersonDetails::getFirstName).orElse(username);
         final var optionalUserEmail = userEmailRepository.findById(username);
@@ -98,6 +103,38 @@ public class VerifyEmailService {
         userTokenRepository.save(userToken);
 
         return verifyLink;
+    }
+
+    public void validateEmailAddress(final String email) throws VerifyEmailException {
+        if (StringUtils.isBlank(email)) {
+            throw new VerifyEmailException("blank");
+        }
+
+        final var atIndex = StringUtils.indexOf(email, '@');
+        if (atIndex == -1 || !email.matches(".*@.*\\..*")) {
+            throw new VerifyEmailException("format");
+        }
+        final var firstCharacter = email.charAt(0);
+        final var lastCharacter = email.charAt(email.length() - 1);
+        if (firstCharacter == '.' || firstCharacter == '@' ||
+                lastCharacter == '.' || lastCharacter == '@') {
+            throw new VerifyEmailException("firstlast");
+        }
+        if (email.matches(".*\\.@.*") || email.matches(".*@\\..*")) {
+            throw new VerifyEmailException("together");
+        }
+        if (StringUtils.countMatches(email, '@') > 1) {
+            throw new VerifyEmailException("at");
+        }
+        if (StringUtils.containsWhitespace(email)) {
+            throw new VerifyEmailException("white");
+        }
+        if (!email.matches("[0-9A-Za-z@.'_\\-+]*")) {
+            throw new VerifyEmailException("characters");
+        }
+        if (!referenceCodesService.isValidEmailDomain(email.substring(atIndex + 1))) {
+            throw new VerifyEmailException("domain");
+        }
     }
 
     public Optional<String> confirmEmail(final String token) {
@@ -142,4 +179,15 @@ public class VerifyEmailService {
         telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", "expired", "username", username), null);
         return Optional.of("expired");
     }
+
+    @Getter
+    public static class VerifyEmailException extends Exception {
+        private final String reason;
+
+        VerifyEmailException(final String reason) {
+            super(String.format("Verify email failed with reason: %s", reason));
+            this.reason = reason;
+        }
+    }
+
 }

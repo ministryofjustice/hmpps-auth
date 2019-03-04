@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenReposi
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -44,6 +45,8 @@ public class VerifyEmailServiceTest {
     private TelemetryClient telemetryClient;
     @Mock
     private NotificationClientApi notificationClient;
+    @Mock
+    private ReferenceCodesService referenceCodesService;
     @Captor
     private ArgumentCaptor<Map<String, String>> mapCaptor;
 
@@ -51,7 +54,7 @@ public class VerifyEmailServiceTest {
 
     @Before
     public void setUp() {
-        verifyEmailService = new VerifyEmailService(userEmailRepository, userTokenRepository, userService, jdbcTemplate, telemetryClient, notificationClient, "templateId");
+        verifyEmailService = new VerifyEmailService(userEmailRepository, userTokenRepository, userService, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId");
     }
 
     @Test
@@ -93,38 +96,42 @@ public class VerifyEmailServiceTest {
     }
 
     @Test
-    public void requestVerification_firstNameMissing() throws NotificationClientException {
-        final var verification = verifyEmailService.requestVerification("user", "email", "url");
-        verify(notificationClient).sendEmail(eq("templateId"), eq("email"), mapCaptor.capture(), eq(null));
+    public void requestVerification_firstNameMissing() throws NotificationClientException, VerifyEmailException {
+        when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
+        final var verification = verifyEmailService.requestVerification("user", "email@john.com", "url");
+        verify(notificationClient).sendEmail(eq("templateId"), eq("email@john.com"), mapCaptor.capture(), eq(null));
         final var params = mapCaptor.getValue();
         assertThat(params).containsEntry("firstName", "user").containsEntry("verifyLink", verification);
     }
 
     @Test
-    public void requestVerification_firstNamePresent() throws NotificationClientException {
+    public void requestVerification_firstNamePresent() throws NotificationClientException, VerifyEmailException {
         when(userService.findUser(anyString())).thenReturn(Optional.of(getStaffUserAccountForBob()));
-        final var verification = verifyEmailService.requestVerification("user", "email", "url");
-        verify(notificationClient).sendEmail(eq("templateId"), eq("email"), mapCaptor.capture(), eq(null));
+        when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
+        final var verification = verifyEmailService.requestVerification("user", "email@john.com", "url");
+        verify(notificationClient).sendEmail(eq("templateId"), eq("email@john.com"), mapCaptor.capture(), eq(null));
         final var params = mapCaptor.getValue();
         assertThat(params).containsEntry("firstName", "Bob").containsEntry("verifyLink", verification);
     }
 
     @Test
-    public void requestVerification_existingToken() throws NotificationClientException {
+    public void requestVerification_existingToken() throws NotificationClientException, VerifyEmailException {
         final var userEmail = new UserEmail("someuser");
         when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
         final var userToken = new UserToken(TokenType.VERIFIED, userEmail);
         when(userTokenRepository.findByTokenTypeAndUserEmail(any(), any())).thenReturn(Optional.of(userToken));
-        verifyEmailService.requestVerification("user", "email", "url");
+        when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
+        verifyEmailService.requestVerification("user", "email@john.com", "url");
         verify(userTokenRepository).delete(userToken);
     }
 
     @Test
-    public void requestVerification_verifyToken() throws NotificationClientException {
+    public void requestVerification_verifyToken() throws NotificationClientException, VerifyEmailException {
         final var userEmail = new UserEmail("someuser");
         when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
         final var captor = ArgumentCaptor.forClass(UserToken.class);
-        final var verification = verifyEmailService.requestVerification("user", "email", "url");
+        when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
+        final var verification = verifyEmailService.requestVerification("user", "email@john.com", "url");
         verify(userTokenRepository).save(captor.capture());
         final var value = captor.getValue();
         assertThat(verification).isEqualTo("url" + value.getToken());
@@ -132,9 +139,77 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void requestVerification_sendFailure() throws NotificationClientException {
+        when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), isNull())).thenThrow(new NotificationClientException("message"));
 
-        assertThatThrownBy(() -> verifyEmailService.requestVerification("user", "email", "url")).hasMessage("message");
+        assertThatThrownBy(() -> verifyEmailService.requestVerification("user", "email@john.com", "url")).hasMessage("message");
+    }
+
+
+    @Test
+    public void verifyEmail_NoAtSign() {
+        verifyEmailFailure("a", "format");
+    }
+
+    @Test
+    public void verifyEmail_MultipleAtSigns() {
+        verifyEmailFailure("a@b.fred@joe.com", "at");
+    }
+
+    @Test
+    public void verifyEmail_NoExtension() {
+        verifyEmailFailure("a@bee", "format");
+    }
+
+    @Test
+    public void verifyEmail_FirstLastStopFirst() {
+        verifyEmailFailure(".a@bee.com", "firstlast");
+    }
+
+    @Test
+    public void verifyEmail_FirstLastStopLast() {
+        verifyEmailFailure("a@bee.com.", "firstlast");
+    }
+
+    @Test
+    public void verifyEmail_FirstLastAtFirst() {
+        verifyEmailFailure("@a@bee.com", "firstlast");
+    }
+
+    @Test
+    public void verifyEmail_FirstLastAtLast() {
+        verifyEmailFailure("a@bee.com@", "firstlast");
+    }
+
+    @Test
+    public void verifyEmail_TogetherAtBefore() {
+        verifyEmailFailure("a@.com", "together");
+    }
+
+    @Test
+    public void verifyEmail_TogetherAtAfter() {
+        verifyEmailFailure("a.@joe.com", "together");
+    }
+
+    @Test
+    public void verifyEmail_White() {
+        verifyEmailFailure("a@be\te.com", "white");
+    }
+
+    @Test
+    public void verifyEmail_InvalidDomain() {
+        verifyEmailFailure("a@b.com", "domain");
+        verify(referenceCodesService).isValidEmailDomain("b.com");
+    }
+
+    @Test
+    public void verifyEmail_InvalidCharacters() {
+        verifyEmailFailure("a@b.&com", "characters");
+    }
+
+    private void verifyEmailFailure(final String email, final String reason) {
+        assertThatThrownBy(() -> verifyEmailService.validateEmailAddress(email)).
+                isInstanceOf(VerifyEmailException.class).extracting("reason").containsOnly(reason);
     }
 
     private StaffUserAccount getStaffUserAccountForBob() {

@@ -131,6 +131,7 @@ public class ResetPasswordService extends PasswordService {
             throw new LockedException("locked");
         }
 
+        userEmail.setVerified(true);
         userEmail.setLocked(false);
 
         // if we're the master of this user record deal with the change of password here

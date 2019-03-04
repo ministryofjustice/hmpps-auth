@@ -24,7 +24,7 @@ public class VerifyEmailServiceIntTest {
 
     @Before
     public void setUp() {
-        verifyEmailService = new VerifyEmailService(null, null, null, jdbcTemplate, null, null, "templateId");
+        verifyEmailService = new VerifyEmailService(null, null, null, jdbcTemplate, null, null, null, "templateId");
     }
 
     @Test
