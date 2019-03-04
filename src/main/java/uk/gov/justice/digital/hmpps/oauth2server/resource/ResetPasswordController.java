@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
@@ -35,6 +34,7 @@ public class ResetPasswordController extends AbstractPasswordController {
                                    final TokenService tokenService, final UserService userService,
                                    final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled,
                                    final @Value("${application.authentication.blacklist}") Set<String> passwordBlacklist) {
+
         super(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "setPassword", passwordBlacklist);
         this.resetPasswordService = resetPasswordService;
         this.tokenService = tokenService;
@@ -88,13 +88,6 @@ public class ResetPasswordController extends AbstractPasswordController {
                     Map.of("username", username, "error", e.getClass().getSimpleName()), null);
             return new ModelAndView("resetPassword", "error", "other");
         }
-    }
-
-    @GetMapping("/reset-password-confirm/{token}")
-    @Deprecated
-    public ModelAndView resetPasswordConfirmInPath(@PathVariable final String token) {
-        // can be removed after go live on the below method instead
-        return resetPasswordConfirm(token);
     }
 
     @GetMapping("/reset-password-confirm")

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import org.assertj.core.data.MapEntry;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,8 +11,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.ReferenceCodesService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientException;
 
 import javax.servlet.ServletException;
@@ -38,14 +39,14 @@ public class VerifyEmailControllerTest {
     @Mock
     private VerifyEmailService verifyEmailService;
     @Mock
-    private ReferenceCodesService referenceCodesService;
+    private TelemetryClient telemetryClient;
 
     private VerifyEmailController verifyEmailController;
     private final UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken("user", "pass");
 
     @Before
     public void setUp() {
-        verifyEmailController = new VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, referenceCodesService, true);
+        verifyEmailController = new VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, telemetryClient, true);
     }
 
     @Test
@@ -94,71 +95,8 @@ public class VerifyEmailControllerTest {
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
         assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("error", "noselection"), MapEntry.entry("candidates", candidates));
     }
-
     @Test
-    public void verifyEmail_NoAtSign() throws IOException, ServletException {
-        verifyEmailFailure("a", "format");
-    }
-
-    @Test
-    public void verifyEmail_MultipleAtSigns() throws IOException, ServletException {
-        verifyEmailFailure("a@b.fred@joe.com", "at");
-    }
-
-    @Test
-    public void verifyEmail_NoExtension() throws IOException, ServletException {
-        verifyEmailFailure("a@bee", "format");
-    }
-
-    @Test
-    public void verifyEmail_FirstLastStopFirst() throws IOException, ServletException {
-        verifyEmailFailure(".a@bee.com", "firstlast");
-    }
-
-    @Test
-    public void verifyEmail_FirstLastStopLast() throws IOException, ServletException {
-        verifyEmailFailure("a@bee.com.", "firstlast");
-    }
-
-    @Test
-    public void verifyEmail_FirstLastAtFirst() throws IOException, ServletException {
-        verifyEmailFailure("@a@bee.com", "firstlast");
-    }
-
-    @Test
-    public void verifyEmail_FirstLastAtLast() throws IOException, ServletException {
-        verifyEmailFailure("a@bee.com@", "firstlast");
-    }
-
-    @Test
-    public void verifyEmail_TogetherAtBefore() throws IOException, ServletException {
-        verifyEmailFailure("a@.com", "together");
-    }
-
-    @Test
-    public void verifyEmail_TogetherAtAfter() throws IOException, ServletException {
-        verifyEmailFailure("a.@joe.com", "together");
-    }
-
-    @Test
-    public void verifyEmail_White() throws IOException, ServletException {
-        verifyEmailFailure("a@be\te.com", "white");
-    }
-
-    @Test
-    public void verifyEmail_InvalidDomain() throws IOException, ServletException {
-        verifyEmailFailure("a@b.com", "domain");
-        verify(referenceCodesService).isValidEmailDomain("b.com");
-    }
-
-    @Test
-    public void verifyEmail_InvalidCharacters() throws IOException, ServletException {
-        verifyEmailFailure("a@b.&com", "characters");
-    }
-
-    @Test
-    public void verifyEmail_Exception() throws NotificationClientException, IOException, ServletException {
-        when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
+    public void verifyEmail_Exception() throws NotificationClientException, IOException, ServletException, VerifyEmailException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url"));
         when(verifyEmailService.requestVerification(anyString(), anyString(), anyString())).thenThrow(new NotificationClientException("something went wrong"));
         final var modelAndView = verifyEmailController.verifyEmail("a@b.com", null, principal, request, response);
@@ -167,8 +105,7 @@ public class VerifyEmailControllerTest {
     }
 
     @Test
-    public void verifyEmail_Success() throws NotificationClientException, IOException, ServletException {
-        when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
+    public void verifyEmail_Success() throws NotificationClientException, IOException, ServletException, VerifyEmailException {
         when(verifyEmailService.requestVerification(anyString(), anyString(), anyString())).thenReturn("link");
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url"));
         final var email = "o'there+bob@b-c.d";
@@ -178,12 +115,6 @@ public class VerifyEmailControllerTest {
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmailSent");
         assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("verifyLink", "link"), MapEntry.entry("email", email));
         verify(verifyEmailService).requestVerification("user", email, "http://some.url-confirm?token=");
-    }
-
-    private void verifyEmailFailure(final String email, final String domain) throws IOException, ServletException {
-        final var modelAndView = verifyEmailController.verifyEmail(email, "", principal, request, response);
-        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
-        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("email", email), MapEntry.entry("error", domain));
     }
 
     @Test

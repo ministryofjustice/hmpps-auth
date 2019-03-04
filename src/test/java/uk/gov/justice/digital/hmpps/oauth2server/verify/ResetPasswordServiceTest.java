@@ -270,6 +270,18 @@ public class ResetPasswordServiceTest {
     }
 
     @Test
+    public void resetPassword_EmailVerified() {
+        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        final var user = new UserEmail("uesr");
+        user.setLocked(true);
+        final var userToken = new UserToken(TokenType.RESET, user);
+        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
+        resetPasswordService.setPassword("bob", "pass");
+
+        assertThat(user.isVerified()).isTrue();
+    }
+
+    @Test
     public void resetPassword_authUser_passwordSet() {
         final var user = new UserEmail("uesr");
         user.setEnabled(true);
