@@ -8,7 +8,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
@@ -119,13 +118,6 @@ public class VerifyEmailController {
 
     private void proceedToOriginalUrl(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         jwtAuthenticationSuccessHandler.proceed(request, response, SecurityContextHolder.getContext().getAuthentication());
-    }
-
-    @GetMapping("/verify-email-confirm/{token}")
-    @Deprecated
-    public ModelAndView verifyEmailConfirmInPath(@PathVariable final String token) {
-        // can be removed after go live on the below method instead
-        return verifyEmailConfirm(token);
     }
 
     @GetMapping("/verify-email-confirm")

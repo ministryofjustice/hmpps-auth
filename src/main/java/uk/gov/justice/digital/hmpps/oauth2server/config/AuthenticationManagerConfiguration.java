@@ -110,10 +110,9 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         web
                 .ignoring()
                 .antMatchers("/css/**", "/js/**", "/images/**", "/fonts/**", "/webjars/**", "/favicon.ico",
-                        "/health", "/info", "/error", "/terms", "/change-password",
-                        "/verify-email-confirm/*", "/verify-email-confirm",
+                        "/health", "/info", "/error", "/terms", "/change-password", "/verify-email-confirm",
                         "/forgot-password", "/reset-password", "/set-password",
-                        "/reset-password-confirm/*", "/reset-password-confirm", "/reset-password-success",
+                        "/reset-password-confirm", "/reset-password-success", "/initial-password",
                         "/h2-console/**", "/v2/api-docs", "/jwt-public-key",
                         "/swagger-ui.html", "/swagger-resources", "/swagger-resources/configuration/ui",
                         "/swagger-resources/configuration/security");

@@ -97,6 +97,11 @@ public class ResetPasswordController extends AbstractPasswordController {
                 orElseGet(() -> createModelWithTokenAndAddIsAdmin(RESET, token, "setPassword"));
     }
 
+    @GetMapping("/initial-password")
+    public ModelAndView initialPassword(@RequestParam final String token) {
+        return resetPasswordConfirm(token);
+    }
+
     @PostMapping("/set-password")
     public ModelAndView setPassword(@RequestParam final String token,
                                     @RequestParam final String newPassword, @RequestParam final String confirmPassword) {

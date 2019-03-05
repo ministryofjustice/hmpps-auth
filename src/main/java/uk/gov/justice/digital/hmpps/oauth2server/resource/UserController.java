@@ -106,7 +106,7 @@ public class UserController {
         // new user
         try {
             final var requestURL = request.getRequestURL();
-            final var setPasswordUrl = requestURL.toString().replaceFirst("/api/user/.*", "/initial-password-confirm?token=");
+            final var setPasswordUrl = requestURL.toString().replaceFirst("/api/user/.*", "/initial-password?token=");
             final var resetLink = createUserService.createUser(username, createUser.getEmail(), createUser.getFirstName(), createUser.getLastName(), setPasswordUrl);
 
             log.info("Create user succeeded for user {}", username);

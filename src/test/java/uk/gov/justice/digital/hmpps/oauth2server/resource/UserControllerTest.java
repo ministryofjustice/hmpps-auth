@@ -176,7 +176,7 @@ public class UserControllerTest {
 
         userController.createUser("newusername", new CreateUser("email", "first", "last"), request);
 
-        verify(createUserService).createUser("newusername", "email", "first", "last", "http://some.url/auth/initial-password-confirm?token=");
+        verify(createUserService).createUser("newusername", "email", "first", "last", "http://some.url/auth/initial-password?token=");
     }
 
     @Test

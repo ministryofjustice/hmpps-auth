@@ -40,7 +40,7 @@ public class CreateUserService {
                              final UserEmailRepository userEmailRepository,
                              final NotificationClientApi notificationClient,
                              final TelemetryClient telemetryClient,
-                             final VerifyEmailService verifyEmailService, @Value("${application.notify.reset.template}") final String licencesTemplateId) {
+                             final VerifyEmailService verifyEmailService, @Value("${application.notify.licences-initial-password.template}") final String licencesTemplateId) {
         this.userTokenRepository = userTokenRepository;
         this.userEmailRepository = userEmailRepository;
         this.notificationClient = notificationClient;
@@ -66,6 +66,8 @@ public class CreateUserService {
 
         // then the reset token
         final var userToken = new UserToken(TokenType.RESET, user);
+        // give users more time to do the reset
+        userToken.setTokenExpiry(LocalDateTime.now().plusDays(7));
         userTokenRepository.save(userToken);
 
         final var setPasswordLink = url + userToken.getToken();

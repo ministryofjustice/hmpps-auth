@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.Verif
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -96,6 +97,7 @@ public class CreateUserServiceTest {
 
         assertThat(captor.getValue().getTokenType()).isEqualTo(TokenType.RESET);
         assertThat(captor.getValue().getToken()).isEqualTo(link.substring("url?token=".length()));
+        assertThat(captor.getValue().getTokenExpiry()).isBetween(LocalDateTime.now().plusDays(6), LocalDateTime.now().plusDays(8));
     }
 
     @Test
