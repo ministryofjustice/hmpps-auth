@@ -128,11 +128,11 @@ public class UserController {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CreateUser {
-        @ApiModelProperty(required = true, value = "Email address", example = "john.smith@digital.justice.gov.uk", position = 1)
+        @ApiModelProperty(required = true, value = "Email address", example = "nomis.user@someagency.justice.gov.uk", position = 1)
         private String email;
-        @ApiModelProperty(required = true, value = "First name", example = "John", position = 2)
+        @ApiModelProperty(required = true, value = "First name", example = "Nomis", position = 2)
         private String firstName;
-        @ApiModelProperty(required = true, value = "Last name", example = "Smith", position = 3)
+        @ApiModelProperty(required = true, value = "Last name", example = "User", position = 3)
         private String lastName;
     }
 
