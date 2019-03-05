@@ -51,15 +51,15 @@ public class InitialPasswordControllerTest {
     @Test
     public void initialPassword_checkView() {
         setupCheckTokenValid();
-        final var modelAndView = controller.initialPassword("token", "somecontext");
+        final var modelAndView = controller.initialPassword("token");
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
     }
 
     @Test
     public void initialPassword_checkModel() {
         setupCheckTokenValid();
-        final var modelAndView = controller.initialPassword("sometoken", "somecontext");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.FALSE), entry("context", "somecontext"));
+        final var modelAndView = controller.initialPassword("sometoken");
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.FALSE), entry("context", "licences"));
     }
 
     @Test
@@ -67,21 +67,21 @@ public class InitialPasswordControllerTest {
         final var user = setupGetUserCallForProfile();
         user.getAccountDetail().setProfile("TAG_ADMIN");
         setupCheckAndGetTokenValid();
-        final var modelAndView = controller.initialPassword("sometoken", "somecontext");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.TRUE), entry("context", "somecontext"));
+        final var modelAndView = controller.initialPassword("sometoken");
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.TRUE), entry("context", "licences"));
     }
 
     @Test
     public void initialPassword_FailureCheckView() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"));
-        final var modelAndView = controller.initialPassword("token", "somecontext");
+        final var modelAndView = controller.initialPassword("token");
         assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
     }
 
     @Test
     public void initialPassword_FailureCheckModel() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
-        final var modelAndView = controller.initialPassword("sometoken", "somecontext");
+        final var modelAndView = controller.initialPassword("sometoken");
         assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"));
     }
 
