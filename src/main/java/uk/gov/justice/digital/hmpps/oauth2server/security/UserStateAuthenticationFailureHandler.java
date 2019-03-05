@@ -32,7 +32,7 @@ public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticati
             builder.add("locked");
         } else if (exception instanceof CredentialsExpiredException) {
             // special handling for expired users and feature switch turned on
-            final var username = request.getParameter("username").toUpperCase();
+            final var username = StringUtils.trim(request.getParameter("username").toUpperCase());
             final var token = changePasswordService.createToken(username);
             getRedirectStrategy().sendRedirect(request, response, "/change-password?token=" + token);
             return;

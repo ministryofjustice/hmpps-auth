@@ -44,13 +44,22 @@ public class UserStateAuthenticationFailureHandlerTest {
     }
 
     @Test
-    public void onAuthenticationFailure_expiredResetEnabled() throws IOException {
+    public void onAuthenticationFailure_expired() throws IOException {
         when(request.getParameter("username")).thenReturn("bob");
         when(changePasswordService.createToken(anyString())).thenReturn("sometoken");
         handler.onAuthenticationFailure(request, response, new CredentialsExpiredException("msg"));
 
         verify(redirectStrategy).sendRedirect(request, response, "/change-password?token=sometoken");
         verify(changePasswordService).createToken("BOB");
+    }
+
+    @Test
+    public void onAuthenticationFailure_expiredTrimUppercase() throws IOException {
+        when(request.getParameter("username")).thenReturn("   Joe  ");
+        when(changePasswordService.createToken(anyString())).thenReturn("sometoken");
+        handler.onAuthenticationFailure(request, response, new CredentialsExpiredException("msg"));
+
+        verify(changePasswordService).createToken("JOE");
     }
 
     @Test
