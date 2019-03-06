@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.PasswordService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.PasswordServiceImpl;
 
 import java.util.Map;
 import java.util.Optional;
@@ -20,7 +20,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 @Transactional
-public class ChangePasswordService extends PasswordService {
+public class ChangePasswordService extends PasswordServiceImpl {
     private final UserTokenRepository userTokenRepository;
     private final UserEmailRepository userEmailRepository;
     private final UserService userService;

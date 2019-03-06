@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.weddini.throttling.ThrottlingException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,6 +89,11 @@ public class ResetPasswordController extends AbstractPasswordController {
             telemetryClient.trackEvent("ResetPasswordRequestFailure",
                     Map.of("username", username, "error", e.getClass().getSimpleName()), null);
             return new ModelAndView("resetPassword", "error", "other");
+        } catch (final ThrottlingException e) {
+            log.info("Reset password throttled request for {}", request.getRemoteAddr());
+            telemetryClient.trackEvent("ResetPasswordRequestFailure",
+                    Map.of("username", username, "error", e.getClass().getSimpleName(), "remoteAddress", request.getRemoteAddr()), null);
+            return new ModelAndView("resetPassword", "error", "throttled");
         }
     }
 

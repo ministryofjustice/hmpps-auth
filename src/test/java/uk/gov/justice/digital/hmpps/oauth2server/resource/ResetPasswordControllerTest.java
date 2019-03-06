@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.weddini.throttling.ThrottlingException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -106,7 +107,7 @@ public class ResetPasswordControllerTest {
     public void resetPasswordRequest_successLinkTelemetry() throws NotificationClientException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("somelink"));
-        final var modelAndView = controller.resetPasswordRequest("user", request);
+        controller.resetPasswordRequest("user", request);
         verify(telemetryClient).trackEvent(eq("ResetPasswordRequestSuccess"), mapCaptor.capture(), isNull());
         assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"));
     }
@@ -127,6 +128,16 @@ public class ResetPasswordControllerTest {
         final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, false, null).resetPasswordRequest("user", request);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
         assertThat(modelAndView.getModel()).containsExactly(entry("error", "other"));
+    }
+
+    @Test
+    public void resetPasswordRequest_throttled() throws NotificationClientException {
+        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
+        when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(new ThrottlingException());
+        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, false, null).resetPasswordRequest("user", request);
+        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
+        assertThat(modelAndView.getModel()).containsExactly(entry("error", "throttled"));
     }
 
     @Test

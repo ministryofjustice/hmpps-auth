@@ -55,7 +55,7 @@ public class ResetPasswordServiceTest {
 
     @Before
     public void setUp() {
-        resetPasswordService = new ResetPasswordService(userEmailRepository, userTokenRepository, userService, alterUserService, notificationClient, "resetTemplate", "resetUnavailableTemplate", passwordEncoder, 10);
+        resetPasswordService = new ResetPasswordServiceImpl(userEmailRepository, userTokenRepository, userService, alterUserService, notificationClient, "resetTemplate", "resetUnavailableTemplate", passwordEncoder, 10);
     }
 
     @Test
