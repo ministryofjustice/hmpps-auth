@@ -83,6 +83,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         jdbcClientDetailsService.setPasswordEncoder(passwordEncoder);
         return jdbcClientDetailsService;
     }
+
     @Override
     public void configure(final ClientDetailsServiceConfigurer clients) throws Exception {
         clients.withClientDetails(jdbcClientDetailsService());

@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Optional;
 
 /**
  * Implementation of request cache that stores the saved request in a cookie rather than the Http session.
@@ -27,13 +26,13 @@ public class CookieRequestCache implements RequestCache {
 
     @Override
     public void saveRequest(final HttpServletRequest request, final HttpServletResponse response) {
-        final String redirectUrl = buildUrlFromRequest(request);
-        final String redirectUrlBase64 = Base64Utils.encodeToString(redirectUrl.getBytes());
+        final var redirectUrl = buildUrlFromRequest(request);
+        final var redirectUrlBase64 = Base64Utils.encodeToString(redirectUrl.getBytes());
         savedRequestCookieHelper.addCookieToResponse(request, response, redirectUrlBase64);
     }
 
     private String buildUrlFromRequest(final HttpServletRequest request) {
-        final String requestUrl = request.getRequestURL().toString();
+        final var requestUrl = request.getRequestURL().toString();
         final URI requestUri;
         try {
             requestUri = new URI(requestUrl);
@@ -41,7 +40,7 @@ public class CookieRequestCache implements RequestCache {
             log.error("Problem creating URI from request.getRequestURL() = [{}]", requestUrl, e);
             throw new RuntimeException("Problem creating URI from request.getRequestURL() = [" + requestUrl + "]", e);
         }
-        final UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.newInstance()
+        final var uriComponentsBuilder = UriComponentsBuilder.newInstance()
                 .scheme(request.isSecure() ? "https" : "http")
                 .host(requestUri.getHost())
                 .path(requestUri.getPath())
@@ -54,19 +53,19 @@ public class CookieRequestCache implements RequestCache {
 
     @Override
     public SavedRequest getRequest(final HttpServletRequest request, final HttpServletResponse response) {
-        final Optional<String> value = savedRequestCookieHelper.readValueFromCookie(request);
+        final var value = savedRequestCookieHelper.readValueFromCookie(request);
         return value.map(v -> new SimpleSavedRequest(new String(Base64Utils.decodeFromString(v)))).orElse(null);
     }
 
     @Override
     public HttpServletRequest getMatchingRequest(final HttpServletRequest request, final HttpServletResponse response) {
-        final SimpleSavedRequest saved = (SimpleSavedRequest) getRequest(request, response);
+        final var saved = (SimpleSavedRequest) getRequest(request, response);
 
         if (saved == null) {
             return null;
         }
 
-        final String requestUrl = buildUrlFromRequest(request);
+        final var requestUrl = buildUrlFromRequest(request);
         if (!requestUrl.equals(saved.getRedirectUrl())) {
             return null;
         }

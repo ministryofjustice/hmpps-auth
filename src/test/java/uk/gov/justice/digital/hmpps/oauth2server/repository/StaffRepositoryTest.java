@@ -9,7 +9,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,7 +55,7 @@ public class StaffRepositoryTest {
         assertThat(retrievedEntity.getUsers()).hasSize(2);
         assertThat(retrievedEntity.getIdentifiers()).hasSize(1);
 
-        final StaffUserAccount generalUser = retrievedEntity.getAccountByType("GENERAL");
+        final var generalUser = retrievedEntity.getAccountByType("GENERAL");
         assertThat(generalUser.getUsername()).isEqualTo("ITAG_USER");
         assertThat(retrievedEntity.getAccountByType("ADMIN").getUsername()).isEqualTo("ITAG_USER_ADM");
 

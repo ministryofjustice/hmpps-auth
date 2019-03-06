@@ -24,16 +24,16 @@ public class ClientsController {
     private JdbcClientDetailsService clientsDetailsService;
 
     @InitBinder
-    public void initBinder(WebDataBinder binder) {
+    public void initBinder(final WebDataBinder binder) {
         binder.registerCustomEditor(Collection.class, new SplitCollectionEditor(Set.class, ","));
         binder.registerCustomEditor(GrantedAuthority.class, new AuthorityPropertyEditor());
     }
 
     @GetMapping(value = "/form")
     @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
-    public String showEditForm(@RequestParam(value = "client", required = false) String clientId, Model model) {
+    public String showEditForm(@RequestParam(value = "client", required = false) final String clientId, final Model model) {
 
-        ClientDetails clientDetails;
+        final ClientDetails clientDetails;
         if (clientId != null) {
             clientDetails = clientsDetailsService.loadClientByClientId(clientId);
         } else {
@@ -48,8 +48,8 @@ public class ClientsController {
     @PostMapping(value = "/edit")
     @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
     public String editClient(
-            @ModelAttribute BaseClientDetails clientDetails,
-            @RequestParam(value = "newClient", required = false) String newClient) {
+            @ModelAttribute final BaseClientDetails clientDetails,
+            @RequestParam(value = "newClient", required = false) final String newClient) {
 
         if (newClient == null) {
             clientsDetailsService.updateClientDetails(clientDetails);
@@ -65,7 +65,7 @@ public class ClientsController {
 
     @GetMapping(value = "/{clientId}/delete")
     @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
-    public String deleteClient(@PathVariable String clientId) {
+    public String deleteClient(@PathVariable final String clientId) {
         clientsDetailsService.removeClientDetails(clientId);
         return "redirect:/ui";
     }

@@ -43,8 +43,8 @@ public class AuthDbConfig {
     @Bean(name = "authEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean
     entityManagerFactory(
-            EntityManagerFactoryBuilder builder,
-            @Qualifier("authDataSource") DataSource dataSource
+            final EntityManagerFactoryBuilder builder,
+            @Qualifier("authDataSource") final DataSource dataSource
     ) {
         return builder
                 .dataSource(dataSource)
@@ -56,7 +56,7 @@ public class AuthDbConfig {
 
     @Bean(name = "authTransactionManager")
     public PlatformTransactionManager transactionManager(
-            @Qualifier("authEntityManagerFactory") EntityManagerFactory
+            @Qualifier("authEntityManagerFactory") final EntityManagerFactory
                     entityManagerFactory
     ) {
         return new JpaTransactionManager(entityManagerFactory);

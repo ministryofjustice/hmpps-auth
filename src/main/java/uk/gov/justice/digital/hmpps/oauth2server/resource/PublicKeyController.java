@@ -23,11 +23,11 @@ public class PublicKeyController {
     private final PublicKey publicKey;
 
     @Autowired
-    public PublicKeyController(@Value("${jwt.signing.key.pair}") String privateKeyPair,
-                               @Value("${jwt.keystore.password}") String keystorePassword,
-                               @Value("${jwt.keystore.alias:elite2api}") String keystoreAlias) {
+    public PublicKeyController(@Value("${jwt.signing.key.pair}") final String privateKeyPair,
+                               @Value("${jwt.keystore.password}") final String keystorePassword,
+                               @Value("${jwt.keystore.alias:elite2api}") final String keystoreAlias) {
 
-        KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(new ByteArrayResource(Base64.decodeBase64(privateKeyPair)),
+        final var keyStoreKeyFactory = new KeyStoreKeyFactory(new ByteArrayResource(Base64.decodeBase64(privateKeyPair)),
                 keystorePassword.toCharArray());
         publicKey = keyStoreKeyFactory.getKeyPair(keystoreAlias).getPublic();
     }
@@ -38,21 +38,21 @@ public class PublicKeyController {
     @RequestMapping(value = "jwt-public-key", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = Map.class)})
     public Map<String, String> getJwtPublicKey() {
-        String formattedKey = getFormattedKey(publicKey);
+        final var formattedKey = getFormattedKey(publicKey);
 
-        Map<String, String> result = new HashMap<>();
+        final Map<String, String> result = new HashMap<>();
         result.put("formatted", formattedKey);
         result.put("encoded", Base64.encodeBase64String(formattedKey.getBytes()));
 
         return result;
     }
 
-    private String getFormattedKey(PublicKey pk) {
-        StringBuilder builder = new StringBuilder();
-        String encodeBase64String = Base64.encodeBase64String(pk.getEncoded());
+    private String getFormattedKey(final PublicKey pk) {
+        final var builder = new StringBuilder();
+        final var encodeBase64String = Base64.encodeBase64String(pk.getEncoded());
         builder.append("-----BEGIN PUBLIC KEY-----");
         builder.append("\r\n");
-        for (int i = 0; i < encodeBase64String.length(); i += 64) {
+        for (var i = 0; i < encodeBase64String.length(); i += 64) {
             builder.append(encodeBase64String.substring(i, Math.min(i + 64, encodeBase64String.length())));
             builder.append("\r\n");
         }

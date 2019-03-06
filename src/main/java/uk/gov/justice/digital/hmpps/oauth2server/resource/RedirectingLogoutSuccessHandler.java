@@ -27,7 +27,7 @@ public class RedirectingLogoutSuccessHandler implements LogoutSuccessHandler {
 
     @Override
     public void onLogoutSuccess(final HttpServletRequest request, final HttpServletResponse response, final Authentication authentication) throws IOException {
-        final String client = request.getParameter("client_id");
+        final var client = request.getParameter("client_id");
         // If we have asked for a redirect, check it is valid for the client
         if (client != null) {
             final var clientDetails = clientDetailsService.loadClientByClientId(client);

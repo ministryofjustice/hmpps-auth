@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
@@ -18,11 +17,11 @@ public class LoggingAccessDeniedHandler implements AccessDeniedHandler {
     private static Logger log = LoggerFactory.getLogger(LoggingAccessDeniedHandler.class);
 
     @Override
-    public void handle(HttpServletRequest request,
-                       HttpServletResponse response,
-                       AccessDeniedException ex) throws IOException {
+    public void handle(final HttpServletRequest request,
+                       final HttpServletResponse response,
+                       final AccessDeniedException ex) throws IOException {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        final var auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth != null) {
             log.info(auth.getName()
