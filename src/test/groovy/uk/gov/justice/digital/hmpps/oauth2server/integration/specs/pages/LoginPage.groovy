@@ -23,8 +23,12 @@ class LoginPage extends Page {
     }
 
     void loginAs(UserAccount userAccount, String password) {
+        loginAs userAccount.username, password
+    }
 
-        $('form').username = userAccount.username
+    void loginAs(String username, String password) {
+
+        $('form').username = username
         $('form').password = password
 
         assert signInButton.value() == 'Sign in'

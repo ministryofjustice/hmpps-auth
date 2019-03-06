@@ -17,7 +17,7 @@ class CreateUserSpecification extends TestSpecification {
 
     def "Create User endpoint succeeds to create user data"() {
         def username = RandomStringUtils.randomAlphanumeric(10)
-        def user = new NewUser(email: "bob@bobdigital.justice.gov.uk", firstName: "Bob", lastName: "Smith")
+        def user = [email: "bob@bobdigital.justice.gov.uk", firstName: "Bob", lastName: "Smith"] as NewUser
 
         given:
         def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER_ADM", "password123456", "elite2apiclient", "clientsecret")
@@ -40,7 +40,7 @@ class CreateUserSpecification extends TestSpecification {
 
     def "Create User endpoint fails if no privilege"() {
         def username = RandomStringUtils.randomAlphanumeric(10)
-        def user = new NewUser(email: "bob@bobdigital.justice.gov.uk", firstName: "Bob", lastName: "Smith")
+        def user = [email: "bob@bobdigital.justice.gov.uk", firstName: "Bob", lastName: "Smith"] as NewUser
 
         given:
         def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password", "elite2apiclient", "clientsecret")

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import uk.gov.justice.digital.hmpps.oauth2server.model.Context;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
@@ -97,16 +98,14 @@ public class ResetPasswordController extends AbstractPasswordController {
                 orElseGet(() -> createModelWithTokenAndAddIsAdmin(RESET, token, "setPassword"));
     }
 
-    @GetMapping("/initial-password")
-    public ModelAndView initialPassword(@RequestParam final String token) {
-        return resetPasswordConfirm(token);
-    }
-
     @PostMapping("/set-password")
     public ModelAndView setPassword(@RequestParam final String token,
-                                    @RequestParam final String newPassword, @RequestParam final String confirmPassword) {
+                                    @RequestParam final String newPassword, @RequestParam final String confirmPassword,
+                                    @RequestParam(required = false) final String context) {
         final var modelAndView = processSetPassword(RESET, token, newPassword, confirmPassword);
+        final var licences = Context.get(context) == Context.LICENCES;
 
-        return modelAndView.orElse(new ModelAndView("redirect:/reset-password-success"));
+        return modelAndView.map(mv -> licences ? mv.addObject("context", context) : mv).orElse(
+                new ModelAndView(licences ? "redirect:/initial-password-success" : "redirect:/reset-password-success"));
     }
 }

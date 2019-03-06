@@ -170,16 +170,32 @@ public class ResetPasswordControllerTest {
     public void setPassword_Success() {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile();
-        final var modelAndView = controller.setPassword("d", "password123456", "password123456");
+        final var modelAndView = controller.setPassword("d", "password123456", "password123456", null);
         assertThat(modelAndView.getViewName()).isEqualTo("redirect:/reset-password-success");
     }
 
     @Test
     public void setPassword_Failure() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
-        final var modelAndView = controller.setPassword("sometoken", "new", "confirm");
+        final var modelAndView = controller.setPassword("sometoken", "new", "confirm", null);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
         assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"));
+    }
+
+    @Test
+    public void setPassword_SuccessWithContext() {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile();
+        final var modelAndView = controller.setPassword("d", "password123456", "password123456", "licences");
+        assertThat(modelAndView.getViewName()).isEqualTo("redirect:/initial-password-success");
+    }
+
+    @Test
+    public void setPassword_FailureWithContext() {
+        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
+        final var modelAndView = controller.setPassword("sometoken", "new", "confirm", "licences");
+        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
+        assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"), entry("context", "licences"));
     }
 
     private void setupCheckTokenValid() {
