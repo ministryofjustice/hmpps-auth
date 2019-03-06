@@ -65,7 +65,7 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor('org.projectlombok:lombok:1.18.4')
 
-    compile files 'lib/ojdbc8-12.2.0.1.jar'
+    compile files('lib/ojdbc8-12.2.0.1.jar')
 
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.security:spring-security-jwt:1.0.9.RELEASE'
