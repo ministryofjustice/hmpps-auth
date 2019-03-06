@@ -31,30 +31,30 @@ public class RequestLogFilter implements Filter {
     private final Pattern excludeUriRegex;
 
     @Autowired
-    public RequestLogFilter(MdcUtility mdcUtility, @Value("${logging.uris.exclude.regex}") String excludeUris) {
+    public RequestLogFilter(final MdcUtility mdcUtility, @Value("${logging.uris.exclude.regex}") final String excludeUris) {
         this.mdcUtility = mdcUtility;
         excludeUriRegex = Pattern.compile(excludeUris);
     }
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    public void init(final FilterConfig filterConfig) throws ServletException {
 
     }
 
     @Override
     public void doFilter(
-            ServletRequest request,
-            ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
+            final ServletRequest request,
+            final ServletResponse response,
+            final FilterChain chain) throws IOException, ServletException {
 
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse res = (HttpServletResponse) response;
+        final var req = (HttpServletRequest) request;
+        final var res = (HttpServletResponse) response;
         if (excludeUriRegex.matcher(req.getRequestURI()).matches()) {
             MDC.put(SKIP_LOGGING, "true");
         }
 
         try {
-            LocalDateTime start = LocalDateTime.now();
+            final var start = LocalDateTime.now();
             MDC.put(REQUEST_ID, mdcUtility.generateUUID());
             MDC.put(USER_ID, getUser(req));
             if (isLoggingAllowed()) {
@@ -63,9 +63,9 @@ public class RequestLogFilter implements Filter {
 
             chain.doFilter(request, response);
 
-            long duration = Duration.between(start, LocalDateTime.now()).toMillis();
+            final var duration = Duration.between(start, LocalDateTime.now()).toMillis();
             MDC.put(REQUEST_DURATION, String.valueOf(duration));
-            int status = res.getStatus();
+            final var status = res.getStatus();
             MDC.put(RESPONSE_STATUS, String.valueOf(status));
             if (isLoggingAllowed()) {
                 log.debug("Response: {} {} - Status {} - Start {}, User {}, Duration {} ms", req.getMethod(), req.getRequestURI(), status, start.format(formatter), getUser(req), duration);
@@ -79,7 +79,7 @@ public class RequestLogFilter implements Filter {
         }
     }
 
-    private String getUser(HttpServletRequest req) {
+    private String getUser(final HttpServletRequest req) {
         return req.getUserPrincipal() != null ? req.getUserPrincipal().getName() : "anonymous";
     }
 

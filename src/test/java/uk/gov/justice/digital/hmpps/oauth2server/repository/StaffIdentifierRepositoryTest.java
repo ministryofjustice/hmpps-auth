@@ -8,8 +8,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffIdentifier;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffRepository;
 
@@ -32,10 +30,10 @@ public class StaffIdentifierRepositoryTest {
     @Test
     public void givenATransientEntityItCanBePeristed() {
 
-        Staff staff = staffRepository.findById(STAFF_ID).orElseThrow();
+        final var staff = staffRepository.findById(STAFF_ID).orElseThrow();
         assertThat(staff.getIdentifiers()).hasSize(0);
 
-        StaffIdentifier newStaffId = staff.addIdentifier("WIBBLE", "WOBBLE");
+        final var newStaffId = staff.addIdentifier("WIBBLE", "WOBBLE");
 
         TestTransaction.flagForCommit();
         TestTransaction.end();
@@ -44,7 +42,7 @@ public class StaffIdentifierRepositoryTest {
 
         TestTransaction.start();
 
-        var retrievedEntity = staffRepository.findById(STAFF_ID).orElseThrow();
+        final var retrievedEntity = staffRepository.findById(STAFF_ID).orElseThrow();
 
         assertThat(retrievedEntity.findIdentifier("WIBBLE")).isEqualTo(newStaffId);
 
@@ -53,9 +51,9 @@ public class StaffIdentifierRepositoryTest {
     @Test
     public void givenAnExistingStaffMemberTheyCanBeRetrievedByIdentification() {
 
-        var retrievedEntity = repository.findById_TypeAndId_IdentificationNumber("YJAF", "olduser@yjaf.gov.uk");
+        final var retrievedEntity = repository.findById_TypeAndId_IdentificationNumber("YJAF", "olduser@yjaf.gov.uk");
 
-        var staff = retrievedEntity.getStaff();
+        final var staff = retrievedEntity.getStaff();
         assertThat(staff).isNotNull();
 
         assertThat(staff.getFirstName()).isEqualTo("Old");

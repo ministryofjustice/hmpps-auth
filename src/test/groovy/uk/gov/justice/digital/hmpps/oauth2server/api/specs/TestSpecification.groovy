@@ -40,11 +40,12 @@ abstract class TestSpecification extends Specification {
     TestWatcher t = new TestWatcher() {
         @Override
         protected void starting(Description description) {
-            log.info ("Starting test '{}'", description.getDisplayName())
+            log.info("Starting test '{}'", description.getDisplayName())
         }
+
         @Override
         protected void finished(Description description) {
-            log.info ("Finished test '{}'", description.getDisplayName())
+            log.info("Finished test '{}'", description.getDisplayName())
         }
     }
 
@@ -80,7 +81,7 @@ abstract class TestSpecification extends Specification {
     }
 
     private OAuth2RestTemplate authenticate(BaseOAuth2ProtectedResourceDetails resource, String queryStr) {
-        resource.setAccessTokenUri(accessTokenUri() + (StringUtils.isNotBlank(queryStr) ? "?"+queryStr : ""));
+        resource.setAccessTokenUri(accessTokenUri() + (StringUtils.isNotBlank(queryStr) ? "?" + queryStr : ""));
         new OAuth2RestTemplate(resource, new DefaultOAuth2ClientContext(new DefaultAccessTokenRequest()))
     }
 

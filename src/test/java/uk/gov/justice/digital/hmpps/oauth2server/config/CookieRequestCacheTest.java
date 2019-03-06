@@ -7,7 +7,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.util.Base64Utils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,7 +45,7 @@ public class CookieRequestCacheTest {
 
         verify(helper).addCookieToResponse(same(request), same(response), captor.capture());
 
-        final String url = new String(Base64Utils.decodeFromString(captor.getValue()));
+        final var url = new String(Base64Utils.decodeFromString(captor.getValue()));
         assertThat(url).isEqualTo("https://some.com/where?param=value");
     }
 
@@ -60,7 +59,7 @@ public class CookieRequestCacheTest {
 
         verify(helper).addCookieToResponse(same(request), same(response), captor.capture());
 
-        final String url = new String(Base64Utils.decodeFromString(captor.getValue()));
+        final var url = new String(Base64Utils.decodeFromString(captor.getValue()));
         assertThat(url).isEqualTo("http://some.com/where?param=value");
     }
 
@@ -74,7 +73,7 @@ public class CookieRequestCacheTest {
 
         verify(helper).addCookieToResponse(same(request), same(response), captor.capture());
 
-        final String url = new String(Base64Utils.decodeFromString(captor.getValue()));
+        final var url = new String(Base64Utils.decodeFromString(captor.getValue()));
         assertThat(url).isEqualTo("https://some.com:12345/where?param=value");
     }
 
@@ -83,7 +82,7 @@ public class CookieRequestCacheTest {
         when(helper.readValueFromCookie(request)).thenReturn(
                 Optional.of(Base64Utils.encodeToString("https://some.com/where?param=value".getBytes())));
 
-        final SavedRequest savedRequest = cache.getRequest(request, response);
+        final var savedRequest = cache.getRequest(request, response);
 
         assertThat(savedRequest.getRedirectUrl()).isEqualTo("https://some.com/where?param=value");
     }
@@ -97,7 +96,7 @@ public class CookieRequestCacheTest {
         when(helper.readValueFromCookie(request)).thenReturn(
                 Optional.of(Base64Utils.encodeToString("https://some.com/where?param=value".getBytes())));
 
-        final HttpServletRequest savedRequest = cache.getMatchingRequest(request, response);
+        final var savedRequest = cache.getMatchingRequest(request, response);
 
         assertThat(savedRequest).isSameAs(request);
 
@@ -113,7 +112,7 @@ public class CookieRequestCacheTest {
         when(helper.readValueFromCookie(request)).thenReturn(
                 Optional.of(Base64Utils.encodeToString("https://some.com/where?param=value".getBytes())));
 
-        final HttpServletRequest savedRequest = cache.getMatchingRequest(request, response);
+        final var savedRequest = cache.getMatchingRequest(request, response);
 
         assertThat(savedRequest).isNull();
 
@@ -124,7 +123,7 @@ public class CookieRequestCacheTest {
     public void getMatchingRequest_noSavedRequest() {
         when(helper.readValueFromCookie(request)).thenReturn(Optional.empty());
 
-        final HttpServletRequest savedRequest = cache.getMatchingRequest(request, response);
+        final var savedRequest = cache.getMatchingRequest(request, response);
 
         assertThat(savedRequest).isNull();
     }

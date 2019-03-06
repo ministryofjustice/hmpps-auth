@@ -44,8 +44,8 @@ public class NomisDbConfig {
     @Bean(name = "entityManagerFactory")
     public LocalContainerEntityManagerFactoryBean
     entityManagerFactory(
-            EntityManagerFactoryBuilder builder,
-            @Qualifier("dataSource") DataSource dataSource
+            final EntityManagerFactoryBuilder builder,
+            @Qualifier("dataSource") final DataSource dataSource
     ) {
         return builder
                 .dataSource(dataSource)
@@ -58,7 +58,7 @@ public class NomisDbConfig {
     @Primary
     @Bean(name = "transactionManager")
     public PlatformTransactionManager transactionManager(
-            @Qualifier("entityManagerFactory") EntityManagerFactory
+            @Qualifier("entityManagerFactory") final EntityManagerFactory
                     entityManagerFactory
     ) {
         return new JpaTransactionManager(entityManagerFactory);

@@ -15,7 +15,7 @@ public class UiController {
     private JdbcClientDetailsService clientDetailsService;
 
     @GetMapping("/ui")
-    public ModelAndView userIndex(Map<String, Object> model) {
+    public ModelAndView userIndex(final Map<String, Object> model) {
         model.put("clientDetails", clientDetailsService.listClientDetails());
         return new ModelAndView("ui/index", model);
     }

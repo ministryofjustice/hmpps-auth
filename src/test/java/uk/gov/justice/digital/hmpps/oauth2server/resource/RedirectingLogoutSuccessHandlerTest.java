@@ -92,7 +92,7 @@ public class RedirectingLogoutSuccessHandlerTest {
     }
 
     private ClientDetails createClientDetails(final String... urls) {
-        final BaseClientDetails details = new BaseClientDetails();
+        final var details = new BaseClientDetails();
         details.setRegisteredRedirectUri(Set.of(urls));
         return details;
     }

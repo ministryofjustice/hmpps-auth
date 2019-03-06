@@ -31,7 +31,7 @@ public class SwaggerConfig {
 
     @Bean
     public Docket offenderApi() {
-        Docket docket = new Docket(DocumentationType.SWAGGER_2)
+        final var docket = new Docket(DocumentationType.SWAGGER_2)
                 .useDefaultResponseMessages(false)
                 .apiInfo(apiInfo())
                 .select()
@@ -54,8 +54,8 @@ public class SwaggerConfig {
         BuildProperties buildProperties;
         try {
             buildProperties = (BuildProperties) applicationContext.getBean("buildProperties");
-        } catch (BeansException be) {
-            Properties properties = new Properties();
+        } catch (final BeansException be) {
+            final var properties = new Properties();
             properties.put("version", "?");
             buildProperties = new BuildProperties(properties);
         }

@@ -22,7 +22,7 @@ public class CookieHelper {
 
     public void addCookieToResponse(final HttpServletRequest request, final HttpServletResponse response, final String value) {
         // Add a session cookie
-        final Cookie sessionCookie = new Cookie(name, value);
+        final var sessionCookie = new Cookie(name, value);
 
         // path has to match exactly the path defined in spring's CookieClearingLogoutHandler
         sessionCookie.setPath(request.getContextPath() + "/");

@@ -19,12 +19,11 @@ public class AuthIpSecurity {
         this.whitelist = whitelist;
     }
 
-    public boolean check(HttpServletRequest request)
-    {
-        var remoteAddr = request.getRemoteAddr();
-        var colonCount = remoteAddr.chars().filter(ch -> ch == ':').count();
-        var remoteIp = colonCount == 1 ? StringUtils.split(remoteAddr, ":")[0] : remoteAddr;
-        boolean matchIp = whitelist.stream().anyMatch(ip -> new IpAddressMatcher(ip).matches(remoteIp));
+    public boolean check(final HttpServletRequest request) {
+        final var remoteAddr = request.getRemoteAddr();
+        final var colonCount = remoteAddr.chars().filter(ch -> ch == ':').count();
+        final var remoteIp = colonCount == 1 ? StringUtils.split(remoteAddr, ":")[0] : remoteAddr;
+        final var matchIp = whitelist.stream().anyMatch(ip -> new IpAddressMatcher(ip).matches(remoteIp));
         if (!matchIp) {
             log.warn("Client IP {}, is not in whitelist {}", remoteIp, whitelist);
         }

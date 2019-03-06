@@ -88,13 +88,14 @@ public class VerifyEmailControllerTest {
 
     @Test
     public void verifyEmail_noselection() throws IOException, ServletException {
-        final List<String> candidates = List.of("joe", "bob");
+        final var candidates = List.of("joe", "bob");
         when(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(candidates);
 
         final var modelAndView = verifyEmailController.verifyEmail("", "", principal, request, response);
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
         assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("error", "noselection"), MapEntry.entry("candidates", candidates));
     }
+
     @Test
     public void verifyEmail_Exception() throws NotificationClientException, IOException, ServletException, VerifyEmailException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url"));

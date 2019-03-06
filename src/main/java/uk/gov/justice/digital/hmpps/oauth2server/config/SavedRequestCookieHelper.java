@@ -17,7 +17,7 @@ public class SavedRequestCookieHelper extends CookieHelper {
     }
 
     void removeCookie(final HttpServletRequest request, final HttpServletResponse response) {
-        final Cookie removeSavedRequestCookie = new Cookie(getName(), "");
+        final var removeSavedRequestCookie = new Cookie(getName(), "");
         removeSavedRequestCookie.setPath(request.getContextPath() + "/");
         removeSavedRequestCookie.setMaxAge(0);
         removeSavedRequestCookie.setSecure(request.isSecure());
