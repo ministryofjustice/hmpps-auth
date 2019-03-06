@@ -20,6 +20,7 @@ apply plugin: 'groovy'
 repositories {
     mavenCentral()
     maven { url "https://dl.bintray.com/gov-uk-notify/maven" }
+    maven { url "https://raw.github.com/weddini/spring-boot-throttling/mvn-repo/" }
 }
 
 ext {
@@ -61,7 +62,7 @@ springBoot {
 }
 
 dependencies {
-    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor('org.projectlombok:lombok:1.18.4')
 
     compile files('lib/ojdbc8-12.2.0.1.jar')
@@ -71,13 +72,14 @@ dependencies {
     compile 'org.springframework.security.oauth:spring-security-oauth2:2.3.3.RELEASE'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'io.jsonwebtoken:jjwt:0.9.1'
+    compile 'com.weddini.throttling:spring-boot-throttling-starter:0.0.9'
 
-    compile("org.springframework.boot:spring-boot-starter-data-jpa")
-    compile("org.hibernate:hibernate-java8")
+    compile 'org.springframework.boot:spring-boot-starter-data-jpa'
+    compile 'org.hibernate:hibernate-java8'
 
-    compile("net.logstash.logback:logstash-logback-encoder:5.2")
-    compile("com.microsoft.azure:applicationinsights-spring-boot-starter:1.1.1")
-    compile("com.microsoft.azure:applicationinsights-logging-logback:2.3.0")
+    compile 'net.logstash.logback:logstash-logback-encoder:5.2'
+    compile 'com.microsoft.azure:applicationinsights-spring-boot-starter:1.1.1'
+    compile 'com.microsoft.azure:applicationinsights-logging-logback:2.3.0'
 
     compile 'javax.annotation:javax.annotation-api:1.3.2'
     compile 'javax.xml.bind:jaxb-api:2.3.0'
@@ -85,7 +87,7 @@ dependencies {
     compile 'com.sun.xml.bind:jaxb-core:2.3.0'
     compile 'javax.activation:activation:1.1.1'
 
-    compile('javax.transaction:javax.transaction-api:1.3')
+    compile 'javax.transaction:javax.transaction-api:1.3'
 
     compile 'io.springfox:springfox-swagger2:2.9.2'
     compile 'io.springfox:springfox-swagger-ui:2.9.2'
@@ -98,22 +100,22 @@ dependencies {
 
     compile 'org.flywaydb:flyway-core:5.2.0'
     compile 'com.zaxxer:HikariCP:2.7.6'
-    compile("org.apache.commons:commons-lang3")
-    compile("org.apache.commons:commons-text:1.6")
+    compile 'org.apache.commons:commons-lang3'
+    compile 'org.apache.commons:commons-text:1.6'
     runtime 'com.h2database:h2:1.4.196'
     compile 'com.microsoft.sqlserver:mssql-jdbc:7.0.0.jre10'
-    runtime('org.springframework.boot:spring-boot-devtools')
+    runtime 'org.springframework.boot:spring-boot-devtools'
 
-    compileOnly('org.projectlombok:lombok:1.18.4')
+    compileOnly 'org.projectlombok:lombok:1.18.4'
 
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-    testCompile('org.springframework.security:spring-security-test')
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
+    testCompile 'org.springframework.security:spring-security-test'
     testRuntime 'com.h2database:h2:1.4.196'
 
     testCompile 'org.codehaus.groovy:groovy-all:2.5.4'
     testCompile 'org.spockframework:spock-spring:1.2-groovy-2.5'
     testCompile('org.spockframework:spock-core:1.2-groovy-2.5') {
-        exclude group: "org.codehaus.groovy"
+        exclude group: 'org.codehaus.groovy'
     }
 
     testCompile 'org.gebish:geb-core:2.2'
