@@ -67,18 +67,20 @@ public class ResetPasswordController extends AbstractPasswordController {
             return new ModelAndView("resetPassword", "error", "format");
         }
 
+        final var ip = IpAddressHelper.retrieveIpFromRemoteAddr(request);
+
         try {
             final var resetLink = resetPasswordService.requestResetPassword(username, request.getRequestURL().append("-confirm?token=").toString());
             final var modelAndView = new ModelAndView("resetPasswordSent");
             if (resetLink.isPresent()) {
                 log.info("Reset password request success for {}", username);
-                telemetryClient.trackEvent("ResetPasswordRequestSuccess", Map.of("username", username), null);
+                telemetryClient.trackEvent("ResetPasswordRequestSuccess", Map.of("username", username, "remoteAddress", ip), null);
                 if (smokeTestEnabled) {
                     modelAndView.addObject("resetLink", resetLink.get());
                 }
             } else {
                 log.info("Reset password request failed, no link provided for {}", username);
-                telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("username", username, "error", "nolink"), null);
+                telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("username", username, "error", "nolink", "remoteAddress", ip), null);
                 if (smokeTestEnabled) {
                     modelAndView.addObject("resetLinkMissing", true);
                 }
@@ -91,7 +93,6 @@ public class ResetPasswordController extends AbstractPasswordController {
                     Map.of("username", username, "error", e.getClass().getSimpleName()), null);
             return new ModelAndView("resetPassword", "error", "other");
         } catch (final ThrottlingException e) {
-            final var ip = IpAddressHelper.retrieveIpFromRemoteAddr(request);
             log.info("Reset password throttled request for {}", ip);
             telemetryClient.trackEvent("ResetPasswordRequestFailure",
                     Map.of("username", username, "error", e.getClass().getSimpleName(), "remoteAddress", ip), null);
