@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.justice.digital.hmpps.oauth2server.model.Context;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 import uk.gov.service.notify.NotificationClientException;
@@ -90,9 +91,10 @@ public class ResetPasswordController extends AbstractPasswordController {
                     Map.of("username", username, "error", e.getClass().getSimpleName()), null);
             return new ModelAndView("resetPassword", "error", "other");
         } catch (final ThrottlingException e) {
-            log.info("Reset password throttled request for {}", request.getRemoteAddr());
+            final var ip = IpAddressHelper.retrieveIpFromRemoteAddr(request);
+            log.info("Reset password throttled request for {}", ip);
             telemetryClient.trackEvent("ResetPasswordRequestFailure",
-                    Map.of("username", username, "error", e.getClass().getSimpleName(), "remoteAddress", request.getRemoteAddr()), null);
+                    Map.of("username", username, "error", e.getClass().getSimpleName(), "remoteAddress", ip), null);
             return new ModelAndView("resetPassword", "error", "throttled");
         }
     }

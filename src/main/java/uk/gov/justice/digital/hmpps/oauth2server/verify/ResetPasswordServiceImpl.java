@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify;
 
 import com.weddini.throttling.Throttling;
+import com.weddini.throttling.ThrottlingType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.LockedException;
@@ -56,7 +57,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
     }
 
     @Override
-    @Throttling(limit = 6, timeUnit = TimeUnit.MINUTES)
+    @Throttling(type = ThrottlingType.SpEL, expression = "T(uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper).retrieveIpFromRequest()", limit = 6, timeUnit = TimeUnit.MINUTES)
     public Optional<String> requestResetPassword(final String inputUsername, final String url) throws NotificationClientException {
         final var username = inputUsername.toUpperCase();
         final var optionalUserEmail = userEmailRepository.findById(username);
