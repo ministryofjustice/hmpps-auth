@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Set;
@@ -20,9 +20,7 @@ public class AuthIpSecurity {
     }
 
     public boolean check(final HttpServletRequest request) {
-        final var remoteAddr = request.getRemoteAddr();
-        final var colonCount = remoteAddr.chars().filter(ch -> ch == ':').count();
-        final var remoteIp = colonCount == 1 ? StringUtils.split(remoteAddr, ":")[0] : remoteAddr;
+        final var remoteIp = IpAddressHelper.retrieveIpFromRemoteAddr(request);
         final var matchIp = whitelist.stream().anyMatch(ip -> new IpAddressMatcher(ip).matches(remoteIp));
         if (!matchIp) {
             log.warn("Client IP {}, is not in whitelist {}", remoteIp, whitelist);
