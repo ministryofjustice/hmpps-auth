@@ -102,7 +102,7 @@ public class CreateUserServiceTest {
 
     @Test
     public void createUser_saveEmailRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        createUserService.createUser("userme", "email", "first", "last", "url?token=");
+        createUserService.createUser("userMe", "eMail", "first", "last", "url?token=");
 
         final var captor = ArgumentCaptor.forClass(UserEmail.class);
         verify(userEmailRepository).save(captor.capture());

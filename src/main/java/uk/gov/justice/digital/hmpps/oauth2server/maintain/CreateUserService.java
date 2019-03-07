@@ -50,10 +50,12 @@ public class CreateUserService {
     }
 
     @Transactional
-    public String createUser(final String usernameInput, final String email, final String firstName, final String lastName, final String url)
+    public String createUser(final String usernameInput, final String emailInput, final String firstName, final String lastName, final String url)
             throws CreateUserException, NotificationClientException, VerifyEmailException {
         // ensure username always uppercase
         final var username = StringUtils.upperCase(usernameInput);
+        // and that email is always lowercase
+        final var email = StringUtils.lowerCase(emailInput);
 
         // validate
         validate(username, email, firstName, lastName);
