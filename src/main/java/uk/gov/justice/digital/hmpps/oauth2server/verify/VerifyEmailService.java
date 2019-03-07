@@ -67,7 +67,8 @@ public class VerifyEmailService {
         return jdbcTemplate.queryForList(EXISTING_EMAIL_SQL, String.class, username);
     }
 
-    public String requestVerification(final String username, final String email, final String url) throws NotificationClientException, VerifyEmailException {
+    public String requestVerification(final String username, final String emailInput, final String url) throws NotificationClientException, VerifyEmailException {
+        final var email = StringUtils.lowerCase(emailInput);
         validateEmailAddress(email);
 
         final var user = userService.findUser(username);
