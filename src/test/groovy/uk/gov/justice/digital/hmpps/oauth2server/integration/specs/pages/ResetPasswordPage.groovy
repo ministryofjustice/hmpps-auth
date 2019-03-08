@@ -15,7 +15,7 @@ class ResetPasswordPage extends Page {
     static content = {
         headingText { $('#main-content h1').text() }
         resetPasswordButton { $("input", type: 'submit') }
-        usernameInput { $('#username') }
+        usernameInput { $('#usernameOrEmail') }
         errorDetail { $('#error-detail').text() }
         backLink { $("a", id: "back-link") }
     }

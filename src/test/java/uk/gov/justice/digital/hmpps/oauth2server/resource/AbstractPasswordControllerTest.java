@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordExceptio
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,13 +42,15 @@ public class AbstractPasswordControllerTest {
     @Mock
     private UserService userService;
     @Mock
+    private VerifyEmailService verifyEmailService;
+    @Mock
     private TelemetryClient telemetryClient;
 
     private ResetPasswordController controller;
 
     @Before
     public void setUp() {
-        controller = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, true, Set.of("password1"));
+        controller = new ResetPasswordController(resetPasswordService, tokenService, userService, verifyEmailService, telemetryClient, true, Set.of("password1"));
     }
 
     @Test

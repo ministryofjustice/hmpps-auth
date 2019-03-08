@@ -15,8 +15,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.Context;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
-import uk.gov.service.notify.NotificationClientException;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -30,17 +32,19 @@ import static uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.Tok
 public class ResetPasswordController extends AbstractPasswordController {
     private final ResetPasswordService resetPasswordService;
     private final TokenService tokenService;
+    private final VerifyEmailService verifyEmailService;
     private final TelemetryClient telemetryClient;
     private final boolean smokeTestEnabled;
 
     public ResetPasswordController(final ResetPasswordService resetPasswordService,
                                    final TokenService tokenService, final UserService userService,
-                                   final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled,
+                                   final VerifyEmailService verifyEmailService, final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled,
                                    final @Value("${application.authentication.blacklist}") Set<String> passwordBlacklist) {
 
         super(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "setPassword", passwordBlacklist);
         this.resetPasswordService = resetPasswordService;
         this.tokenService = tokenService;
+        this.verifyEmailService = verifyEmailService;
         this.telemetryClient = telemetryClient;
         this.smokeTestEnabled = smokeTestEnabled;
     }
@@ -56,45 +60,51 @@ public class ResetPasswordController extends AbstractPasswordController {
     }
 
     @PostMapping("/reset-password")
-    public ModelAndView resetPasswordRequest(@RequestParam(required = false) final String username,
+    public ModelAndView resetPasswordRequest(@RequestParam(required = false) final String usernameOrEmail,
                                              final HttpServletRequest request) {
-        if (StringUtils.isBlank(username)) {
+        if (StringUtils.isBlank(usernameOrEmail)) {
             telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("error", "missing"), null);
             return new ModelAndView("resetPassword", "error", "missing");
         }
-        if (username.indexOf('@') != -1) {
-            telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("error", "format", "username", username), null);
-            return new ModelAndView("resetPassword", "error", "format");
+
+        if (StringUtils.contains(usernameOrEmail, "@")) {
+            try {
+                verifyEmailService.validateEmailAddress(usernameOrEmail);
+            } catch (final VerifyEmailException e) {
+                log.info("Validation failed for reset password email address due to {}", e.getReason());
+                telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("email", usernameOrEmail, "reason", "email." + e.getReason()), null);
+                return new ModelAndView("resetPassword", Map.of("error", "email." + e.getReason(), "usernameOrEmail", usernameOrEmail));
+            }
         }
 
         try {
-            final var resetLink = resetPasswordService.requestResetPassword(username, request.getRequestURL().append("-confirm?token=").toString());
+            final var resetLink = resetPasswordService.requestResetPassword(usernameOrEmail, request.getRequestURL().append("-confirm?token=").toString());
             final var modelAndView = new ModelAndView("resetPasswordSent");
             if (resetLink.isPresent()) {
-                log.info("Reset password request success for {}", username);
-                telemetryClient.trackEvent("ResetPasswordRequestSuccess", Map.of("username", username), null);
+                log.info("Reset password request success for {}", usernameOrEmail);
+                telemetryClient.trackEvent("ResetPasswordRequestSuccess", Map.of("username", usernameOrEmail), null);
                 if (smokeTestEnabled) {
                     modelAndView.addObject("resetLink", resetLink.get());
                 }
             } else {
-                log.info("Reset password request failed, no link provided for {}", username);
-                telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("username", username, "error", "nolink"), null);
+                log.info("Reset password request failed, no link provided for {}", usernameOrEmail);
+                telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("username", usernameOrEmail, "error", "nolink"), null);
                 if (smokeTestEnabled) {
                     modelAndView.addObject("resetLinkMissing", true);
                 }
             }
             return modelAndView;
 
-        } catch (final NotificationClientException e) {
+        } catch (final NotificationClientRuntimeException e) {
             log.error("Failed to send reset password due to", e);
             telemetryClient.trackEvent("ResetPasswordRequestFailure",
-                    Map.of("username", username, "error", e.getClass().getSimpleName()), null);
+                    Map.of("username", usernameOrEmail, "error", e.getClass().getSimpleName()), null);
             return new ModelAndView("resetPassword", "error", "other");
         } catch (final ThrottlingException e) {
             final var ip = IpAddressHelper.retrieveIpFromRemoteAddr(request);
             log.info("Reset password throttled request for {}", ip);
             telemetryClient.trackEvent("ResetPasswordRequestFailure",
-                    Map.of("username", username, "error", e.getClass().getSimpleName(), "remoteAddress", ip), null);
+                    Map.of("username", usernameOrEmail, "error", e.getClass().getSimpleName(), "remoteAddress", ip), null);
             return new ModelAndView("resetPassword", "error", "throttled");
         }
     }

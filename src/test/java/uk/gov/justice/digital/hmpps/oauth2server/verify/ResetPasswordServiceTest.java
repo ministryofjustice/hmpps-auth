@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
@@ -22,10 +23,13 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AlterUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -45,6 +49,8 @@ public class ResetPasswordServiceTest {
     @Mock
     private AlterUserService alterUserService;
     @Mock
+    private VerifyEmailService verifyEmailService;
+    @Mock
     private NotificationClientApi notificationClient;
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -55,18 +61,20 @@ public class ResetPasswordServiceTest {
 
     @Before
     public void setUp() {
-        resetPasswordService = new ResetPasswordServiceImpl(userEmailRepository, userTokenRepository, userService, alterUserService, notificationClient, "resetTemplate", "resetUnavailableTemplate", passwordEncoder, 10);
+        resetPasswordService = new ResetPasswordServiceImpl(userEmailRepository, userTokenRepository, userService,
+                alterUserService, notificationClient,
+                "resetTemplate", "resetUnavailableTemplate", "resetUnavailableByEmailTemplate", "resetUnavailableEmailNotFoundTemplate", passwordEncoder, 10);
     }
 
     @Test
-    public void requestResetPassword_noUserEmail() throws NotificationClientException {
+    public void requestResetPassword_noUserEmail() throws NotificationClientRuntimeException {
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.empty());
         final var optional = resetPasswordService.requestResetPassword("user", "url");
         assertThat(optional).isEmpty();
     }
 
     @Test
-    public void requestResetPassword_noEmail() throws NotificationClientException {
+    public void requestResetPassword_noEmail() throws NotificationClientRuntimeException {
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(new UserEmail("user")));
         final var optional = resetPasswordService.requestResetPassword("user", "url");
         assertThat(optional).isEmpty();
@@ -74,7 +82,7 @@ public class ResetPasswordServiceTest {
 
     @Test
     public void requestResetPassword_noNomisUser() throws NotificationClientException {
-        final var userEmail = new UserEmail("someuser", "email", true, false);
+        final var userEmail = new UserEmail("USER", "email", true, false);
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         when(userService.findUser(anyString())).thenReturn(Optional.empty());
 
@@ -103,10 +111,10 @@ public class ResetPasswordServiceTest {
     @Test
     public void requestResetPassword_authLocked() throws NotificationClientException {
         final var userEmail = new UserEmail("someuser", "email", true, true);
+        userEmail.setPerson(new Person("user", "Bob", "Smith"));
+        userEmail.setMaster(true);
+        userEmail.setEnabled(true);
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
-        final var accountOptional = getStaffUserAccountForBob();
-        ((StaffUserAccount) accountOptional.get()).getAccountDetail().setAccountStatus("LOCKED");
-        when(userService.findUser(anyString())).thenReturn(accountOptional);
 
         final var optionalLink = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), mapCaptor.capture(), isNull());
@@ -145,7 +153,7 @@ public class ResetPasswordServiceTest {
     }
 
     @Test
-    public void requestResetPassword_existingToken() throws NotificationClientException {
+    public void requestResetPassword_existingToken() throws NotificationClientRuntimeException {
         final var userEmail = new UserEmail("someuser", "email", true, false);
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
@@ -170,8 +178,8 @@ public class ResetPasswordServiceTest {
     }
 
     @Test
-    public void requestResetPassword_uppercaseUsername() throws NotificationClientException {
-        final var userEmail = new UserEmail("someuser", "email", false, true);
+    public void requestResetPassword_uppercaseUsername() throws NotificationClientRuntimeException {
+        final var userEmail = new UserEmail("SOMEUSER", "email", false, true);
         when(userEmailRepository.findById(any())).thenReturn(Optional.of(userEmail));
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
 
@@ -181,7 +189,7 @@ public class ResetPasswordServiceTest {
     }
 
     @Test
-    public void requestResetPassword_verifyNotification() throws NotificationClientException {
+    public void requestResetPassword_verifyNotification() throws NotificationClientRuntimeException {
         final var userEmail = new UserEmail("someuser", "email", false, true);
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
@@ -203,7 +211,43 @@ public class ResetPasswordServiceTest {
 
         when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), isNull())).thenThrow(new NotificationClientException("message"));
 
-        assertThatThrownBy(() -> resetPasswordService.requestResetPassword("user", "url")).hasMessage("message");
+        assertThatThrownBy(() -> resetPasswordService.requestResetPassword("user", "url")).hasMessageContaining("NotificationClientException: message");
+    }
+
+    @Test
+    public void requestResetPassword_emailAddressNotFound() throws NotificationClientException {
+        when(userEmailRepository.findByEmail(any())).thenReturn(Collections.emptyList());
+
+        final var optional = resetPasswordService.requestResetPassword("someuser@somewhere", "url");
+        verify(notificationClient).sendEmail(eq("resetUnavailableEmailNotFoundTemplate"), eq("someuser@somewhere"), mapCaptor.capture(), isNull());
+        assertThat(optional).isEmpty();
+        assertThat(mapCaptor.getValue()).isEmpty();
+    }
+
+    @Test
+    public void requestResetPassword_multipleEmailAddresses() throws NotificationClientException {
+        final var userEmail = new UserEmail("someuser", "email", false, false);
+        userEmail.setPerson(new Person("user", "Bob", "Smith"));
+        userEmail.setMaster(true);
+        when(userEmailRepository.findByEmail(any())).thenReturn(List.of(userEmail, userEmail));
+
+        final var optional = resetPasswordService.requestResetPassword("someuser@somewhere", "url");
+        verify(notificationClient).sendEmail(eq("resetUnavailableByEmailTemplate"), eq("email"), mapCaptor.capture(), isNull());
+        assertThat(optional).isEmpty();
+        assertThat(mapCaptor.getValue()).containsOnly(MapEntry.entry("firstName", "Bob"));
+    }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    @Test
+    public void requestResetPassword_byEmail() throws NotificationClientException {
+        final var userEmail = new UserEmail("someuser", "email", false, true);
+        when(userEmailRepository.findByEmail(anyString())).thenReturn(List.of(userEmail));
+        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+
+        final var optionalLink = resetPasswordService.requestResetPassword("user@where", "url");
+        verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), mapCaptor.capture(), isNull());
+        assertThat(optionalLink).isPresent();
+        assertThat(mapCaptor.getValue()).containsOnly(MapEntry.entry("firstName", "Bob"), MapEntry.entry("resetLink", optionalLink.get()));
     }
 
     private Optional<UserPersonDetails> getStaffUserAccountForBob() {

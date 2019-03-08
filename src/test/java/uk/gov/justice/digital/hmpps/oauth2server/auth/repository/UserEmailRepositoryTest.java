@@ -158,6 +158,16 @@ public class UserEmailRepositoryTest {
         assertThat(repository.findByUsernameAndMasterIsTrue("ITAG_USER")).isEmpty();
     }
 
+    @Test
+    public void findByEmail() {
+        assertThat(repository.findByEmail("auth_test@digital.justice.gov.uk")).extracting(UserEmail::getUsername).containsOnly("AUTH_ADM", "AUTH_TEST", "AUTH_EXPIRED");
+    }
+
+    @Test
+    public void findByEmail_NoRecords() {
+        assertThat(repository.findByEmail("noone@digital.justice.gov.uk")).isEmpty();
+    }
+
     private UserEmail transientEntity() {
         final var email = new UserEmail();
         email.setUsername("user");
