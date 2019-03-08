@@ -78,7 +78,7 @@ public class ResetPasswordController extends AbstractPasswordController {
         }
 
         try {
-            final var resetLink = resetPasswordService.requestResetPassword(usernameOrEmail, request.getRequestURL().append("-confirm?token=").toString());
+            final var resetLink = resetPasswordService.requestResetPassword(usernameOrEmail, request.getRequestURL().toString());
             final var modelAndView = new ModelAndView("resetPasswordSent");
             if (resetLink.isPresent()) {
                 log.info("Reset password request success for {}", usernameOrEmail);
