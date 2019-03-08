@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -73,7 +74,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
             final var matches = userEmailRepository.findByEmail(usernameOrEmailAddress.toLowerCase());
             if (matches.isEmpty()) {
                 // no match, but got an email address so let them know
-                sendEmail(usernameOrEmailAddress, resetUnavailableEmailNotFoundTemplateId, Map.of("resetLink", url), usernameOrEmailAddress);
+                sendEmail(usernameOrEmailAddress, resetUnavailableEmailNotFoundTemplateId, Collections.emptyMap(), usernameOrEmailAddress);
                 return Optional.empty();
             }
 

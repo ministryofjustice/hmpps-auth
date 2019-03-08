@@ -221,7 +221,7 @@ public class ResetPasswordServiceTest {
         final var optional = resetPasswordService.requestResetPassword("someuser@somewhere", "url");
         verify(notificationClient).sendEmail(eq("resetUnavailableEmailNotFoundTemplate"), eq("someuser@somewhere"), mapCaptor.capture(), isNull());
         assertThat(optional).isEmpty();
-        assertThat(mapCaptor.getValue()).containsOnly(entry("resetLink", "url"));
+        assertThat(mapCaptor.getValue()).isEmpty();
     }
 
     @Test
