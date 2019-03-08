@@ -101,6 +101,14 @@ public class ResetPasswordControllerTest {
     }
 
     @Test
+    public void resetPasswordRequest_successVerifyServiceCall() throws NotificationClientRuntimeException {
+        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
+        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
+        controller.resetPasswordRequest("user", request);
+        verify(resetPasswordService).requestResetPassword("user", "someurl");
+    }
+
+    @Test
     public void resetPasswordRequest_successLinkTelemetry() throws NotificationClientRuntimeException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("somelink"));

@@ -115,7 +115,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
         final var firstName = userDetails.getFirstName();
         if (foundMultipleMatches) {
             // for now, tell user they can't reset by email address as more than one match found
-            return new TemplateAndParameters(resetUnavailableByEmailTemplateId, firstName);
+            return new TemplateAndParameters(resetUnavailableByEmailTemplateId, Map.of("firstName", firstName, "url", url));
         }
         if (passwordAllowedToBeReset(userEmail, userDetails)) {
             final var userTokenOptional = userTokenRepository.findByTokenTypeAndUserEmail(TokenType.RESET, userEmail);
@@ -125,8 +125,8 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
             final var userToken = new UserToken(TokenType.RESET, userEmail);
             userTokenRepository.save(userToken);
 
-            final var resetLink = url + userToken.getToken();
-            return new TemplateAndParameters(resetTemplateId, firstName, resetLink);
+            final var resetLink = url + "-confirm?token=" + userToken.getToken();
+            return new TemplateAndParameters(resetTemplateId, Map.of("firstName", firstName, "resetLink", resetLink));
         }
         return new TemplateAndParameters(resetUnavailableTemplateId, firstName);
     }
@@ -194,18 +194,15 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
     @Getter
     private static class TemplateAndParameters {
         private final String template;
-        private final String firstName;
-        private final String resetLink;
+        private final Map<String, String> parameters;
 
         TemplateAndParameters(final String template, final String firstName) {
-            this(template, firstName, null);
+            this.template = template;
+            this.parameters = Map.of("firstName", firstName);
         }
 
-        Map<String, String> getParameters() {
-            if (resetLink == null) {
-                return Map.of("firstName", firstName);
-            }
-            return Map.of("firstName", firstName, "resetLink", resetLink);
+        private String getResetLink() {
+            return parameters.get("resetLink");
         }
     }
 

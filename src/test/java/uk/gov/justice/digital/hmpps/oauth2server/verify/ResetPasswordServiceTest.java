@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify;
 
-import org.assertj.core.data.MapEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
@@ -89,7 +89,7 @@ public class ResetPasswordServiceTest {
         final var optional = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), mapCaptor.capture(), isNull());
         assertThat(optional).isEmpty();
-        assertThat(mapCaptor.getValue()).containsExactly(MapEntry.entry("firstName", "USER"));
+        assertThat(mapCaptor.getValue()).containsExactly(entry("firstName", "USER"));
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -104,7 +104,7 @@ public class ResetPasswordServiceTest {
         final var optional = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), mapCaptor.capture(), isNull());
         assertThat(optional).isEmpty();
-        assertThat(mapCaptor.getValue()).containsExactly(MapEntry.entry("firstName", "Bob"));
+        assertThat(mapCaptor.getValue()).containsExactly(entry("firstName", "Bob"));
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -119,7 +119,7 @@ public class ResetPasswordServiceTest {
         final var optionalLink = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), mapCaptor.capture(), isNull());
         assertThat(optionalLink).isPresent();
-        assertThat(mapCaptor.getValue()).containsOnly(MapEntry.entry("firstName", "Bob"), MapEntry.entry("resetLink", optionalLink.get()));
+        assertThat(mapCaptor.getValue()).containsOnly(entry("firstName", "Bob"), entry("resetLink", optionalLink.get()));
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -134,7 +134,7 @@ public class ResetPasswordServiceTest {
         final var optional = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), mapCaptor.capture(), isNull());
         assertThat(optional).isEmpty();
-        assertThat(mapCaptor.getValue()).containsExactly(MapEntry.entry("firstName", "Bob"));
+        assertThat(mapCaptor.getValue()).containsExactly(entry("firstName", "Bob"));
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -149,7 +149,7 @@ public class ResetPasswordServiceTest {
         final var optionalLink = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), mapCaptor.capture(), isNull());
         assertThat(optionalLink).isPresent();
-        assertThat(mapCaptor.getValue()).containsOnly(MapEntry.entry("firstName", "Bob"), MapEntry.entry("resetLink", optionalLink.get()));
+        assertThat(mapCaptor.getValue()).containsOnly(entry("firstName", "Bob"), entry("resetLink", optionalLink.get()));
     }
 
     @Test
@@ -174,7 +174,7 @@ public class ResetPasswordServiceTest {
         final var optionalLink = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), mapCaptor.capture(), isNull());
         assertThat(optionalLink).isPresent();
-        assertThat(mapCaptor.getValue()).containsOnly(MapEntry.entry("firstName", "Bob"), MapEntry.entry("resetLink", optionalLink.get()));
+        assertThat(mapCaptor.getValue()).containsOnly(entry("firstName", "Bob"), entry("resetLink", optionalLink.get()));
     }
 
     @Test
@@ -198,7 +198,7 @@ public class ResetPasswordServiceTest {
         final var linkOptional = resetPasswordService.requestResetPassword("user", "url");
         verify(userTokenRepository).save(captor.capture());
         final var value = captor.getValue();
-        assertThat(linkOptional).get().isEqualTo("url" + value.getToken());
+        assertThat(linkOptional).get().isEqualTo(String.format("url-confirm?token=%s", value.getToken()));
         assertThat(value.getTokenType()).isEqualTo(TokenType.RESET);
         assertThat(value.getUserEmail().getEmail()).isEqualTo("email");
     }
@@ -231,10 +231,10 @@ public class ResetPasswordServiceTest {
         userEmail.setMaster(true);
         when(userEmailRepository.findByEmail(any())).thenReturn(List.of(userEmail, userEmail));
 
-        final var optional = resetPasswordService.requestResetPassword("someuser@somewhere", "url");
+        final var optional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url");
         verify(notificationClient).sendEmail(eq("resetUnavailableByEmailTemplate"), eq("email"), mapCaptor.capture(), isNull());
         assertThat(optional).isEmpty();
-        assertThat(mapCaptor.getValue()).containsOnly(MapEntry.entry("firstName", "Bob"));
+        assertThat(mapCaptor.getValue()).containsOnly(entry("firstName", "Bob"), entry("url", "http://url"));
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -247,7 +247,7 @@ public class ResetPasswordServiceTest {
         final var optionalLink = resetPasswordService.requestResetPassword("user@where", "url");
         verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), mapCaptor.capture(), isNull());
         assertThat(optionalLink).isPresent();
-        assertThat(mapCaptor.getValue()).containsOnly(MapEntry.entry("firstName", "Bob"), MapEntry.entry("resetLink", optionalLink.get()));
+        assertThat(mapCaptor.getValue()).containsOnly(entry("firstName", "Bob"), entry("resetLink", optionalLink.get()));
     }
 
     private Optional<UserPersonDetails> getStaffUserAccountForBob() {
