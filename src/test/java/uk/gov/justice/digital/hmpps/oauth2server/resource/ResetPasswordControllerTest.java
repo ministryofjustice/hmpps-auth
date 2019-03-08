@@ -16,7 +16,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,8 +30,7 @@ import java.util.Set;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ResetPasswordControllerTest {
@@ -38,6 +40,8 @@ public class ResetPasswordControllerTest {
     private TokenService tokenService;
     @Mock
     private UserService userService;
+    @Mock
+    private VerifyEmailService verifyEmailService;
     @Mock
     private TelemetryClient telemetryClient;
     @Mock
@@ -49,7 +53,7 @@ public class ResetPasswordControllerTest {
 
     @Before
     public void setUp() {
-        controller = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, true, Set.of("password1"));
+        controller = new ResetPasswordController(resetPasswordService, tokenService, userService, verifyEmailService, telemetryClient, true, Set.of("password1"));
     }
 
     @Test
@@ -70,14 +74,7 @@ public class ResetPasswordControllerTest {
     }
 
     @Test
-    public void resetPasswordRequest_format() {
-        final var modelAndView = controller.resetPasswordRequest("joe@bloggs.com", request);
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-        assertThat(modelAndView.getModel()).containsExactly(entry("error", "format"));
-    }
-
-    @Test
-    public void resetPasswordRequest_successSmokeWithLink() throws NotificationClientException {
+    public void resetPasswordRequest_successSmokeWithLink() throws NotificationClientRuntimeException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("url"));
         final var modelAndView = controller.resetPasswordRequest("user", request);
@@ -86,7 +83,7 @@ public class ResetPasswordControllerTest {
     }
 
     @Test
-    public void resetPasswordRequest_successSmokeNoLink() throws NotificationClientException {
+    public void resetPasswordRequest_successSmokeNoLink() throws NotificationClientRuntimeException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
         final var modelAndView = controller.resetPasswordRequest("user", request);
@@ -95,7 +92,7 @@ public class ResetPasswordControllerTest {
     }
 
     @Test
-    public void resetPasswordRequest_successNoLinkTelemetry() throws NotificationClientException {
+    public void resetPasswordRequest_successNoLinkTelemetry() throws NotificationClientRuntimeException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
         controller.resetPasswordRequest("user", request);
@@ -104,7 +101,7 @@ public class ResetPasswordControllerTest {
     }
 
     @Test
-    public void resetPasswordRequest_successLinkTelemetry() throws NotificationClientException {
+    public void resetPasswordRequest_successLinkTelemetry() throws NotificationClientRuntimeException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("somelink"));
         controller.resetPasswordRequest("user", request);
@@ -113,29 +110,37 @@ public class ResetPasswordControllerTest {
     }
 
     @Test
-    public void resetPasswordRequest_success() throws NotificationClientException {
+    public void resetPasswordRequest_success() throws NotificationClientRuntimeException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
-        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, false, null).resetPasswordRequest("user", request);
+        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, verifyEmailService, telemetryClient, false, null).resetPasswordRequest("user", request);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPasswordSent");
         assertThat(modelAndView.getModel()).isEmpty();
     }
 
     @Test
-    public void resetPasswordRequest_failed() throws NotificationClientException {
+    public void resetPasswordRequest_failed() throws NotificationClientRuntimeException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
-        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(new NotificationClientException("failure message"));
-        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, false, null).resetPasswordRequest("user", request);
+        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(new NotificationClientRuntimeException(new NotificationClientException("failure message")));
+        final var modelAndView = controller.resetPasswordRequest("user", request);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
         assertThat(modelAndView.getModel()).containsExactly(entry("error", "other"));
     }
 
     @Test
-    public void resetPasswordRequest_throttled() throws NotificationClientException {
+    public void resetPasswordRequest_emailfailed() throws NotificationClientRuntimeException, VerifyEmailException {
+        doThrow(new VerifyEmailException("reason")).when(verifyEmailService).validateEmailAddress(anyString());
+        final var modelAndView = controller.resetPasswordRequest("user@somewhere", request);
+        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
+        assertThat(modelAndView.getModel()).containsOnly(entry("error", "email.reason"), entry("usernameOrEmail", "user@somewhere"));
+    }
+
+    @Test
+    public void resetPasswordRequest_throttled() throws NotificationClientRuntimeException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
         when(request.getRemoteAddr()).thenReturn("127.0.0.1");
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(new ThrottlingException());
-        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, false, null).resetPasswordRequest("user", request);
+        final var modelAndView = controller.resetPasswordRequest("user", request);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
         assertThat(modelAndView.getModel()).containsExactly(entry("error", "throttled"));
     }

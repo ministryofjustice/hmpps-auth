@@ -11,7 +11,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import uk.gov.service.notify.NotificationClientException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,7 +28,7 @@ public class ResetPasswordServiceIntTest {
     private HttpServletRequest request;
 
     @Test
-    public void requestResetPassword_throttleRequests() throws NotificationClientException {
+    public void requestResetPassword_throttleRequests() {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request, null));
 
         when(request.getRemoteAddr()).thenReturn("request_ip:12345");
@@ -49,7 +48,7 @@ public class ResetPasswordServiceIntTest {
     }
 
     @Test
-    public void requestResetPassword_throttleRequestsDifferentIp() throws NotificationClientException {
+    public void requestResetPassword_throttleRequestsDifferentIp() {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request, null));
 
         when(request.getRemoteAddr()).thenReturn("throttle_ip:12345");

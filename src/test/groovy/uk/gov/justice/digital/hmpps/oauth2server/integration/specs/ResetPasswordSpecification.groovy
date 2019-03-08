@@ -22,16 +22,33 @@ class ResetPasswordSpecification extends GebReportingSpec {
         at LoginPage
     }
 
-    def "A user must enter their username in correct format"() {
+    def "A user must enter a valid email address"() {
         given: 'I would like to reset my password'
         to ResetPasswordPage
 
         when:
         resetPasswordAs "joe@bloggs.com"
 
-        then: 'My username is rejected and I am still on the Reset Password page'
+        then: 'My email address is rejected and I am still on the Reset Password page'
         at ResetPasswordErrorPage
-        errorDetail == 'Enter your username - it should be your Quantum ID'
+        errorDetail == 'Enter your work email address'
+
+        and: 'My email address is shown for me to correct'
+        usernameInput == 'joe@bloggs.com'
+    }
+
+    def "A user can enter an email address to reset their password"() {
+        given: 'I would like to reset my password'
+        to LoginPage
+        resetPassword()
+
+        when: 'The Reset Password page is displayed'
+        at ResetPasswordPage
+        resetPasswordAs CA_USER
+
+        then: 'The Reset Password sent page is displayed'
+        at ResetPasswordSentPage
+        $('#resetLink').@href != null
     }
 
     def "A user can reset their password"() {
@@ -150,22 +167,9 @@ class ResetPasswordSpecification extends GebReportingSpec {
         errorText == 'Enter your new password\nEnter your new password again'
         errorNewText == 'Enter your new password'
         errorConfirmText == 'Enter your new password again'
-    }
-
-    def "Attempt reset password with invalid new password"() {
-        given: 'I am on the Set Password page'
-        to ResetPasswordPage
-        resetPasswordAs CA_USER
-
-        and: 'The Reset Password sent page is displayed'
-        at ResetPasswordSentPage
-        String resetLink = $('#resetLink').@href
-
-        and: 'I can then click the reset link in the email'
-        browser.go resetLink
 
         when: "I change password without credentials"
-        at SetPasswordPage
+        at SetPasswordErrorPage
         setPasswordAs 'somepass', 'd'
 
         then: 'My credentials are rejected and I am still on the Set Password page'
