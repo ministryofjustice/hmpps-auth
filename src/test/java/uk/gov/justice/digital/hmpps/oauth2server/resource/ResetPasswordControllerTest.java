@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.weddini.throttling.ThrottlingException;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,8 +9,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
@@ -53,14 +50,6 @@ public class ResetPasswordControllerTest {
     @Before
     public void setUp() {
         controller = new ResetPasswordController(resetPasswordService, tokenService, userService, telemetryClient, true, Set.of("password1"));
-
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request, null));
-        when(request.getRemoteAddr()).thenReturn("some_ip:port");
-    }
-
-    @After
-    public void tearDown() {
-        RequestContextHolder.resetRequestAttributes();
     }
 
     @Test
@@ -111,7 +100,7 @@ public class ResetPasswordControllerTest {
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
         controller.resetPasswordRequest("user", request);
         verify(telemetryClient).trackEvent(eq("ResetPasswordRequestFailure"), mapCaptor.capture(), isNull());
-        assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"), entry("error", "nolink"), entry("remoteAddress", "some_ip"));
+        assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"), entry("error", "nolink"));
     }
 
     @Test
@@ -120,7 +109,7 @@ public class ResetPasswordControllerTest {
         when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("somelink"));
         controller.resetPasswordRequest("user", request);
         verify(telemetryClient).trackEvent(eq("ResetPasswordRequestSuccess"), mapCaptor.capture(), isNull());
-        assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"), entry("remoteAddress", "some_ip"));
+        assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"));
     }
 
     @Test
