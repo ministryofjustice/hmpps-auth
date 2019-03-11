@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
@@ -107,6 +108,35 @@ public class ResetPasswordController extends AbstractPasswordController {
                     Map.of("username", usernameOrEmail, "error", e.getClass().getSimpleName(), "remoteAddress", ip), null);
             return new ModelAndView("resetPassword", "error", "throttled");
         }
+    }
+
+    @GetMapping("/reset-password-select")
+    public ModelAndView resetPasswordSelect(@RequestParam final String token) {
+        final var userTokenOptional = tokenService.checkToken(RESET, token);
+
+        return userTokenOptional.map(s -> new ModelAndView("resetPassword", "error", s)).
+                orElseGet(() -> new ModelAndView("setPasswordSelect", "token", token));
+    }
+
+    @PostMapping("/reset-password-select")
+    public ModelAndView resetPasswordChosen(@RequestParam final String token, @RequestParam final String username) {
+        final var userTokenOptional = tokenService.checkToken(RESET, token);
+        return userTokenOptional.map(ut -> new ModelAndView("resetPassword", "error", ut)).
+                orElseGet(() -> {
+                    try {
+                        final var newToken = resetPasswordService.moveTokenToAccount(token, username);
+                        log.info("Successful reset password select for {}", username);
+                        telemetryClient.trackEvent("ResetPasswordSelectSuccess", Map.of("username", username), null);
+                        return createModelWithTokenAndAddIsAdmin(RESET, newToken, "setPassword");
+                    } catch (final ResetPasswordException e) {
+                        final var userToken = tokenService.getToken(RESET, token).orElseThrow();
+                        final var email = userToken.getUserEmail().getEmail();
+                        log.info("Validation failed due to {} for reset password select for {}", e.getReason(), username);
+                        telemetryClient.trackEvent("ResetPasswordSelectFailure", Map.of("username", username, "error", e.getReason()), null);
+                        return new ModelAndView("setPasswordSelect",
+                                Map.of("error", e.getReason(), "username", username, "token", token, "email", email));
+                    }
+                });
     }
 
     @GetMapping("/reset-password-confirm")
