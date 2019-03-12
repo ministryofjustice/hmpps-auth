@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +59,15 @@ public class UserServiceTest {
 
         verify(userEmailRepository).findByUsernameAndMasterIsTrue("BOB");
         verify(staffUserAccountRepository).findById("BOB");
+    }
+
+    @Test
+    public void findByEmailAndMasterIsTrue() {
+        when(userEmailRepository.findByEmailAndMasterIsTrueOrderByUsername(anyString())).thenReturn(List.of(new UserEmail("someuser")));
+
+        final var user = userService.findAuthUsersByEmail("bob");
+
+        assertThat(user).extracting(UserPersonDetails::getUsername).containsOnly("someuser");
     }
 
     private Optional<UserEmail> createUserEmailUser() {

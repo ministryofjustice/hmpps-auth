@@ -9,7 +9,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.web.client.RestTemplate
-import uk.gov.justice.digital.hmpps.oauth2server.api.specs.CreateUserSpecification.NewUser
+import uk.gov.justice.digital.hmpps.oauth2server.api.specs.AuthUserSpecification.NewUser
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
 class InitialPasswordSpecification extends GebReportingSpec {
@@ -77,6 +77,6 @@ class InitialPasswordSpecification extends GebReportingSpec {
 
         def user = [email: "bob@bobdigital.justice.gov.uk", firstName: "Bob", lastName: "Smith"] as NewUser
         HttpEntity<String> entity = new HttpEntity<String>(new JsonBuilder(user).toPrettyString(), headers)
-        restTemplate.exchange("$baseUrl/auth/api/user/${username}", HttpMethod.PUT, entity, String.class).body
+        restTemplate.exchange("$baseUrl/auth/api/authuser/${username}", HttpMethod.PUT, entity, String.class).body
     }
 }
