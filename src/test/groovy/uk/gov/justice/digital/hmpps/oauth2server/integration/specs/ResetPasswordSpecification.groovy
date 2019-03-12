@@ -79,7 +79,7 @@ class ResetPasswordSpecification extends GebReportingSpec {
 
         then: 'I am shown the set password select error page'
         at SetPasswordSelectErrorPage
-        errorText == 'Accounts can only be reset with this link that have a verified email address of ca_user@digital.justice.gov.uk'
+        errorText == 'The username entered is not linked to your email address'
 
         when: 'I enter my username'
         enterUsernameAs CA_USER_TEST

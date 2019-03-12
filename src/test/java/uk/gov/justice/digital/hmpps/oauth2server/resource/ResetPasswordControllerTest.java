@@ -292,7 +292,7 @@ public class ResetPasswordControllerTest {
         setupCheckAndGetTokenValid();
         when(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenThrow(new ResetPasswordException("reason"));
         final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("username", "user"), entry("email", "email@somewhere.com"), entry("error", "reason"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("username", "user"), entry("error", "reason"));
     }
 
     private void setupCheckTokenValid() {

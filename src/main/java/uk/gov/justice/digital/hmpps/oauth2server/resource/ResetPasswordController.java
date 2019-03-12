@@ -129,12 +129,10 @@ public class ResetPasswordController extends AbstractPasswordController {
                         telemetryClient.trackEvent("ResetPasswordSelectSuccess", Map.of("username", username), null);
                         return createModelWithTokenAndAddIsAdmin(RESET, newToken, "setPassword");
                     } catch (final ResetPasswordException e) {
-                        final var userToken = tokenService.getToken(RESET, token).orElseThrow();
-                        final var email = userToken.getUserEmail().getEmail();
                         log.info("Validation failed due to {} for reset password select for {}", e.getReason(), username);
                         telemetryClient.trackEvent("ResetPasswordSelectFailure", Map.of("username", username, "error", e.getReason()), null);
                         return new ModelAndView("setPasswordSelect",
-                                Map.of("error", e.getReason(), "username", username, "token", token, "email", email));
+                                Map.of("error", e.getReason(), "username", username, "token", token));
                     }
                 });
     }
