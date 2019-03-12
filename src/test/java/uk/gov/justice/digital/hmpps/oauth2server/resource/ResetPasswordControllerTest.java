@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
@@ -222,13 +223,85 @@ public class ResetPasswordControllerTest {
         assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"), entry("context", "licences"));
     }
 
+    @Test
+    public void setPasswordSelect_checkView() {
+        setupCheckTokenValid();
+        final var modelAndView = controller.resetPasswordSelect("token");
+        assertThat(modelAndView.getViewName()).isEqualTo("setPasswordSelect");
+    }
+
+    @Test
+    public void setPasswordSelect_checkModel() {
+        setupCheckTokenValid();
+        final var modelAndView = controller.resetPasswordSelect("sometoken");
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"));
+    }
+
+    @Test
+    public void setPasswordSelect_tokenInvalid_checkView() {
+        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
+        final var modelAndView = controller.resetPasswordSelect("sometoken");
+        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
+    }
+
+    @Test
+    public void setPasswordSelect_tokenInvalid_checkModel() {
+        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
+        final var modelAndView = controller.resetPasswordSelect("sometoken");
+        assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"));
+    }
+
+    @Test
+    public void setPasswordChosen_tokenInvalid_checkView() {
+        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
+        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
+        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
+    }
+
+    @Test
+    public void setPasswordChosen_tokenInvalid_checkModel() {
+        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
+        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
+        assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"));
+    }
+
+    @Test
+    public void setPasswordChosen_checkView() {
+        when(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenReturn("token");
+        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
+        assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
+    }
+
+    @Test
+    public void setPasswordChosen_checkModel() {
+        when(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenReturn("token");
+        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "token"), entry("isAdmin", Boolean.FALSE));
+    }
+
+    @Test
+    public void setPasswordChosen_validationFailure_checkView() {
+        setupCheckAndGetTokenValid();
+        when(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenThrow(new ResetPasswordException("reason"));
+        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
+        assertThat(modelAndView.getViewName()).isEqualTo("setPasswordSelect");
+    }
+
+    @Test
+    public void setPasswordChosen_validationFailure_checkModel() {
+        setupCheckAndGetTokenValid();
+        when(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenThrow(new ResetPasswordException("reason"));
+        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("username", "user"), entry("error", "reason"));
+    }
+
     private void setupCheckTokenValid() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
     }
 
     private void setupCheckAndGetTokenValid() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
-        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, new UserEmail("user"))));
+        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, new UserEmail("user", "email@somewhere.com", true, false))));
     }
 
     private StaffUserAccount setupGetUserCallForProfile() {

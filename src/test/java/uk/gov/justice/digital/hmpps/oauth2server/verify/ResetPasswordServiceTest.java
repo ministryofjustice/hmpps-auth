@@ -49,8 +49,6 @@ public class ResetPasswordServiceTest {
     @Mock
     private AlterUserService alterUserService;
     @Mock
-    private VerifyEmailService verifyEmailService;
-    @Mock
     private NotificationClientApi notificationClient;
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -63,7 +61,7 @@ public class ResetPasswordServiceTest {
     public void setUp() {
         resetPasswordService = new ResetPasswordServiceImpl(userEmailRepository, userTokenRepository, userService,
                 alterUserService, notificationClient,
-                "resetTemplate", "resetUnavailableTemplate", "resetUnavailableByEmailTemplate", "resetUnavailableEmailNotFoundTemplate", passwordEncoder, 10);
+                "resetTemplate", "resetUnavailableTemplate", "resetUnavailableEmailNotFoundTemplate", passwordEncoder, 10);
     }
 
     @Test
@@ -224,17 +222,47 @@ public class ResetPasswordServiceTest {
         assertThat(mapCaptor.getValue()).isEmpty();
     }
 
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     public void requestResetPassword_multipleEmailAddresses() throws NotificationClientException {
+        final var userEmail = new UserEmail("someuser", "email", false, false);
+        userEmail.setPerson(new Person("user", "Bob", "Smith"));
+        userEmail.setMaster(true);
+        userEmail.setEnabled(true);
+        when(userEmailRepository.findByEmail(any())).thenReturn(List.of(userEmail, userEmail));
+
+        final var optional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url");
+        verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), mapCaptor.capture(), isNull());
+        assertThat(optional).isPresent();
+        assertThat(mapCaptor.getValue()).containsOnly(entry("firstName", "Bob"), entry("resetLink", optional.get()));
+    }
+
+    @Test
+    public void requestResetPassword_multipleEmailAddresses_verifyToken() {
+        final var userEmail = new UserEmail("someuser", "email", false, false);
+        userEmail.setPerson(new Person("user", "Bob", "Smith"));
+        userEmail.setMaster(true);
+        userEmail.setEnabled(true);
+        when(userEmailRepository.findByEmail(any())).thenReturn(List.of(userEmail, userEmail));
+        final var captor = ArgumentCaptor.forClass(UserToken.class);
+
+        final var linkOptional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url");
+        verify(userTokenRepository).save(captor.capture());
+        final var value = captor.getValue();
+        assertThat(linkOptional).get().isEqualTo(String.format("http://url-select?token=%s", value.getToken()));
+    }
+
+    @Test
+    public void requestResetPassword_multipleEmailAddresses_noneCanBeReset() throws NotificationClientException {
         final var userEmail = new UserEmail("someuser", "email", false, false);
         userEmail.setPerson(new Person("user", "Bob", "Smith"));
         userEmail.setMaster(true);
         when(userEmailRepository.findByEmail(any())).thenReturn(List.of(userEmail, userEmail));
 
         final var optional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url");
-        verify(notificationClient).sendEmail(eq("resetUnavailableByEmailTemplate"), eq("email"), mapCaptor.capture(), isNull());
+        verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), mapCaptor.capture(), isNull());
         assertThat(optional).isEmpty();
-        assertThat(mapCaptor.getValue()).containsOnly(entry("firstName", "Bob"), entry("url", "http://url"));
+        assertThat(mapCaptor.getValue()).containsOnly(entry("firstName", "Bob"));
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -380,5 +408,54 @@ public class ResetPasswordServiceTest {
         assertThatThrownBy(() -> resetPasswordService.setPassword("bob", "pass")).isInstanceOf(ReusedPasswordException.class);
 
         verify(passwordEncoder).matches("pass", "oldencryptedpassword");
+    }
+
+    @Test
+    public void moveTokenToAccount_missingUsername() {
+        assertThatThrownBy(() -> resetPasswordService.moveTokenToAccount("token", "  ")).hasMessageContaining("failed with reason: missing");
+    }
+
+    @Test
+    public void moveTokenToAccount_usernameNotFound() {
+        assertThatThrownBy(() -> resetPasswordService.moveTokenToAccount("token", "noone")).hasMessageContaining("failed with reason: notfound");
+    }
+
+    @Test
+    public void moveTokenToAccount_differentEmail() {
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(new UserEmail("user", "email", true, false)));
+        when(userTokenRepository.findById("token")).thenReturn(Optional.of(new UserToken(TokenType.RESET, new UserEmail("other", "emailother", true, false))));
+        assertThatThrownBy(() -> resetPasswordService.moveTokenToAccount("token", "noone")).hasMessageContaining("failed with reason: email");
+    }
+
+    @Test
+    public void moveTokenToAccount_disabled() {
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(new UserEmail("user", "email", true, false)));
+        when(userTokenRepository.findById("token")).thenReturn(Optional.of(new UserToken(TokenType.RESET, new UserEmail("other", "email", true, false))));
+        assertThatThrownBy(() -> resetPasswordService.moveTokenToAccount("token", "noone")).extracting("reason").containsOnly("locked");
+    }
+
+    @Test
+    public void moveTokenToAccount_sameUserAccount() {
+        final var user = new UserEmail("USER", "email", true, false);
+        user.setEnabled(true);
+        user.setMaster(true);
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(user));
+        when(userTokenRepository.findById("token")).thenReturn(Optional.of(new UserToken(TokenType.RESET, user)));
+        final var newToken = resetPasswordService.moveTokenToAccount("token", "USER");
+        assertThat(newToken).isEqualTo("token");
+    }
+
+    @Test
+    public void moveTokenToAccount_differentAccount() {
+        final var user = new UserEmail("USER", "email", true, false);
+        user.setEnabled(true);
+        user.setMaster(true);
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(user));
+        final var userToken = new UserToken(TokenType.RESET, new UserEmail("other", "email", true, false));
+        when(userTokenRepository.findById("token")).thenReturn(Optional.of(userToken));
+        final var newToken = resetPasswordService.moveTokenToAccount("token", "USER");
+        assertThat(newToken).hasSize(36);
+        verify(userTokenRepository).delete(userToken);
+        verify(userTokenRepository).save(any());
     }
 }
