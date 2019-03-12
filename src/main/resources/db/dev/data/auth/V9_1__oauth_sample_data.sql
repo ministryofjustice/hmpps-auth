@@ -26,7 +26,7 @@ VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
   ('EXPIRED_TEST2_USER', 'expired_test2_user@digital.justice.gov.uk', 'true'),
   ('EXPIRED_TEST3_USER', 'expired_test3_user@digital.justice.gov.uk', 'true'),
   ('RO_DEMO', null, 'false'),
-  ('CA_USER_TEST', 'ca_user_test@digital.justice.gov.uk', 'true'),
+  ('CA_USER_TEST', 'ca_user@digital.justice.gov.uk', 'true'),
   ('RO_USER_TEST', 'ro_user_test@digital.justice.gov.uk', 'true'),
   ('DM_USER_TEST', 'dm_user_test@digital.justice.gov.uk', 'true');
 
