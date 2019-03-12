@@ -10,44 +10,33 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
-import uk.gov.justice.digital.hmpps.oauth2server.maintain.CreateUserService;
-import uk.gov.justice.digital.hmpps.oauth2server.maintain.CreateUserService.CreateUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
-import uk.gov.justice.digital.hmpps.oauth2server.resource.UserController.CreateUser;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
-import uk.gov.service.notify.NotificationClientException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserControllerTest {
     @Mock
     private UserService userService;
-    @Mock
-    private CreateUserService createUserService;
-    @Mock
-    private HttpServletRequest request;
 
     private UserController userController;
 
     @Before
     public void setUp() {
-        userController = new UserController(userService, createUserService, true);
+        userController = new UserController(userService);
     }
 
     @Test
@@ -121,71 +110,6 @@ public class UserControllerTest {
     public void myRoles_noRoles() {
         final var token = new UsernamePasswordAuthenticationToken("principal", "credentials", Collections.emptyList());
         assertThat(userController.myRoles(token)).isEmpty();
-    }
-
-    @Test
-    public void createUser_AlreadyExists() throws NotificationClientException {
-        when(userService.findUser(anyString())).thenReturn(Optional.of(new UserDetailsImpl("name", "bob", Collections.emptySet(), null)));
-        final var responseEntity = userController.createUser("user", new CreateUser("email", "first", "last"), request);
-
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(409);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("username.exists", "Username user already exists"));
-    }
-
-    @Test
-    public void createUser_BlankDoesntCallUserService() throws NotificationClientException, CreateUserException, VerifyEmailException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/user/newusername"));
-        final var responseEntity = userController.createUser("  ", new CreateUser("email", "first", "last"), request);
-
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        verify(userService, never()).findUser(anyString());
-    }
-
-    @Test
-    public void createUser_Success() throws NotificationClientException, CreateUserException, VerifyEmailException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/user/newusername"));
-        final var responseEntity = userController.createUser("newusername", new CreateUser("email", "first", "last"), request);
-
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isNull();
-    }
-
-    @Test
-    public void createUser_CreateUserError() throws NotificationClientException, CreateUserException, VerifyEmailException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/user/newusername"));
-        when(createUserService.createUser(anyString(), anyString(), anyString(), anyString(), anyString())).thenThrow(new CreateUserException("username", "errorcode"));
-        final var responseEntity = userController.createUser("newusername", new CreateUser("email", "first", "last"), request);
-
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("username.errorcode", "username failed validation"));
-    }
-
-    @Test
-    public void createUser_VerifyUserError() throws NotificationClientException, CreateUserException, VerifyEmailException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/user/newusername"));
-        when(createUserService.createUser(anyString(), anyString(), anyString(), anyString(), anyString())).thenThrow(new VerifyEmailException("reason"));
-        final var responseEntity = userController.createUser("newusername", new CreateUser("email", "first", "last"), request);
-
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("email.reason", "Email address failed validation"));
-    }
-
-    @Test
-    public void createUser_InitialPasswordUrl() throws NotificationClientException, CreateUserException, VerifyEmailException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/user/newusername"));
-
-        userController.createUser("newusername", new CreateUser("email", "first", "last"), request);
-
-        verify(createUserService).createUser("newusername", "email", "first", "last", "http://some.url/auth/initial-password?token=");
-    }
-
-    @Test
-    public void createUser_() throws NotificationClientException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/api/user/newusername"));
-        final var responseEntity = userController.createUser("newusername", new CreateUser("email", "first", "last"), request);
-
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isNull();
     }
 
     private StaffUserAccount setupFindUserCallForNomis() {

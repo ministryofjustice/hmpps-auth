@@ -10,4 +10,7 @@ public interface UserEmailRepository extends CrudRepository<UserEmail, String> {
     Optional<UserEmail> findByUsernameAndMasterIsTrue(String username);
 
     List<UserEmail> findByEmail(String email);
+
+    List<UserEmail> findByEmailAndMasterIsTrueOrderByUsername(String email);
+
 }

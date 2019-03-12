@@ -4,7 +4,7 @@ import groovy.json.JsonSlurper
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 
-class UserMeSpecification extends TestSpecification {
+class UserSpecification extends TestSpecification {
 
     def jsonSlurper = new JsonSlurper()
 

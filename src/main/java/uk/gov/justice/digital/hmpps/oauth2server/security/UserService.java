@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifie
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -56,5 +57,9 @@ public class UserService {
     public Optional<UserPersonDetails> findUser(final String username) {
         return getAuthUserByUsername(username).map(UserPersonDetails.class::cast).
                 or(() -> getUserByUsername(username).map(UserPersonDetails.class::cast));
+    }
+
+    public List<UserEmail> findAuthUsersByEmail(final String email) {
+        return userEmailRepository.findByEmailAndMasterIsTrueOrderByUsername(StringUtils.lowerCase(email));
     }
 }

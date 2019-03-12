@@ -112,7 +112,7 @@ public class UserEmailRepositoryTest {
         assertThat(retrievedEntity.getUsername()).isEqualTo("AUTH_ADM");
         assertThat(retrievedEntity.getPerson().getFirstName()).isEqualTo("Auth");
         assertThat(retrievedEntity.getAuthorities()).extracting("authority").containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES");
-        assertThat(retrievedEntity.getEmail()).isEqualTo("auth_test@digital.justice.gov.uk");
+        assertThat(retrievedEntity.getEmail()).isEqualTo("auth_test2@digital.justice.gov.uk");
         assertThat(retrievedEntity.isVerified()).isTrue();
     }
 
@@ -160,12 +160,22 @@ public class UserEmailRepositoryTest {
 
     @Test
     public void findByEmail() {
-        assertThat(repository.findByEmail("auth_test@digital.justice.gov.uk")).extracting(UserEmail::getUsername).containsOnly("AUTH_ADM", "AUTH_TEST", "AUTH_EXPIRED");
+        assertThat(repository.findByEmail("auth_test2@digital.justice.gov.uk")).extracting(UserEmail::getUsername).containsOnly("AUTH_ADM", "AUTH_EXPIRED");
     }
 
     @Test
     public void findByEmail_NoRecords() {
         assertThat(repository.findByEmail("noone@digital.justice.gov.uk")).isEmpty();
+    }
+
+    @Test
+    public void findByEmailAndMasterIsTrue() {
+        assertThat(repository.findByEmailAndMasterIsTrueOrderByUsername("auth_test2@digital.justice.gov.uk")).extracting(UserEmail::getUsername).containsExactly("AUTH_ADM", "AUTH_EXPIRED");
+    }
+
+    @Test
+    public void findByEmailAndMasterIsTrue_NomisUser() {
+        assertThat(repository.findByEmailAndMasterIsTrueOrderByUsername("ca_user@digital.justice.gov.uk")).isEmpty();
     }
 
     private UserEmail transientEntity() {
