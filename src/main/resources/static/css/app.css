@@ -69,3 +69,39 @@
   background-color: #dee0e2;
   color: #0b0c0c;
 }
+
+/** copied from https://govuk-card-test--region.herokuapp.com/ **/
+.auth-card {
+  box-sizing: border-box;
+}
+
+@media (min-width: 40.0625em) {
+  .auth-card {
+    margin-bottom: 20px;
+  }
+}
+
+.auth-card__content {
+  padding-top: 15px;
+  padding-bottom: 0;
+}
+
+@media (min-width: 40.0625em) {
+  .auth-card__content {
+    padding-top: 20px;
+  }
+}
+
+.auth-card__content p {
+  margin-bottom: 0;
+}
+
+.auth-card__content p + p {
+  margin-top: 15px;
+}
+
+@media (min-width: 40.0625em) {
+  .auth-card__content p + p {
+    margin-top: 20px;
+  }
+}
