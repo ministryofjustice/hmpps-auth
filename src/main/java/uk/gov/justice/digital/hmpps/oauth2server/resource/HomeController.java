@@ -6,11 +6,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.ModelAndView;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service;
 import uk.gov.justice.digital.hmpps.oauth2server.landing.LandingService;
 
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 public class HomeController {
@@ -31,7 +30,7 @@ public class HomeController {
 
     @GetMapping("/")
     public ModelAndView home(final Authentication authentication) {
-        final List<Service> services = landingService.findAllServices();
+        final var services = landingService.findAllServices();
 
         // fallback to current behaviour if no services defined
         if (services.isEmpty()) {
@@ -46,7 +45,12 @@ public class HomeController {
             }
             return modelAndView;
         }
-        return new ModelAndView("landing", "services", services);
+
+        // otherwise create a list of services that the user can see
+        final var allowedServices = services.stream().
+                filter((s) -> s.getRoles().isEmpty() || authentication.getAuthorities().stream().anyMatch((a) -> s.getRoles().contains(a.getAuthority()))).
+                collect(Collectors.toList());
+        return new ModelAndView("landing", "services", allowedServices);
     }
 
     @GetMapping("/terms")

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{fragments/layout}">
 <head>
   <title>Home</title>
@@ -13,8 +12,7 @@
   <div class="govuk-grid-row" th:each="row: ${#numbers.sequence(0, services.size(), 3)}">
     <div th:each="i: ${#numbers.sequence(row, row + 2)}" th:if="${i &lt; services.size()}"
          th:with="service=${services.get(i)}" class="govuk-grid-column-one-third">
-      <div class="govuk-card"
-           sec:authorize="#lists.isEmpty(#vars.service.roles) ? true : hasAnyRole(#vars.service.roles)">
+      <div class="govuk-card">
         <div class="govuk-card__content">
           <h3 class="govuk-heading-m">
             <a th:id="${service.code}" th:href="${service.url}" th:text="${service.name}">New NOMIS</a>
