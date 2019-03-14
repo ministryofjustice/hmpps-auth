@@ -10,8 +10,9 @@
 <div layout:fragment="content">
   <h1 class="govuk-heading-xl">Select service</h1>
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-one-third" th:each="service: ${services}">
+  <div class="govuk-grid-row" th:each="row: ${#numbers.sequence(0, services.size(), 3)}">
+    <div th:each="i: ${#numbers.sequence(row, row + 2)}" th:if="${i &lt; services.size()}"
+         th:with="service=${services.get(i)}" class="govuk-grid-column-one-third">
       <div class="govuk-card"
            sec:authorize="#lists.isEmpty(#vars.service.roles) ? true : hasAnyRole(#vars.service.roles)">
         <div class="govuk-card__content">
