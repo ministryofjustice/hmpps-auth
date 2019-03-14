@@ -74,24 +74,30 @@ public class HomeControllerTest {
 
     @Test
     public void home_dynamicUrls_model() {
-        final var services = List.of(createService(), createService());
+        final var services = List.of(
+                createService("DM", "ROLE_LICENCE_DM"), // single role
+                createService("LIC", "ROLE_LICENCE_CA,ROLE_LICENCE_DM,ROLE_LICENCE_RO"), // multiple role
+                createService("NOMIS", null), // available to all roles
+                createService("OTHER", "ROLE_OTHER")); // not available
         when(landingService.findAllServices()).thenReturn(services);
         final var homeController = new HomeController(landingService, "nn", "bob");
         final var modelAndView = homeController.home(authenticationWithRole("ROLE_LICENCE_DM"));
-        assertThat(modelAndView.getModel()).contains(entry("services", services));
+        //noinspection unchecked
+        final var allocatedServices = (List<Service>) modelAndView.getModel().get("services");
+        assertThat(allocatedServices).extracting(Service::getCode).containsExactly("DM", "LIC", "NOMIS");
     }
 
     @Test
     public void home_dynamicUrls_view() {
-        final var services = List.of(createService(), createService());
+        final var services = List.of(createService("DM", "ROLE_LICENCE_DM"));
         when(landingService.findAllServices()).thenReturn(services);
         final var homeController = new HomeController(landingService, "nn", "bob");
         final var modelAndView = homeController.home(authenticationWithRole("ROLE_LICENCE_DM"));
         assertThat(modelAndView.getViewName()).isEqualTo("landing");
     }
 
-    private Service createService() {
-        return new Service("CODE", "NAME", "Description", "SOME_ROLE", "http://some.url", true);
+    private Service createService(final String code, final String roles) {
+        return new Service(code, "NAME", "Description", roles, "http://some.url", true);
     }
 
     private Authentication authenticationWithRole(final String... roles) {
