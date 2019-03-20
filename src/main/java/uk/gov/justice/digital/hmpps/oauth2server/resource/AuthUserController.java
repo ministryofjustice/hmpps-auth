@@ -23,7 +23,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.Verif
 import uk.gov.service.notify.NotificationClientException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -94,7 +96,7 @@ public class AuthUserController {
         try {
             final var requestURL = request.getRequestURL();
             final var setPasswordUrl = requestURL.toString().replaceFirst("/api/authuser/.*", "/initial-password?token=");
-            final var resetLink = createUserService.createUser(username, createUser.getEmail(), createUser.getFirstName(), createUser.getLastName(), setPasswordUrl);
+            final var resetLink = createUserService.createUser(username, createUser.getEmail(), createUser.getFirstName(), createUser.getLastName(), createUser.getAdditionalRoles(), setPasswordUrl);
 
             log.info("Create user succeeded for user {}", username);
             if (smokeTestEnabled) {
@@ -121,6 +123,12 @@ public class AuthUserController {
         private String firstName;
         @ApiModelProperty(required = true, value = "Last name", example = "User", position = 3)
         private String lastName;
+        @ApiModelProperty(value = "Additional roles", example = "[ROLE_LICENCE_VARY]", dataType = "Set", position = 4)
+        private Set<String> additionalRoles;
+
+        Set<String> getAdditionalRoles() {
+            return additionalRoles == null ? Collections.emptySet() : additionalRoles;
+        }
     }
 
     @Data

@@ -20,7 +20,9 @@ import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -50,32 +52,32 @@ public class CreateUserServiceTest {
 
     @Test
     public void createUser_usernameLength() {
-        assertThatThrownBy(() -> createUserService.createUser("user", "email", "first", "last", "url")).
+        assertThatThrownBy(() -> createUserService.createUser("user", "email", "first", "last", Collections.emptySet(), "url")).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field username with reason: length");
     }
 
     @Test
     public void createUser_usernameFormat() {
-        assertThatThrownBy(() -> createUserService.createUser("user-name", "email", "first", "last", "url")).
+        assertThatThrownBy(() -> createUserService.createUser("user-name", "email", "first", "last", Collections.emptySet(), "url")).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field username with reason: format");
     }
 
     @Test
     public void createUser_firstNameLength() {
-        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "s", "last", "url")).
+        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "s", "last", Collections.emptySet(), "url")).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: length");
     }
 
     @Test
     public void createUser_lastNameLength() {
-        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "se", "x", "url")).
+        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "se", "x", Collections.emptySet(), "url")).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: length");
     }
 
     @Test
     public void createUser_emailValidation() throws VerifyEmailException {
         doThrow(new VerifyEmailException("reason")).when(verifyEmailService).validateEmailAddress(anyString());
-        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "se", "xx", "url")).
+        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "se", "xx", Collections.emptySet(), "url")).
                 isInstanceOf(VerifyEmailException.class).hasMessage("Verify email failed with reason: reason");
 
         verify(verifyEmailService).validateEmailAddress("email");
@@ -83,14 +85,14 @@ public class CreateUserServiceTest {
 
     @Test
     public void createUser_successLinkReturned() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        final var link = createUserService.createUser("userme", "email", "se", "xx", "url?token=");
+        final var link = createUserService.createUser("userme", "email", "se", "xx", Collections.emptySet(), "url?token=");
 
         assertThat(link).startsWith("url?token=").hasSize("url?token=".length() + 36);
     }
 
     @Test
     public void createUser_saveTokenRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        final var link = createUserService.createUser("userme", "email", "se", "xx", "url?token=");
+        final var link = createUserService.createUser("userme", "email", "se", "xx", Collections.emptySet(), "url?token=");
 
         final var captor = ArgumentCaptor.forClass(UserToken.class);
         verify(userTokenRepository).save(captor.capture());
@@ -102,7 +104,7 @@ public class CreateUserServiceTest {
 
     @Test
     public void createUser_saveEmailRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        createUserService.createUser("userMe", "eMail", "first", "last", "url?token=");
+        createUserService.createUser("userMe", "eMail", "first", "last", Collections.emptySet(), "url?token=");
 
         final var captor = ArgumentCaptor.forClass(UserEmail.class);
         verify(userEmailRepository).save(captor.capture());
@@ -119,8 +121,19 @@ public class CreateUserServiceTest {
     }
 
     @Test
+    public void createUser_mergeRoles() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        createUserService.createUser("userMe", "eMail", "first", "last", Set.of("ROLE_LICENCE_VARY", "ROLE_DISALLOWED"), "url?token=");
+
+        final var captor = ArgumentCaptor.forClass(UserEmail.class);
+        verify(userEmailRepository).save(captor.capture());
+
+        final var user = captor.getValue();
+        assertThat(user.getAuthorities()).containsOnly(new Authority("ROLE_LICENCE_RO"), new Authority("ROLE_GLOBAL_SEARCH"), new Authority("ROLE_LICENCE_VARY"));
+    }
+
+    @Test
     public void createUser_callNotify() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        final var link = createUserService.createUser("userme", "email", "first", "last", "url?token=");
+        final var link = createUserService.createUser("userme", "email", "first", "last", Collections.emptySet(), "url?token=");
 
         verify(notificationClient).sendEmail("licences", "email", Map.of("resetLink", link, "firstName", "first"), null);
     }
