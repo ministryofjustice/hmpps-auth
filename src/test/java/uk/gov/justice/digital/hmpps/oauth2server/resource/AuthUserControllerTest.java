@@ -131,6 +131,15 @@ public class AuthUserControllerTest {
     }
 
     @Test
+    public void createUser_NoAdditionalRoles() throws NotificationClientException, CreateUserException, VerifyEmailException {
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
+
+        authUserController.createUser("newusername", new CreateUser("email", "first", "last", null), request);
+
+        verify(createUserService).createUser("newusername", "email", "first", "last", Collections.emptySet(), "http://some.url/auth/initial-password?token=");
+    }
+
+    @Test
     public void createUser() throws NotificationClientException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/api/authuser/newusername"));
         final var responseEntity = authUserController.createUser("newusername", new CreateUser("email", "first", "last", Collections.emptySet()), request);
