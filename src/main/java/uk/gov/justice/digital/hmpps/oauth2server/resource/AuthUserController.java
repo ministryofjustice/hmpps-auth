@@ -51,7 +51,7 @@ public class AuthUserController {
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> user(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
-        final var user = userService.getAuthUserByUsername(username);
+        final var user = userService.getAuthUserByUsername(StringUtils.trim(username));
 
         return user.map(AuthUser::fromUserEmail).map(Object.class::cast).map(ResponseEntity::ok).
                 orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(username)));
@@ -65,7 +65,7 @@ public class AuthUserController {
             @ApiResponse(code = 204, message = "No users found."),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class)})
     public ResponseEntity<Object> searchForUser(@ApiParam(value = "The email address of the user.", required = true) @RequestParam final String email) {
-        final var users = userService.findAuthUsersByEmail(email).stream().map(AuthUser::fromUserEmail).collect(Collectors.toList());
+        final var users = userService.findAuthUsersByEmail(StringUtils.trim(email)).stream().map(AuthUser::fromUserEmail).collect(Collectors.toList());
 
         return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
     }
@@ -85,7 +85,7 @@ public class AuthUserController {
             @ApiParam(value = "Details of the user to be created.", required = true) @RequestBody final CreateUser createUser,
             @ApiIgnore final HttpServletRequest request) throws NotificationClientException {
 
-        final var user = StringUtils.isNotBlank(username) ? userService.findUser(username) : Optional.empty();
+        final var user = StringUtils.isNotBlank(username) ? userService.findUser(StringUtils.trim(username)) : Optional.empty();
 
         // check that we're not asked to create a user that is already in nomis or auth
         if (user.isPresent()) {
@@ -96,7 +96,7 @@ public class AuthUserController {
         try {
             final var requestURL = request.getRequestURL();
             final var setPasswordUrl = requestURL.toString().replaceFirst("/api/authuser/.*", "/initial-password?token=");
-            final var resetLink = createUserService.createUser(username, createUser.getEmail(), createUser.getFirstName(), createUser.getLastName(), createUser.getAdditionalRoles(), setPasswordUrl);
+            final var resetLink = createUserService.createUser(StringUtils.trim(username), createUser.getEmail(), createUser.getFirstName(), createUser.getLastName(), createUser.getAdditionalRoles(), setPasswordUrl);
 
             log.info("Create user succeeded for user {}", username);
             if (smokeTestEnabled) {
