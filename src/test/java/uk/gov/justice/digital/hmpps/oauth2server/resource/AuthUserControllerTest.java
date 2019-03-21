@@ -76,7 +76,7 @@ public class AuthUserControllerTest {
     @Test
     public void createUser_AlreadyExists() throws NotificationClientException {
         when(userService.findUser(anyString())).thenReturn(Optional.of(new UserDetailsImpl("name", "bob", Collections.emptySet(), null)));
-        final var responseEntity = authUserController.createUser("user", new CreateUser("email", "first", "last"), request);
+        final var responseEntity = authUserController.createUser("user", new CreateUser("email", "first", "last", Collections.emptySet()), request);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(409);
         assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("username.exists", "Username user already exists"));
@@ -85,7 +85,7 @@ public class AuthUserControllerTest {
     @Test
     public void createUser_BlankDoesntCallUserService() throws NotificationClientException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
-        final var responseEntity = authUserController.createUser("  ", new CreateUser("email", "first", "last"), request);
+        final var responseEntity = authUserController.createUser("  ", new CreateUser("email", "first", "last", Collections.emptySet()), request);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         verify(userService, never()).findUser(anyString());
@@ -94,7 +94,7 @@ public class AuthUserControllerTest {
     @Test
     public void createUser_Success() throws NotificationClientException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
-        final var responseEntity = authUserController.createUser("newusername", new CreateUser("email", "first", "last"), request);
+        final var responseEntity = authUserController.createUser("newusername", new CreateUser("email", "first", "last", Collections.emptySet()), request);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         assertThat(responseEntity.getBody()).isNull();
@@ -103,8 +103,8 @@ public class AuthUserControllerTest {
     @Test
     public void createUser_CreateUserError() throws NotificationClientException, CreateUserException, VerifyEmailException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
-        when(createUserService.createUser(anyString(), anyString(), anyString(), anyString(), anyString())).thenThrow(new CreateUserException("username", "errorcode"));
-        final var responseEntity = authUserController.createUser("newusername", new CreateUser("email", "first", "last"), request);
+        when(createUserService.createUser(anyString(), anyString(), anyString(), anyString(), anySet(), anyString())).thenThrow(new CreateUserException("username", "errorcode"));
+        final var responseEntity = authUserController.createUser("newusername", new CreateUser("email", "first", "last", Collections.emptySet()), request);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
         assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("username.errorcode", "username failed validation"));
@@ -113,8 +113,8 @@ public class AuthUserControllerTest {
     @Test
     public void createUser_VerifyUserError() throws NotificationClientException, CreateUserException, VerifyEmailException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
-        when(createUserService.createUser(anyString(), anyString(), anyString(), anyString(), anyString())).thenThrow(new VerifyEmailException("reason"));
-        final var responseEntity = authUserController.createUser("newusername", new CreateUser("email", "first", "last"), request);
+        when(createUserService.createUser(anyString(), anyString(), anyString(), anyString(), anySet(), anyString())).thenThrow(new VerifyEmailException("reason"));
+        final var responseEntity = authUserController.createUser("newusername", new CreateUser("email", "first", "last", Collections.emptySet()), request);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
         assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("email.reason", "Email address failed validation"));
@@ -123,16 +123,26 @@ public class AuthUserControllerTest {
     @Test
     public void createUser_InitialPasswordUrl() throws NotificationClientException, CreateUserException, VerifyEmailException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
+        final var roles = Collections.<String>emptySet();
 
-        authUserController.createUser("newusername", new CreateUser("email", "first", "last"), request);
+        authUserController.createUser("newusername", new CreateUser("email", "first", "last", roles), request);
 
-        verify(createUserService).createUser("newusername", "email", "first", "last", "http://some.url/auth/initial-password?token=");
+        verify(createUserService).createUser("newusername", "email", "first", "last", roles, "http://some.url/auth/initial-password?token=");
+    }
+
+    @Test
+    public void createUser_NoAdditionalRoles() throws NotificationClientException, CreateUserException, VerifyEmailException {
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
+
+        authUserController.createUser("newusername", new CreateUser("email", "first", "last", null), request);
+
+        verify(createUserService).createUser("newusername", "email", "first", "last", Collections.emptySet(), "http://some.url/auth/initial-password?token=");
     }
 
     @Test
     public void createUser() throws NotificationClientException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/api/authuser/newusername"));
-        final var responseEntity = authUserController.createUser("newusername", new CreateUser("email", "first", "last"), request);
+        final var responseEntity = authUserController.createUser("newusername", new CreateUser("email", "first", "last", Collections.emptySet()), request);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         assertThat(responseEntity.getBody()).isNull();

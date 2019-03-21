@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain;
 
+import com.google.common.collect.Sets;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -20,14 +21,15 @@ import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class CreateUserService {
-    private static final List<String> LICENCES_ROLES = List.of("ROLE_LICENCE_RO", "ROLE_GLOBAL_SEARCH");
+    private static final Set<String> LICENCES_ROLES = Set.of("ROLE_LICENCE_RO", "ROLE_GLOBAL_SEARCH");
+    private static final Set<String> ALLOWED_ADDITIONAL_ROLES = Set.of("ROLE_LICENCE_VARY");
 
     private final UserTokenRepository userTokenRepository;
     private final UserEmailRepository userEmailRepository;
@@ -50,7 +52,7 @@ public class CreateUserService {
     }
 
     @Transactional
-    public String createUser(final String usernameInput, final String emailInput, final String firstName, final String lastName, final String url)
+    public String createUser(final String usernameInput, final String emailInput, final String firstName, final String lastName, final Set<String> additionalRoles, final String url)
             throws CreateUserException, NotificationClientException, VerifyEmailException {
         // ensure username always uppercase
         final var username = StringUtils.upperCase(usernameInput);
@@ -62,7 +64,9 @@ public class CreateUserService {
 
         // create the user
         final var person = new Person(username, firstName, lastName);
-        final var authorities = LICENCES_ROLES.stream().map(Authority::new).collect(Collectors.toSet());
+
+        // create list of authorities
+        final var authorities = calculateRoles(additionalRoles);
         final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, authorities);
         userEmailRepository.save(user);
 
@@ -93,6 +97,12 @@ public class CreateUserService {
 
         // return the reset link to the controller
         return setPasswordLink;
+    }
+
+    private Set<Authority> calculateRoles(final Set<String> additionalRoles) {
+        final var intersection = Sets.intersection(ALLOWED_ADDITIONAL_ROLES, additionalRoles);
+
+        return Sets.union(LICENCES_ROLES, intersection).stream().map(Authority::new).collect(Collectors.toSet());
     }
 
     private void validate(final String username, final String email, final String firstName, final String lastName)

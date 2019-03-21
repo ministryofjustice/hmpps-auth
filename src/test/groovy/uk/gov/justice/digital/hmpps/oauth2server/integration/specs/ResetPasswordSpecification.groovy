@@ -44,7 +44,7 @@ class ResetPasswordSpecification extends GebReportingSpec {
 
         when: 'The Reset Password page is displayed'
         at ResetPasswordPage
-        resetPasswordAs CA_USER
+        resetPasswordAs RESET_TEST_USER
 
         then: 'The Reset Password sent page is displayed'
         at ResetPasswordSentPage
@@ -58,7 +58,7 @@ class ResetPasswordSpecification extends GebReportingSpec {
 
         when: 'The Reset Password page is displayed'
         at ResetPasswordPage
-        resetPasswordAs 'ca_user@digital.justice.gov.uk'
+        resetPasswordAs 'reset_test@digital.justice.gov.uk'
 
         and: 'The Reset Password sent page is displayed'
         at ResetPasswordSentPage
@@ -108,7 +108,7 @@ class ResetPasswordSpecification extends GebReportingSpec {
 
         when: 'The Reset Password page is displayed'
         at ResetPasswordPage
-        resetPasswordAs CA_USER
+        resetPasswordAs RESET_TEST_USER
 
         and: 'The Reset Password sent page is displayed'
         at ResetPasswordSentPage
@@ -132,7 +132,7 @@ class ResetPasswordSpecification extends GebReportingSpec {
 
         and: 'I can try to login using new password'
         to LoginPage
-        loginAs CA_USER, 'helloworld2'
+        loginAs RESET_TEST_USER, 'helloworld2'
 
         then: 'I am logged in with new password'
         at HomePage
@@ -175,11 +175,10 @@ class ResetPasswordSpecification extends GebReportingSpec {
         at HomePage
     }
 
-    // need to change user password back again so that CA_USER can still login
     def "A user can reset their password back with lowercase username"() {
         given: 'I would like to reset my password'
         to ResetPasswordPage
-        resetPasswordAs CA_USER_LOWERCASE
+        resetPasswordAs "reset_test_user"
 
         and: 'The Reset Password sent page is displayed'
         at ResetPasswordSentPage
@@ -199,7 +198,7 @@ class ResetPasswordSpecification extends GebReportingSpec {
     def "Attempt reset password without credentials"() {
         given: 'I am on the Set Password page'
         to ResetPasswordPage
-        resetPasswordAs CA_USER
+        resetPasswordAs RESET_TEST_USER
 
         and: 'The Reset Password sent page is displayed'
         at ResetPasswordSentPage
@@ -233,7 +232,7 @@ class ResetPasswordSpecification extends GebReportingSpec {
     }
 
     def "A user is asked to reset password again if the reset link is invalid"() {
-        given: 'I have a reste link'
+        given: 'I have a reset link'
         String resetLink = "/auth/reset-password-confirm?token=someinvalidtoken"
 
         when: 'I browse to the link'
