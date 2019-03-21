@@ -58,11 +58,25 @@ public class AuthUserControllerTest {
     }
 
     @Test
+    public void user_trim() {
+        when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
+        authUserController.user("    joe   ");
+        verify(userService).getAuthUserByUsername("joe");
+    }
+
+    @Test
     public void search() {
         when(userService.findAuthUsersByEmail(anyString())).thenReturn(List.of(getAuthUser()));
         final var responseEntity = authUserController.searchForUser("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         assertThat(responseEntity.getBody()).isEqualTo(List.of(new AuthUser("principal", "email", "Joe", "Bloggs", false, true)));
+    }
+
+    @Test
+    public void search_trim() {
+        when(userService.findAuthUsersByEmail(anyString())).thenReturn(List.of(getAuthUser()));
+        authUserController.searchForUser("   joe   ");
+        verify(userService).findAuthUsersByEmail("joe");
     }
 
     @Test
@@ -98,6 +112,15 @@ public class AuthUserControllerTest {
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         assertThat(responseEntity.getBody()).isNull();
+    }
+
+    @Test
+    public void createUser_trim() throws NotificationClientException, CreateUserException, VerifyEmailException {
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
+        authUserController.createUser("   newusername   ", new CreateUser("email", "first", "last", Collections.emptySet()), request);
+
+        verify(userService).findUser("newusername");
+        verify(createUserService).createUser("newusername", "email", "first", "last", Collections.emptySet(), "http://some.url/auth/initial-password?token=");
     }
 
     @Test
