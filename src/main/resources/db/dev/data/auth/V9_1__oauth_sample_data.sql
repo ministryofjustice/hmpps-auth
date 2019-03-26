@@ -47,6 +47,7 @@ VALUES ('AUTH_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QL
        ('AUTH_LOCKED2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_locked2@digital.justice.gov.uk', 'true', 'true', 'true', 'true'),
        ('AUTH_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'false', 'false', 'true'),
        ('AUTH_RO_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
+       ('AUTH_RO_VARY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
        ('AUTH_RO_USER_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true');
 
 INSERT INTO user_token (token, token_type, token_expiry, username)
@@ -62,6 +63,7 @@ VALUES ('AUTH_USER', 'Auth', 'Only'),
        ('AUTH_LOCKED2', 'Auth', 'Locked2'),
        ('AUTH_DISABLED', 'Auth', 'Disabled'),
        ('AUTH_RO_USER', 'Ryan-Auth', 'Orton'),
+       ('AUTH_RO_VARY_USER', 'Ryan-Auth-Vary', 'Orton'),
        ('AUTH_RO_USER_TEST', 'Ryan-Auth', 'Orton');
 
 
@@ -70,5 +72,8 @@ VALUES ('36025454-e42d-49a1-9124-013577a7ed20', 'AUTH_ADM', 'ROLE_OAUTH_ADMIN'),
        ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3a', 'AUTH_ADM', 'ROLE_MAINTAIN_ACCESS_ROLES'),
        ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3b', 'AUTH_RO_USER', 'ROLE_LICENCE_RO'),
        ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3c', 'AUTH_RO_USER', 'ROLE_GLOBAL_SEARCH'),
+       ('b4843bf0-9b44-451c-ba3e-cdf04ba9eb3b', 'AUTH_RO_VARY_USER', 'ROLE_LICENCE_RO'),
+       ('b4843bf0-9b44-451c-ba3e-cdf04ba9eb3c', 'AUTH_RO_VARY_USER', 'ROLE_GLOBAL_SEARCH'),
+       ('b4843bf0-9b44-451c-ba3e-cdf04ba9eb3c', 'AUTH_RO_VARY_USER', 'ROLE_LICENCE_VARY'),
        ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3d', 'AUTH_RO_USER_TEST', 'ROLE_LICENCE_RO'),
        ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3e', 'AUTH_RO_USER_TEST', 'ROLE_GLOBAL_SEARCH');
