@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException;
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleExistsException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
@@ -62,12 +63,14 @@ public class AuthUserRolesControllerTest {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserRolesController.addRole("someuser", "role");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
-        verify(authUserRoleService).addRole("USER", "ROLE_ROLE");
+        verify(authUserRoleService).addRole("USER", "role");
     }
 
     @Test
-    public void addRole_conflict() {
+    public void addRole_conflict() throws AuthUserRoleException {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
+        doThrow(new AuthUserRoleExistsException()).when(authUserRoleService).addRole(anyString(), anyString());
+
         final var responseEntity = authUserRolesController.addRole("someuser", "joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(409);
     }
@@ -90,16 +93,18 @@ public class AuthUserRolesControllerTest {
     }
 
     @Test
-    public void removeRole_success() {
+    public void removeRole_success() throws AuthUserRoleException {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserRolesController.removeRole("someuser", "joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
-        verify(authUserRoleService).removeRole("USER", "ROLE_JOE");
+        verify(authUserRoleService).removeRole("USER", "joe");
     }
 
     @Test
-    public void removeRole_roleMissing() {
+    public void removeRole_roleMissing() throws AuthUserRoleException {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
+        doThrow(new AuthUserRoleException("role", "error")).when(authUserRoleService).removeRole(anyString(), anyString());
+
         final var responseEntity = authUserRolesController.removeRole("someuser", "harry");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
     }

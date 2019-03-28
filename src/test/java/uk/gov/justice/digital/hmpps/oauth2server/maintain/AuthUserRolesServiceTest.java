@@ -37,14 +37,29 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void addRole_blank() {
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
+
         assertThatThrownBy(() -> service.addRole("user", "        ")).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: blank");
     }
 
     @Test
     public void addRole_invalidRole() {
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
+
         assertThatThrownBy(() -> service.addRole("user", "BOB")).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: invalid");
+    }
+
+    @Test
+    public void addRole_roleAlreadyOnUser() {
+        final var user = new UserEmail("user");
+        user.setAuthorities(new HashSet<>(List.of(new Authority("ROLE_LICENCE_VARY"))));
+
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> service.addRole("user", "LICENCE_VARY")).
+                isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: exists");
     }
 
     @Test
@@ -60,12 +75,21 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void removeRole_success() {
+    public void removeRole_roleNotOnUser() {
         final var user = new UserEmail("user");
-        user.setAuthorities(new HashSet<>(List.of(new Authority("JOE"), new Authority("ROLE_LICENCE_VARY"))));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
 
-        service.removeRole("user", "ROLE_LICENCE_VARY");
+        assertThatThrownBy(() -> service.removeRole("user", "BOB")).
+                isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: missing");
+    }
+
+    @Test
+    public void removeRole_success() throws AuthUserRoleException {
+        final var user = new UserEmail("user");
+        user.setAuthorities(new HashSet<>(List.of(new Authority("JOE"), new Authority("LICENCE_VARY"))));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+
+        service.removeRole("user", "  licence_vary   ");
 
         assertThat(user.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_JOE");
         verify(userEmailRepository).save(user);

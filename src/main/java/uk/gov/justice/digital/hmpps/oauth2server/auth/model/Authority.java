@@ -16,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @EqualsAndHashCode(of = {"authority"})
 public class Authority implements GrantedAuthority {
-    private static final String ROLE_PREFIX = "ROLE_";
+    public static final String ROLE_PREFIX = "ROLE_";
 
     @Id
     @GeneratedValue(generator = "UUID")
