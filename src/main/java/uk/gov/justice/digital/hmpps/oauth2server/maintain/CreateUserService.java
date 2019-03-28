@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CreateUserService {
     private static final Set<String> LICENCES_ROLES = Set.of("ROLE_LICENCE_RO", "ROLE_GLOBAL_SEARCH");
-    private static final Set<String> ALLOWED_ADDITIONAL_ROLES = Set.of("ROLE_LICENCE_VARY");
+    static final Set<String> ALLOWED_ADDITIONAL_ROLES = Set.of("ROLE_LICENCE_VARY", "ROLE_LICENCE_RO", "ROLE_GLOBAL_SEARCH");
 
     private final UserTokenRepository userTokenRepository;
     private final UserEmailRepository userEmailRepository;
@@ -83,11 +83,11 @@ public class CreateUserService {
         try {
             log.info("Sending initial set password to notify for user {}", username);
             notificationClient.sendEmail(licencesTemplateId, email, parameters, null);
-            telemetryClient.trackEvent("CreateUserSuccess", Map.of("username", username), null);
+            telemetryClient.trackEvent("AuthUserCreateSuccess", Map.of("username", username), null);
         } catch (final NotificationClientException e) {
             final var reason = (e.getCause() != null ? e.getCause() : e).getClass().getSimpleName();
             log.warn("Failed to send create user notify for user {}", username, e);
-            telemetryClient.trackEvent("CreateUserFailure", Map.of("username", username, "reason", reason), null);
+            telemetryClient.trackEvent("AuthUserCreateFailure", Map.of("username", username, "reason", reason), null);
             if (e.getHttpResult() >= 500) {
                 // second time lucky
                 notificationClient.sendEmail(licencesTemplateId, email, parameters, null, null);
@@ -100,7 +100,8 @@ public class CreateUserService {
     }
 
     private Set<Authority> calculateRoles(final Set<String> additionalRoles) {
-        final var intersection = Sets.intersection(ALLOWED_ADDITIONAL_ROLES, additionalRoles);
+        final var additionalRolesWithRolePrefix = additionalRoles.stream().map(Authority::addRolePrefixIfNecessary).collect(Collectors.toSet());
+        final var intersection = Sets.intersection(ALLOWED_ADDITIONAL_ROLES, additionalRolesWithRolePrefix);
 
         return Sets.union(LICENCES_ROLES, intersection).stream().map(Authority::new).collect(Collectors.toSet());
     }

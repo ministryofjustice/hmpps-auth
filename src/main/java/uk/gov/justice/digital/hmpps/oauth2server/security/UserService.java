@@ -51,7 +51,7 @@ public class UserService {
     }
 
     public Optional<UserEmail> getAuthUserByUsername(final String username) {
-        return userEmailRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(username));
+        return userEmailRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)));
     }
 
     public Optional<UserPersonDetails> findUser(final String username) {
@@ -60,6 +60,6 @@ public class UserService {
     }
 
     public List<UserEmail> findAuthUsersByEmail(final String email) {
-        return userEmailRepository.findByEmailAndMasterIsTrueOrderByUsername(StringUtils.lowerCase(email));
+        return userEmailRepository.findByEmailAndMasterIsTrueOrderByUsername(StringUtils.lowerCase(StringUtils.trim(email)));
     }
 }

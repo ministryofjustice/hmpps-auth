@@ -132,6 +132,17 @@ public class CreateUserServiceTest {
     }
 
     @Test
+    public void createUser_mergeRoles_addRolePrefix() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        createUserService.createUser("userMe", "eMail", "first", "last", Set.of("LICENCE_VARY", "DISALLOWED"), "url?token=");
+
+        final var captor = ArgumentCaptor.forClass(UserEmail.class);
+        verify(userEmailRepository).save(captor.capture());
+
+        final var user = captor.getValue();
+        assertThat(user.getAuthorities()).containsOnly(new Authority("ROLE_LICENCE_RO"), new Authority("ROLE_GLOBAL_SEARCH"), new Authority("ROLE_LICENCE_VARY"));
+    }
+
+    @Test
     public void createUser_callNotify() throws VerifyEmailException, CreateUserException, NotificationClientException {
         final var link = createUserService.createUser("userme", "email", "first", "last", Collections.emptySet(), "url?token=");
 

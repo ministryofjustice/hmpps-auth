@@ -58,25 +58,11 @@ public class AuthUserControllerTest {
     }
 
     @Test
-    public void user_trim() {
-        when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
-        authUserController.user("    joe   ");
-        verify(userService).getAuthUserByUsername("joe");
-    }
-
-    @Test
     public void search() {
         when(userService.findAuthUsersByEmail(anyString())).thenReturn(List.of(getAuthUser()));
         final var responseEntity = authUserController.searchForUser("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         assertThat(responseEntity.getBody()).isEqualTo(List.of(new AuthUser("principal", "email", "Joe", "Bloggs", false, true)));
-    }
-
-    @Test
-    public void search_trim() {
-        when(userService.findAuthUsersByEmail(anyString())).thenReturn(List.of(getAuthUser()));
-        authUserController.searchForUser("   joe   ");
-        verify(userService).findAuthUsersByEmail("joe");
     }
 
     @Test
