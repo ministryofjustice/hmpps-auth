@@ -11,13 +11,14 @@ VALUES ('omicuser','1200',null,'SYSTEM_READ_ONLY','password,authorization_code,r
        ('apireporting','3600',null,'ROLE_REPORTING','client_credentials',null,'$2a$10$f93YXwvkwVx3mS1dsZzK/.dJzvm7gu7jHawG7xIUUJTYLtXkoQaNO',null,null,'reporting',null),
        ('custodyapi','28800',null,'ROLE_REPORTING','client_credentials',null,'$2a$10$ZClyyxwFbX/24Ab9KXflc.Id5cOv3qu4b1ryNkFmXzJZt9y8eJa82','43200',null,'reporting',null),-- 'password'
        ('deliusnewtech','3600',null,'SYSTEM_READ_ONLY','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'reporting',null),
-       ('categorisationtool','3600',null,'ROLE_SYSTEM_USER','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read',null),
+       ('categorisationtool','3600',null,'ROLE_RISK_PROFILER','password,authorization_code,refresh_token,client_credentials','read,write' ,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
        ('prisonstaffhubclient','3600',null,'ROLE_SYSTEM_READ_ONLY','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read',null),
        ('risk-profiler','3600',null,'ROLE_SYSTEM_USER,ROLE_RISK_PROFILER','client_credentials',null,'$2a$10$r12DB/sqXduodnjtAY/ykO0S3KCySdVW4zhG3jlIRaIsfVkFOEds2',null,null,'read',null);
 
 INSERT INTO oauth_service (code, name, description, authorised_roles, url, enabled)
 VALUES ('NOMIS','New NOMIS', null, null, 'http://localhost:3000', 'true'),
        ('HDC','Home Detention Curfew', null, 'ROLE_LICENCE_CA,ROLE_LICENCE_RO,ROLE_LICENCE_DM', 'http://localhost:3003', 'true'),
+       ('CT','Categorisation Tool', 'Categorisation of prisoners', 'ROLE_CREATE_CATEGORISATION,ROLE_APPROVE_CATEGORISATION,ROLE_CATEGORISATION_SECURITY', 'http://localhost:3000', 'true'),
        ('POM','Allocate a POM', 'Allocate the appropriate offender manager to a prisoner', null, 'http://localhost:3004', 'true');
 
 INSERT INTO user_retries (username, retry_count) VALUES ('LOCKED_USER', 5);
