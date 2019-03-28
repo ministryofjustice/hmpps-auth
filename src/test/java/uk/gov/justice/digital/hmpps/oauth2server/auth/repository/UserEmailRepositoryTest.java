@@ -74,7 +74,7 @@ public class UserEmailRepositoryTest {
         assertThat(retrievedEntity.getUsername()).isEqualTo(transientEntity.getUsername());
         assertThat(retrievedEntity.getEmail()).isEqualTo(transientEntity.getEmail());
         assertThat(retrievedEntity.getName()).isEqualTo("first last");
-        assertThat(retrievedEntity.getAuthorities()).extracting("authority").containsOnly("AUTH_1", "AUTH_2");
+        assertThat(retrievedEntity.getAuthorities()).extracting("authority").containsOnly("ROLE_AUTH_1", "ROLE_AUTH_2");
     }
 
     @Test

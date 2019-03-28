@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -25,6 +26,15 @@ public class Authority implements GrantedAuthority {
     private String authority;
 
     public Authority(final String authority) {
-        this.authority = authority;
+        this.authority = addRolePrefixIfNecessary(authority);
+    }
+
+    public String getAuthorityName() {
+        // strip off ROLE_
+        return authority.substring(5);
+    }
+
+    public static String addRolePrefixIfNecessary(final String role) {
+        return StringUtils.startsWith(role, "ROLE_") ? role : String.format("ROLE_%s", role);
     }
 }

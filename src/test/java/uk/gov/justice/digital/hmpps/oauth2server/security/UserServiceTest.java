@@ -41,7 +41,7 @@ public class UserServiceTest {
     public void findUser_AuthUser() {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
 
-        final var user = userService.findUser("bob");
+        final var user = userService.findUser("   bob   ");
 
         assertThat(user).isPresent().get().extracting(UserPersonDetails::getUsername).isEqualTo("someuser");
 
@@ -65,7 +65,7 @@ public class UserServiceTest {
     public void findByEmailAndMasterIsTrue() {
         when(userEmailRepository.findByEmailAndMasterIsTrueOrderByUsername(anyString())).thenReturn(List.of(new UserEmail("someuser")));
 
-        final var user = userService.findAuthUsersByEmail("bob");
+        final var user = userService.findAuthUsersByEmail("  bob  ");
 
         assertThat(user).extracting(UserPersonDetails::getUsername).containsOnly("someuser");
     }

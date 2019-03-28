@@ -51,7 +51,7 @@ public class AuthUserController {
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> user(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
-        final var user = userService.getAuthUserByUsername(StringUtils.trim(username));
+        final var user = userService.getAuthUserByUsername(username);
 
         return user.map(AuthUser::fromUserEmail).map(Object.class::cast).map(ResponseEntity::ok).
                 orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(username)));
@@ -65,7 +65,7 @@ public class AuthUserController {
             @ApiResponse(code = 204, message = "No users found."),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class)})
     public ResponseEntity<Object> searchForUser(@ApiParam(value = "The email address of the user.", required = true) @RequestParam final String email) {
-        final var users = userService.findAuthUsersByEmail(StringUtils.trim(email)).stream().map(AuthUser::fromUserEmail).collect(Collectors.toList());
+        final var users = userService.findAuthUsersByEmail(email).stream().map(AuthUser::fromUserEmail).collect(Collectors.toList());
 
         return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
     }
@@ -75,7 +75,7 @@ public class AuthUserController {
     @ApiOperation(value = "Create user.", notes = "Create user.", nickname = "createUser",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 204, message = "OK"),
+            @ApiResponse(code = 201, message = "Created"),
             @ApiResponse(code = 400, message = "Validation failed.", response = ErrorDetail.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 409, message = "User already exists.", response = ErrorDetail.class),
