@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 
 import java.util.Map;
+import java.util.Set;
 
 import static uk.gov.justice.digital.hmpps.oauth2server.maintain.CreateUserService.ALLOWED_ADDITIONAL_ROLES;
 
@@ -27,36 +28,57 @@ public class AuthUserRoleService {
 
     @Transactional
     public void addRole(final String username, final String role) throws AuthUserRoleException {
-        validate(role);
+        final var roleFormatted = formatRole(role);
 
         // already checked that user exists
         final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
 
-        log.info("Adding role {} to user {}", role, username);
-        userEmail.getAuthorities().add(new Authority(role));
-        telemetryClient.trackEvent("AuthUserRoleAddSuccess", Map.of("username", username, "role", role), null);
+        validate(roleFormatted, userEmail.getAuthorities());
+
+        log.info("Adding role {} to user {}", roleFormatted, username);
+        userEmail.getAuthorities().add(new Authority(roleFormatted));
+        telemetryClient.trackEvent("AuthUserRoleAddSuccess", Map.of("username", username, "role", roleFormatted), null);
         userEmailRepository.save(userEmail);
     }
 
     @Transactional
-    public void removeRole(final String username, final String role) {
+    public void removeRole(final String username, final String role) throws AuthUserRoleException {
         // already checked that user exists
         final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
 
-        log.info("Removing role {} from user {}", role, username);
-        userEmail.getAuthorities().removeIf(a -> a.getAuthority().equals(role));
-        telemetryClient.trackEvent("AuthUserRoleRemoveSuccess", Map.of("username", username, "role", role), null);
+        final var roleFormatted = formatRole(role);
+        if (userEmail.getAuthorities().stream().map(Authority::getAuthority).noneMatch(a -> a.equals(roleFormatted))) {
+            throw new AuthUserRoleException("role", "missing");
+        }
+
+        log.info("Removing role {} from user {}", roleFormatted, username);
+        userEmail.getAuthorities().removeIf(a -> a.getAuthority().equals(roleFormatted));
+        telemetryClient.trackEvent("AuthUserRoleRemoveSuccess", Map.of("username", username, "role", roleFormatted), null);
         userEmailRepository.save(userEmail);
     }
 
-    private void validate(final String role) throws AuthUserRoleException {
-        if (StringUtils.isBlank(role)) {
+    private void validate(final String role, final Set<Authority> authorities) throws AuthUserRoleException {
+        if (role.length() <= Authority.ROLE_PREFIX.length()) {
             throw new AuthUserRoleException("role", "blank");
         }
         if (!ALLOWED_ADDITIONAL_ROLES.contains(role)) {
             throw new AuthUserRoleException("role", "invalid");
         }
+        if (authorities.stream().map(Authority::getAuthority).anyMatch(a -> a.equals(role))) {
+            throw new AuthUserRoleExistsException();
+        }
     }
+
+    private String formatRole(final String role) {
+        return Authority.addRolePrefixIfNecessary(StringUtils.upperCase(StringUtils.trim(role)));
+    }
+
+    public static class AuthUserRoleExistsException extends AuthUserRoleException {
+        public AuthUserRoleExistsException() {
+            super("role", "exists");
+        }
+    }
+
 
     @Getter
     public static class AuthUserRoleException extends Exception {
