@@ -75,7 +75,7 @@ public class AuthUserController {
     @ApiOperation(value = "Create user.", notes = "Create user.", nickname = "createUser",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Created"),
+            @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 400, message = "Validation failed.", response = ErrorDetail.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 409, message = "User already exists.", response = ErrorDetail.class),
