@@ -61,14 +61,14 @@ public class StaffRepositoryTest {
 
         assertThat(generalUser.getRoles().stream().map(r -> r.getRole().getName()))
                 .containsExactly("Some Old Role", "Omic Administrator", "Maintain Access Roles Admin", "Global Search",
-                        "Create Category assessments", "Approve Category assessments");
+                        "Create Category assessments", "Approve Category assessments", "Security Cat tool role");
 
         assertThat(generalUser.getCaseloads().stream().map(c -> c.getCaseload().getName()))
                 .containsExactly("Magic API Caseload", "Moorlands");
 
         assertThat(generalUser.filterRolesByCaseload("NWEB").stream().map(r -> r.getRole().getName()))
                 .containsExactly("Omic Administrator", "Maintain Access Roles Admin", "Global Search",
-                        "Create Category assessments", "Approve Category assessments");
+                        "Create Category assessments", "Approve Category assessments", "Security Cat tool role");
     }
 
     private Staff transientEntity() {

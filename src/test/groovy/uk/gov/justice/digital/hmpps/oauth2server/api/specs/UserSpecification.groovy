@@ -97,7 +97,7 @@ class UserSpecification extends TestSpecification {
 
         assert userData.collect {
             it.roleCode
-        }.sort() == ['APPROVE_CATEGORISATION', 'CREATE_CATEGORISATION', 'GLOBAL_SEARCH', 'MAINTAIN_ACCESS_ROLES_ADMIN', 'OMIC_ADMIN']
+        }.sort() == ['APPROVE_CATEGORISATION', 'CATEGORISATION_SECURITY', 'CREATE_CATEGORISATION', 'GLOBAL_SEARCH', 'MAINTAIN_ACCESS_ROLES_ADMIN', 'OMIC_ADMIN']
     }
 
     def "User Roles endpoint returns principal user data for auth user"() {

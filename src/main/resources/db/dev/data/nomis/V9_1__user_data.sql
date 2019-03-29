@@ -188,7 +188,8 @@ VALUES (1, 'OMIC_ADMIN', 'Omic Administrator', 1, 'APP', 'GENERAL'),
   (16, 'INACTIVE_BOOKINGS', 'View Inactive Bookings', 99, 'APP', 'GENERAL'),
   (17, 'CREATE_CATEGORISATION', 'Create Category assessments', 99, 'APP', 'GENERAL'),
   (18, 'APPROVE_CATEGORISATION', 'Approve Category assessments', 99, 'APP', 'GENERAL'),
-  (19, 'MAINTAIN_OAUTH_USERS', 'Maintain oauth users (admin)', 99, 'APP', 'ADMIN');
+  (19, 'MAINTAIN_OAUTH_USERS', 'Maintain oauth users (admin)', 99, 'APP', 'ADMIN'),
+  (20, 'CATEGORISATION_SECURITY', 'Security Cat tool role', 99, 'APP', 'GENERAL');
 
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME)
 VALUES (-1, 'MDI', 'ITAG_USER'),
@@ -201,6 +202,7 @@ VALUES (-1, 'MDI', 'ITAG_USER'),
   (8, 'NWEB', 'ITAG_USER'),
   (17, 'NWEB', 'ITAG_USER'),
   (18, 'NWEB', 'ITAG_USER'),
+  (20, 'NWEB', 'ITAG_USER'),
   (3, 'CADM', 'ITAG_USER_ADM'),
   (11, 'NWEB', 'CA_USER'),
   (12, 'NWEB', 'RO_USER'),
