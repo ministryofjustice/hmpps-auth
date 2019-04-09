@@ -10,10 +10,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleExistsException;
+import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -23,6 +24,8 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthUserRolesControllerTest {
+    private static final Map<String, String> ALLOWED_AUTH_USER_ROLES = Map.of("ROLE_LICENCE_VARY", "Licence Variation", "ROLE_LICENCE_RO", "Licence Responsible Officer", "ROLE_GLOBAL_SEARCH", "Global Search");
+
     @Mock
     private UserService userService;
     @Mock
@@ -44,11 +47,12 @@ public class AuthUserRolesControllerTest {
 
     @Test
     public void roles_success() {
+        when(authUserRoleService.getAllRoles()).thenReturn(ALLOWED_AUTH_USER_ROLES);
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserRolesController.roles("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         //noinspection unchecked
-        assertThat(((Set) responseEntity.getBody())).containsOnly(new UserRole("FRED"), new UserRole("JOE"));
+        assertThat(((Set) responseEntity.getBody())).containsOnly(new AuthUserRole("FRED", "FRED"), new AuthUserRole("Global Search", "GLOBAL_SEARCH"));
     }
 
     @Test
@@ -111,7 +115,7 @@ public class AuthUserRolesControllerTest {
 
     private UserEmail getAuthUser() {
         final var user = new UserEmail("USER", "email", true, false);
-        user.setAuthorities(Set.of(new Authority("JOE"), new Authority("FRED")));
+        user.setAuthorities(Set.of(new Authority("GLOBAL_SEARCH"), new Authority("FRED")));
         return user;
     }
 }

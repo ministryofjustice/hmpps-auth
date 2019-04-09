@@ -25,11 +25,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.ALLOWED_AUTH_USER_ROLES;
+
 @Service
 @Slf4j
 public class CreateUserService {
     private static final Set<String> LICENCES_ROLES = Set.of("ROLE_LICENCE_RO", "ROLE_GLOBAL_SEARCH");
-    static final Set<String> ALLOWED_ADDITIONAL_ROLES = Set.of("ROLE_LICENCE_VARY", "ROLE_LICENCE_RO", "ROLE_GLOBAL_SEARCH");
 
     private final UserTokenRepository userTokenRepository;
     private final UserEmailRepository userEmailRepository;
@@ -101,7 +102,7 @@ public class CreateUserService {
 
     private Set<Authority> calculateRoles(final Set<String> additionalRoles) {
         final var additionalRolesWithRolePrefix = additionalRoles.stream().map(Authority::addRolePrefixIfNecessary).collect(Collectors.toSet());
-        final var intersection = Sets.intersection(ALLOWED_ADDITIONAL_ROLES, additionalRolesWithRolePrefix);
+        final var intersection = Sets.intersection(ALLOWED_AUTH_USER_ROLES.keySet(), additionalRolesWithRolePrefix);
 
         return Sets.union(LICENCES_ROLES, intersection).stream().map(Authority::new).collect(Collectors.toSet());
     }

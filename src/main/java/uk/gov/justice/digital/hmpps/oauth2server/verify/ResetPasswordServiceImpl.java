@@ -71,7 +71,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
             final var matches = userEmailRepository.findByEmail(usernameOrEmailAddress.toLowerCase());
             if (matches.isEmpty()) {
                 // no match, but got an email address so let them know
-                sendEmail(usernameOrEmailAddress, resetUnavailableEmailNotFoundTemplateId, Collections.emptyMap(), usernameOrEmailAddress);
+                sendEmail(usernameOrEmailAddress, resetUnavailableEmailNotFoundTemplateId, Collections.emptyMap(), usernameOrEmailAddress.toLowerCase());
                 return Optional.empty();
             }
 
