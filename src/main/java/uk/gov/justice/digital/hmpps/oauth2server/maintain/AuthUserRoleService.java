@@ -12,11 +12,12 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailReposi
 import java.util.Map;
 import java.util.Set;
 
-import static uk.gov.justice.digital.hmpps.oauth2server.maintain.CreateUserService.ALLOWED_ADDITIONAL_ROLES;
 
 @Service
 @Slf4j
 public class AuthUserRoleService {
+    static final Map<String, String> ALLOWED_AUTH_USER_ROLES = Map.of("ROLE_LICENCE_VARY", "Licence Variation", "ROLE_LICENCE_RO", "Licence Responsible Officer", "ROLE_GLOBAL_SEARCH", "Global Search");
+
     private final UserEmailRepository userEmailRepository;
     private final TelemetryClient telemetryClient;
 
@@ -61,7 +62,7 @@ public class AuthUserRoleService {
         if (role.length() <= Authority.ROLE_PREFIX.length()) {
             throw new AuthUserRoleException("role", "blank");
         }
-        if (!ALLOWED_ADDITIONAL_ROLES.contains(role)) {
+        if (!ALLOWED_AUTH_USER_ROLES.containsKey(role)) {
             throw new AuthUserRoleException("role", "invalid");
         }
         if (authorities.stream().map(Authority::getAuthority).anyMatch(a -> a.equals(role))) {
@@ -71,6 +72,10 @@ public class AuthUserRoleService {
 
     private String formatRole(final String role) {
         return Authority.addRolePrefixIfNecessary(StringUtils.upperCase(StringUtils.trim(role)));
+    }
+
+    public Map<String, String> getAllRoles() {
+        return ALLOWED_AUTH_USER_ROLES;
     }
 
     public static class AuthUserRoleExistsException extends AuthUserRoleException {

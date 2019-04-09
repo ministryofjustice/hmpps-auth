@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,8 +11,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleExistsException;
+import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
 import java.util.stream.Collectors;
@@ -32,14 +33,19 @@ public class AuthUserRolesController {
     @ApiOperation(value = "Get roles for user.", notes = "Get roles for user.", nickname = "roles",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = UserRole.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "OK", response = AuthUserRole.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> roles(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
         final var userOptional = userService.getAuthUserByUsername(username);
+        final var allRoles = authUserRoleService.getAllRoles();
 
         return userOptional.
-                map(u -> u.getAuthorities().stream().map(a -> new UserRole(a.getAuthorityName())).collect(Collectors.toSet())).
+                map(u -> u.getAuthorities().stream().map(a -> {
+                    final var authority = a.getAuthority();
+                    final var roleName = allRoles.get(authority);
+                    return new AuthUserRole(StringUtils.defaultString(roleName, a.getAuthorityName()), a.getAuthorityName());
+                }).collect(Collectors.toSet())).
                 map(Object.class::cast).
                 map(ResponseEntity::ok).
                 orElse(notFoundResponse(username));
