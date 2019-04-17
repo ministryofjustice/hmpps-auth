@@ -89,7 +89,7 @@ public class AuthUserController {
 
         // check that we're not asked to create a user that is already in nomis or auth
         if (user.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorDetail("username.exists", String.format("Username %s already exists", username)));
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorDetail("username.exists", String.format("Username %s already exists", username), "username"));
         }
 
         // new user
@@ -106,10 +106,10 @@ public class AuthUserController {
         } catch (final CreateUserException e) {
             log.info("Create user failed for user {} for field {} with reason {}", username, e.getField(), e.getErrorCode());
             return ResponseEntity.badRequest().body(new ErrorDetail(String.format("%s.%s", e.getField(), e.getErrorCode()),
-                    String.format("%s failed validation", e.getField())));
+                    String.format("%s failed validation", e.getField()), e.getField()));
         } catch (final VerifyEmailException e) {
             log.info("Create user failed for user {} for field email with reason {}", username, e.getReason());
-            return ResponseEntity.badRequest().body(new ErrorDetail(String.format("email.%s", e.getReason()), "Email address failed validation"));
+            return ResponseEntity.badRequest().body(new ErrorDetail(String.format("email.%s", e.getReason()), "Email address failed validation", "email"));
         }
     }
 
@@ -153,6 +153,6 @@ public class AuthUserController {
     }
 
     private Object notFoundBody(final String username) {
-        return new ErrorDetail("Not Found", String.format("Account for username %s not found", username));
+        return new ErrorDetail("Not Found", String.format("Account for username %s not found", username), "username");
     }
 }

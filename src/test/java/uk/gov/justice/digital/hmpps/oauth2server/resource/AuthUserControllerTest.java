@@ -46,7 +46,7 @@ public class AuthUserControllerTest {
     public void user_userNotFound() {
         final var responseEntity = authUserController.user("bob");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username bob not found"));
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username bob not found", "username"));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class AuthUserControllerTest {
         final var responseEntity = authUserController.createUser("user", new CreateUser("email", "first", "last", Collections.emptySet()), request);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(409);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("username.exists", "Username user already exists"));
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("username.exists", "Username user already exists", "username"));
     }
 
     @Test
@@ -116,7 +116,7 @@ public class AuthUserControllerTest {
         final var responseEntity = authUserController.createUser("newusername", new CreateUser("email", "first", "last", Collections.emptySet()), request);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("username.errorcode", "username failed validation"));
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("username.errorcode", "username failed validation", "username"));
     }
 
     @Test
@@ -126,7 +126,7 @@ public class AuthUserControllerTest {
         final var responseEntity = authUserController.createUser("newusername", new CreateUser("email", "first", "last", Collections.emptySet()), request);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("email.reason", "Email address failed validation"));
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("email.reason", "Email address failed validation", "email"));
     }
 
     @Test

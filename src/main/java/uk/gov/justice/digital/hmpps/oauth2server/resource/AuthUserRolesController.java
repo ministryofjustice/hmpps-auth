@@ -75,11 +75,11 @@ public class AuthUserRolesController {
             } catch (final AuthUserRoleExistsException e) {
                 log.info("Add role failed for user {} for field {} with reason {}", usernameInDb, e.getField(), e.getErrorCode());
                 return ResponseEntity.status(HttpStatus.CONFLICT).
-                        <Object>body(new ErrorDetail("role.exists", String.format("Username %s already has role %s", usernameInDb, role)));
+                        <Object>body(new ErrorDetail("role.exists", String.format("Username %s already has role %s", usernameInDb, role), "role"));
             } catch (final AuthUserRoleException e) {
                 log.info("Add role failed for user {} and role {} for field {} with reason {}", usernameInDb, role, e.getField(), e.getErrorCode());
                 return ResponseEntity.badRequest().<Object>body(new ErrorDetail(String.format("%s.%s", e.getField(), e.getErrorCode()),
-                        String.format("%s failed validation", e.getField())));
+                        String.format("%s failed validation", e.getField()), e.getField()));
             }
         }).orElse(notFoundResponse(username));
     }
@@ -105,7 +105,7 @@ public class AuthUserRolesController {
                 authUserRoleService.removeRole(usernameInDb, role);
             } catch (AuthUserRoleException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).
-                        <Object>body(new ErrorDetail("role.missing", String.format("Username %s doesn't have the role %s", usernameInDb, role)));
+                        <Object>body(new ErrorDetail("role.missing", String.format("Username %s doesn't have the role %s", usernameInDb, role), "role"));
             }
 
             log.info("Remove role succeeded for user {} and role {}", usernameInDb, role);
@@ -115,6 +115,6 @@ public class AuthUserRolesController {
 
     private ResponseEntity<Object> notFoundResponse(@PathVariable @ApiParam(value = "The username of the user.", required = true) final String username) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).
-                body(new ErrorDetail("Not Found", String.format("Account for username %s not found", username)));
+                body(new ErrorDetail("Not Found", String.format("Account for username %s not found", username), "username"));
     }
 }

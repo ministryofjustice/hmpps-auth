@@ -43,7 +43,7 @@ public class UserControllerTest {
     public void user_userNotFound() {
         final var responseEntity = userController.user("bob");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username bob not found"));
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username bob not found", "username"));
     }
 
     @Test
