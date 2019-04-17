@@ -42,7 +42,7 @@ public class AuthUserRolesControllerTest {
     public void roles_userNotFound() {
         final var responseEntity = authUserRolesController.roles("bob");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username bob not found"));
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username bob not found", "username"));
     }
 
     @Test
@@ -59,7 +59,7 @@ public class AuthUserRolesControllerTest {
     public void addRole_userNotFound() {
         final var responseEntity = authUserRolesController.addRole("bob", "role");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username bob not found"));
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username bob not found", "username"));
     }
 
     @Test
@@ -86,14 +86,14 @@ public class AuthUserRolesControllerTest {
         doThrow(new AuthUserRoleException("role", "error")).when(authUserRoleService).addRole(anyString(), anyString());
         final var responseEntity = authUserRolesController.addRole("someuser", "harry");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("role.error", "role failed validation"));
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("role.error", "role failed validation", "role"));
     }
 
     @Test
     public void removeRole_userNotFound() {
         final var responseEntity = authUserRolesController.removeRole("bob", "role");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
-        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username bob not found"));
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username bob not found", "username"));
     }
 
     @Test

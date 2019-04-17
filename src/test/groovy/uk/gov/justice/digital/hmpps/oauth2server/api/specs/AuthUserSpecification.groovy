@@ -94,7 +94,7 @@ class AuthUserSpecification extends TestSpecification {
         then:
         def userData = jsonSlurper.parseText(responseBody)
 
-        userData == ['error': 'Not Found', 'error_description': 'Account for username ITAG_USER not found']
+        userData == ['error': 'Not Found', 'error_description': 'Account for username ITAG_USER not found', 'field': 'username']
     }
 
     def 'Auth User email endpoint returns user data'() {

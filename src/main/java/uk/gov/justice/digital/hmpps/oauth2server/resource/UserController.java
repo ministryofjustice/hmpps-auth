@@ -67,6 +67,6 @@ public class UserController {
     }
 
     private Object notFoundBody(final String username) {
-        return new ErrorDetail("Not Found", String.format("Account for username %s not found", username));
+        return new ErrorDetail("Not Found", String.format("Account for username %s not found", username), "username");
     }
 }
