@@ -57,8 +57,10 @@ d77af7e00910        mojdigitalstudio/nomis-oauth2-server:latest   "/bin/sh /app/
 
 ### Get a JWT token
 ```bash
-TOKEN=$(curl -X POST "http://localhost:8080/oauth/token?grant_type=password&username=ITAG_USER&password=password" -H 'Authorization: Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA==' | grep access_token | awk -F"\"" '{print $4}')
+curl -sX POST "http://localhost:9090/auth/oauth/token?grant_type=password&username=ITAG_USER&password=password" -H 'Authorization: Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA==' | jq .access_token
 ```
+This requires `jq` - https://stedolan.github.io/jq/.  Note that this example uses the client id of elite2apiclient in 
+the authorization header, which allows password, authorization_code and refresh token grants.
 
 #### Update govuk toolkit:
 ``` ./get-govuk-frontend.bash <version>```
