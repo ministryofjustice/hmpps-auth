@@ -146,6 +146,6 @@ public class CreateUserServiceTest {
     public void createUser_callNotify() throws VerifyEmailException, CreateUserException, NotificationClientException {
         final var link = createUserService.createUser("userme", "email", "first", "last", Collections.emptySet(), "url?token=");
 
-        verify(notificationClient).sendEmail("licences", "email", Map.of("resetLink", link, "firstName", "first"), null);
+        verify(notificationClient).sendEmail("licences", "email", Map.of("resetLink", link, "firstName", "first", "username", "USERME"), null);
     }
 }

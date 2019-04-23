@@ -1,36 +1,13 @@
 # HMPPS Oauth2 / SSO Server
 
-Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS DB and New Auth DB
+Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS DB and New Auth DB.
 
-#### Run in docker
-
-```bash
-./gradlew assemble
-docker build -t mojdigitalstudio/nomis-oauth2-server .
-docker run -p9090:8080 --name nomis-oauth2-server -d --health-cmd='curl -f http://localhost:8080/auth/health' --env SPRING_PROFILES_ACTIVE=dev mojdigitalstudio/nomis-oauth2-server:latest
-``` 
-
-### Run against oracle DB (T3 example)
-```bash
-docker run -p9090:8080 --name nomis-oauth2-server -d --health-cmd='curl -f http://localhost:8080/auth/health' \
- --env SPRING_PROFILES_ACTIVE=dev-config,oracle,auth-seed --env SPRING_DATASOURCE_PASSWORD=************ --env SPRING_DATASOURCE_URL=jdbc:oracle:thin:@docker.for.mac.localhost:1521/CNOMT3 --env SPRING_DATASOURCE_USERNAME=API_PROXY_USER \
- mojdigitalstudio/nomis-oauth2-server:latest
-```
-Or, where 'docker.for.mac.localhost' or its windows equivalent is not available e.g. Ubuntu, we can connect to the host network instead of publishing the port:
-```
-docker run --network=host --name nomis-oauth2-server-oracle -d \
- --health-cmd='curl -f http://localhost:9090/auth/health' \
- --env SPRING_DATASOURCE_USERNAME=API_PROXY_USER \
- --env SPRING_DATASOURCE_PASSWORD=xxxxxxxxxx  \
- --env SPRING_PROFILES_ACTIVE=dev,oracle,auth-seed \
- --env SPRING_DATASOURCE_URL=jdbc:oracle:thin:@localhost:1521:CNOMT3 \
- --env SERVER_PORT=9090 \
- mojdigitalstudio/nomis-oauth2-server:latest
-```
+To get started, either run an instance locally, or point to the dev (t3) instance - https://gateway.t3.nomis-api.hmpps.dsd.io/auth/.
+For t3 you will need client credentials to connect, ask in #newnomis_projectteam to get setup.
 
 #### Run in docker-compose
 ```bash
-docker-compose up -d
+docker-compose pull && docker-compose up -d
 ```
 The container should start in a few seconds and be available on port 9090
 
@@ -47,6 +24,12 @@ d77af7e00910        mojdigitalstudio/nomis-oauth2-server:latest   "/bin/sh /app/
 
 #### View logs in docker:
 ```docker logs nomis-oauth2-server```
+
+#### API Documentation
+
+Is available on a running local server at http://localhost:9090/auth/swagger-ui.html.  Alternatively production
+documentation can be found at https://gateway.prod.nomis-api.service.hmpps.dsd.io/auth/swagger-ui.html.  Don't forget to
+include /auth in the requests if calling an api endpoint.`
 
 ### Profiles:
 - dev-config - development configuration
