@@ -78,7 +78,7 @@ public class CreateUserService {
         userTokenRepository.save(userToken);
 
         final var setPasswordLink = url + userToken.getToken();
-        final var parameters = Map.of("firstName", firstName, "resetLink", setPasswordLink);
+        final var parameters = Map.of("firstName", firstName, "resetLink", setPasswordLink, "username", username);
 
         // send the email
         try {
