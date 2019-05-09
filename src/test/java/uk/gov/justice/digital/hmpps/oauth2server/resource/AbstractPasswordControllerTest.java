@@ -113,6 +113,15 @@ public class AbstractPasswordControllerTest {
     }
 
     @Test
+    public void setPassword_TooLong() {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile(null);
+        final var modelAndView = controller.setPassword("d", "abcdefghij123456789012345678901", "abcdefghij123456789012345678901", null);
+        assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errornew", "long"));
+    }
+
+    @Test
     public void setPassword_Blacklist() {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile(null);

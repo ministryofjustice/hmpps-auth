@@ -154,6 +154,10 @@ public class AbstractPasswordController {
             builder.add("errornew", "length9");
         }
 
+        if (newPassword.length() > 30) {
+            builder.add("errornew", "long");
+        }
+
         return builder;
     }
 
