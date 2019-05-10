@@ -60,7 +60,7 @@
         </span>
         <input
             th:class="'govuk-input' + (${missinguser} ? ' govuk-input--error' : '')"
-            id="username" name="username" type="text" autofocus="autofocus"
+            id="username" name="username" type="text" autofocus="autofocus" autocomplete="username"
             data-element-id="username" aria-describedby="username-error">
       </div>
       <div th:with="missingpass=${param.error != null and #arrays.contains(param.error, 'missingpass')}"
@@ -72,7 +72,7 @@
         <div class="show-password">
           <input
               th:class="'govuk-input' + (${missingpass} ? ' govuk-input--error' : '')"
-              id="password" name="password" type="password"
+              id="password" name="password" type="password" autocomplete="current-password"
               data-element-id="password" aria-describedby="password-error">
           <button type="button" onclick="showHide()" id="show-password" class="govuk-button">show</button>
         </div>
