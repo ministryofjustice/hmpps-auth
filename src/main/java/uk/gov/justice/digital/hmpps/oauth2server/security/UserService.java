@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccou
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -22,11 +24,16 @@ public class UserService {
     private final StaffUserAccountRepository userRepository;
     private final StaffIdentifierRepository staffIdentifierRepository;
     private final UserEmailRepository userEmailRepository;
+    private final TelemetryClient telemetryClient;
 
-    public UserService(final StaffUserAccountRepository userRepository, final StaffIdentifierRepository staffIdentifierRepository, final UserEmailRepository userEmailRepository) {
+    public UserService(final StaffUserAccountRepository userRepository,
+                       final StaffIdentifierRepository staffIdentifierRepository,
+                       final UserEmailRepository userEmailRepository,
+                       final TelemetryClient telemetryClient) {
         this.userRepository = userRepository;
         this.staffIdentifierRepository = staffIdentifierRepository;
         this.userEmailRepository = userEmailRepository;
+        this.telemetryClient = telemetryClient;
     }
 
     public Optional<StaffUserAccount> getUserByUsername(final String username) {
@@ -61,5 +68,24 @@ public class UserService {
 
     public List<UserEmail> findAuthUsersByEmail(final String email) {
         return userEmailRepository.findByEmailAndMasterIsTrueOrderByUsername(StringUtils.lowerCase(StringUtils.trim(email)));
+    }
+
+    @Transactional
+    public void enableUser(final String username, final String admin) {
+        changeUserStatus(username, true, admin);
+    }
+
+    @Transactional
+    public void disableUser(final String username, final String admin) {
+        changeUserStatus(username, false, admin);
+    }
+
+    private void changeUserStatus(final String username, final boolean status, final String admin) {
+        final var userEmail = getAuthUserByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
+        userEmail.setEnabled(status);
+        userEmailRepository.save(userEmail);
+        telemetryClient.trackEvent("AuthUserChangeStatus",
+                Map.of("username", username, "status", Boolean.toString(status), "admin", admin), null);
     }
 }

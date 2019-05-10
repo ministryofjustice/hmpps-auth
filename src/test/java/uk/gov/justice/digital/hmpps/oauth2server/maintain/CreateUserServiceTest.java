@@ -52,32 +52,32 @@ public class CreateUserServiceTest {
 
     @Test
     public void createUser_usernameLength() {
-        assertThatThrownBy(() -> createUserService.createUser("user", "email", "first", "last", Collections.emptySet(), "url")).
+        assertThatThrownBy(() -> createUserService.createUser("user", "email", "first", "last", Collections.emptySet(), "url", "bob")).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field username with reason: length");
     }
 
     @Test
     public void createUser_usernameFormat() {
-        assertThatThrownBy(() -> createUserService.createUser("user-name", "email", "first", "last", Collections.emptySet(), "url")).
+        assertThatThrownBy(() -> createUserService.createUser("user-name", "email", "first", "last", Collections.emptySet(), "url", "bob")).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field username with reason: format");
     }
 
     @Test
     public void createUser_firstNameLength() {
-        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "s", "last", Collections.emptySet(), "url")).
+        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "s", "last", Collections.emptySet(), "url", "bob")).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: length");
     }
 
     @Test
     public void createUser_lastNameLength() {
-        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "se", "x", Collections.emptySet(), "url")).
+        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "se", "x", Collections.emptySet(), "url", "bob")).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: length");
     }
 
     @Test
     public void createUser_emailValidation() throws VerifyEmailException {
         doThrow(new VerifyEmailException("reason")).when(verifyEmailService).validateEmailAddress(anyString());
-        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "se", "xx", Collections.emptySet(), "url")).
+        assertThatThrownBy(() -> createUserService.createUser("userme", "email", "se", "xx", Collections.emptySet(), "url", "bob")).
                 isInstanceOf(VerifyEmailException.class).hasMessage("Verify email failed with reason: reason");
 
         verify(verifyEmailService).validateEmailAddress("email");
@@ -85,14 +85,20 @@ public class CreateUserServiceTest {
 
     @Test
     public void createUser_successLinkReturned() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        final var link = createUserService.createUser("userme", "email", "se", "xx", Collections.emptySet(), "url?token=");
+        final var link = createUserService.createUser("userme", "email", "se", "xx", Collections.emptySet(), "url?token=", "bob");
 
         assertThat(link).startsWith("url?token=").hasSize("url?token=".length() + 36);
     }
 
     @Test
+    public void createUser_trackSuccess() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        createUserService.createUser("userme", "email", "se", "xx", Collections.emptySet(), "url?token=", "bob");
+        verify(telemetryClient).trackEvent("AuthUserCreateSuccess", Map.of("username", "USERME", "admin", "bob"), null);
+    }
+
+    @Test
     public void createUser_saveTokenRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        final var link = createUserService.createUser("userme", "email", "se", "xx", Collections.emptySet(), "url?token=");
+        final var link = createUserService.createUser("userme", "email", "se", "xx", Collections.emptySet(), "url?token=", "bob");
 
         final var captor = ArgumentCaptor.forClass(UserToken.class);
         verify(userTokenRepository).save(captor.capture());
@@ -104,7 +110,7 @@ public class CreateUserServiceTest {
 
     @Test
     public void createUser_saveEmailRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        createUserService.createUser("userMe", "eMail", "first", "last", Collections.emptySet(), "url?token=");
+        createUserService.createUser("userMe", "eMail", "first", "last", Collections.emptySet(), "url?token=", "bob");
 
         final var captor = ArgumentCaptor.forClass(UserEmail.class);
         verify(userEmailRepository).save(captor.capture());
@@ -122,7 +128,7 @@ public class CreateUserServiceTest {
 
     @Test
     public void createUser_mergeRoles() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        createUserService.createUser("userMe", "eMail", "first", "last", Set.of("ROLE_LICENCE_VARY", "ROLE_DISALLOWED"), "url?token=");
+        createUserService.createUser("userMe", "eMail", "first", "last", Set.of("ROLE_LICENCE_VARY", "ROLE_DISALLOWED"), "url?token=", "bob");
 
         final var captor = ArgumentCaptor.forClass(UserEmail.class);
         verify(userEmailRepository).save(captor.capture());
@@ -133,7 +139,7 @@ public class CreateUserServiceTest {
 
     @Test
     public void createUser_mergeRoles_addRolePrefix() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        createUserService.createUser("userMe", "eMail", "first", "last", Set.of("LICENCE_VARY", "DISALLOWED"), "url?token=");
+        createUserService.createUser("userMe", "eMail", "first", "last", Set.of("LICENCE_VARY", "DISALLOWED"), "url?token=", "bob");
 
         final var captor = ArgumentCaptor.forClass(UserEmail.class);
         verify(userEmailRepository).save(captor.capture());
@@ -144,7 +150,7 @@ public class CreateUserServiceTest {
 
     @Test
     public void createUser_callNotify() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        final var link = createUserService.createUser("userme", "email", "first", "last", Collections.emptySet(), "url?token=");
+        final var link = createUserService.createUser("userme", "email", "first", "last", Collections.emptySet(), "url?token=", "bob");
 
         verify(notificationClient).sendEmail("licences", "email", Map.of("resetLink", link, "firstName", "first", "username", "USERME"), null);
     }

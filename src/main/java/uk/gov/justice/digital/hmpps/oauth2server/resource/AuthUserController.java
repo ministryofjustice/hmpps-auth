@@ -22,7 +22,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientException;
 
+import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -83,7 +85,8 @@ public class AuthUserController {
     public ResponseEntity<Object> createUser(
             @ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
             @ApiParam(value = "Details of the user to be created.", required = true) @RequestBody final CreateUser createUser,
-            @ApiIgnore final HttpServletRequest request) throws NotificationClientException {
+            @ApiIgnore final HttpServletRequest request,
+            @ApiIgnore final Principal principal) throws NotificationClientException {
 
         final var user = StringUtils.isNotBlank(username) ? userService.findUser(StringUtils.trim(username)) : Optional.empty();
 
@@ -96,7 +99,7 @@ public class AuthUserController {
         try {
             final var requestURL = request.getRequestURL();
             final var setPasswordUrl = requestURL.toString().replaceFirst("/api/authuser/.*", "/initial-password?token=");
-            final var resetLink = createUserService.createUser(StringUtils.trim(username), createUser.getEmail(), createUser.getFirstName(), createUser.getLastName(), createUser.getAdditionalRoles(), setPasswordUrl);
+            final var resetLink = createUserService.createUser(StringUtils.trim(username), createUser.getEmail(), createUser.getFirstName(), createUser.getLastName(), createUser.getAdditionalRoles(), setPasswordUrl, principal.getName());
 
             log.info("Create user succeeded for user {}", username);
             if (smokeTestEnabled) {
@@ -110,6 +113,42 @@ public class AuthUserController {
         } catch (final VerifyEmailException e) {
             log.info("Create user failed for user {} for field email with reason {}", username, e.getReason());
             return ResponseEntity.badRequest().body(new ErrorDetail(String.format("email.%s", e.getReason()), "Email address failed validation", "email"));
+        }
+    }
+
+    @PutMapping("/api/authuser/{username}/enable")
+    @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+    @ApiOperation(value = "Enable a user.", notes = "Enable a user.", nickname = "enableUser",
+            consumes = "application/json", produces = "application/json")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
+            @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
+            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
+    public ResponseEntity<Object> enableUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
+                                             @ApiIgnore final Principal principal) {
+        try {
+            userService.enableUser(username, principal.getName());
+            return ResponseEntity.noContent().build();
+        } catch (final EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/api/authuser/{username}/disable")
+    @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+    @ApiOperation(value = "Disable a user.", notes = "Disable a user.", nickname = "disableUser",
+            consumes = "application/json", produces = "application/json")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
+            @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
+            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
+    public ResponseEntity<Object> disableUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
+                                              @ApiIgnore final Principal principal) {
+        try {
+            userService.disableUser(username, principal.getName());
+            return ResponseEntity.noContent().build();
+        } catch (final EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 

@@ -47,6 +47,8 @@ VALUES ('AUTH_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QL
        ('AUTH_LOCKED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'true', 'true', 'true'),
        ('AUTH_LOCKED2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_locked2@digital.justice.gov.uk', 'true', 'true', 'true', 'true'),
        ('AUTH_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'false', 'false', 'true'),
+('AUTH_STATUS', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', null, 'true', 'false', 'false', 'true')
+,
        ('AUTH_RO_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
        ('AUTH_RO_VARY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
        ('AUTH_RO_USER_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true');
@@ -63,6 +65,8 @@ VALUES ('AUTH_USER', 'Auth', 'Only'),
        ('AUTH_LOCKED', 'Auth', 'Locked'),
        ('AUTH_LOCKED2', 'Auth', 'Locked2'),
        ('AUTH_DISABLED', 'Auth', 'Disabled'),
+    ('AUTH_STATUS', 'Auth', 'Status')
+    ,
        ('AUTH_RO_USER', 'Ryan-Auth', 'Orton'),
        ('AUTH_RO_VARY_USER', 'Ryan-Auth-Vary', 'Orton'),
        ('AUTH_RO_USER_TEST', 'Ryan-Auth', 'Orton');
