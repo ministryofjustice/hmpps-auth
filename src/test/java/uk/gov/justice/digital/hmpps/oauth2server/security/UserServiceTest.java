@@ -96,7 +96,7 @@ public class UserServiceTest {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
         userService.enableUser("someuser", "someadmin");
-        verify(telemetryClient).trackEvent("AuthUserChangeStatus", Map.of("username", "someuser", "admin", "someadmin", "enabled", "true"), null);
+        verify(telemetryClient).trackEvent("AuthUserChangeEnabled", Map.of("username", "someuser", "admin", "someadmin", "enabled", "true"), null);
     }
 
     @Test
@@ -113,7 +113,7 @@ public class UserServiceTest {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
         userService.disableUser("someuser", "someadmin");
-        verify(telemetryClient).trackEvent("AuthUserChangeStatus", Map.of("username", "someuser", "admin", "someadmin", "enabled", "false"), null);
+        verify(telemetryClient).trackEvent("AuthUserChangeEnabled", Map.of("username", "someuser", "admin", "someadmin", "enabled", "false"), null);
     }
 
     @Test
