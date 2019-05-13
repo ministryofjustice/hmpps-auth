@@ -126,4 +126,64 @@ class AuthUserSpecification extends TestSpecification {
         then:
         response.statusCode == HttpStatus.NO_CONTENT
     }
+
+    def 'Auth User Enable endpoint enables user'() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant('ITAG_USER_ADM', 'password123456', 'elite2apiclient', 'clientsecret')
+
+        when:
+        def enableResponse = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS/enable', HttpMethod.PUT, null, String.class)
+
+        then:
+        enableResponse.statusCode == HttpStatus.NO_CONTENT
+        def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': true, 'locked': false, 'firstName': 'Auth', 'lastName': 'Status']
+    }
+
+    def 'Auth User Enable endpoint fails is not an admin user'() {
+
+        when:
+        def oauthRestTemplate = getOauthPasswordGrant('ITAG_USER', 'password123456', 'elite2apiclient', 'clientsecret')
+
+        then:
+        try {
+            oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS/enable', HttpMethod.PUT, null, String.class)
+            assert false // should not get here
+        } catch (OAuth2AccessDeniedException exception) {
+            exception.message == "error='access_denied', error_description='Access is denied'"
+        }
+    }
+
+    def 'Auth User Disable endpoint disables user'() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant('ITAG_USER_ADM', 'password123456', 'elite2apiclient', 'clientsecret')
+
+        when:
+        def disableResponse = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS/disable', HttpMethod.PUT, null, String.class)
+
+        then:
+        disableResponse.statusCode == HttpStatus.NO_CONTENT
+        def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': false, 'locked': false, 'firstName': 'Auth', 'lastName': 'Status']
+    }
+
+    def 'Auth User Disable endpoint fails is not an admin user'() {
+
+        when:
+        def oauthRestTemplate = getOauthPasswordGrant('ITAG_USER', 'password123456', 'elite2apiclient', 'clientsecret')
+
+        then:
+        try {
+            oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS/disable', HttpMethod.PUT, null, String.class)
+            assert false // should not get here
+        } catch (OAuth2AccessDeniedException exception) {
+            exception.message == "error='access_denied', error_description='Access is denied'"
+        }
+    }
 }

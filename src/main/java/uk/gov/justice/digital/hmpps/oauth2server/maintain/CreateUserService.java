@@ -53,7 +53,8 @@ public class CreateUserService {
     }
 
     @Transactional
-    public String createUser(final String usernameInput, final String emailInput, final String firstName, final String lastName, final Set<String> additionalRoles, final String url)
+    public String createUser(final String usernameInput, final String emailInput, final String firstName, final String lastName,
+                             final Set<String> additionalRoles, final String url, final String creator)
             throws CreateUserException, NotificationClientException, VerifyEmailException {
         // ensure username always uppercase
         final var username = StringUtils.upperCase(usernameInput);
@@ -84,14 +85,15 @@ public class CreateUserService {
         try {
             log.info("Sending initial set password to notify for user {}", username);
             notificationClient.sendEmail(licencesTemplateId, email, parameters, null);
-            telemetryClient.trackEvent("AuthUserCreateSuccess", Map.of("username", username), null);
+            telemetryClient.trackEvent("AuthUserCreateSuccess", Map.of("username", username, "admin", creator), null);
         } catch (final NotificationClientException e) {
             final var reason = (e.getCause() != null ? e.getCause() : e).getClass().getSimpleName();
             log.warn("Failed to send create user notify for user {}", username, e);
-            telemetryClient.trackEvent("AuthUserCreateFailure", Map.of("username", username, "reason", reason), null);
+            telemetryClient.trackEvent("AuthUserCreateFailure", Map.of("username", username, "reason", reason, "admin", creator), null);
             if (e.getHttpResult() >= 500) {
                 // second time lucky
                 notificationClient.sendEmail(licencesTemplateId, email, parameters, null, null);
+                telemetryClient.trackEvent("AuthUserCreateSuccess", Map.of("username", username, "admin", creator), null);
             }
             throw e;
         }
