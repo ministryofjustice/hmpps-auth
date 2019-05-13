@@ -82,8 +82,7 @@ public class UserServiceTest {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
         userService.enableUser("user", "admin");
         assertThat(optionalUserEmail).get().extracting(UserEmail::isEnabled).isEqualTo(Boolean.TRUE);
-        //noinspection OptionalGetWithoutIsPresent
-        verify(userEmailRepository).save(optionalUserEmail.get());
+        verify(userEmailRepository).save(optionalUserEmail.orElseThrow());
     }
 
     @Test
@@ -97,7 +96,7 @@ public class UserServiceTest {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
         userService.enableUser("someuser", "someadmin");
-        verify(telemetryClient).trackEvent("AuthUserChangeStatus", Map.of("username", "someuser", "admin", "someadmin", "status", "true"), null);
+        verify(telemetryClient).trackEvent("AuthUserChangeStatus", Map.of("username", "someuser", "admin", "someadmin", "enabled", "true"), null);
     }
 
     @Test
@@ -106,8 +105,7 @@ public class UserServiceTest {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
         userService.disableUser("user", "admin");
         assertThat(optionalUserEmail).get().extracting(UserEmail::isEnabled).isEqualTo(Boolean.FALSE);
-        //noinspection OptionalGetWithoutIsPresent
-        verify(userEmailRepository).save(optionalUserEmail.get());
+        verify(userEmailRepository).save(optionalUserEmail.orElseThrow());
     }
 
     @Test
@@ -115,7 +113,7 @@ public class UserServiceTest {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
         userService.disableUser("someuser", "someadmin");
-        verify(telemetryClient).trackEvent("AuthUserChangeStatus", Map.of("username", "someuser", "admin", "someadmin", "status", "false"), null);
+        verify(telemetryClient).trackEvent("AuthUserChangeStatus", Map.of("username", "someuser", "admin", "someadmin", "enabled", "false"), null);
     }
 
     @Test

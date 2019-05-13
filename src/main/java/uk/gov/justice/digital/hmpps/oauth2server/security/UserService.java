@@ -72,20 +72,20 @@ public class UserService {
 
     @Transactional
     public void enableUser(final String username, final String admin) {
-        changeUserStatus(username, true, admin);
+        changeUserEnabled(username, true, admin);
     }
 
     @Transactional
     public void disableUser(final String username, final String admin) {
-        changeUserStatus(username, false, admin);
+        changeUserEnabled(username, false, admin);
     }
 
-    private void changeUserStatus(final String username, final boolean status, final String admin) {
+    private void changeUserEnabled(final String username, final boolean enabled, final String admin) {
         final var userEmail = getAuthUserByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
-        userEmail.setEnabled(status);
+        userEmail.setEnabled(enabled);
         userEmailRepository.save(userEmail);
-        telemetryClient.trackEvent("AuthUserChangeStatus",
-                Map.of("username", username, "status", Boolean.toString(status), "admin", admin), null);
+        telemetryClient.trackEvent("AuthUserChangeEnabled",
+                Map.of("username", username, "enabled", Boolean.toString(enabled), "admin", admin), null);
     }
 }
