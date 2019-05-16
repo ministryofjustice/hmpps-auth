@@ -28,7 +28,7 @@ public class AuthUserRoleService {
     }
 
     @Transactional
-    public void addRole(final String username, final String role) throws AuthUserRoleException {
+    public void addRole(final String username, final String role, final String modifier) throws AuthUserRoleException {
         final var roleFormatted = formatRole(role);
 
         // already checked that user exists
@@ -38,12 +38,12 @@ public class AuthUserRoleService {
 
         log.info("Adding role {} to user {}", roleFormatted, username);
         userEmail.getAuthorities().add(new Authority(roleFormatted));
-        telemetryClient.trackEvent("AuthUserRoleAddSuccess", Map.of("username", username, "role", roleFormatted), null);
+        telemetryClient.trackEvent("AuthUserRoleAddSuccess", Map.of("username", username, "role", roleFormatted, "admin", modifier), null);
         userEmailRepository.save(userEmail);
     }
 
     @Transactional
-    public void removeRole(final String username, final String role) throws AuthUserRoleException {
+    public void removeRole(final String username, final String role, final String modifier) throws AuthUserRoleException {
         // already checked that user exists
         final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
 
@@ -54,7 +54,7 @@ public class AuthUserRoleService {
 
         log.info("Removing role {} from user {}", roleFormatted, username);
         userEmail.getAuthorities().removeIf(a -> a.getAuthority().equals(roleFormatted));
-        telemetryClient.trackEvent("AuthUserRoleRemoveSuccess", Map.of("username", username, "role", roleFormatted), null);
+        telemetryClient.trackEvent("AuthUserRoleRemoveSuccess", Map.of("username", username, "role", roleFormatted, "admin", modifier), null);
         userEmailRepository.save(userEmail);
     }
 

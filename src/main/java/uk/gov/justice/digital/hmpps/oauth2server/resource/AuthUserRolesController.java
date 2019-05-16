@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException;
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
+import java.security.Principal;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -64,12 +66,13 @@ public class AuthUserRolesController {
             @ApiResponse(code = 500, message = "Server exception e.g. failed to insert row.", response = ErrorDetail.class)})
     public ResponseEntity<Object> addRole(
             @ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
-            @ApiParam(value = "The role to be added to the user.", required = true) @PathVariable final String role) {
+            @ApiParam(value = "The role to be added to the user.", required = true) @PathVariable final String role,
+            @ApiIgnore final Principal principal) {
 
         final var userOptional = userService.getAuthUserByUsername(username);
         return userOptional.map(UserEmail::getUsername).map(usernameInDb -> {
             try {
-                authUserRoleService.addRole(usernameInDb, role);
+                authUserRoleService.addRole(usernameInDb, role, principal.getName());
                 log.info("Add role succeeded for user {} and role {}", usernameInDb, role);
                 return ResponseEntity.noContent().build();
             } catch (final AuthUserRoleExistsException e) {
@@ -96,13 +99,14 @@ public class AuthUserRolesController {
             @ApiResponse(code = 500, message = "Server exception e.g. failed to insert row.", response = ErrorDetail.class)})
     public ResponseEntity<Object> removeRole(
             @ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
-            @ApiParam(value = "The role to be delete from the user.", required = true) @PathVariable final String role) {
+            @ApiParam(value = "The role to be delete from the user.", required = true) @PathVariable final String role,
+            @ApiIgnore final Principal principal) {
 
         final var userOptional = userService.getAuthUserByUsername(username);
         return userOptional.map(u -> {
             final var usernameInDb = u.getUsername();
             try {
-                authUserRoleService.removeRole(usernameInDb, role);
+                authUserRoleService.removeRole(usernameInDb, role, principal.getName());
             } catch (AuthUserRoleException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).
                         <Object>body(new ErrorDetail("role.missing", String.format("Username %s doesn't have the role %s", usernameInDb, role), "role"));
