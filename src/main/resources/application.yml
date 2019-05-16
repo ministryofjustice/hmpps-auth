@@ -7,6 +7,8 @@ server:
     protocol_header: x-forwarded-proto
 
 spring:
+  application:
+    name: oauth2-server
   main:
     allow-bean-definition-overriding: true
   datasource:
