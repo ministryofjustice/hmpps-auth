@@ -63,8 +63,7 @@ public class UserTokenRepositoryTest {
 
     @Test
     public void testFindByTokenAndTokenType() {
-        //noinspection OptionalGetWithoutIsPresent
-        final var lockedUser = userEmailRepository.findById("LOCKED_USER").get();
+        final var lockedUser = userEmailRepository.findById("LOCKED_USER").orElseThrow();
         final var retrievedEntity = repository.findByTokenTypeAndUserEmail(TokenType.RESET, lockedUser).orElseThrow();
         assertThat(retrievedEntity.getToken()).isEqualTo("reset");
         assertThat(retrievedEntity.getTokenType()).isEqualTo(TokenType.RESET);

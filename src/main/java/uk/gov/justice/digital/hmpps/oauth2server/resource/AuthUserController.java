@@ -14,8 +14,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
-import uk.gov.justice.digital.hmpps.oauth2server.maintain.CreateUserService;
-import uk.gov.justice.digital.hmpps.oauth2server.maintain.CreateUserService.CreateUserException;
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException;
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
@@ -35,13 +36,13 @@ import java.util.stream.Collectors;
 @Api(tags = {"/api/authuser"})
 public class AuthUserController {
     private final UserService userService;
-    private final CreateUserService createUserService;
+    private final AuthUserService authUserService;
     private final boolean smokeTestEnabled;
 
-    public AuthUserController(final UserService userService, final CreateUserService createUserService,
+    public AuthUserController(final UserService userService, final AuthUserService authUserService,
                               @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
         this.userService = userService;
-        this.createUserService = createUserService;
+        this.authUserService = authUserService;
         this.smokeTestEnabled = smokeTestEnabled;
     }
 
@@ -97,9 +98,8 @@ public class AuthUserController {
 
         // new user
         try {
-            final var requestURL = request.getRequestURL();
-            final var setPasswordUrl = requestURL.toString().replaceFirst("/api/authuser/.*", "/initial-password?token=");
-            final var resetLink = createUserService.createUser(StringUtils.trim(username), createUser.getEmail(), createUser.getFirstName(), createUser.getLastName(), createUser.getAdditionalRoles(), setPasswordUrl, principal.getName());
+            final var setPasswordUrl = createInitialPasswordUrl(request);
+            final var resetLink = authUserService.createUser(StringUtils.trim(username), createUser.getEmail(), createUser.getFirstName(), createUser.getLastName(), createUser.getAdditionalRoles(), setPasswordUrl, principal.getName());
 
             log.info("Create user succeeded for user {}", username);
             if (smokeTestEnabled) {
@@ -116,12 +116,17 @@ public class AuthUserController {
         }
     }
 
+    private String createInitialPasswordUrl(@ApiIgnore final HttpServletRequest request) {
+        final var requestURL = request.getRequestURL();
+        return requestURL.toString().replaceFirst("/api/authuser/.*", "/initial-password?token=");
+    }
+
     @PutMapping("/api/authuser/{username}/enable")
     @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
     @ApiOperation(value = "Enable a user.", notes = "Enable a user.", nickname = "enableUser",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
+            @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> enableUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
@@ -139,7 +144,7 @@ public class AuthUserController {
     @ApiOperation(value = "Disable a user.", notes = "Disable a user.", nickname = "disableUser",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
+            @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> disableUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
@@ -150,6 +155,40 @@ public class AuthUserController {
         } catch (final EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping("/api/authuser/{username}")
+    @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+    @ApiOperation(value = "Amend a user.", notes = "Amend a user.", nickname = "amendUser",
+            consumes = "application/json", produces = "application/json")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
+            @ApiResponse(code = 400, message = "Bad request e.g. if validation failed or if the amendments are disallowed", response = ErrorDetail.class),
+            @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
+            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
+    public ResponseEntity<Object> amendUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
+                                            @RequestBody final AmendUser amendUser,
+                                            @ApiIgnore final HttpServletRequest request,
+                                            @ApiIgnore final Principal principal) throws NotificationClientException {
+        try {
+            final var setPasswordUrl = createInitialPasswordUrl(request);
+            final var resetLink = authUserService.amendUser(username, amendUser.getEmail(), setPasswordUrl, principal.getName());
+            log.info("Amend user succeeded for user {}", username);
+            if (smokeTestEnabled) {
+                return ResponseEntity.ok(resetLink);
+            }
+            return ResponseEntity.noContent().build();
+        } catch (final EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (final AmendUserException e) {
+            log.info("Amend user failed for user {} for field {} with reason {}", username, e.getField(), e.getErrorCode());
+            return ResponseEntity.badRequest().body(new ErrorDetail(String.format("%s.%s", e.getField(), e.getErrorCode()),
+                    String.format("%s failed validation", e.getField()), e.getField()));
+        } catch (final VerifyEmailException e) {
+            log.info("Amend user failed for user {} for field email with reason {}", username, e.getReason());
+            return ResponseEntity.badRequest().body(new ErrorDetail(String.format("email.%s", e.getReason()), "Email address failed validation", "email"));
+        }
+
     }
 
     @Data
@@ -168,6 +207,14 @@ public class AuthUserController {
         Set<String> getAdditionalRoles() {
             return additionalRoles == null ? Collections.emptySet() : additionalRoles;
         }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    static class AmendUser {
+        @ApiModelProperty(required = true, value = "Email address", example = "nomis.user@someagency.justice.gov.uk", position = 1)
+        private String email;
     }
 
     @Data

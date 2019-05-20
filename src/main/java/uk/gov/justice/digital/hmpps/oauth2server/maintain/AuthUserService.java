@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.Verif
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +30,7 @@ import static uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleSer
 
 @Service
 @Slf4j
-public class CreateUserService {
+public class AuthUserService {
     private static final Set<String> LICENCES_ROLES = Set.of("ROLE_LICENCE_RO", "ROLE_GLOBAL_SEARCH");
 
     private final UserTokenRepository userTokenRepository;
@@ -39,11 +40,11 @@ public class CreateUserService {
     private final VerifyEmailService verifyEmailService;
     private final String licencesTemplateId;
 
-    public CreateUserService(final UserTokenRepository userTokenRepository,
-                             final UserEmailRepository userEmailRepository,
-                             final NotificationClientApi notificationClient,
-                             final TelemetryClient telemetryClient,
-                             final VerifyEmailService verifyEmailService, @Value("${application.notify.licences-initial-password.template}") final String licencesTemplateId) {
+    public AuthUserService(final UserTokenRepository userTokenRepository,
+                           final UserEmailRepository userEmailRepository,
+                           final NotificationClientApi notificationClient,
+                           final TelemetryClient telemetryClient,
+                           final VerifyEmailService verifyEmailService, @Value("${application.notify.licences-initial-password.template}") final String licencesTemplateId) {
         this.userTokenRepository = userTokenRepository;
         this.userEmailRepository = userEmailRepository;
         this.notificationClient = notificationClient;
@@ -70,6 +71,10 @@ public class CreateUserService {
         // create list of authorities
         final var authorities = calculateRoles(additionalRoles);
         final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, authorities);
+        return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate");
+    }
+
+    private String saveAndSendInitialEmail(final String url, final UserEmail user, final String creator, final String eventPrefix) throws NotificationClientException {
         userEmailRepository.save(user);
 
         // then the reset token
@@ -79,27 +84,45 @@ public class CreateUserService {
         userTokenRepository.save(userToken);
 
         final var setPasswordLink = url + userToken.getToken();
-        final var parameters = Map.of("firstName", firstName, "resetLink", setPasswordLink, "username", username);
+        final var username = user.getUsername();
+        final var email = user.getEmail();
+        final var parameters = Map.of("firstName", user.getFirstName(), "resetLink", setPasswordLink, "username", username);
 
         // send the email
         try {
             log.info("Sending initial set password to notify for user {}", username);
             notificationClient.sendEmail(licencesTemplateId, email, parameters, null);
-            telemetryClient.trackEvent("AuthUserCreateSuccess", Map.of("username", username, "admin", creator), null);
+            telemetryClient.trackEvent(String.format("%sSuccess", eventPrefix), Map.of("username", username, "admin", creator), null);
         } catch (final NotificationClientException e) {
             final var reason = (e.getCause() != null ? e.getCause() : e).getClass().getSimpleName();
             log.warn("Failed to send create user notify for user {}", username, e);
-            telemetryClient.trackEvent("AuthUserCreateFailure", Map.of("username", username, "reason", reason, "admin", creator), null);
+            telemetryClient.trackEvent(String.format("%sFailure", eventPrefix), Map.of("username", username, "reason", reason, "admin", creator), null);
             if (e.getHttpResult() >= 500) {
                 // second time lucky
                 notificationClient.sendEmail(licencesTemplateId, email, parameters, null, null);
-                telemetryClient.trackEvent("AuthUserCreateSuccess", Map.of("username", username, "admin", creator), null);
+                telemetryClient.trackEvent(String.format("%sSuccess", eventPrefix), Map.of("username", username, "admin", creator), null);
             }
             throw e;
         }
 
         // return the reset link to the controller
         return setPasswordLink;
+    }
+
+    @Transactional
+    public String amendUser(final String usernameInput, final String emailAddressInput, final String url, final String admin) throws AmendUserException, VerifyEmailException, NotificationClientException {
+        final var username = StringUtils.upperCase(usernameInput);
+        final var email = StringUtils.lowerCase(emailAddressInput);
+
+        final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
+        // if unverified and password not set then still in the initial state
+        if (userEmail.isVerified() || userEmail.getPassword() != null) {
+            throw new AmendUserException("email", "notinitial");
+        }
+        verifyEmailService.validateEmailAddress(email);
+        userEmail.setEmail(email);
+        return saveAndSendInitialEmail(url, userEmail, admin, "AuthUserAmend");
     }
 
     private Set<Authority> calculateRoles(final Set<String> additionalRoles) {
@@ -135,6 +158,19 @@ public class CreateUserService {
 
         public CreateUserException(final String field, final String errorCode) {
             super(String.format("Create user failed for field %s with reason: %s", field, errorCode));
+
+            this.field = field;
+            this.errorCode = errorCode;
+        }
+    }
+
+    @Getter
+    public static class AmendUserException extends Exception {
+        private final String errorCode;
+        private final String field;
+
+        public AmendUserException(final String field, final String errorCode) {
+            super(String.format("Amend user failed for field %s with reason: %s", field, errorCode));
 
             this.field = field;
             this.errorCode = errorCode;
