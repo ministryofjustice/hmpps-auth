@@ -186,4 +186,42 @@ class AuthUserSpecification extends TestSpecification {
             exception.message == "error='access_denied', error_description='Access is denied'"
         }
     }
+
+    def 'Amend User endpoint succeeds to alter user email'() {
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant('ITAG_USER_ADM', 'password123456', 'elite2apiclient', 'clientsecret')
+
+        when:
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.APPLICATION_JSON)
+
+        HttpEntity<String> entity = new HttpEntity<String>('{"email": "bobby.b@digital.justice.gov.uk" }', headers)
+        def createUserResponse = oauthRestTemplate.exchange("${getBaseUrl()}/api/authuser/AUTH_NEW_USER", HttpMethod.POST, entity, String.class)
+
+        then:
+        createUserResponse.statusCode == HttpStatus.OK
+
+        def response = oauthRestTemplate.exchange("${getBaseUrl()}/api/authuser/AUTH_NEW_USER", HttpMethod.GET, null, String.class)
+        def userData = jsonSlurper.parseText(response.body as String)
+
+        userData.email == 'bobby.b@digital.justice.gov.uk'
+    }
+
+    def 'Amend User endpoint fails if no privilege'() {
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant('ITAG_USER', 'password', 'elite2apiclient', 'clientsecret')
+
+        when:
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.APPLICATION_JSON)
+
+        then:
+        try {
+            HttpEntity<String> entity = new HttpEntity<String>('{"email": "bobby.b@digital.justice.gov.uk" }', headers)
+            oauthRestTemplate.exchange("${getBaseUrl()}/api/authuser/AUTH_NEW_USER", HttpMethod.POST, entity, String.class)
+            assert false // should not get here
+        } catch (OAuth2AccessDeniedException exception) {
+            exception.message == "error='access_denied', error_description='Access is denied'"
+        }
+    }
 }
