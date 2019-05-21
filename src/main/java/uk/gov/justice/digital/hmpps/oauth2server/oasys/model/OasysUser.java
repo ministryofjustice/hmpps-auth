@@ -100,7 +100,7 @@ public class OasysUser implements UserPersonDetails {
 
     @Override
     public String getAuthSource() {
-        return null;
+        return "oasys";
     }
 
     @Override
