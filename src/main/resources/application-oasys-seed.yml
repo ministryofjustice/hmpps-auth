@@ -1,0 +1,3 @@
+oasys:
+  flyway:
+    locations: db/oasys,db/dev/data/oasys

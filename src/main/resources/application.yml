@@ -49,3 +49,17 @@ management:
       base-path: /
     health:
       show-details: "ALWAYS"
+
+# Oasys db - "oasys"
+oasys:
+  datasource:
+    url: 'jdbc:h2:mem:oasysdb;MODE=Oracle'
+  flyway:
+    locations: db/oasys
+  jpa:
+    hibernate:
+      hbm2ddl:
+        auto: none
+    properties:
+      hibernate:
+        show_sql: true

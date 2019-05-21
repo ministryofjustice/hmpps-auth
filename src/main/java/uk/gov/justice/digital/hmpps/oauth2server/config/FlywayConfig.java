@@ -41,4 +41,19 @@ public class FlywayConfig {
         flyway.migrate();
         return flyway;
     }
+
+    @Bean(name = "oasysFlyway", initMethod = "migrate")
+    @FlywayDataSource
+    @Primary
+    @Profile("oasys-seed")
+    public Flyway oasysFlyway(@Qualifier("oasysDataSource") final DataSource dataSource,
+                              @Value("${oasys.flyway.locations}") final List<String> flywayLocations) {
+        final var flyway = Flyway.configure()
+                .dataSource(dataSource)
+                .locations(flywayLocations.toArray(new String[0]))
+                .installedBy("oasys-seed")
+                .load();
+        flyway.migrate();
+        return flyway;
+    }
 }
