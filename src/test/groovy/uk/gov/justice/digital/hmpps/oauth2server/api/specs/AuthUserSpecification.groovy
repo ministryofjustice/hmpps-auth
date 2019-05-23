@@ -73,7 +73,7 @@ class AuthUserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ['username': 'AUTH_USER', 'email': 'auth_user@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'firstName': 'Auth', 'lastName': 'Only']
+        userData == ['username': 'AUTH_USER', 'email': 'auth_user@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Only']
     }
 
     def 'Auth User endpoint returns no data for nomis user'() {
@@ -110,8 +110,8 @@ class AuthUserSpecification extends TestSpecification {
         def userDataList = jsonSlurper.parseText(response.body)
 
         userDataList == [
-                ['username': 'AUTH_ADM', 'email': 'auth_test2@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'firstName': 'Auth', 'lastName': 'Adm'],
-                ['username': 'AUTH_EXPIRED', 'email': 'auth_test2@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'firstName': 'Auth', 'lastName': 'Expired'],
+                ['username': 'AUTH_ADM', 'email': 'auth_test2@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Adm'],
+                ['username': 'AUTH_EXPIRED', 'email': 'auth_test2@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Expired'],
         ]
     }
 
@@ -140,7 +140,7 @@ class AuthUserSpecification extends TestSpecification {
         def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': true, 'locked': false, 'firstName': 'Auth', 'lastName': 'Status']
+        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status']
     }
 
     def 'Auth User Enable endpoint fails is not an admin user'() {
@@ -170,7 +170,7 @@ class AuthUserSpecification extends TestSpecification {
         def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': false, 'locked': false, 'firstName': 'Auth', 'lastName': 'Status']
+        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': false, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status']
     }
 
     def 'Auth User Disable endpoint fails is not an admin user'() {
