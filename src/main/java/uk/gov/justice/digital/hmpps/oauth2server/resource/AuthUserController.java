@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientException;
@@ -50,7 +49,7 @@ public class AuthUserController {
     @ApiOperation(value = "User detail.", notes = "User detail.", nickname = "getUserDetails",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
+            @ApiResponse(code = 200, message = "OK", response = AuthUser.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> user(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
@@ -162,7 +161,7 @@ public class AuthUserController {
     @ApiOperation(value = "Amend a user.", notes = "Amend a user.", nickname = "amendUser",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
+            @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 400, message = "Bad request e.g. if validation failed or if the amendments are disallowed", response = ErrorDetail.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
@@ -232,9 +231,19 @@ public class AuthUserController {
         private boolean locked;
         @ApiModelProperty(required = true, value = "Account is enabled", example = "false", position = 6)
         private boolean enabled;
+        @ApiModelProperty(required = true, value = "Email address has been verified", example = "false", position = 7)
+        private boolean verified;
 
         private static AuthUser fromUserEmail(final UserEmail user) {
-            return AuthUser.builder().username(user.getUsername()).email(user.getEmail()).firstName(user.getFirstName()).lastName(user.getPerson().getLastName()).locked(user.isLocked()).enabled(user.isEnabled()).build();
+            return AuthUser.builder().
+                    username(user.getUsername()).
+                    email(user.getEmail()).
+                    firstName(user.getFirstName()).
+                    lastName(user.getPerson().getLastName()).
+                    locked(user.isLocked()).
+                    enabled(user.isEnabled()).
+                    verified(user.isVerified()).
+                    build();
         }
     }
 

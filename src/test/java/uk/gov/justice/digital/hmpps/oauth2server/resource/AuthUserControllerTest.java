@@ -61,7 +61,7 @@ public class AuthUserControllerTest {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(new AuthUser("principal", "email", "Joe", "Bloggs", false, true));
+        assertThat(responseEntity.getBody()).isEqualTo(new AuthUser("principal", "email", "Joe", "Bloggs", false, true, true));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class AuthUserControllerTest {
         when(userService.findAuthUsersByEmail(anyString())).thenReturn(List.of(getAuthUser()));
         final var responseEntity = authUserController.searchForUser("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(List.of(new AuthUser("principal", "email", "Joe", "Bloggs", false, true)));
+        assertThat(responseEntity.getBody()).isEqualTo(List.of(new AuthUser("principal", "email", "Joe", "Bloggs", false, true, true)));
     }
 
     @Test
