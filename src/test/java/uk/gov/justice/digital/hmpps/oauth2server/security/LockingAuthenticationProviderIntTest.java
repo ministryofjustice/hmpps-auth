@@ -21,24 +21,24 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ActiveProfiles("dev")
 public class LockingAuthenticationProviderIntTest {
     @Autowired
-    private LockingAuthenticationProvider provider;
+    private LockingAuthenticationProvider nomisLockingAuthenticationProvider;
 
     @Test
     public void authenticate_Success() {
-        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "password"));
+        final var auth = nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "password"));
         assertThat(auth).isNotNull();
     }
 
     @Test
     public void authenticate_SuccessWithAuthorities() {
-        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER_ADM", "password123456"));
+        final var auth = nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER_ADM", "password123456"));
         assertThat(auth).isNotNull();
         assertThat(auth.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_KW_MIGRATION", "ROLE_MAINTAIN_OAUTH_USERS");
     }
 
     @Test
     public void authenticate_AuthUserSuccessWithAuthorities() {
-        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ADM", "password123456"));
+        final var auth = nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ADM", "password123456"));
         assertThat(auth).isNotNull();
         assertThat(auth.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES");
     }
@@ -46,103 +46,103 @@ public class LockingAuthenticationProviderIntTest {
     @Test
     public void authenticate_NullUsername() {
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken(null, "password"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(null, "password"))
         ).isInstanceOf(MissingCredentialsException.class);
     }
 
     @Test
     public void authenticate_MissingUsername() {
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("      ", "password"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("      ", "password"))
         ).isInstanceOf(MissingCredentialsException.class);
     }
 
     @Test
     public void authenticate_MissingPassword() {
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "   "))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "   "))
         ).isInstanceOf(MissingCredentialsException.class);
     }
 
     @Test
     public void authenticate_LockAfterThreeFailures() {
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("CA_USER", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("CA_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("CA_USER", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("CA_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("CA_USER", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("CA_USER", "wrong"))
         ).isInstanceOf(LockedException.class);
     }
 
     @Test
     public void authenticate_AuthUserLockAfterThreeFailures() {
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
         ).isInstanceOf(LockedException.class);
     }
 
     @Test
     public void authenticate_ResetAfterSuccess() {
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         // success in middle should cause reset of count
-        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "password"));
+        final var auth = nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "password"));
         assertThat(auth).isNotNull();
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
     }
 
     @Test
     public void authenticate_AuthUserResetAfterSuccess() {
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
 
         // success in middle should cause reset of count
-        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "password123456"));
+        final var auth = nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "password123456"));
         assertThat(auth).isNotNull();
 
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
     }
 
     @Test
     public void authenticate_ExpiredUserWrongPassword() {
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("EXPIRED_USER", "wrong"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("EXPIRED_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
     }
 
     @Test
     public void authenticate_ExpiredUser() {
         assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("EXPIRED_USER", "password123456"))
+                nomisLockingAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("EXPIRED_USER", "password123456"))
         ).isInstanceOf(CredentialsExpiredException.class);
     }
 }
