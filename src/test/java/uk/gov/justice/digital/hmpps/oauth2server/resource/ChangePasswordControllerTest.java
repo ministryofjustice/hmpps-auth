@@ -20,8 +20,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
 import javax.servlet.ServletException;
@@ -36,7 +36,10 @@ import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChangePasswordControllerTest {
@@ -47,7 +50,7 @@ public class ChangePasswordControllerTest {
     @Mock
     private ChangePasswordService changePasswordService;
     @Mock
-    private UserService userService;
+    private NomisUserService userService;
     @Mock
     private TokenService tokenService;
     @Mock

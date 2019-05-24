@@ -27,7 +27,7 @@ public class LockingAuthenticationProviderTest {
 
     @Before
     public void setUp() {
-        lockingAuthenticationProvider = new LockingAuthenticationProvider(userDetailsService, userRetriesService, telemetryClient, 3);
+        lockingAuthenticationProvider = new LockingAuthenticationProvider(userDetailsService, userRetriesService, telemetryClient, 3, new OracleSha1PasswordEncoder());
     }
 
     @Test

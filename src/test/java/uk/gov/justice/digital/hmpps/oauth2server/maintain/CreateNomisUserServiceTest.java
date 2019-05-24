@@ -31,7 +31,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CreateUserServiceTest {
+public class CreateNomisUserServiceTest {
     @Mock
     private UserEmailRepository userEmailRepository;
     @Mock

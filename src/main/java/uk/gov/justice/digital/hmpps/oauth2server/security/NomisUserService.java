@@ -19,17 +19,17 @@ import java.util.Optional;
 @Service
 @Slf4j
 @Transactional(readOnly = true)
-public class UserService {
+public class NomisUserService {
 
     private final StaffUserAccountRepository userRepository;
     private final StaffIdentifierRepository staffIdentifierRepository;
     private final UserEmailRepository userEmailRepository;
     private final TelemetryClient telemetryClient;
 
-    public UserService(final StaffUserAccountRepository userRepository,
-                       final StaffIdentifierRepository staffIdentifierRepository,
-                       final UserEmailRepository userEmailRepository,
-                       final TelemetryClient telemetryClient) {
+    public NomisUserService(final StaffUserAccountRepository userRepository,
+                            final StaffIdentifierRepository staffIdentifierRepository,
+                            final UserEmailRepository userEmailRepository,
+                            final TelemetryClient telemetryClient) {
         this.userRepository = userRepository;
         this.staffIdentifierRepository = staffIdentifierRepository;
         this.userEmailRepository = userEmailRepository;

@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.Au
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleExistsException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 
 import java.security.Principal;
 import java.util.Map;
@@ -22,7 +22,9 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthUserRolesControllerTest {
@@ -31,7 +33,7 @@ public class AuthUserRolesControllerTest {
     private final Principal principal = new UsernamePasswordAuthenticationToken("bob", "pass");
 
     @Mock
-    private UserService userService;
+    private NomisUserService userService;
     @Mock
     private AuthUserRoleService authUserRoleService;
 

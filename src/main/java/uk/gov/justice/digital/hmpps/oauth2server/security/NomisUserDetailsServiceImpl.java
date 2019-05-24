@@ -13,10 +13,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-@Service("userDetailsService")
+@Service("nomisUserDetailsService")
 @Transactional(readOnly = true)
-public class UserDetailsServiceImpl implements UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
-    private final UserService userService;
+public class NomisUserDetailsServiceImpl implements UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
+    private final NomisUserService userService;
 
     @PersistenceContext(unitName = "nomis")
     private EntityManager nomisEntityManager;
@@ -24,7 +24,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
     @PersistenceContext(unitName = "auth")
     private EntityManager authEntityManager;
 
-    public UserDetailsServiceImpl(final UserService userService) {
+    public NomisUserDetailsServiceImpl(final NomisUserService userService) {
         this.userService = userService;
     }
 

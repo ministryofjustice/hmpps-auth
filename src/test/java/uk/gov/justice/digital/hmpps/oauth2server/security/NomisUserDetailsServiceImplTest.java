@@ -9,7 +9,16 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.*;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Caseload;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Role;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.UserAccessibleCaseload;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.UserCaseloadIdentity;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.UserCaseloadRole;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.UserCaseloadRoleIdentity;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
@@ -22,16 +31,21 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.*;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.EXPIRED;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.EXPIRED_GRACE;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.EXPIRED_LOCKED;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.LOCKED;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.LOCKED_TIMED;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.OPEN;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class UserDetailsServiceImplTest {
+public class NomisUserDetailsServiceImplTest {
 
-    private UserDetailsServiceImpl service;
+    private NomisUserDetailsServiceImpl service;
 
     @Mock
-    private UserService userService;
+    private NomisUserService userService;
     @Mock
     private EntityManager nomisEntityManager;
     @Mock
@@ -43,7 +57,7 @@ public class UserDetailsServiceImplTest {
 
     @Before
     public void setup() {
-        service = new UserDetailsServiceImpl(userService);
+        service = new NomisUserDetailsServiceImpl(userService);
         ReflectionTestUtils.setField(service, "nomisEntityManager", nomisEntityManager);
         ReflectionTestUtils.setField(service, "authEntityManager", authEntityManager);
     }

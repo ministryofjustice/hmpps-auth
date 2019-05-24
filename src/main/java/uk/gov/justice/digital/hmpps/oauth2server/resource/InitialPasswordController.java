@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.justice.digital.hmpps.oauth2server.model.Context;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
@@ -27,7 +27,7 @@ public class InitialPasswordController extends AbstractPasswordController {
     private final String hdcUrl;
 
     public InitialPasswordController(final ResetPasswordService resetPasswordService,
-                                     final TokenService tokenService, final UserService userService,
+                                     final TokenService tokenService, final NomisUserService userService,
                                      final TelemetryClient telemetryClient,
                                      final @Value("${application.authentication.blacklist}") Set<String> passwordBlacklist,
                                      @Value("${application.hdc-endpoint-url}") final String hdcUrl) {

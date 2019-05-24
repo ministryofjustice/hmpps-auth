@@ -20,12 +20,12 @@ public class ExternalIdAuthenticationHelper {
     private static final String REQUEST_PARAM_USER_ID = "user_id";
     private static final String REQUEST_PARAM_USER_NAME = "username";
 
-    private final UserService userService;
+    private final NomisUserService userService;
     private final UserDetailsService userDetailsService;
 
-    public ExternalIdAuthenticationHelper(final UserService userService, final UserDetailsService userDetailsService) {
+    public ExternalIdAuthenticationHelper(final NomisUserService userService, final UserDetailsService nomisUserDetailsService) {
         this.userService = userService;
-        this.userDetailsService = userDetailsService;
+        this.userDetailsService = nomisUserDetailsService;
     }
 
     public UserPersonDetails getUserDetails(final Map<String, String> requestParameters) {

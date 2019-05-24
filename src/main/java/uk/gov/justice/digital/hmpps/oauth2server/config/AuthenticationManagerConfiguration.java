@@ -23,41 +23,47 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHan
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtCookieAuthenticationFilter;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserDetailsServiceImpl;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler;
 
 @Configuration
 @Order(4)
 public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsService nomisUserDetailsService;
+    private final UserDetailsService oasysUserDetailsService;
     private final LoggingAccessDeniedHandler accessDeniedHandler;
     private final RedirectingLogoutSuccessHandler logoutSuccessHandler;
     private final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
     private final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter;
     private final String jwtCookieName;
     private final CookieRequestCache cookieRequestCache;
-    private final DaoAuthenticationProvider daoAuthenticationProvider;
+    private final DaoAuthenticationProvider nomisAuthenticationProvider;
+    private final DaoAuthenticationProvider oasysAuthenticationProvider;
     private final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler;
 
     @Autowired
-    public AuthenticationManagerConfiguration(final UserDetailsService userDetailsService,
+    public AuthenticationManagerConfiguration(final UserDetailsService nomisUserDetailsService,
+                                              final UserDetailsService oasysUserDetailsService,
                                               final LoggingAccessDeniedHandler accessDeniedHandler,
                                               final RedirectingLogoutSuccessHandler logoutSuccessHandler,
                                               final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
                                               final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter,
                                               @Value("${jwt.cookie.name}") final String jwtCookieName,
                                               final CookieRequestCache cookieRequestCache,
-                                              final DaoAuthenticationProvider daoAuthenticationProvider,
+                                              final DaoAuthenticationProvider nomisLockingAuthenticationProvider,
+                                              final DaoAuthenticationProvider oasysLockingAuthenticationProvider,
                                               final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler) {
-        this.userDetailsService = userDetailsService;
+        this.nomisUserDetailsService = nomisUserDetailsService;
+        this.oasysUserDetailsService = oasysUserDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
         this.jwtCookieAuthenticationFilter = jwtCookieAuthenticationFilter;
         this.jwtCookieName = jwtCookieName;
         this.cookieRequestCache = cookieRequestCache;
-        this.daoAuthenticationProvider = daoAuthenticationProvider;
+        this.nomisAuthenticationProvider = nomisLockingAuthenticationProvider;
+        this.oasysAuthenticationProvider = oasysLockingAuthenticationProvider;
         this.userStateAuthenticationFailureHandler = userStateAuthenticationFailureHandler;
     }
 
@@ -66,26 +72,26 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
         // @formatter:off
         http
-            .sessionManagement()
+                .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
-            // Can't have CSRF protection as requires session
-            .and().csrf().disable()
+                // Can't have CSRF protection as requires session
+                .and().csrf().disable()
 
-            .authorizeRequests()
+                .authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/login").permitAll()
                 .antMatchers(HttpMethod.POST, "/login").permitAll()
                 .antMatchers("/ui/**").access("isAuthenticated() and @authIpSecurity.check(request)")
                 .anyRequest().authenticated()
 
-            .and()
+                .and()
                 .formLogin()
                 .loginPage("/login")
                 .successHandler(jwtAuthenticationSuccessHandler)
                 .failureHandler(userStateAuthenticationFailureHandler)
                 .permitAll()
 
-            .and()
+                .and()
                 .logout()
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
@@ -94,11 +100,11 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .logoutSuccessHandler(logoutSuccessHandler)
                 .permitAll()
 
-            .and()
+                .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler)
 
-            .and()
+                .and()
                 .addFilterAfter(jwtCookieAuthenticationFilter, BasicAuthenticationFilter.class)
 
                 .requestCache().requestCache(cookieRequestCache);
@@ -127,7 +133,8 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     @Override
     protected void configure(final AuthenticationManagerBuilder auth) {
-        auth.authenticationProvider(daoAuthenticationProvider);
+        auth.authenticationProvider(nomisAuthenticationProvider);
+        auth.authenticationProvider(oasysAuthenticationProvider);
         auth.authenticationProvider(preAuthProvider());
     }
 
@@ -135,7 +142,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     @Bean
     public PreAuthenticatedAuthenticationProvider preAuthProvider() {
         final var preAuth = new PreAuthenticatedAuthenticationProvider();
-        preAuth.setPreAuthenticatedUserDetailsService((UserDetailsServiceImpl) userDetailsService);
+        preAuth.setPreAuthenticatedUserDetailsService((NomisUserDetailsServiceImpl) nomisUserDetailsService);
         return preAuth;
     }
 

@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UserServiceTest {
+public class NomisUserServiceTest {
     @Mock
     private UserEmailRepository userEmailRepository;
     @Mock
@@ -36,11 +36,11 @@ public class UserServiceTest {
     @Mock
     private TelemetryClient telemetryClient;
 
-    private UserService userService;
+    private NomisUserService userService;
 
     @Before
     public void setUp() {
-        userService = new UserService(staffUserAccountRepository, staffIdentifierRepository, userEmailRepository, telemetryClient);
+        userService = new NomisUserService(staffUserAccountRepository, staffIdentifierRepository, userEmailRepository, telemetryClient);
     }
 
     @Test

@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.oasys.model.OasysUser;
 import uk.gov.justice.digital.hmpps.oauth2server.oasys.repository.OasysUserRepository;
 
@@ -17,7 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OasysUserServiceTest {
+public class OasysNomisUserServiceTest {
 
     @Mock
     private OasysUserRepository oasysUserRepository;

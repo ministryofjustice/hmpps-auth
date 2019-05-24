@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
 import javax.servlet.ServletException;
@@ -37,14 +37,14 @@ public class ChangePasswordController extends AbstractPasswordController {
     private final TelemetryClient telemetryClient;
 
     public ChangePasswordController(final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
-                                    final DaoAuthenticationProvider daoAuthenticationProvider,
+                                    final DaoAuthenticationProvider nomisLockingAuthenticationProvider,
                                     final ChangePasswordService changePasswordService,
-                                    final TokenService tokenService, final UserService userService,
+                                    final TokenService tokenService, final NomisUserService userService,
                                     final TelemetryClient telemetryClient,
                                     final @Value("${application.authentication.blacklist}") Set<String> passwordBlacklist) {
         super(changePasswordService, tokenService, userService, telemetryClient, "redirect:/login?error=%s", "changePassword", passwordBlacklist);
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
-        this.daoAuthenticationProvider = daoAuthenticationProvider;
+        this.daoAuthenticationProvider = nomisLockingAuthenticationProvider;
         this.tokenService = tokenService;
         this.telemetryClient = telemetryClient;
     }

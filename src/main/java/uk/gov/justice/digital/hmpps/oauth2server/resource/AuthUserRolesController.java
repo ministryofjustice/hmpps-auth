@@ -1,12 +1,20 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
@@ -14,7 +22,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.Au
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleExistsException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 
 import java.security.Principal;
 import java.util.stream.Collectors;
@@ -23,10 +31,10 @@ import java.util.stream.Collectors;
 @RestController
 @Api(tags = {"/api/authuser/{username}/roles"})
 public class AuthUserRolesController {
-    private final UserService userService;
+    private final NomisUserService userService;
     private final AuthUserRoleService authUserRoleService;
 
-    public AuthUserRolesController(final UserService userService, final AuthUserRoleService authUserRoleService) {
+    public AuthUserRolesController(final NomisUserService userService, final AuthUserRoleService authUserRoleService) {
         this.userService = userService;
         this.authUserRoleService = authUserRoleService;
     }

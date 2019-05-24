@@ -134,6 +134,22 @@ class LoginSpecification extends GebReportingSpec {
         body.auth_source == 'nomis'
     }
 
+    def "Log in with valid Oasys credentials"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login using valid oasys credentials"
+        loginAs OASYS_USER, 'Pa55w0rd1'
+
+        then: 'My credentials are accepted and I am shown the Home page'
+        at HomePage
+        principalName == 'Alice Aliston'
+
+        def body = parseJwt()
+        body.name == 'Alice Aliston'
+        body.auth_source == 'oasys'
+    }
+
     def "Log in with valid credentials sets jwt cookie"() {
         given: 'I am on the Login page'
         to LoginPage

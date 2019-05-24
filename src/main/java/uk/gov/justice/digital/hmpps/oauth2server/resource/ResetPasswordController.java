@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.justice.digital.hmpps.oauth2server.model.Context;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException;
@@ -38,7 +38,7 @@ public class ResetPasswordController extends AbstractPasswordController {
     private final boolean smokeTestEnabled;
 
     public ResetPasswordController(final ResetPasswordService resetPasswordService,
-                                   final TokenService tokenService, final UserService userService,
+                                   final TokenService tokenService, final NomisUserService userService,
                                    final VerifyEmailService verifyEmailService, final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled,
                                    final @Value("${application.authentication.blacklist}") Set<String> passwordBlacklist) {
 

@@ -9,10 +9,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.PasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
@@ -24,7 +24,7 @@ import java.util.Set;
 public class AbstractPasswordController {
     private final PasswordService passwordService;
     private final TokenService tokenService;
-    private final UserService userService;
+    private final NomisUserService userService;
     private final TelemetryClient telemetryClient;
 
     private final String startAgainViewOrUrl;
@@ -32,7 +32,7 @@ public class AbstractPasswordController {
     private final Set<String> passwordBlacklist;
 
     public AbstractPasswordController(final PasswordService passwordService,
-                                      final TokenService tokenService, final UserService userService,
+                                      final TokenService tokenService, final NomisUserService userService,
                                       final TelemetryClient telemetryClient,
                                       final String startAgainViewOrUrl, final String failureViewName,
                                       final Set<String> passwordBlacklist) {

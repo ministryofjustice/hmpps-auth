@@ -14,11 +14,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ExternalIdAuthenticationHelperTest {
+public class NomisExternalIdAuthenticationHelperTest {
     @Mock
     private UserDetailsService userDetailsService;
     @Mock
-    private UserService userService;
+    private NomisUserService userService;
 
     private ExternalIdAuthenticationHelper helper;
 

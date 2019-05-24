@@ -18,8 +18,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailReposi
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AlterUserService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -35,7 +35,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
 
     private final UserEmailRepository userEmailRepository;
     private final UserTokenRepository userTokenRepository;
-    private final UserService userService;
+    private final NomisUserService userService;
     private final AlterUserService alterUserService;
     private final NotificationClientApi notificationClient;
     private final String resetTemplateId;
@@ -43,7 +43,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
     private final String resetUnavailableEmailNotFoundTemplateId;
 
     public ResetPasswordServiceImpl(final UserEmailRepository userEmailRepository,
-                                    final UserTokenRepository userTokenRepository, final UserService userService,
+                                    final UserTokenRepository userTokenRepository, final NomisUserService userService,
                                     final AlterUserService alterUserService,
                                     final NotificationClientApi notificationClient,
                                     @Value("${application.notify.reset.template}") final String resetTemplateId,

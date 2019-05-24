@@ -14,9 +14,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
@@ -40,7 +40,7 @@ public class AbstractPasswordControllerTest {
     @Mock
     private TokenService tokenService;
     @Mock
-    private UserService userService;
+    private NomisUserService userService;
     @Mock
     private VerifyEmailService verifyEmailService;
     @Mock

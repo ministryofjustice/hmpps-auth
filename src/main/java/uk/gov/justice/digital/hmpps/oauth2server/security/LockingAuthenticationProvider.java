@@ -14,12 +14,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Map;
 
 @Slf4j
-@Component
 public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserRetriesService userRetriesService;
     private final TelemetryClient telemetryClient;
@@ -28,16 +27,16 @@ public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
     public LockingAuthenticationProvider(final UserDetailsService userDetailsService,
                                          final UserRetriesService userRetriesService,
                                          final TelemetryClient telemetryClient,
-                                         @Value("${application.authentication.lockout-count}") final int accountLockoutCount) {
+                                         @Value("${application.authentication.lockout-count}") final int accountLockoutCount,
+                                         final PasswordEncoder passwordEncoder) {
         this.userRetriesService = userRetriesService;
         this.telemetryClient = telemetryClient;
         this.accountLockoutCount = accountLockoutCount;
         setUserDetailsService(userDetailsService);
 
-        final var oracleSha1PasswordEncoder = new OracleSha1PasswordEncoder();
-        final var encoders = Map.of("bcrypt", new BCryptPasswordEncoder(), "oracle", oracleSha1PasswordEncoder);
+        final var encoders = Map.of("bcrypt", new BCryptPasswordEncoder(), "oracle", passwordEncoder);
         final var delegatingPasswordEncoder = new DelegatingPasswordEncoder("bcrypt", encoders);
-        delegatingPasswordEncoder.setDefaultPasswordEncoderForMatches(oracleSha1PasswordEncoder);
+        delegatingPasswordEncoder.setDefaultPasswordEncoderForMatches(passwordEncoder);
         setPasswordEncoder(delegatingPasswordEncoder);
     }
 

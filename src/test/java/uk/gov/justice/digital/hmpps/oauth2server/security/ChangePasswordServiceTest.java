@@ -24,7 +24,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChangePasswordServiceTest {
@@ -33,7 +35,7 @@ public class ChangePasswordServiceTest {
     @Mock
     private UserTokenRepository userTokenRepository;
     @Mock
-    private UserService userService;
+    private NomisUserService userService;
     @Mock
     private AlterUserService alterUserService;
     @Mock

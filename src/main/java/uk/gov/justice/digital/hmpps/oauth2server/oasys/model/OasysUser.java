@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.text.WordUtils;
 import org.springframework.security.core.GrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
@@ -38,7 +39,7 @@ public class OasysUser implements UserPersonDetails {
     @Column(name = "USER_FAMILY_NAME")
     private String userFamilyName;
     @Column(name = "PASSWORD_ENCRYPTED")
-    private byte[] passwordEncrypted;
+    private String passwordEncrypted;
     @Column(name = "PASSWORD_CHANGE_DATE")
     private Time passwordChangeDate;
     @Column(name = "LAST_LOGIN")
@@ -85,7 +86,7 @@ public class OasysUser implements UserPersonDetails {
 
     @Override
     public String getName() {
-        return userFamilyName;
+        return WordUtils.capitalizeFully(String.format("%s %s", userForename1, userFamilyName));
     }
 
     @Override
@@ -136,5 +137,10 @@ public class OasysUser implements UserPersonDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String getPassword() {
+        return passwordEncrypted;
     }
 }

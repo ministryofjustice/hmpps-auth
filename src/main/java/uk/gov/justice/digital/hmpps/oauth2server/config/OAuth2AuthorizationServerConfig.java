@@ -54,7 +54,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy final AuthenticationManager authenticationManager,
-                                           @Lazy final UserDetailsService userDetailsService,
+                                           @Lazy final UserDetailsService nomisUserDetailsService,
                                            @Value("${jwt.signing.key.pair}") final String privateKeyPair,
                                            @Value("${jwt.keystore.password}") final String keystorePassword,
                                            @Value("${jwt.keystore.alias:elite2api}") final String keystoreAlias,
@@ -64,7 +64,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.keystorePassword = keystorePassword;
         this.keystoreAlias = keystoreAlias;
-        this.userDetailsService = userDetailsService;
+        this.userDetailsService = nomisUserDetailsService;
         this.authenticationManager = authenticationManager;
         this.dataSource = dataSource;
         this.passwordEncoder = passwordEncoder;

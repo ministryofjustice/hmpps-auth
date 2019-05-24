@@ -1,6 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,14 +16,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.CreateUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.CreateUserService.CreateUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -34,11 +44,11 @@ import java.util.stream.Collectors;
 @RestController
 @Api(tags = {"/api/authuser"})
 public class AuthUserController {
-    private final UserService userService;
+    private final NomisUserService userService;
     private final CreateUserService createUserService;
     private final boolean smokeTestEnabled;
 
-    public AuthUserController(final UserService userService, final CreateUserService createUserService,
+    public AuthUserController(final NomisUserService userService, final CreateUserService createUserService,
                               @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
         this.userService = userService;
         this.createUserService = createUserService;

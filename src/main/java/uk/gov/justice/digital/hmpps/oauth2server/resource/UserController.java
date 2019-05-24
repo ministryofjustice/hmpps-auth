@@ -1,6 +1,10 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +16,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 
 import java.security.Principal;
 import java.util.Collection;
@@ -22,9 +26,9 @@ import java.util.stream.Collectors;
 @RestController
 @Api(tags = {"/api/user"})
 public class UserController {
-    private final UserService userService;
+    private final NomisUserService userService;
 
-    public UserController(final UserService userService) {
+    public UserController(final NomisUserService userService) {
         this.userService = userService;
     }
 

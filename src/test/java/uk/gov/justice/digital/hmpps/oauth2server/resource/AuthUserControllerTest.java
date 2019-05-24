@@ -13,8 +13,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.CreateUserService.Crea
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.AuthUserController.AuthUser;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.AuthUserController.CreateUser;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -27,12 +27,16 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anySet;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthUserControllerTest {
     @Mock
-    private UserService userService;
+    private NomisUserService userService;
     @Mock
     private CreateUserService createUserService;
     @Mock

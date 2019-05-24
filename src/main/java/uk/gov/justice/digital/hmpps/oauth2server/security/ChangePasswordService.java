@@ -23,13 +23,13 @@ import java.util.Optional;
 public class ChangePasswordService extends PasswordServiceImpl {
     private final UserTokenRepository userTokenRepository;
     private final UserEmailRepository userEmailRepository;
-    private final UserService userService;
+    private final NomisUserService userService;
     private final AlterUserService alterUserService;
     private final TelemetryClient telemetryClient;
 
     protected ChangePasswordService(final UserTokenRepository userTokenRepository,
                                     final UserEmailRepository userEmailRepository,
-                                    final UserService userService, final AlterUserService alterUserService,
+                                    final NomisUserService userService, final AlterUserService alterUserService,
                                     final PasswordEncoder passwordEncoder,
                                     final TelemetryClient telemetryClient,
                                     @Value("${application.authentication.password-age}") final long passwordAge) {
