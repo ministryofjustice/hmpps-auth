@@ -3,20 +3,30 @@ package uk.gov.justice.digital.hmpps.oauth2server.oasys.model;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.sql.Time;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Data
 @Entity
@@ -84,6 +94,10 @@ public class OasysUser implements UserPersonDetails {
     @Column(name = "EXCL_DEACT_IND")
     private String exclDeactInd;
 
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "OASYS_USER_CODE", referencedColumnName = "OASYS_USER_CODE")
+    private List<AreaEstUserRole> roles;
+
     @Override
     public String getName() {
         return WordUtils.capitalizeFully(String.format("%s %s", userForename1, userFamilyName));
@@ -111,7 +125,9 @@ public class OasysUser implements UserPersonDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return roles.stream().filter(Objects::nonNull)
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(role.getRefRole().getRefRoleCode().replace('-', '_'))))
+                .collect(Collectors.toSet());
     }
 
     @Override

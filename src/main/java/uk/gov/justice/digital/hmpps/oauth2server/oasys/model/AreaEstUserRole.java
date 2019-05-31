@@ -6,6 +6,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.sql.Time;
 
@@ -39,5 +41,9 @@ public class AreaEstUserRole {
     private Time lastupdDate;
     @Column(name = "LASTUPD_USER")
     private String lastupdUser;
+
+    @ManyToOne
+    @JoinColumn(name = "REF_ROLE_CODE", insertable = false, updatable = false)
+    private RefRole refRole;
 
 }
