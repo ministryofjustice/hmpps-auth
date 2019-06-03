@@ -31,8 +31,6 @@ import static uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleSer
 @Service
 @Slf4j
 public class AuthUserService {
-    private static final Set<String> LICENCES_ROLES = Set.of("ROLE_LICENCE_RO", "ROLE_GLOBAL_SEARCH");
-
     private final UserTokenRepository userTokenRepository;
     private final UserEmailRepository userEmailRepository;
     private final NotificationClientApi notificationClient;
@@ -44,7 +42,7 @@ public class AuthUserService {
                            final UserEmailRepository userEmailRepository,
                            final NotificationClientApi notificationClient,
                            final TelemetryClient telemetryClient,
-                           final VerifyEmailService verifyEmailService, @Value("${application.notify.licences-initial-password.template}") final String licencesTemplateId) {
+                           final VerifyEmailService verifyEmailService, @Value("${application.notify.create-initial-password.template}") final String licencesTemplateId) {
         this.userTokenRepository = userTokenRepository;
         this.userEmailRepository = userEmailRepository;
         this.notificationClient = notificationClient;
@@ -127,9 +125,7 @@ public class AuthUserService {
 
     private Set<Authority> calculateRoles(final Set<String> additionalRoles) {
         final var additionalRolesWithRolePrefix = additionalRoles.stream().map(Authority::addRolePrefixIfNecessary).collect(Collectors.toSet());
-        final var intersection = Sets.intersection(ALLOWED_AUTH_USER_ROLES.keySet(), additionalRolesWithRolePrefix);
-
-        return Sets.union(LICENCES_ROLES, intersection).stream().map(Authority::new).collect(Collectors.toSet());
+        return Sets.intersection(ALLOWED_AUTH_USER_ROLES.keySet(), additionalRolesWithRolePrefix).stream().map(Authority::new).collect(Collectors.toSet());
     }
 
     private void validate(final String username, final String email, final String firstName, final String lastName)

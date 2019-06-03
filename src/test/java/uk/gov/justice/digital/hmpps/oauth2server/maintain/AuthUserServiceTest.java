@@ -124,7 +124,7 @@ public class AuthUserServiceTest {
         assertThat(user.isMaster()).isTrue();
         assertThat(user.isVerified()).isFalse();
         assertThat(user.isCredentialsNonExpired()).isFalse();
-        assertThat(user.getAuthorities()).containsOnly(new Authority("ROLE_LICENCE_RO"), new Authority("ROLE_GLOBAL_SEARCH"));
+        assertThat(user.getAuthorities()).isEmpty();
     }
 
     @Test
@@ -135,7 +135,7 @@ public class AuthUserServiceTest {
         verify(userEmailRepository).save(captor.capture());
 
         final var user = captor.getValue();
-        assertThat(user.getAuthorities()).containsOnly(new Authority("ROLE_LICENCE_RO"), new Authority("ROLE_GLOBAL_SEARCH"), new Authority("ROLE_LICENCE_VARY"));
+        assertThat(user.getAuthorities()).containsOnly(new Authority("ROLE_LICENCE_VARY"));
     }
 
     @Test
@@ -146,7 +146,7 @@ public class AuthUserServiceTest {
         verify(userEmailRepository).save(captor.capture());
 
         final var user = captor.getValue();
-        assertThat(user.getAuthorities()).containsOnly(new Authority("ROLE_LICENCE_RO"), new Authority("ROLE_GLOBAL_SEARCH"), new Authority("ROLE_LICENCE_VARY"));
+        assertThat(user.getAuthorities()).containsOnly(new Authority("ROLE_LICENCE_VARY"));
     }
 
     @Test
