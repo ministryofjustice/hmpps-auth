@@ -75,7 +75,7 @@ public class InitialPasswordControllerTest {
     public void initialPassword_checkModel() {
         setupCheckTokenValid();
         final var modelAndView = controller.initialPassword("sometoken");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.FALSE), entry("context", "licences"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.FALSE), entry("initial", Boolean.TRUE));
     }
 
     @Test
@@ -84,7 +84,7 @@ public class InitialPasswordControllerTest {
         user.getAccountDetail().setProfile("TAG_ADMIN");
         setupCheckAndGetTokenValid();
         final var modelAndView = controller.initialPassword("sometoken");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.TRUE), entry("context", "licences"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.TRUE), entry("initial", Boolean.TRUE));
     }
 
     @Test

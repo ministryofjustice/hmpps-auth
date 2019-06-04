@@ -13,6 +13,6 @@ class InitialPasswordSuccessPage extends Page {
 
     static content = {
         headingText { $('#main-content h1').text() }
-        signInLink { $('#hdc-signin') }
+        signInLink { $('[data-qa="initial-signin"]') }
     }
 }

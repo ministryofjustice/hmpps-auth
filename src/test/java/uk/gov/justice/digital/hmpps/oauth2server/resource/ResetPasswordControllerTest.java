@@ -211,16 +211,16 @@ public class ResetPasswordControllerTest {
     public void setPassword_SuccessWithContext() {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile();
-        final var modelAndView = controller.setPassword("d", "password123456", "password123456", "licences");
+        final var modelAndView = controller.setPassword("d", "password123456", "password123456", Boolean.TRUE);
         assertThat(modelAndView.getViewName()).isEqualTo("redirect:/initial-password-success");
     }
 
     @Test
     public void setPassword_FailureWithContext() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
-        final var modelAndView = controller.setPassword("sometoken", "new", "confirm", "licences");
+        final var modelAndView = controller.setPassword("sometoken", "new", "confirm", Boolean.TRUE);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"), entry("context", "licences"));
+        assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"), entry("initial", Boolean.TRUE));
     }
 
     @Test

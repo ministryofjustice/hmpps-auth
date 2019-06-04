@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.weddini.throttling.ThrottlingException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-import uk.gov.justice.digital.hmpps.oauth2server.model.Context;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
@@ -147,11 +147,11 @@ public class ResetPasswordController extends AbstractPasswordController {
     @PostMapping("/set-password")
     public ModelAndView setPassword(@RequestParam final String token,
                                     @RequestParam final String newPassword, @RequestParam final String confirmPassword,
-                                    @RequestParam(required = false) final String context) {
+                                    @RequestParam(required = false) final Boolean initial) {
         final var modelAndView = processSetPassword(RESET, token, newPassword, confirmPassword);
-        final var licences = Context.get(context) == Context.LICENCES;
+        final var initialAsPrimitive = BooleanUtils.toBoolean(initial);
 
-        return modelAndView.map(mv -> licences ? mv.addObject("context", context) : mv).orElse(
-                new ModelAndView(licences ? "redirect:/initial-password-success" : "redirect:/reset-password-success"));
+        return modelAndView.map(mv -> initialAsPrimitive ? mv.addObject("initial", Boolean.TRUE) : mv).orElse(
+                new ModelAndView(initialAsPrimitive ? "redirect:/initial-password-success" : "redirect:/reset-password-success"));
     }
 }
