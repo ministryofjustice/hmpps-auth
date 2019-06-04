@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-import uk.gov.justice.digital.hmpps.oauth2server.model.Context;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
@@ -47,6 +46,6 @@ public class InitialPasswordController extends AbstractPasswordController {
     public ModelAndView initialPassword(@RequestParam final String token) {
         final var userTokenOptional = tokenService.checkToken(RESET, token);
         return userTokenOptional.map(s -> new ModelAndView("resetPassword", "error", s)).
-                orElseGet(() -> createModelWithTokenAndAddIsAdmin(RESET, token, "setPassword").addObject("context", Context.LICENCES.getContext()));
+                orElseGet(() -> createModelWithTokenAndAddIsAdmin(RESET, token, "setPassword").addObject("initial", Boolean.TRUE));
     }
 }

@@ -36,19 +36,19 @@ public class AuthUserService {
     private final NotificationClientApi notificationClient;
     private final TelemetryClient telemetryClient;
     private final VerifyEmailService verifyEmailService;
-    private final String licencesTemplateId;
+    private final String initialPasswordTemplateId;
 
     public AuthUserService(final UserTokenRepository userTokenRepository,
                            final UserEmailRepository userEmailRepository,
                            final NotificationClientApi notificationClient,
                            final TelemetryClient telemetryClient,
-                           final VerifyEmailService verifyEmailService, @Value("${application.notify.create-initial-password.template}") final String licencesTemplateId) {
+                           final VerifyEmailService verifyEmailService, @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId) {
         this.userTokenRepository = userTokenRepository;
         this.userEmailRepository = userEmailRepository;
         this.notificationClient = notificationClient;
         this.telemetryClient = telemetryClient;
         this.verifyEmailService = verifyEmailService;
-        this.licencesTemplateId = licencesTemplateId;
+        this.initialPasswordTemplateId = initialPasswordTemplateId;
     }
 
     @Transactional
@@ -89,7 +89,7 @@ public class AuthUserService {
         // send the email
         try {
             log.info("Sending initial set password to notify for user {}", username);
-            notificationClient.sendEmail(licencesTemplateId, email, parameters, null);
+            notificationClient.sendEmail(initialPasswordTemplateId, email, parameters, null);
             telemetryClient.trackEvent(String.format("%sSuccess", eventPrefix), Map.of("username", username, "admin", creator), null);
         } catch (final NotificationClientException e) {
             final var reason = (e.getCause() != null ? e.getCause() : e).getClass().getSimpleName();
@@ -97,7 +97,7 @@ public class AuthUserService {
             telemetryClient.trackEvent(String.format("%sFailure", eventPrefix), Map.of("username", username, "reason", reason, "admin", creator), null);
             if (e.getHttpResult() >= 500) {
                 // second time lucky
-                notificationClient.sendEmail(licencesTemplateId, email, parameters, null, null);
+                notificationClient.sendEmail(initialPasswordTemplateId, email, parameters, null, null);
                 telemetryClient.trackEvent(String.format("%sSuccess", eventPrefix), Map.of("username", username, "admin", creator), null);
             }
             throw e;

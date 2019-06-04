@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -25,51 +24,9 @@ public class HomeControllerTest {
 
     @Test
     public void home() {
-        final var homeController = new HomeController(landingService, "bob", "");
+        final var homeController = new HomeController(landingService);
         final var modelAndView = homeController.home(authenticationWithRole());
-        assertThat(modelAndView.getViewName()).isEqualTo("index");
-    }
-
-    @Test
-    public void home_NewNomisUrlOnly() {
-        final var homeController = new HomeController(landingService, "bob", "");
-        final var modelAndView = homeController.home(authenticationWithRole());
-        assertThat(modelAndView.getModel()).containsExactly(entry("nnUrl", "bob"));
-    }
-
-    @Test
-    public void home_HdcUrlOnly_CA() {
-        final var homeController = new HomeController(landingService, "  ", "bob");
-        final var modelAndView = homeController.home(authenticationWithRole("ROLE_LICENCE_CA"));
-        assertThat(modelAndView.getModel()).containsExactly(entry("hdcUrl", "bob"));
-    }
-
-    @Test
-    public void home_HdcUrlOnly_RO() {
-        final var homeController = new HomeController(landingService, "  ", "bob");
-        final var modelAndView = homeController.home(authenticationWithRole("ROLE_LICENCE_RO"));
-        assertThat(modelAndView.getModel()).containsExactly(entry("hdcUrl", "bob"));
-    }
-
-    @Test
-    public void home_HdcUrlOnly_DM() {
-        final var homeController = new HomeController(landingService, "  ", "bob");
-        final var modelAndView = homeController.home(authenticationWithRole("ROLE_LICENCE_DM"));
-        assertThat(modelAndView.getModel()).containsExactly(entry("hdcUrl", "bob"));
-    }
-
-    @Test
-    public void home_HdcNoRole() {
-        final var homeController = new HomeController(landingService, "  ", "bob");
-        final var modelAndView = homeController.home(authenticationWithRole("JOE"));
-        assertThat(modelAndView.getModel()).hasSize(0);
-    }
-
-    @Test
-    public void home_AllUrls() {
-        final var homeController = new HomeController(landingService, "nn", "bob");
-        final var modelAndView = homeController.home(authenticationWithRole("ROLE_LICENCE_DM"));
-        assertThat(modelAndView.getModel()).contains(entry("hdcUrl", "bob"), entry("nnUrl", "nn"));
+        assertThat(modelAndView.getViewName()).isEqualTo("landing");
     }
 
     @Test
@@ -80,7 +37,7 @@ public class HomeControllerTest {
                 createService("NOMIS", null), // available to all roles
                 createService("OTHER", "ROLE_OTHER")); // not available
         when(landingService.findAllServices()).thenReturn(services);
-        final var homeController = new HomeController(landingService, "nn", "bob");
+        final var homeController = new HomeController(landingService);
         final var modelAndView = homeController.home(authenticationWithRole("ROLE_LICENCE_DM"));
         //noinspection unchecked
         final var allocatedServices = (List<Service>) modelAndView.getModel().get("services");
@@ -91,7 +48,7 @@ public class HomeControllerTest {
     public void home_dynamicUrls_view() {
         final var services = List.of(createService("DM", "ROLE_LICENCE_DM"));
         when(landingService.findAllServices()).thenReturn(services);
-        final var homeController = new HomeController(landingService, "nn", "bob");
+        final var homeController = new HomeController(landingService);
         final var modelAndView = homeController.home(authenticationWithRole("ROLE_LICENCE_DM"));
         assertThat(modelAndView.getViewName()).isEqualTo("landing");
     }
