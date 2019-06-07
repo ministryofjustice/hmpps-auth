@@ -20,7 +20,7 @@ spring:
   jpa:
     hibernate:
       hbm2ddl:
-         auto: none
+        auto: none
     properties:
       hibernate:
         show_sql: true
@@ -47,5 +47,11 @@ management:
   endpoints:
     web:
       base-path: /
+  endpoint:
     health:
-      show-details: "ALWAYS"
+      cache:
+        time-to-live: 2000ms
+      show-details: always
+    info:
+      cache:
+        time-to-live: 2000ms
