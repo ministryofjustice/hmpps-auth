@@ -38,11 +38,7 @@ public class PublicKeyController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = Map.class)})
     public Map<String, Object> getJwtPublicKey() {
         final var formattedKey = getFormattedKey(publicKey);
-        return Map.of("formatted", convertNewLinesToArray(formattedKey), "encoded", Base64.encodeBase64String(formattedKey.getBytes()));
-    }
-
-    private String[] convertNewLinesToArray(final String formattedKey) {
-        return formattedKey.split("\n");
+        return Map.of("formatted", formattedKey, "encoded", Base64.encodeBase64String(formattedKey.getBytes()));
     }
 
     private String getFormattedKey(final PublicKey pk) {
