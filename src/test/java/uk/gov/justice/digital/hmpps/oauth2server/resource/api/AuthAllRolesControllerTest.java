@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.resource;
+package uk.gov.justice.digital.hmpps.oauth2server.resource.api;
 
 import org.junit.Before;
 import org.junit.Test;
