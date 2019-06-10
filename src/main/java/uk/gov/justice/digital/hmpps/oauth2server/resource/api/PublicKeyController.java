@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.PublicKey;
-import java.util.HashMap;
 import java.util.Map;
 
 @Api(tags = {"jwt-public-key"})
@@ -37,26 +36,26 @@ public class PublicKeyController {
             nickname = "getFormattedKey")
     @RequestMapping(value = "jwt-public-key", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "OK", response = Map.class)})
-    public Map<String, String> getJwtPublicKey() {
+    public Map<String, Object> getJwtPublicKey() {
         final var formattedKey = getFormattedKey(publicKey);
+        return Map.of("formatted", convertNewLinesToArray(formattedKey), "encoded", Base64.encodeBase64String(formattedKey.getBytes()));
+    }
 
-        final Map<String, String> result = new HashMap<>();
-        result.put("formatted", formattedKey);
-        result.put("encoded", Base64.encodeBase64String(formattedKey.getBytes()));
-
-        return result;
+    private String[] convertNewLinesToArray(final String formattedKey) {
+        return formattedKey.split("\n");
     }
 
     private String getFormattedKey(final PublicKey pk) {
         final var builder = new StringBuilder();
         final var encodeBase64String = Base64.encodeBase64String(pk.getEncoded());
         builder.append("-----BEGIN PUBLIC KEY-----");
-        builder.append("\r\n");
+        builder.append("\n");
         for (var i = 0; i < encodeBase64String.length(); i += 64) {
-            builder.append(encodeBase64String.substring(i, Math.min(i + 64, encodeBase64String.length())));
-            builder.append("\r\n");
+            builder.append(encodeBase64String, i, Math.min(i + 64, encodeBase64String.length()));
+            builder.append("\n");
         }
         builder.append("-----END PUBLIC KEY-----");
+        builder.append("\n");
         return builder.toString();
     }
 }
