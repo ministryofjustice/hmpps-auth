@@ -31,6 +31,14 @@ Is available on a running local server at http://localhost:9090/auth/swagger-ui.
 documentation can be found at https://gateway.prod.nomis-api.service.hmpps.dsd.io/auth/swagger-ui.html.  Don't forget to
 include /auth in the requests if calling an api endpoint.`
 
+#### Health
+
+- `/ping`: will respond `pong` to all requests.  This should be used by dependent systems to check connectivity to auth,
+rather than calling the `/health` endpoint.
+- `/health`: provides information about the application health and its dependencies.  This should only be used
+by auth health monitoring (e.g. pager duty) and not other systems who wish to find out the state of auth.
+- `/info`: provides information about the version of deployed application.
+
 ### Profiles:
 - dev-config - development configuration
 - auth-seed - seed auth database with api clients and sample users
