@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.resource;
+package uk.gov.justice.digital.hmpps.oauth2server.resource.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
