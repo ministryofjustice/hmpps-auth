@@ -21,7 +21,7 @@ import static uk.gov.justice.digital.hmpps.oauth2server.utils.MdcUtility.*;
 
 @Component
 @Slf4j
-@Order(1)
+@Order(2)
 public class RequestLogFilter implements Filter {
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS");
@@ -57,8 +57,8 @@ public class RequestLogFilter implements Filter {
             final var start = LocalDateTime.now();
             MDC.put(REQUEST_ID, mdcUtility.generateUUID());
             MDC.put(USER_ID, getUser(req));
-            if (isLoggingAllowed()) {
-                log.debug("Request: {} {}", req.getMethod(), req.getRequestURI());
+            if (log.isTraceEnabled() && isLoggingAllowed()) {
+                log.trace("Request: {} {}", req.getMethod(), req.getRequestURI());
             }
 
             chain.doFilter(request, response);
@@ -67,8 +67,8 @@ public class RequestLogFilter implements Filter {
             MDC.put(REQUEST_DURATION, String.valueOf(duration));
             final var status = res.getStatus();
             MDC.put(RESPONSE_STATUS, String.valueOf(status));
-            if (isLoggingAllowed()) {
-                log.debug("Response: {} {} - Status {} - Start {}, User {}, Duration {} ms", req.getMethod(), req.getRequestURI(), status, start.format(formatter), getUser(req), duration);
+            if (log.isTraceEnabled() && isLoggingAllowed()) {
+                log.trace("Response: {} {} - Status {} - Start {}, User {}, Duration {} ms", req.getMethod(), req.getRequestURI(), status, start.format(formatter), getUser(req), duration);
             }
         } finally {
             MDC.remove(REQUEST_DURATION);
