@@ -10,6 +10,7 @@ public class MdcUtility {
 
     static final String USER_ID = "userId";
     static final String REQUEST_ID = "requestId";
+    static final String CORRELATION_ID_HEADER = "correlationId";
     static final String REQUEST_DURATION = "duration";
     static final String RESPONSE_STATUS = "status";
     static final String SKIP_LOGGING = "skipLogging";
