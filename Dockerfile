@@ -13,10 +13,8 @@ RUN addgroup --gid 2000 --system appgroup && \
 
 WORKDIR /app
 
-COPY build/libs/oauth2server*.jar /app/app.jar
-COPY run.sh /app
-
-RUN chown -R appuser:appgroup /app
+COPY --chown=appuser:appgroup build/libs/oauth2server*.jar /app/app.jar
+COPY --chown=appuser:appgroup run.sh /app
 
 USER 2000
 
