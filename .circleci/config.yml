@@ -124,3 +124,7 @@ workflows:
       - build_docker:
           requires:
             - integration_tests
+          filters:
+            branches:
+              only:
+                - master
