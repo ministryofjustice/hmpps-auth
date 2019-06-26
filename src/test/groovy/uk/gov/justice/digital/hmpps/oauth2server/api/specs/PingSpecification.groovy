@@ -13,7 +13,7 @@ class PingSpecification extends TestSpecification {
 
         then:
         response.statusCode == HttpStatus.OK
-        response.headers.getContentType() == MimeType.valueOf("plain/text;charset=UTF-8")
+        response.headers.getContentType() == MimeType.valueOf("text/plain;charset=UTF-8")
         response.body == 'pong'
     }
 }
