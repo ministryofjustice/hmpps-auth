@@ -64,7 +64,7 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor('org.projectlombok:lombok:1.18.8')
 
-    implementation files('lib/ojdbc8-18.3.jar')
+    implementation files('lib/ojdbc10-19.3.jar')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.security:spring-security-jwt:1.0.10.RELEASE'
@@ -74,7 +74,7 @@ dependencies {
     implementation 'com.weddini.throttling:spring-boot-throttling-starter:0.0.9'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.hibernate:hibernate-java8'
+    implementation 'org.hibernate:hibernate-core'
 
     implementation 'net.logstash.logback:logstash-logback-encoder:6.1'
     implementation 'com.microsoft.azure:applicationinsights-spring-boot-starter:1.2.0-BETA'
@@ -113,14 +113,14 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntime 'com.h2database:h2:1.4.196'
 
-    testImplementation 'org.codehaus.groovy:groovy-all:2.5.4'
+    testImplementation 'org.codehaus.groovy:groovy-all:2.5.7'
     testImplementation 'org.spockframework:spock-spring:1.2-groovy-2.5'
     testImplementation('org.spockframework:spock-core:1.2-groovy-2.5') {
         exclude group: 'org.codehaus.groovy'
     }
 
-    testImplementation 'org.gebish:geb-core:3.0'
-    testImplementation 'org.gebish:geb-spock:3.0'
+    testImplementation 'org.gebish:geb-core:3.0.1'
+    testImplementation 'org.gebish:geb-spock:3.0.1'
     testImplementation 'org.seleniumhq.selenium:selenium-support:3.141.59'
     testImplementation 'org.seleniumhq.selenium:selenium-chrome-driver:3.141.59'
     testImplementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.141.59'

@@ -16,6 +16,6 @@ WORKDIR /app
 COPY --chown=appuser:appgroup build/libs/oauth2server*.jar /app/app.jar
 COPY --chown=appuser:appgroup run.sh /app
 
-USER 2000
+USER appuser
 
 ENTRYPOINT ["/bin/sh", "/app/run.sh"]
