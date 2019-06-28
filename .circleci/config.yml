@@ -3,12 +3,22 @@ defaults: &defaults
   environment:
     JAVA_TOOL_OPTIONS: -Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
 
-version: 2
-jobs:
-  build:
+version: 2.1
+
+executors:
+  builder:
     <<: *defaults
     docker:
       - image: circleci/openjdk:11-jdk-browsers
+
+  deployer:
+    <<: *defaults
+    docker:
+      - image: circleci/python:3
+
+jobs:
+  build:
+    executor: builder
     steps:
       - checkout
       - restore_cache:
@@ -35,9 +45,7 @@ jobs:
             - build.gradle
 
   integration_tests:
-    <<: *defaults
-    docker:
-    - image: circleci/openjdk:11-jdk-browsers
+    executor: builder
     steps:
     - checkout
     - attach_workspace:
@@ -71,9 +79,7 @@ jobs:
         path: build/test-results/testIntegration
 
   build_docker:
-    <<: *defaults
-    docker:
-      - image: circleci/node:8.11.1-browsers
+    executor: deployer
     steps:
       - checkout
       - attach_workspace:
@@ -82,19 +88,17 @@ jobs:
       - run:
           name: Build container and publish to docker hub
           command: |
-            jar xvf build/libs/oauth2server-*.jar BOOT-INF/classes/META-INF/build-info.properties
-            API_VERSION=$(grep 'build.version=' BOOT-INF/classes/META-INF/build-info.properties | awk -F= '{print $2}')
-            rm BOOT-INF/classes/META-INF/build-info.properties
+            APP_VERSION=$(unzip -p build/libs/oauth2server-*.jar BOOT-INF/classes/META-INF/build-info.properties | awk -F = '/build.version/ {print $2}')
 
             # make up a good version name
-            TAG=${API_VERSION}.${CIRCLE_BRANCH}
-            if [[ "${CIRCLE_BRANCH}" == "master" ]]; then
-              TAG=${API_VERSION}
-            fi
+            TAG=$([[ "${CIRCLE_BRANCH}" == "master" ]] && echo "$APP_VERSION" || echo "${APP_VERSION}.${CIRCLE_BRANCH}")
+            echo "Setting app version to $TAG"
+
+            DOCKER_IMAGE="mojdigitalstudio/nomis-oauth2-server"
 
             # build the container
             docker build --rm=false . \
-               --tag "mojdigitalstudio/nomis-oauth2-server:$TAG" \
+               --tag "$DOCKER_IMAGE:$TAG" \
                --label "maintainer=michael.willis@digital.justice.gov.uk" \
                --label "app.version=$TAG" \
                --label "build.version=$TAG" \
@@ -105,9 +109,9 @@ jobs:
             if [[ "${CIRCLE_BRANCH}" == "master" ]]; then
               # publish to docker hub as the tag
               docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker push mojdigitalstudio/nomis-oauth2-server:$TAG
-              docker tag mojdigitalstudio/nomis-oauth2-server:$TAG mojdigitalstudio/nomis-oauth2-server:latest
-              docker push mojdigitalstudio/nomis-oauth2-server:latest
+              docker push $DOCKER_IMAGE:$TAG
+              docker tag $DOCKER_IMAGE:$TAG $DOCKER_IMAGE:latest
+              docker push $DOCKER_IMAGE:latest
             fi
 
 workflows:
@@ -124,3 +128,7 @@ workflows:
       - build_docker:
           requires:
             - integration_tests
+          filters:
+            branches:
+              only:
+                - master

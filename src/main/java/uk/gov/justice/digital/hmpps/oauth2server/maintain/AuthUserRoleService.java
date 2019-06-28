@@ -16,7 +16,12 @@ import java.util.Set;
 @Service
 @Slf4j
 public class AuthUserRoleService {
-    static final Map<String, String> ALLOWED_AUTH_USER_ROLES = Map.of("ROLE_LICENCE_VARY", "Licence Variation", "ROLE_LICENCE_RO", "Licence Responsible Officer", "ROLE_GLOBAL_SEARCH", "Global Search");
+    static final Map<String, String> ALLOWED_AUTH_USER_ROLES = Map.of(
+            "ROLE_LICENCE_VARY", "Licence Variation",
+            "ROLE_LICENCE_RO", "Licence Responsible Officer",
+            "ROLE_GLOBAL_SEARCH", "Global Search",
+            "ROLE_PECS_POLICE", "PECS Police",
+            "ROLE_PECS_SUPPLIER", "PECS Supplier");
 
     private final UserEmailRepository userEmailRepository;
     private final TelemetryClient telemetryClient;
