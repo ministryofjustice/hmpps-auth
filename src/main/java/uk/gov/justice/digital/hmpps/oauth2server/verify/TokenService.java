@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-@Transactional
+@Transactional(transactionManager = "authTransactionManager", readOnly = true)
 public class TokenService {
 
     private final UserTokenRepository userTokenRepository;

@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("dev")
-@Transactional
+@Transactional(transactionManager = "authTransactionManager")
 public class VerifyEmailServiceIntTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;

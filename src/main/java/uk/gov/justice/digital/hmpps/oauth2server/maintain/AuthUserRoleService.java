@@ -32,7 +32,7 @@ public class AuthUserRoleService {
         this.telemetryClient = telemetryClient;
     }
 
-    @Transactional
+    @Transactional(transactionManager = "authTransactionManager")
     public void addRole(final String username, final String role, final String modifier) throws AuthUserRoleException {
         final var roleFormatted = formatRole(role);
 
@@ -47,7 +47,7 @@ public class AuthUserRoleService {
         userEmailRepository.save(userEmail);
     }
 
-    @Transactional
+    @Transactional(transactionManager = "authTransactionManager")
     public void removeRole(final String username, final String role, final String modifier) throws AuthUserRoleException {
         // already checked that user exists
         final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();

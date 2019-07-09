@@ -51,7 +51,7 @@ public class AuthUserService {
         this.initialPasswordTemplateId = initialPasswordTemplateId;
     }
 
-    @Transactional
+    @Transactional(transactionManager = "authTransactionManager")
     public String createUser(final String usernameInput, final String emailInput, final String firstName, final String lastName,
                              final Set<String> additionalRoles, final String url, final String creator)
             throws CreateUserException, NotificationClientException, VerifyEmailException {
@@ -68,7 +68,7 @@ public class AuthUserService {
 
         // create list of authorities
         final var authorities = calculateRoles(additionalRoles);
-        final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, authorities);
+        final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, authorities, Set.of());
         return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate");
     }
 
@@ -107,7 +107,7 @@ public class AuthUserService {
         return setPasswordLink;
     }
 
-    @Transactional
+    @Transactional(transactionManager = "authTransactionManager")
     public String amendUser(final String usernameInput, final String emailAddressInput, final String url, final String admin) throws AmendUserException, VerifyEmailException, NotificationClientException {
         final var username = StringUtils.upperCase(usernameInput);
         final var email = StringUtils.lowerCase(emailAddressInput);

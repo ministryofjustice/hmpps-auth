@@ -77,12 +77,19 @@ VALUES ('AUTH_USER', 'Auth', 'Only'),
 
 
 INSERT INTO authority (authority_id, username, authority)
-VALUES ('36025454-e42d-49a1-9124-013577a7ed20', 'AUTH_ADM', 'ROLE_OAUTH_ADMIN'),
-       ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3a', 'AUTH_ADM', 'ROLE_MAINTAIN_ACCESS_ROLES'),
-       ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3b', 'AUTH_RO_USER', 'ROLE_LICENCE_RO'),
-       ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3c', 'AUTH_RO_USER', 'ROLE_GLOBAL_SEARCH'),
-       ('b4843bf0-9b44-451c-ba3e-cdf04ba9eb3b', 'AUTH_RO_VARY_USER', 'ROLE_LICENCE_RO'),
-       ('b4843bf0-9b44-451c-ba3e-cdf04ba9eb3c', 'AUTH_RO_VARY_USER', 'ROLE_GLOBAL_SEARCH'),
-       ('b4843bf0-9b44-451c-ba3e-cdf04ba9eb3d', 'AUTH_RO_VARY_USER', 'ROLE_LICENCE_VARY'),
-       ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3d', 'AUTH_RO_USER_TEST', 'ROLE_LICENCE_RO'),
-       ('a4843bf0-9b44-451c-ba3e-cdf04ba9eb3e', 'AUTH_RO_USER_TEST', 'ROLE_GLOBAL_SEARCH');
+VALUES (newid(), 'AUTH_ADM', 'ROLE_OAUTH_ADMIN'),
+       (newid(), 'AUTH_ADM', 'ROLE_MAINTAIN_ACCESS_ROLES'),
+       (newid(), 'AUTH_RO_USER', 'ROLE_LICENCE_RO'),
+       (newid(), 'AUTH_RO_USER', 'ROLE_GLOBAL_SEARCH'),
+       (newid(), 'AUTH_RO_VARY_USER', 'ROLE_LICENCE_RO'),
+       (newid(), 'AUTH_RO_VARY_USER', 'ROLE_GLOBAL_SEARCH'),
+       (newid(), 'AUTH_RO_VARY_USER', 'ROLE_LICENCE_VARY'),
+       (newid(), 'AUTH_RO_USER_TEST', 'ROLE_LICENCE_RO'),
+       (newid(), 'AUTH_RO_USER_TEST', 'ROLE_GLOBAL_SEARCH');
+
+
+INSERT INTO groups (group_id, group_code, group_name)
+VALUES (newid(), 'SITE_1_GROUP_1', 'Site 1 - Group 1'),
+       (newid(), 'SITE_2_GROUP_2', 'Site 1 - Group 2'),
+       (newid(), 'SITE_2_GROUP_1', 'Site 2 - Group 1'),
+       (newid(), 'SITE_3_GROUP_1', 'Site 3 - Group 1');

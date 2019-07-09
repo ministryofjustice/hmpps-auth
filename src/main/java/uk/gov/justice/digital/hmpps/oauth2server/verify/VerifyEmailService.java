@@ -24,7 +24,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-@Transactional
+@Transactional(transactionManager = "authTransactionManager", readOnly = true)
 public class VerifyEmailService {
 
     private static final String EXISTING_EMAIL_SQL = "select distinct internet_address from internet_addresses i " +
@@ -67,6 +67,7 @@ public class VerifyEmailService {
         return jdbcTemplate.queryForList(EXISTING_EMAIL_SQL, String.class, username);
     }
 
+    @Transactional(transactionManager = "authTransactionManager")
     public String requestVerification(final String username, final String emailInput, final String url) throws NotificationClientException, VerifyEmailException {
         final var email = StringUtils.lowerCase(emailInput);
         validateEmailAddress(email);
@@ -138,6 +139,7 @@ public class VerifyEmailService {
         }
     }
 
+    @Transactional(transactionManager = "authTransactionManager")
     public Optional<String> confirmEmail(final String token) {
         final var userTokenOptional = userTokenRepository.findById(token);
         if (userTokenOptional.isEmpty()) {

@@ -60,6 +60,9 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     @JoinColumn(name = "username", nullable = false)
     private Set<Authority> authorities = new HashSet<>();
 
+    @OneToMany(cascade = CascadeType.ALL)
+    private Set<Group> groups = new HashSet<>();
+
     public UserEmail(final String username) {
         this.username = username;
     }

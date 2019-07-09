@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepo
 
 @Service
 @Slf4j
-@Transactional
+@Transactional(transactionManager = "authTransactionManager")
 public class UserRetriesService {
 
     private final UserRetriesRepository userRetriesRepository;
