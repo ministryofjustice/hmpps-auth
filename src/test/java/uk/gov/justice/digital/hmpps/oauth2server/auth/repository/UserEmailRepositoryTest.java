@@ -3,26 +3,37 @@ package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
+import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig;
+import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
 
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@DataJpaTest
 @ActiveProfiles("dev")
-@Transactional
+@Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
+@AutoConfigureTestDatabase(replace = Replace.NONE)
+@Transactional(transactionManager = "authTransactionManager")
 public class UserEmailRepositoryTest {
     @Autowired
     private UserEmailRepository repository;
+    @Autowired
+    private GroupRepository groupRepository;
 
     @Test
     public void givenATransientEntityItCanBePersisted() {
@@ -74,7 +85,7 @@ public class UserEmailRepositoryTest {
         assertThat(retrievedEntity.getUsername()).isEqualTo(transientEntity.getUsername());
         assertThat(retrievedEntity.getEmail()).isEqualTo(transientEntity.getEmail());
         assertThat(retrievedEntity.getName()).isEqualTo("first last");
-        assertThat(retrievedEntity.getAuthorities()).extracting("authority").containsOnly("ROLE_AUTH_1", "ROLE_AUTH_2");
+        assertThat(retrievedEntity.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_AUTH_1", "ROLE_AUTH_2");
     }
 
     @Test
@@ -111,7 +122,7 @@ public class UserEmailRepositoryTest {
         final var retrievedEntity = repository.findById("AUTH_ADM").orElseThrow();
         assertThat(retrievedEntity.getUsername()).isEqualTo("AUTH_ADM");
         assertThat(retrievedEntity.getPerson().getFirstName()).isEqualTo("Auth");
-        assertThat(retrievedEntity.getAuthorities()).extracting("authority").containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES");
+        assertThat(retrievedEntity.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES");
         assertThat(retrievedEntity.getEmail()).isEqualTo("auth_test2@digital.justice.gov.uk");
         assertThat(retrievedEntity.isVerified()).isTrue();
     }
@@ -134,9 +145,9 @@ public class UserEmailRepositoryTest {
 
         final var retrievedEntity = repository.findById("AUTH_TEST").orElseThrow();
         final var authorities = retrievedEntity.getAuthorities();
-        assertThat(authorities).extracting("authority").containsOnly("ROLE_AUTH", "ROLE_AUTH_RO");
+        assertThat(authorities).extracting(Authority::getAuthority).containsOnly("ROLE_AUTH", "ROLE_AUTH_RO");
         authorities.removeIf(a -> "ROLE_AUTH".equals(a.getAuthority()));
-        assertThat(authorities).extracting("authority").containsOnly("ROLE_AUTH_RO");
+        assertThat(authorities).extracting(Authority::getAuthority).containsOnly("ROLE_AUTH_RO");
 
         repository.save(retrievedEntity);
 
@@ -145,7 +156,42 @@ public class UserEmailRepositoryTest {
         TestTransaction.start();
 
         final var retrievedEntity2 = repository.findById("AUTH_TEST").orElseThrow();
-        assertThat(retrievedEntity2.getAuthorities()).extracting("authority").containsOnly("ROLE_AUTH_RO");
+        assertThat(retrievedEntity2.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_AUTH_RO");
+    }
+
+    @Test
+    public void testGroupMapping() {
+        final var entity = repository.findById("AUTH_TEST").orElseThrow();
+        assertThat(entity.getUsername()).isEqualTo("AUTH_TEST");
+        assertThat(entity.getName()).isEqualTo("Auth Test");
+        assertThat(TestTransaction.isActive()).isTrue();
+        assertThat(entity.getGroups()).isEmpty();
+
+        final var group1 = groupRepository.findByGroupCode("SITE_1_GROUP_1").orElseThrow();
+        final var group3 = groupRepository.findByGroupCode("SITE_3_GROUP_1").orElseThrow();
+        entity.getGroups().add(group1);
+        entity.getGroups().add(group3);
+
+        repository.save(entity);
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
+
+        final var retrievedEntity = repository.findById("AUTH_TEST").orElseThrow();
+        final var groups = retrievedEntity.getGroups();
+        assertThat(groups).extracting(Group::getGroupCode).containsOnly("SITE_1_GROUP_1", "SITE_3_GROUP_1");
+        groups.removeIf(a -> "SITE_3_GROUP_1".equals(a.getGroupCode()));
+        assertThat(groups).extracting(Group::getGroupCode).containsOnly("SITE_1_GROUP_1");
+
+        repository.save(retrievedEntity);
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
+
+        final var retrievedEntity2 = repository.findById("AUTH_TEST").orElseThrow();
+        assertThat(retrievedEntity2.getGroups()).extracting(Group::getGroupCode).containsOnly("SITE_1_GROUP_1");
     }
 
     @Test

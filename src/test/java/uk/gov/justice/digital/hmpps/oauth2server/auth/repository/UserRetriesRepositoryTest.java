@@ -3,19 +3,27 @@ package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
+import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
+import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig;
+import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@DataJpaTest
 @ActiveProfiles("dev")
-@Transactional
+@Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
+@AutoConfigureTestDatabase(replace = Replace.NONE)
+@Transactional(transactionManager = "authTransactionManager")
 public class UserRetriesRepositoryTest {
     @Autowired
     private UserRetriesRepository repository;

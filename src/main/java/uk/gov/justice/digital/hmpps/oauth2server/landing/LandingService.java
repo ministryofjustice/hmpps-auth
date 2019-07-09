@@ -6,7 +6,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRep
 
 import java.util.List;
 
-@Transactional(readOnly = true)
+
+@Transactional(transactionManager = "authTransactionManager", readOnly = true)
 @org.springframework.stereotype.Service
 public class LandingService {
     private final OauthServiceRepository oauthServiceRepository;

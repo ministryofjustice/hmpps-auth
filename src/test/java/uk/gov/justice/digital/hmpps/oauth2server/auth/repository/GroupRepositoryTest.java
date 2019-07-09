@@ -11,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
@@ -24,41 +24,43 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @Transactional(transactionManager = "authTransactionManager")
-public class OauthServiceRepositoryTest {
+public class GroupRepositoryTest {
     @Autowired
-    private OauthServiceRepository repository;
+    private GroupRepository repository;
 
     @Test
     public void givenATransientEntityItCanBePersisted() {
 
         final var transientEntity = transientEntity();
 
-        final var entity = transientEntity();
+        final var entity = new Group(transientEntity.getGroupCode(), transientEntity.getGroupName());
 
         final var persistedEntity = repository.save(entity);
 
         TestTransaction.flagForCommit();
         TestTransaction.end();
 
-        assertThat(persistedEntity.getCode()).isNotNull();
+        assertThat(persistedEntity.getGroupCode()).isNotNull();
 
         TestTransaction.start();
 
-        final var retrievedEntity = repository.findById(entity.getCode()).orElseThrow();
+        final var retrievedEntity = repository.findByGroupCode(entity.getGroupCode()).orElseThrow();
 
         // equals only compares the business key columns
         assertThat(retrievedEntity).isEqualTo(transientEntity);
 
-        assertThat(retrievedEntity.getCode()).isEqualTo(transientEntity.getCode());
-        assertThat(retrievedEntity.getName()).isEqualTo(transientEntity.getName());
+        assertThat(retrievedEntity.getGroupCode()).isEqualTo(transientEntity.getGroupCode());
+        assertThat(retrievedEntity.getGroupName()).isEqualTo(transientEntity.getGroupName());
     }
 
     @Test
-    public void findByUsernameAndMasterIsTrue_AuthUser() {
-        assertThat(repository.findAllByEnabledTrueOrderByName()).extracting(Service::getName).containsOnly("New NOMIS", "Categorisation Tool", "Home Detention Curfew", "Allocate a POM");
+    public void givenAnExistingUserTheyCanBeRetrieved() {
+        final var retrievedEntity = repository.findByGroupCode("SITE_1_GROUP_1").orElseThrow();
+        assertThat(retrievedEntity.getGroupCode()).isEqualTo("SITE_1_GROUP_1");
+        assertThat(retrievedEntity.getGroupName()).isEqualTo("Site 1 - Group 1");
     }
 
-    private Service transientEntity() {
-        return new Service("CODE", "NAME", "Description", "SOME_ROLE", "http://some.url", true);
+    private Group transientEntity() {
+        return new Group("hdc", "Licences");
     }
 }

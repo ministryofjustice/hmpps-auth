@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("dev")
-@Transactional
+@Transactional(transactionManager = "authTransactionManager")
 public class ResetPasswordServiceIntTest {
     @Autowired
     private ResetPasswordService resetPasswordService;

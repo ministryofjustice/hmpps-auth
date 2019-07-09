@@ -41,6 +41,7 @@ public class ChangePasswordService extends PasswordServiceImpl {
         this.telemetryClient = telemetryClient;
     }
 
+    @Transactional(transactionManager = "authTransactionManager")
     String createToken(final String username) {
         final var userEmailOptional = userEmailRepository.findById(username);
         final var userEmail = userEmailOptional.orElseGet(() -> {
