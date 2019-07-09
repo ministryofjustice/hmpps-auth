@@ -30,6 +30,7 @@ import static uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleSer
 
 @Service
 @Slf4j
+@Transactional(transactionManager = "authTransactionManager", readOnly = true)
 public class AuthUserService {
     private final UserTokenRepository userTokenRepository;
     private final UserEmailRepository userEmailRepository;

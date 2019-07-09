@@ -70,12 +70,12 @@ public class UserService {
         return userEmailRepository.findByEmailAndMasterIsTrueOrderByUsername(StringUtils.lowerCase(StringUtils.trim(email)));
     }
 
-    @Transactional
+    @Transactional(transactionManager = "authTransactionManager")
     public void enableUser(final String username, final String admin) {
         changeUserEnabled(username, true, admin);
     }
 
-    @Transactional
+    @Transactional(transactionManager = "authTransactionManager")
     public void disableUser(final String username, final String admin) {
         changeUserEnabled(username, false, admin);
     }

@@ -15,6 +15,7 @@ import java.util.Set;
 
 @Service
 @Slf4j
+@Transactional(transactionManager = "authTransactionManager", readOnly = true)
 public class AuthUserRoleService {
     static final Map<String, String> ALLOWED_AUTH_USER_ROLES = Map.of(
             "ROLE_LICENCE_VARY", "Licence Variation",
