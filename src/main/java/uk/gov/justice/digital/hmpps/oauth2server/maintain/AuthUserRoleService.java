@@ -45,7 +45,6 @@ public class AuthUserRoleService {
         log.info("Adding role {} to user {}", roleFormatted, username);
         userEmail.getAuthorities().add(new Authority(roleFormatted));
         telemetryClient.trackEvent("AuthUserRoleAddSuccess", Map.of("username", username, "role", roleFormatted, "admin", modifier), null);
-        userEmailRepository.save(userEmail);
     }
 
     @Transactional(transactionManager = "authTransactionManager")
@@ -61,7 +60,6 @@ public class AuthUserRoleService {
         log.info("Removing role {} from user {}", roleFormatted, username);
         userEmail.getAuthorities().removeIf(a -> a.getAuthority().equals(roleFormatted));
         telemetryClient.trackEvent("AuthUserRoleRemoveSuccess", Map.of("username", username, "role", roleFormatted, "admin", modifier), null);
-        userEmailRepository.save(userEmail);
     }
 
     private void validate(final String role, final Set<Authority> authorities) throws AuthUserRoleException {
