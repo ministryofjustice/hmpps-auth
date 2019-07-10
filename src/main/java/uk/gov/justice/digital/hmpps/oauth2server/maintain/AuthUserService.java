@@ -67,6 +67,17 @@ public class AuthUserService {
         validate(username, email, firstName, lastName);
 
         // get the initial group to assign to - only allowed to be empty if super user
+        final var groups = getInitialGroupAsSet(groupCode, creator, authorities);
+
+        // create the user
+        final var person = new Person(username, firstName, lastName);
+
+        // create list of authorities
+        final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, Set.of(), groups);
+        return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate");
+    }
+
+    private Set<Group> getInitialGroupAsSet(final String groupCode, final String creator, final Collection<? extends GrantedAuthority> authorities) throws CreateUserException {
         final Set<Group> groups;
         if (StringUtils.isEmpty(groupCode)) {
             if (authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_MAINTAIN_OAUTH_USERS"::equals)) {
@@ -76,13 +87,7 @@ public class AuthUserService {
             final var authUserGroups = authUserGroupService.getAssignableGroups(creator, authorities);
             groups = Set.of(authUserGroups.stream().filter(g -> g.getGroupCode().equals(groupCode)).findFirst().orElseThrow(() -> new CreateUserException("groupCode", "notfound")));
         }
-
-        // create the user
-        final var person = new Person(username, firstName, lastName);
-
-        // create list of authorities
-        final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, Set.of(), groups);
-        return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate");
+        return groups;
     }
 
     private String saveAndSendInitialEmail(final String url, final UserEmail user, final String creator, final String eventPrefix) throws NotificationClientException {
