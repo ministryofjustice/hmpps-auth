@@ -42,7 +42,9 @@ public class AuthUserService {
                            final UserEmailRepository userEmailRepository,
                            final NotificationClientApi notificationClient,
                            final TelemetryClient telemetryClient,
-                           final VerifyEmailService verifyEmailService, final AuthUserGroupService authUserGroupService, @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId) {
+                           final VerifyEmailService verifyEmailService,
+                           final AuthUserGroupService authUserGroupService,
+                           @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId) {
         this.userTokenRepository = userTokenRepository;
         this.userEmailRepository = userEmailRepository;
         this.notificationClient = notificationClient;

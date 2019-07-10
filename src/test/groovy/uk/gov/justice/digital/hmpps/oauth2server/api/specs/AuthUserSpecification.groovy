@@ -231,7 +231,7 @@ class AuthUserSpecification extends TestSpecification {
         def oauthRestTemplate = getOauthPasswordGrant("AUTH_RO_VARY_USER", "password123456", "elite2apiclient", "clientsecret")
 
         when:
-        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/authuser/me/assignableGroups", HttpMethod.GET, null, String.class)
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/authuser/me/assignable-groups", HttpMethod.GET, null, String.class)
 
         then:
         response.statusCode == HttpStatus.OK
@@ -246,7 +246,7 @@ class AuthUserSpecification extends TestSpecification {
         def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER_ADM", "password123456", "elite2apiclient", "clientsecret")
 
         when:
-        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/authuser/me/assignableGroups", HttpMethod.GET, null, String.class)
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/authuser/me/assignable-groups", HttpMethod.GET, null, String.class)
 
         then:
         response.statusCode == HttpStatus.OK

@@ -76,7 +76,7 @@ public class AuthUserController {
         return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
     }
 
-    @GetMapping("/api/authuser/me/assignableGroups")
+    @GetMapping("/api/authuser/me/assignable-groups")
     @ApiOperation(value = "Get list of assignable groups.", notes = "Get list of groups that can be assigned by the current user.", nickname = "assignableGroups",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
