@@ -19,7 +19,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -73,7 +72,6 @@ public class AuthUserGroupServiceTest {
         service.addGroup("user", "GROUP_LICENCE_VARY", "admin");
 
         assertThat(user.getGroups()).extracting(Group::getGroupCode).containsOnly("GROUP_JOE", "GROUP_LICENCE_VARY");
-        verify(userEmailRepository).save(user);
     }
 
     @Test
@@ -94,7 +92,6 @@ public class AuthUserGroupServiceTest {
         service.removeGroup("user", "  licence_vary   ", "admin");
 
         assertThat(user.getGroups()).extracting(Group::getGroupCode).containsOnly("JOE");
-        verify(userEmailRepository).save(user);
     }
 
     @Test

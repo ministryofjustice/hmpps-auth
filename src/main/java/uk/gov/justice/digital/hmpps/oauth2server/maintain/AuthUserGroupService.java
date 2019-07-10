@@ -48,7 +48,6 @@ public class AuthUserGroupService {
         log.info("Adding group {} to user {}", groupFormatted, username);
         userEmail.getGroups().add(group);
         telemetryClient.trackEvent("AuthUserGroupAddSuccess", Map.of("username", username, "group", groupFormatted, "admin", modifier), null);
-        userEmailRepository.save(userEmail);
     }
 
     @Transactional(transactionManager = "authTransactionManager")
@@ -65,7 +64,6 @@ public class AuthUserGroupService {
         userEmail.getGroups().removeIf(a -> a.getGroupCode().equals(groupFormatted));
 
         telemetryClient.trackEvent("AuthUserGroupRemoveSuccess", Map.of("username", username, "group", groupCode, "admin", modifier), null);
-        userEmailRepository.save(userEmail);
     }
 
     private String formatGroup(final String group) {

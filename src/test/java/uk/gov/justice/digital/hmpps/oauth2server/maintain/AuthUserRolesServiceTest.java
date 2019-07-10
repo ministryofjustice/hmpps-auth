@@ -18,7 +18,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -71,7 +70,6 @@ public class AuthUserRolesServiceTest {
         service.addRole("user", "ROLE_LICENCE_VARY", "admin");
 
         assertThat(user.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_JOE", "ROLE_LICENCE_VARY");
-        verify(userEmailRepository).save(user);
     }
 
     @Test
@@ -92,6 +90,5 @@ public class AuthUserRolesServiceTest {
         service.removeRole("user", "  licence_vary   ", "admin");
 
         assertThat(user.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_JOE");
-        verify(userEmailRepository).save(user);
     }
 }
