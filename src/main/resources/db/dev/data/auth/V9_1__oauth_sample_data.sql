@@ -90,6 +90,12 @@ VALUES (newid(), 'AUTH_ADM', 'ROLE_OAUTH_ADMIN'),
 
 INSERT INTO groups (group_id, group_code, group_name)
 VALUES (newid(), 'SITE_1_GROUP_1', 'Site 1 - Group 1'),
-       (newid(), 'SITE_2_GROUP_2', 'Site 1 - Group 2'),
+       (newid(), 'SITE_1_GROUP_2', 'Site 1 - Group 2'),
        (newid(), 'SITE_2_GROUP_1', 'Site 2 - Group 1'),
        (newid(), 'SITE_3_GROUP_1', 'Site 3 - Group 1');
+
+INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_RO_VARY_USER' FROM groups WHERE group_code = 'SITE_1_GROUP_1';
+INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_RO_VARY_USER' FROM groups WHERE group_code = 'SITE_1_GROUP_2';
+INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_RO_USER' FROM groups WHERE group_code = 'SITE_1_GROUP_1';
+INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_RO_USER_TEST' FROM groups WHERE group_code = 'SITE_1_GROUP_1';
+INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_RO_USER_TEST' FROM groups WHERE group_code = 'SITE_2_GROUP_1';
