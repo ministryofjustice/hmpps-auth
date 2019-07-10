@@ -50,7 +50,7 @@ public class AuthUserGroupsControllerTest {
     public void groups_success() {
         final var group1 = new Group("FRED", "desc");
         final var group2 = new Group("GLOBAL_SEARCH", "desc2");
-        when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
+        when(authUserGroupService.getAuthUserGroups(anyString())).thenReturn(Optional.of(Set.of(group1, group2)));
         final var responseEntity = authUserGroupsController.groups("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         //noinspection unchecked
