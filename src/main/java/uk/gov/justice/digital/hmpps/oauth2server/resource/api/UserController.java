@@ -63,10 +63,12 @@ public class UserController {
         final var user = userService.findUser(username);
 
         return user.map(UserDetail::fromPerson).map(Object.class::cast).map(ResponseEntity::ok).
-                orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(username)));
+                orElse(notFoundResponse(username));
     }
 
-    private Object notFoundBody(final String username) {
-        return new ErrorDetail("Not Found", String.format("Account for username %s not found", username), "username");
+
+    private ResponseEntity<Object> notFoundResponse(final String username) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).
+                body(new ErrorDetail("Not Found", String.format("Account for username %s not found", username), "username"));
     }
 }

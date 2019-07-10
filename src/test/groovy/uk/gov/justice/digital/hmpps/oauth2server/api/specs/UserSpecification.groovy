@@ -112,7 +112,9 @@ class UserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        assert userData.collect { it.roleCode }.sort() == ['MAINTAIN_ACCESS_ROLES', 'OAUTH_ADMIN']
+        assert userData.collect {
+            it.roleCode
+        }.sort() == ['MAINTAIN_ACCESS_ROLES', 'MAINTAIN_OAUTH_USERS', 'OAUTH_ADMIN']
     }
 
     def "User Me endpoint not accessible without valid token"() {

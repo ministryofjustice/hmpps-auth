@@ -107,7 +107,7 @@ public class AuthUserGroupsController {
         }).orElse(notFoundResponse(username));
     }
 
-    private ResponseEntity<Object> notFoundResponse(@PathVariable @ApiParam(value = "The username of the user.", required = true) final String username) {
+    private ResponseEntity<Object> notFoundResponse(final String username) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).
                 body(new ErrorDetail("Not Found", String.format("Account for username %s not found", username), "username"));
     }

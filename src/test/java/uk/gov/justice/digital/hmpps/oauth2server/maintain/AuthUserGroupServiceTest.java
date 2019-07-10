@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository;
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.A
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -102,6 +104,13 @@ public class AuthUserGroupServiceTest {
     }
 
     @Test
+    public void getAuthUserAssignableGroups_notAdminAndNoUser() {
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.empty());
+        final var groups = service.getAssignableGroups(" BOB ", Set.of());
+        assertThat(groups).isEmpty();
+    }
+
+    @Test
     public void getAuthUserGroups_success() {
         final var user = new UserEmail("user");
         user.setGroups(new HashSet<>(List.of(new Group("JOE", "desc"), new Group("LICENCE_VARY", "desc2"))));
@@ -109,5 +118,21 @@ public class AuthUserGroupServiceTest {
         final var groups = service.getAuthUserGroups(" BOB ");
         //noinspection OptionalGetWithoutIsPresent
         assertThat(groups.get()).extracting(Group::getGroupCode).containsOnly("JOE", "LICENCE_VARY");
+    }
+
+    @Test
+    public void getAuthUserAssignableGroups_normalUser() {
+        final var user = new UserEmail("user");
+        user.setGroups(new HashSet<>(List.of(new Group("JOE", "desc"), new Group("LICENCE_VARY", "desc2"))));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+        final var groups = service.getAssignableGroups(" BOB ", Set.of());
+        assertThat(groups).extracting(Group::getGroupCode).containsOnly("JOE", "LICENCE_VARY");
+    }
+
+    @Test
+    public void getAuthUserAssignableGroups_superUser() {
+        when(groupRepository.findAll()).thenReturn(List.of(new Group("JOE", "desc"), new Group("LICENCE_VARY", "desc2")));
+        final var groups = service.getAssignableGroups(" BOB ", Set.of(new SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS")));
+        assertThat(groups).extracting(Group::getGroupCode).containsOnly("JOE", "LICENCE_VARY");
     }
 }

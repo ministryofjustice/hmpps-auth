@@ -11,12 +11,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException;
+import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
@@ -25,9 +28,8 @@ import uk.gov.service.notify.NotificationClientException;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,12 +38,14 @@ import java.util.stream.Collectors;
 public class AuthUserController {
     private final UserService userService;
     private final AuthUserService authUserService;
+    private final AuthUserGroupService authUserGroupService;
     private final boolean smokeTestEnabled;
 
     public AuthUserController(final UserService userService, final AuthUserService authUserService,
-                              @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
+                              final AuthUserGroupService authUserGroupService, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
         this.userService = userService;
         this.authUserService = authUserService;
+        this.authUserGroupService = authUserGroupService;
         this.smokeTestEnabled = smokeTestEnabled;
     }
 
@@ -72,8 +76,19 @@ public class AuthUserController {
         return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
     }
 
+    @GetMapping("/api/authuser/me/assignableGroups")
+    @ApiOperation(value = "Get list of assignable groups.", notes = "Get list of groups that can be assigned by the current user.", nickname = "assignableGroups",
+            consumes = "application/json", produces = "application/json")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = AuthUserGroup.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class)})
+    public Collection<AuthUserGroup> assignableGroups(@ApiIgnore final Authentication authentication) {
+        final var groups = authUserGroupService.getAssignableGroups(authentication.getName(), authentication.getAuthorities());
+        return groups.stream().map(AuthUserGroup::new).collect(Collectors.toSet());
+    }
+
     @PutMapping("/api/authuser/{username}")
-    @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+    @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
     @ApiOperation(value = "Create user.", notes = "Create user.", nickname = "createUser",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
@@ -86,7 +101,7 @@ public class AuthUserController {
             @ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
             @ApiParam(value = "Details of the user to be created.", required = true) @RequestBody final CreateUser createUser,
             @ApiIgnore final HttpServletRequest request,
-            @ApiIgnore final Principal principal) throws NotificationClientException {
+            @ApiIgnore final Authentication authentication) throws NotificationClientException {
 
         final var user = StringUtils.isNotBlank(username) ? userService.findUser(StringUtils.trim(username)) : Optional.empty();
 
@@ -98,7 +113,9 @@ public class AuthUserController {
         // new user
         try {
             final var setPasswordUrl = createInitialPasswordUrl(request);
-            final var resetLink = authUserService.createUser(StringUtils.trim(username), createUser.getEmail(), createUser.getFirstName(), createUser.getLastName(), createUser.getAdditionalRoles(), setPasswordUrl, principal.getName());
+            final var resetLink = authUserService.createUser(StringUtils.trim(username), createUser.getEmail(),
+                    createUser.getFirstName(), createUser.getLastName(), createUser.getGroupCode(),
+                    setPasswordUrl, authentication.getName(), authentication.getAuthorities());
 
             log.info("Create user succeeded for user {}", username);
             if (smokeTestEnabled) {
@@ -200,12 +217,8 @@ public class AuthUserController {
         private String firstName;
         @ApiModelProperty(required = true, value = "Last name", example = "User", position = 3)
         private String lastName;
-        @ApiModelProperty(value = "Additional roles", example = "[ROLE_LICENCE_VARY]", dataType = "Set", position = 4)
-        private Set<String> additionalRoles;
-
-        Set<String> getAdditionalRoles() {
-            return additionalRoles == null ? Collections.emptySet() : additionalRoles;
-        }
+        @ApiModelProperty(value = "Initial group, required for group managers", example = "[SITE_1_GROUP_1]", position = 4)
+        private String groupCode;
     }
 
     @Data

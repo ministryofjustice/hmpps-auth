@@ -79,6 +79,8 @@ VALUES ('AUTH_USER', 'Auth', 'Only'),
 INSERT INTO authority (authority_id, username, authority)
 VALUES (newid(), 'AUTH_ADM', 'ROLE_OAUTH_ADMIN'),
        (newid(), 'AUTH_ADM', 'ROLE_MAINTAIN_ACCESS_ROLES'),
+    (newid(), 'AUTH_ADM', 'ROLE_MAINTAIN_OAUTH_USERS')
+    ,
        (newid(), 'AUTH_RO_USER', 'ROLE_LICENCE_RO'),
        (newid(), 'AUTH_RO_USER', 'ROLE_GLOBAL_SEARCH'),
        (newid(), 'AUTH_RO_VARY_USER', 'ROLE_LICENCE_RO'),
