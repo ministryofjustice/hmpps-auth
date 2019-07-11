@@ -69,7 +69,7 @@ public class AuthUserGroupService {
     }
 
     public List<Group> getAllGroups() {
-        return groupRepository.findAll();
+        return groupRepository.findAllByOrderByGroupName();
     }
 
     public Optional<Set<Group>> getAuthUserGroups(final String username) {

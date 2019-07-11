@@ -8,9 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface GroupRepository extends CrudRepository<Group, String> {
-    @Override
     @NonNull
-    List<Group> findAll();
+    List<Group> findAllByOrderByGroupName();
 
     Optional<Group> findByGroupCode(String groupCode);
 }
