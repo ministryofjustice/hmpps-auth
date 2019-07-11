@@ -224,4 +224,36 @@ class AuthUserSpecification extends TestSpecification {
             exception.message == "error='access_denied', error_description='Access is denied'"
         }
     }
+
+    def "Auth User Assignable Groups endpoint for normal user returns their own groups"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("AUTH_RO_VARY_USER", "password123456", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/authuser/me/assignable-groups", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        assert userData.collect { it.groupCode }.sort() == ['SITE_1_GROUP_1', 'SITE_1_GROUP_2']
+    }
+
+    def "Auth User Assignable Groups endpoint for super user returns all groups"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER_ADM", "password123456", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/authuser/me/assignable-groups", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        assert userData.size() > 3
+        assert userData.find { it.groupCode == 'SITE_1_GROUP_1' }.groupName == 'Site 1 - Group 1'
+    }
+
 }

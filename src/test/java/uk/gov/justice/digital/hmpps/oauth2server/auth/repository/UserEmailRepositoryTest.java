@@ -122,7 +122,7 @@ public class UserEmailRepositoryTest {
         final var retrievedEntity = repository.findById("AUTH_ADM").orElseThrow();
         assertThat(retrievedEntity.getUsername()).isEqualTo("AUTH_ADM");
         assertThat(retrievedEntity.getPerson().getFirstName()).isEqualTo("Auth");
-        assertThat(retrievedEntity.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES");
+        assertThat(retrievedEntity.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS");
         assertThat(retrievedEntity.getEmail()).isEqualTo("auth_test2@digital.justice.gov.uk");
         assertThat(retrievedEntity.isVerified()).isTrue();
     }

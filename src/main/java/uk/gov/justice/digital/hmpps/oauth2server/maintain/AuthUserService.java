@@ -1,14 +1,14 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain;
 
-import com.google.common.collect.Sets;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
@@ -22,11 +22,9 @@ import uk.gov.service.notify.NotificationClientException;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import static uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.ALLOWED_AUTH_USER_ROLES;
 
 @Service
 @Slf4j
@@ -37,24 +35,28 @@ public class AuthUserService {
     private final NotificationClientApi notificationClient;
     private final TelemetryClient telemetryClient;
     private final VerifyEmailService verifyEmailService;
+    private final AuthUserGroupService authUserGroupService;
     private final String initialPasswordTemplateId;
 
     public AuthUserService(final UserTokenRepository userTokenRepository,
                            final UserEmailRepository userEmailRepository,
                            final NotificationClientApi notificationClient,
                            final TelemetryClient telemetryClient,
-                           final VerifyEmailService verifyEmailService, @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId) {
+                           final VerifyEmailService verifyEmailService,
+                           final AuthUserGroupService authUserGroupService,
+                           @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId) {
         this.userTokenRepository = userTokenRepository;
         this.userEmailRepository = userEmailRepository;
         this.notificationClient = notificationClient;
         this.telemetryClient = telemetryClient;
         this.verifyEmailService = verifyEmailService;
+        this.authUserGroupService = authUserGroupService;
         this.initialPasswordTemplateId = initialPasswordTemplateId;
     }
 
     @Transactional(transactionManager = "authTransactionManager")
     public String createUser(final String usernameInput, final String emailInput, final String firstName, final String lastName,
-                             final Set<String> additionalRoles, final String url, final String creator)
+                             final String groupCode, final String url, final String creator, final Collection<? extends GrantedAuthority> authorities)
             throws CreateUserException, NotificationClientException, VerifyEmailException {
         // ensure username always uppercase
         final var username = StringUtils.upperCase(usernameInput);
@@ -64,13 +66,28 @@ public class AuthUserService {
         // validate
         validate(username, email, firstName, lastName);
 
+        // get the initial group to assign to - only allowed to be empty if super user
+        final var groups = getInitialGroupAsSet(groupCode, creator, authorities);
+
         // create the user
         final var person = new Person(username, firstName, lastName);
 
         // create list of authorities
-        final var authorities = calculateRoles(additionalRoles);
-        final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, authorities, Set.of());
+        final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, Set.of(), groups);
         return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate");
+    }
+
+    private Set<Group> getInitialGroupAsSet(final String groupCode, final String creator, final Collection<? extends GrantedAuthority> authorities) throws CreateUserException {
+        final Set<Group> groups;
+        if (StringUtils.isEmpty(groupCode)) {
+            if (authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_MAINTAIN_OAUTH_USERS"::equals)) {
+                groups = Set.of();
+            } else throw new CreateUserException("groupCode", "missing");
+        } else {
+            final var authUserGroups = authUserGroupService.getAssignableGroups(creator, authorities);
+            groups = Set.of(authUserGroups.stream().filter(g -> g.getGroupCode().equals(groupCode)).findFirst().orElseThrow(() -> new CreateUserException("groupCode", "notfound")));
+        }
+        return groups;
     }
 
     private String saveAndSendInitialEmail(final String url, final UserEmail user, final String creator, final String eventPrefix) throws NotificationClientException {
@@ -122,11 +139,6 @@ public class AuthUserService {
         verifyEmailService.validateEmailAddress(email);
         userEmail.setEmail(email);
         return saveAndSendInitialEmail(url, userEmail, admin, "AuthUserAmend");
-    }
-
-    private Set<Authority> calculateRoles(final Set<String> additionalRoles) {
-        final var additionalRolesWithRolePrefix = additionalRoles.stream().map(Authority::addRolePrefixIfNecessary).collect(Collectors.toSet());
-        return Sets.intersection(ALLOWED_AUTH_USER_ROLES.keySet(), additionalRolesWithRolePrefix).stream().map(Authority::new).collect(Collectors.toSet());
     }
 
     private void validate(final String username, final String email, final String firstName, final String lastName)

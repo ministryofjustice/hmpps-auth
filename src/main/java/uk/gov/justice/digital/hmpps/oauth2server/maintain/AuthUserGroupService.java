@@ -6,16 +6,14 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 
 @Service
@@ -82,12 +80,18 @@ public class AuthUserGroupService {
         });
     }
 
+    public Set<Group> getAssignableGroups(final String username, final Collection<? extends GrantedAuthority> authorities) {
+        if (authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_MAINTAIN_OAUTH_USERS"::equals)) {
+            return Set.copyOf(getAllGroups());
+        }
+        return getAuthUserGroups(username).orElse(Set.of());
+    }
+
     public static class AuthUserGroupExistsException extends AuthUserGroupException {
         public AuthUserGroupExistsException() {
             super("group", "exists");
         }
     }
-
 
     @Getter
     public static class AuthUserGroupException extends Exception {

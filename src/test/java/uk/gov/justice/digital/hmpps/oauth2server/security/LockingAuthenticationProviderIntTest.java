@@ -40,7 +40,7 @@ public class LockingAuthenticationProviderIntTest {
     public void authenticate_AuthUserSuccessWithAuthorities() {
         final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ADM", "password123456"));
         assertThat(auth).isNotNull();
-        assertThat(auth.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES");
+        assertThat(auth.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS");
     }
 
     @Test
