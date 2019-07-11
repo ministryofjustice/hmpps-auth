@@ -60,6 +60,11 @@ public class GroupRepositoryTest {
         assertThat(retrievedEntity.getGroupName()).isEqualTo("Site 1 - Group 1");
     }
 
+    @Test
+    public void findByEmail_NoRecords() {
+        assertThat(repository.findAllByOrderByGroupName()).extracting(Group::getGroupCode).containsExactly("SITE_1_GROUP_1", "SITE_1_GROUP_2", "SITE_2_GROUP_1", "SITE_3_GROUP_1");
+    }
+
     private Group transientEntity() {
         return new Group("hdc", "Licences");
     }

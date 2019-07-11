@@ -131,7 +131,7 @@ public class AuthUserGroupServiceTest {
 
     @Test
     public void getAuthUserAssignableGroups_superUser() {
-        when(groupRepository.findAll()).thenReturn(List.of(new Group("JOE", "desc"), new Group("LICENCE_VARY", "desc2")));
+        when(groupRepository.findAllByOrderByGroupName()).thenReturn(List.of(new Group("JOE", "desc"), new Group("LICENCE_VARY", "desc2")));
         final var groups = service.getAssignableGroups(" BOB ", Set.of(new SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS")));
         assertThat(groups).extracting(Group::getGroupCode).containsOnly("JOE", "LICENCE_VARY");
     }
