@@ -55,6 +55,7 @@ VALUES ('AUTH_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QL
        ('AUTH_NEW_USER', null, '3013-01-28 13:23:19', 'a@b.com', 'false', 'true', 'false', 'true'),
        ('AUTH_RO_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
        ('AUTH_RO_VARY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
+       ('AUTH_GROUP_MANAGER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_group_manager@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
        ('AUTH_RO_USER_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true');
 
 INSERT INTO user_token (token, token_type, token_expiry, username)
@@ -73,7 +74,8 @@ VALUES ('AUTH_USER', 'Auth', 'Only'),
        ('AUTH_NEW_USER', 'Auth', 'New-User'),
        ('AUTH_RO_USER', 'Ryan-Auth', 'Orton'),
        ('AUTH_RO_VARY_USER', 'Ryan-Auth-Vary', 'Orton'),
-       ('AUTH_RO_USER_TEST', 'Ryan-Auth', 'Orton');
+       ('AUTH_RO_USER_TEST', 'Ryan-Auth', 'Orton'),
+       ('AUTH_GROUP_MANAGER', 'Group', 'Manager');
 
 
 INSERT INTO authority (authority_id, username, authority)
@@ -86,7 +88,9 @@ VALUES (newid(), 'AUTH_ADM', 'ROLE_OAUTH_ADMIN'),
        (newid(), 'AUTH_RO_VARY_USER', 'ROLE_GLOBAL_SEARCH'),
        (newid(), 'AUTH_RO_VARY_USER', 'ROLE_LICENCE_VARY'),
        (newid(), 'AUTH_RO_USER_TEST', 'ROLE_LICENCE_RO'),
-       (newid(), 'AUTH_RO_USER_TEST', 'ROLE_GLOBAL_SEARCH');
+       (newid(), 'AUTH_RO_USER_TEST', 'ROLE_GLOBAL_SEARCH'),
+       (newid(), 'AUTH_GROUP_MANAGER', 'ROLE_AUTH_GROUP_MANAGER');
+
 
 
 INSERT INTO groups (group_id, group_code, group_name)
@@ -100,3 +104,5 @@ INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group
 INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_RO_USER' FROM groups WHERE group_code = 'SITE_1_GROUP_1';
 INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_RO_USER_TEST' FROM groups WHERE group_code = 'SITE_1_GROUP_1';
 INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_RO_USER_TEST' FROM groups WHERE group_code = 'SITE_2_GROUP_1';
+INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_GROUP_MANAGER' FROM groups WHERE group_code = 'SITE_1_GROUP_1';
+INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_GROUP_MANAGER' FROM groups WHERE group_code = 'SITE_1_GROUP_2';
