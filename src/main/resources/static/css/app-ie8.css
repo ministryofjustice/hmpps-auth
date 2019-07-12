@@ -23,10 +23,6 @@
   border-bottom-color: white;
 }
 
-#loginForm #username {
-  text-transform: uppercase;
-}
-
 #cancel {
   background-color: #dee0e2;
   color: #0b0c0c;
