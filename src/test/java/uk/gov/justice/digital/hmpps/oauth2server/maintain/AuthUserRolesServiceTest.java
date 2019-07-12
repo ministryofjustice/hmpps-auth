@@ -62,6 +62,32 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
+    public void addRole_oauthAdminRestricted() {
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
+        final var role = new Authority("ROLE_OAUTH_ADMIN", "Role Licence Vary");
+        when(roleRepository.findByAuthority(anyString())).thenReturn(Optional.of(role));
+        when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role));
+
+        assertThatThrownBy(() -> service.addRole("user", "BOB", "admin", GRANTED_AUTHORITY_SUPER_USER)).
+                isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: invalid");
+    }
+
+    @Test
+    public void addRole_oauthAdminRestricted_success() throws AuthUserRoleException {
+        final UserEmail user = new UserEmail("user");
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+        final var role = new Authority("ROLE_OAUTH_ADMIN", "Role Auth Admin");
+        when(roleRepository.findByAuthority(anyString())).thenReturn(Optional.of(role));
+        when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role));
+
+        service.addRole("user", "BOB", "admin",
+                Set.of(new SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"), new SimpleGrantedAuthority("ROLE_OAUTH_ADMIN")));
+
+        assertThat(user.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN");
+
+    }
+
+    @Test
     public void addRole_roleAlreadyOnUser() {
         final var user = new UserEmail("user");
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");

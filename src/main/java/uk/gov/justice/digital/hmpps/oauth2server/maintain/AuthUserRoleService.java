@@ -58,11 +58,11 @@ public class AuthUserRoleService {
         final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
 
         final var roleFormatted = formatRole(roleCode);
-        if (userEmail.getAuthorities().stream().map(Authority::getAuthority).noneMatch(a -> a.equals(roleFormatted))) {
+        final var role = roleRepository.findByAuthority(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "notfound"));
+
+        if (!userEmail.getAuthorities().contains(role)) {
             throw new AuthUserRoleException("role", "missing");
         }
-
-        final var role = roleRepository.findByAuthority(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "notfound"));
 
         if (!getAssignableRoles(modifier, authorities).contains(role)) {
             throw new AuthUserRoleException("role", "invalid");
@@ -84,7 +84,7 @@ public class AuthUserRoleService {
     public Set<Authority> getAssignableRoles(final String username, final Collection<? extends GrantedAuthority> authorities) {
         if (canMaintainAuthUsers(authorities)) {
             // only allow oauth admins to see that role
-            return getAllRoles().stream().filter(r -> !"ROLE_OAUTH_ADMIN".equals(r.getAuthority()) || canAddAuthClients(authorities)).collect(Collectors.toSet());
+            return getAllRoles().stream().filter(r -> !"ROLE_OAUTH_ADMIN".equals(r.getAuthorityName()) || canAddAuthClients(authorities)).collect(Collectors.toSet());
         }
         // TODO: return roles for all groups
         return Set.copyOf(getAllRoles());
