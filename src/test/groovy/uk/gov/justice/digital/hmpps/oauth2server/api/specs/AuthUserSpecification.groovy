@@ -12,6 +12,7 @@ class AuthUserSpecification extends TestSpecification {
         String email
         String firstName
         String lastName
+        String groupCode
     }
 
     def jsonSlurper = new JsonSlurper()
@@ -37,6 +38,29 @@ class AuthUserSpecification extends TestSpecification {
         def userData = jsonSlurper.parseText(response.body as String)
 
         userData == ['username': username.toUpperCase(), 'active': true, 'name': 'Bob Smith', 'authSource': 'auth']
+    }
+
+    def 'Create User endpoint succeeds to create user data with group'() {
+        def username = RandomStringUtils.randomAlphanumeric(10)
+        def user = [email: 'bob@bobdigital.justice.gov.uk', firstName: 'Bob', lastName: 'Smith', groupCode: 'SITE_1_GROUP_1'] as NewUser
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant('AUTH_GROUP_MANAGER', 'password123456', 'elite2apiclient', 'clientsecret')
+
+        when:
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.APPLICATION_JSON)
+
+        HttpEntity<String> entity = new HttpEntity<String>(new JsonBuilder(user).toPrettyString(), headers)
+        def createUserResponse = oauthRestTemplate.exchange("${getBaseUrl()}/api/authuser/${username}", HttpMethod.PUT, entity, String.class)
+
+        then:
+        createUserResponse.statusCode == HttpStatus.OK
+
+        def response = oauthRestTemplate.exchange("${getBaseUrl()}/api/authuser/${username}/groups", HttpMethod.GET, null, String.class)
+        def groupData = jsonSlurper.parseText(response.body as String)
+
+        groupData == [['groupCode': 'SITE_1_GROUP_1', 'groupName': 'Site 1 - Group 1']]
     }
 
     def 'Create User endpoint fails if no privilege'() {
