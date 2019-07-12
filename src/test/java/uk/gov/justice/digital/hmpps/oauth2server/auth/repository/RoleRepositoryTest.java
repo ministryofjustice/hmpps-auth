@@ -44,7 +44,7 @@ public class RoleRepositoryTest {
 
         TestTransaction.start();
 
-        final var retrievedEntity = repository.findByAuthority(entity.getAuthority()).orElseThrow();
+        final var retrievedEntity = repository.findByRoleCode(entity.getRoleCode()).orElseThrow();
 
         // equals only compares the business key columns
         assertThat(retrievedEntity).isEqualTo(transientEntity);
@@ -55,7 +55,7 @@ public class RoleRepositoryTest {
 
     @Test
     public void givenAnExistingRoleTheyCanBeRetrieved() {
-        final var retrievedEntity = repository.findByAuthority("ROLE_PECS_POLICE").orElseThrow();
+        final var retrievedEntity = repository.findByRoleCode("PECS_POLICE").orElseThrow();
         assertThat(retrievedEntity.getAuthority()).isEqualTo("ROLE_PECS_POLICE");
         assertThat(retrievedEntity.getRoleName()).isEqualTo("PECS Police");
     }

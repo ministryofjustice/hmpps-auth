@@ -11,5 +11,5 @@ public interface RoleRepository extends CrudRepository<Authority, String> {
     @NonNull
     List<Authority> findAllByOrderByRoleName();
 
-    Optional<Authority> findByAuthority(String roleCode);
+    Optional<Authority> findByRoleCode(String roleCode);
 }

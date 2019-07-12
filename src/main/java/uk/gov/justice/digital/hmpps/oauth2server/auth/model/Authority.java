@@ -14,7 +14,7 @@ import java.util.UUID;
 @Table(name = "ROLES")
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(of = {"authority"})
+@EqualsAndHashCode(of = {"roleCode"})
 public class Authority implements GrantedAuthority {
     public static final String ROLE_PREFIX = "ROLE_";
 
@@ -25,22 +25,22 @@ public class Authority implements GrantedAuthority {
     private UUID id;
 
     @Column(name = "role_code", nullable = false)
-    private String authority;
+    private String roleCode;
 
     @Column(name = "role_name", nullable = false)
     private String roleName;
 
-    public Authority(final String authority, final String roleName) {
-        this.authority = addRolePrefixIfNecessary(authority);
+    public Authority(final String roleCode, final String roleName) {
+        this.roleCode = removeRolePrefixIfNecessary(roleCode);
         this.roleName = roleName;
     }
 
-    public String getAuthorityName() {
-        // strip off ROLE_
-        return authority.substring(ROLE_PREFIX.length());
+    public static String removeRolePrefixIfNecessary(final String role) {
+        return StringUtils.startsWith(role, ROLE_PREFIX) ? StringUtils.substring(role, ROLE_PREFIX.length()) : role;
     }
 
-    public static String addRolePrefixIfNecessary(final String role) {
-        return StringUtils.startsWith(role, ROLE_PREFIX) ? role : ROLE_PREFIX + role;
+    @Override
+    public String getAuthority() {
+        return ROLE_PREFIX + roleCode;
     }
 }

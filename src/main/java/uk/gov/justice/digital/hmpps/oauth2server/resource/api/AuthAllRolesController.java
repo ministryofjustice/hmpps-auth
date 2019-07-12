@@ -34,7 +34,7 @@ public class AuthAllRolesController {
     public ResponseEntity<List<AuthUserRole>> allRoles() {
         final var allRoles = authUserRoleService.getAllRoles();
         final var mappedRoles = allRoles.stream().
-                map(e -> new AuthUserRole(e.getRoleName(), e.getAuthorityName())).collect(Collectors.toList());
+                map(e -> new AuthUserRole(e.getRoleName(), e.getRoleCode())).collect(Collectors.toList());
         return ResponseEntity.ok(mappedRoles);
     }
 }

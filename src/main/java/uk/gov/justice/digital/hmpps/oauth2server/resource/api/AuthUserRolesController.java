@@ -43,7 +43,7 @@ public class AuthUserRolesController {
         return userOptional
                 .map(u -> u.getAuthorities()
                         .stream()
-                        .map(a -> new AuthUserRole(a.getRoleName(), a.getAuthorityName()))
+                        .map(a -> new AuthUserRole(a.getRoleName(), a.getRoleCode()))
                         .collect(Collectors.toSet()))
                 .map(Object.class::cast).
                         map(ResponseEntity::ok).

@@ -21,19 +21,19 @@ CREATE INDEX user_role_user_email_fk ON user_email_roles (username);
 CREATE INDEX user_role_role_fk ON user_email_roles (role_id);
 
 INSERT INTO roles (role_id, role_code, role_name)
-VALUES (newid(), 'ROLE_GLOBAL_SEARCH', 'Global Search'),
-       (newid(), 'ROLE_LICENCE_VARY', 'Licence Variation'),
-       (newid(), 'ROLE_LICENCE_RO', 'Licence Responsible Officer'),
-       (newid(), 'ROLE_PECS_POLICE', 'PECS Police'),
-       (newid(), 'ROLE_PECS_SUPPLIER', 'PECS Supplier'),
-       (newid(), 'ROLE_MAINTAIN_ACCESS_ROLES', 'Maintain Roles'),
-       (newid(), 'ROLE_MAINTAIN_ACCESS_ROLES_ADMIN', 'Maintain Access Roles (admin)'),
-       (newid(), 'ROLE_OAUTH_ADMIN', 'Auth Client Management (admin)'),
-       (newid(), 'ROLE_MAINTAIN_OAUTH_USERS', 'Maintain Auth Users (admin)'),
-       (newid(), 'ROLE_AUTH_GROUP_MANAGER', 'Auth Group Manager');
+VALUES (newid(), 'GLOBAL_SEARCH', 'Global Search'),
+       (newid(), 'LICENCE_VARY', 'Licence Variation'),
+       (newid(), 'LICENCE_RO', 'Licence Responsible Officer'),
+       (newid(), 'PECS_POLICE', 'PECS Police'),
+       (newid(), 'PECS_SUPPLIER', 'PECS Supplier'),
+       (newid(), 'MAINTAIN_ACCESS_ROLES', 'Maintain Roles'),
+       (newid(), 'MAINTAIN_ACCESS_ROLES_ADMIN', 'Maintain Access Roles (admin)'),
+       (newid(), 'OAUTH_ADMIN', 'Auth Client Management (admin)'),
+       (newid(), 'MAINTAIN_OAUTH_USERS', 'Maintain Auth Users (admin)'),
+       (newid(), 'AUTH_GROUP_MANAGER', 'Auth Group Manager');
 
 INSERT INTO user_email_roles (role_id, username) (select role_id, username
                                                   from authority a
-                                                           join roles r on a.authority = r.role_code);
+                                                           join roles r on a.authority = 'ROLE_' || r.role_code);
 
 

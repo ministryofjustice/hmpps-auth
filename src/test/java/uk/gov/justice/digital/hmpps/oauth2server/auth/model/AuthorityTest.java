@@ -17,21 +17,21 @@ public class AuthorityTest {
 
     @Test
     public void getAuthorityName() {
-        assertThat(new Authority("ROLE_BOB", "bloggs").getAuthorityName()).isEqualTo("BOB");
+        assertThat(new Authority("ROLE_BOB", "bloggs").getRoleCode()).isEqualTo("BOB");
     }
 
     @Test
-    public void addRolePrefixIfNecessary_necessary() {
-        assertThat(Authority.addRolePrefixIfNecessary("BOB")).isEqualTo("ROLE_BOB");
+    public void removeRolePrefixIfNecessary_necessary() {
+        assertThat(Authority.removeRolePrefixIfNecessary("ROLE_BOB")).isEqualTo("BOB");
     }
 
     @Test
-    public void addRolePrefixIfNecessary_unnecessary() {
-        assertThat(Authority.addRolePrefixIfNecessary("ROLE_BOB")).isEqualTo("ROLE_BOB");
+    public void removeRolePrefixIfNecessary_unnecessary() {
+        assertThat(Authority.removeRolePrefixIfNecessary("BOB")).isEqualTo("BOB");
     }
 
     @Test
-    public void addRolePrefixIfNecessary_null() {
-        assertThat(Authority.addRolePrefixIfNecessary(null)).isEqualTo("ROLE_null");
+    public void removeRolePrefixIfNecessary_null() {
+        assertThat(Authority.removeRolePrefixIfNecessary(null)).isEqualTo(null);
     }
 }

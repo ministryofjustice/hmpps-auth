@@ -37,7 +37,7 @@ public class AuthUserRoleService {
         final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
 
         // check that role exists
-        final var role = roleRepository.findByAuthority(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "notfound"));
+        final var role = roleRepository.findByRoleCode(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "notfound"));
 
         if (userEmail.getAuthorities().contains(role)) {
             throw new AuthUserRoleExistsException();
@@ -58,7 +58,7 @@ public class AuthUserRoleService {
         final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
 
         final var roleFormatted = formatRole(roleCode);
-        final var role = roleRepository.findByAuthority(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "notfound"));
+        final var role = roleRepository.findByRoleCode(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "notfound"));
 
         if (!userEmail.getAuthorities().contains(role)) {
             throw new AuthUserRoleException("role", "missing");
@@ -74,7 +74,7 @@ public class AuthUserRoleService {
     }
 
     private String formatRole(final String role) {
-        return Authority.addRolePrefixIfNecessary(StringUtils.upperCase(StringUtils.trim(role)));
+        return Authority.removeRolePrefixIfNecessary(StringUtils.upperCase(StringUtils.trim(role)));
     }
 
     public List<Authority> getAllRoles() {
@@ -84,7 +84,7 @@ public class AuthUserRoleService {
     public Set<Authority> getAssignableRoles(final String username, final Collection<? extends GrantedAuthority> authorities) {
         if (canMaintainAuthUsers(authorities)) {
             // only allow oauth admins to see that role
-            return getAllRoles().stream().filter(r -> !"ROLE_OAUTH_ADMIN".equals(r.getAuthorityName()) || canAddAuthClients(authorities)).collect(Collectors.toSet());
+            return getAllRoles().stream().filter(r -> !"OAUTH_ADMIN".equals(r.getRoleCode()) || canAddAuthClients(authorities)).collect(Collectors.toSet());
         }
         // TODO: return roles for all groups
         return Set.copyOf(getAllRoles());

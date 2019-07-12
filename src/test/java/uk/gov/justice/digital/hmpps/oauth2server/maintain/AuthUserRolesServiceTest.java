@@ -54,7 +54,7 @@ public class AuthUserRolesServiceTest {
     public void addRole_invalidRole() {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
-        when(roleRepository.findByAuthority(anyString())).thenReturn(Optional.of(role));
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(new Authority("FRED", "Role Fred")));
 
         assertThatThrownBy(() -> service.addRole("user", "BOB", "admin", GRANTED_AUTHORITY_SUPER_USER)).
@@ -65,7 +65,7 @@ public class AuthUserRolesServiceTest {
     public void addRole_oauthAdminRestricted() {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
         final var role = new Authority("ROLE_OAUTH_ADMIN", "Role Licence Vary");
-        when(roleRepository.findByAuthority(anyString())).thenReturn(Optional.of(role));
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role));
 
         assertThatThrownBy(() -> service.addRole("user", "BOB", "admin", GRANTED_AUTHORITY_SUPER_USER)).
@@ -77,7 +77,7 @@ public class AuthUserRolesServiceTest {
         final UserEmail user = new UserEmail("user");
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         final var role = new Authority("ROLE_OAUTH_ADMIN", "Role Auth Admin");
-        when(roleRepository.findByAuthority(anyString())).thenReturn(Optional.of(role));
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role));
 
         service.addRole("user", "BOB", "admin",
@@ -94,7 +94,7 @@ public class AuthUserRolesServiceTest {
         user.setAuthorities(new HashSet<>(List.of(role)));
 
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
-        when(roleRepository.findByAuthority(anyString())).thenReturn(Optional.of(role));
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
 
         assertThatThrownBy(() -> service.addRole("user", "LICENCE_VARY", "admin", GRANTED_AUTHORITY_SUPER_USER)).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: exists");
@@ -106,7 +106,7 @@ public class AuthUserRolesServiceTest {
         user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
-        when(roleRepository.findByAuthority(anyString())).thenReturn(Optional.of(role));
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role));
 
         service.addRole("user", "ROLE_LICENCE_VARY", "admin", GRANTED_AUTHORITY_SUPER_USER);
@@ -118,6 +118,8 @@ public class AuthUserRolesServiceTest {
     public void removeRole_roleNotOnUser() {
         final var user = new UserEmail("user");
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+        final var role2 = new Authority("BOB", "Bloggs");
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2));
 
         assertThatThrownBy(() -> service.removeRole("user", "BOB", "admin", GRANTED_AUTHORITY_SUPER_USER)).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: missing");
@@ -130,7 +132,7 @@ public class AuthUserRolesServiceTest {
         final var role2 = new Authority("BOB", "Bloggs");
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
-        when(roleRepository.findByAuthority(anyString())).thenReturn(Optional.of(role2));
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role));
 
         assertThatThrownBy(() -> service.removeRole("user", "BOB", "admin", GRANTED_AUTHORITY_SUPER_USER)).
@@ -156,7 +158,7 @@ public class AuthUserRolesServiceTest {
         final var role2 = new Authority("JOE", "Bloggs");
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
-        when(roleRepository.findByAuthority(anyString())).thenReturn(Optional.of(role));
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role, role2));
 
         service.removeRole("user", "  licence_vary   ", "admin", GRANTED_AUTHORITY_SUPER_USER);

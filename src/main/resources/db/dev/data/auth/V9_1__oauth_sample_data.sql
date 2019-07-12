@@ -77,17 +77,17 @@ VALUES ('AUTH_USER', 'Auth', 'Only'),
        ('AUTH_RO_USER_TEST', 'Ryan-Auth', 'Orton'),
        ('AUTH_GROUP_MANAGER', 'Group', 'Manager');
 
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_ADM' from roles where role_code = 'ROLE_OAUTH_ADMIN';
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_ADM' from roles where role_code = 'ROLE_MAINTAIN_ACCESS_ROLES';
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_ADM' from roles where role_code = 'ROLE_MAINTAIN_OAUTH_USERS';
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER' from roles where role_code = 'ROLE_LICENCE_RO';
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER' from roles where role_code = 'ROLE_GLOBAL_SEARCH';
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_VARY_USER' from roles where role_code = 'ROLE_LICENCE_RO';
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_VARY_USER' from roles where role_code = 'ROLE_GLOBAL_SEARCH';
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_VARY_USER' from roles where role_code = 'ROLE_LICENCE_VARY';
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER_TEST' from roles where role_code = 'ROLE_LICENCE_RO';
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER_TEST' from roles where role_code = 'ROLE_GLOBAL_SEARCH';
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_GROUP_MANAGER' from roles where role_code = 'ROLE_AUTH_GROUP_MANAGER';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_ADM' from roles where role_code = 'OAUTH_ADMIN';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_ADM' from roles where role_code = 'MAINTAIN_ACCESS_ROLES';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_ADM' from roles where role_code = 'MAINTAIN_OAUTH_USERS';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER' from roles where role_code = 'LICENCE_RO';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER' from roles where role_code = 'GLOBAL_SEARCH';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_VARY_USER' from roles where role_code = 'LICENCE_RO';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_VARY_USER' from roles where role_code = 'GLOBAL_SEARCH';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_VARY_USER' from roles where role_code = 'LICENCE_VARY';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER_TEST' from roles where role_code = 'LICENCE_RO';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER_TEST' from roles where role_code = 'GLOBAL_SEARCH';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_GROUP_MANAGER' from roles where role_code = 'AUTH_GROUP_MANAGER';
 
 INSERT INTO groups (group_id, group_code, group_name)
 VALUES (newid(), 'SITE_1_GROUP_1', 'Site 1 - Group 1'),

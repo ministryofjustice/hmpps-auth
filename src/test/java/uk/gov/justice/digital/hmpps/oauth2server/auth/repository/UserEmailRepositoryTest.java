@@ -70,8 +70,8 @@ public class UserEmailRepositoryTest {
         final var transientEntity = transientEntity();
         transientEntity.setPerson(new Person(transientEntity.getUsername(), "first", "last"));
 
-        final var roleLicenceVary = roleRepository.findByAuthority("ROLE_LICENCE_VARY").orElseThrow();
-        final var roleGlobalSearch = roleRepository.findByAuthority("ROLE_GLOBAL_SEARCH").orElseThrow();
+        final var roleLicenceVary = roleRepository.findByRoleCode("LICENCE_VARY").orElseThrow();
+        final var roleGlobalSearch = roleRepository.findByRoleCode("GLOBAL_SEARCH").orElseThrow();
         transientEntity.setAuthorities(Set.of(roleLicenceVary, roleGlobalSearch));
 
         final var persistedEntity = repository.save(transientEntity);
@@ -139,8 +139,8 @@ public class UserEmailRepositoryTest {
         assertThat(entity.getName()).isEqualTo("Auth Test");
         assertThat(entity.getAuthorities()).isEmpty();
 
-        final var roleLicenceVary = roleRepository.findByAuthority("ROLE_LICENCE_VARY").orElseThrow();
-        final var roleGlobalSearch = roleRepository.findByAuthority("ROLE_GLOBAL_SEARCH").orElseThrow();
+        final var roleLicenceVary = roleRepository.findByRoleCode("LICENCE_VARY").orElseThrow();
+        final var roleGlobalSearch = roleRepository.findByRoleCode("GLOBAL_SEARCH").orElseThrow();
         entity.getAuthorities().add(roleLicenceVary);
         entity.getAuthorities().add(roleGlobalSearch);
 
