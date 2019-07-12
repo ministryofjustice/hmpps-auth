@@ -81,10 +81,9 @@ public class AuthUserGroupService {
     }
 
     public Set<Group> getAssignableGroups(final String username, final Collection<? extends GrantedAuthority> authorities) {
-        if (authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_MAINTAIN_OAUTH_USERS"::equals)) {
-            return Set.copyOf(getAllGroups());
-        }
-        return getAuthUserGroups(username).orElse(Set.of());
+        return AuthUserRoleService.canMaintainAuthUsers(authorities) ?
+                Set.copyOf(getAllGroups()) :
+                getAuthUserGroups(username).orElse(Set.of());
     }
 
     public static class AuthUserGroupExistsException extends AuthUserGroupException {

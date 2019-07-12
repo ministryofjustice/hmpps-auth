@@ -2,10 +2,10 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api;
 
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
-import java.security.Principal;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,17 +39,15 @@ public class AuthUserRolesController {
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> roles(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
         final var userOptional = userService.getAuthUserByUsername(username);
-        final var allRoles = authUserRoleService.getAllRoles();
 
-        return userOptional.
-                map(u -> u.getAuthorities().stream().map(a -> {
-                    final var authority = a.getAuthority();
-                    final var roleName = allRoles.get(authority);
-                    return new AuthUserRole(StringUtils.defaultString(roleName, a.getAuthorityName()), a.getAuthorityName());
-                }).collect(Collectors.toSet())).
-                map(Object.class::cast).
-                map(ResponseEntity::ok).
-                orElse(notFoundResponse(username));
+        return userOptional
+                .map(u -> u.getAuthorities()
+                        .stream()
+                        .map(a -> new AuthUserRole(a.getRoleName(), a.getAuthorityName()))
+                        .collect(Collectors.toSet()))
+                .map(Object.class::cast).
+                        map(ResponseEntity::ok).
+                        orElse(notFoundResponse(username));
     }
 
     @PutMapping("/api/authuser/{username}/roles/{role}")
@@ -67,12 +64,12 @@ public class AuthUserRolesController {
     public ResponseEntity<Object> addRole(
             @ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
             @ApiParam(value = "The role to be added to the user.", required = true) @PathVariable final String role,
-            @ApiIgnore final Principal principal) {
+            @ApiIgnore final Authentication authentication) {
 
         final var userOptional = userService.getAuthUserByUsername(username);
         return userOptional.map(UserEmail::getUsername).map(usernameInDb -> {
             try {
-                authUserRoleService.addRole(usernameInDb, role, principal.getName());
+                authUserRoleService.addRole(usernameInDb, role, authentication.getName(), authentication.getAuthorities());
                 log.info("Add role succeeded for user {} and role {}", usernameInDb, role);
                 return ResponseEntity.noContent().build();
             } catch (final AuthUserRoleExistsException e) {
@@ -100,13 +97,13 @@ public class AuthUserRolesController {
     public ResponseEntity<Object> removeRole(
             @ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
             @ApiParam(value = "The role to be delete from the user.", required = true) @PathVariable final String role,
-            @ApiIgnore final Principal principal) {
+            @ApiIgnore final Authentication authentication) {
 
         final var userOptional = userService.getAuthUserByUsername(username);
         return userOptional.map(u -> {
             final var usernameInDb = u.getUsername();
             try {
-                authUserRoleService.removeRole(usernameInDb, role, principal.getName());
+                authUserRoleService.removeRole(usernameInDb, role, authentication.getName(), authentication.getAuthorities());
             } catch (AuthUserRoleException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).
                         <Object>body(new ErrorDetail("role.missing", String.format("Username %s doesn't have the role %s", usernameInDb, role), "role"));

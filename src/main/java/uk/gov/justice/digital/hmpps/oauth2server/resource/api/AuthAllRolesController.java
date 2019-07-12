@@ -33,8 +33,8 @@ public class AuthAllRolesController {
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class)})
     public ResponseEntity<List<AuthUserRole>> allRoles() {
         final var allRoles = authUserRoleService.getAllRoles();
-        final var mappedRoles = allRoles.entrySet().stream().
-                map(e -> new AuthUserRole(e.getValue(), e.getKey().substring(5))).collect(Collectors.toList());
+        final var mappedRoles = allRoles.stream().
+                map(e -> new AuthUserRole(e.getRoleName(), e.getAuthorityName())).collect(Collectors.toList());
         return ResponseEntity.ok(mappedRoles);
     }
 }

@@ -7,17 +7,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AuthorityTest {
     @Test
     public void testConstructor_addsRole() {
-        assertThat(new Authority("BOB").getAuthority()).isEqualTo("ROLE_BOB");
+        assertThat(new Authority("BOB", "bloggs").getAuthority()).isEqualTo("ROLE_BOB");
     }
 
     @Test
     public void testConstructor_unecessary() {
-        assertThat(new Authority("ROLE_BOB").getAuthority()).isEqualTo("ROLE_BOB");
+        assertThat(new Authority("ROLE_BOB", "bloggs").getAuthority()).isEqualTo("ROLE_BOB");
     }
 
     @Test
     public void getAuthorityName() {
-        assertThat(new Authority("ROLE_BOB").getAuthorityName()).isEqualTo("BOB");
+        assertThat(new Authority("ROLE_BOB", "bloggs").getAuthorityName()).isEqualTo("BOB");
     }
 
     @Test

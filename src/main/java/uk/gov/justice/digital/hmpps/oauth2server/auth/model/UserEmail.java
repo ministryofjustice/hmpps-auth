@@ -56,11 +56,13 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     @PrimaryKeyJoinColumn
     private Person person;
 
-    @OneToMany(cascade = ALL, orphanRemoval = true, fetch = EAGER)
-    @JoinColumn(name = "username", nullable = false)
+    @OneToMany(cascade = ALL, fetch = EAGER)
+    @JoinTable(name = "user_email_roles",
+            joinColumns = @JoinColumn(name = "username"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Authority> authorities = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = ALL)
     private Set<Group> groups = new HashSet<>();
 
     public UserEmail(final String username) {

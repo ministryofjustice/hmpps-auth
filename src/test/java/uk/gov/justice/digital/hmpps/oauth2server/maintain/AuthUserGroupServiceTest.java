@@ -42,7 +42,6 @@ public class AuthUserGroupServiceTest {
     @Test
     public void addGroup_blank() {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
-        when(groupRepository.findByGroupCode(anyString())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.addGroup("user", "        ", "admin")).
                 isInstanceOf(AuthUserGroupException.class).hasMessage("Add group failed for field group with reason: notfound");

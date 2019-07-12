@@ -34,6 +34,8 @@ public class UserEmailRepositoryTest {
     private UserEmailRepository repository;
     @Autowired
     private GroupRepository groupRepository;
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Test
     public void givenATransientEntityItCanBePersisted() {
@@ -67,7 +69,10 @@ public class UserEmailRepositoryTest {
 
         final var transientEntity = transientEntity();
         transientEntity.setPerson(new Person(transientEntity.getUsername(), "first", "last"));
-        transientEntity.setAuthorities(Set.of(new Authority("AUTH_1"), new Authority("AUTH_2")));
+
+        final var roleLicenceVary = roleRepository.findByAuthority("ROLE_LICENCE_VARY").orElseThrow();
+        final var roleGlobalSearch = roleRepository.findByAuthority("ROLE_GLOBAL_SEARCH").orElseThrow();
+        transientEntity.setAuthorities(Set.of(roleLicenceVary, roleGlobalSearch));
 
         final var persistedEntity = repository.save(transientEntity);
 
@@ -85,7 +90,7 @@ public class UserEmailRepositoryTest {
         assertThat(retrievedEntity.getUsername()).isEqualTo(transientEntity.getUsername());
         assertThat(retrievedEntity.getEmail()).isEqualTo(transientEntity.getEmail());
         assertThat(retrievedEntity.getName()).isEqualTo("first last");
-        assertThat(retrievedEntity.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_AUTH_1", "ROLE_AUTH_2");
+        assertThat(retrievedEntity.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_LICENCE_VARY", "ROLE_GLOBAL_SEARCH");
     }
 
     @Test
@@ -134,8 +139,10 @@ public class UserEmailRepositoryTest {
         assertThat(entity.getName()).isEqualTo("Auth Test");
         assertThat(entity.getAuthorities()).isEmpty();
 
-        entity.getAuthorities().add(new Authority("ROLE_AUTH"));
-        entity.getAuthorities().add(new Authority("ROLE_AUTH_RO"));
+        final var roleLicenceVary = roleRepository.findByAuthority("ROLE_LICENCE_VARY").orElseThrow();
+        final var roleGlobalSearch = roleRepository.findByAuthority("ROLE_GLOBAL_SEARCH").orElseThrow();
+        entity.getAuthorities().add(roleLicenceVary);
+        entity.getAuthorities().add(roleGlobalSearch);
 
         repository.save(entity);
 
@@ -145,9 +152,9 @@ public class UserEmailRepositoryTest {
 
         final var retrievedEntity = repository.findById("AUTH_TEST").orElseThrow();
         final var authorities = retrievedEntity.getAuthorities();
-        assertThat(authorities).extracting(Authority::getAuthority).containsOnly("ROLE_AUTH", "ROLE_AUTH_RO");
-        authorities.removeIf(a -> "ROLE_AUTH".equals(a.getAuthority()));
-        assertThat(authorities).extracting(Authority::getAuthority).containsOnly("ROLE_AUTH_RO");
+        assertThat(authorities).extracting(Authority::getAuthority).containsOnly("ROLE_LICENCE_VARY", "ROLE_GLOBAL_SEARCH");
+        authorities.removeIf(a -> "ROLE_LICENCE_VARY".equals(a.getAuthority()));
+        assertThat(authorities).extracting(Authority::getAuthority).containsOnly("ROLE_GLOBAL_SEARCH");
 
         repository.save(retrievedEntity);
 
@@ -156,7 +163,7 @@ public class UserEmailRepositoryTest {
         TestTransaction.start();
 
         final var retrievedEntity2 = repository.findById("AUTH_TEST").orElseThrow();
-        assertThat(retrievedEntity2.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_AUTH_RO");
+        assertThat(retrievedEntity2.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_GLOBAL_SEARCH");
     }
 
     @Test
