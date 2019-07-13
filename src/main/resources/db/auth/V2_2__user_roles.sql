@@ -32,8 +32,9 @@ VALUES (newid(), 'GLOBAL_SEARCH', 'Global Search'),
        (newid(), 'MAINTAIN_OAUTH_USERS', 'Maintain Auth Users (admin)'),
        (newid(), 'AUTH_GROUP_MANAGER', 'Auth Group Manager');
 
-INSERT INTO user_email_roles (role_id, username) (select role_id, username
-                                                  from authority a
-                                                           join roles r on a.authority = 'ROLE_' || r.role_code);
+INSERT INTO user_email_roles (role_id, username)
+    (SELECT role_id, username
+     FROM authority a
+              JOIN roles r ON a.authority = concat('ROLE_', r.role_code));
 
 
