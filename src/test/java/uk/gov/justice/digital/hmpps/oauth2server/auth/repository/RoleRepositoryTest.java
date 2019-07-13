@@ -65,6 +65,11 @@ public class RoleRepositoryTest {
         assertThat(repository.findAllByOrderByRoleName()).extracting(Authority::getAuthority).contains("ROLE_GLOBAL_SEARCH", "ROLE_PECS_POLICE");
     }
 
+    @Test
+    public void findByGroupAssignableRolesForUsername() {
+        assertThat(repository.findByGroupAssignableRolesForUsername("AUTH_RO_VARY_USER")).extracting(Authority::getRoleCode).containsExactly("GLOBAL_SEARCH", "LICENCE_RO", "LICENCE_VARY");
+    }
+
     private Authority transientEntity() {
         return new Authority("hdc", "Licences");
     }

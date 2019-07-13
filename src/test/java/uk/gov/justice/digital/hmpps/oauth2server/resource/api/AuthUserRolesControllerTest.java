@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -52,7 +53,7 @@ public class AuthUserRolesControllerTest {
         final var responseEntity = authUserRolesController.roles("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         //noinspection unchecked
-        assertThat(((Set) responseEntity.getBody())).containsOnly(new AuthUserRole("FRED", "FRED"), new AuthUserRole("Global Search", "GLOBAL_SEARCH"));
+        assertThat(((Set) responseEntity.getBody())).containsOnly(new AuthUserRole(new Authority("FRED", "FRED")), new AuthUserRole(new Authority("GLOBAL_SEARCH", "Global Search")));
     }
 
     @Test
@@ -111,6 +112,16 @@ public class AuthUserRolesControllerTest {
 
         final var responseEntity = authUserRolesController.removeRole("someuser", "harry", principal);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
+    }
+
+    @Test
+    public void getAssignableRoles() {
+        when(authUserRoleService.getAssignableRoles(anyString(), any())).thenReturn(List.of(new Authority("FRED", "FRED"), new Authority("GLOBAL_SEARCH", "Global Search")));
+
+        final var response = authUserRolesController.assignableRoles("someuser", principal);
+        assertThat(response).containsOnly(
+                new AuthUserRole(new Authority("FRED", "FRED")),
+                new AuthUserRole(new Authority("GLOBAL_SEARCH", "Global Search")));
     }
 
     private UserEmail getAuthUser() {

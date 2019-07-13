@@ -35,7 +35,8 @@ public class AuthUserRolesServiceTest {
 
     private AuthUserRoleService service;
 
-    private static final Set<GrantedAuthority> GRANTED_AUTHORITY_SUPER_USER = Set.of(new SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"));
+    private static final Set<GrantedAuthority> SUPER_USER = Set.of(new SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"));
+    private static final Set<GrantedAuthority> GROUP_MANAGER = Set.of(new SimpleGrantedAuthority("ROLE_AUTH_GROUP_MANAGER"));
 
     @Before
     public void setUp() {
@@ -46,7 +47,7 @@ public class AuthUserRolesServiceTest {
     public void addRole_notfound() {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
 
-        assertThatThrownBy(() -> service.addRole("user", "        ", "admin", GRANTED_AUTHORITY_SUPER_USER)).
+        assertThatThrownBy(() -> service.addRole("user", "        ", "admin", SUPER_USER)).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: notfound");
     }
 
@@ -57,7 +58,18 @@ public class AuthUserRolesServiceTest {
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(new Authority("FRED", "Role Fred")));
 
-        assertThatThrownBy(() -> service.addRole("user", "BOB", "admin", GRANTED_AUTHORITY_SUPER_USER)).
+        assertThatThrownBy(() -> service.addRole("user", "BOB", "admin", SUPER_USER)).
+                isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: invalid");
+    }
+
+    @Test
+    public void addRole_invalidRoleGroupManager() {
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
+        final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
+        when(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(List.of(new Authority("FRED", "Role Fred")));
+
+        assertThatThrownBy(() -> service.addRole("user", "BOB", "admin", GROUP_MANAGER)).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: invalid");
     }
 
@@ -68,7 +80,7 @@ public class AuthUserRolesServiceTest {
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role));
 
-        assertThatThrownBy(() -> service.addRole("user", "BOB", "admin", GRANTED_AUTHORITY_SUPER_USER)).
+        assertThatThrownBy(() -> service.addRole("user", "BOB", "admin", SUPER_USER)).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: invalid");
     }
 
@@ -96,7 +108,7 @@ public class AuthUserRolesServiceTest {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
 
-        assertThatThrownBy(() -> service.addRole("user", "LICENCE_VARY", "admin", GRANTED_AUTHORITY_SUPER_USER)).
+        assertThatThrownBy(() -> service.addRole("user", "LICENCE_VARY", "admin", SUPER_USER)).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: exists");
     }
 
@@ -109,7 +121,21 @@ public class AuthUserRolesServiceTest {
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role));
 
-        service.addRole("user", "ROLE_LICENCE_VARY", "admin", GRANTED_AUTHORITY_SUPER_USER);
+        service.addRole("user", "ROLE_LICENCE_VARY", "admin", SUPER_USER);
+
+        assertThat(user.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_JOE", "ROLE_LICENCE_VARY");
+    }
+
+    @Test
+    public void addRole_successGroupManager() throws AuthUserRoleException {
+        final var user = new UserEmail("user");
+        user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+        final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
+        when(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(List.of(role));
+
+        service.addRole("user", "ROLE_LICENCE_VARY", "admin", GROUP_MANAGER);
 
         assertThat(user.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_JOE", "ROLE_LICENCE_VARY");
     }
@@ -121,7 +147,7 @@ public class AuthUserRolesServiceTest {
         final var role2 = new Authority("BOB", "Bloggs");
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2));
 
-        assertThatThrownBy(() -> service.removeRole("user", "BOB", "admin", GRANTED_AUTHORITY_SUPER_USER)).
+        assertThatThrownBy(() -> service.removeRole("user", "BOB", "admin", SUPER_USER)).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: missing");
     }
 
@@ -135,7 +161,21 @@ public class AuthUserRolesServiceTest {
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role));
 
-        assertThatThrownBy(() -> service.removeRole("user", "BOB", "admin", GRANTED_AUTHORITY_SUPER_USER)).
+        assertThatThrownBy(() -> service.removeRole("user", "BOB", "admin", SUPER_USER)).
+                isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: invalid");
+    }
+
+    @Test
+    public void removeRole_invalidGroupManager() {
+        final var user = new UserEmail("user");
+        final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
+        final var role2 = new Authority("BOB", "Bloggs");
+        user.setAuthorities(new HashSet<>(List.of(role, role2)));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2));
+        when(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(List.of(role));
+
+        assertThatThrownBy(() -> service.removeRole("user", "BOB", "admin", GROUP_MANAGER)).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: invalid");
     }
 
@@ -147,7 +187,7 @@ public class AuthUserRolesServiceTest {
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
 
-        assertThatThrownBy(() -> service.removeRole("user", "BOB", "admin", GRANTED_AUTHORITY_SUPER_USER)).
+        assertThatThrownBy(() -> service.removeRole("user", "BOB", "admin", SUPER_USER)).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: notfound");
     }
 
@@ -161,7 +201,22 @@ public class AuthUserRolesServiceTest {
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role, role2));
 
-        service.removeRole("user", "  licence_vary   ", "admin", GRANTED_AUTHORITY_SUPER_USER);
+        service.removeRole("user", "  licence_vary   ", "admin", SUPER_USER);
+
+        assertThat(user.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_JOE");
+    }
+
+    @Test
+    public void removeRole_successGroupManager() throws AuthUserRoleException {
+        final var user = new UserEmail("user");
+        final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
+        final var role2 = new Authority("JOE", "Bloggs");
+        user.setAuthorities(new HashSet<>(List.of(role, role2)));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+        when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
+        when(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(List.of(role, role2));
+
+        service.removeRole("user", "  licence_vary   ", "admin", GROUP_MANAGER);
 
         assertThat(user.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_JOE");
     }

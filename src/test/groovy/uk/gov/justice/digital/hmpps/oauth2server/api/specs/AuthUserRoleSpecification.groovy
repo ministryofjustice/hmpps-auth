@@ -62,6 +62,38 @@ class AuthUserRoleSpecification extends TestSpecification {
         assert userData.collect { it.roleCode }.sort() == ['GLOBAL_SEARCH', 'LICENCE_RO', 'LICENCE_VARY']
     }
 
+    def "Auth Roles endpoint returns all assignable auth roles for a group for admin maintainer"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("AUTH_ADM", "password123456", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/authuser/auth_ro_vary_user/assignable-roles", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def allRoles = jsonSlurper.parseText(response.body)
+
+        assert allRoles.size() > 5
+        assert allRoles.find { it.roleCode == 'GLOBAL_SEARCH' }.roleName == 'Global Search'
+    }
+
+    def "Auth Roles endpoint returns all assignable auth roles for a group for group manager"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("AUTH_GROUP_MANAGER", "password123456", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/authuser/auth_ro_vary_user/roles", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def allRoles = jsonSlurper.parseText(response.body)
+
+        assert allRoles.size() == 3
+        assert allRoles.find { it.roleCode == 'GLOBAL_SEARCH' }.roleName == 'Global Search'
+    }
+
     def "Auth User Roles endpoint not accessible without valid token"() {
 
         when:

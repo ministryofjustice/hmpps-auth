@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
@@ -31,10 +30,8 @@ public class AuthAllRolesController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK", response = AuthUserRole.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class)})
-    public ResponseEntity<List<AuthUserRole>> allRoles() {
+    public List<AuthUserRole> allRoles() {
         final var allRoles = authUserRoleService.getAllRoles();
-        final var mappedRoles = allRoles.stream().
-                map(e -> new AuthUserRole(e.getRoleName(), e.getRoleCode())).collect(Collectors.toList());
-        return ResponseEntity.ok(mappedRoles);
+        return allRoles.stream().map(AuthUserRole::new).collect(Collectors.toList());
     }
 }
