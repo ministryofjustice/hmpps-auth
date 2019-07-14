@@ -28,11 +28,11 @@ public class AuthAllRolesControllerTest {
 
     @Test
     public void allRoles() {
-        when(authUserRoleService.getAllRoles()).thenReturn(List.of(new Authority("FRED", "FRED"), new Authority("GLOBAL_SEARCH", "Global Search")));
+        final var auth1 = new Authority("FRED", "FRED");
+        final var auth2 = new Authority("GLOBAL_SEARCH", "Global Search");
+        when(authUserRoleService.getAllRoles()).thenReturn(List.of(auth1, auth2));
 
         final var response = controller.allRoles();
-        assertThat(response).containsOnly(
-                new AuthUserRole(new Authority("FRED", "FRED")),
-                new AuthUserRole(new Authority("Global Search", "GLOBAL_SEARCH")));
+        assertThat(response).containsOnly(new AuthUserRole(auth1), new AuthUserRole(auth2));
     }
 }
