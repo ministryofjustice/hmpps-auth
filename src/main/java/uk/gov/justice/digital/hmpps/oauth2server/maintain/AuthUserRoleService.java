@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain;
 
+import com.google.common.collect.Sets;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.RoleRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 
@@ -29,11 +31,12 @@ public class AuthUserRoleService {
     private final TelemetryClient telemetryClient;
 
     @Transactional(transactionManager = "authTransactionManager")
-    public void addRole(final String username, final String roleCode, final String modifier, final Collection<? extends GrantedAuthority> authorities) throws AuthUserRoleException {
+    public void addRole(final String username, final String roleCode, final String loggedInUser, final Collection<? extends GrantedAuthority> authorities) throws AuthUserRoleException {
         final var roleFormatted = formatRole(roleCode);
 
         // already checked that user exists
         final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
+        ensureUserLoggedInUserRelationship(loggedInUser, authorities, userEmail);
 
         // check that role exists
         final var role = roleRepository.findByRoleCode(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "notfound"));
@@ -48,13 +51,16 @@ public class AuthUserRoleService {
 
         log.info("Adding role {} to user {}", roleFormatted, username);
         userEmail.getAuthorities().add(role);
-        telemetryClient.trackEvent("AuthUserRoleAddSuccess", Map.of("username", username, "role", roleFormatted, "admin", modifier), null);
+        telemetryClient.trackEvent("AuthUserRoleAddSuccess", Map.of("username", username, "role", roleFormatted, "admin", loggedInUser), null);
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public void removeRole(final String username, final String roleCode, final String modifier, final Collection<? extends GrantedAuthority> authorities) throws AuthUserRoleException {
+    public void removeRole(final String username, final String roleCode, final String loggedInUser, final Collection<? extends GrantedAuthority> authorities) throws AuthUserRoleException {
         // already checked that user exists
         final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
+
+        // check that the logged in user has permission to modify user
+        ensureUserLoggedInUserRelationship(loggedInUser, authorities, userEmail);
 
         final var roleFormatted = formatRole(roleCode);
         final var role = roleRepository.findByRoleCode(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "notfound"));
@@ -63,13 +69,13 @@ public class AuthUserRoleService {
             throw new AuthUserRoleException("role", "missing");
         }
 
-        if (!getAssignableRoles(modifier, authorities).contains(role)) {
+        if (!getAssignableRoles(username, authorities).contains(role)) {
             throw new AuthUserRoleException("role", "invalid");
         }
 
         log.info("Removing role {} from user {}", roleFormatted, username);
         userEmail.getAuthorities().removeIf(role::equals);
-        telemetryClient.trackEvent("AuthUserRoleRemoveSuccess", Map.of("username", username, "role", roleFormatted, "admin", modifier), null);
+        telemetryClient.trackEvent("AuthUserRoleRemoveSuccess", Map.of("username", username, "role", roleFormatted, "admin", loggedInUser), null);
     }
 
     private String formatRole(final String role) {
@@ -103,6 +109,18 @@ public class AuthUserRoleService {
         return authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_OAUTH_ADMIN"::equals);
     }
 
+    private void ensureUserLoggedInUserRelationship(final String loggedInUser, final Collection<? extends GrantedAuthority> authorities, final UserEmail userEmail) throws AuthUserRoleException {
+        // if they have maintain privileges then all good
+        if (canMaintainAuthUsers(authorities)) {
+            return;
+        }
+        // otherwise group managers must have a group in common for maintenance
+        final var loggedInUserEmail = userEmailRepository.findByUsernameAndMasterIsTrue(loggedInUser).orElseThrow();
+        if (Sets.intersection(loggedInUserEmail.getGroups(), userEmail.getGroups()).isEmpty()) {
+            // no group in common, so disallow
+            throw new AuthUserRoleException("role", "noaccess");
+        }
+    }
 
     @Getter
     public static class AuthUserRoleException extends Exception {

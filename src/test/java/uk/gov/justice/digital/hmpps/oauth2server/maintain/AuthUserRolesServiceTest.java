@@ -9,6 +9,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.RoleRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
@@ -63,8 +64,32 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
+    public void addRole_noaccess() {
+        final var user = new UserEmail("user");
+        user.setGroups(Set.of(new Group("group", "desc")));
+        final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
+        final var role2 = new Authority("BOB", "Bloggs");
+        final var groupManager = new UserEmail("groupManager");
+        groupManager.setGroups(Set.of(new Group("group2", "desc")));
+        user.setAuthorities(new HashSet<>(List.of(role, role2)));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
+                .thenReturn(Optional.of(user))
+                .thenReturn(Optional.of(groupManager));
+
+        assertThatThrownBy(() -> service.addRole("user", "BOB", "admin", GROUP_MANAGER)).
+                isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: noaccess");
+    }
+
+    @Test
     public void addRole_invalidRoleGroupManager() {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
+        final var user = new UserEmail("user");
+        final var group1 = new Group("group", "desc");
+        user.setGroups(Set.of(group1));
+        final var groupManager = new UserEmail("groupManager");
+        groupManager.setGroups(Set.of(group1));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
+                .thenReturn(Optional.of(user))
+                .thenReturn(Optional.of(groupManager));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(List.of(new Authority("FRED", "Role Fred")));
@@ -86,7 +111,7 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void addRole_oauthAdminRestricted_success() throws AuthUserRoleException {
-        final UserEmail user = new UserEmail("user");
+        final var user = new UserEmail("user");
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         final var role = new Authority("ROLE_OAUTH_ADMIN", "Role Auth Admin");
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
@@ -129,8 +154,15 @@ public class AuthUserRolesServiceTest {
     @Test
     public void addRole_successGroupManager() throws AuthUserRoleException {
         final var user = new UserEmail("user");
+        final var group1 = new Group("group", "desc");
+        user.setGroups(Set.of(group1, new Group("group2", "desc")));
+
         user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+        final var groupManager = new UserEmail("groupManager");
+        groupManager.setGroups(Set.of(new Group("group3", "desc"), group1));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
+                .thenReturn(Optional.of(user))
+                .thenReturn(Optional.of(groupManager));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(List.of(role));
@@ -166,12 +198,36 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void removeRole_invalidGroupManager() {
+    public void removeRole_noaccess() {
         final var user = new UserEmail("user");
+        user.setGroups(Set.of(new Group("group", "desc")));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("BOB", "Bloggs");
+        final var groupManager = new UserEmail("groupManager");
+        groupManager.setGroups(Set.of(new Group("group2", "desc")));
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
+                .thenReturn(Optional.of(user))
+                .thenReturn(Optional.of(groupManager));
+
+        assertThatThrownBy(() -> service.removeRole("user", "BOB", "admin", GROUP_MANAGER)).
+                isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: noaccess");
+    }
+
+    @Test
+    public void removeRole_invalidGroupManager() {
+        final var user = new UserEmail("user");
+        final var group1 = new Group("group", "desc");
+        user.setGroups(Set.of(group1));
+        final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
+        final var role2 = new Authority("BOB", "Bloggs");
+        final var groupManager = new UserEmail("groupManager");
+        groupManager.setGroups(Set.of(group1));
+        user.setAuthorities(new HashSet<>(List.of(role, role2)));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
+                .thenReturn(Optional.of(user))
+                .thenReturn(Optional.of(groupManager));
+
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2));
         when(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(List.of(role));
 
@@ -194,10 +250,19 @@ public class AuthUserRolesServiceTest {
     @Test
     public void removeRole_success() throws AuthUserRoleException {
         final var user = new UserEmail("user");
+        final var group1 = new Group("group", "desc");
+        user.setGroups(Set.of(group1));
+
+        user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
+        final var groupManager = new UserEmail("groupManager");
+        groupManager.setGroups(Set.of(group1));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
+                .thenReturn(Optional.of(user))
+                .thenReturn(Optional.of(groupManager));
+
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("JOE", "Bloggs");
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role, role2));
 
@@ -209,10 +274,17 @@ public class AuthUserRolesServiceTest {
     @Test
     public void removeRole_successGroupManager() throws AuthUserRoleException {
         final var user = new UserEmail("user");
+        final var group1 = new Group("group", "desc");
+        user.setGroups(Set.of(group1));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("JOE", "Bloggs");
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+        final var groupManager = new UserEmail("groupManager");
+        groupManager.setGroups(Set.of(group1));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
+                .thenReturn(Optional.of(user))
+                .thenReturn(Optional.of(groupManager));
+
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(List.of(role, role2));
 
