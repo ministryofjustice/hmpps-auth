@@ -24,6 +24,7 @@ INSERT INTO roles (role_id, role_code, role_name)
 VALUES (newid(), 'GLOBAL_SEARCH', 'Global Search'),
        (newid(), 'LICENCE_VARY', 'Licence Variation'),
        (newid(), 'LICENCE_RO', 'Licence Responsible Officer'),
+       (newid(), 'NOMIS_BATCHLOAD', 'Licence Batch Load (admin)'),
        (newid(), 'PECS_POLICE', 'PECS Police'),
        (newid(), 'PECS_SUPPLIER', 'PECS Supplier'),
        (newid(), 'MAINTAIN_ACCESS_ROLES', 'Maintain Roles'),
