@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
@@ -15,8 +16,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
-import java.security.Principal;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,9 +25,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthUserRolesControllerTest {
-    private static final Map<String, String> ALLOWED_AUTH_USER_ROLES = Map.of("ROLE_LICENCE_VARY", "Licence Variation", "ROLE_LICENCE_RO", "Licence Responsible Officer", "ROLE_GLOBAL_SEARCH", "Global Search");
-
-    private final Principal principal = new UsernamePasswordAuthenticationToken("bob", "pass");
+    private final Authentication principal = new UsernamePasswordAuthenticationToken("bob", "pass");
 
     @Mock
     private UserService userService;
@@ -51,7 +48,6 @@ public class AuthUserRolesControllerTest {
 
     @Test
     public void roles_success() {
-        when(authUserRoleService.getAllRoles()).thenReturn(ALLOWED_AUTH_USER_ROLES);
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserRolesController.roles("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
@@ -71,13 +67,13 @@ public class AuthUserRolesControllerTest {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserRolesController.addRole("someuser", "role", principal);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
-        verify(authUserRoleService).addRole("USER", "role", "bob");
+        verify(authUserRoleService).addRole("USER", "role", "bob", principal.getAuthorities());
     }
 
     @Test
     public void addRole_conflict() throws AuthUserRoleException {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
-        doThrow(new AuthUserRoleExistsException()).when(authUserRoleService).addRole(anyString(), anyString(), anyString());
+        doThrow(new AuthUserRoleExistsException()).when(authUserRoleService).addRole(anyString(), anyString(), anyString(), any());
 
         final var responseEntity = authUserRolesController.addRole("someuser", "joe", principal);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(409);
@@ -87,7 +83,7 @@ public class AuthUserRolesControllerTest {
     public void addRole_validation() throws AuthUserRoleException {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
 
-        doThrow(new AuthUserRoleException("role", "error")).when(authUserRoleService).addRole(anyString(), anyString(), anyString());
+        doThrow(new AuthUserRoleException("role", "error")).when(authUserRoleService).addRole(anyString(), anyString(), anyString(), any());
         final var responseEntity = authUserRolesController.addRole("someuser", "harry", principal);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
         assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("role.error", "role failed validation", "role"));
@@ -105,13 +101,13 @@ public class AuthUserRolesControllerTest {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserRolesController.removeRole("someuser", "joe", principal);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
-        verify(authUserRoleService).removeRole("USER", "joe", "bob");
+        verify(authUserRoleService).removeRole("USER", "joe", "bob", principal.getAuthorities());
     }
 
     @Test
     public void removeRole_roleMissing() throws AuthUserRoleException {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
-        doThrow(new AuthUserRoleException("role", "error")).when(authUserRoleService).removeRole(anyString(), anyString(), anyString());
+        doThrow(new AuthUserRoleException("role", "error")).when(authUserRoleService).removeRole(anyString(), anyString(), anyString(), any());
 
         final var responseEntity = authUserRolesController.removeRole("someuser", "harry", principal);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
@@ -119,7 +115,8 @@ public class AuthUserRolesControllerTest {
 
     private UserEmail getAuthUser() {
         final var user = new UserEmail("USER", "email", true, false);
-        user.setAuthorities(Set.of(new Authority("GLOBAL_SEARCH"), new Authority("FRED")));
+
+        user.setAuthorities(Set.of(new Authority("FRED", "FRED"), new Authority("GLOBAL_SEARCH", "Global Search")));
         return user;
     }
 }

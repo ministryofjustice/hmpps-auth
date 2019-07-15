@@ -11,32 +11,36 @@ import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "AUTHORITY")
+@Table(name = "ROLES")
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(of = {"authority"})
+@EqualsAndHashCode(of = {"roleCode"})
 public class Authority implements GrantedAuthority {
     public static final String ROLE_PREFIX = "ROLE_";
 
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "authority_id", updatable = false, nullable = false)
+    @Column(name = "role_id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "authority", nullable = false)
-    private String authority;
+    @Column(name = "role_code", nullable = false)
+    private String roleCode;
 
-    public Authority(final String authority) {
-        this.authority = addRolePrefixIfNecessary(authority);
+    @Column(name = "role_name", nullable = false)
+    private String roleName;
+
+    public Authority(final String roleCode, final String roleName) {
+        this.roleCode = removeRolePrefixIfNecessary(roleCode);
+        this.roleName = roleName;
     }
 
-    public String getAuthorityName() {
-        // strip off ROLE_
-        return authority.substring(ROLE_PREFIX.length());
+    public static String removeRolePrefixIfNecessary(final String role) {
+        return StringUtils.startsWith(role, ROLE_PREFIX) ? StringUtils.substring(role, ROLE_PREFIX.length()) : role;
     }
 
-    public static String addRolePrefixIfNecessary(final String role) {
-        return StringUtils.startsWith(role, ROLE_PREFIX) ? role : ROLE_PREFIX + role;
+    @Override
+    public String getAuthority() {
+        return ROLE_PREFIX + roleCode;
     }
 }
