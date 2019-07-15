@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailReposi
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -43,7 +42,7 @@ public class AuthUserRoleService {
             throw new AuthUserRoleExistsException();
         }
 
-        if (!getAssignableRoles(modifier, authorities).contains(role)) {
+        if (!getAssignableRoles(username, authorities).contains(role)) {
             throw new AuthUserRoleException("role", "invalid");
         }
 
@@ -81,13 +80,13 @@ public class AuthUserRoleService {
         return roleRepository.findAllByOrderByRoleName();
     }
 
-    public Set<Authority> getAssignableRoles(final String username, final Collection<? extends GrantedAuthority> authorities) {
+    public List<Authority> getAssignableRoles(final String username, final Collection<? extends GrantedAuthority> authorities) {
         if (canMaintainAuthUsers(authorities)) {
             // only allow oauth admins to see that role
-            return getAllRoles().stream().filter(r -> !"OAUTH_ADMIN".equals(r.getRoleCode()) || canAddAuthClients(authorities)).collect(Collectors.toSet());
+            return getAllRoles().stream().filter(r -> !"OAUTH_ADMIN".equals(r.getRoleCode()) || canAddAuthClients(authorities)).collect(Collectors.toList());
         }
-        // TODO: return roles for all groups
-        return Set.copyOf(getAllRoles());
+        // otherwise they can assign all roles that can be assigned to any of their groups
+        return roleRepository.findByGroupAssignableRolesForUsername(username);
     }
 
     public static class AuthUserRoleExistsException extends AuthUserRoleException {
@@ -96,11 +95,11 @@ public class AuthUserRoleService {
         }
     }
 
-    public static boolean canMaintainAuthUsers(final Collection<? extends GrantedAuthority> authorities) {
+    static boolean canMaintainAuthUsers(final Collection<? extends GrantedAuthority> authorities) {
         return authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_MAINTAIN_OAUTH_USERS"::equals);
     }
 
-    public static boolean canAddAuthClients(final Collection<? extends GrantedAuthority> authorities) {
+    private static boolean canAddAuthClients(final Collection<? extends GrantedAuthority> authorities) {
         return authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_OAUTH_ADMIN"::equals);
     }
 

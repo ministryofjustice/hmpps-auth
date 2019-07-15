@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.lang.NonNull;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
@@ -12,4 +13,7 @@ public interface RoleRepository extends CrudRepository<Authority, String> {
     List<Authority> findAllByOrderByRoleName();
 
     Optional<Authority> findByRoleCode(String roleCode);
+
+    @Query("select distinct r from UserEmail u join u.groups g join g.assignableRoles gar join gar.role r where u.username = ?1 order by r.roleName")
+    List<Authority> findByGroupAssignableRolesForUsername(String username);
 }

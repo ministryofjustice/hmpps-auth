@@ -102,3 +102,9 @@ INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group
 INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_RO_USER_TEST' FROM groups WHERE group_code = 'SITE_2_GROUP_1';
 INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_GROUP_MANAGER' FROM groups WHERE group_code = 'SITE_1_GROUP_1';
 INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_GROUP_MANAGER' FROM groups WHERE group_code = 'SITE_1_GROUP_2';
+
+INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'true' FROM groups g, roles r WHERE r.role_code = 'GLOBAL_SEARCH' AND g.group_code = 'SITE_1_GROUP_1';
+INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'true' FROM groups g, roles r WHERE r.role_code = 'LICENCE_RO' AND g.group_code = 'SITE_1_GROUP_1';
+INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'false' FROM groups g, roles r WHERE r.role_code = 'LICENCE_VARY' AND g.group_code = 'SITE_1_GROUP_1';
+INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'true' FROM groups g, roles r WHERE r.role_code = 'GLOBAL_SEARCH' AND g.group_code = 'SITE_1_GROUP_2';
+INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'true' FROM groups g, roles r WHERE r.role_code = 'LICENCE_RO' AND g.group_code = 'SITE_1_GROUP_2';

@@ -7,7 +7,11 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+
+import static javax.persistence.CascadeType.ALL;
 
 @Entity
 @Table(name = "GROUPS")
@@ -26,6 +30,9 @@ public class Group implements Serializable {
 
     @Column(name = "group_name", nullable = false)
     private String groupName;
+
+    @OneToMany(mappedBy = "group", cascade = ALL, orphanRemoval = true)
+    private Set<GroupAssignableRole> assignableRoles = new HashSet<>();
 
     public Group(final String groupCode, final String groupName) {
         this.groupCode = groupCode;
