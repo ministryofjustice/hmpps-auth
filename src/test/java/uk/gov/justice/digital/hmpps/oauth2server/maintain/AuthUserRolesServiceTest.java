@@ -69,9 +69,9 @@ public class AuthUserRolesServiceTest {
         user.setGroups(Set.of(new Group("group", "desc")));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("BOB", "Bloggs");
+        user.setAuthorities(new HashSet<>(List.of(role, role2)));
         final var groupManager = new UserEmail("groupManager");
         groupManager.setGroups(Set.of(new Group("group2", "desc")));
-        user.setAuthorities(new HashSet<>(List.of(role, role2)));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
                 .thenReturn(Optional.of(user))
                 .thenReturn(Optional.of(groupManager));
