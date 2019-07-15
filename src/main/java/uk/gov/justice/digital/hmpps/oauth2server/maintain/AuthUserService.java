@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
@@ -24,7 +21,9 @@ import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -67,27 +66,33 @@ public class AuthUserService {
         validate(username, email, firstName, lastName);
 
         // get the initial group to assign to - only allowed to be empty if super user
-        final var groups = getInitialGroupAsSet(groupCode, creator, authorities);
+        final var group = getInitialGroup(groupCode, creator, authorities);
 
         // create the user
         final var person = new Person(username, firstName, lastName);
 
-        // create list of authorities
-        final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, Set.of(), groups);
+        // obtain list of authorities that should be assigned for group
+        final var roles = group.map(Group::getAssignableRoles)
+                .map(gar -> gar.stream()
+                        .filter(GroupAssignableRole::isAutomatic)
+                        .map(GroupAssignableRole::getRole)
+                        .collect(Collectors.toSet()))
+                .orElse(Set.of());
+
+        final var groups = group.map(Set::of).orElse(Set.of());
+
+        final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, roles, groups);
         return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate");
     }
 
-    private Set<Group> getInitialGroupAsSet(final String groupCode, final String creator, final Collection<? extends GrantedAuthority> authorities) throws CreateUserException {
-        final Set<Group> groups;
+    private Optional<Group> getInitialGroup(final String groupCode, final String creator, final Collection<? extends GrantedAuthority> authorities) throws CreateUserException {
         if (StringUtils.isEmpty(groupCode)) {
             if (authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_MAINTAIN_OAUTH_USERS"::equals)) {
-                groups = Set.of();
+                return Optional.empty();
             } else throw new CreateUserException("groupCode", "missing");
-        } else {
-            final var authUserGroups = authUserGroupService.getAssignableGroups(creator, authorities);
-            groups = Set.of(authUserGroups.stream().filter(g -> g.getGroupCode().equals(groupCode)).findFirst().orElseThrow(() -> new CreateUserException("groupCode", "notfound")));
         }
-        return groups;
+        final var authUserGroups = authUserGroupService.getAssignableGroups(creator, authorities);
+        return Optional.of(authUserGroups.stream().filter(g -> g.getGroupCode().equals(groupCode)).findFirst().orElseThrow(() -> new CreateUserException("groupCode", "notfound")));
     }
 
     private String saveAndSendInitialEmail(final String url, final UserEmail user, final String creator, final String eventPrefix) throws NotificationClientException {

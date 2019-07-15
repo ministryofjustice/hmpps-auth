@@ -40,7 +40,7 @@ class AuthUserSpecification extends TestSpecification {
         userData == ['username': username.toUpperCase(), 'active': true, 'name': 'Bob Smith', 'authSource': 'auth']
     }
 
-    def 'Create User endpoint succeeds to create user data with group'() {
+    def 'Create User endpoint succeeds to create user data with group and roles'() {
         def username = RandomStringUtils.randomAlphanumeric(10)
         def user = [email: 'bob@bobdigital.justice.gov.uk', firstName: 'Bob', lastName: 'Smith', groupCode: 'SITE_1_GROUP_1'] as NewUser
 
@@ -61,6 +61,11 @@ class AuthUserSpecification extends TestSpecification {
         def groupData = jsonSlurper.parseText(response.body as String)
 
         groupData == [['groupCode': 'SITE_1_GROUP_1', 'groupName': 'Site 1 - Group 1']]
+
+        def response2 = oauthRestTemplate.exchange("${getBaseUrl()}/api/authuser/${username}/roles", HttpMethod.GET, null, String.class)
+        def roleData = jsonSlurper.parseText(response2.body as String)
+
+        roleData.collect({ it.roleCode }) == ['GLOBAL_SEARCH', 'LICENCE_RO']
     }
 
     def 'Create User endpoint fails if no privilege'() {

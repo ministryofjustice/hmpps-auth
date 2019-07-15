@@ -9,9 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
@@ -142,6 +140,34 @@ public class AuthUserServiceTest {
 
         final var user = captor.getValue();
         assertThat(user.getGroups()).extracting(Group::getGroupCode).containsOnly("SITE_1_GROUP_1");
+    }
+
+    @Test
+    public void createUser_noRoles() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(Set.of(new Group("SITE_1_GROUP_1", "desc")));
+        authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var captor = ArgumentCaptor.forClass(UserEmail.class);
+        verify(userEmailRepository).save(captor.capture());
+
+        final var user = captor.getValue();
+        assertThat(user.getAuthorities()).isEmpty();
+    }
+
+    @Test
+    public void createUser_setRoles() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        final var group = new Group("SITE_1_GROUP_1", "desc");
+        group.setAssignableRoles(Set.of(
+                new GroupAssignableRole(new Authority("AUTH_AUTO", "Auth Name"), group, true),
+                new GroupAssignableRole(new Authority("AUTH_MANUAL", "Auth Name"), group, false)));
+        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(Set.of(group));
+        authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var captor = ArgumentCaptor.forClass(UserEmail.class);
+        verify(userEmailRepository).save(captor.capture());
+
+        final var user = captor.getValue();
+        assertThat(user.getAuthorities()).extracting(Authority::getRoleCode).containsOnly("AUTH_AUTO");
     }
 
     @Test
