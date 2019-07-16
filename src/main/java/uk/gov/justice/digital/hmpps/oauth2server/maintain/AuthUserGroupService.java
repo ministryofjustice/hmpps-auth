@@ -85,7 +85,7 @@ public class AuthUserGroupService {
         return AuthUserRoleService.canMaintainAuthUsers(authorities) ?
                 List.copyOf(getAllGroups()) :
                 getAuthUserGroups(username)
-                        .map(groups -> groups.stream().sorted(Comparator.comparing(Group::getGroupCode)).collect(Collectors.toList()))
+                        .map(groups -> groups.stream().sorted(Comparator.comparing(Group::getGroupName)).collect(Collectors.toList()))
                         .orElse(List.of());
     }
 
