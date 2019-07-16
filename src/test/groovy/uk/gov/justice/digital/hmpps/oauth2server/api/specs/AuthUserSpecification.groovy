@@ -296,9 +296,9 @@ class AuthUserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        assert userData.collect {
-            it.groupCode
-        } == ['SITE_1_GROUP_1', 'SITE_1_GROUP_2', 'SITE_2_GROUP_1', 'SITE_3_GROUP_1']
+        assert userData.collect { it.groupCode }.findAll({
+            it.startsWith("SITE")
+        }) == ['SITE_1_GROUP_1', 'SITE_1_GROUP_2', 'SITE_2_GROUP_1', 'SITE_3_GROUP_1']
     }
 
 }

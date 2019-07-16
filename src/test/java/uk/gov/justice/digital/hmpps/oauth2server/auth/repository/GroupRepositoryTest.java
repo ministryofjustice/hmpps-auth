@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("dev")
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-@Transactional(transactionManager = "authTransactionManager")
+@Transactional("authTransactionManager")
 public class GroupRepositoryTest {
     @Autowired
     private GroupRepository repository;
@@ -101,8 +101,8 @@ public class GroupRepositoryTest {
     }
 
     @Test
-    public void findByEmail_NoRecords() {
-        assertThat(repository.findAllByOrderByGroupName()).extracting(Group::getGroupCode).containsExactly("SITE_1_GROUP_1", "SITE_1_GROUP_2", "SITE_2_GROUP_1", "SITE_3_GROUP_1");
+    public void findAllByOrderByGroupName() {
+        assertThat(repository.findAllByOrderByGroupName()).extracting(Group::getGroupCode).containsSequence("SITE_1_GROUP_1", "SITE_1_GROUP_2", "SITE_2_GROUP_1", "SITE_3_GROUP_1");
     }
 
     private Group transientEntity() {
