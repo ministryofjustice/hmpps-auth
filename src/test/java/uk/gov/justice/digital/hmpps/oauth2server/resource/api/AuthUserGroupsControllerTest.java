@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -54,7 +55,7 @@ public class AuthUserGroupsControllerTest {
         final var responseEntity = authUserGroupsController.groups("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         //noinspection unchecked
-        assertThat(((Set) responseEntity.getBody())).containsOnly(new AuthUserGroup(group1), new AuthUserGroup(group2));
+        assertThat(((List) responseEntity.getBody())).containsOnly(new AuthUserGroup(group1), new AuthUserGroup(group2));
     }
 
     @Test
