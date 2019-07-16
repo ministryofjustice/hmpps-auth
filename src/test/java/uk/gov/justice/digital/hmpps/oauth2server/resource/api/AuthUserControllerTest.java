@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
@@ -247,7 +249,7 @@ public class AuthUserControllerTest {
     public void assignableGroups_success() {
         final var group1 = new Group("FRED", "desc");
         final var group2 = new Group("GLOBAL_SEARCH", "desc2");
-        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(Set.of(group1, group2));
+        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(group1, group2));
         final var responseEntity = authUserController.assignableGroups(authentication);
         assertThat(responseEntity).containsOnly(new AuthUserGroup(group1), new AuthUserGroup(group2));
     }
@@ -259,5 +261,13 @@ public class AuthUserControllerTest {
         user.getPerson().setLastName("Bloggs");
         user.setEnabled(true);
         return user;
+    }
+
+    @Test
+    public void searchForUser() {
+        final var unpaged = Pageable.unpaged();
+        when(authUserService.findAuthUsers(anyString(), anyString(), anyString(), any())).thenReturn(new PageImpl<>(List.of(getAuthUser())));
+        authUserController.searchForUser("somename", "somerole", "somegroup", unpaged);
+        verify(authUserService).findAuthUsers("somename", "somerole", "somegroup", unpaged);
     }
 }

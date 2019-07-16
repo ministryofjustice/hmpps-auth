@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,6 +85,11 @@ public class AuthUserService {
 
         final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, roles, groups);
         return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate");
+    }
+
+    public Page<UserEmail> findAuthUsers(final String name, final String roleCode, final String groupCode, final Pageable pageable) {
+        final var userEmailFilter = UserEmailFilter.builder().name(name).roleCode(roleCode).groupCode(groupCode).build();
+        return userEmailRepository.findAll(userEmailFilter, pageable);
     }
 
     private Optional<Group> getInitialGroup(final String groupCode, final String creator, final Collection<? extends GrantedAuthority> authorities) throws CreateUserException {

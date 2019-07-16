@@ -37,7 +37,7 @@ public class AuthUserGroupsController {
     public ResponseEntity<Object> groups(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
         final var userOptional = authUserGroupService.getAuthUserGroups(username);
         return userOptional.
-                map(g -> g.stream().map(AuthUserGroup::new).collect(Collectors.toSet())).
+                map(g -> g.stream().map(AuthUserGroup::new).collect(Collectors.toList())).
                 map(Object.class::cast).
                 map(ResponseEntity::ok).
                 orElse(notFoundResponse(username));

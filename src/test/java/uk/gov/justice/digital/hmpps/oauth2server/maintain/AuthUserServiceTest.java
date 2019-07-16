@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
@@ -21,6 +22,7 @@ import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -132,7 +134,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_setGroup() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(Set.of(new Group("SITE_1_GROUP_1", "desc")));
+        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("SITE_1_GROUP_1", "desc")));
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(UserEmail.class);
@@ -144,7 +146,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_noRoles() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(Set.of(new Group("SITE_1_GROUP_1", "desc")));
+        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("SITE_1_GROUP_1", "desc")));
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(UserEmail.class);
@@ -160,7 +162,7 @@ public class AuthUserServiceTest {
         group.setAssignableRoles(Set.of(
                 new GroupAssignableRole(new Authority("AUTH_AUTO", "Auth Name"), group, true),
                 new GroupAssignableRole(new Authority("AUTH_MANUAL", "Auth Name"), group, false)));
-        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(Set.of(group));
+        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(group));
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(UserEmail.class);
@@ -172,7 +174,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_wrongGroup() {
-        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(Set.of(new Group("OTHER_GROUP", "desc")));
+        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("OTHER_GROUP", "desc")));
         assertThatThrownBy(() -> authUserService.createUser("userMe", "eMail", "first", "last", "SITE_2_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER))
                 .isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field groupCode with reason: notfound");
     }
@@ -262,5 +264,14 @@ public class AuthUserServiceTest {
 
     private Optional<UserEmail> createUserEmailUser() {
         return Optional.of(new UserEmail("SOMEUSER"));
+    }
+
+    @Test
+    public void findAuthUsers() {
+        final var unpaged = Pageable.unpaged();
+        authUserService.findAuthUsers("somename ", "somerole  ", "  somegroup", unpaged);
+        final var captor = ArgumentCaptor.forClass(UserEmailFilter.class);
+        verify(userEmailRepository).findAll(captor.capture(), eq(unpaged));
+        assertThat(captor.getValue()).extracting("name", "roleCode", "groupCode").containsExactly("somename", "somerole", "somegroup");
     }
 }

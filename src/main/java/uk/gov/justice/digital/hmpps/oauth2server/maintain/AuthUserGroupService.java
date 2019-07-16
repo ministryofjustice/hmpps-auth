@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -80,10 +81,12 @@ public class AuthUserGroupService {
         });
     }
 
-    public Set<Group> getAssignableGroups(final String username, final Collection<? extends GrantedAuthority> authorities) {
+    public List<Group> getAssignableGroups(final String username, final Collection<? extends GrantedAuthority> authorities) {
         return AuthUserRoleService.canMaintainAuthUsers(authorities) ?
-                Set.copyOf(getAllGroups()) :
-                getAuthUserGroups(username).orElse(Set.of());
+                List.copyOf(getAllGroups()) :
+                getAuthUserGroups(username)
+                        .map(groups -> groups.stream().sorted(Comparator.comparing(Group::getGroupCode)).collect(Collectors.toList()))
+                        .orElse(List.of());
     }
 
     public static class AuthUserGroupExistsException extends AuthUserGroupException {

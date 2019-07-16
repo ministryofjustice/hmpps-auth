@@ -144,6 +144,21 @@ class AuthUserSpecification extends TestSpecification {
         ]
     }
 
+    def 'Auth User search endpoint returns user data'() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant('ITAG_USER', 'password', 'elite2apiclient', 'clientsecret')
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/search?name=test2', HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userDataList = jsonSlurper.parseText(response.body)
+
+        userDataList.collect({ it.username }) == ['AUTH_ADM', 'AUTH_EXPIRED']
+    }
+
     def 'Auth User email endpoint returns no data if not found'() {
 
         given:
@@ -266,7 +281,7 @@ class AuthUserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        assert userData.collect { it.groupCode }.sort() == ['SITE_1_GROUP_1', 'SITE_1_GROUP_2']
+        assert userData.collect { it.groupCode } == ['SITE_1_GROUP_1', 'SITE_1_GROUP_2']
     }
 
     def "Auth User Assignable Groups endpoint for super user returns all groups"() {
@@ -281,8 +296,9 @@ class AuthUserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        assert userData.size() > 3
-        assert userData.find { it.groupCode == 'SITE_1_GROUP_1' }.groupName == 'Site 1 - Group 1'
+        assert userData.collect {
+            it.groupCode
+        } == ['SITE_1_GROUP_1', 'SITE_1_GROUP_2', 'SITE_2_GROUP_1', 'SITE_3_GROUP_1']
     }
 
 }

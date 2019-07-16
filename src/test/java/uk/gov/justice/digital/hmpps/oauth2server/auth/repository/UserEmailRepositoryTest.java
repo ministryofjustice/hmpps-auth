@@ -11,10 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
@@ -223,12 +220,63 @@ public class UserEmailRepositoryTest {
 
     @Test
     public void findByEmailAndMasterIsTrue() {
-        assertThat(repository.findByEmailAndMasterIsTrueOrderByUsername("auth_test2@digital.justice.gov.uk")).extracting(UserEmail::getUsername).containsExactly("AUTH_ADM", "AUTH_EXPIRED");
+        assertThat(repository.findByEmailAndMasterIsTrueOrderByUsername("auth_test2@digital.justice.gov.uk"))
+                .extracting(UserEmail::getUsername)
+                .containsExactly("AUTH_ADM", "AUTH_EXPIRED");
     }
 
     @Test
     public void findByEmailAndMasterIsTrue_NomisUser() {
         assertThat(repository.findByEmailAndMasterIsTrueOrderByUsername("ca_user@digital.justice.gov.uk")).isEmpty();
+    }
+
+    @Test
+    public void findAll_UserEmailFilter_ByRole() {
+        assertThat(repository.findAll(UserEmailFilter.builder().roleCode("LICENCE_VARY").build()))
+                .extracting(UserEmail::getUsername)
+                .containsExactly("AUTH_RO_VARY_USER");
+    }
+
+    @Test
+    public void findAll_UserEmailFilter_ByGroup() {
+        assertThat(repository.findAll(UserEmailFilter.builder().groupCode("SITE_1_GROUP_2").build()))
+                .extracting(UserEmail::getUsername)
+                .containsExactly("AUTH_RO_VARY_USER", "AUTH_GROUP_MANAGER");
+    }
+
+    @Test
+    public void findAll_UserEmailFilter_ByUsername() {
+        assertThat(repository.findAll(UserEmailFilter.builder().name("_expired").build()))
+                .extracting(UserEmail::getUsername)
+                .containsExactly("AUTH_EXPIRED");
+    }
+
+    @Test
+    public void findAll_UserEmailFilter_ByEmail() {
+        assertThat(repository.findAll(UserEmailFilter.builder().name("test@digital").build()))
+                .extracting(UserEmail::getUsername)
+                .containsExactly("AUTH_TEST", "AUTH_RO_USER_TEST");
+    }
+
+    @Test
+    public void findAll_UserEmailFilter_ByFirstNameLastName() {
+        assertThat(repository.findAll(UserEmailFilter.builder().name("a no").build()))
+                .extracting(UserEmail::getUsername)
+                .containsExactly("AUTH_NO_EMAIL");
+    }
+
+    @Test
+    public void findAll_UserEmailFilter_ByLastNameFirstName() {
+        assertThat(repository.findAll(UserEmailFilter.builder().name("orton, r").build()))
+                .extracting(UserEmail::getUsername)
+                .containsExactly("AUTH_RO_USER", "AUTH_RO_VARY_USER", "AUTH_RO_USER_TEST");
+    }
+
+    @Test
+    public void findAll_UserEmailFilter_all() {
+        assertThat(repository.findAll(UserEmailFilter.builder().roleCode("LICENCE_VARY").groupCode("SITE_1_GROUP_2").name("vary").build()))
+                .extracting(UserEmail::getUsername)
+                .containsExactly("AUTH_RO_VARY_USER");
     }
 
     private UserEmail transientEntity() {

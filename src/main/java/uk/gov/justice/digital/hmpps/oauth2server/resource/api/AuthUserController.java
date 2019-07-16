@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,9 +30,11 @@ import uk.gov.service.notify.NotificationClientException;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.springframework.data.domain.Sort.Direction.ASC;
 
 @Slf4j
 @RestController
@@ -76,15 +80,39 @@ public class AuthUserController {
         return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
     }
 
+    @GetMapping("/api/authuser/search")
+    @ApiOperation(value = "Search for a user.", notes = "Search for a user.", nickname = "searchForUser",
+            consumes = "application/json", produces = "application/json")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = AuthUser.class, responseContainer = "List"),
+            @ApiResponse(code = 204, message = "No users found."),
+            @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class)})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
+                    value = "Results page you want to retrieve (0..N)", example = "0", defaultValue = "0"),
+            @ApiImplicitParam(name = "size", dataType = "int", paramType = "query",
+                    value = "Number of records per page.", example = "10", defaultValue = "10"),
+            @ApiImplicitParam(name = "sort", dataType = "string", paramType = "query",
+                    value = "Sort column and direction, eg sort=lastName,desc")})
+    public ResponseEntity<Object> searchForUser(
+            @ApiParam(value = "The username, email or name of the user.", example = "j smith") @RequestParam(required = false) final String name,
+            @ApiParam(value = "The role of the user.") @RequestParam(required = false) final String role,
+            @ApiParam(value = "The group of the user.") @RequestParam(required = false) final String group,
+            @PageableDefault(sort = {"username"}, direction = ASC) final Pageable pageable) {
+        final var users = authUserService.findAuthUsers(name, role, group, pageable).stream().map(AuthUser::fromUserEmail).collect(Collectors.toList());
+
+        return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
+    }
+
     @GetMapping("/api/authuser/me/assignable-groups")
     @ApiOperation(value = "Get list of assignable groups.", notes = "Get list of groups that can be assigned by the current user.", nickname = "assignableGroups",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK", response = AuthUserGroup.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class)})
-    public Collection<AuthUserGroup> assignableGroups(@ApiIgnore final Authentication authentication) {
+    public List<AuthUserGroup> assignableGroups(@ApiIgnore final Authentication authentication) {
         final var groups = authUserGroupService.getAssignableGroups(authentication.getName(), authentication.getAuthorities());
-        return groups.stream().map(AuthUserGroup::new).collect(Collectors.toSet());
+        return groups.stream().map(AuthUserGroup::new).collect(Collectors.toList());
     }
 
     @PutMapping("/api/authuser/{username}")
