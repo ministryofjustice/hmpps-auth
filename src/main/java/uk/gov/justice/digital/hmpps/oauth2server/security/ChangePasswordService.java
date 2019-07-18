@@ -13,8 +13,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.PasswordServiceImpl;
-import uk.gov.service.notify.NotificationClientApi;
-import uk.gov.service.notify.NotificationClientException;
 
 import java.util.Map;
 import java.util.Optional;
@@ -28,25 +26,19 @@ public class ChangePasswordService extends PasswordServiceImpl {
     private final UserService userService;
     private final AlterUserService alterUserService;
     private final TelemetryClient telemetryClient;
-    private final NotificationClientApi notificationClient;
-    private final String resetPasswordTemplateId;
 
     protected ChangePasswordService(final UserTokenRepository userTokenRepository,
                                     final UserEmailRepository userEmailRepository,
                                     final UserService userService, final AlterUserService alterUserService,
                                     final PasswordEncoder passwordEncoder,
                                     final TelemetryClient telemetryClient,
-                                    final NotificationClientApi notificationClient,
-                                    @Value("${application.authentication.password-age}") final long passwordAge,
-                                    @Value("${application.notify.reset-password.template}") String resetPasswordTemplateId) {
+                                    @Value("${application.authentication.password-age}") final long passwordAge) {
         super(passwordEncoder, passwordAge);
         this.userTokenRepository = userTokenRepository;
         this.userEmailRepository = userEmailRepository;
         this.userService = userService;
         this.alterUserService = alterUserService;
         this.telemetryClient = telemetryClient;
-        this.notificationClient = notificationClient;
-        this.resetPasswordTemplateId = resetPasswordTemplateId;
     }
 
     @Transactional(transactionManager = "authTransactionManager")
@@ -87,30 +79,6 @@ public class ChangePasswordService extends PasswordServiceImpl {
         }
         userEmailRepository.save(userEmail);
         userTokenRepository.delete(userToken);
-        sendPasswordResetEmail(userEmail);
     }
 
-    private void sendPasswordResetEmail(final UserEmail userEmail) {
-        // then the reset token
-        final var username = userEmail.getUsername();
-        final var email = userEmail.getEmail();
-        final var parameters = Map.of("firstName", userEmail.getFirstName(), "username", username);
-
-        // send the email
-        try {
-            log.info("Sending password reset to notify for user {}", username);
-            notificationClient.sendEmail(resetPasswordTemplateId, email, parameters, null);
-        } catch (final NotificationClientException e) {
-            final var reason = (e.getCause() != null ? e.getCause() : e).getClass().getSimpleName();
-            log.warn("Failed to send password reset notify for user {}", username, e);
-            if (e.getHttpResult() >= 500) {
-                // second time lucky
-                try {
-                    notificationClient.sendEmail(resetPasswordTemplateId, email, parameters, null, null);
-                } catch (NotificationClientException ex) {
-                    log.error("Failed to send password reset notify for user {}", username, ex);
-                }
-            }
-        }
-    }
 }

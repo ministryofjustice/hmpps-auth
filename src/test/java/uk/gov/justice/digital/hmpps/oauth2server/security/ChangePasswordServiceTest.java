@@ -17,11 +17,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenReposi
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
-import uk.gov.service.notify.NotificationClientApi;
-import uk.gov.service.notify.NotificationClientException;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,14 +40,12 @@ public class ChangePasswordServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private TelemetryClient telemetryClient;
-    @Mock
-    private NotificationClientApi notificationClient;
 
     private ChangePasswordService changePasswordService;
 
     @Before
     public void setUp() {
-        changePasswordService = new ChangePasswordService(userTokenRepository, userEmailRepository, userService, alterUserService, passwordEncoder, telemetryClient, notificationClient, 10, "reset");
+        changePasswordService = new ChangePasswordService(userTokenRepository, userEmailRepository, userService, alterUserService, passwordEncoder, telemetryClient, 10);
     }
 
     @Test
@@ -58,7 +53,7 @@ public class ChangePasswordServiceTest {
     }
 
     @Test
-    public void setPassword_AlterUser() throws NotificationClientException {
+    public void setPassword_AlterUser() {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = new UserEmail("user");
         user.setLocked(true);
@@ -67,11 +62,10 @@ public class ChangePasswordServiceTest {
         changePasswordService.setPassword("bob", "pass");
 
         verify(alterUserService).changePassword("user", "pass");
-        verify(notificationClient).sendEmail("reset", null, Map.of("firstName", "user", "username", "user"), null);
     }
 
     @Test
-    public void setPassword_AuthUser() throws NotificationClientException {
+    public void setPassword_AuthUser() {
         final var user = new UserEmail("user", "email", false, false);
         user.setEnabled(true);
         user.setMaster(true);
@@ -81,7 +75,6 @@ public class ChangePasswordServiceTest {
         changePasswordService.setPassword("bob", "pass");
 
         verify(alterUserService, never()).changePassword(anyString(), anyString());
-        verify(notificationClient).sendEmail("reset", "email", Map.of("firstName", "user", "username", "user"), null);
     }
 
     @Test
