@@ -114,7 +114,7 @@ public class AuthUserService {
         final var setPasswordLink = url + userToken.getToken();
         final var username = user.getUsername();
         final var email = user.getEmail();
-        final var parameters = Map.of("firstName", user.getFirstName(), "resetLink", setPasswordLink, "username", username);
+        final var parameters = Map.of("firstName", user.getFirstName(), "resetLink", setPasswordLink);
 
         // send the email
         try {
