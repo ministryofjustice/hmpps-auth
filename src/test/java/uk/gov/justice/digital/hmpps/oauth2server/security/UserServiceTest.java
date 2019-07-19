@@ -6,6 +6,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
@@ -15,9 +22,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifie
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,6 +42,10 @@ public class UserServiceTest {
     private TelemetryClient telemetryClient;
 
     private UserService userService;
+
+    private static final Set<GrantedAuthority> SUPER_USER = Set.of(new SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"));
+    private static final Set<GrantedAuthority> GROUP_MANAGER = Set.of(new SimpleGrantedAuthority("ROLE_AUTH_GROUP_MANAGER"));
+
 
     @Before
     public void setUp() {
@@ -77,49 +86,105 @@ public class UserServiceTest {
     }
 
     @Test
-    public void enableUser() {
+    public void enableUser_superUser() throws UserService.EnableDisableUserException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        userService.enableUser("user", "admin");
+        userService.enableUser("user", "admin", SUPER_USER);
         assertThat(optionalUserEmail).get().extracting(UserEmail::isEnabled).isEqualTo(Boolean.TRUE);
         verify(userEmailRepository).save(optionalUserEmail.orElseThrow());
     }
 
     @Test
-    public void enableUser_notFound() {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> userService.enableUser("user", "admin")).isInstanceOf(EntityNotFoundException.class).hasMessageContaining("username user");
+    public void enableUser_invalidGroup_GroupManager() throws UserService.EnableDisableUserException {
+        final var optionalUserEmail = createUserEmailUser();
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
+        assertThatThrownBy(() -> userService.enableUser("user", "admin", GROUP_MANAGER)).
+                isInstanceOf(UserService.EnableDisableUserException.class).hasMessage("enable/disable user someuser failed with reason: user is not in group managers groups");
     }
 
     @Test
-    public void enableUser_trackEvent() {
+    public void enableUser_validGroup_groupManager() throws UserService.EnableDisableUserException {
+        final var user = new UserEmail("user");
+        final var group1 = new Group("group", "desc");
+        user.setGroups(Set.of(group1, new Group("group2", "desc")));
+
+        user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
+        final var groupManager = new UserEmail("groupManager");
+        groupManager.setGroups(Set.of(new Group("group3", "desc"), group1));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
+                .thenReturn(Optional.of(user))
+                .thenReturn(Optional.of(groupManager));
+
+        userService.enableUser("user", "admin", GROUP_MANAGER);
+
+        assertThat(user).extracting(UserEmail::isEnabled).isEqualTo(Boolean.TRUE);
+        verify(userEmailRepository).save(user);
+    }
+
+    @Test
+    public void enableUser_NotFound() {
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> userService.enableUser("user", "admin", SUPER_USER)).isInstanceOf(EntityNotFoundException.class).hasMessageContaining("username user");
+    }
+
+    @Test
+    public void enableUser_trackEvent() throws UserService.EnableDisableUserException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        userService.enableUser("someuser", "someadmin");
+        userService.enableUser("someuser", "someadmin", SUPER_USER);
         verify(telemetryClient).trackEvent("AuthUserChangeEnabled", Map.of("username", "someuser", "admin", "someadmin", "enabled", "true"), null);
     }
 
     @Test
-    public void disableUser() {
+    public void disableUser_superUser() throws UserService.EnableDisableUserException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        userService.disableUser("user", "admin");
+        userService.disableUser("user", "admin", SUPER_USER);
         assertThat(optionalUserEmail).get().extracting(UserEmail::isEnabled).isEqualTo(Boolean.FALSE);
         verify(userEmailRepository).save(optionalUserEmail.orElseThrow());
     }
 
     @Test
-    public void disableUser_trackEvent() {
+    public void disableUser_invalidGroup_GroupManager() throws UserService.EnableDisableUserException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        userService.disableUser("someuser", "someadmin");
+        assertThatThrownBy(() -> userService.disableUser("user", "admin", GROUP_MANAGER)).
+                isInstanceOf(UserService.EnableDisableUserException.class).hasMessage("enable/disable user someuser failed with reason: user is not in group managers groups");
+    }
+
+    @Test
+    public void disableUser_validGroup_groupManager() throws UserService.EnableDisableUserException {
+        final var user = new UserEmail("user");
+        final var group1 = new Group("group", "desc");
+        user.setGroups(Set.of(group1, new Group("group2", "desc")));
+        user.setEnabled(true);
+
+        user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
+        final var groupManager = new UserEmail("groupManager");
+        groupManager.setGroups(Set.of(new Group("group3", "desc"), group1));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
+                .thenReturn(Optional.of(user))
+                .thenReturn(Optional.of(groupManager));
+
+        userService.disableUser("user", "admin", GROUP_MANAGER);
+
+        assertThat(user).extracting(UserEmail::isEnabled).isEqualTo(Boolean.FALSE);
+        verify(userEmailRepository).save(user);
+    }
+
+    @Test
+    public void disableUser_trackEvent() throws UserService.EnableDisableUserException {
+        final var optionalUserEmail = createUserEmailUser();
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
+        userService.disableUser("someuser", "someadmin", SUPER_USER);
         verify(telemetryClient).trackEvent("AuthUserChangeEnabled", Map.of("username", "someuser", "admin", "someadmin", "enabled", "false"), null);
     }
+
 
     @Test
     public void disableUser_notFound() {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> userService.disableUser("user", "admin")).isInstanceOf(EntityNotFoundException.class).hasMessageContaining("username user");
+        assertThatThrownBy(() -> userService.disableUser("user", "admin", SUPER_USER)).isInstanceOf(EntityNotFoundException.class).hasMessageContaining("username user");
     }
 
     private Optional<UserEmail> createUserEmailUser() {

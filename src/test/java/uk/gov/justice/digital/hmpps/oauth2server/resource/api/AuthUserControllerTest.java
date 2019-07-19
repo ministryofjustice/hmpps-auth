@@ -7,8 +7,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
@@ -28,6 +30,7 @@ import uk.gov.service.notify.NotificationClientException;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -50,6 +53,8 @@ public class AuthUserControllerTest {
     private AuthUserController authUserController;
 
     private final Authentication authentication = new UsernamePasswordAuthenticationToken("bob", "pass");
+
+
 
     @Before
     public void setUp() {
@@ -171,29 +176,37 @@ public class AuthUserControllerTest {
     }
 
     @Test
-    public void enableUser() {
+    public void enableUser() throws UserService.EnableDisableUserException {
+        final var userEmail = new UserEmail("USER", "email", true, false);
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         final var responseEntity = authUserController.enableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
-        verify(userService).enableUser("user", "bob");
+        verify(userService).enableUser("USER", "bob", authentication.getAuthorities());
     }
 
     @Test
-    public void enableUser_notFound() {
-        doThrow(new EntityNotFoundException("message")).when(userService).enableUser(anyString(), anyString());
+    public void enableUser_notFound() throws UserService.EnableDisableUserException {
+        final var userEmail = new UserEmail("USER", "email", true, false);
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
+        doThrow(new EntityNotFoundException("message")).when(userService).enableUser(anyString(), anyString(),any());
         final var responseEntity = authUserController.enableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
     }
 
     @Test
-    public void disableUser() {
+    public void disableUser() throws UserService.EnableDisableUserException {
+        final var userEmail = new UserEmail("USER", "email", true, false);
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         final var responseEntity = authUserController.disableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
-        verify(userService).disableUser("user", "bob");
+        verify(userService).disableUser("USER", "bob", authentication.getAuthorities());
     }
 
     @Test
-    public void disableUser_notFound() {
-        doThrow(new EntityNotFoundException("message")).when(userService).disableUser(anyString(), anyString());
+    public void disableUser_notFound() throws UserService.EnableDisableUserException {
+        final var userEmail = new UserEmail("USER", "email", true, false);
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
+        doThrow(new EntityNotFoundException("message")).when(userService).disableUser(anyString(), anyString(), any());
         final var responseEntity = authUserController.disableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
     }

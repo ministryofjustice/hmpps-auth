@@ -166,39 +166,59 @@ public class AuthUserController {
     }
 
     @PutMapping("/api/authuser/{username}/enable")
-    @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+    @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
     @ApiOperation(value = "Enable a user.", notes = "Enable a user.", nickname = "enableUser",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
-            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
+            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class),
+            @ApiResponse(code = 409, message = "Unable to enable user, the user is not within one of your groups", response = ErrorDetail.class)})
     public ResponseEntity<Object> enableUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
-                                             @ApiIgnore final Principal principal) {
-        try {
-            userService.enableUser(username, principal.getName());
-            return ResponseEntity.noContent().build();
-        } catch (final EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+                                             @ApiIgnore final Authentication authentication) {
+
+        final var userOptional = userService.getAuthUserByUsername(username);
+        return userOptional.map(u -> {
+            final var usernameInDb = u.getUsername();
+            try {
+                userService.enableUser(usernameInDb, authentication.getName(), authentication.getAuthorities());
+                return ResponseEntity.noContent().build();
+            } catch (final UserService.EnableDisableUserException e) {
+                log.info("enable user failed  with reason {}", e.getErrorCode());
+                return ResponseEntity.status(HttpStatus.CONFLICT).
+                        <Object>body(new ErrorDetail("unable to maintain user", "Unable to enable user, the user is not within one of your groups", "groups"));
+            } catch (final EntityNotFoundException e) {
+                return ResponseEntity.notFound().build();
+            }
+        }).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
     }
 
     @PutMapping("/api/authuser/{username}/disable")
-    @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+    @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
     @ApiOperation(value = "Disable a user.", notes = "Disable a user.", nickname = "disableUser",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
-            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
+            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class),
+            @ApiResponse(code = 409, message = "Unable to disable user, the user is not within one of your groups", response = ErrorDetail.class)})
     public ResponseEntity<Object> disableUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
-                                              @ApiIgnore final Principal principal) {
-        try {
-            userService.disableUser(username, principal.getName());
-            return ResponseEntity.noContent().build();
-        } catch (final EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+                                              @ApiIgnore final Authentication authentication) {
+        final var userOptional = userService.getAuthUserByUsername(username);
+        return userOptional.map(u -> {
+            final var usernameInDb = u.getUsername();
+
+            try {
+                userService.disableUser(usernameInDb, authentication.getName(), authentication.getAuthorities());
+                return ResponseEntity.noContent().build();
+            } catch (final UserService.EnableDisableUserException e) {
+                log.info("Disable user failed  with reason {}", e.getErrorCode());
+                return ResponseEntity.status(HttpStatus.CONFLICT).
+                        <Object>body(new ErrorDetail("unable to maintain user", "Unable to disable user, the user is not within one of your groups", "groups"));
+            } catch (final EntityNotFoundException e) {
+                return ResponseEntity.notFound().build();
+            }
+        }).orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
     }
 
     @PostMapping("/api/authuser/{username}")
@@ -291,4 +311,5 @@ public class AuthUserController {
     private Object notFoundBody(final String username) {
         return new ErrorDetail("Not Found", String.format("Account for username %s not found", username), "username");
     }
+
 }

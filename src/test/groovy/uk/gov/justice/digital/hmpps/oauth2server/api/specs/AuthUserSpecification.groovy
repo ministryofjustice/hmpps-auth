@@ -5,6 +5,7 @@ import groovy.json.JsonSlurper
 import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.http.*
 import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpClientErrorException.NotFound
 
 class AuthUserSpecification extends TestSpecification {
@@ -187,6 +188,44 @@ class AuthUserSpecification extends TestSpecification {
         userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status']
     }
 
+    def 'Group manager Enable endpoint enables user'() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER_ADM", "password123456", "elite2apiclient", "clientsecret")
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.APPLICATION_JSON)
+        oauthRestTemplate.exchange("${getBaseUrl()}/api/authuser/AUTH_STATUS/groups/site_1_group_2", HttpMethod.PUT, null, String.class)
+        def oauthRestTemplate1 = getOauthPasswordGrant('AUTH_GROUP_MANAGER', 'password123456', 'elite2apiclient', 'clientsecret')
+
+        when:
+        def enableResponse = oauthRestTemplate1.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS/enable', HttpMethod.PUT, null, String.class)
+
+        then:
+        enableResponse.statusCode == HttpStatus.NO_CONTENT
+        def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status']
+    }
+
+    def 'Group manager Enable endpoint fails user not in group manager group conflict'() {
+
+        when:
+        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER_ADM", "password123456", "elite2apiclient", "clientsecret")
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.APPLICATION_JSON)
+        oauthRestTemplate.exchange("${getBaseUrl()}/api/authuser/AUTH_STATUS/groups/site_1_group_2", HttpMethod.DELETE, null, String.class)
+        def oauthRestTemplate1 = getOauthPasswordGrant('AUTH_GROUP_MANAGER', 'password123456', 'elite2apiclient', 'clientsecret')
+
+        then:
+        try {
+            oauthRestTemplate1.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS/enable', HttpMethod.PUT, null, String.class)
+            assert false // should not get here
+        } catch (HttpClientErrorException exception) {
+            exception.statusCode == HttpStatus.CONFLICT
+        }
+    }
+
     def 'Auth User Enable endpoint fails is not an admin user'() {
 
         when:
@@ -215,6 +254,46 @@ class AuthUserSpecification extends TestSpecification {
         def userData = jsonSlurper.parseText(response.body)
 
         userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': false, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status']
+    }
+
+    def 'Group manager Disable endpoint enables user'() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER_ADM", "password123456", "elite2apiclient", "clientsecret")
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.APPLICATION_JSON)
+        oauthRestTemplate.exchange("${getBaseUrl()}/api/authuser/AUTH_STATUS/groups/site_1_group_2", HttpMethod.PUT, null, String.class)
+        oauthRestTemplate.exchange("${getBaseUrl()}/api/authuser/AUTH_STATUS/enable", HttpMethod.PUT, null, String.class)
+        def oauthRestTemplate1 = getOauthPasswordGrant('AUTH_GROUP_MANAGER', 'password123456', 'elite2apiclient', 'clientsecret')
+
+        when:
+        def disableResponse = oauthRestTemplate1.exchange("${getBaseUrl()}/api/authuser/AUTH_STATUS/disable", HttpMethod.PUT, null, String.class)
+
+        then:
+        disableResponse.statusCode == HttpStatus.NO_CONTENT
+        def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': false, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status']
+    }
+
+
+    def 'Group manager Disable endpoint fails user not in group manager group conflict'() {
+
+        when:
+        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER_ADM", "password123456", "elite2apiclient", "clientsecret")
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.APPLICATION_JSON)
+        oauthRestTemplate.exchange("${getBaseUrl()}/api/authuser/AUTH_STATUS/groups/site_1_group_2", HttpMethod.DELETE, null, String.class)
+        def oauthRestTemplate1 = getOauthPasswordGrant('AUTH_GROUP_MANAGER', 'password123456', 'elite2apiclient', 'clientsecret')
+
+        then:
+        try {
+            oauthRestTemplate1.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS/disable', HttpMethod.PUT, null, String.class)
+            assert false // should not get here
+        } catch (HttpClientErrorException exception) {
+            exception.statusCode == HttpStatus.CONFLICT
+        }
     }
 
     def 'Auth User Disable endpoint fails is not an admin user'() {
