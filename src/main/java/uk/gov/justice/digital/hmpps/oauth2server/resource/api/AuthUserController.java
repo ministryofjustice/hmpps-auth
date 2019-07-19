@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendU
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientException;
@@ -183,7 +184,7 @@ public class AuthUserController {
             try {
                 userService.enableUser(usernameInDb, authentication.getName(), authentication.getAuthorities());
                 return ResponseEntity.noContent().build();
-            } catch (final UserService.EnableDisableUserException e) {
+            } catch (final MaintainUserCheck.AuthUserGroupRelationshipException e) {
                 log.info("enable user failed  with reason {}", e.getErrorCode());
                 return ResponseEntity.status(HttpStatus.CONFLICT).
                         <Object>body(new ErrorDetail("unable to maintain user", "Unable to enable user, the user is not within one of your groups", "groups"));
@@ -211,7 +212,7 @@ public class AuthUserController {
             try {
                 userService.disableUser(usernameInDb, authentication.getName(), authentication.getAuthorities());
                 return ResponseEntity.noContent().build();
-            } catch (final UserService.EnableDisableUserException e) {
+            } catch (final MaintainUserCheck.AuthUserGroupRelationshipException e) {
                 log.info("Disable user failed  with reason {}", e.getErrorCode());
                 return ResponseEntity.status(HttpStatus.CONFLICT).
                         <Object>body(new ErrorDetail("unable to maintain user", "Unable to disable user, the user is not within one of your groups", "groups"));

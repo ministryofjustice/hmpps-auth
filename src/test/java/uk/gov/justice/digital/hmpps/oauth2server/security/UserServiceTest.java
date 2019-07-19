@@ -6,11 +6,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
@@ -26,9 +23,9 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceTest {
@@ -43,13 +40,16 @@ public class UserServiceTest {
 
     private UserService userService;
 
+    @Mock
+    private MaintainUserCheck maintainUserCheck;
+
     private static final Set<GrantedAuthority> SUPER_USER = Set.of(new SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"));
     private static final Set<GrantedAuthority> GROUP_MANAGER = Set.of(new SimpleGrantedAuthority("ROLE_AUTH_GROUP_MANAGER"));
 
 
     @Before
     public void setUp() {
-        userService = new UserService(staffUserAccountRepository, staffIdentifierRepository, userEmailRepository, telemetryClient);
+        userService = new UserService(staffUserAccountRepository, staffIdentifierRepository, userEmailRepository, telemetryClient, maintainUserCheck);
     }
 
     @Test
@@ -86,7 +86,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void enableUser_superUser() throws UserService.EnableDisableUserException {
+    public void enableUser_superUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
         userService.enableUser("user", "admin", SUPER_USER);
@@ -95,15 +95,16 @@ public class UserServiceTest {
     }
 
     @Test
-    public void enableUser_invalidGroup_GroupManager() throws UserService.EnableDisableUserException {
+    public void enableUser_invalidGroup_GroupManager() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        assertThatThrownBy(() -> userService.enableUser("user", "admin", GROUP_MANAGER)).
-                isInstanceOf(UserService.EnableDisableUserException.class).hasMessage("enable/disable user someuser failed with reason: user is not in group managers groups");
+        doThrow(new MaintainUserCheck.AuthUserGroupRelationshipException("someuser","User not with your groups")).when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(),anyCollection(),any(UserEmail.class));
+        assertThatThrownBy(() -> userService.enableUser("someuser", "admin", GROUP_MANAGER)).
+                isInstanceOf(MaintainUserCheck.AuthUserGroupRelationshipException.class).hasMessage("Unable to maintain user: someuser with reason: User not with your groups");
     }
 
     @Test
-    public void enableUser_validGroup_groupManager() throws UserService.EnableDisableUserException {
+    public void enableUser_validGroup_groupManager() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = new UserEmail("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1, new Group("group2", "desc")));
@@ -112,8 +113,7 @@ public class UserServiceTest {
         final var groupManager = new UserEmail("groupManager");
         groupManager.setGroups(Set.of(new Group("group3", "desc"), group1));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
-                .thenReturn(Optional.of(user))
-                .thenReturn(Optional.of(groupManager));
+                .thenReturn(Optional.of(user));
 
         userService.enableUser("user", "admin", GROUP_MANAGER);
 
@@ -128,32 +128,35 @@ public class UserServiceTest {
     }
 
     @Test
-    public void enableUser_trackEvent() throws UserService.EnableDisableUserException {
+    public void enableUser_trackEvent() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
+        doNothing().when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(),anyCollection(),any(UserEmail.class));
         userService.enableUser("someuser", "someadmin", SUPER_USER);
         verify(telemetryClient).trackEvent("AuthUserChangeEnabled", Map.of("username", "someuser", "admin", "someadmin", "enabled", "true"), null);
     }
 
     @Test
-    public void disableUser_superUser() throws UserService.EnableDisableUserException {
+    public void disableUser_superUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
+        doNothing().when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(),anyCollection(),any(UserEmail.class));
         userService.disableUser("user", "admin", SUPER_USER);
         assertThat(optionalUserEmail).get().extracting(UserEmail::isEnabled).isEqualTo(Boolean.FALSE);
         verify(userEmailRepository).save(optionalUserEmail.orElseThrow());
     }
 
     @Test
-    public void disableUser_invalidGroup_GroupManager() throws UserService.EnableDisableUserException {
+    public void disableUser_invalidGroup_GroupManager() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        assertThatThrownBy(() -> userService.disableUser("user", "admin", GROUP_MANAGER)).
-                isInstanceOf(UserService.EnableDisableUserException.class).hasMessage("enable/disable user someuser failed with reason: user is not in group managers groups");
+        doThrow(new MaintainUserCheck.AuthUserGroupRelationshipException("someuser","User not with your groups")).when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(),anyCollection(),any(UserEmail.class));
+        assertThatThrownBy(() -> userService.disableUser("someuser", "admin", GROUP_MANAGER)).
+                isInstanceOf(MaintainUserCheck.AuthUserGroupRelationshipException.class).hasMessage("Unable to maintain user: someuser with reason: User not with your groups");
     }
 
     @Test
-    public void disableUser_validGroup_groupManager() throws UserService.EnableDisableUserException {
+    public void disableUser_validGroup_groupManager() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = new UserEmail("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1, new Group("group2", "desc")));
@@ -163,8 +166,7 @@ public class UserServiceTest {
         final var groupManager = new UserEmail("groupManager");
         groupManager.setGroups(Set.of(new Group("group3", "desc"), group1));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
-                .thenReturn(Optional.of(user))
-                .thenReturn(Optional.of(groupManager));
+                .thenReturn(Optional.of(user));
 
         userService.disableUser("user", "admin", GROUP_MANAGER);
 
@@ -173,7 +175,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void disableUser_trackEvent() throws UserService.EnableDisableUserException {
+    public void disableUser_trackEvent() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
         userService.disableUser("someuser", "someadmin", SUPER_USER);

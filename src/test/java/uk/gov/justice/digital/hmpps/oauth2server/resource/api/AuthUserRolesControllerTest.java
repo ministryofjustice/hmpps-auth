@@ -11,9 +11,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException;
-import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleExistsException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
 import java.util.List;
@@ -64,7 +64,7 @@ public class AuthUserRolesControllerTest {
     }
 
     @Test
-    public void addRole_success() throws AuthUserRoleException {
+    public void addRole_success() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserRolesController.addRole("someuser", "role", principal);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
@@ -72,16 +72,16 @@ public class AuthUserRolesControllerTest {
     }
 
     @Test
-    public void addRole_conflict() throws AuthUserRoleException {
+    public void addRole_conflict() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
-        doThrow(new AuthUserRoleExistsException()).when(authUserRoleService).addRole(anyString(), anyString(), anyString(), any());
+        doThrow(new MaintainUserCheck.AuthUserGroupRelationshipException("someuser","User not with your groups")).when(authUserRoleService).addRole(anyString(), anyString(), anyString(), any());
 
         final var responseEntity = authUserRolesController.addRole("someuser", "joe", principal);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(409);
     }
 
     @Test
-    public void addRole_validation() throws AuthUserRoleException {
+    public void addRole_validation() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
 
         doThrow(new AuthUserRoleException("role", "error")).when(authUserRoleService).addRole(anyString(), anyString(), anyString(), any());
@@ -98,7 +98,7 @@ public class AuthUserRolesControllerTest {
     }
 
     @Test
-    public void removeRole_success() throws AuthUserRoleException {
+    public void removeRole_success() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserRolesController.removeRole("someuser", "joe", principal);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
@@ -106,7 +106,7 @@ public class AuthUserRolesControllerTest {
     }
 
     @Test
-    public void removeRole_roleMissing() throws AuthUserRoleException {
+    public void removeRole_roleMissing() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         doThrow(new AuthUserRoleException("role", "error")).when(authUserRoleService).removeRole(anyString(), anyString(), anyString(), any());
 

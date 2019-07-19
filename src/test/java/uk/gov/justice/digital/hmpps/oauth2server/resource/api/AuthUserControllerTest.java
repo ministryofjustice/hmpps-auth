@@ -7,10 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
@@ -23,6 +21,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AmendUser;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AuthUser;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.CreateUser;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
@@ -30,7 +29,6 @@ import uk.gov.service.notify.NotificationClientException;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -176,7 +174,7 @@ public class AuthUserControllerTest {
     }
 
     @Test
-    public void enableUser() throws UserService.EnableDisableUserException {
+    public void enableUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var userEmail = new UserEmail("USER", "email", true, false);
         when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         final var responseEntity = authUserController.enableUser("user", authentication);
@@ -185,7 +183,7 @@ public class AuthUserControllerTest {
     }
 
     @Test
-    public void enableUser_notFound() throws UserService.EnableDisableUserException {
+    public void enableUser_notFound() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var userEmail = new UserEmail("USER", "email", true, false);
         when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         doThrow(new EntityNotFoundException("message")).when(userService).enableUser(anyString(), anyString(),any());
@@ -194,7 +192,7 @@ public class AuthUserControllerTest {
     }
 
     @Test
-    public void disableUser() throws UserService.EnableDisableUserException {
+    public void disableUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var userEmail = new UserEmail("USER", "email", true, false);
         when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         final var responseEntity = authUserController.disableUser("user", authentication);
@@ -203,7 +201,7 @@ public class AuthUserControllerTest {
     }
 
     @Test
-    public void disableUser_notFound() throws UserService.EnableDisableUserException {
+    public void disableUser_notFound() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var userEmail = new UserEmail("USER", "email", true, false);
         when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         doThrow(new EntityNotFoundException("message")).when(userService).disableUser(anyString(), anyString(), any());
