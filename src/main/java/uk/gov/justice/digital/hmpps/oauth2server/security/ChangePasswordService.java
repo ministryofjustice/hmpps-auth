@@ -80,4 +80,5 @@ public class ChangePasswordService extends PasswordServiceImpl {
         userEmailRepository.save(userEmail);
         userTokenRepository.delete(userToken);
     }
+
 }

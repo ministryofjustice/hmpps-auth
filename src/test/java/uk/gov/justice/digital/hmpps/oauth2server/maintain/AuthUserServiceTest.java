@@ -189,7 +189,7 @@ public class AuthUserServiceTest {
     public void createUser_callNotify() throws VerifyEmailException, CreateUserException, NotificationClientException {
         final var link = authUserService.createUser("userme", "email", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
-        verify(notificationClient).sendEmail("licences", "email", Map.of("resetLink", link, "firstName", "first", "username", "USERME"), null);
+        verify(notificationClient).sendEmail("licences", "email", Map.of("resetLink", link, "firstName", "first"), null);
     }
 
     @Test

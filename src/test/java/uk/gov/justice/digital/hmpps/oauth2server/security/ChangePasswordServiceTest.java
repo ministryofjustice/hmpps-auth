@@ -55,22 +55,23 @@ public class ChangePasswordServiceTest {
     @Test
     public void setPassword_AlterUser() {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
-        final var user = new UserEmail("uesr");
+        final var user = new UserEmail("user");
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         changePasswordService.setPassword("bob", "pass");
 
-        verify(alterUserService).changePassword("uesr", "pass");
+        verify(alterUserService).changePassword("user", "pass");
     }
 
     @Test
     public void setPassword_AuthUser() {
-        final var user = new UserEmail("uesr", null, false, false);
+        final var user = new UserEmail("user", "email", false, false);
         user.setEnabled(true);
         user.setMaster(true);
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
+
         changePasswordService.setPassword("bob", "pass");
 
         verify(alterUserService, never()).changePassword(anyString(), anyString());
@@ -79,7 +80,7 @@ public class ChangePasswordServiceTest {
     @Test
     public void setPassword_SaveAndDelete() {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
-        final var user = new UserEmail("uesr");
+        final var user = new UserEmail("user");
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
@@ -92,7 +93,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_AuthUserPasswordSet() {
-        final var user = new UserEmail("uesr", null, false, false);
+        final var user = new UserEmail("user", null, false, false);
         user.setEnabled(true);
         user.setMaster(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -109,7 +110,7 @@ public class ChangePasswordServiceTest {
     public void setPassword_NotFound() {
         when(userService.findUser(anyString())).thenReturn(Optional.empty());
 
-        final var user = new UserEmail("uesr");
+        final var user = new UserEmail("user");
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
@@ -122,7 +123,7 @@ public class ChangePasswordServiceTest {
         staffUserAccount.map(StaffUserAccount.class::cast).get().getAccountDetail().setAccountStatus("LOCKED");
         when(userService.findUser(anyString())).thenReturn(staffUserAccount);
 
-        final var user = new UserEmail("uesr");
+        final var user = new UserEmail("user");
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
@@ -135,7 +136,7 @@ public class ChangePasswordServiceTest {
         userEmail.map(UserEmail.class::cast).get().setEnabled(false);
         when(userService.findUser(anyString())).thenReturn(userEmail);
 
-        final var user = new UserEmail("uesr");
+        final var user = new UserEmail("user");
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
@@ -144,7 +145,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_LockedAuthAccount() {
-        final var user = new UserEmail("uesr", null, false, true);
+        final var user = new UserEmail("user", null, false, true);
         user.setEnabled(true);
         user.setMaster(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -155,7 +156,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_AuthPasswordSameAsCurrent() {
-        final var user = new UserEmail("uesr", null, false, false);
+        final var user = new UserEmail("user", null, false, false);
         user.setEnabled(true);
         user.setMaster(true);
         user.setPassword("oldencryptedpassword");

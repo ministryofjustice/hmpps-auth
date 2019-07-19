@@ -41,6 +41,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
     private final String resetTemplateId;
     private final String resetUnavailableTemplateId;
     private final String resetUnavailableEmailNotFoundTemplateId;
+    private final String resetPasswordConfirmedTemplateId;
 
     public ResetPasswordServiceImpl(final UserEmailRepository userEmailRepository,
                                     final UserTokenRepository userTokenRepository, final UserService userService,
@@ -49,6 +50,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
                                     @Value("${application.notify.reset.template}") final String resetTemplateId,
                                     @Value("${application.notify.reset-unavailable.template}") final String resetUnavailableTemplateId,
                                     @Value("${application.notify.reset-unavailable-email-not-found.template}") final String resetUnavailableEmailNotFoundTemplateId,
+                                    @Value("${application.notify.reset-password.template}") String resetPasswordConfirmedTemplateId,
                                     final PasswordEncoder passwordEncoder,
                                     @Value("${application.authentication.password-age}") final long passwordAge) {
         super(passwordEncoder, passwordAge);
@@ -60,6 +62,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
         this.resetTemplateId = resetTemplateId;
         this.resetUnavailableTemplateId = resetUnavailableTemplateId;
         this.resetUnavailableEmailNotFoundTemplateId = resetUnavailableEmailNotFoundTemplateId;
+        this.resetPasswordConfirmedTemplateId = resetPasswordConfirmedTemplateId;
     }
 
     @Override
@@ -181,6 +184,31 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
 
         userEmailRepository.save(userEmail);
         userTokenRepository.delete(userToken);
+        sendPasswordResetEmail(userEmail);
+    }
+
+    private void sendPasswordResetEmail(final UserEmail userEmail) {
+        // then the reset token
+        final var username = userEmail.getUsername();
+        final var email = userEmail.getEmail();
+        final var parameters = Map.of("firstName", userEmail.getFirstName(), "username", username);
+
+        // send the email
+        try {
+            log.info("Sending password reset to notify for user {}", username);
+            notificationClient.sendEmail(resetPasswordConfirmedTemplateId, email, parameters, null);
+        } catch (final NotificationClientException e) {
+            final var reason = (e.getCause() != null ? e.getCause() : e).getClass().getSimpleName();
+            log.warn("Failed to send password reset notify for user {}", username, e);
+            if (e.getHttpResult() >= 500) {
+                // second time lucky
+                try {
+                    notificationClient.sendEmail(resetPasswordConfirmedTemplateId, email, parameters, null, null);
+                } catch (NotificationClientException ex) {
+                    log.error("Failed to send password reset notify for user {}", username, ex);
+                }
+            }
+        }
     }
 
     private boolean passwordAllowedToBeReset(final UserEmail ue) {
