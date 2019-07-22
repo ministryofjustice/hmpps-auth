@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -82,7 +83,7 @@ public class AuthUserGroupService {
     }
 
     public List<Group> getAssignableGroups(final String username, final Collection<? extends GrantedAuthority> authorities) {
-        return AuthUserRoleService.canMaintainAuthUsers(authorities) ?
+        return MaintainUserCheck.canMaintainAuthUsers(authorities) ?
                 List.copyOf(getAllGroups()) :
                 getAuthUserGroups(username)
                         .map(groups -> groups.stream().sorted(Comparator.comparing(Group::getGroupName)).collect(Collectors.toList()))

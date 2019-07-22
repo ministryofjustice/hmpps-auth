@@ -11,9 +11,9 @@ import springfox.documentation.annotations.ApiIgnore;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException;
-import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleExistsException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
 import java.util.List;
@@ -87,10 +87,15 @@ public class AuthUserRolesController {
                 authUserRoleService.addRole(usernameInDb, role, authentication.getName(), authentication.getAuthorities());
                 log.info("Add role succeeded for user {} and role {}", usernameInDb, role);
                 return ResponseEntity.noContent().build();
-            } catch (final AuthUserRoleExistsException e) {
+            } catch (final AuthUserRoleService.AuthUserRoleExistsException e) {
                 log.info("Add role failed for user {} for field {} with reason {}", usernameInDb, e.getField(), e.getErrorCode());
                 return ResponseEntity.status(HttpStatus.CONFLICT).
                         <Object>body(new ErrorDetail("role.exists", String.format("Username %s already has role %s", usernameInDb, role), "role"));
+            } catch (final MaintainUserCheck.AuthUserGroupRelationshipException e) {
+                log.info("Add role failed for user {} with reason {}", usernameInDb,  e.getErrorCode());
+                return ResponseEntity.status(HttpStatus.CONFLICT).
+                        <Object>body(new ErrorDetail("role.exists", String.format("Username %s already has role %s", usernameInDb, role), "role"));
+
             } catch (final AuthUserRoleException e) {
                 log.info("Add role failed for user {} and role {} for field {} with reason {}", usernameInDb, role, e.getField(), e.getErrorCode());
                 return ResponseEntity.badRequest().<Object>body(new ErrorDetail(String.format("%s.%s", e.getField(), e.getErrorCode()),
@@ -123,6 +128,10 @@ public class AuthUserRolesController {
                 log.info("Add role failed for user {} and role {} for field {} with reason {}", usernameInDb, role, e.getField(), e.getErrorCode());
                 return ResponseEntity.badRequest().<Object>body(new ErrorDetail(String.format("%s.%s", e.getField(), e.getErrorCode()),
                         String.format("%s failed validation", e.getField()), e.getField()));
+            } catch (MaintainUserCheck.AuthUserGroupRelationshipException e) {
+                log.info("Add role failed for user {} with reason {}", usernameInDb,  e.getErrorCode());
+                return ResponseEntity.status(HttpStatus.CONFLICT).
+                        <Object>body(new ErrorDetail("role.exists", String.format("Username %s already has role %s", usernameInDb, role), "role"));
             }
 
             log.info("Remove role succeeded for user {} and role {}", usernameInDb, role);

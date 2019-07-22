@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AmendUser;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AuthUser;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.CreateUser;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
@@ -50,6 +51,8 @@ public class AuthUserControllerTest {
     private AuthUserController authUserController;
 
     private final Authentication authentication = new UsernamePasswordAuthenticationToken("bob", "pass");
+
+
 
     @Before
     public void setUp() {
@@ -171,29 +174,37 @@ public class AuthUserControllerTest {
     }
 
     @Test
-    public void enableUser() {
+    public void enableUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
+        final var userEmail = new UserEmail("USER", "email", true, false);
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         final var responseEntity = authUserController.enableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
-        verify(userService).enableUser("user", "bob");
+        verify(userService).enableUser("USER", "bob", authentication.getAuthorities());
     }
 
     @Test
-    public void enableUser_notFound() {
-        doThrow(new EntityNotFoundException("message")).when(userService).enableUser(anyString(), anyString());
+    public void enableUser_notFound() throws MaintainUserCheck.AuthUserGroupRelationshipException {
+        final var userEmail = new UserEmail("USER", "email", true, false);
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
+        doThrow(new EntityNotFoundException("message")).when(userService).enableUser(anyString(), anyString(),any());
         final var responseEntity = authUserController.enableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
     }
 
     @Test
-    public void disableUser() {
+    public void disableUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
+        final var userEmail = new UserEmail("USER", "email", true, false);
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         final var responseEntity = authUserController.disableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
-        verify(userService).disableUser("user", "bob");
+        verify(userService).disableUser("USER", "bob", authentication.getAuthorities());
     }
 
     @Test
-    public void disableUser_notFound() {
-        doThrow(new EntityNotFoundException("message")).when(userService).disableUser(anyString(), anyString());
+    public void disableUser_notFound() throws MaintainUserCheck.AuthUserGroupRelationshipException {
+        final var userEmail = new UserEmail("USER", "email", true, false);
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
+        doThrow(new EntityNotFoundException("message")).when(userService).disableUser(anyString(), anyString(), any());
         final var responseEntity = authUserController.disableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
     }

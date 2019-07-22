@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
@@ -12,6 +13,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifie
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,15 +27,18 @@ public class UserService {
     private final StaffIdentifierRepository staffIdentifierRepository;
     private final UserEmailRepository userEmailRepository;
     private final TelemetryClient telemetryClient;
+    private final MaintainUserCheck maintainUserCheck;
 
     public UserService(final StaffUserAccountRepository userRepository,
                        final StaffIdentifierRepository staffIdentifierRepository,
                        final UserEmailRepository userEmailRepository,
-                       final TelemetryClient telemetryClient) {
+                       final TelemetryClient telemetryClient,
+                       final MaintainUserCheck maintainUserCheck) {
         this.userRepository = userRepository;
         this.staffIdentifierRepository = staffIdentifierRepository;
         this.userEmailRepository = userEmailRepository;
         this.telemetryClient = telemetryClient;
+        this.maintainUserCheck = maintainUserCheck;
     }
 
     public Optional<StaffUserAccount> getUserByUsername(final String username) {
@@ -71,21 +76,33 @@ public class UserService {
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public void enableUser(final String username, final String admin) {
-        changeUserEnabled(username, true, admin);
+    public void enableUser(final String usernameInDb, final String admin, final Collection<? extends GrantedAuthority> authorities) throws MaintainUserCheck.AuthUserGroupRelationshipException {
+
+        final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(usernameInDb)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", usernameInDb)));
+
+        maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, userEmail);
+
+        changeUserEnabled(userEmail, true, admin);
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public void disableUser(final String username, final String admin) {
-        changeUserEnabled(username, false, admin);
+    public void disableUser(final String usernameInDb, final String admin, final Collection<? extends GrantedAuthority> authorities) throws MaintainUserCheck.AuthUserGroupRelationshipException {
+
+        final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(usernameInDb)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", usernameInDb)));
+
+        maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, userEmail);
+
+        changeUserEnabled(userEmail, false, admin);
+
     }
 
-    private void changeUserEnabled(final String username, final boolean enabled, final String admin) {
-        final var userEmail = getAuthUserByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
+    private void changeUserEnabled(final UserEmail userEmail, final boolean enabled, final String admin) {
         userEmail.setEnabled(enabled);
         userEmailRepository.save(userEmail);
         telemetryClient.trackEvent("AuthUserChangeEnabled",
-                Map.of("username", username, "enabled", Boolean.toString(enabled), "admin", admin), null);
+                Map.of("username", userEmail.getUsername(), "enabled", Boolean.toString(enabled), "admin", admin), null);
     }
+
 }
