@@ -75,8 +75,20 @@ public class AuthUserServiceTest {
     }
 
     @Test
+    public void createUser_firstNameMaxLength() {
+        assertThatThrownBy(() -> authUserService.createUser("userme", "email", "ThisFirstNameIsMoreThanFiftyCharactersInLengthAndInvalid", "last", null, "url", "bob", GRANTED_AUTHORITY_SUPER_USER)).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: length");
+    }
+
+    @Test
     public void createUser_lastNameLength() {
         assertThatThrownBy(() -> authUserService.createUser("userme", "email", "se", "x", null, "url", "bob", GRANTED_AUTHORITY_SUPER_USER)).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: length");
+    }
+
+    @Test
+    public void createUser_lastNameMaxLength() {
+        assertThatThrownBy(() -> authUserService.createUser("userme", "email", "se", "ThisLastNameIsMoreThanFiftyCharactersInLengthAndInvalid", null, "url", "bob", GRANTED_AUTHORITY_SUPER_USER)).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: length");
     }
 

@@ -39,6 +39,11 @@ public class AuthUserService {
     private final AuthUserGroupService authUserGroupService;
     private final String initialPasswordTemplateId;
 
+    // Sizes limited for fixed column sizes in repository
+    private static int MAX_LENGTH_USERNAME = 30;
+    private static int MAX_LENGTH_FIRST_NAME = 50;
+    private static int MAX_LENGTH_LAST_NAME = 50;
+
     public AuthUserService(final UserTokenRepository userTokenRepository,
                            final UserEmailRepository userEmailRepository,
                            final NotificationClientApi notificationClient,
@@ -156,16 +161,16 @@ public class AuthUserService {
     private void validate(final String username, final String email, final String firstName, final String lastName)
             throws CreateUserException, VerifyEmailException {
 
-        if (StringUtils.length(username) < 6) {
+        if (StringUtils.length(username) < 6 || StringUtils.length(username) > MAX_LENGTH_USERNAME) {
             throw new CreateUserException("username", "length");
         }
         if (!username.matches("^[A-Z0-9_]*$")) {
             throw new CreateUserException("username", "format");
         }
-        if (StringUtils.length(firstName) < 2) {
+        if (StringUtils.length(firstName) < 2 || StringUtils.length(firstName) > MAX_LENGTH_FIRST_NAME) {
             throw new CreateUserException("firstName", "length");
         }
-        if (StringUtils.length(lastName) < 2) {
+        if (StringUtils.length(lastName) < 2 || StringUtils.length(lastName) > MAX_LENGTH_LAST_NAME) {
             throw new CreateUserException("lastName", "length");
         }
 
