@@ -39,10 +39,13 @@ public class AuthUserService {
     private final AuthUserGroupService authUserGroupService;
     private final String initialPasswordTemplateId;
 
-    // Sizes limited for fixed column sizes in repository
-    private static int MAX_LENGTH_USERNAME = 30;
-    private static int MAX_LENGTH_FIRST_NAME = 50;
-    private static int MAX_LENGTH_LAST_NAME = 50;
+    // Data item field size validation checks
+    private static final int MAX_LENGTH_USERNAME = 30;
+    private static final int MAX_LENGTH_FIRST_NAME = 50;
+    private static final int MAX_LENGTH_LAST_NAME = 50;
+    private static final int MIN_LENGTH_USERNAME = 6;
+    private static final int MIN_LENGTH_FIRST_NAME = 2;
+    private static final int MIN_LENGTH_LAST_NAME = 2;
 
     public AuthUserService(final UserTokenRepository userTokenRepository,
                            final UserEmailRepository userEmailRepository,
@@ -161,17 +164,26 @@ public class AuthUserService {
     private void validate(final String username, final String email, final String firstName, final String lastName)
             throws CreateUserException, VerifyEmailException {
 
-        if (StringUtils.length(username) < 6 || StringUtils.length(username) > MAX_LENGTH_USERNAME) {
+        if (StringUtils.length(username) < MIN_LENGTH_USERNAME) {
             throw new CreateUserException("username", "length");
+        }
+        if (StringUtils.length(username) > MAX_LENGTH_USERNAME) {
+            throw new CreateUserException("username", "maxlength");
         }
         if (!username.matches("^[A-Z0-9_]*$")) {
             throw new CreateUserException("username", "format");
         }
-        if (StringUtils.length(firstName) < 2 || StringUtils.length(firstName) > MAX_LENGTH_FIRST_NAME) {
+        if (StringUtils.length(firstName) < MIN_LENGTH_FIRST_NAME) {
             throw new CreateUserException("firstName", "length");
         }
-        if (StringUtils.length(lastName) < 2 || StringUtils.length(lastName) > MAX_LENGTH_LAST_NAME) {
+        if (StringUtils.length(firstName) > MAX_LENGTH_FIRST_NAME) {
+            throw new CreateUserException("firstName", "maxlength");
+        }
+        if (StringUtils.length(lastName) < MIN_LENGTH_LAST_NAME) {
             throw new CreateUserException("lastName", "length");
+        }
+        if (StringUtils.length(lastName) > MAX_LENGTH_LAST_NAME) {
+            throw new CreateUserException("lastName", "maxlength");
         }
 
         verifyEmailService.validateEmailAddress(email);
