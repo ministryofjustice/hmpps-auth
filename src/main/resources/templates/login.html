@@ -26,7 +26,7 @@
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
   <div th:unless="${#arrays.isEmpty(param.error)}" class="govuk-error-summary" aria-labelledby="error-summary-title"
        role="alert"
-       data-module="error-summary">
+       data-module="govuk-error-summary">
     <h2 class="govuk-error-summary__title" id="error-summary">
       There is a problem
     </h2>
@@ -74,7 +74,9 @@
               th:class="'govuk-input' + (${missingpass} ? ' govuk-input--error' : '')"
               id="password" name="password" type="password" autocomplete="current-password"
               data-element-id="password" aria-describedby="password-error">
-          <button type="button" onclick="showHide()" id="show-password" class="govuk-button">show</button>
+          <button type="button" onclick="showHide()" id="show-password" class="govuk-button" data-module="govuk-button">
+            show
+          </button>
         </div>
       </div>
     </div>
@@ -89,7 +91,7 @@
       </ul>
     </div>
   </form>
-  <details class="govuk-details govuk-form-group">
+  <details class="govuk-details govuk-form-group" data-module="govuk-details">
     <summary class="govuk-details__summary">
         <span class="govuk-details__summary-text">
           Why won’t my password work?

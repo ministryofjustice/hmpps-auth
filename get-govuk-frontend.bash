@@ -6,18 +6,10 @@ source="https://raw.githubusercontent.com/alphagov/govuk-frontend/v$version/dist
 files="govuk-frontend-$version.min.css
        govuk-frontend-$version.min.js
        govuk-frontend-ie8-$version.min.css"
-fonts="bold-a2452cb66f-v1.woff2
-       bold-f38c792ac2-v1.woff
-       bold-fb2676462a-v1.eot
-       bold-tabular-357fdfbcc3-v1.eot
-       bold-tabular-784c21afb8-v1.woff
-       bold-tabular-b89238d840-v1.woff2
-       light-2c037cf7e1-v1.eot
-       light-458f8ea81c-v1.woff
-       light-f38ad40456-v1.woff2
-       light-tabular-498ea8ffe2-v1.eot
-       light-tabular-62cc6f0a28-v1.woff
-       light-tabular-851b10ccdd-v1.woff2"
+fonts="bold-affa96571d-v2.woff
+       bold-b542beb274-v2.woff2
+       light-94a07e06a1-v2.woff2
+       light-f591b13f7d-v2.woff"
 images="favicon.ico
         govuk-apple-touch-icon-152x152.png
         govuk-apple-touch-icon-167x167.png
@@ -27,11 +19,7 @@ images="favicon.ico
         govuk-crest.png
         govuk-logotype-crown.png
         govuk-mask-icon.svg
-        govuk-opengraph-image.png
-        icon-arrow-left.png
-        icon-important.png
-        icon-pointer-2x.png
-        icon-pointer.png"
+        govuk-opengraph-image.png"
 
 for file in $(echo $files); do
   file_type=${file##*.}
