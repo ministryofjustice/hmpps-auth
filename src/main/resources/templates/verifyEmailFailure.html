@@ -7,7 +7,7 @@
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
-  <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="error-summary">
+  <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
     <th:block th:switch="${error}">
       <div class="govuk-error-summary__body" id="error-detail">
         <th:block th:case="'invalid'">This link is invalid. You'll need to sign in and confirm your email again so we

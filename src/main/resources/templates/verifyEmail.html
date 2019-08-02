@@ -8,7 +8,7 @@
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
   <div th:if="${error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
-       data-module="error-summary">
+       data-module="govuk-error-summary">
     <h2 class="govuk-error-summary__title" id="error-summary">
       There is a problem
     </h2>
@@ -39,7 +39,7 @@
       </legend>
       <div th:unless="${#lists.isEmpty(candidates)}"
            th:class="'govuk-form-group' + (${error == 'noselection'} ? ' govuk-form-group--error' : '')">
-        <div class="govuk-radios govuk-radios--conditional" data-module="radios">
+        <div class="govuk-radios govuk-radios--conditional" data-module="govuk-radios">
           <span th:if="${error}" id="selection-error" class="govuk-error-message"
                 th:text="#{${'verifyemail.' + error}}">No error</span>
           <div th:each="candidate, iter: ${candidates}" class="govuk-radios__item">
