@@ -282,7 +282,7 @@ public class UserEmailRepositoryTest {
     public void findInactiveUsers_First10() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
         assertThat(inactive).extracting(UserEmail::getUsername)
-                .contains("AUTH_USER", "AUTH_EXPIRED")
+                .contains("AUTH_INACTIVE")
                 .doesNotContain("AUTH_DISABLED", "ITAG_USER");
         assertThat(inactive).hasSize(10);
     }
