@@ -60,7 +60,7 @@ public class VerifyEmailControllerTest {
 
     @Test
     public void verifyEmailRequest_existingUserEmail() throws IOException, ServletException {
-        final var userEmail = new UserEmail("bob");
+        final var userEmail = UserEmail.of("bob");
         userEmail.setEmail("email");
         when(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(userEmail));
         final var modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null);
@@ -70,7 +70,7 @@ public class VerifyEmailControllerTest {
 
     @Test
     public void verifyEmailRequest_existingUserEmailVerified() throws IOException, ServletException {
-        final var userEmail = new UserEmail("bob");
+        final var userEmail = UserEmail.of("bob");
         userEmail.setVerified(true);
         when(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(userEmail));
         SecurityContextHolder.getContext().setAuthentication(principal);

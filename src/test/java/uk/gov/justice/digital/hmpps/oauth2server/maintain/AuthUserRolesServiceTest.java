@@ -50,7 +50,7 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void addRole_notfound() {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(UserEmail.of("user")));
 
         assertThatThrownBy(() -> service.addRole("user", "        ", "admin", SUPER_USER)).
                 isInstanceOf(AuthUserRoleException.class).hasMessage("Add role failed for field role with reason: notfound");
@@ -58,7 +58,7 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void addRole_invalidRole() {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(UserEmail.of("user")));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(new Authority("FRED", "Role Fred")));
@@ -69,12 +69,12 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void addRole_noaccess() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         user.setGroups(Set.of(new Group("group", "desc")));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("BOB", "Bloggs");
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
-        final var groupManager = new UserEmail("groupManager");
+        final var groupManager = UserEmail.of("groupManager");
         groupManager.setGroups(Set.of(new Group("group2", "desc")));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
                 .thenReturn(Optional.of(user))
@@ -87,10 +87,10 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void addRole_invalidRoleGroupManager() {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1));
-        final var groupManager = new UserEmail("groupManager");
+        final var groupManager = UserEmail.of("groupManager");
         groupManager.setGroups(Set.of(group1));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
                 .thenReturn(Optional.of(user))
@@ -105,7 +105,7 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void addRole_oauthAdminRestricted() {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(UserEmail.of("user")));
         final var role = new Authority("ROLE_OAUTH_ADMIN", "Role Licence Vary");
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
         when(roleRepository.findAllByOrderByRoleName()).thenReturn(List.of(role));
@@ -116,7 +116,7 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void addRole_oauthAdminRestricted_success() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         final var role = new Authority("ROLE_OAUTH_ADMIN", "Role Auth Admin");
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
@@ -131,7 +131,7 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void addRole_roleAlreadyOnUser() {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         user.setAuthorities(new HashSet<>(List.of(role)));
 
@@ -144,7 +144,7 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void addRole_success() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
@@ -158,12 +158,12 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void addRole_successGroupManager() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1, new Group("group2", "desc")));
 
         user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
-        final var groupManager = new UserEmail("groupManager");
+        final var groupManager = UserEmail.of("groupManager");
         groupManager.setGroups(Set.of(new Group("group3", "desc"), group1));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
                 .thenReturn(Optional.of(user))
@@ -179,7 +179,7 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void removeRole_roleNotOnUser() {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         final var role2 = new Authority("BOB", "Bloggs");
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2));
@@ -190,7 +190,7 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void removeRole_invalid() {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("BOB", "Bloggs");
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
@@ -204,11 +204,11 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void removeRole_noaccess() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         user.setGroups(Set.of(new Group("group", "desc")));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("BOB", "Bloggs");
-        final var groupManager = new UserEmail("groupManager");
+        final var groupManager = UserEmail.of("groupManager");
         groupManager.setGroups(Set.of(new Group("group2", "desc")));
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
         doThrow(new MaintainUserCheck.AuthUserGroupRelationshipException("user","User not with your groups")).when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(),anyCollection(),any(UserEmail.class));
@@ -223,12 +223,12 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void removeRole_invalidGroupManager() {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("BOB", "Bloggs");
-        final var groupManager = new UserEmail("groupManager");
+        final var groupManager = UserEmail.of("groupManager");
         groupManager.setGroups(Set.of(group1));
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
@@ -244,7 +244,7 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void removeRole_notfound() {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("BOB", "Bloggs");
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
@@ -256,12 +256,12 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void removeRole_success() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1));
 
         user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
-        final var groupManager = new UserEmail("groupManager");
+        final var groupManager = UserEmail.of("groupManager");
         groupManager.setGroups(Set.of(group1));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
                 .thenReturn(Optional.of(user))
@@ -280,13 +280,13 @@ public class AuthUserRolesServiceTest {
 
     @Test
     public void removeRole_successGroupManager() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("JOE", "Bloggs");
         user.setAuthorities(new HashSet<>(List.of(role, role2)));
-        final var groupManager = new UserEmail("groupManager");
+        final var groupManager = UserEmail.of("groupManager");
         groupManager.setGroups(Set.of(group1));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
                 .thenReturn(Optional.of(user))

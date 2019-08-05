@@ -107,7 +107,7 @@ public class InitialPasswordControllerTest {
 
     private void setupCheckAndGetTokenValid() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
-        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, new UserEmail("user"))));
+        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, UserEmail.of("user"))));
     }
 
     private StaffUserAccount setupGetUserCallForProfile() {

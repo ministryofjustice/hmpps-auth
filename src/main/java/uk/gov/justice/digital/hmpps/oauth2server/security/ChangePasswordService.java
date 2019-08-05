@@ -45,7 +45,7 @@ public class ChangePasswordService extends PasswordServiceImpl {
     String createToken(final String username) {
         final var userEmailOptional = userEmailRepository.findById(username);
         final var userEmail = userEmailOptional.orElseGet(() -> {
-            final var ue = new UserEmail(username);
+            final var ue = UserEmail.of(username);
             userEmailRepository.save(ue);
             return ue;
         });

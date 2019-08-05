@@ -41,7 +41,7 @@ public class AuthUserGroupServiceTest {
 
     @Test
     public void addGroup_blank() {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(new UserEmail("user")));
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(UserEmail.of("user")));
 
         assertThatThrownBy(() -> service.addGroup("user", "        ", "admin")).
                 isInstanceOf(AuthUserGroupException.class).hasMessage("Add group failed for field group with reason: notfound");
@@ -49,7 +49,7 @@ public class AuthUserGroupServiceTest {
 
     @Test
     public void addGroup_groupAlreadyOnUser() {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var group = new Group("GROUP_LICENCE_VARY", "desc");
         user.setGroups(new HashSet<>(List.of(group)));
 
@@ -62,7 +62,7 @@ public class AuthUserGroupServiceTest {
 
     @Test
     public void addGroup_success() throws AuthUserGroupException {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         user.setGroups(new HashSet<>(List.of(new Group("GROUP_JOE", "desc"))));
 
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
@@ -77,7 +77,7 @@ public class AuthUserGroupServiceTest {
 
     @Test
     public void removeGroup_groupNotOnUser() {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
 
         assertThatThrownBy(() -> service.removeGroup("user", "BOB", "admin")).
@@ -86,7 +86,7 @@ public class AuthUserGroupServiceTest {
 
     @Test
     public void removeGroup_success() throws AuthUserGroupException {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         user.setGroups(new HashSet<>(List.of(new Group("JOE", "desc"), new Group("LICENCE_VARY", "desc2"))));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
 
@@ -111,7 +111,7 @@ public class AuthUserGroupServiceTest {
 
     @Test
     public void getAuthUserGroups_success() {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         user.setGroups(new HashSet<>(List.of(new Group("JOE", "desc"), new Group("LICENCE_VARY", "desc2"))));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         final var groups = service.getAuthUserGroups(" BOB ");
@@ -121,7 +121,7 @@ public class AuthUserGroupServiceTest {
 
     @Test
     public void getAuthUserAssignableGroups_normalUser() {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         user.setGroups(new HashSet<>(List.of(new Group("JOE", "desc"), new Group("LICENCE_VARY", "desc2"))));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         final var groups = service.getAssignableGroups(" BOB ", Set.of());

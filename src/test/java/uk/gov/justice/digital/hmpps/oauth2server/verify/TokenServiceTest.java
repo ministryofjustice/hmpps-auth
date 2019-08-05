@@ -61,7 +61,7 @@ public class TokenServiceTest {
     @Test
     public void checkToken() {
         final var userToken = new UserToken(TokenType.RESET, null);
-        userToken.setUserEmail(new UserEmail("user"));
+        userToken.setUserEmail(UserEmail.of("user"));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         assertThat(tokenService.checkToken(TokenType.RESET, "token")).isEmpty();
     }
@@ -76,7 +76,7 @@ public class TokenServiceTest {
     @Test
     public void checkToken_expiredTelemetryUsername() {
         final var userToken = new UserToken(TokenType.RESET, null);
-        userToken.setUserEmail(new UserEmail("user"));
+        userToken.setUserEmail(UserEmail.of("user"));
         userToken.setTokenExpiry(LocalDateTime.now().minusHours(1));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         tokenService.checkToken(TokenType.RESET, "token");
@@ -87,7 +87,7 @@ public class TokenServiceTest {
 
     @Test
     public void checkToken_expired() {
-        final var userToken = new UserToken(TokenType.RESET, new UserEmail("joe"));
+        final var userToken = new UserToken(TokenType.RESET, UserEmail.of("joe"));
         userToken.setTokenExpiry(LocalDateTime.now().minusHours(1));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         assertThat(tokenService.checkToken(TokenType.RESET, "token")).get().isEqualTo("expired");

@@ -91,7 +91,14 @@ public class AuthUserService {
 
         final var groups = group.map(Set::of).orElse(Set.of());
 
-        final var user = new UserEmail(username, null, email, false, false, true, true, LocalDateTime.now(), person, roles, groups);
+        final var user = UserEmail.builder()
+                .username(username)
+                .email(email)
+                .enabled(true)
+                .master(true)
+                .person(person)
+                .authorities(roles)
+                .groups(groups).build();
         return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate");
     }
 

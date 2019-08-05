@@ -78,7 +78,7 @@ public class UserServiceTest {
 
     @Test
     public void findByEmailAndMasterIsTrue() {
-        when(userEmailRepository.findByEmailAndMasterIsTrueOrderByUsername(anyString())).thenReturn(List.of(new UserEmail("someuser")));
+        when(userEmailRepository.findByEmailAndMasterIsTrueOrderByUsername(anyString())).thenReturn(List.of(UserEmail.of("someuser")));
 
         final var user = userService.findAuthUsersByEmail("  bob  ");
 
@@ -105,12 +105,12 @@ public class UserServiceTest {
 
     @Test
     public void enableUser_validGroup_groupManager() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1, new Group("group2", "desc")));
 
         user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
-        final var groupManager = new UserEmail("groupManager");
+        final var groupManager = UserEmail.of("groupManager");
         groupManager.setGroups(Set.of(new Group("group3", "desc"), group1));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
                 .thenReturn(Optional.of(user));
@@ -157,13 +157,13 @@ public class UserServiceTest {
 
     @Test
     public void disableUser_validGroup_groupManager() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1, new Group("group2", "desc")));
         user.setEnabled(true);
 
         user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
-        final var groupManager = new UserEmail("groupManager");
+        final var groupManager = UserEmail.of("groupManager");
         groupManager.setGroups(Set.of(new Group("group3", "desc"), group1));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
                 .thenReturn(Optional.of(user));
@@ -190,7 +190,7 @@ public class UserServiceTest {
     }
 
     private Optional<UserEmail> createUserEmailUser() {
-        return Optional.of(new UserEmail("someuser"));
+        return Optional.of(UserEmail.of("someuser"));
     }
 
     private Optional<StaffUserAccount> getStaffUserAccountForBob() {

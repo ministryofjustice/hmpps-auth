@@ -26,7 +26,7 @@ public class JWTTokenEnhancerTest {
     public void testEnhance_HasUserToken() {
         final OAuth2AccessToken token = new DefaultOAuth2AccessToken("value");
         when(authentication.isClientOnly()).thenReturn(false);
-        when(authentication.getUserAuthentication()).thenReturn(new UsernamePasswordAuthenticationToken(new UserEmail("user"), "pass"));
+        when(authentication.getUserAuthentication()).thenReturn(new UsernamePasswordAuthenticationToken(UserEmail.of("user"), "pass"));
 
         new JWTTokenEnhancer().enhance(token, authentication);
 

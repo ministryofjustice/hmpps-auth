@@ -126,7 +126,7 @@ public class UserControllerTest {
     }
 
     private void setupFindUserCallForAuth() {
-        final var user = new UserEmail("principal", "email", true, false);
+        final var user = UserEmail.builder().username("principal").email("email").verified(true).build();
         user.setPerson(new Person());
         user.getPerson().setFirstName("Joe");
         user.getPerson().setLastName("Bloggs");

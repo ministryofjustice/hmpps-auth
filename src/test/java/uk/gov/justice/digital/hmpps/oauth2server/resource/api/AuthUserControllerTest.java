@@ -175,7 +175,7 @@ public class AuthUserControllerTest {
 
     @Test
     public void enableUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var userEmail = new UserEmail("USER", "email", true, false);
+        final var userEmail = UserEmail.builder().username("USER").email("email").verified(true).build();
         when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         final var responseEntity = authUserController.enableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
@@ -184,7 +184,7 @@ public class AuthUserControllerTest {
 
     @Test
     public void enableUser_notFound() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var userEmail = new UserEmail("USER", "email", true, false);
+        final var userEmail = UserEmail.builder().username("USER").email("email").verified(true).build();
         when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         doThrow(new EntityNotFoundException("message")).when(userService).enableUser(anyString(), anyString(),any());
         final var responseEntity = authUserController.enableUser("user", authentication);
@@ -193,7 +193,7 @@ public class AuthUserControllerTest {
 
     @Test
     public void disableUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var userEmail = new UserEmail("USER", "email", true, false);
+        final var userEmail = UserEmail.builder().username("USER").email("email").verified(true).build();
         when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         final var responseEntity = authUserController.disableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
@@ -202,7 +202,7 @@ public class AuthUserControllerTest {
 
     @Test
     public void disableUser_notFound() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var userEmail = new UserEmail("USER", "email", true, false);
+        final var userEmail = UserEmail.builder().username("USER").email("email").verified(true).build();
         when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
         doThrow(new EntityNotFoundException("message")).when(userService).disableUser(anyString(), anyString(), any());
         final var responseEntity = authUserController.disableUser("user", authentication);
@@ -266,7 +266,7 @@ public class AuthUserControllerTest {
     }
 
     private UserEmail getAuthUser() {
-        final var user = new UserEmail("authentication", "email", true, false);
+        final var user = UserEmail.builder().username("authentication").email("email").verified(true).build();
         user.setPerson(new Person());
         user.getPerson().setFirstName("Joe");
         user.getPerson().setLastName("Bloggs");

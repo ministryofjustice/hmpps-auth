@@ -38,16 +38,16 @@ public class MaintainUserCheckTest {
 
     @Test
     public void superUserDoesNotThrowError()  {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         assertThatCode(() -> maintainUserCheck.ensureUserLoggedInUserRelationship("SuperUser",SUPER_USER,user)).doesNotThrowAnyException();
     }
 
     @Test
     public void groupManagerGroupInCommonWithUserDoesNotThrowError()  {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1, new Group("group2", "desc")));
-        final var groupManager = new UserEmail("groupManager");
+        final var groupManager = UserEmail.of("groupManager");
         groupManager.setGroups(Set.of(new Group("group3", "desc"), group1));
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString()))
                 .thenReturn(Optional.of(groupManager));
@@ -59,7 +59,7 @@ public class MaintainUserCheckTest {
 
     @Test
     public void groupManagerNoGroupInCommonWithUserThrowsError()  {
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
 
@@ -70,7 +70,7 @@ public class MaintainUserCheckTest {
     }
 
     private Optional<UserEmail> createUserEmailUser() {
-        return Optional.of(new UserEmail("someUser"));
+        return Optional.of(UserEmail.of("someUser"));
     }
 
 }
