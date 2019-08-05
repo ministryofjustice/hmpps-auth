@@ -60,7 +60,7 @@ public class UserRetriesServiceTest {
 
     @Test
     public void lockAccount_lockUserEmailExistingRecord() {
-        final var existingUserEmail = new UserEmail("username");
+        final var existingUserEmail = UserEmail.of("username");
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(existingUserEmail));
         service.lockAccount("bob");
         final var captor = ArgumentCaptor.forClass(UserEmail.class);
@@ -71,7 +71,7 @@ public class UserRetriesServiceTest {
 
     @Test
     public void lockAccount_NoAlterUserForAuthOnlyAccounts() {
-        final var existingUserEmail = new UserEmail("username");
+        final var existingUserEmail = UserEmail.of("username");
         existingUserEmail.setMaster(true);
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(existingUserEmail));
         service.lockAccount("bob");

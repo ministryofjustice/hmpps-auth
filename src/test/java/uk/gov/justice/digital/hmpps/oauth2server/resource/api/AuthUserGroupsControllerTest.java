@@ -117,7 +117,7 @@ public class AuthUserGroupsControllerTest {
     }
 
     private UserEmail getAuthUser() {
-        final var user = new UserEmail("USER", "email", true, false);
+        final var user = UserEmail.builder().username("USER").email("email").verified(true).build();
         user.setGroups(Set.of(new Group("GLOBAL_SEARCH", "desc2"), new Group("FRED", "desc")));
         return user;
     }

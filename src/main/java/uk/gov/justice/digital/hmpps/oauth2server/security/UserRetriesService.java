@@ -42,7 +42,7 @@ public class UserRetriesService {
 
     public void lockAccount(final String username) {
         final var userEmailOptional = userEmailRepository.findById(username);
-        final var userEmail = userEmailOptional.orElseGet(() -> new UserEmail(username));
+        final var userEmail = userEmailOptional.orElseGet(() -> UserEmail.of(username));
         userEmail.setLocked(true);
         userEmailRepository.save(userEmail);
 

@@ -55,7 +55,7 @@ public class ChangePasswordServiceTest {
     @Test
     public void setPassword_AlterUser() {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
@@ -66,7 +66,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_AuthUser() {
-        final var user = new UserEmail("user", "email", false, false);
+        final var user = UserEmail.builder().username("user").email("email").build();
         user.setEnabled(true);
         user.setMaster(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -80,7 +80,7 @@ public class ChangePasswordServiceTest {
     @Test
     public void setPassword_SaveAndDelete() {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
@@ -93,7 +93,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_AuthUserPasswordSet() {
-        final var user = new UserEmail("user", null, false, false);
+        final var user = UserEmail.builder().username("user").build();
         user.setEnabled(true);
         user.setMaster(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -110,7 +110,7 @@ public class ChangePasswordServiceTest {
     public void setPassword_NotFound() {
         when(userService.findUser(anyString())).thenReturn(Optional.empty());
 
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
@@ -123,7 +123,7 @@ public class ChangePasswordServiceTest {
         staffUserAccount.map(StaffUserAccount.class::cast).get().getAccountDetail().setAccountStatus("LOCKED");
         when(userService.findUser(anyString())).thenReturn(staffUserAccount);
 
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
@@ -136,7 +136,7 @@ public class ChangePasswordServiceTest {
         userEmail.map(UserEmail.class::cast).get().setEnabled(false);
         when(userService.findUser(anyString())).thenReturn(userEmail);
 
-        final var user = new UserEmail("user");
+        final var user = UserEmail.of("user");
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
@@ -145,7 +145,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_LockedAuthAccount() {
-        final var user = new UserEmail("user", null, false, true);
+        final var user = UserEmail.builder().username("user").locked(true).build();
         user.setEnabled(true);
         user.setMaster(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -156,7 +156,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_AuthPasswordSameAsCurrent() {
-        final var user = new UserEmail("user", null, false, false);
+        final var user = UserEmail.builder().username("user").build();
         user.setEnabled(true);
         user.setMaster(true);
         user.setPassword("oldencryptedpassword");
@@ -170,7 +170,7 @@ public class ChangePasswordServiceTest {
     }
 
     private Optional<UserPersonDetails> buildAuthUser() {
-        final var userEmail = new UserEmail("user", "email", true, false);
+        final var userEmail = UserEmail.builder().username("user").email("email").verified(true).build();
         userEmail.setPerson(new Person("user", "first", "last"));
         userEmail.setEnabled(true);
         return Optional.of(userEmail);

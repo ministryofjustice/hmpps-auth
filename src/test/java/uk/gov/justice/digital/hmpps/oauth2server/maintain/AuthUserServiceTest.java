@@ -262,7 +262,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUser_verifiedEmail() {
-        final var user = new UserEmail("SOMEUSER");
+        final var user = UserEmail.of("SOMEUSER");
         user.setVerified(true);
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob")).
@@ -272,7 +272,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUser_passwordSet() {
-        final var user = new UserEmail("SOMEUSER");
+        final var user = UserEmail.of("SOMEUSER");
         user.setPassword("some pass");
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob")).
@@ -281,7 +281,7 @@ public class AuthUserServiceTest {
     }
 
     private Optional<UserEmail> createUserEmailUser() {
-        return Optional.of(new UserEmail("SOMEUSER"));
+        return Optional.of(UserEmail.of("SOMEUSER"));
     }
 
     @Test

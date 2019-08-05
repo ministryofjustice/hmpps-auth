@@ -125,7 +125,7 @@ public class AuthUserRolesControllerTest {
     }
 
     private UserEmail getAuthUser() {
-        final var user = new UserEmail("USER", "email", true, false);
+        final var user = UserEmail.builder().username("USER").email("email").verified(true).build();
 
         user.setAuthorities(Set.of(new Authority("FRED", "FRED"), new Authority("GLOBAL_SEARCH", "Global Search")));
         return user;

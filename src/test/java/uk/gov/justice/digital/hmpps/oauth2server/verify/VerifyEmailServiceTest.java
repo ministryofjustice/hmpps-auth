@@ -59,7 +59,7 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void getEmail() {
-        final var userEmail = new UserEmail("bob", "joe@bob.com", false, false);
+        final var userEmail = UserEmail.builder().username("bob").email("joe@bob.com").build();
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         final var userEmailOptional = verifyEmailService.getEmail("user");
         assertThat(userEmailOptional).get().isEqualTo(userEmail);
@@ -67,7 +67,7 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void getEmail_NoEmailSet() {
-        final var userEmail = new UserEmail("bob");
+        final var userEmail = UserEmail.of("bob");
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         final var userEmailOptional = verifyEmailService.getEmail("user");
         assertThat(userEmailOptional).isEmpty();
@@ -82,14 +82,14 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void isNotVerified_userFoundNotVerified() {
-        final var userEmail = new UserEmail("bob");
+        final var userEmail = UserEmail.of("bob");
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         assertThat(verifyEmailService.isNotVerified("user")).isTrue();
     }
 
     @Test
     public void isNotVerified_userFoundVerified() {
-        final var userEmail = new UserEmail("bob", "joe@bob.com", false, false);
+        final var userEmail = UserEmail.builder().username("bob").email("joe@bob.com").build();
         userEmail.setVerified(true);
         when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
         assertThat(verifyEmailService.isNotVerified("user")).isFalse();
@@ -116,7 +116,7 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void requestVerification_existingToken() throws NotificationClientException, VerifyEmailException {
-        final var userEmail = new UserEmail("someuser");
+        final var userEmail = UserEmail.of("someuser");
         when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
         final var userToken = new UserToken(TokenType.VERIFIED, userEmail);
         when(userTokenRepository.findByTokenTypeAndUserEmail(any(), any())).thenReturn(Optional.of(userToken));
@@ -127,7 +127,7 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void requestVerification_verifyToken() throws NotificationClientException, VerifyEmailException {
-        final var userEmail = new UserEmail("someuser");
+        final var userEmail = UserEmail.of("someuser");
         when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
         final var captor = ArgumentCaptor.forClass(UserToken.class);
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
@@ -139,7 +139,7 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void requestVerification_saveEmail() throws NotificationClientException, VerifyEmailException {
-        final var userEmail = new UserEmail("someuser");
+        final var userEmail = UserEmail.of("someuser");
         when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         verifyEmailService.requestVerification("user", "eMail@john.COM", "url");
@@ -233,7 +233,7 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void confirmEmail_happyPath() {
-        final var userEmail = new UserEmail("bob");
+        final var userEmail = UserEmail.of("bob");
         final var userToken = new UserToken(TokenType.VERIFIED, userEmail);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         final var result = verifyEmailService.confirmEmail("token");
@@ -251,7 +251,7 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void confirmEmail_expired() {
-        final var userEmail = new UserEmail("bob");
+        final var userEmail = UserEmail.of("bob");
         final var userToken = new UserToken(TokenType.VERIFIED, userEmail);
         userToken.setTokenExpiry(LocalDateTime.now().minusSeconds(1));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));

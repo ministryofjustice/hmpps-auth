@@ -1,9 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.CredentialsContainer;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
@@ -19,8 +16,9 @@ import static javax.persistence.FetchType.EAGER;
 @Table(name = "USER_EMAIL")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"username"})
+@Builder
 public class UserEmail implements UserPersonDetails, CredentialsContainer {
 
     @Id
@@ -49,6 +47,7 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     private boolean master;
 
     @Column(name = "password_expiry")
+    @Builder.Default
     private LocalDateTime passwordExpiry = LocalDateTime.now();
 
     @OneToOne(cascade = ALL)
@@ -60,20 +59,15 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     @JoinTable(name = "user_email_roles",
             joinColumns = @JoinColumn(name = "username"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @Builder.Default
     private Set<Authority> authorities = new HashSet<>();
 
     @OneToMany(cascade = ALL)
+    @Builder.Default
     private Set<Group> groups = new HashSet<>();
 
-    public UserEmail(final String username) {
-        this.username = username;
-    }
-
-    public UserEmail(final String username, final String email, final boolean verified, final boolean locked) {
-        this.username = username;
-        this.email = email;
-        this.verified = verified;
-        this.locked = locked;
+    public static UserEmail of(final String username) {
+        return UserEmail.builder().username(username).build();
     }
 
     @Override

@@ -75,7 +75,7 @@ public class VerifyEmailService {
         final var user = userService.findUser(username);
         final var firstName = user.map(UserPersonDetails::getFirstName).orElse(username);
         final var optionalUserEmail = userEmailRepository.findById(username);
-        final var userEmail = optionalUserEmail.orElseGet(() -> new UserEmail(username));
+        final var userEmail = optionalUserEmail.orElseGet(() -> UserEmail.of(username));
         userEmail.setEmail(email);
 
         // check for an existing token and delete as we now have a new one

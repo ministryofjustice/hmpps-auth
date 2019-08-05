@@ -301,7 +301,7 @@ public class ResetPasswordControllerTest {
 
     private void setupCheckAndGetTokenValid() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
-        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, new UserEmail("user", "email@somewhere.com", true, false))));
+        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, UserEmail.builder().username("user").email("email@somewhere.com").verified(true).build())));
     }
 
     private StaffUserAccount setupGetUserCallForProfile() {

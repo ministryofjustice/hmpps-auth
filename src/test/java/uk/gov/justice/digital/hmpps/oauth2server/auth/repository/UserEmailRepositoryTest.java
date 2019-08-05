@@ -39,9 +39,7 @@ public class UserEmailRepositoryTest {
 
         final var transientEntity = transientEntity();
 
-        final var entity = new UserEmail();
-        entity.setUsername(transientEntity.getUsername());
-        entity.setEmail(transientEntity.getEmail());
+        final var entity = UserEmail.builder().username(transientEntity.getUsername()).email(transientEntity.getEmail()).build();
 
         final var persistedEntity = repository.save(entity);
 
@@ -92,7 +90,7 @@ public class UserEmailRepositoryTest {
 
     @Test
     public void persistUserWithoutEmail() {
-        final var transientEntity = new UserEmail("userb");
+        final var transientEntity = UserEmail.of("userb");
         final var persistedEntity = repository.save(transientEntity);
 
         TestTransaction.flagForCommit();
@@ -280,9 +278,6 @@ public class UserEmailRepositoryTest {
     }
 
     private UserEmail transientEntity() {
-        final var email = new UserEmail();
-        email.setUsername("user");
-        email.setEmail("a@b.com");
-        return email;
+        return UserEmail.builder().username("user").email("a@b.com").build();
     }
 }
