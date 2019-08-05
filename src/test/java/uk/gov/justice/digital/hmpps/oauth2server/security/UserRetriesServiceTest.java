@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,10 +36,30 @@ public class UserRetriesServiceTest {
 
     @Test
     public void resetRetries() {
-        service.resetRetries("bob");
+        service.resetRetriesAndRecordLogin("bob");
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
         verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 0));
+    }
+
+    @Test
+    public void resetRetries_RecordLastLogginIn() {
+        final var user = UserEmail.builder().username("joe").lastLoggedIn(LocalDateTime.now().minusDays(1)).build();
+        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(user));
+        service.resetRetriesAndRecordLogin("bob");
+
+        assertThat(user.getLastLoggedIn()).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now());
+    }
+
+    @Test
+    public void resetRetries_SaveNewUser() {
+        service.resetRetriesAndRecordLogin("bob");
+
+        final var captor = ArgumentCaptor.forClass(UserEmail.class);
+        verify(userEmailRepository).save(captor.capture());
+
+        assertThat(captor.getValue().getUsername()).isEqualTo("bob");
+        assertThat(captor.getValue().getLastLoggedIn()).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now());
     }
 
     @Test

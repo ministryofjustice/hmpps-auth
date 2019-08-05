@@ -8,6 +8,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
 
+import java.time.LocalDateTime;
+
 @Service
 @Slf4j
 @Transactional(transactionManager = "authTransactionManager")
@@ -24,8 +26,19 @@ public class UserRetriesService {
         this.alterUserService = alterUserService;
     }
 
-    public void resetRetries(final String username) {
+    private void resetRetries(final String username) {
+        // reset their retry count
         userRetriesRepository.save(new UserRetries(username, 0));
+    }
+
+    public void resetRetriesAndRecordLogin(final String username) {
+        resetRetries(username);
+
+        // and record last logged in as now too (doing for all users to prevent confusion)
+        final var userEmailOptional = userEmailRepository.findById(username);
+        final var userEmail = userEmailOptional.orElseGet(() -> UserEmail.of(username));
+        userEmail.setLastLoggedIn(LocalDateTime.now());
+        userEmailRepository.save(userEmail);
     }
 
     /**

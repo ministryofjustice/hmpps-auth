@@ -58,6 +58,10 @@ VALUES ('AUTH_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QL
        ('AUTH_GROUP_MANAGER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_group_manager@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
        ('AUTH_RO_USER_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true');
 
+INSERT INTO user_email (username, password, last_logged_in, verified, enabled, locked, master)
+VALUES ('AUTH_INACTIVE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2019-02-03 13:23:19',
+        'true', 'true', 'false', 'true');
+
 INSERT INTO user_token (token, token_type, token_expiry, username)
 VALUES ('reset', 'RESET', '2018-12-10 08:55:45', 'LOCKED_USER');
 
@@ -70,6 +74,7 @@ VALUES ('AUTH_USER', 'Auth', 'Only'),
        ('AUTH_LOCKED', 'Auth', 'Locked'),
        ('AUTH_LOCKED2', 'Auth', 'Locked2'),
        ('AUTH_DISABLED', 'Auth', 'Disabled'),
+       ('AUTH_INACTIVE', 'Auth', 'Inactive'),
        ('AUTH_STATUS', 'Auth', 'Status'),
        ('AUTH_NEW_USER', 'Auth', 'New-User'),
        ('AUTH_RO_USER', 'Ryan-Auth', 'Orton'),
