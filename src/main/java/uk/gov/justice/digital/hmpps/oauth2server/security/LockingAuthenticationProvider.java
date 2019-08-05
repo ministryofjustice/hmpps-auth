@@ -76,7 +76,7 @@ public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
         final var username = userDetails.getUsername();
         if (getPasswordEncoder().matches(password, userDetails.getPassword())) {
             log.info("Resetting retries for user {}", username);
-            userRetriesService.resetRetries(username);
+            userRetriesService.resetRetriesAndRecordLogin(username);
 
         } else {
             final var newRetryCount = userRetriesService.incrementRetries(username);

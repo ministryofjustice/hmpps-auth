@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -275,6 +276,33 @@ public class UserEmailRepositoryTest {
         assertThat(repository.findAll(UserEmailFilter.builder().roleCode("LICENCE_VARY").groupCode("SITE_1_GROUP_2").name("vary").build()))
                 .extracting(UserEmail::getUsername)
                 .containsExactly("AUTH_RO_VARY_USER");
+    }
+
+    @Test
+    public void findInactiveUsers_First10() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
+        assertThat(inactive).extracting(UserEmail::getUsername)
+                .contains("AUTH_USER", "AUTH_EXPIRED")
+                .doesNotContain("AUTH_DISABLED", "ITAG_USER");
+        assertThat(inactive).hasSize(10);
+    }
+
+    @Test
+    public void findInactiveUsers_OrderByLastLoggedInOldestFirst() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
+        assertThat(inactive).extracting(UserEmail::getUsername).first().isEqualTo("AUTH_INACTIVE");
+    }
+
+    @Test
+    public void findInactiveUsers_NoRows() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.parse("2019-02-03T13:23:19").minusSeconds(1));
+        assertThat(inactive).isEmpty();
+    }
+
+    @Test
+    public void findInactiveUsers_SingleRow() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.parse("2019-02-03T13:23:19").plusSeconds(1));
+        assertThat(inactive).extracting(UserEmail::getUsername).containsExactly("AUTH_INACTIVE");
     }
 
     private UserEmail transientEntity() {

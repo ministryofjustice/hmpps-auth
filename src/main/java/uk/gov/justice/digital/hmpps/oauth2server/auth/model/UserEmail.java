@@ -46,9 +46,16 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     @Column(name = "master", nullable = false)
     private boolean master;
 
+    /**
+     * Used for NOMIS accounts to force change password so that they don't get locked out due to not changing password
+     */
     @Column(name = "password_expiry")
     @Builder.Default
     private LocalDateTime passwordExpiry = LocalDateTime.now();
+
+    @Column(name = "last_logged_in")
+    @Builder.Default
+    private LocalDateTime lastLoggedIn = LocalDateTime.now();
 
     @OneToOne(cascade = ALL)
     @JoinColumn(name = "username")
