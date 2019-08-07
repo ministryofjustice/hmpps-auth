@@ -1,14 +1,15 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
 
+import org.flywaydb.core.Flyway;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
@@ -29,7 +30,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @Transactional(transactionManager = "authTransactionManager")
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class UserEmailRepositoryTest {
     @Autowired
     private UserEmailRepository repository;
@@ -37,6 +37,20 @@ public class UserEmailRepositoryTest {
     private GroupRepository groupRepository;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    @Qualifier("authFlyway")
+    private Flyway flyway;
+
+    private static boolean initialized;
+
+    @Before
+    public void resetFlyway() {
+        if (!initialized) {
+            flyway.clean();
+            flyway.migrate();
+            initialized = true;
+        }
+    }
 
     @Test
     public void givenATransientEntityItCanBePersisted() {
