@@ -62,14 +62,14 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     @PrimaryKeyJoinColumn
     private Person person;
 
-    @OneToMany(cascade = ALL, fetch = EAGER)
+    @OneToMany(fetch = EAGER)
     @JoinTable(name = "user_email_roles",
             joinColumns = @JoinColumn(name = "username"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     @Builder.Default
     private Set<Authority> authorities = new HashSet<>();
 
-    @OneToMany(cascade = ALL)
+    @OneToMany
     @Builder.Default
     private Set<Group> groups = new HashSet<>();
 

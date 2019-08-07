@@ -25,7 +25,9 @@ VALUES ('NOMIS','New NOMIS', null, null, 'http://localhost:3000', 'true'),
        ('CT','Categorisation Tool', 'Categorisation of prisoners', 'ROLE_CREATE_CATEGORISATION,ROLE_APPROVE_CATEGORISATION,ROLE_CATEGORISATION_SECURITY', 'http://localhost:3000', 'true'),
        ('POM','Allocate a POM', 'Allocate the appropriate offender manager to a prisoner', null, 'http://localhost:3004', 'true');
 
-INSERT INTO user_retries (username, retry_count) VALUES ('LOCKED_USER', 5);
+INSERT INTO user_retries (username, retry_count)
+VALUES ('LOCKED_USER', 5),
+       ('AUTH_DELETEALL', 5);
 
 INSERT INTO user_email (username, email, verified)
 VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
@@ -59,11 +61,14 @@ VALUES ('AUTH_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QL
        ('AUTH_RO_USER_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true');
 
 INSERT INTO user_email (username, password, last_logged_in, verified, enabled, locked, master)
-VALUES ('AUTH_INACTIVE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2019-02-03 13:23:19',
-        'true', 'true', 'false', 'true');
+VALUES ('AUTH_INACTIVE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2019-02-03 13:23:19', 'true', 'true', 'false', 'true'),
+       ('AUTH_DELETE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2018-01-02 13:23:19', 'true', 'false', 'false', 'true'),
+       ('AUTH_DELETEALL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2018-02-03 13:23:19', 'true', 'false', 'false', 'true');
 
 INSERT INTO user_token (token, token_type, token_expiry, username)
-VALUES ('reset', 'RESET', '2018-12-10 08:55:45', 'LOCKED_USER');
+VALUES ('reset', 'RESET', '2018-12-10 08:55:45', 'LOCKED_USER'),
+       ('reset2', 'RESET', '2018-12-10 08:55:45', 'AUTH_DELETEALL'),
+       ('verified', 'VERIFIED', '2018-12-10 08:55:45', 'AUTH_DELETEALL');
 
 INSERT INTO person (username, first_name, last_name)
 VALUES ('AUTH_USER', 'Auth', 'Only'),
@@ -74,6 +79,8 @@ VALUES ('AUTH_USER', 'Auth', 'Only'),
        ('AUTH_LOCKED', 'Auth', 'Locked'),
        ('AUTH_LOCKED2', 'Auth', 'Locked2'),
        ('AUTH_DISABLED', 'Auth', 'Disabled'),
+       ('AUTH_DELETE', 'Auth', 'Delete'),
+       ('AUTH_DELETEALL', 'Auth', 'DeleteAll'),
        ('AUTH_INACTIVE', 'Auth', 'Inactive'),
        ('AUTH_STATUS', 'Auth', 'Status'),
        ('AUTH_NEW_USER', 'Auth', 'New-User'),
@@ -93,6 +100,7 @@ INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_VARY_U
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER_TEST' from roles where role_code = 'LICENCE_RO';
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER_TEST' from roles where role_code = 'GLOBAL_SEARCH';
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_GROUP_MANAGER' from roles where role_code = 'AUTH_GROUP_MANAGER';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_DELETEALL' from roles where role_code = 'LICENCE_RO';
 
 INSERT INTO groups (group_id, group_code, group_name)
 VALUES (newid(), 'SITE_1_GROUP_1', 'Site 1 - Group 1'),
@@ -107,6 +115,7 @@ INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group
 INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_RO_USER_TEST' FROM groups WHERE group_code = 'SITE_2_GROUP_1';
 INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_GROUP_MANAGER' FROM groups WHERE group_code = 'SITE_1_GROUP_1';
 INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_GROUP_MANAGER' FROM groups WHERE group_code = 'SITE_1_GROUP_2';
+INSERT INTO user_email_groups (groups_group_id, useremail_username) SELECT group_id, 'AUTH_DELETEALL' FROM groups WHERE group_code = 'SITE_3_GROUP_1';
 
 INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'true' FROM groups g, roles r WHERE r.role_code = 'GLOBAL_SEARCH' AND g.group_code = 'SITE_1_GROUP_1';
 INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'true' FROM groups g, roles r WHERE r.role_code = 'LICENCE_RO' AND g.group_code = 'SITE_1_GROUP_1';

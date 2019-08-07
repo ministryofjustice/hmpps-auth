@@ -70,11 +70,19 @@ public class UserTokenRepositoryTest {
     }
 
     @Test
-    public void testFindByTokenAndTokenType() {
+    public void findByTokenTypeAndUserEmail() {
         final var lockedUser = userEmailRepository.findById("LOCKED_USER").orElseThrow();
         final var retrievedEntity = repository.findByTokenTypeAndUserEmail(TokenType.RESET, lockedUser).orElseThrow();
         assertThat(retrievedEntity.getToken()).isEqualTo("reset");
         assertThat(retrievedEntity.getTokenType()).isEqualTo(TokenType.RESET);
+    }
+
+    @Test
+    public void findByUserEmail() {
+        final var lockedUser = userEmailRepository.findById("LOCKED_USER").orElseThrow();
+        final var retrievedEntities = repository.findByUserEmail(lockedUser);
+        assertThat(retrievedEntities).extracting(UserToken::getToken).containsExactly("reset");
+        assertThat(retrievedEntities).extracting(UserToken::getTokenType).containsExactly(TokenType.RESET);
     }
 
     private UserEmail transientUserEmail() {

@@ -40,7 +40,7 @@ public class DisableInactiveAuthUsersServiceTest {
         final var users = List.of(UserEmail.of("user"), UserEmail.of("joe"));
         when(userEmailRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
                 .thenReturn(users);
-        assertThat(service.findAndDisableInactiveAuthUsers()).isEqualTo(2);
+        assertThat(service.processInBatches()).isEqualTo(2);
     }
 
     @Test
@@ -50,7 +50,7 @@ public class DisableInactiveAuthUsersServiceTest {
                 UserEmail.builder().username("joe").enabled(true).build());
         when(userEmailRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
                 .thenReturn(users);
-        service.findAndDisableInactiveAuthUsers();
+        service.processInBatches();
         assertThat(users).extracting(UserEmail::isEnabled).containsExactly(false, false);
     }
 
@@ -61,7 +61,7 @@ public class DisableInactiveAuthUsersServiceTest {
                 UserEmail.builder().username("joe").enabled(true).build());
         when(userEmailRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
                 .thenReturn(users);
-        service.findAndDisableInactiveAuthUsers();
+        service.processInBatches();
 
         verify(telemetryClient, times(2)).trackEvent(eq("DisableInactiveAuthUsersProcessed"), mapCaptor.capture(), isNull());
         assertThat(mapCaptor.getAllValues().stream().map(m -> m.get("username")).collect(Collectors.toList())).containsExactly("user", "joe");

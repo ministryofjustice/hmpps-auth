@@ -305,6 +305,33 @@ public class UserEmailRepositoryTest {
         assertThat(inactive).extracting(UserEmail::getUsername).containsExactly("AUTH_INACTIVE");
     }
 
+    @Test
+    public void findDisabledUsers_First10() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
+        assertThat(inactive).extracting(UserEmail::getUsername)
+                .contains("AUTH_DELETE", "AUTH_DELETEALL")
+                .doesNotContain("AUTH_DISABLED", "AUTH_USER");
+        assertThat(inactive).hasSize(10);
+    }
+
+    @Test
+    public void findDisabledUsers_OrderByLastLoggedInOldestFirst() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
+        assertThat(inactive).extracting(UserEmail::getUsername).first().isEqualTo("AUTH_DELETE");
+    }
+
+    @Test
+    public void findDisabledUsers_NoRows() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2019-01-02T13:23:19").minusSeconds(1));
+        assertThat(inactive).isEmpty();
+    }
+
+    @Test
+    public void findDisabledUsers_SingleRow() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2019-01-02T13:23:19").plusSeconds(1));
+        assertThat(inactive).extracting(UserEmail::getUsername).containsExactly("AUTH_DELETE");
+    }
+
     private UserEmail transientEntity() {
         return UserEmail.builder().username("user").email("a@b.com").build();
     }

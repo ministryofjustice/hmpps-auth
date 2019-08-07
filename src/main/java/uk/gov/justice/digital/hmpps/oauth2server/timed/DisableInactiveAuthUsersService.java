@@ -13,12 +13,12 @@ import java.util.Map;
 @Service
 @AllArgsConstructor
 @Log4j2
-public class DisableInactiveAuthUsersService {
+public class DisableInactiveAuthUsersService implements BatchUserService {
     private final UserEmailRepository repository;
     private final TelemetryClient telemetryClient;
 
     @Transactional(transactionManager = "authTransactionManager")
-    public int findAndDisableInactiveAuthUsers() {
+    public int processInBatches() {
         final var usersToDisable = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().minusDays(90));
         usersToDisable.forEach(user -> {
             user.setEnabled(false);
