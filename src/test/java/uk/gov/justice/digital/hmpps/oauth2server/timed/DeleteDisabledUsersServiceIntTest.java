@@ -55,30 +55,31 @@ public class DeleteDisabledUsersServiceIntTest {
 
     @Test
     public void findAndDeleteDisabledAuthUsers_Processed() {
-        assertThat(service.processInBatches()).isEqualTo(2);
+        assertThat(service.processInBatches()).isEqualTo(3);
 
         TestTransaction.flagForCommit();
         TestTransaction.end();
         TestTransaction.start();
 
         final var jdbcTemplate = new JdbcTemplate(dataSource);
+        final var whereClause = "where username in ('AUTH_DELETE', 'AUTH_DELETEALL', 'NOMIS_DELETE')";
 
-        final var retries = jdbcTemplate.queryForList("select * from user_retries where username in ('AUTH_DELETE', 'AUTH_DELETEALL')");
+        final var retries = jdbcTemplate.queryForList(String.format("select * from user_retries %s", whereClause));
         assertThat(retries).isEmpty();
 
-        final var tokens = jdbcTemplate.queryForList("select * from user_token where username in ('AUTH_DELETE', 'AUTH_DELETEALL')");
+        final var tokens = jdbcTemplate.queryForList(String.format("select * from user_token %s", whereClause));
         assertThat(tokens).isEmpty();
 
-        final var users = jdbcTemplate.queryForList("select * from user_email where username in ('AUTH_DELETE', 'AUTH_DELETEALL')");
+        final var users = jdbcTemplate.queryForList(String.format("select * from user_email %s", whereClause));
         assertThat(users).isEmpty();
 
-        final var people = jdbcTemplate.queryForList("select * from person where username in ('AUTH_DELETE', 'AUTH_DELETEALL')");
+        final var people = jdbcTemplate.queryForList(String.format("select * from person %s", whereClause));
         assertThat(people).isEmpty();
 
-        final var roles = jdbcTemplate.queryForList("select * from user_email_roles where username in ('AUTH_DELETE', 'AUTH_DELETEALL')");
+        final var roles = jdbcTemplate.queryForList(String.format("select * from user_email_roles %s", whereClause));
         assertThat(roles).isEmpty();
 
-        final var groups = jdbcTemplate.queryForList("select * from user_email_groups where useremail_username in ('AUTH_DELETE', 'AUTH_DELETEALL')");
+        final var groups = jdbcTemplate.queryForList(String.format("select * from user_email_groups %s", whereClause).replace("username", "useremail_username"));
         assertThat(groups).isEmpty();
     }
 }

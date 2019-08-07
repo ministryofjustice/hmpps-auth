@@ -27,8 +27,11 @@ VALUES ('NOMIS','New NOMIS', null, null, 'http://localhost:3000', 'true'),
 
 INSERT INTO user_retries (username, retry_count)
 VALUES ('LOCKED_USER', 5),
-       ('AUTH_DELETEALL', 5);
+       ('AUTH_DELETEALL', 3),
+       ('NOMIS_DELETE', 1);
 
+
+-- nomis users
 INSERT INTO user_email (username, email, verified)
 VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
        ('CA_USER', 'ca_user@digital.justice.gov.uk', 'true'),
@@ -44,6 +47,10 @@ VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
        ('DM_USER_TEST', 'dm_user_test@digital.justice.gov.uk', 'true'),
        ('RESET_TEST_USER', 'reset_test@digital.justice.gov.uk', 'true');
 
+INSERT INTO user_email (username, email, verified, last_logged_in)
+VALUES ('NOMIS_DELETE', 'locked@somewhere.com', 'true', '2018-02-04 13:23:19');
+
+-- auth users
 INSERT INTO user_email (username, password, password_expiry, email, verified, enabled, locked, master)
 VALUES ('AUTH_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
        ('AUTH_ADM', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_test2@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),

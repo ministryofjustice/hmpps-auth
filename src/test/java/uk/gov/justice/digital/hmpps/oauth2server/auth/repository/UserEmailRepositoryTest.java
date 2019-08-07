@@ -309,7 +309,7 @@ public class UserEmailRepositoryTest {
     public void findDisabledUsers_First10() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
         assertThat(inactive).extracting(UserEmail::getUsername)
-                .contains("AUTH_DELETE", "AUTH_DELETEALL")
+                .contains("AUTH_DELETE", "AUTH_DELETEALL", "NOMIS_DELETE")
                 .doesNotContain("AUTH_DISABLED", "AUTH_USER");
         assertThat(inactive).hasSize(10);
     }
@@ -322,13 +322,13 @@ public class UserEmailRepositoryTest {
 
     @Test
     public void findDisabledUsers_NoRows() {
-        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2019-01-02T13:23:19").minusSeconds(1));
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2018-01-02T13:23:19").minusSeconds(1));
         assertThat(inactive).isEmpty();
     }
 
     @Test
     public void findDisabledUsers_SingleRow() {
-        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2019-01-02T13:23:19").plusSeconds(1));
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2018-01-02T13:23:19").plusSeconds(1));
         assertThat(inactive).extracting(UserEmail::getUsername).containsExactly("AUTH_DELETE");
     }
 

@@ -72,7 +72,7 @@ public class DeleteDisabledUsersServiceTest {
         final var token = new UserToken(TokenType.RESET, user);
         final var retry = new UserRetries("user", 3);
         when(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(retry));
-        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(token));
+        when(userTokenRepository.findByUserEmail(any())).thenReturn(List.of(token));
 
         when(userEmailRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
                 .thenReturn(List.of(user));
