@@ -17,7 +17,7 @@ public class DisableInactiveAuthUsers extends BatchUserProcessor {
 
     @Scheduled(
             fixedDelayString = "${application.authentication.disable.frequency}",
-            initialDelayString = "${random.int[0,${application.authentication.disable.frequency}]}")
+            initialDelayString = "${random.int[600000,${application.authentication.disable.frequency}]}")
     public void findAndDisableInactiveAuthUsers() {
         log.info("Disable inactive auth users started");
 

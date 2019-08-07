@@ -18,7 +18,7 @@ public class DeleteDisabledUsers extends BatchUserProcessor {
 
     @Scheduled(
             fixedDelayString = "${application.authentication.delete.frequency}",
-            initialDelayString = "${random.int[0,${application.authentication.delete.frequency}]}")
+            initialDelayString = "${random.int[600000,${application.authentication.delete.frequency}]}")
     public void findAndDeleteDisabledUsers() {
         log.info("Delete disabled users started");
 
