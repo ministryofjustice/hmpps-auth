@@ -105,4 +105,7 @@ public class UserService {
                 Map.of("username", userEmail.getUsername(), "enabled", Boolean.toString(enabled), "admin", admin), null);
     }
 
+    public Optional<UserEmail> findUserEmail(final String username) {
+        return userEmailRepository.findById(StringUtils.upperCase(username));
+    }
 }

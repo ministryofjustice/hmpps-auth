@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api;
 
 import io.swagger.annotations.*;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
+import uk.gov.justice.digital.hmpps.oauth2server.model.EmailAddress;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole;
@@ -21,12 +23,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @Api(tags = {"/api/user"})
+@AllArgsConstructor
 public class UserController {
     private final UserService userService;
-
-    public UserController(final UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping("/api/user/me")
     @ApiOperation(value = "Current user detail.", notes = "Current user detail.", nickname = "getMyUserInformation",
@@ -64,6 +63,25 @@ public class UserController {
 
         return user.map(UserDetail::fromPerson).map(Object.class::cast).map(ResponseEntity::ok).
                 orElse(notFoundResponse(username));
+    }
+
+    @GetMapping("/api/user/{username}/email")
+    @ApiOperation(value = "Email address for user", notes = "Verified email address for user", nickname = "getUserEmail",
+            consumes = "application/json", produces = "application/json")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
+            @ApiResponse(code = 204, message = "No content.  No verified email address found for user"),
+            @ApiResponse(code = 404, message = "User not found.  The user doesn't exist in auth so could have never logged in", response = ErrorDetail.class)})
+    public ResponseEntity<Object> getUserEmail(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
+        final var userEmail = userService.findUserEmail(username);
+
+        if (userEmail.isEmpty()) {
+            return notFoundResponse(username);
+        }
+
+        final var email = userEmail.get();
+
+        return email.isVerified() ? ResponseEntity.ok(EmailAddress.fromUserEmail(email)) : ResponseEntity.noContent().build();
     }
 
 

@@ -83,6 +83,48 @@ class UserSpecification extends TestSpecification {
         userData == ["username": "AUTH_USER", "active": true, "name": "Auth Only", "authSource": "auth"]
     }
 
+    def "User email endpoint returns user data for auth user"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/AUTH_USER/email", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ["username": "AUTH_USER", "email": "auth_user@digital.justice.gov.uk"]
+    }
+
+    def "User email endpoint returns no user data for unverified email address"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/DM_USER/email", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.NO_CONTENT
+    }
+
+    def "User email endpoint returns user data for nomis user"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/ITAG_USER/email", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ["username": "ITAG_USER", "email": "itag_user@digital.justice.gov.uk"]
+    }
+
     def "User Roles endpoint returns principal user data"() {
 
         given:
@@ -139,6 +181,15 @@ class UserSpecification extends TestSpecification {
 
         when:
         def response = restTemplate.exchange("/api/user/bob", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.UNAUTHORIZED
+    }
+
+    def "User email endpoint not accessible without valid token"() {
+
+        when:
+        def response = restTemplate.exchange("/api/user/bob/email", HttpMethod.GET, null, String.class)
 
         then:
         response.statusCode == HttpStatus.UNAUTHORIZED
