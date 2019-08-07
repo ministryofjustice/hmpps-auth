@@ -98,7 +98,7 @@ public class UserServiceTest {
     public void enableUser_invalidGroup_GroupManager() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        doThrow(new MaintainUserCheck.AuthUserGroupRelationshipException("someuser","User not with your groups")).when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(),anyCollection(),any(UserEmail.class));
+        doThrow(new MaintainUserCheck.AuthUserGroupRelationshipException("someuser", "User not with your groups")).when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any(UserEmail.class));
         assertThatThrownBy(() -> userService.enableUser("someuser", "admin", GROUP_MANAGER)).
                 isInstanceOf(MaintainUserCheck.AuthUserGroupRelationshipException.class).hasMessage("Unable to maintain user: someuser with reason: User not with your groups");
     }
@@ -131,7 +131,7 @@ public class UserServiceTest {
     public void enableUser_trackEvent() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        doNothing().when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(),anyCollection(),any(UserEmail.class));
+        doNothing().when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any(UserEmail.class));
         userService.enableUser("someuser", "someadmin", SUPER_USER);
         verify(telemetryClient).trackEvent("AuthUserChangeEnabled", Map.of("username", "someuser", "admin", "someadmin", "enabled", "true"), null);
     }
@@ -140,7 +140,7 @@ public class UserServiceTest {
     public void disableUser_superUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        doNothing().when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(),anyCollection(),any(UserEmail.class));
+        doNothing().when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any(UserEmail.class));
         userService.disableUser("user", "admin", SUPER_USER);
         assertThat(optionalUserEmail).get().extracting(UserEmail::isEnabled).isEqualTo(Boolean.FALSE);
         verify(userEmailRepository).save(optionalUserEmail.orElseThrow());
@@ -150,7 +150,7 @@ public class UserServiceTest {
     public void disableUser_invalidGroup_GroupManager() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var optionalUserEmail = createUserEmailUser();
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        doThrow(new MaintainUserCheck.AuthUserGroupRelationshipException("someuser","User not with your groups")).when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(),anyCollection(),any(UserEmail.class));
+        doThrow(new MaintainUserCheck.AuthUserGroupRelationshipException("someuser", "User not with your groups")).when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any(UserEmail.class));
         assertThatThrownBy(() -> userService.disableUser("someuser", "admin", GROUP_MANAGER)).
                 isInstanceOf(MaintainUserCheck.AuthUserGroupRelationshipException.class).hasMessage("Unable to maintain user: someuser with reason: User not with your groups");
     }
@@ -182,11 +182,21 @@ public class UserServiceTest {
         verify(telemetryClient).trackEvent("AuthUserChangeEnabled", Map.of("username", "someuser", "admin", "someadmin", "enabled", "false"), null);
     }
 
-
     @Test
     public void disableUser_notFound() {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.disableUser("user", "admin", SUPER_USER)).isInstanceOf(EntityNotFoundException.class).hasMessageContaining("username user");
+    }
+
+    @Test
+    public void findUserEmail() {
+        final var userEmail = createUserEmailUser();
+        when(userEmailRepository.findById(anyString())).thenReturn(userEmail);
+
+        final var found = userService.findUserEmail("bob");
+
+        assertThat(found).isSameAs(userEmail);
+        verify(userEmailRepository).findById("BOB");
     }
 
     private Optional<UserEmail> createUserEmailUser() {

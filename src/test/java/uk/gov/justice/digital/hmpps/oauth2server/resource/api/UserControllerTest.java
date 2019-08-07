@@ -10,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.model.EmailAddress;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole;
@@ -110,6 +111,36 @@ public class UserControllerTest {
     public void myRoles_noRoles() {
         final var token = new UsernamePasswordAuthenticationToken("principal", "credentials", Collections.emptyList());
         assertThat(userController.myRoles(token)).isEmpty();
+    }
+
+    @Test
+    public void getUserEmail_found() {
+        when(userService.findUserEmail(anyString())).thenReturn(Optional.of(UserEmail.builder().username("JOE").verified(true).email("someemail").build()));
+
+        final var responseEntity = userController.getUserEmail("joe");
+
+        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
+        assertThat(responseEntity.getBody()).isEqualTo(new EmailAddress("JOE", "someemail"));
+    }
+
+    @Test
+    public void getUserEmail_notFound() {
+        when(userService.findUserEmail(anyString())).thenReturn(Optional.empty());
+
+        final var responseEntity = userController.getUserEmail("joe");
+
+        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("Not Found", "Account for username joe not found", "username"));
+    }
+
+    @Test
+    public void getUserEmail_notVerified() {
+        when(userService.findUserEmail(anyString())).thenReturn(Optional.of(UserEmail.of("JOE")));
+
+        final var responseEntity = userController.getUserEmail("joe");
+
+        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
+        assertThat(responseEntity.getBody()).isNull();
     }
 
     private StaffUserAccount setupFindUserCallForNomis() {
