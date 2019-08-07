@@ -7,6 +7,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
@@ -27,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @Transactional(transactionManager = "authTransactionManager")
+@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class UserEmailRepositoryTest {
     @Autowired
     private UserEmailRepository repository;
