@@ -16,4 +16,6 @@ public interface UserEmailRepository extends CrudRepository<UserEmail, String>, 
     List<UserEmail> findByEmailAndMasterIsTrueOrderByUsername(String email);
 
     List<UserEmail> findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime lastLoggedIn);
+
+    List<UserEmail> findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime lastLoggedIn);
 }

@@ -11,23 +11,23 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DisableInactiveAuthUsersTest {
+public class DeleteDisabledUsersTest {
     @Mock
-    private DisableInactiveAuthUsersService service;
+    private DeleteDisabledUsersService service;
     @Mock
     private TelemetryClient telemetryClient;
 
-    private DisableInactiveAuthUsers disableInactiveAuthUsers;
+    private DeleteDisabledUsers deleteDisabledUsers;
 
     @Before
     public void setUp() {
-        disableInactiveAuthUsers = new DisableInactiveAuthUsers(service, telemetryClient);
+        deleteDisabledUsers = new DeleteDisabledUsers(service, telemetryClient);
     }
 
     @Test
-    public void findAndDisableInactiveAuthUsers() {
+    public void findAndDeleteDisabledUsers() {
         when(service.processInBatches()).thenReturn(0);
-        disableInactiveAuthUsers.findAndDisableInactiveAuthUsers();
+        deleteDisabledUsers.findAndDeleteDisabledUsers();
         verify(service).processInBatches();
     }
 }

@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
 
+import org.flywaydb.core.Flyway;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -34,6 +37,20 @@ public class UserEmailRepositoryTest {
     private GroupRepository groupRepository;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    @Qualifier("authFlyway")
+    private Flyway flyway;
+
+    private static boolean initialized;
+
+    @Before
+    public void resetFlyway() {
+        if (!initialized) {
+            flyway.clean();
+            flyway.migrate();
+            initialized = true;
+        }
+    }
 
     @Test
     public void givenATransientEntityItCanBePersisted() {
@@ -303,6 +320,33 @@ public class UserEmailRepositoryTest {
     public void findInactiveUsers_SingleRow() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.parse("2019-02-03T13:23:19").plusSeconds(1));
         assertThat(inactive).extracting(UserEmail::getUsername).containsExactly("AUTH_INACTIVE");
+    }
+
+    @Test
+    public void findDisabledUsers_First10() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
+        assertThat(inactive).extracting(UserEmail::getUsername)
+                .contains("AUTH_DELETE", "AUTH_DELETEALL", "NOMIS_DELETE")
+                .doesNotContain("AUTH_DISABLED", "AUTH_USER");
+        assertThat(inactive).hasSize(10);
+    }
+
+    @Test
+    public void findDisabledUsers_OrderByLastLoggedInOldestFirst() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
+        assertThat(inactive).extracting(UserEmail::getUsername).first().isEqualTo("AUTH_DELETE");
+    }
+
+    @Test
+    public void findDisabledUsers_NoRows() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2018-01-02T13:23:19").minusSeconds(1));
+        assertThat(inactive).isEmpty();
+    }
+
+    @Test
+    public void findDisabledUsers_SingleRow() {
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2018-01-02T13:23:19").plusSeconds(1));
+        assertThat(inactive).extracting(UserEmail::getUsername).containsExactly("AUTH_DELETE");
     }
 
     private UserEmail transientEntity() {
