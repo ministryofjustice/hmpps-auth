@@ -101,7 +101,7 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:3.3.1'
     implementation 'org.apache.commons:commons-lang3:3.9'
     implementation 'org.apache.commons:commons-text:1.7'
-    implementation 'com.microsoft.sqlserver:mssql-jdbc:7.4.1.jre12'
+    implementation 'com.microsoft.sqlserver:mssql-jdbc:7.4.1.jre11'
     implementation 'com.github.timpeeters:spring-boot-graceful-shutdown:2.1.1'
 
     runtime 'com.h2database:h2:1.4.199'
