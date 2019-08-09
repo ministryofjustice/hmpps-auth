@@ -192,7 +192,7 @@ public class ChangePasswordControllerTest {
         controller.changePassword("user", "password2", "password2", request, response);
 
         verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateFailure"), mapCaptor.capture(), isNull());
-        assertThat(mapCaptor.getValue()).containsExactly(entry("username", "user"), entry("reason", "AccountExpiredException"));
+        assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"), entry("reason", "AccountExpiredException"));
     }
 
     @Test
