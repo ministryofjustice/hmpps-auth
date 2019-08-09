@@ -61,7 +61,7 @@ public class ChangePasswordController extends AbstractPasswordController {
 
         final var userToken = tokenService.getToken(CHANGE, token);
 
-        final var modelAndView = processSetPassword(CHANGE, token, newPassword, confirmPassword);
+        final var modelAndView = processSetPassword(CHANGE, "Change", token, newPassword, confirmPassword);
         if (modelAndView.isPresent()) {
             return modelAndView.get();
         }
@@ -73,14 +73,14 @@ public class ChangePasswordController extends AbstractPasswordController {
         try {
             final var successToken = authenticate(username, newPassword);
             // success, so forward on
-            telemetryClient.trackEvent("ChangePasswordSuccess", Map.of("username", username), null);
+            telemetryClient.trackEvent("ChangePasswordAuthenticateSuccess", Map.of("username", username), null);
             jwtAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, successToken);
             // return here is not required, since the success handler will have redirected
             return null;
         } catch (final AuthenticationException e) {
             final var reason = e.getClass().getSimpleName();
             log.info("Caught unexpected {} after change password", reason, e);
-            telemetryClient.trackEvent("ChangePasswordFailure", Map.of("username", username, "reason", reason), null);
+            telemetryClient.trackEvent("ChangePasswordAuthenticateFailure", Map.of("username", username, "reason", reason), null);
             // this should have succeeded, but unable to login
             // need to tell user that the change password request has been successful though
             return new ModelAndView("redirect:/login?error=changepassword");

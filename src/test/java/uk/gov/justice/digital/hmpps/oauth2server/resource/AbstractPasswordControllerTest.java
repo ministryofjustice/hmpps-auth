@@ -6,6 +6,8 @@ import org.assertj.core.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.LockedException;
@@ -22,6 +24,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,8 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractPasswordControllerTest {
@@ -45,6 +47,8 @@ public class AbstractPasswordControllerTest {
     private VerifyEmailService verifyEmailService;
     @Mock
     private TelemetryClient telemetryClient;
+    @Captor
+    private ArgumentCaptor<Map<String, String>> mapCaptor;
 
     private ResetPasswordController controller;
 
@@ -62,6 +66,24 @@ public class AbstractPasswordControllerTest {
     }
 
     @Test
+    public void setPassword_Success_Telemetry() {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile("TAG_ADMIN");
+        controller.setPassword("d", "password123456", "password123456", null);
+        verify(telemetryClient).trackEvent(eq("ResetPasswordSuccess"), mapCaptor.capture(), isNull());
+        assertThat(mapCaptor.getValue()).containsExactly(entry("username", "user"));
+    }
+
+    @Test
+    public void setPassword_InitialSuccess_Telemetry() {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile("TAG_ADMIN");
+        controller.setPassword("d", "password123456", "password123456", true);
+        verify(telemetryClient).trackEvent(eq("InitialPasswordSuccess"), mapCaptor.capture(), isNull());
+        assertThat(mapCaptor.getValue()).containsExactly(entry("username", "user"));
+    }
+
+    @Test
     public void setPassword_Failure() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
         final var modelAndView = controller.setPassword("sometoken", "new", "confirm", null);
@@ -76,6 +98,15 @@ public class AbstractPasswordControllerTest {
         final var modelAndView = controller.setPassword("d", "@fewfewfew1", "@fewfewfew1", null);
         assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
         assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("isAdmin", Boolean.FALSE), entry("error", Boolean.TRUE), listEntry("errornew", "alphanumeric"));
+    }
+
+    @Test
+    public void setPassword_NotAlphanumeric_Telemetry() {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile(null);
+        controller.setPassword("d", "@fewfewfew1", "@fewfewfew1", null);
+        verify(telemetryClient).trackEvent(eq("ResetPasswordFailure"), mapCaptor.capture(), isNull());
+        assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"), entry("reason", "{errornew=[alphanumeric]}"));
     }
 
     @Test
