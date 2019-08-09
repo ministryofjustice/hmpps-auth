@@ -148,8 +148,8 @@ public class ResetPasswordController extends AbstractPasswordController {
     public ModelAndView setPassword(@RequestParam final String token,
                                     @RequestParam final String newPassword, @RequestParam final String confirmPassword,
                                     @RequestParam(required = false) final Boolean initial) {
-        final var modelAndView = processSetPassword(RESET, token, newPassword, confirmPassword);
         final var initialAsPrimitive = BooleanUtils.toBoolean(initial);
+        final var modelAndView = processSetPassword(RESET, initialAsPrimitive ? "Initial" : "Reset", token, newPassword, confirmPassword);
 
         return modelAndView.map(mv -> initialAsPrimitive ? mv.addObject("initial", Boolean.TRUE) : mv).orElse(
                 new ModelAndView(initialAsPrimitive ? "redirect:/initial-password-success" : "redirect:/reset-password-success"));

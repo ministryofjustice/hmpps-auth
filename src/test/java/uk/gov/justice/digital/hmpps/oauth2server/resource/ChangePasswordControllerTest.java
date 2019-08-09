@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.AccountExpiredException;
@@ -29,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -56,6 +58,8 @@ public class ChangePasswordControllerTest {
     private HttpServletRequest request;
     @Mock
     private HttpServletResponse response;
+    @Captor
+    private ArgumentCaptor<Map<String, String>> mapCaptor;
 
     private ChangePasswordController controller;
 
@@ -142,6 +146,30 @@ public class ChangePasswordControllerTest {
     }
 
     @Test
+    public void changePassword_Success_Telemetry() throws Exception {
+        final var token = new UsernamePasswordAuthenticationToken("bob", "pass");
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile();
+        when(daoAuthenticationProvider.authenticate(any())).thenReturn(token);
+        controller.changePassword("user", "password2", "password2", request, response);
+
+        verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), mapCaptor.capture(), isNull());
+        assertThat(mapCaptor.getValue()).containsExactly(entry("username", "user"));
+    }
+
+    @Test
+    public void changePassword_AuthenticateSuccess_Telemetry() throws Exception {
+        final var token = new UsernamePasswordAuthenticationToken("bob", "pass");
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile();
+        when(daoAuthenticationProvider.authenticate(any())).thenReturn(token);
+        controller.changePassword("user", "password2", "password2", request, response);
+
+        verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateSuccess"), mapCaptor.capture(), isNull());
+        assertThat(mapCaptor.getValue()).containsExactly(entry("username", "user"));
+    }
+
+    @Test
     public void changePassword_SuccessAccountExpired() throws Exception {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile();
@@ -154,6 +182,28 @@ public class ChangePasswordControllerTest {
         assertThat(value.getPrincipal()).isEqualTo("USER");
         assertThat(value.getCredentials()).isEqualTo("password2");
         verify(changePasswordService).setPassword("user", "password2");
+    }
+
+    @Test
+    public void changePassword_SuccessAccountExpired_TelemetryFailure() throws Exception {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile();
+        when(daoAuthenticationProvider.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
+        controller.changePassword("user", "password2", "password2", request, response);
+
+        verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateFailure"), mapCaptor.capture(), isNull());
+        assertThat(mapCaptor.getValue()).containsExactly(entry("username", "user"), entry("reason", "AccountExpiredException"));
+    }
+
+    @Test
+    public void changePassword_SuccessAccountExpired_TelemetrySuccess() throws Exception {
+        setupCheckAndGetTokenValid();
+        setupGetUserCallForProfile();
+        when(daoAuthenticationProvider.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
+        controller.changePassword("user", "password2", "password2", request, response);
+
+        verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), mapCaptor.capture(), isNull());
+        assertThat(mapCaptor.getValue()).containsExactly(entry("username", "user"));
     }
 
     private StaffUserAccount setupGetUserCallForProfile() {

@@ -52,7 +52,7 @@ public class AbstractPasswordController {
         return modelAndView;
     }
 
-    Optional<ModelAndView> processSetPassword(final TokenType tokenType, final String token,
+    Optional<ModelAndView> processSetPassword(final TokenType tokenType, final String metricsPrefix, final String token,
                                               final String newPassword, final String confirmPassword) {
         final var userTokenOptional = tokenService.checkToken(tokenType, token);
         if (userTokenOptional.isPresent()) {
@@ -99,7 +99,7 @@ public class AbstractPasswordController {
         }
 
         log.info("Successfully changed password for {}", username);
-        telemetryClient.trackEvent(String.format("%sPasswordSuccess", tokenType.getDescription()),
+        telemetryClient.trackEvent(String.format("%sPasswordSuccess", metricsPrefix),
                 Map.of("username", username), null);
         return Optional.empty();
     }
