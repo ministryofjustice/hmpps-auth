@@ -69,7 +69,7 @@ public class UserController {
     @ApiOperation(value = "Email address for user", notes = "Verified email address for user", nickname = "getUserEmail",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
+            @ApiResponse(code = 200, message = "OK", response = EmailAddress.class),
             @ApiResponse(code = 204, message = "No content.  No verified email address found for user"),
             @ApiResponse(code = 404, message = "User not found.  The user doesn't exist in auth so could have never logged in", response = ErrorDetail.class)})
     public ResponseEntity<Object> getUserEmail(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
