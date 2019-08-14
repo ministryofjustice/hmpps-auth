@@ -17,7 +17,7 @@ class ResetPasswordPage extends Page {
         resetPasswordButton { $("input", type: 'submit') }
         usernameInput { $('#usernameOrEmail') }
         errorDetail { $('#error-detail').text() }
-        backLink { $("a", id: "back-link") }
+        backLink { $("a", 'data-qa': "back-link") }
     }
 
     void resetPasswordAs(UserAccount account) {

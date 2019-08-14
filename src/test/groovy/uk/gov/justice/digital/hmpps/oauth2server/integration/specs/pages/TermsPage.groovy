@@ -13,12 +13,10 @@ class TermsPage extends Page {
 
     static content = {
         headingText { $('#main-content h1').text() }
-        continueButton { $('#continue') }
+        backLink { $("a", 'data-qa': "back-link") }
     }
 
     void accept() {
-        assert continueButton.text() == 'OK, continue'
-
-        continueButton.click()
+        backLink.click()
     }
 }

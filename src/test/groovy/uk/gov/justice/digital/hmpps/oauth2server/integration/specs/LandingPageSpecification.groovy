@@ -19,8 +19,8 @@ class LandingPageSpecification extends GebReportingSpec {
 
         then: 'My credentials are accepted and I am shown NOMIS and HDC links on the home page'
         at HomePage
-        $('a#HDC').text() == 'Home Detention Curfew'
-        $('a#NOMIS').text() == 'New NOMIS'
+        $("a#HDC").text() == 'Home Detention Curfew'
+        $('a#NOMIS').text() == 'Digital Prison Service'
     }
 
     def "Log in with nomis user"() {
@@ -32,7 +32,7 @@ class LandingPageSpecification extends GebReportingSpec {
 
         then: 'My credentials are accepted and I am shown NOMIS but not HDC links on the home page'
         at HomePage
-        $('a#HDC').text() == null
-        $('a#NOMIS').text() == 'New NOMIS'
+        $("a#HDC").text() == null
+        $("a#NOMIS").text() == 'Digital Prison Service'
     }
 }
