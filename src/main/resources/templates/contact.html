@@ -13,7 +13,7 @@
     <h3 class="govuk-heading-m" th:text="${service.name}">New NOMIS</h3>
     <p class="govuk-body govuk-body govuk-!-margin-bottom-8">
       Contact
-      <a th:href="@{'mailto:' + service.email}" th:text="${service.email}">somewhere@justice.gov.uk</a>
+      <a th:href="@{'mailto:' + ${service.email}}" th:text="${service.email}">somewhere@justice.gov.uk</a>
     </p>
   </div>
 </div>

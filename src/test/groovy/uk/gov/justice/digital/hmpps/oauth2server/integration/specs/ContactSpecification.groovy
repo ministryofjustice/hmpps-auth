@@ -25,10 +25,12 @@ class ContactSpecification extends GebReportingSpec {
         then:
         hdcSection.$('h3').text() == 'Home Detention Curfew'
         hdcSection.$('a').text() == 'hdcdigitalservice@digital.justice.gov.uk'
+        hdcSection.$('a').@href == 'mailto:hdcdigitalservice@digital.justice.gov.uk'
 
         and: "The nomis contact details are displayed"
         nomisSection.$('h3').text() == 'Digital Prison Service'
         nomisSection.$('a').text() == 'feedback@digital.justice.gov.uk'
+        nomisSection.$('a').@href == 'mailto:feedback@digital.justice.gov.uk'
     }
 
     def "Return to login page"() {
