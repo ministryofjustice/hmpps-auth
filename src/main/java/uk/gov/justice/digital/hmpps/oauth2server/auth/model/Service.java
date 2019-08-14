@@ -22,23 +22,26 @@ import java.util.List;
 @EqualsAndHashCode(of = {"code"})
 public class Service {
     @Id
-    @Column(name = "code", nullable = false)
+    @Column(nullable = false)
     private String code;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "description", nullable = false)
+    @Column(nullable = false)
     private String description;
 
     @Column(name = "authorised_roles")
     private String authorisedRoles;
 
-    @Column(name = "url", nullable = false)
+    @Column(nullable = false)
     private String url;
 
-    @Column(name = "enabled", nullable = false)
+    @Column(nullable = false)
     private boolean enabled;
+
+    @Column
+    private String email;
 
     public List<String> getRoles() {
         //noinspection UnstableApiUsage

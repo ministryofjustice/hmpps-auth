@@ -9,6 +9,7 @@ class HomePage extends Page {
     static url = "/auth"
 
     static at = {
+        title == 'HMPPS Digital Services - Select service'
         headingText == 'Select service'
     }
 

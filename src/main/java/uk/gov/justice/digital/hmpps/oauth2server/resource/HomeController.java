@@ -21,9 +21,9 @@ public class HomeController {
         final var services = landingService.findAllServices();
 
         // create a list of services that the user can see
-        final var allowedServices = services.stream().
-                filter((s) -> s.getRoles().isEmpty() || authentication.getAuthorities().stream().anyMatch((a) -> s.getRoles().contains(a.getAuthority()))).
-                collect(Collectors.toList());
+        final var allowedServices = services.stream()
+                .filter((s) -> s.getRoles().isEmpty() || authentication.getAuthorities().stream().anyMatch((a) -> s.getRoles().contains(a.getAuthority())))
+                .collect(Collectors.toList());
         return new ModelAndView("landing", "services", allowedServices);
     }
 
@@ -32,4 +32,14 @@ public class HomeController {
         return "terms";
     }
 
+    @GetMapping("/contact")
+    public ModelAndView contact() {
+        final var services = landingService.findAllServices();
+
+        // create a list of services that have email addresses
+        final var servicesWithEmail = services.stream()
+                .filter((s) -> s.getEmail() != null)
+                .collect(Collectors.toList());
+        return new ModelAndView("contact", "services", servicesWithEmail);
+    }
 }

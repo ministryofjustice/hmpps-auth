@@ -59,6 +59,6 @@ public class OauthServiceRepositoryTest {
     }
 
     private Service transientEntity() {
-        return new Service("CODE", "NAME", "Description", "SOME_ROLE", "http://some.url", true);
+        return new Service("CODE", "NAME", "Description", "SOME_ROLE", "http://some.url", true, "a@b.com");
     }
 }

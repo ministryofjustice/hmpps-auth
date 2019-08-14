@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/layout}">
+      layout:decorate="~{fragments/layout}" th:with="showBack=true">
 <head>
   <title>Terms and conditions</title>
 </head>
@@ -31,7 +31,6 @@
     Unauthorised access or attempts to alter, destroy, damage, disclose or otherwise interfere with the data
     in Prison-NOMIS could result in disciplinary proceedings and / or criminal prosecution.
   </p>
-  <a class="govuk-button" th:href="@{/}" id="continue">OK, continue</a>
 </div>
 </body>
 </html>

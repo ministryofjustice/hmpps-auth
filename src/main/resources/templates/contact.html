@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}" th:with="showBack=true">
+<head>
+  <title>Contact us</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <h1 class="govuk-heading-xl">Contact us</h1>
+
+  <div th:each="service: ${services}" th:id="${service.code}">
+    <h3 class="govuk-heading-m" th:text="${service.name}">New NOMIS</h3>
+    <p class="govuk-body govuk-body govuk-!-margin-bottom-8">
+      Contact
+      <a th:href="@{'mailto:' + service.email}" th:text="${service.email}">somewhere@justice.gov.uk</a>
+    </p>
+  </div>
+</div>
+</body>
+</html>
