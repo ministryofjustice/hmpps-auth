@@ -54,8 +54,8 @@ public class OauthServiceRepositoryTest {
     }
 
     @Test
-    public void findByUsernameAndMasterIsTrue_AuthUser() {
-        assertThat(repository.findAllByEnabledTrueOrderByName()).extracting(Service::getName).containsOnly("New NOMIS", "Categorisation Tool", "Home Detention Curfew", "Allocate a POM");
+    public void findAllByEnabledTrueOrderByName() {
+        assertThat(repository.findAllByEnabledTrueOrderByName()).extracting(Service::getName).contains("Digital Categorisation Service", "Home Detention Curfew", "Allocate a POM Service");
     }
 
     private Service transientEntity() {
