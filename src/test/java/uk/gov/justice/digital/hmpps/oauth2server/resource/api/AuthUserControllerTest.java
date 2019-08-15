@@ -263,7 +263,7 @@ public class AuthUserControllerTest {
         when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new AuthUserGroupRelationshipException("user", "reason"));
 
         final var responseEntity = authUserController.amendUser("user", new AmendUser("a@b.com"), request, authentication);
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(409);
+        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(403);
         assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("unable to maintain user", "Unable to amend user, the user is not within one of your groups", "groups"));
     }
 

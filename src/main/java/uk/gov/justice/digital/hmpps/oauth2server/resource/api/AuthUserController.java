@@ -172,8 +172,8 @@ public class AuthUserController {
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
-            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class),
-            @ApiResponse(code = 409, message = "Unable to enable user, the user is not within one of your groups", response = ErrorDetail.class)})
+            @ApiResponse(code = 403, message = "Unable to enable user, the user is not within one of your groups", response = ErrorDetail.class),
+            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> enableUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
                                              @ApiIgnore final Authentication authentication) {
 
@@ -185,7 +185,7 @@ public class AuthUserController {
                 return ResponseEntity.noContent().build();
             } catch (final AuthUserGroupRelationshipException e) {
                 log.info("enable user failed  with reason {}", e.getErrorCode());
-                return ResponseEntity.status(HttpStatus.CONFLICT).
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).
                         <Object>body(new ErrorDetail("unable to maintain user", "Unable to enable user, the user is not within one of your groups", "groups"));
             } catch (final EntityNotFoundException e) {
                 return ResponseEntity.notFound().build();
@@ -200,8 +200,8 @@ public class AuthUserController {
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
-            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class),
-            @ApiResponse(code = 409, message = "Unable to disable user, the user is not within one of your groups", response = ErrorDetail.class)})
+            @ApiResponse(code = 403, message = "Unable to disable user, the user is not within one of your groups", response = ErrorDetail.class),
+            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> disableUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
                                               @ApiIgnore final Authentication authentication) {
         final var userOptional = userService.getAuthUserByUsername(username);
@@ -213,7 +213,7 @@ public class AuthUserController {
                 return ResponseEntity.noContent().build();
             } catch (final AuthUserGroupRelationshipException e) {
                 log.info("Disable user failed  with reason {}", e.getErrorCode());
-                return ResponseEntity.status(HttpStatus.CONFLICT).
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).
                         <Object>body(new ErrorDetail("unable to maintain user", "Unable to disable user, the user is not within one of your groups", "groups"));
             } catch (final EntityNotFoundException e) {
                 return ResponseEntity.notFound().build();
@@ -229,8 +229,8 @@ public class AuthUserController {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 400, message = "Bad request e.g. if validation failed or if the amendments are disallowed", response = ErrorDetail.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
-            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class),
-            @ApiResponse(code = 409, message = "Unable to amend user, the user is not within one of your groups", response = ErrorDetail.class)})
+            @ApiResponse(code = 403, message = "Unable to amend user, the user is not within one of your groups", response = ErrorDetail.class),
+            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> amendUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
                                             @RequestBody final AmendUser amendUser,
                                             @ApiIgnore final HttpServletRequest request,
@@ -254,7 +254,7 @@ public class AuthUserController {
             return ResponseEntity.badRequest().body(new ErrorDetail(String.format("email.%s", e.getReason()), "Email address failed validation", "email"));
         } catch (final AuthUserGroupRelationshipException e) {
             log.info("enable user failed  with reason {}", e.getErrorCode());
-            return ResponseEntity.status(HttpStatus.CONFLICT).
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).
                     body(new ErrorDetail("unable to maintain user", "Unable to amend user, the user is not within one of your groups", "groups"));
         }
     }
