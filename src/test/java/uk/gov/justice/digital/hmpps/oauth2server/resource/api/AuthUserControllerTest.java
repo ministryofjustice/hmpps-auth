@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AuthUser;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.CreateUser;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
@@ -210,12 +211,12 @@ public class AuthUserControllerTest {
     }
 
     @Test
-    public void amendUser_checkService() throws NotificationClientException, VerifyEmailException, AmendUserException {
+    public void amendUser_checkService() throws NotificationClientException, VerifyEmailException, AmendUserException, AuthUserGroupRelationshipException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
 
         authUserController.amendUser("user", new AmendUser("a@b.com"), request, authentication);
 
-        verify(authUserService).amendUser("user", "a@b.com", "http://some.url/auth/initial-password?token=", "bob");
+        verify(authUserService).amendUser("user", "a@b.com", "http://some.url/auth/initial-password?token=", "bob", authentication.getAuthorities());
     }
 
     @Test
@@ -228,18 +229,18 @@ public class AuthUserControllerTest {
     }
 
     @Test
-    public void amendUser_notFound() throws NotificationClientException, VerifyEmailException, AmendUserException {
+    public void amendUser_notFound() throws NotificationClientException, VerifyEmailException, AmendUserException, AuthUserGroupRelationshipException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
-        when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString())).thenThrow(new EntityNotFoundException("not found"));
+        when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new EntityNotFoundException("not found"));
 
         final var responseEntity = authUserController.amendUser("user", new AmendUser("a@b.com"), request, authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
     }
 
     @Test
-    public void amendUser_amendException() throws NotificationClientException, VerifyEmailException, AmendUserException {
+    public void amendUser_amendException() throws NotificationClientException, VerifyEmailException, AmendUserException, AuthUserGroupRelationshipException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
-        when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString())).thenThrow(new AmendUserException("fiel", "cod"));
+        when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new AmendUserException("fiel", "cod"));
 
         final var responseEntity = authUserController.amendUser("user", new AmendUser("a@b.com"), request, authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
@@ -247,13 +248,23 @@ public class AuthUserControllerTest {
     }
 
     @Test
-    public void amendUser_verifyException() throws NotificationClientException, VerifyEmailException, AmendUserException {
+    public void amendUser_verifyException() throws NotificationClientException, VerifyEmailException, AmendUserException, AuthUserGroupRelationshipException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
-        when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString())).thenThrow(new VerifyEmailException("reason"));
+        when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new VerifyEmailException("reason"));
 
         final var responseEntity = authUserController.amendUser("user", new AmendUser("a@b.com"), request, authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
         assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("email.reason", "Email address failed validation", "email"));
+    }
+
+    @Test
+    public void amendUser_groupException() throws NotificationClientException, VerifyEmailException, AmendUserException, AuthUserGroupRelationshipException {
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
+        when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new AuthUserGroupRelationshipException("user", "reason"));
+
+        final var responseEntity = authUserController.amendUser("user", new AmendUser("a@b.com"), request, authentication);
+        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(409);
+        assertThat(responseEntity.getBody()).isEqualTo(new ErrorDetail("unable to maintain user", "Unable to amend user, the user is not within one of your groups", "groups"));
     }
 
     @Test
@@ -266,11 +277,10 @@ public class AuthUserControllerTest {
     }
 
     private UserEmail getAuthUser() {
-        final var user = UserEmail.builder().username("authentication").email("email").verified(true).build();
+        final var user = UserEmail.builder().username("authentication").email("email").verified(true).enabled(true).build();
         user.setPerson(new Person());
         user.getPerson().setFirstName("Joe");
         user.getPerson().setLastName("Bloggs");
-        user.setEnabled(true);
         return user;
     }
 

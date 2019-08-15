@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailReposi
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.Collection;
@@ -41,7 +42,7 @@ public class UserService {
         this.maintainUserCheck = maintainUserCheck;
     }
 
-    public Optional<StaffUserAccount> getUserByUsername(final String username) {
+    private Optional<StaffUserAccount> getUserByUsername(final String username) {
         return userRepository.findById(StringUtils.upperCase(username));
     }
 
@@ -76,29 +77,21 @@ public class UserService {
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public void enableUser(final String usernameInDb, final String admin, final Collection<? extends GrantedAuthority> authorities) throws MaintainUserCheck.AuthUserGroupRelationshipException {
-
-        final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(usernameInDb)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", usernameInDb)));
-
-        maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, userEmail);
-
-        changeUserEnabled(userEmail, true, admin);
+    public void enableUser(final String usernameInDb, final String admin, final Collection<? extends GrantedAuthority> authorities) throws AuthUserGroupRelationshipException {
+        changeUserEnabled(usernameInDb, true, admin, authorities);
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public void disableUser(final String usernameInDb, final String admin, final Collection<? extends GrantedAuthority> authorities) throws MaintainUserCheck.AuthUserGroupRelationshipException {
+    public void disableUser(final String usernameInDb, final String admin, final Collection<? extends GrantedAuthority> authorities) throws AuthUserGroupRelationshipException {
+        changeUserEnabled(usernameInDb, false, admin, authorities);
+    }
 
-        final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(usernameInDb)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", usernameInDb)));
+    private void changeUserEnabled(final String username, final boolean enabled, final String admin, final Collection<? extends GrantedAuthority> authorities) throws AuthUserGroupRelationshipException {
+        final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
 
         maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, userEmail);
 
-        changeUserEnabled(userEmail, false, admin);
-
-    }
-
-    private void changeUserEnabled(final UserEmail userEmail, final boolean enabled, final String admin) {
         userEmail.setEnabled(enabled);
         userEmailRepository.save(userEmail);
         telemetryClient.trackEvent("AuthUserChangeEnabled",

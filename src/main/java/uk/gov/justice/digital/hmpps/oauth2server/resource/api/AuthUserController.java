@@ -23,14 +23,13 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendU
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientException;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -184,7 +183,7 @@ public class AuthUserController {
             try {
                 userService.enableUser(usernameInDb, authentication.getName(), authentication.getAuthorities());
                 return ResponseEntity.noContent().build();
-            } catch (final MaintainUserCheck.AuthUserGroupRelationshipException e) {
+            } catch (final AuthUserGroupRelationshipException e) {
                 log.info("enable user failed  with reason {}", e.getErrorCode());
                 return ResponseEntity.status(HttpStatus.CONFLICT).
                         <Object>body(new ErrorDetail("unable to maintain user", "Unable to enable user, the user is not within one of your groups", "groups"));
@@ -212,7 +211,7 @@ public class AuthUserController {
             try {
                 userService.disableUser(usernameInDb, authentication.getName(), authentication.getAuthorities());
                 return ResponseEntity.noContent().build();
-            } catch (final MaintainUserCheck.AuthUserGroupRelationshipException e) {
+            } catch (final AuthUserGroupRelationshipException e) {
                 log.info("Disable user failed  with reason {}", e.getErrorCode());
                 return ResponseEntity.status(HttpStatus.CONFLICT).
                         <Object>body(new ErrorDetail("unable to maintain user", "Unable to disable user, the user is not within one of your groups", "groups"));
@@ -223,21 +222,22 @@ public class AuthUserController {
     }
 
     @PostMapping("/api/authuser/{username}")
-    @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+    @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
     @ApiOperation(value = "Amend a user.", notes = "Amend a user.", nickname = "amendUser",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 400, message = "Bad request e.g. if validation failed or if the amendments are disallowed", response = ErrorDetail.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
-            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
+            @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class),
+            @ApiResponse(code = 409, message = "Unable to amend user, the user is not within one of your groups", response = ErrorDetail.class)})
     public ResponseEntity<Object> amendUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
                                             @RequestBody final AmendUser amendUser,
                                             @ApiIgnore final HttpServletRequest request,
-                                            @ApiIgnore final Principal principal) throws NotificationClientException {
+                                            @ApiIgnore final Authentication authentication) throws NotificationClientException {
         try {
             final var setPasswordUrl = createInitialPasswordUrl(request);
-            final var resetLink = authUserService.amendUser(username, amendUser.getEmail(), setPasswordUrl, principal.getName());
+            final var resetLink = authUserService.amendUser(username, amendUser.getEmail(), setPasswordUrl, authentication.getName(), authentication.getAuthorities());
             log.info("Amend user succeeded for user {}", username);
             if (smokeTestEnabled) {
                 return ResponseEntity.ok(resetLink);
@@ -252,8 +252,11 @@ public class AuthUserController {
         } catch (final VerifyEmailException e) {
             log.info("Amend user failed for user {} for field email with reason {}", username, e.getReason());
             return ResponseEntity.badRequest().body(new ErrorDetail(String.format("email.%s", e.getReason()), "Email address failed validation", "email"));
+        } catch (final AuthUserGroupRelationshipException e) {
+            log.info("enable user failed  with reason {}", e.getErrorCode());
+            return ResponseEntity.status(HttpStatus.CONFLICT).
+                    body(new ErrorDetail("unable to maintain user", "Unable to amend user, the user is not within one of your groups", "groups"));
         }
-
     }
 
     @Data
