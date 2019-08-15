@@ -25,14 +25,14 @@ public class MaintainUserCheck {
 
     public void ensureUserLoggedInUserRelationship(final String loggedInUser, final Collection<? extends GrantedAuthority> authorities, final UserEmail userEmail) throws AuthUserGroupRelationshipException {
         // if they have maintain privileges then all good
-        if (MaintainUserCheck.canMaintainAuthUsers(authorities)) {
+        if (canMaintainAuthUsers(authorities)) {
             return;
         }
         // otherwise group managers must have a group in common for maintenance
         final var loggedInUserEmail = userEmailRepository.findByUsernameAndMasterIsTrue(loggedInUser).orElseThrow();
         if (Sets.intersection(loggedInUserEmail.getGroups(), userEmail.getGroups()).isEmpty()) {
             // no group in common, so disallow
-            throw new MaintainUserCheck.AuthUserGroupRelationshipException(userEmail.getName(), "User not with your groups");
+            throw new AuthUserGroupRelationshipException(userEmail.getName(), "User not with your groups");
         }
     }
 

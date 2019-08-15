@@ -8,6 +8,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
@@ -16,6 +18,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailReposi
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientApi;
@@ -34,6 +38,9 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthUserServiceTest {
+    private static final Authentication PRINCIPAL = new UsernamePasswordAuthenticationToken("bob", "pass");
+    private static final Set<GrantedAuthority> GRANTED_AUTHORITY_SUPER_USER = Set.of(new SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"));
+
     @Mock
     private UserEmailRepository userEmailRepository;
     @Mock
@@ -46,14 +53,14 @@ public class AuthUserServiceTest {
     private VerifyEmailService verifyEmailService;
     @Mock
     private AuthUserGroupService authUserGroupService;
+    @Mock
+    private MaintainUserCheck maintainUserCheck;
 
     private AuthUserService authUserService;
 
-    private static final Set<GrantedAuthority> GRANTED_AUTHORITY_SUPER_USER = Set.of(new SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"));
-
     @Before
     public void setUp() {
-        authUserService = new AuthUserService(userTokenRepository, userEmailRepository, notificationClient, telemetryClient, verifyEmailService, authUserGroupService, "licences");
+        authUserService = new AuthUserService(userTokenRepository, userEmailRepository, notificationClient, telemetryClient, verifyEmailService, authUserGroupService, maintainUserCheck, "licences");
     }
 
     @Test
@@ -214,31 +221,39 @@ public class AuthUserServiceTest {
     public void amendUser_emailValidation() throws VerifyEmailException {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
         doThrow(new VerifyEmailException("reason")).when(verifyEmailService).validateEmailAddress(anyString());
-        assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob")).
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
                 isInstanceOf(VerifyEmailException.class).hasMessage("Verify email failed with reason: reason");
 
         verify(verifyEmailService).validateEmailAddress("email");
     }
 
     @Test
-    public void amendUser_successLinkReturned() throws VerifyEmailException, NotificationClientException, AmendUserException {
+    public void amendUser_groupValidation() throws AuthUserGroupRelationshipException {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
-        final var link = authUserService.amendUser("userme", "email", "url?token=", "bob");
+        doThrow(new AuthUserGroupRelationshipException("user", "reason")).when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(), any(), any());
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
+                isInstanceOf(AuthUserGroupRelationshipException.class).hasMessage("Unable to maintain user: user with reason: reason");
+    }
+
+    @Test
+    public void amendUser_successLinkReturned() throws VerifyEmailException, NotificationClientException, AmendUserException, AuthUserGroupRelationshipException {
+        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
+        final var link = authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         assertThat(link).startsWith("url?token=").hasSize("url?token=".length() + 36);
     }
 
     @Test
-    public void amendUser_trackSuccess() throws VerifyEmailException, AmendUserException, NotificationClientException {
+    public void amendUser_trackSuccess() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
-        authUserService.amendUser("userme", "email", "url?token=", "bob");
+        authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
         verify(telemetryClient).trackEvent("AuthUserAmendSuccess", Map.of("username", "SOMEUSER", "admin", "bob"), null);
     }
 
     @Test
-    public void amendUser_saveTokenRepository() throws VerifyEmailException, AmendUserException, NotificationClientException {
+    public void amendUser_saveTokenRepository() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
-        final var link = authUserService.amendUser("userme", "email", "url?token=", "bob");
+        final var link = authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         final var captor = ArgumentCaptor.forClass(UserToken.class);
         verify(userTokenRepository).save(captor.capture());
@@ -249,9 +264,9 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUser_saveEmailRepository() throws VerifyEmailException, AmendUserException, NotificationClientException {
+    public void amendUser_saveEmailRepository() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
-        authUserService.amendUser("userMe", "eMail", "url?token=", "bob");
+        authUserService.amendUser("userMe", "eMail", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         final var captor = ArgumentCaptor.forClass(UserEmail.class);
         verify(userEmailRepository).save(captor.capture());
@@ -265,7 +280,7 @@ public class AuthUserServiceTest {
         final var user = UserEmail.of("SOMEUSER");
         user.setVerified(true);
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
-        assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob")).
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
                 isInstanceOf(AmendUserException.class).
                 hasMessageContaining("reason: notinitial");
     }
@@ -275,7 +290,7 @@ public class AuthUserServiceTest {
         final var user = UserEmail.of("SOMEUSER");
         user.setPassword("some pass");
         when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
-        assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob")).
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
                 isInstanceOf(AmendUserException.class).
                 hasMessageContaining("reason: notinitial");
     }

@@ -14,6 +14,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientApi;
@@ -37,6 +39,7 @@ public class AuthUserService {
     private final TelemetryClient telemetryClient;
     private final VerifyEmailService verifyEmailService;
     private final AuthUserGroupService authUserGroupService;
+    private final MaintainUserCheck maintainUserCheck;
     private final String initialPasswordTemplateId;
 
     // Data item field size validation checks
@@ -53,6 +56,7 @@ public class AuthUserService {
                            final TelemetryClient telemetryClient,
                            final VerifyEmailService verifyEmailService,
                            final AuthUserGroupService authUserGroupService,
+                           final MaintainUserCheck maintainUserCheck,
                            @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId) {
         this.userTokenRepository = userTokenRepository;
         this.userEmailRepository = userEmailRepository;
@@ -60,6 +64,7 @@ public class AuthUserService {
         this.telemetryClient = telemetryClient;
         this.verifyEmailService = verifyEmailService;
         this.authUserGroupService = authUserGroupService;
+        this.maintainUserCheck = maintainUserCheck;
         this.initialPasswordTemplateId = initialPasswordTemplateId;
     }
 
@@ -153,12 +158,16 @@ public class AuthUserService {
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public String amendUser(final String usernameInput, final String emailAddressInput, final String url, final String admin) throws AmendUserException, VerifyEmailException, NotificationClientException {
+    public String amendUser(final String usernameInput, final String emailAddressInput, final String url, final String admin, final Collection<? extends GrantedAuthority> authorities)
+            throws AmendUserException, VerifyEmailException, NotificationClientException, AuthUserGroupRelationshipException {
         final var username = StringUtils.upperCase(usernameInput);
         final var email = StringUtils.lowerCase(emailAddressInput);
 
         final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
+
+        maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, userEmail);
+
         // if unverified and password not set then still in the initial state
         if (userEmail.isVerified() || userEmail.getPassword() != null) {
             throw new AmendUserException("email", "notinitial");
