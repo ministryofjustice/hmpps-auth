@@ -86,7 +86,7 @@ public class AuthUserRolesController {
         return userOptional.map(UserEmail::getUsername).map(usernameInDb -> {
             try {
                 authUserRoleService.addRole(usernameInDb, role, authentication.getName(), authentication.getAuthorities());
-                log.info("Add role succeeded for user {} andenable role {}", usernameInDb, role);
+                log.info("Add role succeeded for user {} and role {}", usernameInDb, role);
                 return ResponseEntity.noContent().build();
             } catch (final AuthUserRoleExistsException e) {
                 log.info("Add role failed for user {} for field {} with reason {}", usernameInDb, e.getField(), e.getErrorCode());
