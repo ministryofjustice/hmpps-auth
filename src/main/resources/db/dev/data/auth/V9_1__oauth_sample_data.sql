@@ -51,7 +51,8 @@ VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
        ('CA_USER_TEST', 'reset_test@digital.justice.gov.uk', 'true'),
        ('RO_USER_TEST', 'ro_user_test@digital.justice.gov.uk', 'true'),
        ('DM_USER_TEST', 'dm_user_test@digital.justice.gov.uk', 'true'),
-       ('RESET_TEST_USER', 'reset_test@digital.justice.gov.uk', 'true');
+       ('RESET_TEST_USER', 'reset_test@digital.justice.gov.uk', 'true'),
+       ('PPL_USER', 'ppl_user@digital.justice.gov.uk', 'true');
 
 INSERT INTO user_email (username, email, verified, last_logged_in)
 VALUES ('NOMIS_DELETE', 'locked@somewhere.com', 'true', '2018-02-04 13:23:19');
