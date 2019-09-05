@@ -52,7 +52,8 @@ VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
        ('RO_USER_TEST', 'ro_user_test@digital.justice.gov.uk', 'true'),
        ('DM_USER_TEST', 'dm_user_test@digital.justice.gov.uk', 'true'),
        ('RESET_TEST_USER', 'reset_test@digital.justice.gov.uk', 'true'),
-       ('PPL_USER', 'ppl_user@digital.justice.gov.uk', 'true');
+       ('PPL_USER', 'ppl_user@digital.justice.gov.uk', 'true'),
+       ('IC_USER', 'ic_user@digital.justice.gov.uk', 'true');
 
 INSERT INTO user_email (username, email, verified, last_logged_in)
 VALUES ('NOMIS_DELETE', 'locked@somewhere.com', 'true', '2018-02-04 13:23:19');
@@ -72,7 +73,8 @@ VALUES ('AUTH_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QL
        ('AUTH_RO_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
        ('AUTH_RO_VARY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
        ('AUTH_GROUP_MANAGER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_group_manager@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
-       ('AUTH_RO_USER_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true');
+       ('AUTH_RO_USER_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_ro_user_test@digital.justice.gov.uk', 'true', 'true', 'false', 'true'),
+       ('AUTH_PF_OM_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19', 'auth_pf_om_user@digital.justice.gov.uk', 'true', 'true', 'false', 'true');
 
 INSERT INTO user_email (username, password, last_logged_in, verified, enabled, locked, master)
 VALUES ('AUTH_INACTIVE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2019-02-03 13:23:19', 'true', 'true', 'false', 'true'),
@@ -101,7 +103,8 @@ VALUES ('AUTH_USER', 'Auth', 'Only'),
        ('AUTH_RO_USER', 'Ryan-Auth', 'Orton'),
        ('AUTH_RO_VARY_USER', 'Ryan-Auth-Vary', 'Orton'),
        ('AUTH_RO_USER_TEST', 'Ryan-Auth', 'Orton'),
-       ('AUTH_GROUP_MANAGER', 'Group', 'Manager');
+       ('AUTH_GROUP_MANAGER', 'Group', 'Manager'),
+       ('AUTH_PF_OM_USER', 'Offender', 'Manager');
 
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_ADM' from roles where role_code = 'OAUTH_ADMIN';
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_ADM' from roles where role_code = 'MAINTAIN_ACCESS_ROLES';
@@ -115,6 +118,9 @@ INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER_T
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER_TEST' from roles where role_code = 'GLOBAL_SEARCH';
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_GROUP_MANAGER' from roles where role_code = 'AUTH_GROUP_MANAGER';
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_DELETEALL' from roles where role_code = 'LICENCE_RO';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_DELETEALL' from roles where role_code = 'LICENCE_RO';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_PF_OM_USER' from roles where role_code = 'PATHFINDER_OM';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_PF_OM_USER' from roles where role_code = 'GLOBAL_SEARCH';
 
 INSERT INTO groups (group_id, group_code, group_name)
 VALUES (newid(), 'SITE_1_GROUP_1', 'Site 1 - Group 1'),
