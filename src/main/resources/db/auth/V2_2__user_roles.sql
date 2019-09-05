@@ -31,7 +31,8 @@ VALUES (newid(), 'GLOBAL_SEARCH', 'Global Search'),
        (newid(), 'MAINTAIN_ACCESS_ROLES_ADMIN', 'Maintain Access Roles (admin)'),
        (newid(), 'OAUTH_ADMIN', 'Auth Client Management (admin)'),
        (newid(), 'MAINTAIN_OAUTH_USERS', 'Maintain Auth Users (admin)'),
-       (newid(), 'AUTH_GROUP_MANAGER', 'Auth Group Manager');
+       (newid(), 'AUTH_GROUP_MANAGER', 'Auth Group Manager'),
+       (newid(), 'PF_OFFENDER_MANAGER', 'Pathfinder Offender Manager');
 
 INSERT INTO user_email_roles (role_id, username)
     (SELECT role_id, username
