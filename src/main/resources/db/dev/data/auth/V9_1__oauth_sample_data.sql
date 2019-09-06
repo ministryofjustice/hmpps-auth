@@ -119,7 +119,7 @@ INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_RO_USER_T
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_GROUP_MANAGER' from roles where role_code = 'AUTH_GROUP_MANAGER';
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_DELETEALL' from roles where role_code = 'LICENCE_RO';
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_DELETEALL' from roles where role_code = 'LICENCE_RO';
-INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_PF_OM_USER' from roles where role_code = 'PF_OFFENDER_MANAGER';
+INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_PF_OM_USER' from roles where role_code = 'PATHFINDER_OM';
 INSERT INTO user_email_roles (role_id, username) SELECT role_id, 'AUTH_PF_OM_USER' from roles where role_code = 'GLOBAL_SEARCH';
 
 INSERT INTO groups (group_id, group_code, group_name)
