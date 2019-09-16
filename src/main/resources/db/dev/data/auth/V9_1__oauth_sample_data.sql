@@ -42,6 +42,7 @@ VALUES ('LOCKED_USER', 5),
 INSERT INTO user_email (username, email, verified)
 VALUES ('LOCKED_USER', 'locked@somewhere.com', 'true'),
        ('CA_USER', 'ca_user@digital.justice.gov.uk', 'true'),
+       ('UOF_REVIEWER_USER', 'uof_reviewer@digital.justice.gov.uk', 'true'),
        ('ITAG_USER', 'itag_user@digital.justice.gov.uk', 'true'),
        ('ITAG_USER_ADM', 'itag_user_adm@digital.justice.gov.uk', 'true'),
        ('DM_USER', 'dm_user@digital.justice.gov.uk', 'false'),
