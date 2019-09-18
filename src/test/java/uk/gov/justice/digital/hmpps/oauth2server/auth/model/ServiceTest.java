@@ -17,4 +17,16 @@ public class ServiceTest {
         final var service = new Service("CODE", "NAME", "Description", null, "http://some.url", true, "a@b.com");
         assertThat(service.getRoles()).isEmpty();
     }
+
+    @Test
+    public void isUrlInsteadOfEmail() {
+        final var service = new Service("CODE", "NAME", "Description", null, "http://some.url", true, "a@b.com");
+        assertThat(service.isUrlInsteadOfEmail()).isFalse();
+    }
+
+    @Test
+    public void isUrlInsteadOfEmail_true() {
+        final var service = new Service("CODE", "NAME", "Description", null, "http://some.url", true, "http://some.url");
+        assertThat(service.isUrlInsteadOfEmail()).isTrue();
+    }
 }

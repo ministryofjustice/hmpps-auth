@@ -16,6 +16,7 @@ class ContactPage extends Page {
         backLink { $("a", 'data-qa': "back-link") }
         hdcSection { $('#HDC') }
         nomisSection { $('#NOMIS') }
+        moicSection { $('#POM') }
     }
 
     void back() {
