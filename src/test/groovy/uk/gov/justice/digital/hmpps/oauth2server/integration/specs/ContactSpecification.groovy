@@ -31,6 +31,11 @@ class ContactSpecification extends GebReportingSpec {
         nomisSection.$('h3').text() == 'Digital Prison Service'
         nomisSection.$('a').text() == 'feedback@digital.justice.gov.uk'
         nomisSection.$('a').@href == 'mailto:feedback@digital.justice.gov.uk'
+
+        and: "The moic contact details are displayed"
+        moicSection.$('h3').text() == 'Allocate a POM Service'
+        moicSection.$('a').text() == 'https://moic.service.justice.gov.uk/help'
+        moicSection.$('a').@href == 'https://moic.service.justice.gov.uk/help'
     }
 
     def "Return to login page"() {

@@ -47,4 +47,8 @@ public class Service {
         //noinspection UnstableApiUsage
         return StringUtils.isBlank(authorisedRoles) ? Collections.emptyList() : Splitter.on(',').trimResults().splitToList(authorisedRoles);
     }
+
+    public boolean isUrlInsteadOfEmail() {
+        return StringUtils.startsWith(email, "http");
+    }
 }
