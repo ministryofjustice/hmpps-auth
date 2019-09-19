@@ -24,6 +24,15 @@
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <div th:if="${@environment.getProperty('application.non-prod-warning.enabled') == 'true'}" class="govuk-warning-text">
+    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+    <strong class="govuk-warning-text__text">
+      <span class="govuk-warning-text__assistive">Warning</span>
+      This is a test service only - it does not contain any real details. Use the live
+      <a th:href="${@environment.getProperty('application.non-prod-warning.prod-url')}">
+        HMPPS Digital Service</a> to view real details.
+    </strong>
+  </div>
   <div th:unless="${#arrays.isEmpty(param.error)}" class="govuk-error-summary" aria-labelledby="error-summary-title"
        role="alert"
        data-module="govuk-error-summary">
