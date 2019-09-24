@@ -37,9 +37,8 @@ public class SwaggerConfig {
                 .select()
                 .apis(RequestHandlerSelectors.any())
                 .paths(Predicates.or(regex("(\\/info.*)"),
-                        regex("(\\/oauth.*)"),
                         regex("(\\/api.*)"),
-                        regex("(\\/health.*)")))
+                        regex("(\\/health)")))
                 .build();
 
         docket.genericModelSubstitutes(Optional.class);
@@ -63,7 +62,7 @@ public class SwaggerConfig {
         return new ApiInfo(
                 "Nomis OAUTH2 Server",
                 "OAUTH2 Server for accessing the Nomis APIs",
-                buildProperties.getVersion(), "", contactInfo(), "", "",
+                buildProperties.getVersion(), "", contactInfo(), "Open Government Licence v3.0", "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
                 Collections.emptyList());
     }
 
