@@ -13,7 +13,7 @@
     <h3 class="govuk-heading-m" th:text="${service.name}">New NOMIS</h3>
     <p class="govuk-body govuk-body govuk-!-margin-bottom-8" th:if="${service.urlInsteadOfEmail}">
       Contact us using the
-      <a th:href="@{(${service.email})}">Online form
+      <a th:href="@{(${service.email})}">online form
       </a>
     </p>
     <p class="govuk-body govuk-body govuk-!-margin-bottom-8" th:unless="${service.urlInsteadOfEmail}">
