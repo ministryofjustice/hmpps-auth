@@ -34,7 +34,7 @@ class ContactSpecification extends GebReportingSpec {
 
         and: "The moic contact details are displayed"
         moicSection.$('h3').text() == 'Allocate a POM Service'
-        moicSection.$('p').text() == 'Contact us using the '
+        moicSection.$('p').text() == 'Contact us using the online form'
         moicSection.$('a').text() == 'online form'
         moicSection.$('a').@href == 'https://moic.service.justice.gov.uk/help'
     }
