@@ -16,7 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional(transactionManager = "authTransactionManager")
 public class DeleteDisabledUsersServiceIntTest {
     @Autowired
-    private UserEmailRepository userEmailRepository;
+    private UserRepository userRepository;
     @Autowired
     private UserTokenRepository userTokenRepository;
     @Autowired
@@ -50,7 +50,7 @@ public class DeleteDisabledUsersServiceIntTest {
 
     @Before
     public void setUp() {
-        service = new DeleteDisabledUsersService(userEmailRepository, userRetriesRepository, userTokenRepository, telemetryClient);
+        service = new DeleteDisabledUsersService(userRepository, userRetriesRepository, userTokenRepository, telemetryClient);
     }
 
     @Test

@@ -14,6 +14,6 @@ public interface RoleRepository extends CrudRepository<Authority, String> {
 
     Optional<Authority> findByRoleCode(String roleCode);
 
-    @Query("select distinct r from UserEmail u join u.groups g join g.assignableRoles gar join gar.role r where u.username = ?1 order by r.roleName")
+    @Query("select distinct r from User u join u.groups g join g.assignableRoles gar join gar.role r where u.username = ?1 order by r.roleName")
     List<Authority> findByGroupAssignableRolesForUsername(String username);
 }

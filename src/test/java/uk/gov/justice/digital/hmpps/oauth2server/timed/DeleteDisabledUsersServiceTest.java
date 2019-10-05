@@ -8,11 +8,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class DeleteDisabledUsersServiceTest {
     @Mock
-    private UserEmailRepository userEmailRepository;
+    private UserRepository userRepository;
     @Mock
     private UserTokenRepository userTokenRepository;
     @Mock
@@ -42,39 +42,39 @@ public class DeleteDisabledUsersServiceTest {
 
     @Before
     public void setUp() {
-        service = new DeleteDisabledUsersService(userEmailRepository, userRetriesRepository, userTokenRepository, telemetryClient);
+        service = new DeleteDisabledUsersService(userRepository, userRetriesRepository, userTokenRepository, telemetryClient);
     }
 
     @Test
     public void findAndDeleteDisabledUsers_Processed() {
-        final var users = List.of(UserEmail.of("user"), UserEmail.of("joe"));
-        when(userEmailRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
+        final var users = List.of(User.of("user"), User.of("joe"));
+        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
                 .thenReturn(users);
         assertThat(service.processInBatches()).isEqualTo(2);
     }
 
     @Test
     public void findAndDeleteDisabledUsers_Deleted() {
-        final var user = UserEmail.of("user");
-        final var joe = UserEmail.of("joe");
+        final var user = User.of("user");
+        final var joe = User.of("joe");
         final var users = List.of(user, joe);
 
-        when(userEmailRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
+        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
                 .thenReturn(users);
         service.processInBatches();
-        verify(userEmailRepository).delete(user);
-        verify(userEmailRepository).delete(joe);
+        verify(userRepository).delete(user);
+        verify(userRepository).delete(joe);
     }
 
     @Test
     public void findAndDeleteDisabledUsers_DeleteAll() {
-        final var user = UserEmail.of("user");
+        final var user = User.of("user");
         final var token = new UserToken(TokenType.RESET, user);
         final var retry = new UserRetries("user", 3);
         when(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(retry));
-        when(userTokenRepository.findByUserEmail(any())).thenReturn(List.of(token));
+        when(userTokenRepository.findByUser(any())).thenReturn(List.of(token));
 
-        when(userEmailRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
+        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
                 .thenReturn(List.of(user));
         service.processInBatches();
         verify(userRetriesRepository).delete(retry);
@@ -83,8 +83,8 @@ public class DeleteDisabledUsersServiceTest {
 
     @Test
     public void findAndDeleteDisabledUsers_Telemetry() {
-        final var users = List.of(UserEmail.of("user"), UserEmail.of("joe"));
-        when(userEmailRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
+        final var users = List.of(User.of("user"), User.of("joe"));
+        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
                 .thenReturn(users);
         service.processInBatches();
 

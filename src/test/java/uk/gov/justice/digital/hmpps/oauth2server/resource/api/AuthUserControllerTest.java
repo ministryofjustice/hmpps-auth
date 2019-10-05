@@ -11,7 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException;
@@ -176,8 +176,8 @@ public class AuthUserControllerTest {
 
     @Test
     public void enableUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var userEmail = UserEmail.builder().username("USER").email("email").verified(true).build();
-        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
+        final var user = User.builder().username("USER").email("email").verified(true).build();
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
         final var responseEntity = authUserController.enableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
         verify(userService).enableUser("USER", "bob", authentication.getAuthorities());
@@ -185,8 +185,8 @@ public class AuthUserControllerTest {
 
     @Test
     public void enableUser_notFound() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var userEmail = UserEmail.builder().username("USER").email("email").verified(true).build();
-        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
+        final var user = User.builder().username("USER").email("email").verified(true).build();
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
         doThrow(new EntityNotFoundException("message")).when(userService).enableUser(anyString(), anyString(),any());
         final var responseEntity = authUserController.enableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
@@ -194,8 +194,8 @@ public class AuthUserControllerTest {
 
     @Test
     public void disableUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var userEmail = UserEmail.builder().username("USER").email("email").verified(true).build();
-        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
+        final var user = User.builder().username("USER").email("email").verified(true).build();
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
         final var responseEntity = authUserController.disableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
         verify(userService).disableUser("USER", "bob", authentication.getAuthorities());
@@ -203,8 +203,8 @@ public class AuthUserControllerTest {
 
     @Test
     public void disableUser_notFound() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var userEmail = UserEmail.builder().username("USER").email("email").verified(true).build();
-        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(userEmail));
+        final var user = User.builder().username("USER").email("email").verified(true).build();
+        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
         doThrow(new EntityNotFoundException("message")).when(userService).disableUser(anyString(), anyString(), any());
         final var responseEntity = authUserController.disableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
@@ -276,8 +276,8 @@ public class AuthUserControllerTest {
         assertThat(responseEntity).containsOnly(new AuthUserGroup(group1), new AuthUserGroup(group2));
     }
 
-    private UserEmail getAuthUser() {
-        final var user = UserEmail.builder().username("authentication").email("email").verified(true).enabled(true).build();
+    private User getAuthUser() {
+        final var user = User.builder().username("authentication").email("email").verified(true).enabled(true).build();
         user.setPerson(new Person());
         user.getPerson().setFirstName("Joe");
         user.getPerson().setLastName("Bloggs");

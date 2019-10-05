@@ -8,7 +8,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.*;
 
 import javax.persistence.EntityManager;
@@ -269,11 +269,11 @@ public class UserDetailsServiceImplTest {
                 .build();
     }
 
-    private UserEmail buildAuthUser() {
-        final var userEmail = UserEmail.builder().username("user").email("email").verified(true).build();
-        userEmail.setPerson(new Person("user", "first", "last"));
-        userEmail.setEnabled(true);
-        userEmail.setPasswordExpiry(LocalDateTime.now().plusDays(1));
-        return userEmail;
+    private User buildAuthUser() {
+        final var user = User.builder().username("user").email("email").verified(true).build();
+        user.setPerson(new Person("user", "first", "last"));
+        user.setEnabled(true);
+        user.setPasswordExpiry(LocalDateTime.now().plusDays(1));
+        return user;
     }
 }

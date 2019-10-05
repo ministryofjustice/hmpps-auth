@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupExistsException;
@@ -60,7 +60,7 @@ public class AuthUserGroupsController {
             @ApiIgnore final Principal principal) {
 
         final var userOptional = userService.getAuthUserByUsername(username);
-        return userOptional.map(UserEmail::getUsername).map(usernameInDb -> {
+        return userOptional.map(User::getUsername).map(usernameInDb -> {
             try {
                 authUserGroupService.addGroup(usernameInDb, group, principal.getName());
                 log.info("Add group succeeded for user {} and group {}", usernameInDb, group);

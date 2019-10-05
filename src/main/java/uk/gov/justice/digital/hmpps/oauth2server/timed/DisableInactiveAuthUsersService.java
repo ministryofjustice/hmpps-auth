@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -14,7 +14,7 @@ import java.util.Map;
 @AllArgsConstructor
 @Log4j2
 public class DisableInactiveAuthUsersService implements BatchUserService {
-    private final UserEmailRepository repository;
+    private final UserRepository repository;
     private final TelemetryClient telemetryClient;
 
     @Transactional(transactionManager = "authTransactionManager")

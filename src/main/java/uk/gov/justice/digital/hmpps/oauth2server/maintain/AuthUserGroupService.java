@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 
 import java.util.*;
@@ -23,21 +23,21 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
 public class AuthUserGroupService {
-    private final UserEmailRepository userEmailRepository;
+    private final UserRepository userRepository;
     private final GroupRepository groupRepository;
     private final TelemetryClient telemetryClient;
 
     @Transactional(transactionManager = "authTransactionManager")
     public void addGroup(final String username, final String groupCode, final String modifier) throws AuthUserGroupException {
         // already checked that user exists
-        final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
+        final var user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
 
         final var groupFormatted = formatGroup(groupCode);
 
         // check that group exists
         final var group = groupRepository.findByGroupCode(groupFormatted).orElseThrow(() -> new AuthUserGroupException("group", "notfound"));
 
-        if (userEmail.getGroups().contains(group)) {
+        if (user.getGroups().contains(group)) {
             throw new AuthUserGroupExistsException();
         }
 
@@ -46,7 +46,7 @@ public class AuthUserGroupService {
         // 2. If group admin then needs to be one of their groups and user can't be a member of a different group
 
         log.info("Adding group {} to user {}", groupFormatted, username);
-        userEmail.getGroups().add(group);
+        user.getGroups().add(group);
         telemetryClient.trackEvent("AuthUserGroupAddSuccess", Map.of("username", username, "group", groupFormatted, "admin", modifier), null);
     }
 
@@ -54,14 +54,14 @@ public class AuthUserGroupService {
     public void removeGroup(final String username, final String groupCode, final String modifier) throws AuthUserGroupException {
         final var groupFormatted = formatGroup(groupCode);
         // already checked that user exists
-        final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
+        final var user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
 
-        if (userEmail.getGroups().stream().map(Group::getGroupCode).noneMatch(a -> a.equals(groupFormatted))) {
+        if (user.getGroups().stream().map(Group::getGroupCode).noneMatch(a -> a.equals(groupFormatted))) {
             throw new AuthUserGroupException("group", "missing");
         }
 
         log.info("Removing group {} from user {}", groupFormatted, username);
-        userEmail.getGroups().removeIf(a -> a.getGroupCode().equals(groupFormatted));
+        user.getGroups().removeIf(a -> a.getGroupCode().equals(groupFormatted));
 
         telemetryClient.trackEvent("AuthUserGroupRemoveSuccess", Map.of("username", username, "group", groupCode, "admin", modifier), null);
     }
@@ -75,7 +75,7 @@ public class AuthUserGroupService {
     }
 
     public Optional<Set<Group>> getAuthUserGroups(final String username) {
-        final var user = userEmailRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)));
+        final var user = userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)));
         return user.map(u -> {
             Hibernate.initialize(u.getGroups());
             return u.getGroups();

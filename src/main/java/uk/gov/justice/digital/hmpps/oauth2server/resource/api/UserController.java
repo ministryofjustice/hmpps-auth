@@ -73,15 +73,15 @@ public class UserController {
             @ApiResponse(code = 204, message = "No content.  No verified email address found for user"),
             @ApiResponse(code = 404, message = "User not found.  The user doesn't exist in auth so could have never logged in", response = ErrorDetail.class)})
     public ResponseEntity<Object> getUserEmail(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
-        final var userEmail = userService.findUserEmail(username);
+        final var user = userService.findAuthUser(username);
 
-        if (userEmail.isEmpty()) {
+        if (user.isEmpty()) {
             return notFoundResponse(username);
         }
 
-        final var email = userEmail.get();
+        final var email = user.get();
 
-        return email.isVerified() ? ResponseEntity.ok(EmailAddress.fromUserEmail(email)) : ResponseEntity.noContent().build();
+        return email.isVerified() ? ResponseEntity.ok(EmailAddress.fromUser(email)) : ResponseEntity.noContent().build();
     }
 
 

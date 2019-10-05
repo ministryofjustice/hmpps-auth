@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ApiModel(description = "User email details")
@@ -18,7 +18,7 @@ public class EmailAddress {
     @ApiModelProperty(required = true, value = "Email", example = "john.smith@digital.justice.gov.uk", position = 2)
     private final String email;
 
-    public static EmailAddress fromUserEmail(final UserEmail u) {
+    public static EmailAddress fromUser(final User u) {
         return new EmailAddress(u.getUsername(), u.getEmail());
     }
 }

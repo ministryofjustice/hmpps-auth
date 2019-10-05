@@ -11,19 +11,19 @@ import javax.persistence.criteria.*;
 
 @Builder
 @EqualsAndHashCode
-public class UserEmailFilter implements Specification<UserEmail> {
+public class UserFilter implements Specification<User> {
     private final String name;
     private final String roleCode;
     private final String groupCode;
 
-    private UserEmailFilter(final String name, final String roleCode, final String groupCode) {
+    private UserFilter(final String name, final String roleCode, final String groupCode) {
         this.name = StringUtils.trimToNull(name);
         this.roleCode = StringUtils.trimToNull(roleCode);
         this.groupCode = StringUtils.trimToNull(groupCode);
     }
 
     @Override
-    public Predicate toPredicate(@NonNull final Root<UserEmail> root, @NonNull final CriteriaQuery<?> query, @NonNull final CriteriaBuilder cb) {
+    public Predicate toPredicate(@NonNull final Root<User> root, @NonNull final CriteriaQuery<?> query, @NonNull final CriteriaBuilder cb) {
         final var andBuilder = ImmutableList.<Predicate>builder();
         andBuilder.add(cb.equal(root.get("master"), true));
 
@@ -39,7 +39,7 @@ public class UserEmailFilter implements Specification<UserEmail> {
         return cb.and(andBuilder.build().toArray(new Predicate[0]));
     }
 
-    private Predicate buildNamePredicate(final Root<UserEmail> root, final CriteriaBuilder cb) {
+    private Predicate buildNamePredicate(final Root<User> root, final CriteriaBuilder cb) {
         final var orBuilder = ImmutableList.<Predicate>builder();
         final var pattern = "%" + name.replace(',', ' ').replaceAll(" [ ]*", "% %") + "%";
         orBuilder.add(cb.like(root.get("email"), pattern.toLowerCase()));

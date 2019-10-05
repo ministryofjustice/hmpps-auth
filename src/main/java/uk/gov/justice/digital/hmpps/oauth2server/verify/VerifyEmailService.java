@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
@@ -30,7 +30,7 @@ public class VerifyEmailService {
     private static final String EXISTING_EMAIL_SQL = "select distinct internet_address from internet_addresses i " +
             "inner join STAFF_USER_ACCOUNTS s on i.owner_id = s.staff_id and owner_class = 'STF' " +
             "where internet_address_class = 'EMAIL' and s.username = ?";
-    private final UserEmailRepository userEmailRepository;
+    private final UserRepository userRepository;
     private final UserTokenRepository userTokenRepository;
     private final UserService userService;
     private final JdbcTemplate jdbcTemplate;
@@ -39,13 +39,13 @@ public class VerifyEmailService {
     private final ReferenceCodesService referenceCodesService;
     private final String notifyTemplateId;
 
-    public VerifyEmailService(final UserEmailRepository userEmailRepository,
+    public VerifyEmailService(final UserRepository userRepository,
                               final UserTokenRepository userTokenRepository,
                               final UserService userService, final JdbcTemplate jdbcTemplate,
                               final TelemetryClient telemetryClient,
                               final NotificationClientApi notificationClient,
                               final ReferenceCodesService referenceCodesService, @Value("${application.notify.verify.template}") final String notifyTemplateId) {
-        this.userEmailRepository = userEmailRepository;
+        this.userRepository = userRepository;
         this.userTokenRepository = userTokenRepository;
         this.userService = userService;
         this.jdbcTemplate = jdbcTemplate;
@@ -55,12 +55,12 @@ public class VerifyEmailService {
         this.notifyTemplateId = notifyTemplateId;
     }
 
-    public Optional<UserEmail> getEmail(final String username) {
-        return userEmailRepository.findById(username).filter(ue -> StringUtils.isNotBlank(ue.getEmail()));
+    public Optional<User> getEmail(final String username) {
+        return userRepository.findById(username).filter(ue -> StringUtils.isNotBlank(ue.getEmail()));
     }
 
     public boolean isNotVerified(final String name) {
-        return !getEmail(name).map(UserEmail::isVerified).orElse(Boolean.FALSE);
+        return !getEmail(name).map(User::isVerified).orElse(Boolean.FALSE);
     }
 
     public List<String> getExistingEmailAddresses(final String username) {
@@ -72,17 +72,17 @@ public class VerifyEmailService {
         final var email = StringUtils.lowerCase(emailInput);
         validateEmailAddress(email);
 
-        final var user = userService.findUser(username);
-        final var firstName = user.map(UserPersonDetails::getFirstName).orElse(username);
-        final var optionalUserEmail = userEmailRepository.findById(username);
-        final var userEmail = optionalUserEmail.orElseGet(() -> UserEmail.of(username));
-        userEmail.setEmail(email);
+        final var userPersonDetails = userService.findUser(username);
+        final var firstName = userPersonDetails.map(UserPersonDetails::getFirstName).orElse(username);
+        final var optionalUser = userRepository.findById(username);
+        final var user = optionalUser.orElseGet(() -> User.of(username));
+        user.setEmail(email);
 
         // check for an existing token and delete as we now have a new one
-        final var existingTokenOptional = userTokenRepository.findByTokenTypeAndUserEmail(TokenType.VERIFIED, userEmail);
+        final var existingTokenOptional = userTokenRepository.findByTokenTypeAndUser(TokenType.VERIFIED, user);
         existingTokenOptional.ifPresent(userTokenRepository::delete);
 
-        final var userToken = new UserToken(TokenType.VERIFIED, userEmail);
+        final var userToken = new UserToken(TokenType.VERIFIED, user);
         final var verifyLink = url + userToken.getToken();
         final var parameters = Map.of("firstName", firstName, "verifyLink", verifyLink);
 
@@ -101,7 +101,7 @@ public class VerifyEmailService {
             throw e;
         }
 
-        userEmailRepository.save(userEmail);
+        userRepository.save(user);
         userTokenRepository.save(userToken);
 
         return verifyLink;
@@ -146,10 +146,10 @@ public class VerifyEmailService {
             return trackAndReturnFailureForInvalidToken();
         }
         final var userToken = userTokenOptional.get();
-        final var userEmail = userToken.getUserEmail();
-        final var username = userEmail.getUsername();
+        final var user = userToken.getUser();
+        final var username = user.getUsername();
 
-        if (userEmail.isVerified()) {
+        if (user.isVerified()) {
             log.info("Verify email succeeded due to already verified");
             telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
             return Optional.empty();
@@ -158,17 +158,17 @@ public class VerifyEmailService {
             return trackAndReturnFailureForExpiredToken(username);
         }
 
-        markEmailAsVerified(userEmail);
+        markEmailAsVerified(user);
         return Optional.empty();
     }
 
-    private void markEmailAsVerified(final UserEmail userEmail) {
+    private void markEmailAsVerified(final User user) {
         // verification token match
-        userEmail.setVerified(true);
-        userEmailRepository.save(userEmail);
+        user.setVerified(true);
+        userRepository.save(user);
 
-        log.info("Verify email succeeded for {}", userEmail.getUsername());
-        telemetryClient.trackEvent("VerifyEmailConfirmSuccess", Map.of("username", userEmail.getUsername()), null);
+        log.info("Verify email succeeded for {}", user.getUsername());
+        telemetryClient.trackEvent("VerifyEmailConfirmSuccess", Map.of("username", user.getUsername()), null);
     }
 
     private Optional<String> trackAndReturnFailureForInvalidToken() {

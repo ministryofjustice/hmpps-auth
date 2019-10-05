@@ -9,10 +9,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class ChangePasswordServiceTest {
     @Mock
-    private UserEmailRepository userEmailRepository;
+    private UserRepository userRepository;
     @Mock
     private UserTokenRepository userTokenRepository;
     @Mock
@@ -45,7 +45,7 @@ public class ChangePasswordServiceTest {
 
     @Before
     public void setUp() {
-        changePasswordService = new ChangePasswordService(userTokenRepository, userEmailRepository, userService, alterUserService, passwordEncoder, telemetryClient, 10);
+        changePasswordService = new ChangePasswordService(userTokenRepository, userRepository, userService, alterUserService, passwordEncoder, telemetryClient, 10);
     }
 
     @Test
@@ -55,7 +55,7 @@ public class ChangePasswordServiceTest {
     @Test
     public void setPassword_AlterUser() {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
-        final var user = UserEmail.of("user");
+        final var user = User.of("user");
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
@@ -66,7 +66,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_AuthUser() {
-        final var user = UserEmail.builder().username("user").email("email").build();
+        final var user = User.builder().username("user").email("email").build();
         user.setEnabled(true);
         user.setMaster(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -80,7 +80,7 @@ public class ChangePasswordServiceTest {
     @Test
     public void setPassword_SaveAndDelete() {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
-        final var user = UserEmail.of("user");
+        final var user = User.of("user");
         user.setLocked(true);
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
@@ -88,12 +88,12 @@ public class ChangePasswordServiceTest {
 
         // need to ensure that the token has been removed as don't want them to be able to change password multiple times
         verify(userTokenRepository).delete(userToken);
-        verify(userEmailRepository).save(user);
+        verify(userRepository).save(user);
     }
 
     @Test
     public void setPassword_AuthUserPasswordSet() {
-        final var user = UserEmail.builder().username("user").build();
+        final var user = User.builder().username("user").build();
         user.setEnabled(true);
         user.setMaster(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -110,7 +110,7 @@ public class ChangePasswordServiceTest {
     public void setPassword_NotFound() {
         when(userService.findUser(anyString())).thenReturn(Optional.empty());
 
-        final var user = UserEmail.of("user");
+        final var user = User.of("user");
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
@@ -123,7 +123,7 @@ public class ChangePasswordServiceTest {
         staffUserAccount.map(StaffUserAccount.class::cast).get().getAccountDetail().setAccountStatus("LOCKED");
         when(userService.findUser(anyString())).thenReturn(staffUserAccount);
 
-        final var user = UserEmail.of("user");
+        final var user = User.of("user");
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
@@ -132,11 +132,11 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_DisabledAccount() {
-        final var userEmail = buildAuthUser();
-        userEmail.map(UserEmail.class::cast).get().setEnabled(false);
-        when(userService.findUser(anyString())).thenReturn(userEmail);
+        final var optionalUser = buildAuthUser();
+        optionalUser.map(User.class::cast).get().setEnabled(false);
+        when(userService.findUser(anyString())).thenReturn(optionalUser);
 
-        final var user = UserEmail.of("user");
+        final var user = User.of("user");
         final var userToken = new UserToken(TokenType.RESET, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
@@ -145,7 +145,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_LockedAuthAccount() {
-        final var user = UserEmail.builder().username("user").locked(true).build();
+        final var user = User.builder().username("user").locked(true).build();
         user.setEnabled(true);
         user.setMaster(true);
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -156,7 +156,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_AuthPasswordSameAsCurrent() {
-        final var user = UserEmail.builder().username("user").build();
+        final var user = User.builder().username("user").build();
         user.setEnabled(true);
         user.setMaster(true);
         user.setPassword("oldencryptedpassword");
@@ -170,10 +170,10 @@ public class ChangePasswordServiceTest {
     }
 
     private Optional<UserPersonDetails> buildAuthUser() {
-        final var userEmail = UserEmail.builder().username("user").email("email").verified(true).build();
-        userEmail.setPerson(new Person("user", "first", "last"));
-        userEmail.setEnabled(true);
-        return Optional.of(userEmail);
+        final var user = User.builder().username("user").email("email").verified(true).build();
+        user.setPerson(new Person("user", "first", "last"));
+        user.setEnabled(true);
+        return Optional.of(user);
     }
 
     private Optional<UserPersonDetails> getStaffUserAccountForBob() {

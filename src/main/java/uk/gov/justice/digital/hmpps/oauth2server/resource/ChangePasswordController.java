@@ -67,7 +67,7 @@ public class ChangePasswordController extends AbstractPasswordController {
         }
 
         // will be error if unable to get token here as set password process has been successful
-        final var username = userToken.orElseThrow().getUserEmail().getUsername();
+        final var username = userToken.orElseThrow().getUser().getUsername();
 
         // authentication with new password
         try {

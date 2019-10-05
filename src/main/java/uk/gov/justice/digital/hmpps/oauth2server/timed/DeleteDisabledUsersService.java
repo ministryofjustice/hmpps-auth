@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 
@@ -16,7 +16,7 @@ import java.util.Map;
 @AllArgsConstructor
 @Log4j2
 public class DeleteDisabledUsersService implements BatchUserService {
-    private final UserEmailRepository repository;
+    private final UserRepository repository;
     private final UserRetriesRepository userRetriesRepository;
     private final UserTokenRepository userTokenRepository;
     private final TelemetryClient telemetryClient;
@@ -27,7 +27,7 @@ public class DeleteDisabledUsersService implements BatchUserService {
         usersToDelete.forEach(user -> {
             final var username = user.getUsername();
             userRetriesRepository.findById(username).ifPresent(userRetriesRepository::delete);
-            userTokenRepository.findByUserEmail(user).forEach(userTokenRepository::delete);
+            userTokenRepository.findByUser(user).forEach(userTokenRepository::delete);
             repository.delete(user);
 
             log.debug("Deleting auth user {} due to inactivity", username);

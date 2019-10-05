@@ -14,7 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException;
@@ -42,7 +42,7 @@ public class AuthUserServiceTest {
     private static final Set<GrantedAuthority> GRANTED_AUTHORITY_SUPER_USER = Set.of(new SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"));
 
     @Mock
-    private UserEmailRepository userEmailRepository;
+    private UserRepository userRepository;
     @Mock
     private UserTokenRepository userTokenRepository;
     @Mock
@@ -60,7 +60,7 @@ public class AuthUserServiceTest {
 
     @Before
     public void setUp() {
-        authUserService = new AuthUserService(userTokenRepository, userEmailRepository, notificationClient, telemetryClient, verifyEmailService, authUserGroupService, maintainUserCheck, "licences");
+        authUserService = new AuthUserService(userTokenRepository, userRepository, notificationClient, telemetryClient, verifyEmailService, authUserGroupService, maintainUserCheck, "licences");
     }
 
     @Test
@@ -143,8 +143,8 @@ public class AuthUserServiceTest {
     public void createUser_saveEmailRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
         authUserService.createUser("userMe", "eMail", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
-        final var captor = ArgumentCaptor.forClass(UserEmail.class);
-        verify(userEmailRepository).save(captor.capture());
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
 
         final var user = captor.getValue();
         assertThat(user.getName()).isEqualTo("first last");
@@ -162,8 +162,8 @@ public class AuthUserServiceTest {
         when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("SITE_1_GROUP_1", "desc")));
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
-        final var captor = ArgumentCaptor.forClass(UserEmail.class);
-        verify(userEmailRepository).save(captor.capture());
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
 
         final var user = captor.getValue();
         assertThat(user.getGroups()).extracting(Group::getGroupCode).containsOnly("SITE_1_GROUP_1");
@@ -174,8 +174,8 @@ public class AuthUserServiceTest {
         when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("SITE_1_GROUP_1", "desc")));
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
-        final var captor = ArgumentCaptor.forClass(UserEmail.class);
-        verify(userEmailRepository).save(captor.capture());
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
 
         final var user = captor.getValue();
         assertThat(user.getAuthorities()).isEmpty();
@@ -190,8 +190,8 @@ public class AuthUserServiceTest {
         when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(group));
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
-        final var captor = ArgumentCaptor.forClass(UserEmail.class);
-        verify(userEmailRepository).save(captor.capture());
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
 
         final var user = captor.getValue();
         assertThat(user.getAuthorities()).extracting(Authority::getRoleCode).containsOnly("AUTH_AUTO");
@@ -219,7 +219,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUser_emailValidation() throws VerifyEmailException {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
         doThrow(new VerifyEmailException("reason")).when(verifyEmailService).validateEmailAddress(anyString());
         assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
                 isInstanceOf(VerifyEmailException.class).hasMessage("Verify email failed with reason: reason");
@@ -229,7 +229,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUser_groupValidation() throws AuthUserGroupRelationshipException {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
         doThrow(new AuthUserGroupRelationshipException("user", "reason")).when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(), any(), any());
         assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
                 isInstanceOf(AuthUserGroupRelationshipException.class).hasMessage("Unable to maintain user: user with reason: reason");
@@ -237,7 +237,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUser_successLinkReturned() throws VerifyEmailException, NotificationClientException, AmendUserException, AuthUserGroupRelationshipException {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
         final var link = authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         assertThat(link).startsWith("url?token=").hasSize("url?token=".length() + 36);
@@ -245,14 +245,14 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUser_trackSuccess() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
         authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
         verify(telemetryClient).trackEvent("AuthUserAmendSuccess", Map.of("username", "SOMEUSER", "admin", "bob"), null);
     }
 
     @Test
     public void amendUser_saveTokenRepository() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
         final var link = authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         final var captor = ArgumentCaptor.forClass(UserToken.class);
@@ -265,11 +265,11 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUser_saveEmailRepository() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUserEmailUser());
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
         authUserService.amendUser("userMe", "eMail", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
-        final var captor = ArgumentCaptor.forClass(UserEmail.class);
-        verify(userEmailRepository).save(captor.capture());
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
 
         final var user = captor.getValue();
         assertThat(user.getEmail()).isEqualTo("email");
@@ -277,9 +277,9 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUser_verifiedEmail() {
-        final var user = UserEmail.of("SOMEUSER");
+        final var user = User.of("SOMEUSER");
         user.setVerified(true);
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
                 isInstanceOf(AmendUserException.class).
                 hasMessageContaining("reason: notinitial");
@@ -287,24 +287,24 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUser_passwordSet() {
-        final var user = UserEmail.of("SOMEUSER");
+        final var user = User.of("SOMEUSER");
         user.setPassword("some pass");
-        when(userEmailRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
                 isInstanceOf(AmendUserException.class).
                 hasMessageContaining("reason: notinitial");
     }
 
-    private Optional<UserEmail> createUserEmailUser() {
-        return Optional.of(UserEmail.of("SOMEUSER"));
+    private Optional<User> createUser() {
+        return Optional.of(User.of("SOMEUSER"));
     }
 
     @Test
     public void findAuthUsers() {
         final var unpaged = Pageable.unpaged();
         authUserService.findAuthUsers("somename ", "somerole  ", "  somegroup", unpaged);
-        final var captor = ArgumentCaptor.forClass(UserEmailFilter.class);
-        verify(userEmailRepository).findAll(captor.capture(), eq(unpaged));
+        final var captor = ArgumentCaptor.forClass(UserFilter.class);
+        verify(userRepository).findAll(captor.capture(), eq(unpaged));
         assertThat(captor.getValue()).extracting("name", "roleCode", "groupCode").containsExactly("somename", "somerole", "somegroup");
     }
 }

@@ -16,7 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException;
@@ -63,7 +63,7 @@ public class AuthUserController {
     public ResponseEntity<Object> user(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
         final var user = userService.getAuthUserByUsername(username);
 
-        return user.map(AuthUser::fromUserEmail).map(Object.class::cast).map(ResponseEntity::ok).
+        return user.map(AuthUser::fromUser).map(Object.class::cast).map(ResponseEntity::ok).
                 orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(username)));
     }
 
@@ -75,7 +75,7 @@ public class AuthUserController {
             @ApiResponse(code = 204, message = "No users found."),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class)})
     public ResponseEntity<Object> searchForUser(@ApiParam(value = "The email address of the user.", required = true) @RequestParam final String email) {
-        final var users = userService.findAuthUsersByEmail(email).stream().map(AuthUser::fromUserEmail).collect(Collectors.toList());
+        final var users = userService.findAuthUsersByEmail(email).stream().map(AuthUser::fromUser).collect(Collectors.toList());
 
         return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
     }
@@ -99,7 +99,7 @@ public class AuthUserController {
             @ApiParam(value = "The role of the user.") @RequestParam(required = false) final String role,
             @ApiParam(value = "The group of the user.") @RequestParam(required = false) final String group,
             @PageableDefault(sort = {"username"}, direction = ASC) final Pageable pageable) {
-        final var users = authUserService.findAuthUsers(name, role, group, pageable).stream().map(AuthUser::fromUserEmail).collect(Collectors.toList());
+        final var users = authUserService.findAuthUsers(name, role, group, pageable).stream().map(AuthUser::fromUser).collect(Collectors.toList());
 
         return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
     }
@@ -299,7 +299,7 @@ public class AuthUserController {
         @ApiModelProperty(required = true, value = "Email address has been verified", example = "false", position = 7)
         private boolean verified;
 
-        private static AuthUser fromUserEmail(final UserEmail user) {
+        private static AuthUser fromUser(final User user) {
             return AuthUser.builder().
                     username(user.getUsername()).
                     email(user.getEmail()).

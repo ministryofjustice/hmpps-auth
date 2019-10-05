@@ -30,9 +30,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @Transactional(transactionManager = "authTransactionManager")
-public class UserEmailRepositoryTest {
+public class UserRepositoryTest {
     @Autowired
-    private UserEmailRepository repository;
+    private UserRepository repository;
     @Autowired
     private GroupRepository groupRepository;
     @Autowired
@@ -57,7 +57,7 @@ public class UserEmailRepositoryTest {
 
         final var transientEntity = transientEntity();
 
-        final var entity = UserEmail.builder().username(transientEntity.getUsername()).email(transientEntity.getEmail()).build();
+        final var entity = User.builder().username(transientEntity.getUsername()).email(transientEntity.getEmail()).build();
 
         final var persistedEntity = repository.save(entity);
 
@@ -108,7 +108,7 @@ public class UserEmailRepositoryTest {
 
     @Test
     public void persistUserWithoutEmail() {
-        final var transientEntity = UserEmail.of("userb");
+        final var transientEntity = User.of("userb");
         final var persistedEntity = repository.save(transientEntity);
 
         TestTransaction.flagForCommit();
@@ -226,7 +226,7 @@ public class UserEmailRepositoryTest {
 
     @Test
     public void findByEmail() {
-        assertThat(repository.findByEmail("auth_test2@digital.justice.gov.uk")).extracting(UserEmail::getUsername).containsOnly("AUTH_ADM", "AUTH_EXPIRED");
+        assertThat(repository.findByEmail("auth_test2@digital.justice.gov.uk")).extracting(User::getUsername).containsOnly("AUTH_ADM", "AUTH_EXPIRED");
     }
 
     @Test
@@ -237,7 +237,7 @@ public class UserEmailRepositoryTest {
     @Test
     public void findByEmailAndMasterIsTrue() {
         assertThat(repository.findByEmailAndMasterIsTrueOrderByUsername("auth_test2@digital.justice.gov.uk"))
-                .extracting(UserEmail::getUsername)
+                .extracting(User::getUsername)
                 .containsExactly("AUTH_ADM", "AUTH_EXPIRED");
     }
 
@@ -247,58 +247,58 @@ public class UserEmailRepositoryTest {
     }
 
     @Test
-    public void findAll_UserEmailFilter_ByRole() {
-        assertThat(repository.findAll(UserEmailFilter.builder().roleCode("LICENCE_VARY").build()))
-                .extracting(UserEmail::getUsername)
+    public void findAll_UserFilter_ByRole() {
+        assertThat(repository.findAll(UserFilter.builder().roleCode("LICENCE_VARY").build()))
+                .extracting(User::getUsername)
                 .containsExactly("AUTH_RO_VARY_USER");
     }
 
     @Test
-    public void findAll_UserEmailFilter_ByGroup() {
-        assertThat(repository.findAll(UserEmailFilter.builder().groupCode("SITE_1_GROUP_2").build()))
-                .extracting(UserEmail::getUsername)
+    public void findAll_UserFilter_ByGroup() {
+        assertThat(repository.findAll(UserFilter.builder().groupCode("SITE_1_GROUP_2").build()))
+                .extracting(User::getUsername)
                 .containsExactly("AUTH_RO_VARY_USER", "AUTH_GROUP_MANAGER");
     }
 
     @Test
-    public void findAll_UserEmailFilter_ByUsername() {
-        assertThat(repository.findAll(UserEmailFilter.builder().name("_expired").build()))
-                .extracting(UserEmail::getUsername)
+    public void findAll_UserFilter_ByUsername() {
+        assertThat(repository.findAll(UserFilter.builder().name("_expired").build()))
+                .extracting(User::getUsername)
                 .containsExactly("AUTH_EXPIRED");
     }
 
     @Test
-    public void findAll_UserEmailFilter_ByEmail() {
-        assertThat(repository.findAll(UserEmailFilter.builder().name("test@digital").build()))
-                .extracting(UserEmail::getUsername)
+    public void findAll_UserFilter_ByEmail() {
+        assertThat(repository.findAll(UserFilter.builder().name("test@digital").build()))
+                .extracting(User::getUsername)
                 .containsExactly("AUTH_TEST", "AUTH_RO_USER_TEST");
     }
 
     @Test
-    public void findAll_UserEmailFilter_ByFirstNameLastName() {
-        assertThat(repository.findAll(UserEmailFilter.builder().name("a no").build()))
-                .extracting(UserEmail::getUsername)
+    public void findAll_UserFilter_ByFirstNameLastName() {
+        assertThat(repository.findAll(UserFilter.builder().name("a no").build()))
+                .extracting(User::getUsername)
                 .containsExactly("AUTH_NO_EMAIL");
     }
 
     @Test
-    public void findAll_UserEmailFilter_ByLastNameFirstName() {
-        assertThat(repository.findAll(UserEmailFilter.builder().name("orton, r").build()))
-                .extracting(UserEmail::getUsername)
+    public void findAll_UserFilter_ByLastNameFirstName() {
+        assertThat(repository.findAll(UserFilter.builder().name("orton, r").build()))
+                .extracting(User::getUsername)
                 .containsExactly("AUTH_RO_USER", "AUTH_RO_VARY_USER", "AUTH_RO_USER_TEST");
     }
 
     @Test
-    public void findAll_UserEmailFilter_all() {
-        assertThat(repository.findAll(UserEmailFilter.builder().roleCode("LICENCE_VARY").groupCode("SITE_1_GROUP_2").name("vary").build()))
-                .extracting(UserEmail::getUsername)
+    public void findAll_UserFilter_all() {
+        assertThat(repository.findAll(UserFilter.builder().roleCode("LICENCE_VARY").groupCode("SITE_1_GROUP_2").name("vary").build()))
+                .extracting(User::getUsername)
                 .containsExactly("AUTH_RO_VARY_USER");
     }
 
     @Test
     public void findInactiveUsers_First10() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
-        assertThat(inactive).extracting(UserEmail::getUsername)
+        assertThat(inactive).extracting(User::getUsername)
                 .contains("AUTH_INACTIVE")
                 .doesNotContain("AUTH_DISABLED", "ITAG_USER");
         assertThat(inactive).hasSize(10);
@@ -307,7 +307,7 @@ public class UserEmailRepositoryTest {
     @Test
     public void findInactiveUsers_OrderByLastLoggedInOldestFirst() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
-        assertThat(inactive).extracting(UserEmail::getUsername).first().isEqualTo("AUTH_INACTIVE");
+        assertThat(inactive).extracting(User::getUsername).first().isEqualTo("AUTH_INACTIVE");
     }
 
     @Test
@@ -319,13 +319,13 @@ public class UserEmailRepositoryTest {
     @Test
     public void findInactiveUsers_SingleRow() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.parse("2019-02-03T13:23:19").plusSeconds(1));
-        assertThat(inactive).extracting(UserEmail::getUsername).containsExactly("AUTH_INACTIVE");
+        assertThat(inactive).extracting(User::getUsername).containsExactly("AUTH_INACTIVE");
     }
 
     @Test
     public void findDisabledUsers_First10() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
-        assertThat(inactive).extracting(UserEmail::getUsername)
+        assertThat(inactive).extracting(User::getUsername)
                 .contains("AUTH_DELETE", "AUTH_DELETEALL", "NOMIS_DELETE")
                 .doesNotContain("AUTH_DISABLED", "AUTH_USER");
         assertThat(inactive).hasSize(10);
@@ -334,7 +334,7 @@ public class UserEmailRepositoryTest {
     @Test
     public void findDisabledUsers_OrderByLastLoggedInOldestFirst() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
-        assertThat(inactive).extracting(UserEmail::getUsername).first().isEqualTo("AUTH_DELETE");
+        assertThat(inactive).extracting(User::getUsername).first().isEqualTo("AUTH_DELETE");
     }
 
     @Test
@@ -346,10 +346,10 @@ public class UserEmailRepositoryTest {
     @Test
     public void findDisabledUsers_SingleRow() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2018-01-02T13:23:19").plusSeconds(1));
-        assertThat(inactive).extracting(UserEmail::getUsername).containsExactly("AUTH_DELETE");
+        assertThat(inactive).extracting(User::getUsername).containsExactly("AUTH_DELETE");
     }
 
-    private UserEmail transientEntity() {
-        return UserEmail.builder().username("user").email("a@b.com").build();
+    private User transientEntity() {
+        return User.builder().username("user").email("a@b.com").build();
     }
 }

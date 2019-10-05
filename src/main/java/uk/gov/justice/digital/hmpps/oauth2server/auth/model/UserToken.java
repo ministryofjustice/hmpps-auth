@@ -27,12 +27,12 @@ public class UserToken {
 
     @ManyToOne
     @JoinColumn(name = "username")
-    private UserEmail userEmail;
+    private User user;
 
-    public UserToken(final TokenType tokenType, final UserEmail userEmail) {
+    public UserToken(final TokenType tokenType, final User user) {
         this.token = UUID.randomUUID().toString();
         this.tokenType = tokenType;
-        this.userEmail = userEmail;
+        this.user = user;
 
         final var now = LocalDateTime.now();
         this.tokenExpiry = tokenType == TokenType.CHANGE ? now.plusMinutes(20) : now.plusDays(1);
