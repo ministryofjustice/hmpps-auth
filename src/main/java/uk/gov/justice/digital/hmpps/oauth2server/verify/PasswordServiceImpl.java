@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
 
 import java.time.LocalDateTime;
@@ -16,13 +16,13 @@ public abstract class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
-    public void changeAuthPassword(final UserEmail userEmail, final String password) {
+    public void changeAuthPassword(final User user, final String password) {
         // check user not setting password to existing password
-        if (passwordEncoder.matches(password, userEmail.getPassword())) {
+        if (passwordEncoder.matches(password, user.getPassword())) {
             throw new ReusedPasswordException();
         }
 
-        userEmail.setPassword(passwordEncoder.encode(password));
-        userEmail.setPasswordExpiry(LocalDateTime.now().plusDays(passwordAge));
+        user.setPassword(passwordEncoder.encode(password));
+        user.setPasswordExpiry(LocalDateTime.now().plusDays(passwordAge));
     }
 }

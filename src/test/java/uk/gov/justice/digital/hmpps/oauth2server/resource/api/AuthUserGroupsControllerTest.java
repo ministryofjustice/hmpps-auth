@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupExistsException;
@@ -116,8 +116,8 @@ public class AuthUserGroupsControllerTest {
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
     }
 
-    private UserEmail getAuthUser() {
-        final var user = UserEmail.builder().username("USER").email("email").verified(true).build();
+    private User getAuthUser() {
+        final var user = User.builder().username("USER").email("email").verified(true).build();
         user.setGroups(Set.of(new Group("GLOBAL_SEARCH", "desc2"), new Group("FRED", "desc")));
         return user;
     }

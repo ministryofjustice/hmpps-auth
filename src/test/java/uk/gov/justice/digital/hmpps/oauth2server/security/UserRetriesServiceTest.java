@@ -6,9 +6,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
 
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ public class UserRetriesServiceTest {
     @Mock
     private UserRetriesRepository userRetriesRepository;
     @Mock
-    private UserEmailRepository userEmailRepository;
+    private UserRepository userRepository;
     @Mock
     private AlterUserService alterUserService;
 
@@ -31,7 +31,7 @@ public class UserRetriesServiceTest {
 
     @Before
     public void setUp() {
-        service = new UserRetriesService(userRetriesRepository, userEmailRepository, alterUserService);
+        service = new UserRetriesService(userRetriesRepository, userRepository, alterUserService);
     }
 
     @Test
@@ -44,8 +44,8 @@ public class UserRetriesServiceTest {
 
     @Test
     public void resetRetries_RecordLastLogginIn() {
-        final var user = UserEmail.builder().username("joe").lastLoggedIn(LocalDateTime.now().minusDays(1)).build();
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(user));
+        final var user = User.builder().username("joe").lastLoggedIn(LocalDateTime.now().minusDays(1)).build();
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
         service.resetRetriesAndRecordLogin("bob");
 
         assertThat(user.getLastLoggedIn()).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now());
@@ -55,8 +55,8 @@ public class UserRetriesServiceTest {
     public void resetRetries_SaveNewUser() {
         service.resetRetriesAndRecordLogin("bob");
 
-        final var captor = ArgumentCaptor.forClass(UserEmail.class);
-        verify(userEmailRepository).save(captor.capture());
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
 
         assertThat(captor.getValue().getUsername()).isEqualTo("bob");
         assertThat(captor.getValue().getLastLoggedIn()).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now());
@@ -72,29 +72,29 @@ public class UserRetriesServiceTest {
 
     @Test
     public void lockAccount_lockUserEmailNoRecord() {
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.empty());
+        when(userRepository.findById(anyString())).thenReturn(Optional.empty());
         service.lockAccount("bob");
-        final var captor = ArgumentCaptor.forClass(UserEmail.class);
-        verify(userEmailRepository).save(captor.capture());
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
         assertThat(captor.getValue().isLocked()).isEqualTo(true);
     }
 
     @Test
     public void lockAccount_lockUserEmailExistingRecord() {
-        final var existingUserEmail = UserEmail.of("username");
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(existingUserEmail));
+        final var existingUserEmail = User.of("username");
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(existingUserEmail));
         service.lockAccount("bob");
-        final var captor = ArgumentCaptor.forClass(UserEmail.class);
-        verify(userEmailRepository).save(captor.capture());
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
         assertThat(captor.getValue().isLocked()).isEqualTo(true);
         assertThat(captor.getValue()).isSameAs(existingUserEmail);
     }
 
     @Test
     public void lockAccount_NoAlterUserForAuthOnlyAccounts() {
-        final var existingUserEmail = UserEmail.of("username");
+        final var existingUserEmail = User.of("username");
         existingUserEmail.setMaster(true);
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(existingUserEmail));
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(existingUserEmail));
         service.lockAccount("bob");
         verify(alterUserService, never()).lockAccount(anyString());
     }

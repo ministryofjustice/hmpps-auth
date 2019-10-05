@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
@@ -60,19 +60,19 @@ public class VerifyEmailControllerTest {
 
     @Test
     public void verifyEmailRequest_existingUserEmail() throws IOException, ServletException {
-        final var userEmail = UserEmail.of("bob");
-        userEmail.setEmail("email");
-        when(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(userEmail));
+        final var user = User.of("bob");
+        user.setEmail("email");
+        when(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(user));
         final var modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null);
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
-        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("suggestion", userEmail.getEmail()));
+        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("suggestion", user.getEmail()));
     }
 
     @Test
     public void verifyEmailRequest_existingUserEmailVerified() throws IOException, ServletException {
-        final var userEmail = UserEmail.of("bob");
-        userEmail.setVerified(true);
-        when(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(userEmail));
+        final var user = User.of("bob");
+        user.setVerified(true);
+        when(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(user));
         SecurityContextHolder.getContext().setAuthentication(principal);
         final var modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null);
         assertThat(modelAndView).isNull();

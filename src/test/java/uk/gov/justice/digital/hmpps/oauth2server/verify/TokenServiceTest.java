@@ -9,7 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
@@ -61,7 +61,7 @@ public class TokenServiceTest {
     @Test
     public void checkToken() {
         final var userToken = new UserToken(TokenType.RESET, null);
-        userToken.setUserEmail(UserEmail.of("user"));
+        userToken.setUser(User.of("user"));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         assertThat(tokenService.checkToken(TokenType.RESET, "token")).isEmpty();
     }
@@ -76,7 +76,7 @@ public class TokenServiceTest {
     @Test
     public void checkToken_expiredTelemetryUsername() {
         final var userToken = new UserToken(TokenType.RESET, null);
-        userToken.setUserEmail(UserEmail.of("user"));
+        userToken.setUser(User.of("user"));
         userToken.setTokenExpiry(LocalDateTime.now().minusHours(1));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         tokenService.checkToken(TokenType.RESET, "token");
@@ -87,7 +87,7 @@ public class TokenServiceTest {
 
     @Test
     public void checkToken_expired() {
-        final var userToken = new UserToken(TokenType.RESET, UserEmail.of("joe"));
+        final var userToken = new UserToken(TokenType.RESET, User.of("joe"));
         userToken.setTokenExpiry(LocalDateTime.now().minusHours(1));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         assertThat(tokenService.checkToken(TokenType.RESET, "token")).get().isEqualTo("expired");

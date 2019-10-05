@@ -39,7 +39,7 @@ public class TokenService {
             return Optional.of("invalid");
         }
         final var userToken = userTokenOptional.get();
-        final var username = userToken.getUserEmail().getUsername();
+        final var username = userToken.getUser().getUsername();
         if (userToken.hasTokenExpired()) {
             log.info("Failed to reset password due to expired token");
             telemetryClient.trackEvent(String.format("%sPasswordFailure", tokenType.getDescription()),

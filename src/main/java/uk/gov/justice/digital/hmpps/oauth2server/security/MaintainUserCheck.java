@@ -4,35 +4,35 @@ import com.google.common.collect.Sets;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 
 import java.util.Collection;
 
 @Service
 public class MaintainUserCheck {
 
-    private final UserEmailRepository userEmailRepository;
+    private final UserRepository userRepository;
 
     public MaintainUserCheck(
-            final UserEmailRepository userEmailRepository) {
-        this.userEmailRepository = userEmailRepository;
+            final UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public static boolean canMaintainAuthUsers(final Collection<? extends GrantedAuthority> authorities) {
         return authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_MAINTAIN_OAUTH_USERS"::equals);
     }
 
-    public void ensureUserLoggedInUserRelationship(final String loggedInUser, final Collection<? extends GrantedAuthority> authorities, final UserEmail userEmail) throws AuthUserGroupRelationshipException {
+    public void ensureUserLoggedInUserRelationship(final String loggedInUser, final Collection<? extends GrantedAuthority> authorities, final User user) throws AuthUserGroupRelationshipException {
         // if they have maintain privileges then all good
         if (canMaintainAuthUsers(authorities)) {
             return;
         }
         // otherwise group managers must have a group in common for maintenance
-        final var loggedInUserEmail = userEmailRepository.findByUsernameAndMasterIsTrue(loggedInUser).orElseThrow();
-        if (Sets.intersection(loggedInUserEmail.getGroups(), userEmail.getGroups()).isEmpty()) {
+        final var loggedInUserEmail = userRepository.findByUsernameAndMasterIsTrue(loggedInUser).orElseThrow();
+        if (Sets.intersection(loggedInUserEmail.getGroups(), user.getGroups()).isEmpty()) {
             // no group in common, so disallow
-            throw new AuthUserGroupRelationshipException(userEmail.getName(), "User not with your groups");
+            throw new AuthUserGroupRelationshipException(user.getName(), "User not with your groups");
         }
     }
 

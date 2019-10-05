@@ -3,9 +3,9 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
 
 import java.time.LocalDateTime;
@@ -16,13 +16,13 @@ import java.time.LocalDateTime;
 public class UserRetriesService {
 
     private final UserRetriesRepository userRetriesRepository;
-    private final UserEmailRepository userEmailRepository;
+    private final UserRepository userRepository;
     private final AlterUserService alterUserService;
 
 
-    public UserRetriesService(final UserRetriesRepository userRetriesRepository, final UserEmailRepository userEmailRepository, final AlterUserService alterUserService) {
+    public UserRetriesService(final UserRetriesRepository userRetriesRepository, final UserRepository userRepository, final AlterUserService alterUserService) {
         this.userRetriesRepository = userRetriesRepository;
-        this.userEmailRepository = userEmailRepository;
+        this.userRepository = userRepository;
         this.alterUserService = alterUserService;
     }
 
@@ -35,10 +35,10 @@ public class UserRetriesService {
         resetRetries(username);
 
         // and record last logged in as now too (doing for all users to prevent confusion)
-        final var userEmailOptional = userEmailRepository.findById(username);
-        final var userEmail = userEmailOptional.orElseGet(() -> UserEmail.of(username));
-        userEmail.setLastLoggedIn(LocalDateTime.now());
-        userEmailRepository.save(userEmail);
+        final var userOptional = userRepository.findById(username);
+        final var user = userOptional.orElseGet(() -> User.of(username));
+        user.setLastLoggedIn(LocalDateTime.now());
+        userRepository.save(user);
     }
 
     /**
@@ -54,13 +54,13 @@ public class UserRetriesService {
     }
 
     public void lockAccount(final String username) {
-        final var userEmailOptional = userEmailRepository.findById(username);
-        final var userEmail = userEmailOptional.orElseGet(() -> UserEmail.of(username));
-        userEmail.setLocked(true);
-        userEmailRepository.save(userEmail);
+        final var userOptional = userRepository.findById(username);
+        final var user = userOptional.orElseGet(() -> User.of(username));
+        user.setLocked(true);
+        userRepository.save(user);
 
         // if auth isn't the master of the data then call to oracle to lock the user account
-        if (!userEmail.isMaster()) {
+        if (!user.isMaster()) {
             alterUserService.lockAccount(username);
         }
 

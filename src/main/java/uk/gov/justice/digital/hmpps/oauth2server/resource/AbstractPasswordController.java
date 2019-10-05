@@ -66,7 +66,7 @@ public class AbstractPasswordController {
         }
         // token checked already by service, so can just get it here
         final var userToken = tokenService.getToken(tokenType, token).orElseThrow();
-        final var username = userToken.getUserEmail().getUsername();
+        final var username = userToken.getUser().getUsername();
 
         final var validationResult = validate(username, newPassword, confirmPassword);
         if (!validationResult.isEmpty()) {
@@ -182,7 +182,7 @@ public class AbstractPasswordController {
 
     private void addIsAdminToModel(@SuppressWarnings("OptionalUsedAsFieldOrParameterType") final Optional<UserToken> userToken,
                                    final ModelAndView modelAndView) {
-        final boolean isAdmin = userToken.flatMap(ut -> userService.findUser(ut.getUserEmail().getUsername())).
+        final boolean isAdmin = userToken.flatMap(ut -> userService.findUser(ut.getUser().getUsername())).
                 map(UserPersonDetails::isAdmin).
                 orElse(Boolean.FALSE);
         modelAndView.addObject("isAdmin", isAdmin);

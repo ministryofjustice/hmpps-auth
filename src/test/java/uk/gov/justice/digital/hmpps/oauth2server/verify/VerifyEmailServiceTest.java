@@ -9,10 +9,10 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class VerifyEmailServiceTest {
     @Mock
-    private UserEmailRepository userEmailRepository;
+    private UserRepository userRepository;
     @Mock
     private UserTokenRepository userTokenRepository;
     @Mock
@@ -54,44 +54,44 @@ public class VerifyEmailServiceTest {
 
     @Before
     public void setUp() {
-        verifyEmailService = new VerifyEmailService(userEmailRepository, userTokenRepository, userService, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId");
+        verifyEmailService = new VerifyEmailService(userRepository, userTokenRepository, userService, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId");
     }
 
     @Test
     public void getEmail() {
-        final var userEmail = UserEmail.builder().username("bob").email("joe@bob.com").build();
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
-        final var userEmailOptional = verifyEmailService.getEmail("user");
-        assertThat(userEmailOptional).get().isEqualTo(userEmail);
+        final var user = User.builder().username("bob").email("joe@bob.com").build();
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
+        final var userOptional = verifyEmailService.getEmail("user");
+        assertThat(userOptional).get().isEqualTo(user);
     }
 
     @Test
     public void getEmail_NoEmailSet() {
-        final var userEmail = UserEmail.of("bob");
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
-        final var userEmailOptional = verifyEmailService.getEmail("user");
-        assertThat(userEmailOptional).isEmpty();
+        final var user = User.of("bob");
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
+        final var userOptionalOptional = verifyEmailService.getEmail("user");
+        assertThat(userOptionalOptional).isEmpty();
     }
 
     @Test
     public void isNotVerified_userMissing() {
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.empty());
+        when(userRepository.findById(anyString())).thenReturn(Optional.empty());
         assertThat(verifyEmailService.isNotVerified("user")).isTrue();
-        verify(userEmailRepository).findById("user");
+        verify(userRepository).findById("user");
     }
 
     @Test
     public void isNotVerified_userFoundNotVerified() {
-        final var userEmail = UserEmail.of("bob");
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
+        final var user = User.of("bob");
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
         assertThat(verifyEmailService.isNotVerified("user")).isTrue();
     }
 
     @Test
     public void isNotVerified_userFoundVerified() {
-        final var userEmail = UserEmail.builder().username("bob").email("joe@bob.com").build();
-        userEmail.setVerified(true);
-        when(userEmailRepository.findById(anyString())).thenReturn(Optional.of(userEmail));
+        final var user = User.builder().username("bob").email("joe@bob.com").build();
+        user.setVerified(true);
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
         assertThat(verifyEmailService.isNotVerified("user")).isFalse();
     }
 
@@ -116,10 +116,10 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void requestVerification_existingToken() throws NotificationClientException, VerifyEmailException {
-        final var userEmail = UserEmail.of("someuser");
-        when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
-        final var userToken = new UserToken(TokenType.VERIFIED, userEmail);
-        when(userTokenRepository.findByTokenTypeAndUserEmail(any(), any())).thenReturn(Optional.of(userToken));
+        final var user = User.of("someuser");
+        when(userRepository.findById("user")).thenReturn(Optional.of(user));
+        final var userToken = new UserToken(TokenType.VERIFIED, user);
+        when(userTokenRepository.findByTokenTypeAndUser(any(), any())).thenReturn(Optional.of(userToken));
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         verifyEmailService.requestVerification("user", "email@john.com", "url");
         verify(userTokenRepository).delete(userToken);
@@ -127,8 +127,8 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void requestVerification_verifyToken() throws NotificationClientException, VerifyEmailException {
-        final var userEmail = UserEmail.of("someuser");
-        when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
+        final var user = User.of("someuser");
+        when(userRepository.findById("user")).thenReturn(Optional.of(user));
         final var captor = ArgumentCaptor.forClass(UserToken.class);
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         final var verification = verifyEmailService.requestVerification("user", "email@john.com", "url");
@@ -139,13 +139,13 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void requestVerification_saveEmail() throws NotificationClientException, VerifyEmailException {
-        final var userEmail = UserEmail.of("someuser");
-        when(userEmailRepository.findById("user")).thenReturn(Optional.of(userEmail));
+        final var user = User.of("someuser");
+        when(userRepository.findById("user")).thenReturn(Optional.of(user));
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         verifyEmailService.requestVerification("user", "eMail@john.COM", "url");
-        verify(userEmailRepository).save(userEmail);
-        assertThat(userEmail.getEmail()).isEqualTo("email@john.com");
-        assertThat(userEmail.isVerified()).isFalse();
+        verify(userRepository).save(user);
+        assertThat(user.getEmail()).isEqualTo("email@john.com");
+        assertThat(user.isVerified()).isFalse();
     }
 
     @Test
@@ -233,14 +233,14 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void confirmEmail_happyPath() {
-        final var userEmail = UserEmail.of("bob");
-        final var userToken = new UserToken(TokenType.VERIFIED, userEmail);
+        final var user = User.of("bob");
+        final var userToken = new UserToken(TokenType.VERIFIED, user);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         final var result = verifyEmailService.confirmEmail("token");
 
         assertThat(result).isEmpty();
-        verify(userEmailRepository).save(userEmail);
-        assertThat(userEmail.isVerified()).isTrue();
+        verify(userRepository).save(user);
+        assertThat(user.isVerified()).isTrue();
     }
 
     @Test
@@ -251,8 +251,8 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void confirmEmail_expired() {
-        final var userEmail = UserEmail.of("bob");
-        final var userToken = new UserToken(TokenType.VERIFIED, userEmail);
+        final var user = User.of("bob");
+        final var userToken = new UserToken(TokenType.VERIFIED, user);
         userToken.setTokenExpiry(LocalDateTime.now().minusSeconds(1));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         final var result = verifyEmailService.confirmEmail("token");

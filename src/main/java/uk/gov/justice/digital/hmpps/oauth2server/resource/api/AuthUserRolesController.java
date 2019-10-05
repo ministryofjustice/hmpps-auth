@@ -8,7 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleExistsException;
@@ -83,7 +83,7 @@ public class AuthUserRolesController {
             @ApiIgnore final Authentication authentication) {
 
         final var userOptional = userService.getAuthUserByUsername(username);
-        return userOptional.map(UserEmail::getUsername).map(usernameInDb -> {
+        return userOptional.map(User::getUsername).map(usernameInDb -> {
             try {
                 authUserRoleService.addRole(usernameInDb, role, authentication.getName(), authentication.getAuthorities());
                 log.info("Add role succeeded for user {} and role {}", usernameInDb, role);

@@ -8,7 +8,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
@@ -124,8 +124,8 @@ public class AuthUserRolesControllerTest {
                 new AuthUserRole(new Authority("GLOBAL_SEARCH", "Global Search")));
     }
 
-    private UserEmail getAuthUser() {
-        final var user = UserEmail.builder().username("USER").email("email").verified(true).build();
+    private User getAuthUser() {
+        final var user = User.builder().username("USER").email("email").verified(true).build();
 
         user.setAuthorities(Set.of(new Authority("FRED", "FRED"), new Authority("GLOBAL_SEARCH", "Global Search")));
         return user;

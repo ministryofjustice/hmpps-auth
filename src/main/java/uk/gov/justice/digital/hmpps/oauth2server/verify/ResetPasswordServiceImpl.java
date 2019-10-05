@@ -11,10 +11,10 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AlterUserService;
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Transactional
 public class ResetPasswordServiceImpl extends PasswordServiceImpl implements ResetPasswordService {
 
-    private final UserEmailRepository userEmailRepository;
+    private final UserRepository userRepository;
     private final UserTokenRepository userTokenRepository;
     private final UserService userService;
     private final AlterUserService alterUserService;
@@ -43,18 +43,18 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
     private final String resetUnavailableEmailNotFoundTemplateId;
     private final String resetPasswordConfirmedTemplateId;
 
-    public ResetPasswordServiceImpl(final UserEmailRepository userEmailRepository,
+    public ResetPasswordServiceImpl(final UserRepository userRepository,
                                     final UserTokenRepository userTokenRepository, final UserService userService,
                                     final AlterUserService alterUserService,
                                     final NotificationClientApi notificationClient,
                                     @Value("${application.notify.reset.template}") final String resetTemplateId,
                                     @Value("${application.notify.reset-unavailable.template}") final String resetUnavailableTemplateId,
                                     @Value("${application.notify.reset-unavailable-email-not-found.template}") final String resetUnavailableEmailNotFoundTemplateId,
-                                    @Value("${application.notify.reset-password.template}") String resetPasswordConfirmedTemplateId,
+                                    @Value("${application.notify.reset-password.template}") final String resetPasswordConfirmedTemplateId,
                                     final PasswordEncoder passwordEncoder,
                                     @Value("${application.authentication.password-age}") final long passwordAge) {
         super(passwordEncoder, passwordAge);
-        this.userEmailRepository = userEmailRepository;
+        this.userRepository = userRepository;
         this.userTokenRepository = userTokenRepository;
         this.userService = userService;
         this.alterUserService = alterUserService;
@@ -68,10 +68,10 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
     @Override
     @Throttling(type = ThrottlingType.SpEL, expression = "T(uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper).retrieveIpFromRequest()", limit = 6, timeUnit = TimeUnit.MINUTES)
     public Optional<String> requestResetPassword(final String usernameOrEmailAddress, final String url) throws NotificationClientRuntimeException {
-        final Optional<UserEmail> optionalUserEmail;
+        final Optional<User> optionalUser;
         final boolean multipleMatchesAndCanBeReset;
         if (StringUtils.contains(usernameOrEmailAddress, "@")) {
-            final var matches = userEmailRepository.findByEmail(usernameOrEmailAddress.toLowerCase());
+            final var matches = userRepository.findByEmail(usernameOrEmailAddress.toLowerCase());
             if (matches.isEmpty()) {
                 // no match, but got an email address so let them know
                 sendEmail(usernameOrEmailAddress, resetUnavailableEmailNotFoundTemplateId, Collections.emptyMap(), usernameOrEmailAddress.toLowerCase());
@@ -80,46 +80,46 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
 
             final var passwordCanBeReset = matches.stream().filter(this::passwordAllowedToBeReset).findFirst();
             multipleMatchesAndCanBeReset = passwordCanBeReset.map(ue -> matches.size() > 1).orElse(Boolean.FALSE);
-            optionalUserEmail = Optional.of(matches.get(0));
+            optionalUser = Optional.of(matches.get(0));
         } else {
             multipleMatchesAndCanBeReset = false;
-            optionalUserEmail = userEmailRepository.findById(usernameOrEmailAddress.toUpperCase());
+            optionalUser = userRepository.findById(usernameOrEmailAddress.toUpperCase());
         }
 
-        if (optionalUserEmail.isEmpty() || StringUtils.isEmpty(optionalUserEmail.get().getEmail())) {
+        if (optionalUser.isEmpty() || StringUtils.isEmpty(optionalUser.get().getEmail())) {
             // no user found or email address found, so nothing more we can do.  Bail
             return Optional.empty();
         }
 
-        final var userEmail = optionalUserEmail.get();
-        final var templateAndParameters = getTemplateAndParameters(url, multipleMatchesAndCanBeReset, userEmail);
+        final var user = optionalUser.get();
+        final var templateAndParameters = getTemplateAndParameters(url, multipleMatchesAndCanBeReset, user);
 
-        sendEmail(userEmail.getUsername(), templateAndParameters, userEmail.getEmail());
+        sendEmail(user.getUsername(), templateAndParameters, user.getEmail());
 
         return Optional.ofNullable(templateAndParameters.getResetLink());
     }
 
-    private TemplateAndParameters getTemplateAndParameters(final String url, final boolean multipleMatchesAndCanBeReset, final UserEmail userEmail) {
+    private TemplateAndParameters getTemplateAndParameters(final String url, final boolean multipleMatchesAndCanBeReset, final User user) {
         final UserPersonDetails userDetails;
-        if (userEmail.isMaster()) {
-            userDetails = userEmail;
+        if (user.isMaster()) {
+            userDetails = user;
         } else {
-            final var userOptional = userService.findUser(userEmail.getUsername());
+            final var userOptional = userService.findUser(user.getUsername());
             if (userOptional.isEmpty()) {
                 // shouldn't really happen, means that a nomis user exists in auth but not in nomis
-                return new TemplateAndParameters(resetUnavailableTemplateId, userEmail.getUsername());
+                return new TemplateAndParameters(resetUnavailableTemplateId, user.getUsername());
             }
             userDetails = userOptional.get();
         }
         // only allow reset for active accounts that aren't locked
         // or are locked by getting password incorrect (in either c-nomis or auth)
         final var firstName = userDetails.getFirstName();
-        if (multipleMatchesAndCanBeReset || passwordAllowedToBeReset(userEmail, userDetails)) {
-            final var userTokenOptional = userTokenRepository.findByTokenTypeAndUserEmail(TokenType.RESET, userEmail);
+        if (multipleMatchesAndCanBeReset || passwordAllowedToBeReset(user, userDetails)) {
+            final var userTokenOptional = userTokenRepository.findByTokenTypeAndUser(TokenType.RESET, user);
             // delete any existing token
             userTokenOptional.ifPresent(userTokenRepository::delete);
 
-            final var userToken = new UserToken(TokenType.RESET, userEmail);
+            final var userToken = new UserToken(TokenType.RESET, user);
             userTokenRepository.save(userToken);
 
             final var selectOrConfirm = multipleMatchesAndCanBeReset ? "select" : "confirm";
@@ -151,47 +151,47 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
         }
     }
 
-    private boolean passwordAllowedToBeReset(final UserEmail userEmail, final UserPersonDetails userPersonDetails) {
-        if (userEmail.isMaster()) {
+    private boolean passwordAllowedToBeReset(final User user, final UserPersonDetails userPersonDetails) {
+        if (user.isMaster()) {
             // for auth users they must be enabled (so can be locked)
-            return userEmail.isEnabled();
+            return user.isEnabled();
         }
         // otherwise must be nomis user so will have a staff account instead.
         final var staffUserAccount = (StaffUserAccount) userPersonDetails;
         final var status = staffUserAccount.getAccountDetail().getStatus();
-        return staffUserAccount.getStaff().isActive() && (!status.isLocked() || status.isUserLocked() || userEmail.isLocked());
+        return staffUserAccount.getStaff().isActive() && (!status.isLocked() || status.isUserLocked() || user.isLocked());
     }
 
     @Override
     public void setPassword(final String token, final String password) {
         final var userToken = userTokenRepository.findById(token).orElseThrow();
-        final var userEmail = userToken.getUserEmail();
+        final var user = userToken.getUser();
 
-        if (!passwordAllowedToBeReset(userEmail)) {
+        if (!passwordAllowedToBeReset(user)) {
             // failed, so let user know
             throw new LockedException("locked");
         }
 
-        userEmail.setVerified(true);
-        userEmail.setLocked(false);
+        user.setVerified(true);
+        user.setLocked(false);
 
         // if we're the master of this user record deal with the change of password here
-        if (userEmail.isMaster()) {
-            changeAuthPassword(userEmail, password);
+        if (user.isMaster()) {
+            changeAuthPassword(user, password);
         } else {
-            alterUserService.changePasswordWithUnlock(userEmail.getUsername(), password);
+            alterUserService.changePasswordWithUnlock(user.getUsername(), password);
         }
 
-        userEmailRepository.save(userEmail);
+        userRepository.save(user);
         userTokenRepository.delete(userToken);
-        sendPasswordResetEmail(userEmail);
+        sendPasswordResetEmail(user);
     }
 
-    private void sendPasswordResetEmail(final UserEmail userEmail) {
+    private void sendPasswordResetEmail(final User user) {
         // then the reset token
-        final var username = userEmail.getUsername();
-        final var email = userEmail.getEmail();
-        final var parameters = Map.of("firstName", userEmail.getFirstName(), "username", username);
+        final var username = user.getUsername();
+        final var email = user.getEmail();
+        final var parameters = Map.of("firstName", user.getFirstName(), "username", username);
 
         // send the email
         try {
@@ -204,14 +204,14 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
                 // second time lucky
                 try {
                     notificationClient.sendEmail(resetPasswordConfirmedTemplateId, email, parameters, null, null);
-                } catch (NotificationClientException ex) {
+                } catch (final NotificationClientException ex) {
                     log.error("Failed to send password reset notify for user {}", username, ex);
                 }
             }
         }
     }
 
-    private boolean passwordAllowedToBeReset(final UserEmail ue) {
+    private boolean passwordAllowedToBeReset(final User ue) {
         final var userPersonDetailsOptional = ue.isMaster() ? Optional.of(ue) : userService.findUser(ue.getUsername());
         return userPersonDetailsOptional.map(upd -> passwordAllowedToBeReset(ue, upd)).orElse(false);
     }
@@ -223,18 +223,18 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
         }
         final var username = StringUtils.upperCase(StringUtils.trim(usernameInput));
 
-        final var userEmailOptional = userEmailRepository.findById(username);
-        return userEmailOptional.map(ue -> {
+        final var userOptional = userRepository.findById(username);
+        return userOptional.map(ue -> {
             final var userToken = userTokenRepository.findById(token).orElseThrow();
             // need to have same email address
-            if (!userToken.getUserEmail().getEmail().equals(ue.getEmail())) {
+            if (!userToken.getUser().getEmail().equals(ue.getEmail())) {
                 throw new ResetPasswordException("email");
             }
 
             if (!passwordAllowedToBeReset(ue)) {
                 throw new ResetPasswordException("locked");
             }
-            if (userToken.getUserEmail().getUsername().equals(username)) {
+            if (userToken.getUser().getUsername().equals(username)) {
                 // no work since they are the same
                 return token;
             }

@@ -8,8 +8,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class DisableInactiveAuthUsersServiceTest {
     @Mock
-    private UserEmailRepository userEmailRepository;
+    private UserRepository userRepository;
     @Mock
     private TelemetryClient telemetryClient;
     @Captor
@@ -32,13 +32,13 @@ public class DisableInactiveAuthUsersServiceTest {
 
     @Before
     public void setUp() {
-        service = new DisableInactiveAuthUsersService(userEmailRepository, telemetryClient);
+        service = new DisableInactiveAuthUsersService(userRepository, telemetryClient);
     }
 
     @Test
     public void findAndDisableInactiveAuthUsers_Processed() {
-        final var users = List.of(UserEmail.of("user"), UserEmail.of("joe"));
-        when(userEmailRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
+        final var users = List.of(User.of("user"), User.of("joe"));
+        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
                 .thenReturn(users);
         assertThat(service.processInBatches()).isEqualTo(2);
     }
@@ -46,20 +46,20 @@ public class DisableInactiveAuthUsersServiceTest {
     @Test
     public void findAndDisableInactiveAuthUsers_Disabled() {
         final var users = List.of(
-                UserEmail.builder().username("user").enabled(true).build(),
-                UserEmail.builder().username("joe").enabled(true).build());
-        when(userEmailRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
+                User.builder().username("user").enabled(true).build(),
+                User.builder().username("joe").enabled(true).build());
+        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
                 .thenReturn(users);
         service.processInBatches();
-        assertThat(users).extracting(UserEmail::isEnabled).containsExactly(false, false);
+        assertThat(users).extracting(User::isEnabled).containsExactly(false, false);
     }
 
     @Test
     public void findAndDisableInactiveAuthUsers_Telemetry() {
         final var users = List.of(
-                UserEmail.builder().username("user").enabled(true).build(),
-                UserEmail.builder().username("joe").enabled(true).build());
-        when(userEmailRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
+                User.builder().username("user").enabled(true).build(),
+                User.builder().username("joe").enabled(true).build());
+        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
                 .thenReturn(users);
         service.processInBatches();
 

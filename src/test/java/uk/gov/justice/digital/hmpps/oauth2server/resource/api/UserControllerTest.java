@@ -9,7 +9,7 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.model.EmailAddress;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail;
@@ -115,7 +115,7 @@ public class UserControllerTest {
 
     @Test
     public void getUserEmail_found() {
-        when(userService.findUserEmail(anyString())).thenReturn(Optional.of(UserEmail.builder().username("JOE").verified(true).email("someemail").build()));
+        when(userService.findAuthUser(anyString())).thenReturn(Optional.of(User.builder().username("JOE").verified(true).email("someemail").build()));
 
         final var responseEntity = userController.getUserEmail("joe");
 
@@ -125,7 +125,7 @@ public class UserControllerTest {
 
     @Test
     public void getUserEmail_notFound() {
-        when(userService.findUserEmail(anyString())).thenReturn(Optional.empty());
+        when(userService.findAuthUser(anyString())).thenReturn(Optional.empty());
 
         final var responseEntity = userController.getUserEmail("joe");
 
@@ -135,7 +135,7 @@ public class UserControllerTest {
 
     @Test
     public void getUserEmail_notVerified() {
-        when(userService.findUserEmail(anyString())).thenReturn(Optional.of(UserEmail.of("JOE")));
+        when(userService.findAuthUser(anyString())).thenReturn(Optional.of(User.of("JOE")));
 
         final var responseEntity = userController.getUserEmail("joe");
 
@@ -157,7 +157,7 @@ public class UserControllerTest {
     }
 
     private void setupFindUserCallForAuth() {
-        final var user = UserEmail.builder().username("principal").email("email").verified(true).build();
+        final var user = User.builder().username("principal").email("email").verified(true).build();
         user.setPerson(new Person());
         user.getPerson().setFirstName("Joe");
         user.getPerson().setLastName("Bloggs");

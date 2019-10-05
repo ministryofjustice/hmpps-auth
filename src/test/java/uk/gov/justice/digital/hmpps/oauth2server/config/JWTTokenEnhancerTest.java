@@ -8,7 +8,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl;
 
 import java.util.Collections;
@@ -26,7 +26,7 @@ public class JWTTokenEnhancerTest {
     public void testEnhance_HasUserToken() {
         final OAuth2AccessToken token = new DefaultOAuth2AccessToken("value");
         when(authentication.isClientOnly()).thenReturn(false);
-        when(authentication.getUserAuthentication()).thenReturn(new UsernamePasswordAuthenticationToken(UserEmail.of("user"), "pass"));
+        when(authentication.getUserAuthentication()).thenReturn(new UsernamePasswordAuthenticationToken(User.of("user"), "pass"));
 
         new JWTTokenEnhancer().enhance(token, authentication);
 

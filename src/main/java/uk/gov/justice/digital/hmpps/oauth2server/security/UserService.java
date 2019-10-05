@@ -6,8 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserEmail;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
@@ -24,26 +24,26 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class UserService {
 
-    private final StaffUserAccountRepository userRepository;
+    private final StaffUserAccountRepository staffUserAccountRepository;
     private final StaffIdentifierRepository staffIdentifierRepository;
-    private final UserEmailRepository userEmailRepository;
+    private final UserRepository userRepository;
     private final TelemetryClient telemetryClient;
     private final MaintainUserCheck maintainUserCheck;
 
-    public UserService(final StaffUserAccountRepository userRepository,
+    public UserService(final StaffUserAccountRepository staffUserAccountRepository,
                        final StaffIdentifierRepository staffIdentifierRepository,
-                       final UserEmailRepository userEmailRepository,
+                       final UserRepository userRepository,
                        final TelemetryClient telemetryClient,
                        final MaintainUserCheck maintainUserCheck) {
-        this.userRepository = userRepository;
+        this.staffUserAccountRepository = staffUserAccountRepository;
         this.staffIdentifierRepository = staffIdentifierRepository;
-        this.userEmailRepository = userEmailRepository;
+        this.userRepository = userRepository;
         this.telemetryClient = telemetryClient;
         this.maintainUserCheck = maintainUserCheck;
     }
 
     private Optional<StaffUserAccount> getUserByUsername(final String username) {
-        return userRepository.findById(StringUtils.upperCase(username));
+        return staffUserAccountRepository.findById(StringUtils.upperCase(username));
     }
 
     public StaffUserAccount getUserByExternalIdentifier(final String idType, final String id, final boolean activeOnly) {
@@ -63,8 +63,8 @@ public class UserService {
                 new EntityNotFoundException(String.format("User not found for external identifier with idType [%s] and id [%s].", idType, id)));
     }
 
-    public Optional<UserEmail> getAuthUserByUsername(final String username) {
-        return userEmailRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)));
+    public Optional<User> getAuthUserByUsername(final String username) {
+        return userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)));
     }
 
     public Optional<UserPersonDetails> findUser(final String username) {
@@ -72,8 +72,8 @@ public class UserService {
                 or(() -> getUserByUsername(username).map(UserPersonDetails.class::cast));
     }
 
-    public List<UserEmail> findAuthUsersByEmail(final String email) {
-        return userEmailRepository.findByEmailAndMasterIsTrueOrderByUsername(StringUtils.lowerCase(StringUtils.trim(email)));
+    public List<User> findAuthUsersByEmail(final String email) {
+        return userRepository.findByEmailAndMasterIsTrueOrderByUsername(StringUtils.lowerCase(StringUtils.trim(email)));
     }
 
     @Transactional(transactionManager = "authTransactionManager")
@@ -87,18 +87,18 @@ public class UserService {
     }
 
     private void changeUserEnabled(final String username, final boolean enabled, final String admin, final Collection<? extends GrantedAuthority> authorities) throws AuthUserGroupRelationshipException {
-        final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username)
+        final var user = userRepository.findByUsernameAndMasterIsTrue(username)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
 
-        maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, userEmail);
+        maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user);
 
-        userEmail.setEnabled(enabled);
-        userEmailRepository.save(userEmail);
+        user.setEnabled(enabled);
+        userRepository.save(user);
         telemetryClient.trackEvent("AuthUserChangeEnabled",
-                Map.of("username", userEmail.getUsername(), "enabled", Boolean.toString(enabled), "admin", admin), null);
+                Map.of("username", user.getUsername(), "enabled", Boolean.toString(enabled), "admin", admin), null);
     }
 
-    public Optional<UserEmail> findUserEmail(final String username) {
-        return userEmailRepository.findById(StringUtils.upperCase(username));
+    public Optional<User> findAuthUser(final String username) {
+        return userRepository.findById(StringUtils.upperCase(username));
     }
 }

@@ -19,7 +19,7 @@ import static javax.persistence.FetchType.EAGER;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"username"})
 @Builder
-public class UserEmail implements UserPersonDetails, CredentialsContainer {
+public class User implements UserPersonDetails, CredentialsContainer {
 
     @Id
     @Column(name = "username", nullable = false)
@@ -70,11 +70,14 @@ public class UserEmail implements UserPersonDetails, CredentialsContainer {
     private Set<Authority> authorities = new HashSet<>();
 
     @OneToMany
+    @JoinTable(name = "user_email_groups",
+            joinColumns = @JoinColumn(name = "useremail_username"),
+            inverseJoinColumns = @JoinColumn(name = "groups_group_id"))
     @Builder.Default
     private Set<Group> groups = new HashSet<>();
 
-    public static UserEmail of(final String username) {
-        return UserEmail.builder().username(username).build();
+    public static User of(final String username) {
+        return User.builder().username(username).build();
     }
 
     @Override

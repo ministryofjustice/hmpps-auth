@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserEmailRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
 public class AuthUserService {
     private final UserTokenRepository userTokenRepository;
-    private final UserEmailRepository userEmailRepository;
+    private final UserRepository userRepository;
     private final NotificationClientApi notificationClient;
     private final TelemetryClient telemetryClient;
     private final VerifyEmailService verifyEmailService;
@@ -51,7 +51,7 @@ public class AuthUserService {
     private static final int MIN_LENGTH_LAST_NAME = 2;
 
     public AuthUserService(final UserTokenRepository userTokenRepository,
-                           final UserEmailRepository userEmailRepository,
+                           final UserRepository userRepository,
                            final NotificationClientApi notificationClient,
                            final TelemetryClient telemetryClient,
                            final VerifyEmailService verifyEmailService,
@@ -59,7 +59,7 @@ public class AuthUserService {
                            final MaintainUserCheck maintainUserCheck,
                            @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId) {
         this.userTokenRepository = userTokenRepository;
-        this.userEmailRepository = userEmailRepository;
+        this.userRepository = userRepository;
         this.notificationClient = notificationClient;
         this.telemetryClient = telemetryClient;
         this.verifyEmailService = verifyEmailService;
@@ -96,7 +96,7 @@ public class AuthUserService {
 
         final var groups = group.map(Set::of).orElse(Set.of());
 
-        final var user = UserEmail.builder()
+        final var user = User.builder()
                 .username(username)
                 .email(email)
                 .enabled(true)
@@ -107,9 +107,9 @@ public class AuthUserService {
         return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate");
     }
 
-    public Page<UserEmail> findAuthUsers(final String name, final String roleCode, final String groupCode, final Pageable pageable) {
-        final var userEmailFilter = UserEmailFilter.builder().name(name).roleCode(roleCode).groupCode(groupCode).build();
-        return userEmailRepository.findAll(userEmailFilter, pageable);
+    public Page<User> findAuthUsers(final String name, final String roleCode, final String groupCode, final Pageable pageable) {
+        final var userFilter = UserFilter.builder().name(name).roleCode(roleCode).groupCode(groupCode).build();
+        return userRepository.findAll(userFilter, pageable);
     }
 
     private Optional<Group> getInitialGroup(final String groupCode, final String creator, final Collection<? extends GrantedAuthority> authorities) throws CreateUserException {
@@ -122,8 +122,8 @@ public class AuthUserService {
         return Optional.of(authUserGroups.stream().filter(g -> g.getGroupCode().equals(groupCode)).findFirst().orElseThrow(() -> new CreateUserException("groupCode", "notfound")));
     }
 
-    private String saveAndSendInitialEmail(final String url, final UserEmail user, final String creator, final String eventPrefix) throws NotificationClientException {
-        userEmailRepository.save(user);
+    private String saveAndSendInitialEmail(final String url, final User user, final String creator, final String eventPrefix) throws NotificationClientException {
+        userRepository.save(user);
 
         // then the reset token
         final var userToken = new UserToken(TokenType.RESET, user);
@@ -163,18 +163,18 @@ public class AuthUserService {
         final var username = StringUtils.upperCase(usernameInput);
         final var email = StringUtils.lowerCase(emailAddressInput);
 
-        final var userEmail = userEmailRepository.findByUsernameAndMasterIsTrue(username)
+        final var user = userRepository.findByUsernameAndMasterIsTrue(username)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
 
-        maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, userEmail);
+        maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user);
 
         // if unverified and password not set then still in the initial state
-        if (userEmail.isVerified() || userEmail.getPassword() != null) {
+        if (user.isVerified() || user.getPassword() != null) {
             throw new AmendUserException("email", "notinitial");
         }
         verifyEmailService.validateEmailAddress(email);
-        userEmail.setEmail(email);
-        return saveAndSendInitialEmail(url, userEmail, admin, "AuthUserAmend");
+        user.setEmail(email);
+        return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend");
     }
 
     private void validate(final String username, final String email, final String firstName, final String lastName)
