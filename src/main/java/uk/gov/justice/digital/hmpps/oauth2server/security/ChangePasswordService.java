@@ -42,7 +42,7 @@ public class ChangePasswordService extends PasswordServiceImpl {
 
     @Transactional(transactionManager = "authTransactionManager")
     public String createToken(final String username) {
-        final var userOptional = userRepository.findById(username);
+        final var userOptional = userRepository.findByUsername(username);
         final var user = userOptional.orElseGet(() -> {
             final var ue = User.of(username);
             return userRepository.save(ue);

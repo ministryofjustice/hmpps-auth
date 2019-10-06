@@ -35,7 +35,7 @@ public class UserRetriesService {
         resetRetries(username);
 
         // and record last logged in as now too (doing for all users to prevent confusion)
-        final var userOptional = userRepository.findById(username);
+        final var userOptional = userRepository.findByUsername(username);
         final var user = userOptional.orElseGet(() -> User.of(username));
         user.setLastLoggedIn(LocalDateTime.now());
         userRepository.save(user);
@@ -54,7 +54,7 @@ public class UserRetriesService {
     }
 
     public void lockAccount(final String username) {
-        final var userOptional = userRepository.findById(username);
+        final var userOptional = userRepository.findByUsername(username);
         final var user = userOptional.orElseGet(() -> User.of(username));
         user.setLocked(true);
         userRepository.save(user);

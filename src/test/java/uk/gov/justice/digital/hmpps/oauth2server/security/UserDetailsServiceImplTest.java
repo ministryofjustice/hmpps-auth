@@ -271,7 +271,7 @@ public class UserDetailsServiceImplTest {
 
     private User buildAuthUser() {
         final var user = User.builder().username("user").email("email").verified(true).build();
-        user.setPerson(new Person("user", "first", "last"));
+        user.setPerson(new Person("first", "last"));
         user.setEnabled(true);
         user.setPasswordExpiry(LocalDateTime.now().plusDays(1));
         return user;

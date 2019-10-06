@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.security.core.CredentialsContainer;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
@@ -9,20 +10,24 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
-import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.FetchType.EAGER;
 
 @Entity
-@Table(name = "USER_EMAIL")
+@Table(name = "USERS")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@EqualsAndHashCode(of = {"username"})
+@EqualsAndHashCode(of = {"id"})
 @Builder
 public class User implements UserPersonDetails, CredentialsContainer {
-
     @Id
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "user_id", updatable = false, nullable = false)
+    private UUID id;
+
     @Column(name = "username", nullable = false)
     private String username;
 
@@ -58,22 +63,20 @@ public class User implements UserPersonDetails, CredentialsContainer {
     @Builder.Default
     private LocalDateTime lastLoggedIn = LocalDateTime.now();
 
-    @OneToOne(cascade = ALL)
-    @JoinColumn(name = "username")
-    @PrimaryKeyJoinColumn
+    @Embedded
     private Person person;
 
     @OneToMany(fetch = EAGER)
-    @JoinTable(name = "user_email_roles",
-            joinColumns = @JoinColumn(name = "username"),
+    @JoinTable(name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     @Builder.Default
     private Set<Authority> authorities = new HashSet<>();
 
     @OneToMany
-    @JoinTable(name = "user_email_groups",
-            joinColumns = @JoinColumn(name = "useremail_username"),
-            inverseJoinColumns = @JoinColumn(name = "groups_group_id"))
+    @JoinTable(name = "user_group",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "group_id"))
     @Builder.Default
     private Set<Group> groups = new HashSet<>();
 

@@ -170,7 +170,7 @@ public class ChangePasswordServiceTest {
 
     private Optional<UserPersonDetails> buildAuthUser() {
         final var user = User.builder().username("user").email("email").verified(true).build();
-        user.setPerson(new Person("user", "first", "last"));
+        user.setPerson(new Person("first", "last"));
         user.setEnabled(true);
         return Optional.of(user);
     }

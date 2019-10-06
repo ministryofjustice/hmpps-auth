@@ -99,6 +99,6 @@ public class UserService {
     }
 
     public Optional<User> findAuthUser(final String username) {
-        return userRepository.findById(StringUtils.upperCase(username));
+        return userRepository.findByUsername(StringUtils.upperCase(username));
     }
 }

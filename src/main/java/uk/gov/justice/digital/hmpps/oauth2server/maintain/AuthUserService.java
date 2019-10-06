@@ -80,7 +80,7 @@ public class AuthUserService {
         final var group = getInitialGroup(groupCode, creator, authorities);
 
         // create the user
-        final var person = new Person(username, firstName, lastName);
+        final var person = new Person(firstName, lastName);
 
         // obtain list of authorities that should be assigned for group
         final var roles = group.map(Group::getAssignableRoles)

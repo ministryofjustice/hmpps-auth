@@ -27,7 +27,7 @@ public class UserToken {
     private LocalDateTime tokenExpiry;
 
     @ManyToOne
-    @JoinColumn(name = "username")
+    @JoinColumn(name = "user_id")
     private User user;
 
     UserToken(final TokenType tokenType, final User user) {
