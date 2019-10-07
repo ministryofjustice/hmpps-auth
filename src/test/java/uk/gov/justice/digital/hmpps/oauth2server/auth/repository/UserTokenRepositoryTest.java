@@ -12,7 +12,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig;
@@ -65,22 +64,6 @@ public class UserTokenRepositoryTest {
         assertThat(retrievedEntity.getTokenType()).isEqualTo(TokenType.RESET);
         assertThat(retrievedEntity.getTokenExpiry()).isEqualTo(LocalDateTime.of(2018, 12, 10, 8, 55, 45));
         assertThat(retrievedEntity.getUser().getUsername()).isEqualTo("LOCKED_USER");
-    }
-
-    @Test
-    public void findByTokenTypeAndUserEmail() {
-        final var lockedUser = userRepository.findById("LOCKED_USER").orElseThrow();
-        final var retrievedEntity = repository.findByTokenTypeAndUser(TokenType.RESET, lockedUser).orElseThrow();
-        assertThat(retrievedEntity.getToken()).isEqualTo("reset");
-        assertThat(retrievedEntity.getTokenType()).isEqualTo(TokenType.RESET);
-    }
-
-    @Test
-    public void findByUser() {
-        final var lockedUser = userRepository.findById("LOCKED_USER").orElseThrow();
-        final var retrievedEntities = repository.findByUser(lockedUser);
-        assertThat(retrievedEntities).extracting(UserToken::getToken).containsExactly("reset");
-        assertThat(retrievedEntities).extracting(UserToken::getTokenType).containsExactly(TokenType.RESET);
     }
 
     private User transientUser() {
