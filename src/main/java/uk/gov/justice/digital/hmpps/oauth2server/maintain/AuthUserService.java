@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
@@ -33,7 +32,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
 public class AuthUserService {
-    private final UserTokenRepository userTokenRepository;
     private final UserRepository userRepository;
     private final NotificationClientApi notificationClient;
     private final TelemetryClient telemetryClient;
@@ -50,15 +48,13 @@ public class AuthUserService {
     private static final int MIN_LENGTH_FIRST_NAME = 2;
     private static final int MIN_LENGTH_LAST_NAME = 2;
 
-    public AuthUserService(final UserTokenRepository userTokenRepository,
-                           final UserRepository userRepository,
+    public AuthUserService(final UserRepository userRepository,
                            final NotificationClientApi notificationClient,
                            final TelemetryClient telemetryClient,
                            final VerifyEmailService verifyEmailService,
                            final AuthUserGroupService authUserGroupService,
                            final MaintainUserCheck maintainUserCheck,
                            @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId) {
-        this.userTokenRepository = userTokenRepository;
         this.userRepository = userRepository;
         this.notificationClient = notificationClient;
         this.telemetryClient = telemetryClient;
@@ -123,13 +119,11 @@ public class AuthUserService {
     }
 
     private String saveAndSendInitialEmail(final String url, final User user, final String creator, final String eventPrefix) throws NotificationClientException {
-        userRepository.save(user);
-
         // then the reset token
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         // give users more time to do the reset
         userToken.setTokenExpiry(LocalDateTime.now().plusDays(7));
-        userTokenRepository.save(userToken);
+        userRepository.save(user);
 
         final var setPasswordLink = url + userToken.getToken();
         final var username = user.getUsername();

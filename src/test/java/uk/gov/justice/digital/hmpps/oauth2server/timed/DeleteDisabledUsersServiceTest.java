@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
@@ -69,7 +68,7 @@ public class DeleteDisabledUsersServiceTest {
     @Test
     public void findAndDeleteDisabledUsers_DeleteAll() {
         final var user = User.of("user");
-        final var token = new UserToken(TokenType.RESET, user);
+        final var token = user.createToken(TokenType.RESET);
         final var retry = new UserRetries("user", 3);
         when(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(retry));
         when(userTokenRepository.findByUser(any())).thenReturn(List.of(token));

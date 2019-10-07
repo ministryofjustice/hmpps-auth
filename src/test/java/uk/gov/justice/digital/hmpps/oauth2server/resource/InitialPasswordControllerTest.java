@@ -7,7 +7,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
@@ -107,7 +106,7 @@ public class InitialPasswordControllerTest {
 
     private void setupCheckAndGetTokenValid() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
-        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, User.of("user"))));
+        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(User.of("user").createToken(TokenType.RESET)));
     }
 
     private StaffUserAccount setupGetUserCallForProfile() {

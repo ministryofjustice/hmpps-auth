@@ -10,7 +10,6 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
@@ -57,7 +56,7 @@ public class ChangePasswordServiceTest {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = User.of("user");
         user.setLocked(true);
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         changePasswordService.setPassword("bob", "pass");
 
@@ -69,7 +68,7 @@ public class ChangePasswordServiceTest {
         final var user = User.builder().username("user").email("email").build();
         user.setEnabled(true);
         user.setMaster(true);
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
         changePasswordService.setPassword("bob", "pass");
@@ -82,12 +81,12 @@ public class ChangePasswordServiceTest {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = User.of("user");
         user.setLocked(true);
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         changePasswordService.setPassword("bob", "pass");
 
         // need to ensure that the token has been removed as don't want them to be able to change password multiple times
-        verify(userTokenRepository).delete(userToken);
+        assertThat(user.getTokens()).isEmpty();
         verify(userRepository).save(user);
     }
 
@@ -96,7 +95,7 @@ public class ChangePasswordServiceTest {
         final var user = User.builder().username("user").build();
         user.setEnabled(true);
         user.setMaster(true);
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         when(passwordEncoder.encode(anyString())).thenReturn("hashedpassword");
         changePasswordService.setPassword("bob", "pass");
@@ -111,7 +110,7 @@ public class ChangePasswordServiceTest {
         when(userService.findUser(anyString())).thenReturn(Optional.empty());
 
         final var user = User.of("user");
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
         assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
@@ -124,7 +123,7 @@ public class ChangePasswordServiceTest {
         when(userService.findUser(anyString())).thenReturn(staffUserAccount);
 
         final var user = User.of("user");
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
         assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
@@ -137,7 +136,7 @@ public class ChangePasswordServiceTest {
         when(userService.findUser(anyString())).thenReturn(optionalUser);
 
         final var user = User.of("user");
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
         assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
@@ -148,7 +147,7 @@ public class ChangePasswordServiceTest {
         final var user = User.builder().username("user").locked(true).build();
         user.setEnabled(true);
         user.setMaster(true);
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
         assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
@@ -161,7 +160,7 @@ public class ChangePasswordServiceTest {
         user.setMaster(true);
         user.setPassword("oldencryptedpassword");
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(Boolean.TRUE);
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
         assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(ReusedPasswordException.class);

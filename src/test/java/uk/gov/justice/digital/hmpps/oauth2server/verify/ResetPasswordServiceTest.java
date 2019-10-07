@@ -151,11 +151,10 @@ public class ResetPasswordServiceTest {
         final var user = User.builder().username("someuser").email("email").verified(true).build();
         when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
-        final var userToken = new UserToken(TokenType.RESET, user);
-        when(userTokenRepository.findByTokenTypeAndUser(any(), any())).thenReturn(Optional.of(userToken));
+        final var existingUserToken = user.createToken(TokenType.RESET);
 
         resetPasswordService.requestResetPassword("user", "url");
-        verify(userTokenRepository).delete(userToken);
+        assertThat(user.getTokens()).hasSize(1).extracting(UserToken::getToken).doesNotContain(existingUserToken.getToken());
     }
 
     @Test
@@ -186,11 +185,9 @@ public class ResetPasswordServiceTest {
         final var user = User.builder().username("someuser").email("email").locked(true).build();
         when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
-        final var captor = ArgumentCaptor.forClass(UserToken.class);
 
         final var linkOptional = resetPasswordService.requestResetPassword("user", "url");
-        verify(userTokenRepository).save(captor.capture());
-        final var value = captor.getValue();
+        final var value = user.getTokens().stream().findFirst().orElseThrow();
         assertThat(linkOptional).get().isEqualTo(String.format("url-confirm?token=%s", value.getToken()));
         assertThat(value.getTokenType()).isEqualTo(TokenType.RESET);
         assertThat(value.getUser().getEmail()).isEqualTo("email");
@@ -238,12 +235,10 @@ public class ResetPasswordServiceTest {
         user.setMaster(true);
         user.setEnabled(true);
         when(userRepository.findByEmail(any())).thenReturn(List.of(user, user));
-        final var captor = ArgumentCaptor.forClass(UserToken.class);
 
         final var linkOptional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url");
-        verify(userTokenRepository).save(captor.capture());
-        final var value = captor.getValue();
-        assertThat(linkOptional).get().isEqualTo(String.format("http://url-select?token=%s", value.getToken()));
+        final var userToken = user.getTokens().stream().findFirst().orElseThrow();
+        assertThat(linkOptional).get().isEqualTo(String.format("http://url-select?token=%s", userToken.getToken()));
     }
 
     @Test
@@ -286,11 +281,11 @@ public class ResetPasswordServiceTest {
     public void resetPassword() throws NotificationClientException {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = User.of("user");
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         resetPasswordService.setPassword("bob", "pass");
 
-        verify(userTokenRepository).delete(userToken);
+        assertThat(user.getTokens()).isEmpty();
         verify(userRepository).save(user);
         verify(alterUserService).changePasswordWithUnlock("user", "pass");
         verify(notificationClient).sendEmail("reset-confirm", null, Map.of("firstName", "user", "username", "user"), null);
@@ -302,11 +297,11 @@ public class ResetPasswordServiceTest {
         final var user = User.of("user");
         user.setEnabled(true);
         user.setMaster(true);
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         resetPasswordService.setPassword("bob", "pass");
 
-        verify(userTokenRepository).delete(userToken);
+        assertThat(user.getTokens()).isEmpty();
         verify(userRepository).save(user);
         verify(alterUserService, never()).changePasswordWithUnlock(anyString(), anyString());
         verify(notificationClient).sendEmail("reset-confirm", null, Map.of("firstName", "user", "username", "user"), null);
@@ -318,7 +313,7 @@ public class ResetPasswordServiceTest {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = User.of("user");
         user.setLocked(true);
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         resetPasswordService.setPassword("bob", "pass");
 
@@ -333,7 +328,7 @@ public class ResetPasswordServiceTest {
         user.setEnabled(true);
         user.setMaster(true);
         user.setLocked(true);
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         resetPasswordService.setPassword("bob", "pass");
 
@@ -347,7 +342,7 @@ public class ResetPasswordServiceTest {
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = User.of("user");
         user.setLocked(true);
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         resetPasswordService.setPassword("bob", "pass");
 
@@ -361,7 +356,7 @@ public class ResetPasswordServiceTest {
         user.setMaster(true);
         when(passwordEncoder.encode(anyString())).thenReturn("hashedpassword");
         user.setLocked(true);
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         resetPasswordService.setPassword("bob", "pass");
 
@@ -377,7 +372,7 @@ public class ResetPasswordServiceTest {
         when(userService.findUser(anyString())).thenReturn(staffUserAccount);
 
         final var user = User.of("user");
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
         assertThatThrownBy(() -> resetPasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
@@ -388,7 +383,7 @@ public class ResetPasswordServiceTest {
         final var user = User.of("user");
         user.setMaster(true);
 
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
         assertThatThrownBy(() -> resetPasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
@@ -402,7 +397,7 @@ public class ResetPasswordServiceTest {
         user.setPassword("oldencryptedpassword");
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(Boolean.TRUE);
 
-        final var userToken = new UserToken(TokenType.RESET, user);
+        final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
         assertThatThrownBy(() -> resetPasswordService.setPassword("bob", "pass")).isInstanceOf(ReusedPasswordException.class);
@@ -423,14 +418,16 @@ public class ResetPasswordServiceTest {
     @Test
     public void moveTokenToAccount_differentEmail() {
         when(userRepository.findById(anyString())).thenReturn(Optional.of(User.builder().username("user").email("email").verified(true).build()));
-        when(userTokenRepository.findById("token")).thenReturn(Optional.of(new UserToken(TokenType.RESET, User.builder().username("other").email("emailother").verified(true).build())));
+        final var builtUser = User.builder().username("other").email("emailother").verified(true).build();
+        when(userTokenRepository.findById("token")).thenReturn(Optional.of(builtUser.createToken(TokenType.RESET)));
         assertThatThrownBy(() -> resetPasswordService.moveTokenToAccount("token", "noone")).hasMessageContaining("failed with reason: email");
     }
 
     @Test
     public void moveTokenToAccount_disabled() {
         when(userRepository.findById(anyString())).thenReturn(Optional.of(User.builder().username("user").email("email").verified(true).build()));
-        when(userTokenRepository.findById("token")).thenReturn(Optional.of(new UserToken(TokenType.RESET, User.builder().username("other").email("email").verified(true).build())));
+        final var builtUser = User.builder().username("other").email("email").verified(true).build();
+        when(userTokenRepository.findById("token")).thenReturn(Optional.of(builtUser.createToken(TokenType.RESET)));
         assertThatThrownBy(() -> resetPasswordService.moveTokenToAccount("token", "noone")).extracting("reason").containsOnly("locked");
     }
 
@@ -440,7 +437,7 @@ public class ResetPasswordServiceTest {
         user.setEnabled(true);
         user.setMaster(true);
         when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
-        when(userTokenRepository.findById("token")).thenReturn(Optional.of(new UserToken(TokenType.RESET, user)));
+        when(userTokenRepository.findById("token")).thenReturn(Optional.of(user.createToken(TokenType.RESET)));
         final var newToken = resetPasswordService.moveTokenToAccount("token", "USER");
         assertThat(newToken).isEqualTo("token");
     }
@@ -451,11 +448,12 @@ public class ResetPasswordServiceTest {
         user.setEnabled(true);
         user.setMaster(true);
         when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
-        final var userToken = new UserToken(TokenType.RESET, User.builder().username("other").email("email").verified(true).build());
+        final var builtUser = User.builder().username("other").email("email").verified(true).build();
+        final var userToken = builtUser.createToken(TokenType.RESET);
         when(userTokenRepository.findById("token")).thenReturn(Optional.of(userToken));
         final var newToken = resetPasswordService.moveTokenToAccount("token", "USER");
         assertThat(newToken).hasSize(36);
         verify(userTokenRepository).delete(userToken);
-        verify(userTokenRepository).save(any());
+        assertThat(user.getTokens()).extracting(UserToken::getToken).containsExactly(newToken);
     }
 }

@@ -118,22 +118,19 @@ public class VerifyEmailServiceTest {
     public void requestVerification_existingToken() throws NotificationClientException, VerifyEmailException {
         final var user = User.of("someuser");
         when(userRepository.findById("user")).thenReturn(Optional.of(user));
-        final var userToken = new UserToken(TokenType.VERIFIED, user);
-        when(userTokenRepository.findByTokenTypeAndUser(any(), any())).thenReturn(Optional.of(userToken));
+        final var existingUserToken = user.createToken(TokenType.VERIFIED);
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         verifyEmailService.requestVerification("user", "email@john.com", "url");
-        verify(userTokenRepository).delete(userToken);
+        assertThat(user.getTokens()).hasSize(1).extracting(UserToken::getToken).doesNotContain(existingUserToken.getToken());
     }
 
     @Test
     public void requestVerification_verifyToken() throws NotificationClientException, VerifyEmailException {
         final var user = User.of("someuser");
         when(userRepository.findById("user")).thenReturn(Optional.of(user));
-        final var captor = ArgumentCaptor.forClass(UserToken.class);
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         final var verification = verifyEmailService.requestVerification("user", "email@john.com", "url");
-        verify(userTokenRepository).save(captor.capture());
-        final var value = captor.getValue();
+        final var value = user.getTokens().stream().findFirst().orElseThrow();
         assertThat(verification).isEqualTo("url" + value.getToken());
     }
 
@@ -234,7 +231,7 @@ public class VerifyEmailServiceTest {
     @Test
     public void confirmEmail_happyPath() {
         final var user = User.of("bob");
-        final var userToken = new UserToken(TokenType.VERIFIED, user);
+        final var userToken = user.createToken(TokenType.VERIFIED);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         final var result = verifyEmailService.confirmEmail("token");
 
@@ -252,7 +249,7 @@ public class VerifyEmailServiceTest {
     @Test
     public void confirmEmail_expired() {
         final var user = User.of("bob");
-        final var userToken = new UserToken(TokenType.VERIFIED, user);
+        final var userToken = user.createToken(TokenType.VERIFIED);
         userToken.setTokenExpiry(LocalDateTime.now().minusSeconds(1));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         final var result = verifyEmailService.confirmEmail("token");

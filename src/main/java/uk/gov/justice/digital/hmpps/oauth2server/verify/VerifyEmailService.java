@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
@@ -78,11 +77,7 @@ public class VerifyEmailService {
         final var user = optionalUser.orElseGet(() -> User.of(username));
         user.setEmail(email);
 
-        // check for an existing token and delete as we now have a new one
-        final var existingTokenOptional = userTokenRepository.findByTokenTypeAndUser(TokenType.VERIFIED, user);
-        existingTokenOptional.ifPresent(userTokenRepository::delete);
-
-        final var userToken = new UserToken(TokenType.VERIFIED, user);
+        final var userToken = user.createToken(TokenType.VERIFIED);
         final var verifyLink = url + userToken.getToken();
         final var parameters = Map.of("firstName", firstName, "verifyLink", verifyLink);
 
@@ -102,7 +97,6 @@ public class VerifyEmailService {
         }
 
         userRepository.save(user);
-        userTokenRepository.save(userToken);
 
         return verifyLink;
     }

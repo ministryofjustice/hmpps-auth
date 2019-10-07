@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
 import lombok.*;
 import org.springframework.security.core.CredentialsContainer;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import javax.persistence.*;
@@ -76,6 +77,11 @@ public class User implements UserPersonDetails, CredentialsContainer {
     @Builder.Default
     private Set<Group> groups = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @Setter(AccessLevel.NONE)
+    private Set<UserToken> tokens = new HashSet<>();
+
     public static User of(final String username) {
         return User.builder().username(username).build();
     }
@@ -118,5 +124,17 @@ public class User implements UserPersonDetails, CredentialsContainer {
     @Override
     public String getAuthSource() {
         return "auth";
+    }
+
+    public UserToken createToken(final TokenType tokenType) {
+        final var token = new UserToken(tokenType, this);
+        // equals and hashcode by token type so remove will remove any token of same type
+        tokens.remove(token);
+        tokens.add(token);
+        return token;
+    }
+
+    public void removeToken(final UserToken userToken) {
+        tokens.remove(userToken);
     }
 }
