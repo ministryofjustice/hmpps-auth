@@ -60,7 +60,7 @@ public class AuthUserServiceTest {
 
     @Before
     public void setUp() {
-        authUserService = new AuthUserService(userTokenRepository, userRepository, notificationClient, telemetryClient, verifyEmailService, authUserGroupService, maintainUserCheck, "licences");
+        authUserService = new AuthUserService(userRepository, notificationClient, telemetryClient, verifyEmailService, authUserGroupService, maintainUserCheck, "licences");
     }
 
     @Test
@@ -128,15 +128,18 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void createUser_saveTokenRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
+    public void createUser_saveUserRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
         final var link = authUserService.createUser("userme", "email", "se", "xx", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
-        final var captor = ArgumentCaptor.forClass(UserToken.class);
-        verify(userTokenRepository).save(captor.capture());
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
 
-        assertThat(captor.getValue().getTokenType()).isEqualTo(TokenType.RESET);
-        assertThat(captor.getValue().getToken()).isEqualTo(link.substring("url?token=".length()));
-        assertThat(captor.getValue().getTokenExpiry()).isBetween(LocalDateTime.now().plusDays(6), LocalDateTime.now().plusDays(8));
+        final var user = captor.getValue();
+        final var userToken = user.getTokens().stream().findFirst().orElseThrow();
+
+        assertThat(userToken.getTokenType()).isEqualTo(TokenType.RESET);
+        assertThat(userToken.getToken()).isEqualTo(link.substring("url?token=".length()));
+        assertThat(userToken.getTokenExpiry()).isBetween(LocalDateTime.now().plusDays(6), LocalDateTime.now().plusDays(8));
     }
 
     @Test
@@ -252,15 +255,14 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUser_saveTokenRepository() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
+        final var user = createUser();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(user);
         final var link = authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
-        final var captor = ArgumentCaptor.forClass(UserToken.class);
-        verify(userTokenRepository).save(captor.capture());
-
-        assertThat(captor.getValue().getTokenType()).isEqualTo(TokenType.RESET);
-        assertThat(captor.getValue().getToken()).isEqualTo(link.substring("url?token=".length()));
-        assertThat(captor.getValue().getTokenExpiry()).isBetween(LocalDateTime.now().plusDays(6), LocalDateTime.now().plusDays(8));
+        final var userToken = user.orElseThrow().getTokens().stream().findFirst().orElseThrow();
+        assertThat(userToken.getTokenType()).isEqualTo(TokenType.RESET);
+        assertThat(userToken.getToken()).isEqualTo(link.substring("url?token=".length()));
+        assertThat(userToken.getTokenExpiry()).isBetween(LocalDateTime.now().plusDays(6), LocalDateTime.now().plusDays(8));
     }
 
     @Test

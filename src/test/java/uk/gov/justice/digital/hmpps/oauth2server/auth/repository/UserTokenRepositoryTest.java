@@ -38,15 +38,13 @@ public class UserTokenRepositoryTest {
     public void givenATransientEntityItCanBePersisted() {
 
         final var user = transientUser();
+        final var entity = user.createToken(TokenType.RESET);
         userRepository.save(user);
-
-        final var entity = new UserToken(TokenType.RESET, user);
-        final var persistedEntity = repository.save(entity);
 
         TestTransaction.flagForCommit();
         TestTransaction.end();
 
-        assertThat(persistedEntity.getToken()).isNotNull();
+        assertThat(entity.getToken()).isNotNull();
 
         TestTransaction.start();
 

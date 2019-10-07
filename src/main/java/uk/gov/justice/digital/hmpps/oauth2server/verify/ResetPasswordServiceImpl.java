@@ -12,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
@@ -67,6 +66,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
 
     @Override
     @Throttling(type = ThrottlingType.SpEL, expression = "T(uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper).retrieveIpFromRequest()", limit = 6, timeUnit = TimeUnit.MINUTES)
+    @Transactional(transactionManager = "authTransactionManager")
     public Optional<String> requestResetPassword(final String usernameOrEmailAddress, final String url) throws NotificationClientRuntimeException {
         final Optional<User> optionalUser;
         final boolean multipleMatchesAndCanBeReset;
@@ -115,12 +115,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
         // or are locked by getting password incorrect (in either c-nomis or auth)
         final var firstName = userDetails.getFirstName();
         if (multipleMatchesAndCanBeReset || passwordAllowedToBeReset(user, userDetails)) {
-            final var userTokenOptional = userTokenRepository.findByTokenTypeAndUser(TokenType.RESET, user);
-            // delete any existing token
-            userTokenOptional.ifPresent(userTokenRepository::delete);
-
-            final var userToken = new UserToken(TokenType.RESET, user);
-            userTokenRepository.save(userToken);
+            final var userToken = user.createToken(TokenType.RESET);
 
             final var selectOrConfirm = multipleMatchesAndCanBeReset ? "select" : "confirm";
             final var resetLink = String.format("%s-%s?token=%s", url, selectOrConfirm, userToken.getToken());
@@ -163,6 +158,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
     }
 
     @Override
+    @Transactional(transactionManager = "authTransactionManager")
     public void setPassword(final String token, final String password) {
         final var userToken = userTokenRepository.findById(token).orElseThrow();
         final var user = userToken.getUser();
@@ -182,8 +178,8 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
             alterUserService.changePasswordWithUnlock(user.getUsername(), password);
         }
 
+        user.removeToken(userToken);
         userRepository.save(user);
-        userTokenRepository.delete(userToken);
         sendPasswordResetEmail(user);
     }
 
@@ -199,7 +195,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
             notificationClient.sendEmail(resetPasswordConfirmedTemplateId, email, parameters, null);
         } catch (final NotificationClientException e) {
             final var reason = (e.getCause() != null ? e.getCause() : e).getClass().getSimpleName();
-            log.warn("Failed to send password reset notify for user {}", username, e);
+            log.warn("Failed to send password reset notify for user {} due to {}", username, reason, e);
             if (e.getHttpResult() >= 500) {
                 // second time lucky
                 try {
@@ -217,6 +213,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
     }
 
     @Override
+    @Transactional(transactionManager = "authTransactionManager")
     public String moveTokenToAccount(final String token, final String usernameInput) throws ResetPasswordException {
         if (StringUtils.isBlank(usernameInput)) {
             throw new ResetPasswordException("missing");
@@ -240,8 +237,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
             }
             // otherwise need to delete and add
             userTokenRepository.delete(userToken);
-            final var newUserToken = new UserToken(TokenType.RESET, ue);
-            userTokenRepository.save(newUserToken);
+            final var newUserToken = ue.createToken(TokenType.RESET);
             return newUserToken.getToken();
 
         }).orElseThrow(() -> new ResetPasswordException("notfound"));

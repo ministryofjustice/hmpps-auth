@@ -11,7 +11,8 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = {"token"})
+@EqualsAndHashCode(of = {"tokenType"})
+@ToString(exclude = "user")
 public class UserToken {
 
     @Id
@@ -25,11 +26,11 @@ public class UserToken {
     @Column(name = "token_expiry", nullable = false)
     private LocalDateTime tokenExpiry;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "username")
     private User user;
 
-    public UserToken(final TokenType tokenType, final User user) {
+    UserToken(final TokenType tokenType, final User user) {
         this.token = UUID.randomUUID().toString();
         this.tokenType = tokenType;
         this.user = user;

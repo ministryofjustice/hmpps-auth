@@ -10,7 +10,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 
@@ -47,36 +46,35 @@ public class TokenServiceTest {
 
     @Test
     public void getToken_WrongType() {
-        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(new UserToken(TokenType.VERIFIED, null)));
+        final var userToken = User.of("user").createToken(TokenType.VERIFIED);
+        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         assertThat(tokenService.getToken(TokenType.RESET, "token")).isEmpty();
     }
 
     @Test
     public void getToken() {
-        final var userToken = new UserToken(TokenType.RESET, null);
+        final var userToken = User.of("user").createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         assertThat(tokenService.getToken(TokenType.RESET, "token")).get().isSameAs(userToken);
     }
 
     @Test
     public void checkToken() {
-        final var userToken = new UserToken(TokenType.RESET, null);
-        userToken.setUser(User.of("user"));
+        final var userToken = User.of("user").createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         assertThat(tokenService.checkToken(TokenType.RESET, "token")).isEmpty();
     }
 
     @Test
     public void checkToken_invalid() {
-        final var userToken = new UserToken(TokenType.CHANGE, null);
+        final var userToken = User.of("user").createToken(TokenType.CHANGE);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         assertThat(tokenService.checkToken(TokenType.RESET, "token")).get().isEqualTo("invalid");
     }
 
     @Test
     public void checkToken_expiredTelemetryUsername() {
-        final var userToken = new UserToken(TokenType.RESET, null);
-        userToken.setUser(User.of("user"));
+        final var userToken = User.of("user").createToken(TokenType.RESET);
         userToken.setTokenExpiry(LocalDateTime.now().minusHours(1));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         tokenService.checkToken(TokenType.RESET, "token");
@@ -87,7 +85,7 @@ public class TokenServiceTest {
 
     @Test
     public void checkToken_expired() {
-        final var userToken = new UserToken(TokenType.RESET, User.of("joe"));
+        final var userToken = User.of("joe").createToken(TokenType.RESET);
         userToken.setTokenExpiry(LocalDateTime.now().minusHours(1));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         assertThat(tokenService.checkToken(TokenType.RESET, "token")).get().isEqualTo("expired");

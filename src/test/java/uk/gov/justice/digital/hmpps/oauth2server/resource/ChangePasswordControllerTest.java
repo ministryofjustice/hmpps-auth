@@ -15,7 +15,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
@@ -215,7 +214,7 @@ public class ChangePasswordControllerTest {
 
     private void setupCheckAndGetTokenValid() {
         when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
-        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(new UserToken(TokenType.RESET, User.of("user"))));
+        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(User.of("user").createToken(TokenType.RESET)));
     }
 
     private MapEntry<String, List<Object>> listEntry(final String key, final Object... values) {

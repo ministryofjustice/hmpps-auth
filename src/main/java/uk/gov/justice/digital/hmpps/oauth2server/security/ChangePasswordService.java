@@ -8,7 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
@@ -42,24 +41,20 @@ public class ChangePasswordService extends PasswordServiceImpl {
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    String createToken(final String username) {
+    public String createToken(final String username) {
         final var userOptional = userRepository.findById(username);
         final var user = userOptional.orElseGet(() -> {
             final var ue = User.of(username);
-            userRepository.save(ue);
-            return ue;
+            return userRepository.save(ue);
         });
-        final var userTokenOptional = userTokenRepository.findByTokenTypeAndUser(TokenType.CHANGE, user);
-        userTokenOptional.ifPresent(userTokenRepository::delete);
-
-        final var userToken = new UserToken(TokenType.CHANGE, user);
-        userTokenRepository.save(userToken);
+        final var userToken = user.createToken(TokenType.CHANGE);
         log.info("Requesting change password for {}", username);
         telemetryClient.trackEvent("ChangePasswordRequest", Map.of("username", username), null);
         return userToken.getToken();
     }
 
     @Override
+    @Transactional(transactionManager = "authTransactionManager")
     public void setPassword(final String token, final String password) {
         final var userToken = userTokenRepository.findById(token).orElseThrow();
         final var user = userToken.getUser();
@@ -77,8 +72,8 @@ public class ChangePasswordService extends PasswordServiceImpl {
         } else {
             alterUserService.changePassword(user.getUsername(), password);
         }
+        user.removeToken(userToken);
         userRepository.save(user);
-        userTokenRepository.delete(userToken);
     }
 
 }
