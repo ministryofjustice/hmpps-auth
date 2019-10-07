@@ -152,7 +152,6 @@ public class ResetPasswordServiceTest {
         when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
         when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
         final var existingUserToken = user.createToken(TokenType.RESET);
-        when(userTokenRepository.findByTokenTypeAndUser(any(), any())).thenReturn(Optional.of(existingUserToken));
 
         resetPasswordService.requestResetPassword("user", "url");
         assertThat(user.getTokens()).hasSize(1).extracting(UserToken::getToken).doesNotContain(existingUserToken.getToken());

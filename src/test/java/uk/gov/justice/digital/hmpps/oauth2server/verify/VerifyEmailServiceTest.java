@@ -119,7 +119,6 @@ public class VerifyEmailServiceTest {
         final var user = User.of("someuser");
         when(userRepository.findById("user")).thenReturn(Optional.of(user));
         final var existingUserToken = user.createToken(TokenType.VERIFIED);
-        when(userTokenRepository.findByTokenTypeAndUser(any(), any())).thenReturn(Optional.of(existingUserToken));
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         verifyEmailService.requestVerification("user", "email@john.com", "url");
         assertThat(user.getTokens()).hasSize(1).extracting(UserToken::getToken).doesNotContain(existingUserToken.getToken());
