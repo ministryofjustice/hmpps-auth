@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 
 import java.util.List;
 import java.util.Map;
@@ -29,8 +28,6 @@ public class DeleteDisabledUsersServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private UserTokenRepository userTokenRepository;
-    @Mock
     private UserRetriesRepository userRetriesRepository;
     @Mock
     private TelemetryClient telemetryClient;
@@ -41,7 +38,7 @@ public class DeleteDisabledUsersServiceTest {
 
     @Before
     public void setUp() {
-        service = new DeleteDisabledUsersService(userRepository, userRetriesRepository, userTokenRepository, telemetryClient);
+        service = new DeleteDisabledUsersService(userRepository, userRetriesRepository, telemetryClient);
     }
 
     @Test
@@ -71,13 +68,11 @@ public class DeleteDisabledUsersServiceTest {
         final var token = user.createToken(TokenType.RESET);
         final var retry = new UserRetries("user", 3);
         when(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(retry));
-        when(userTokenRepository.findByUser(any())).thenReturn(List.of(token));
 
         when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
                 .thenReturn(List.of(user));
         service.processInBatches();
         verify(userRetriesRepository).delete(retry);
-        verify(userTokenRepository).delete(token);
     }
 
     @Test

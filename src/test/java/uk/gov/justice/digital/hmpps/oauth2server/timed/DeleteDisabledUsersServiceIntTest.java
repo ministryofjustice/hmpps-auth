@@ -18,7 +18,6 @@ import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
@@ -37,8 +36,6 @@ public class DeleteDisabledUsersServiceIntTest {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private UserTokenRepository userTokenRepository;
-    @Autowired
     private UserRetriesRepository userRetriesRepository;
     @Autowired
     @Qualifier("authDataSource")
@@ -50,7 +47,7 @@ public class DeleteDisabledUsersServiceIntTest {
 
     @Before
     public void setUp() {
-        service = new DeleteDisabledUsersService(userRepository, userRetriesRepository, userTokenRepository, telemetryClient);
+        service = new DeleteDisabledUsersService(userRepository, userRetriesRepository, telemetryClient);
     }
 
     @Test

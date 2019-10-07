@@ -26,7 +26,7 @@ public class UserToken {
     @Column(name = "token_expiry", nullable = false)
     private LocalDateTime tokenExpiry;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "username")
     private User user;
 

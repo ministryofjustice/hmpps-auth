@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -18,7 +17,6 @@ import java.util.Map;
 public class DeleteDisabledUsersService implements BatchUserService {
     private final UserRepository repository;
     private final UserRetriesRepository userRetriesRepository;
-    private final UserTokenRepository userTokenRepository;
     private final TelemetryClient telemetryClient;
 
     @Transactional(transactionManager = "authTransactionManager")
@@ -27,7 +25,6 @@ public class DeleteDisabledUsersService implements BatchUserService {
         usersToDelete.forEach(user -> {
             final var username = user.getUsername();
             userRetriesRepository.findById(username).ifPresent(userRetriesRepository::delete);
-            userTokenRepository.findByUser(user).forEach(userTokenRepository::delete);
             repository.delete(user);
 
             log.debug("Deleting auth user {} due to inactivity", username);
