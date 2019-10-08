@@ -55,7 +55,7 @@ public class VerifyEmailService {
     }
 
     public Optional<User> getEmail(final String username) {
-        return userRepository.findById(username).filter(ue -> StringUtils.isNotBlank(ue.getEmail()));
+        return userRepository.findByUsername(username).filter(ue -> StringUtils.isNotBlank(ue.getEmail()));
     }
 
     public boolean isNotVerified(final String name) {
@@ -73,7 +73,7 @@ public class VerifyEmailService {
 
         final var userPersonDetails = userService.findUser(username);
         final var firstName = userPersonDetails.map(UserPersonDetails::getFirstName).orElse(username);
-        final var optionalUser = userRepository.findById(username);
+        final var optionalUser = userRepository.findByUsername(username);
         final var user = optionalUser.orElseGet(() -> User.of(username));
         user.setEmail(email);
 

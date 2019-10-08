@@ -60,7 +60,7 @@ public class VerifyEmailServiceTest {
     @Test
     public void getEmail() {
         final var user = User.builder().username("bob").email("joe@bob.com").build();
-        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         final var userOptional = verifyEmailService.getEmail("user");
         assertThat(userOptional).get().isEqualTo(user);
     }
@@ -68,22 +68,22 @@ public class VerifyEmailServiceTest {
     @Test
     public void getEmail_NoEmailSet() {
         final var user = User.of("bob");
-        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         final var userOptionalOptional = verifyEmailService.getEmail("user");
         assertThat(userOptionalOptional).isEmpty();
     }
 
     @Test
     public void isNotVerified_userMissing() {
-        when(userRepository.findById(anyString())).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
         assertThat(verifyEmailService.isNotVerified("user")).isTrue();
-        verify(userRepository).findById("user");
+        verify(userRepository).findByUsername("user");
     }
 
     @Test
     public void isNotVerified_userFoundNotVerified() {
         final var user = User.of("bob");
-        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         assertThat(verifyEmailService.isNotVerified("user")).isTrue();
     }
 
@@ -91,7 +91,7 @@ public class VerifyEmailServiceTest {
     public void isNotVerified_userFoundVerified() {
         final var user = User.builder().username("bob").email("joe@bob.com").build();
         user.setVerified(true);
-        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         assertThat(verifyEmailService.isNotVerified("user")).isFalse();
     }
 
@@ -117,7 +117,7 @@ public class VerifyEmailServiceTest {
     @Test
     public void requestVerification_existingToken() throws NotificationClientException, VerifyEmailException {
         final var user = User.of("someuser");
-        when(userRepository.findById("user")).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
         final var existingUserToken = user.createToken(TokenType.VERIFIED);
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         verifyEmailService.requestVerification("user", "email@john.com", "url");
@@ -127,7 +127,7 @@ public class VerifyEmailServiceTest {
     @Test
     public void requestVerification_verifyToken() throws NotificationClientException, VerifyEmailException {
         final var user = User.of("someuser");
-        when(userRepository.findById("user")).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         final var verification = verifyEmailService.requestVerification("user", "email@john.com", "url");
         final var value = user.getTokens().stream().findFirst().orElseThrow();
@@ -137,7 +137,7 @@ public class VerifyEmailServiceTest {
     @Test
     public void requestVerification_saveEmail() throws NotificationClientException, VerifyEmailException {
         final var user = User.of("someuser");
-        when(userRepository.findById("user")).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         verifyEmailService.requestVerification("user", "eMail@john.COM", "url");
         verify(userRepository).save(user);

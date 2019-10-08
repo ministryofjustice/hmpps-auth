@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends CrudRepository<User, String>, JpaSpecificationExecutor<User> {
+    Optional<User> findByUsername(String username);
+
     Optional<User> findByUsernameAndMasterIsTrue(String username);
 
     List<User> findByEmail(String email);

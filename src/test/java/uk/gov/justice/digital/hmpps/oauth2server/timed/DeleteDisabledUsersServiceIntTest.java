@@ -52,6 +52,9 @@ public class DeleteDisabledUsersServiceIntTest {
 
     @Test
     public void findAndDeleteDisabledAuthUsers_Processed() {
+        final var authDeleteId = userRepository.findByUsername("AUTH_DELETE").orElseThrow().getId();
+        final var authDeleteAllId = userRepository.findByUsername("AUTH_DELETEALL").orElseThrow().getId();
+        final var nomisDeleteId = userRepository.findByUsername("NOMIS_DELETE").orElseThrow().getId();
         assertThat(service.processInBatches()).isEqualTo(3);
 
         TestTransaction.flagForCommit();
@@ -59,24 +62,22 @@ public class DeleteDisabledUsersServiceIntTest {
         TestTransaction.start();
 
         final var jdbcTemplate = new JdbcTemplate(dataSource);
-        final var whereClause = "where username in ('AUTH_DELETE', 'AUTH_DELETEALL', 'NOMIS_DELETE')";
+        final var usernameWhereClause = "where username in ('AUTH_DELETE', 'AUTH_DELETEALL', 'NOMIS_DELETE')";
+        final var userIdWhereClause = String.format("where user_id in ('%s', '%s', '%s')", authDeleteId, authDeleteAllId, nomisDeleteId);
 
-        final var retries = jdbcTemplate.queryForList(String.format("select * from user_retries %s", whereClause));
+        final var retries = jdbcTemplate.queryForList(String.format("select * from user_retries %s", usernameWhereClause));
         assertThat(retries).isEmpty();
 
-        final var tokens = jdbcTemplate.queryForList(String.format("select * from user_token %s", whereClause));
-        assertThat(tokens).isEmpty();
-
-        final var users = jdbcTemplate.queryForList(String.format("select * from user_email %s", whereClause));
+        final var users = jdbcTemplate.queryForList(String.format("select * from users %s", usernameWhereClause));
         assertThat(users).isEmpty();
 
-        final var people = jdbcTemplate.queryForList(String.format("select * from person %s", whereClause));
-        assertThat(people).isEmpty();
+        final var tokens = jdbcTemplate.queryForList(String.format("select * from user_token %s", userIdWhereClause));
+        assertThat(tokens).isEmpty();
 
-        final var roles = jdbcTemplate.queryForList(String.format("select * from user_email_roles %s", whereClause));
+        final var roles = jdbcTemplate.queryForList(String.format("select * from user_role %s", userIdWhereClause));
         assertThat(roles).isEmpty();
 
-        final var groups = jdbcTemplate.queryForList(String.format("select * from user_email_groups %s", whereClause).replace("username", "useremail_username"));
+        final var groups = jdbcTemplate.queryForList(String.format("select * from user_group %s", userIdWhereClause));
         assertThat(groups).isEmpty();
     }
 }

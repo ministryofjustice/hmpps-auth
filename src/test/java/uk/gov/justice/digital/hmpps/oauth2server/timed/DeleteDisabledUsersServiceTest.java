@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepo
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,8 +52,8 @@ public class DeleteDisabledUsersServiceTest {
 
     @Test
     public void findAndDeleteDisabledUsers_Deleted() {
-        final var user = User.of("user");
-        final var joe = User.of("joe");
+        final var user = User.builder().username("user").id(UUID.randomUUID()).build();
+        final var joe = User.builder().username("joe").id(UUID.randomUUID()).build();
         final var users = List.of(user, joe);
 
         when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
@@ -65,7 +66,7 @@ public class DeleteDisabledUsersServiceTest {
     @Test
     public void findAndDeleteDisabledUsers_DeleteAll() {
         final var user = User.of("user");
-        final var token = user.createToken(TokenType.RESET);
+        user.createToken(TokenType.RESET);
         final var retry = new UserRetries("user", 3);
         when(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(retry));
 

@@ -45,7 +45,7 @@ public class UserRetriesServiceTest {
     @Test
     public void resetRetries_RecordLastLogginIn() {
         final var user = User.builder().username("joe").lastLoggedIn(LocalDateTime.now().minusDays(1)).build();
-        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         service.resetRetriesAndRecordLogin("bob");
 
         assertThat(user.getLastLoggedIn()).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now());
@@ -72,7 +72,7 @@ public class UserRetriesServiceTest {
 
     @Test
     public void lockAccount_lockUserEmailNoRecord() {
-        when(userRepository.findById(anyString())).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
         service.lockAccount("bob");
         final var captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(captor.capture());
@@ -82,7 +82,7 @@ public class UserRetriesServiceTest {
     @Test
     public void lockAccount_lockUserEmailExistingRecord() {
         final var existingUserEmail = User.of("username");
-        when(userRepository.findById(anyString())).thenReturn(Optional.of(existingUserEmail));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(existingUserEmail));
         service.lockAccount("bob");
         final var captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(captor.capture());
@@ -94,7 +94,7 @@ public class UserRetriesServiceTest {
     public void lockAccount_NoAlterUserForAuthOnlyAccounts() {
         final var existingUserEmail = User.of("username");
         existingUserEmail.setMaster(true);
-        when(userRepository.findById(anyString())).thenReturn(Optional.of(existingUserEmail));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(existingUserEmail));
         service.lockAccount("bob");
         verify(alterUserService, never()).lockAccount(anyString());
     }

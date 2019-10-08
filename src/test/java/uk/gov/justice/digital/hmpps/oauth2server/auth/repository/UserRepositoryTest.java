@@ -54,21 +54,19 @@ public class UserRepositoryTest {
 
     @Test
     public void givenATransientEntityItCanBePersisted() {
+        final var transientEntity = User.builder().username("transiententity").email("transient@b.com").build();
 
-        final var transientEntity = transientEntity();
-
-        final var entity = User.builder().username(transientEntity.getUsername()).email(transientEntity.getEmail()).build();
-
-        final var persistedEntity = repository.save(entity);
+        final var persistedEntity = repository.save(transientEntity);
 
         TestTransaction.flagForCommit();
         TestTransaction.end();
 
         assertThat(persistedEntity.getUsername()).isNotNull();
+        assertThat(persistedEntity.getId()).isNotNull();
 
         TestTransaction.start();
 
-        final var retrievedEntity = repository.findById(entity.getUsername()).orElseThrow();
+        final var retrievedEntity = repository.findByUsername(transientEntity.getUsername()).orElseThrow();
 
         // equals only compares the business key columns
         assertThat(retrievedEntity).isEqualTo(transientEntity);
@@ -81,7 +79,7 @@ public class UserRepositoryTest {
     public void givenATransientAuthEntityItCanBePersisted() {
 
         final var transientEntity = transientEntity();
-        transientEntity.setPerson(new Person(transientEntity.getUsername(), "first", "last"));
+        transientEntity.setPerson(new Person("first", "last"));
 
         final var roleLicenceVary = roleRepository.findByRoleCode("LICENCE_VARY").orElseThrow();
         final var roleGlobalSearch = roleRepository.findByRoleCode("GLOBAL_SEARCH").orElseThrow();
@@ -96,7 +94,7 @@ public class UserRepositoryTest {
 
         TestTransaction.start();
 
-        final var retrievedEntity = repository.findById(transientEntity.getUsername()).orElseThrow();
+        final var retrievedEntity = repository.findByUsername(transientEntity.getUsername()).orElseThrow();
 
         // equals only compares the business key columns
         assertThat(retrievedEntity).isEqualTo(transientEntity);
@@ -118,7 +116,7 @@ public class UserRepositoryTest {
 
         TestTransaction.start();
 
-        final var retrievedEntity = repository.findById(transientEntity.getUsername()).orElseThrow();
+        final var retrievedEntity = repository.findByUsername(transientEntity.getUsername()).orElseThrow();
 
         // equals only compares the business key columns
         assertThat(retrievedEntity).isEqualTo(transientEntity);
@@ -129,7 +127,7 @@ public class UserRepositoryTest {
 
     @Test
     public void givenAnExistingUserTheyCanBeRetrieved() {
-        final var retrievedEntity = repository.findById("LOCKED_USER").orElseThrow();
+        final var retrievedEntity = repository.findByUsername("LOCKED_USER").orElseThrow();
         assertThat(retrievedEntity.getUsername()).isEqualTo("LOCKED_USER");
         assertThat(retrievedEntity.getEmail()).isEqualTo("locked@somewhere.com");
         assertThat(retrievedEntity.isVerified()).isTrue();
@@ -137,7 +135,7 @@ public class UserRepositoryTest {
 
     @Test
     public void givenAnExistingAuthUserTheyCanBeRetrieved() {
-        final var retrievedEntity = repository.findById("AUTH_ADM").orElseThrow();
+        final var retrievedEntity = repository.findByUsername("AUTH_ADM").orElseThrow();
         assertThat(retrievedEntity.getUsername()).isEqualTo("AUTH_ADM");
         assertThat(retrievedEntity.getPerson().getFirstName()).isEqualTo("Auth");
         assertThat(retrievedEntity.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS");
@@ -147,7 +145,7 @@ public class UserRepositoryTest {
 
     @Test
     public void testAuthorityMapping() {
-        final var entity = repository.findById("AUTH_TEST").orElseThrow();
+        final var entity = repository.findByUsername("AUTH_TEST").orElseThrow();
         assertThat(entity.getUsername()).isEqualTo("AUTH_TEST");
         assertThat(entity.getName()).isEqualTo("Auth Test");
         assertThat(entity.getAuthorities()).isEmpty();
@@ -163,7 +161,7 @@ public class UserRepositoryTest {
         TestTransaction.end();
         TestTransaction.start();
 
-        final var retrievedEntity = repository.findById("AUTH_TEST").orElseThrow();
+        final var retrievedEntity = repository.findByUsername("AUTH_TEST").orElseThrow();
         final var authorities = retrievedEntity.getAuthorities();
         assertThat(authorities).extracting(Authority::getAuthority).containsOnly("ROLE_LICENCE_VARY", "ROLE_GLOBAL_SEARCH");
         authorities.removeIf(a -> "ROLE_LICENCE_VARY".equals(a.getAuthority()));
@@ -175,13 +173,13 @@ public class UserRepositoryTest {
         TestTransaction.end();
         TestTransaction.start();
 
-        final var retrievedEntity2 = repository.findById("AUTH_TEST").orElseThrow();
+        final var retrievedEntity2 = repository.findByUsername("AUTH_TEST").orElseThrow();
         assertThat(retrievedEntity2.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_GLOBAL_SEARCH");
     }
 
     @Test
     public void testGroupMapping() {
-        final var entity = repository.findById("AUTH_TEST").orElseThrow();
+        final var entity = repository.findByUsername("AUTH_TEST").orElseThrow();
         assertThat(entity.getUsername()).isEqualTo("AUTH_TEST");
         assertThat(entity.getName()).isEqualTo("Auth Test");
         assertThat(TestTransaction.isActive()).isTrue();
@@ -198,7 +196,7 @@ public class UserRepositoryTest {
         TestTransaction.end();
         TestTransaction.start();
 
-        final var retrievedEntity = repository.findById("AUTH_TEST").orElseThrow();
+        final var retrievedEntity = repository.findByUsername("AUTH_TEST").orElseThrow();
         final var groups = retrievedEntity.getGroups();
         assertThat(groups).extracting(Group::getGroupCode).containsOnly("SITE_1_GROUP_1", "SITE_3_GROUP_1");
         groups.removeIf(a -> "SITE_3_GROUP_1".equals(a.getGroupCode()));
@@ -210,7 +208,7 @@ public class UserRepositoryTest {
         TestTransaction.end();
         TestTransaction.start();
 
-        final var retrievedEntity2 = repository.findById("AUTH_TEST").orElseThrow();
+        final var retrievedEntity2 = repository.findByUsername("AUTH_TEST").orElseThrow();
         assertThat(retrievedEntity2.getGroups()).extracting(Group::getGroupCode).containsOnly("SITE_1_GROUP_1");
     }
 

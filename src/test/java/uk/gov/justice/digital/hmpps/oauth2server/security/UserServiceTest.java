@@ -191,12 +191,12 @@ public class UserServiceTest {
     @Test
     public void findUserEmail() {
         final var user = createUser();
-        when(userRepository.findById(anyString())).thenReturn(user);
+        when(userRepository.findByUsername(anyString())).thenReturn(user);
 
         final var found = userService.findAuthUser("bob");
 
         assertThat(found).isSameAs(user);
-        verify(userRepository).findById("BOB");
+        verify(userRepository).findByUsername("BOB");
     }
 
     private Optional<User> createUser() {

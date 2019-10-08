@@ -83,7 +83,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
             optionalUser = Optional.of(matches.get(0));
         } else {
             multipleMatchesAndCanBeReset = false;
-            optionalUser = userRepository.findById(usernameOrEmailAddress.toUpperCase());
+            optionalUser = userRepository.findByUsername(usernameOrEmailAddress.toUpperCase());
         }
 
         if (optionalUser.isEmpty() || StringUtils.isEmpty(optionalUser.get().getEmail())) {
@@ -220,7 +220,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
         }
         final var username = StringUtils.upperCase(StringUtils.trim(usernameInput));
 
-        final var userOptional = userRepository.findById(username);
+        final var userOptional = userRepository.findByUsername(username);
         return userOptional.map(ue -> {
             final var userToken = userTokenRepository.findById(token).orElseThrow();
             // need to have same email address
