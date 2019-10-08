@@ -67,6 +67,6 @@ public class UserTokenRepositoryTest {
     }
 
     private User transientUser() {
-        return User.builder().username("user").email("a@b.com").build();
+        return User.builder().username("userTokenRepository").email("a@b.com").build();
     }
 }
