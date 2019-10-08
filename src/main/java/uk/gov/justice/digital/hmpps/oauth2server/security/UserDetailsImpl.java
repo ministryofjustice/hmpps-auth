@@ -18,21 +18,24 @@ public class UserDetailsImpl extends User implements UserPersonDetails {
     private final String name;
     private final String firstName;
     private final String authSource;
+    private final String userId;
 
     UserDetailsImpl(final String username, final String name, final String password,
                     final boolean enabled, final boolean accountNonExpired, final boolean credentialsNonExpired,
-                    final boolean accountNonLocked, final Collection<? extends GrantedAuthority> authorities, final String authSource) {
+                    final boolean accountNonLocked, final Collection<? extends GrantedAuthority> authorities, final String authSource, final String userId) {
         super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
         this.name = name;
         this.firstName = name;
         this.authSource = authSource;
+        this.userId = userId;
     }
 
-    public UserDetailsImpl(final String username, final String name, final Collection<GrantedAuthority> authorities, final String authSource) {
+    public UserDetailsImpl(final String username, final String name, final Collection<GrantedAuthority> authorities, final String authSource, final String userId) {
         super(username, "", authorities);
         this.name = name;
         this.firstName = name;
         this.authSource = authSource;
+        this.userId = userId;
     }
 
     @Override

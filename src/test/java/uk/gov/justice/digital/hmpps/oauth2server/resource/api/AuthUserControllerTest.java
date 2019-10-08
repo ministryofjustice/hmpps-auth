@@ -93,7 +93,7 @@ public class AuthUserControllerTest {
 
     @Test
     public void createUser_AlreadyExists() throws NotificationClientException {
-        when(userService.findUser(anyString())).thenReturn(Optional.of(new UserDetailsImpl("name", "bob", Set.of(), null)));
+        when(userService.findUser(anyString())).thenReturn(Optional.of(new UserDetailsImpl("name", "bob", Set.of(), null, null)));
         final var responseEntity = authUserController.createUser("user", new CreateUser("email", "first", "last", null), request, authentication);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(409);

@@ -132,6 +132,7 @@ class LoginSpecification extends GebReportingSpec {
         def body = parseJwt()
         body.name == 'Itag User'
         body.auth_source == 'nomis'
+        body.user_id == "1"
     }
 
     def "Log in with valid credentials sets jwt cookie"() {
@@ -172,6 +173,7 @@ class LoginSpecification extends GebReportingSpec {
         def body = parseJwt()
         body.name == 'Auth Only'
         body.auth_source == 'auth'
+        body.user_id == '608955ae-52ed-44cc-884c-011597a77949'
     }
 
     def "Log in with valid credentials in lower case"() {
@@ -235,6 +237,7 @@ class LoginSpecification extends GebReportingSpec {
         def response = getAccessToken(authCode)
         response.user_name == ITAG_USER.username
         response.auth_source == 'nomis'
+        response.user_id == '1'
 
         cleanup:
         CachingDriverFactory.clearCache()
@@ -264,6 +267,7 @@ class LoginSpecification extends GebReportingSpec {
         def response = getAccessToken(authCode)
         response.user_name == AUTH_USER.username
         response.auth_source == 'auth'
+        response.user_id == '608955ae-52ed-44cc-884c-011597a77949'
 
         cleanup:
         CachingDriverFactory.clearCache()

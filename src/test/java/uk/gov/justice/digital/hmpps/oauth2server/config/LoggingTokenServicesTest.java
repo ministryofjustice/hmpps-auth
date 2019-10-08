@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class LoggingTokenServicesTest {
     private static final OAuth2Request OAUTH_2_REQUEST = new OAuth2Request(Collections.emptyMap(), "client", Collections.emptySet(), true, Collections.emptySet(), Collections.emptySet(), "redirect", null, null);
-    private static final UserDetailsImpl USER_DETAILS = new UserDetailsImpl("authenticateduser", "name", Collections.emptySet(), null);
+    private static final UserDetailsImpl USER_DETAILS = new UserDetailsImpl("authenticateduser", "name", Collections.emptySet(), null, null);
 
     @Mock
     private TelemetryClient telemetryClient;
