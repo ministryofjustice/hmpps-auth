@@ -20,7 +20,7 @@ class UserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "ITAG_USER", "active": true, "name": "Itag User", "staffId": 1, "activeCaseLoadId": "MDI", "authSource": "nomis"]
+        userData == ["username": "ITAG_USER", "active": true, "name": "Itag User", "staffId": 1, "activeCaseLoadId": "MDI", "authSource": "nomis", "userId": "1"]
     }
 
     def "User Me endpoint returns principal user data for client credentials grant"() {
@@ -35,7 +35,7 @@ class UserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "ITAG_USER", "active": true, "name": "Itag User", "staffId": 1, "activeCaseLoadId": "MDI", "authSource": "nomis"]
+        userData == ["username": "ITAG_USER", "active": true, "name": "Itag User", "staffId": 1, "activeCaseLoadId": "MDI", "authSource": "nomis", "userId": "1"]
     }
 
     def "User Me endpoint returns principal user data for auth user"() {
@@ -50,7 +50,7 @@ class UserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "AUTH_USER", "active": true, "name": "Auth Only", "authSource": "auth"]
+        userData == ["username": "AUTH_USER", "active": true, "name": "Auth Only", "authSource": "auth", 'userId': '608955ae-52ed-44cc-884c-011597a77949']
     }
 
     def "User username endpoint returns user data"() {
@@ -65,7 +65,7 @@ class UserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "RO_USER", "active": true, "name": "Licence Responsible Officer", "authSource": "nomis", "staffId": 4, "activeCaseLoadId": "BEL"]
+        userData == ["username": "RO_USER", "active": true, "name": "Licence Responsible Officer", "authSource": "nomis", "staffId": 4, "activeCaseLoadId": "BEL", "userId": "4"]
     }
 
     def "User username endpoint returns user data for auth user"() {
@@ -80,7 +80,7 @@ class UserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "AUTH_USER", "active": true, "name": "Auth Only", "authSource": "auth"]
+        userData == ["username": "AUTH_USER", "active": true, "name": "Auth Only", "authSource": "auth", 'userId': '608955ae-52ed-44cc-884c-011597a77949']
     }
 
     def "User email endpoint returns user data for auth user"() {

@@ -25,31 +25,37 @@ public class UserDetail {
     @ApiModelProperty(required = true, value = "Name", example = "John Smith", position = 3)
     private final String name;
 
-    @ApiModelProperty(required = true, value = "Authentication Source", example = "nomis", position = 4)
+    @ApiModelProperty(required = true, value = "Authentication Source", notes = "auth for auth users, nomis for nomis authenticated users", example = "nomis", position = 4)
     private final AuthSource authSource;
 
-    @ApiModelProperty(value = "Staff Id", example = "231232")
+    @ApiModelProperty(value = "Staff Id", notes = "Deprecated, use userId instead", example = "231232", position = 5)
+    @Deprecated
     private final Long staffId;
 
-    @ApiModelProperty(value = "Current Active Caseload", example = "MDI", position = 5)
+    @ApiModelProperty(value = "Current Active Caseload", notes = "Deprecated, retrieve from elite2 API rather than auth", example = "MDI", position = 6)
     @Deprecated
     private final String activeCaseLoadId;
 
+    @ApiModelProperty(value = "User Id", notes = "Unique identifier for user, will be UUID for auth users or staff ID for nomis users", example = "231232", position = 7)
+    private final String userId;
+
     public static UserDetail fromPerson(final UserPersonDetails u) {
         final var authSource = AuthSource.fromNullableString(u.getAuthSource());
-        final var builder = builder().
-                username(u.getUsername()).
-                active(u.isEnabled()).
-                name(u.getName()).
-                authSource(authSource);
+        final var builder = builder()
+                .username(u.getUsername())
+                .active(u.isEnabled())
+                .name(u.getName())
+                .authSource(authSource);
 
         if (authSource == AuthSource.NOMIS) {
             final var staffUserAccount = (StaffUserAccount) u;
-            builder.staffId(staffUserAccount.getStaff().getStaffId());
+            final var staffId = staffUserAccount.getStaff().getStaffId();
+            builder.staffId(staffId);
             if (staffUserAccount.getActiveCaseLoadId() != null) {
                 builder.activeCaseLoadId(staffUserAccount.getActiveCaseLoadId());
             }
         }
+        builder.userId = u.getUserId();
         return builder.build();
     }
 

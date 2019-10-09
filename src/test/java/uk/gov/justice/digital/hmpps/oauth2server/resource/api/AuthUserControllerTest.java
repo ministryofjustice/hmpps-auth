@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -40,6 +41,8 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthUserControllerTest {
+    private static final String USER_ID = "07395ef9-53ec-4d6c-8bb1-0dc96cd4bd2f";
+
     @Mock
     private UserService userService;
     @Mock
@@ -52,8 +55,6 @@ public class AuthUserControllerTest {
     private AuthUserController authUserController;
 
     private final Authentication authentication = new UsernamePasswordAuthenticationToken("bob", "pass");
-
-
 
     @Before
     public void setUp() {
@@ -72,7 +73,7 @@ public class AuthUserControllerTest {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(new AuthUser("authentication", "email", "Joe", "Bloggs", false, true, true));
+        assertThat(responseEntity.getBody()).isEqualTo(new AuthUser(USER_ID, "authentication", "email", "Joe", "Bloggs", false, true, true));
     }
 
     @Test
@@ -80,7 +81,7 @@ public class AuthUserControllerTest {
         when(userService.findAuthUsersByEmail(anyString())).thenReturn(List.of(getAuthUser()));
         final var responseEntity = authUserController.searchForUser("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(List.of(new AuthUser("authentication", "email", "Joe", "Bloggs", false, true, true)));
+        assertThat(responseEntity.getBody()).isEqualTo(List.of(new AuthUser(USER_ID, "authentication", "email", "Joe", "Bloggs", false, true, true)));
     }
 
     @Test
@@ -277,7 +278,7 @@ public class AuthUserControllerTest {
     }
 
     private User getAuthUser() {
-        final var user = User.builder().username("authentication").email("email").verified(true).enabled(true).build();
+        final var user = User.builder().id(UUID.fromString(USER_ID)).username("authentication").email("email").verified(true).enabled(true).build();
         user.setPerson(new Person());
         user.getPerson().setFirstName("Joe");
         user.getPerson().setLastName("Bloggs");
