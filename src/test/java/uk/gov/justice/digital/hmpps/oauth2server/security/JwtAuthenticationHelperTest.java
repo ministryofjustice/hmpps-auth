@@ -12,7 +12,6 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class JwtAuthenticationHelperTest {
     private static final String PASSWORD = "s3cre3tK3y";
     private static final String ALIAS = "elite2api";
@@ -30,13 +29,13 @@ public class JwtAuthenticationHelperTest {
     @Test
     public void testReadAndWriteWithoutAuthorities() {
 
-        final var user = new UserDetailsImpl("user", "name", Collections.emptyList(), "none");
+        final var user = new UserDetailsImpl("user", "name", Collections.emptyList(), "none", "user id");
         final var token = new UsernamePasswordAuthenticationToken(user, "pass");
         final var jwt = helper.createJwt(token);
         final var auth = helper.readAuthenticationFromJwt(jwt);
 
         assertThat(auth).isPresent();
-        assertThat(auth.get().getPrincipal()).extracting("username", "name", "authSource").containsExactly("user", "name", "none");
+        assertThat(auth.get().getPrincipal()).extracting("username", "name", "authSource", "userId").containsExactly("user", "name", "none", "user id");
         assertThat(auth.get().getAuthorities()).isEmpty();
     }
 
@@ -85,5 +84,47 @@ public class JwtAuthenticationHelperTest {
 
         final var token = helper.readAuthenticationFromJwt(cookie);
         assertThat(token).get().extracting("principal.authSource").isEqualTo(List.of("none"));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    public void testReadCookieWithoutUserIdField() {
+        final var properties = new JwtCookieConfigurationProperties();
+        properties.setExpiryTime(Duration.ofHours(1));
+        final var helper = new JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties);
+        final var expiryTime = (Duration) ReflectionTestUtils.getField(helper, "expiryTime");
+        final var keyPair = (KeyPair) ReflectionTestUtils.getField(helper, "keyPair");
+
+        final var cookie = Jwts.builder()
+                .setId(UUID.randomUUID().toString())
+                .setSubject("BOB")
+                .addClaims(Map.of("authorities", ""))
+                .setExpiration(new Date(System.currentTimeMillis() + expiryTime.toMillis()))
+                .signWith(SignatureAlgorithm.RS256, keyPair.getPrivate())
+                .compact();
+
+        final var token = helper.readAuthenticationFromJwt(cookie);
+        assertThat(token).get().extracting("principal.userId").containsExactly("BOB");
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    public void testReadCookie() {
+        final var properties = new JwtCookieConfigurationProperties();
+        properties.setExpiryTime(Duration.ofHours(1));
+        final var helper = new JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties);
+        final var expiryTime = (Duration) ReflectionTestUtils.getField(helper, "expiryTime");
+        final var keyPair = (KeyPair) ReflectionTestUtils.getField(helper, "keyPair");
+
+        final var cookie = Jwts.builder()
+                .setId(UUID.randomUUID().toString())
+                .setSubject("BOB")
+                .addClaims(Map.of("authorities", "", "user_id", "some user"))
+                .setExpiration(new Date(System.currentTimeMillis() + expiryTime.toMillis()))
+                .signWith(SignatureAlgorithm.RS256, keyPair.getPrivate())
+                .compact();
+
+        final var token = helper.readAuthenticationFromJwt(cookie);
+        assertThat(token).get().extracting("principal.userId").containsExactly("some user");
     }
 }

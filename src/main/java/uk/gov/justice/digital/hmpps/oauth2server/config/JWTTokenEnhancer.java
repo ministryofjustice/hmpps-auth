@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class JWTTokenEnhancer implements TokenEnhancer {
     private static final String ADD_INFO_AUTH_SOURCE = "auth_source";
     static final String ADD_INFO_USER_NAME = "user_name";
+    static final String ADD_INFO_USER_ID = "user_id";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
 
     @Autowired
@@ -34,9 +35,11 @@ public class JWTTokenEnhancer implements TokenEnhancer {
         } else {
             final var userAuthentication = authentication.getUserAuthentication();
             final var userDetails = (UserPersonDetails) userAuthentication.getPrincipal();
+            final var userId = StringUtils.defaultString(userDetails.getUserId(), userAuthentication.getName());
             additionalInfo = Map.of(
                     ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
-                    ADD_INFO_USER_NAME, userAuthentication.getName());
+                    ADD_INFO_USER_NAME, userAuthentication.getName(),
+                    ADD_INFO_USER_ID, userId);
         }
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
@@ -64,6 +67,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
         if (userDetails != null) {
             additionalInfo.put(ADD_INFO_AUTH_SOURCE, userDetails.getAuthSource());
             additionalInfo.put(ADD_INFO_USER_NAME, userDetails.getUsername());
+            additionalInfo.put(ADD_INFO_USER_ID, userDetails.getUserId());
 
             // TODO: remove once write credential has been added to clients
             // Add "write" scope with those for client credentials

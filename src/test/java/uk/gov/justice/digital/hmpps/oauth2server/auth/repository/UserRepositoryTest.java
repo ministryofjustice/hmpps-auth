@@ -269,7 +269,7 @@ public class UserRepositoryTest {
     public void findAll_UserFilter_ByEmail() {
         assertThat(repository.findAll(UserFilter.builder().name("test@digital").build()))
                 .extracting(User::getUsername)
-                .containsExactly("AUTH_TEST", "AUTH_RO_USER_TEST");
+                .containsOnly("AUTH_TEST", "AUTH_RO_USER_TEST");
     }
 
     @Test
@@ -283,7 +283,7 @@ public class UserRepositoryTest {
     public void findAll_UserFilter_ByLastNameFirstName() {
         assertThat(repository.findAll(UserFilter.builder().name("orton, r").build()))
                 .extracting(User::getUsername)
-                .containsExactly("AUTH_RO_USER", "AUTH_RO_VARY_USER", "AUTH_RO_USER_TEST");
+                .containsOnly("AUTH_RO_USER", "AUTH_RO_VARY_USER", "AUTH_RO_USER_TEST");
     }
 
     @Test

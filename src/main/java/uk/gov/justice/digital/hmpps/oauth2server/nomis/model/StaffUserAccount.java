@@ -27,7 +27,7 @@ import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatu
 @ToString(of = {"username", "type"})
 public class StaffUserAccount implements UserPersonDetails {
 
-    @Id()
+    @Id
     @Column(name = "USERNAME", nullable = false)
     private String username;
 
@@ -76,6 +76,11 @@ public class StaffUserAccount implements UserPersonDetails {
     @Override
     public String getFirstName() {
         return getStaff().getFirstName();
+    }
+
+    @Override
+    public String getUserId() {
+        return getStaff().getStaffId().toString();
     }
 
     @Override

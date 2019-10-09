@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.springframework.security.core.CredentialsContainer;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
@@ -26,6 +27,7 @@ public class User implements UserPersonDetails, CredentialsContainer {
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "user_id", updatable = false, nullable = false)
+    @Type(type = "uuid-char")
     private UUID id;
 
     @Column(name = "username", nullable = false)
@@ -127,6 +129,11 @@ public class User implements UserPersonDetails, CredentialsContainer {
     @Override
     public String getAuthSource() {
         return "auth";
+    }
+
+    @Override
+    public String getUserId() {
+        return id.toString();
     }
 
     public UserToken createToken(final TokenType tokenType) {
