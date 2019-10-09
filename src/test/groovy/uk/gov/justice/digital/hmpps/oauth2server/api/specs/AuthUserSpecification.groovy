@@ -38,7 +38,9 @@ class AuthUserSpecification extends TestSpecification {
         def response = oauthRestTemplate.exchange("${getBaseUrl()}/api/user/${username}", HttpMethod.GET, null, String.class)
         def userData = jsonSlurper.parseText(response.body as String)
 
-        userData == ['username': username.toUpperCase(), 'active': true, 'name': 'Bob Smith', 'authSource': 'auth']
+        userData.findAll {
+            it.key != 'userId'
+        } == ['username': username.toUpperCase(), 'active': true, 'name': 'Bob Smith', 'authSource': 'auth']
     }
 
     def 'Create User endpoint succeeds to create user data with group and roles'() {
@@ -103,7 +105,7 @@ class AuthUserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ['username': 'AUTH_USER', 'email': 'auth_user@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Only']
+        userData == ['userId': '608955ae-52ed-44cc-884c-011597a77949', 'username': 'AUTH_USER', 'email': 'auth_user@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Only']
     }
 
     def 'Auth User endpoint returns no data for nomis user'() {
@@ -140,8 +142,8 @@ class AuthUserSpecification extends TestSpecification {
         def userDataList = jsonSlurper.parseText(response.body)
 
         userDataList == [
-                ['username': 'AUTH_ADM', 'email': 'auth_test2@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Adm'],
-                ['username': 'AUTH_EXPIRED', 'email': 'auth_test2@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Expired'],
+            ['username': 'AUTH_ADM', 'email': 'auth_test2@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Adm', 'userId': '5105a589-75b3-4ca0-9433-b96228c1c8f3'],
+            ['username': 'AUTH_EXPIRED', 'email': 'auth_test2@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Expired', 'userId': '9e84f1e4-59c8-4b10-927a-9cf9e9a30791'],
         ]
     }
 
@@ -185,7 +187,7 @@ class AuthUserSpecification extends TestSpecification {
         def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status']
+        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status', 'userId': 'fc494152-f9ad-48a0-a87c-9adc8bd75255']
     }
 
     def 'Group manager Enable endpoint enables user'() {
@@ -205,7 +207,7 @@ class AuthUserSpecification extends TestSpecification {
         def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status']
+        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status', 'userId': 'fc494152-f9ad-48a0-a87c-9adc8bd75255']
     }
 
     def 'Group manager Enable endpoint fails user not in group manager group conflict'() {
@@ -253,7 +255,7 @@ class AuthUserSpecification extends TestSpecification {
         def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': false, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status']
+        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': false, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status', 'userId': 'fc494152-f9ad-48a0-a87c-9adc8bd75255']
     }
 
     def 'Group manager Disable endpoint enables user'() {
@@ -274,7 +276,7 @@ class AuthUserSpecification extends TestSpecification {
         def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': false, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status']
+        userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': false, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status', 'userId': 'fc494152-f9ad-48a0-a87c-9adc8bd75255']
     }
 
 

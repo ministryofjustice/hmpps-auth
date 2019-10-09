@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,6 +31,8 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserControllerTest {
+    private static final String USER_ID = "07395ef9-53ec-4d6c-8bb1-0dc96cd4bd2f";
+
     @Mock
     private UserService userService;
 
@@ -52,7 +55,7 @@ public class UserControllerTest {
         setupFindUserCallForNomis();
         final var responseEntity = userController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, null));
+        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, null, "5"));
     }
 
     @Test
@@ -61,7 +64,7 @@ public class UserControllerTest {
         staffUserAccount.setActiveCaseLoadId("somecase");
         final var responseEntity = userController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, "somecase"));
+        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, "somecase", "5"));
     }
 
     @Test
@@ -69,7 +72,7 @@ public class UserControllerTest {
         setupFindUserCallForAuth();
         final var responseEntity = userController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", true, "Joe Bloggs", AuthSource.AUTH, null, null));
+        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", true, "Joe Bloggs", AuthSource.AUTH, null, null, USER_ID));
     }
 
     @Test
@@ -82,7 +85,7 @@ public class UserControllerTest {
     public void me_nomisUserNoCaseload() {
         setupFindUserCallForNomis();
         final var principal = new TestingAuthenticationToken("principal", "credentials");
-        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, null));
+        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, null, "5"));
     }
 
     @Test
@@ -90,14 +93,14 @@ public class UserControllerTest {
         final var staffUserAccount = setupFindUserCallForNomis();
         staffUserAccount.setActiveCaseLoadId("somecase");
         final var principal = new TestingAuthenticationToken("principal", "credentials");
-        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, "somecase"));
+        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, "somecase", "5"));
     }
 
     @Test
     public void me_authUser() {
         setupFindUserCallForAuth();
         final var principal = new TestingAuthenticationToken("principal", "credentials");
-        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", true, "Joe Bloggs", AuthSource.AUTH, null, null));
+        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", true, "Joe Bloggs", AuthSource.AUTH, null, null, USER_ID));
     }
 
     @Test
@@ -157,7 +160,7 @@ public class UserControllerTest {
     }
 
     private void setupFindUserCallForAuth() {
-        final var user = User.builder().username("principal").email("email").verified(true).build();
+        final var user = User.builder().id(UUID.fromString(USER_ID)).username("principal").email("email").verified(true).build();
         user.setPerson(new Person());
         user.getPerson().setFirstName("Joe");
         user.getPerson().setLastName("Bloggs");

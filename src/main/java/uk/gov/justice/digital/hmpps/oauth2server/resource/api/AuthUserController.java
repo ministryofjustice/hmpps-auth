@@ -284,31 +284,34 @@ public class AuthUserController {
     @Data
     @Builder
     static class AuthUser {
-        @ApiModelProperty(required = true, value = "Username", example = "authuser", position = 1)
+        @ApiModelProperty(required = true, value = "User ID", example = "91229A16-B5F4-4784-942E-A484A97AC865", position = 1)
+        private String userId;
+        @ApiModelProperty(required = true, value = "Username", example = "authuser", position = 2)
         private String username;
-        @ApiModelProperty(required = true, value = "Email address", example = "auth.user@someagency.justice.gov.uk", position = 2)
+        @ApiModelProperty(required = true, value = "Email address", example = "auth.user@someagency.justice.gov.uk", position = 3)
         private String email;
-        @ApiModelProperty(required = true, value = "First name", example = "Auth", position = 3)
+        @ApiModelProperty(required = true, value = "First name", example = "Auth", position = 4)
         private String firstName;
-        @ApiModelProperty(required = true, value = "Last name", example = "User", position = 4)
+        @ApiModelProperty(required = true, value = "Last name", example = "User", position = 5)
         private String lastName;
-        @ApiModelProperty(required = true, value = "Account is locked due to incorrect password attempts", example = "true", position = 5)
+        @ApiModelProperty(required = true, value = "Account is locked due to incorrect password attempts", example = "true", position = 6)
         private boolean locked;
-        @ApiModelProperty(required = true, value = "Account is enabled", example = "false", position = 6)
+        @ApiModelProperty(required = true, value = "Account is enabled", example = "false", position = 7)
         private boolean enabled;
-        @ApiModelProperty(required = true, value = "Email address has been verified", example = "false", position = 7)
+        @ApiModelProperty(required = true, value = "Email address has been verified", example = "false", position = 8)
         private boolean verified;
 
         private static AuthUser fromUser(final User user) {
-            return AuthUser.builder().
-                    username(user.getUsername()).
-                    email(user.getEmail()).
-                    firstName(user.getFirstName()).
-                    lastName(user.getPerson().getLastName()).
-                    locked(user.isLocked()).
-                    enabled(user.isEnabled()).
-                    verified(user.isVerified()).
-                    build();
+            return AuthUser.builder()
+                    .userId(user.getId().toString())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getPerson().getLastName())
+                    .locked(user.isLocked())
+                    .enabled(user.isEnabled())
+                    .verified(user.isVerified())
+                    .build();
         }
     }
 
