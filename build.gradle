@@ -2,46 +2,51 @@ import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 import java.time.Instant
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 plugins {
-    id 'java'
-    id 'groovy'
-    id 'org.springframework.boot' version '2.1.9.RELEASE'
-    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-    id 'com.github.ben-manes.versions' version '0.25.0'
+  id 'java'
+  id 'groovy'
+  id 'org.springframework.boot' version '2.1.9.RELEASE'
+  id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+  id 'com.github.ben-manes.versions' version '0.26.0'
 }
 
 repositories {
-    mavenCentral()
-    maven { url "https://dl.bintray.com/gov-uk-notify/maven" }
-    maven { url "https://raw.github.com/weddini/spring-boot-throttling/mvn-repo/" }
+  mavenCentral()
+  maven { url "https://dl.bintray.com/gov-uk-notify/maven" }
+  maven { url "https://raw.github.com/weddini/spring-boot-throttling/mvn-repo/" }
+}
+
+configurations {
+  agentDeps
+  agentDeps.transitive = false
 }
 
 ext {
     ext {
-        drivers = [
-                'chromeHeadless'
-        ]
+        drivers = ['chromeHeadless']
     }
 }
 
-def today = Instant.now()
 group = 'uk.gov.justice.digital.hmpps'
-project.sourceCompatibility = 11
-project.targetCompatibility = 11
 
-def todayDate = LocalDate.now()
-def formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-version todayDate.format(formatter)
+def today = Instant.now()
+def todaysDate = LocalDate.now().format('yyyy-MM-dd')
+version = System.getenv('CI') ? "${todaysDate}.${System.getenv('CIRCLE_BUILD_NUM')}" : todaysDate
 
+jar {
+    baseName = rootProject.name
+    manifest {
+        attributes 'Implementation-Title': rootProject.name, 'Implementation-Version': version
+    }
+}
 
 springBoot {
     buildInfo {
         properties {
             artifact = rootProject.name
-            version = System.getenv('CI') ? "${version}.${System.getenv('CIRCLE_BUILD_NUM')}" : version
-            group = 'uk.gov.justice.digital.hmpps'
+            version = version
+            group = group
             name = rootProject.name
             time = today
             additional = [
@@ -55,100 +60,107 @@ springBoot {
 }
 
 dependencyManagement {
-    imports {
-        mavenBom(SpringBootPlugin.BOM_COORDINATES)
-    }
+  imports {
+    mavenBom(SpringBootPlugin.BOM_COORDINATES)
+  }
 }
 
 dependencies {
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-    annotationProcessor('org.projectlombok:lombok:1.18.8')
+  annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+  annotationProcessor('org.projectlombok:lombok:1.18.10')
 
-    implementation files('lib/ojdbc10-19.3.jar')
+  implementation files('lib/ojdbc10-19.3.jar')
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.security:spring-security-jwt:1.0.10.RELEASE'
-    implementation 'org.springframework.security.oauth:spring-security-oauth2:2.3.6.RELEASE'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'io.jsonwebtoken:jjwt:0.9.1'
-    implementation 'com.weddini.throttling:spring-boot-throttling-starter:0.0.9'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'org.springframework.security:spring-security-jwt:1.0.10.RELEASE'
+  implementation 'org.springframework.security.oauth:spring-security-oauth2:2.3.6.RELEASE'
+  implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  implementation 'io.jsonwebtoken:jjwt:0.9.1'
+  implementation 'com.weddini.throttling:spring-boot-throttling-starter:0.0.9'
 
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.hibernate:hibernate-core'
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+  implementation 'org.hibernate:hibernate-core'
 
-    implementation 'net.logstash.logback:logstash-logback-encoder:6.2'
-    implementation 'com.microsoft.azure:applicationinsights-spring-boot-starter:2.5.0'
-    implementation 'com.microsoft.azure:applicationinsights-logging-logback:2.5.0'
+  implementation 'net.logstash.logback:logstash-logback-encoder:6.2'
+  implementation 'com.microsoft.azure:applicationinsights-spring-boot-starter:2.5.1-BETA'
+  implementation 'com.microsoft.azure:applicationinsights-logging-logback:2.5.1-BETA'
+  agentDeps 'com.microsoft.azure:applicationinsights-agent:2.5.1-BETA'
+  implementation 'javax.annotation:javax.annotation-api:1.3.2'
+  implementation 'javax.xml.bind:jaxb-api:2.3.1'
+  implementation 'com.sun.xml.bind:jaxb-impl:2.3.2'
+  implementation 'com.sun.xml.bind:jaxb-core:2.3.0.1'
+  implementation 'javax.activation:activation:1.1.1'
 
-    implementation 'javax.annotation:javax.annotation-api:1.3.2'
-    implementation 'javax.xml.bind:jaxb-api:2.3.1'
-    implementation 'com.sun.xml.bind:jaxb-impl:2.3.2'
-    implementation 'com.sun.xml.bind:jaxb-core:2.3.0.1'
-    implementation 'javax.activation:activation:1.1.1'
+  implementation 'javax.transaction:javax.transaction-api:1.3'
 
-    implementation 'javax.transaction:javax.transaction-api:1.3'
+  implementation 'io.springfox:springfox-swagger2:2.9.2'
+  implementation 'io.springfox:springfox-swagger-ui:2.9.2'
 
-    implementation 'io.springfox:springfox-swagger2:2.9.2'
-    implementation 'io.springfox:springfox-swagger-ui:2.9.2'
+  implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+  implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
+  implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1'
+  implementation 'org.webjars:bootstrap:4.3.1'
+  implementation 'uk.gov.service.notify:notifications-java-client:3.15.0-RELEASE'
 
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
-    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1'
-    implementation 'org.webjars:bootstrap:4.3.1'
-    implementation 'uk.gov.service.notify:notifications-java-client:3.15.0-RELEASE'
+  implementation 'org.flywaydb:flyway-core:5.2.4'
+  implementation 'com.zaxxer:HikariCP:3.4.1'
+  implementation 'org.apache.commons:commons-lang3:3.9'
+  implementation 'org.apache.commons:commons-text:1.8'
+  implementation 'com.microsoft.sqlserver:mssql-jdbc:7.4.1.jre11'
+  implementation 'com.github.timpeeters:spring-boot-graceful-shutdown:2.1.1'
 
-    implementation 'org.flywaydb:flyway-core:5.2.4'
-    implementation 'com.zaxxer:HikariCP:3.3.1'
-    implementation 'org.apache.commons:commons-lang3:3.9'
-    implementation 'org.apache.commons:commons-text:1.8'
-    implementation 'com.microsoft.sqlserver:mssql-jdbc:7.4.1.jre11'
-    implementation 'com.github.timpeeters:spring-boot-graceful-shutdown:2.1.1'
+  runtime 'com.h2database:h2:1.4.199'
+  runtime 'org.springframework.boot:spring-boot-devtools'
 
-    runtime 'com.h2database:h2:1.4.199'
-    runtime 'org.springframework.boot:spring-boot-devtools'
+  compileOnly 'org.projectlombok:lombok:1.18.8'
 
-    compileOnly 'org.projectlombok:lombok:1.18.8'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+  testImplementation 'org.springframework.security:spring-security-test'
+  testRuntime 'com.h2database:h2:1.4.196'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testRuntime 'com.h2database:h2:1.4.196'
+  testImplementation 'org.codehaus.groovy:groovy-all:2.5.7'
+  testImplementation 'org.spockframework:spock-spring:1.2-groovy-2.5'
+  testImplementation('org.spockframework:spock-core:1.2-groovy-2.5') {
+    exclude group: 'org.codehaus.groovy'
+  }
 
-    testImplementation 'org.codehaus.groovy:groovy-all:2.5.7'
-    testImplementation 'org.spockframework:spock-spring:1.2-groovy-2.5'
-    testImplementation('org.spockframework:spock-core:1.2-groovy-2.5') {
-        exclude group: 'org.codehaus.groovy'
-    }
+  testImplementation 'org.gebish:geb-core:3.1'
+  testImplementation 'org.gebish:geb-spock:3.1'
+  testImplementation 'org.seleniumhq.selenium:selenium-support:3.141.59'
+  testImplementation 'org.seleniumhq.selenium:selenium-chrome-driver:3.141.59'
+  testImplementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.141.59'
+  testImplementation 'io.github.http-builder-ng:http-builder-ng-apache:1.0.4'
 
-    testImplementation 'org.gebish:geb-core:3.0.1'
-    testImplementation 'org.gebish:geb-spock:3.0.1'
-    testImplementation 'org.seleniumhq.selenium:selenium-support:3.141.59'
-    testImplementation 'org.seleniumhq.selenium:selenium-chrome-driver:3.141.59'
-    testImplementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.141.59'
-    testImplementation 'io.github.http-builder-ng:http-builder-ng-apache:1.0.4'
+  testImplementation 'com.github.tomakehurst:wiremock-standalone:2.25.0'
+  testImplementation 'com.github.tomjankes:wiremock-groovy:0.2.0'
+  testImplementation 'org.slf4j:slf4j-api:1.7.25'
+  testImplementation 'com.auth0:java-jwt:3.8.3'
 
-    testImplementation 'com.github.tomakehurst:wiremock-standalone:2.25.0'
-    testImplementation 'com.github.tomjankes:wiremock-groovy:0.2.0'
-    testImplementation 'org.slf4j:slf4j-api:1.7.25'
-    testImplementation 'com.auth0:java-jwt:3.8.3'
+  compile configurations.agentDeps
 }
+
+task copyAgent(type: Copy) {
+    from configurations.agentDeps
+    into "$buildDir/libs"
+}
+
+assemble.dependsOn copyAgent
 
 drivers.each { driver ->
-    task "${driver}Test"(type: Test) {
-        group JavaBasePlugin.VERIFICATION_GROUP
+  task "${driver}Test"(type: Test) {
+    group JavaBasePlugin.VERIFICATION_GROUP
 
-        outputs.upToDateWhen { false } // Always run tests
+    outputs.upToDateWhen { false } // Always run tests
 
-        systemProperty 'geb.build.reportsDir', reporting.file("geb/${name}")
-        systemProperty 'geb.env', driver
-    }
+    systemProperty 'geb.build.reportsDir', reporting.file("geb/${name}")
+    systemProperty 'geb.env', driver
+  }
 }
 
-
 test {
-    exclude '**/integration/*'
+  exclude '**/integration/*'
 }
 
 task testIntegration(type: Test) {
-    include 'uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*'
+  include 'uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*'
 }
-
