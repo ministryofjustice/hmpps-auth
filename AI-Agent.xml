@@ -4,10 +4,8 @@
     <BuiltIn enabled="true">
       <HTTP enabled="true" W3C="true"/>
 
-      <!-- capture query plans for JDBC queries that exceed this value (MySQL, PostgreSQL),
-           default is 10000 milliseconds -->
-      <MaxStatementQueryLimitInMS>1000</MaxStatementQueryLimitInMS>
-
+      <!-- JDBC disabled as ALTER USER commands appear in the logs -->
+      <JDBC enabled="false" />
     </BuiltIn>
   </Instrumentation>
 </ApplicationInsightsAgent>
