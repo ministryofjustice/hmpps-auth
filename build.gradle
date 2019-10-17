@@ -114,8 +114,10 @@ dependencies {
   runtime 'com.h2database:h2:1.4.199'
   runtime 'org.springframework.boot:spring-boot-devtools'
 
-  compileOnly 'org.projectlombok:lombok:1.18.8'
+  compileOnly 'org.projectlombok:lombok:1.18.10'
 
+  testAnnotationProcessor 'org.projectlombok:lombok:1.18.10'
+  testCompileOnly 'org.projectlombok:lombok:1.18.10'
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testImplementation 'org.springframework.security:spring-security-test'
   testRuntime 'com.h2database:h2:1.4.196'
