@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext;
 import com.microsoft.applicationinsights.web.internal.ThreadContext;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +38,11 @@ public class ClientTrackingTelemetryModuleTest {
     @Before
     public void setup() {
         ThreadContext.setRequestTelemetryContext(new RequestTelemetryContext(1L));
+    }
+
+    @After
+    public void tearDown() {
+        ThreadContext.remove();
     }
 
     @Test
