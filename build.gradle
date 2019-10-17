@@ -116,6 +116,8 @@ dependencies {
 
   compileOnly 'org.projectlombok:lombok:1.18.8'
 
+  testAnnotationProcessor 'org.projectlombok:lombok:1.18.8'
+  testCompileOnly 'org.projectlombok:lombok:1.18.8'
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testImplementation 'org.springframework.security:spring-security-test'
   testRuntime 'com.h2database:h2:1.4.196'
