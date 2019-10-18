@@ -428,7 +428,7 @@ public class ResetPasswordServiceTest {
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User.builder().username("user").email("email").verified(true).build()));
         final var builtUser = User.builder().username("other").email("email").verified(true).build();
         when(userTokenRepository.findById("token")).thenReturn(Optional.of(builtUser.createToken(TokenType.RESET)));
-        assertThatThrownBy(() -> resetPasswordService.moveTokenToAccount("token", "noone")).extracting("reason").containsOnly("locked");
+        assertThatThrownBy(() -> resetPasswordService.moveTokenToAccount("token", "noone")).extracting("reason").isEqualTo("locked");
     }
 
     @Test

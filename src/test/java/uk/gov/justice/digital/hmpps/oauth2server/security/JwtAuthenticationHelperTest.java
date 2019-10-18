@@ -8,7 +8,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.security.KeyPair;
 import java.time.Duration;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -62,7 +65,7 @@ public class JwtAuthenticationHelperTest {
                 .compact();
 
         final var token = helper.readAuthenticationFromJwt(cookie);
-        assertThat(token).get().extracting("principal.name").isEqualTo(List.of("BOB"));
+        assertThat(token).get().extracting("principal.name").isEqualTo("BOB");
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -83,7 +86,7 @@ public class JwtAuthenticationHelperTest {
                 .compact();
 
         final var token = helper.readAuthenticationFromJwt(cookie);
-        assertThat(token).get().extracting("principal.authSource").isEqualTo(List.of("none"));
+        assertThat(token).get().extracting("principal.authSource").isEqualTo("none");
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -104,7 +107,7 @@ public class JwtAuthenticationHelperTest {
                 .compact();
 
         final var token = helper.readAuthenticationFromJwt(cookie);
-        assertThat(token).get().extracting("principal.userId").containsExactly("BOB");
+        assertThat(token).get().extracting("principal.userId").isEqualTo("BOB");
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -125,6 +128,6 @@ public class JwtAuthenticationHelperTest {
                 .compact();
 
         final var token = helper.readAuthenticationFromJwt(cookie);
-        assertThat(token).get().extracting("principal.userId").containsExactly("some user");
+        assertThat(token).get().extracting("principal.userId").isEqualTo("some user");
     }
 }
