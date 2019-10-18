@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify;
 
-import com.weddini.throttling.Throttling;
-import com.weddini.throttling.ThrottlingType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +23,6 @@ import uk.gov.service.notify.NotificationClientException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -65,7 +62,6 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
     }
 
     @Override
-    @Throttling(type = ThrottlingType.SpEL, expression = "T(uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper).retrieveIpFromRequest()", limit = 6, timeUnit = TimeUnit.MINUTES)
     @Transactional(transactionManager = "authTransactionManager")
     public Optional<String> requestResetPassword(final String usernameOrEmailAddress, final String url) throws NotificationClientRuntimeException {
         final Optional<User> optionalUser;

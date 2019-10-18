@@ -15,7 +15,6 @@ plugins {
 repositories {
   mavenCentral()
   maven { url "https://dl.bintray.com/gov-uk-notify/maven" }
-  maven { url "https://raw.github.com/weddini/spring-boot-throttling/mvn-repo/" }
 }
 
 configurations {
@@ -34,13 +33,6 @@ group = 'uk.gov.justice.digital.hmpps'
 def today = Instant.now()
 def todaysDate = LocalDate.now().format('yyyy-MM-dd')
 version = System.getenv('CI') ? "${todaysDate}.${System.getenv('CIRCLE_BUILD_NUM')}" : todaysDate
-
-jar {
-    baseName = rootProject.name
-    manifest {
-        attributes 'Implementation-Title': rootProject.name, 'Implementation-Version': version
-    }
-}
 
 springBoot {
     buildInfo {
@@ -77,7 +69,6 @@ dependencies {
   implementation 'org.springframework.security.oauth:spring-security-oauth2:2.3.6.RELEASE'
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
   implementation 'io.jsonwebtoken:jjwt:0.9.1'
-  implementation 'com.weddini.throttling:spring-boot-throttling-starter:0.0.9'
 
   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
   implementation 'org.hibernate:hibernate-core'
