@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import com.weddini.throttling.ThrottlingException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -141,16 +140,6 @@ public class ResetPasswordControllerTest {
         final var modelAndView = controller.resetPasswordRequest("user@somewhere", request);
         assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
         assertThat(modelAndView.getModel()).containsOnly(entry("error", "email.reason"), entry("usernameOrEmail", "user@somewhere"));
-    }
-
-    @Test
-    public void resetPasswordRequest_throttled() throws NotificationClientRuntimeException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
-        when(request.getRemoteAddr()).thenReturn("127.0.0.1");
-        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(new ThrottlingException());
-        final var modelAndView = controller.resetPasswordRequest("user", request);
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-        assertThat(modelAndView.getModel()).containsExactly(entry("error", "throttled"));
     }
 
     @Test
