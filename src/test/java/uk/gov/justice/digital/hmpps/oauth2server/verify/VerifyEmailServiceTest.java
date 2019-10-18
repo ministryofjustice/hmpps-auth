@@ -217,7 +217,7 @@ public class VerifyEmailServiceTest {
 
     private void verifyEmailFailure(final String email, final String reason) {
         assertThatThrownBy(() -> verifyEmailService.validateEmailAddress(email)).
-                isInstanceOf(VerifyEmailException.class).extracting("reason").containsOnly(reason);
+                isInstanceOf(VerifyEmailException.class).extracting("reason").isEqualTo(reason);
     }
 
     private StaffUserAccount getStaffUserAccountForBob() {
