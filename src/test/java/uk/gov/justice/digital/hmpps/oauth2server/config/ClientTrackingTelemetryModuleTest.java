@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 import static uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters;
 
 @RunWith(SpringRunner.class)
@@ -29,11 +30,16 @@ import static uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtP
 @ActiveProfiles("test")
 public class ClientTrackingTelemetryModuleTest {
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private ClientTrackingTelemetryModule clientTrackingTelemetryModule;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private JwtAuthHelper jwtAuthHelper;
+
+    private final MockHttpServletResponse res = new MockHttpServletResponse();
+    private final MockHttpServletRequest req = new MockHttpServletRequest();
 
     @Before
     public void setup() {
@@ -48,30 +54,23 @@ public class ClientTrackingTelemetryModuleTest {
     @Test
     public void shouldAddClientIdAndUserNameToInsightTelemetry() {
 
-        final var token = createJwt("bob", List.of(), 1L);
+        final var token = createJwt("bob", 1L);
 
-        MockHttpServletRequest req = new MockHttpServletRequest();
         req.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-        MockHttpServletResponse res = new MockHttpServletResponse();
 
         clientTrackingTelemetryModule.onBeginRequest(req, res);
 
         final var insightTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getProperties();
 
-        assertThat(insightTelemetry).hasSize(2);
-        assertThat(insightTelemetry.get("user_name")).isEqualTo("bob");
-        assertThat(insightTelemetry.get("client_id")).isEqualTo("elite2apiclient");
-
+        assertThat(insightTelemetry).containsOnly(entry("username", "bob"), entry("clientId", "elite2apiclient"));
     }
 
     @Test
     public void shouldNotAddClientIdAndUserNameToInsightTelemetryAsTokenExpired() {
 
-        final var token = createJwt("Fred", List.of(), -1L);
+        final var token = createJwt("Fred", -1L);
 
-        MockHttpServletRequest req = new MockHttpServletRequest();
         req.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-        MockHttpServletResponse res = new MockHttpServletResponse();
 
         clientTrackingTelemetryModule.onBeginRequest(req, res);
 
@@ -80,10 +79,10 @@ public class ClientTrackingTelemetryModuleTest {
         assertThat(insightTelemetry).isEmpty();
     }
 
-    private String createJwt(final String user, final List<String> roles, Long duration) {
+    private String createJwt(final String user, final Long duration) {
         return jwtAuthHelper.createJwt(JwtParameters.builder()
                 .username(user)
-                .roles(roles)
+                .roles(List.of())
                 .scope(List.of("read", "write"))
                 .expiryTime(Duration.ofDays(duration))
                 .build());
