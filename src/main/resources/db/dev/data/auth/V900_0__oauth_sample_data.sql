@@ -58,7 +58,9 @@ INSERT INTO users (user_id, username, email, verified)
         ('6A3F0216-BBAB-49CD-BD6E-AC09C1762EE4', 'LOCKED_USER', 'locked@somewhere.com', 1),
         ('79CDC23C-510F-4CE2-8C98-AC251296EC39', 'RO_DEMO', null, 0),
         ('AB8DA2CA-3E79-42D3-883E-CEE6C3F693CA', 'RO_USER_TEST', 'ro_user_test@digital.justice.gov.uk', 1),
-        ('5C72B180-5211-454D-9605-CF29573B946F', 'UOF_REVIEWER_USER', 'uof_reviewer@digital.justice.gov.uk', 1);
+        ('5C72B180-5211-454D-9605-CF29573B946F', 'UOF_REVIEWER_USER', 'uof_reviewer@digital.justice.gov.uk', 1),
+        ('98FBF8D7-4164-47B3-826F-ECD3BB643005', 'RCTL_USER1', 'rctl_user1@digital.justice.gov.uk', 1),
+        ('26912E22-E313-4164-8434-0D2623483123', 'PPL_RCTL_USER1', 'ppl_rctl_user1@digital.justice.gov.uk', 1);
 
 INSERT INTO users (user_id, username, email, verified, last_logged_in)
  VALUES ('A2B6E3C0-2CE4-4148-9DFB-42E94BC78D02', 'NOMIS_DELETE', 'locked@somewhere.com', 1, '2018-02-04 13:23:19.0000000');
