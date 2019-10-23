@@ -20,6 +20,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.security.KeyPair;
+import java.util.Optional;
 
 @Configuration
 public class ClientTrackingTelemetryModule implements WebTelemetryModule, TelemetryModule {
@@ -38,7 +39,7 @@ public class ClientTrackingTelemetryModule implements WebTelemetryModule, Teleme
     @Override
     public void onBeginRequest(final ServletRequest req, final ServletResponse res) {
 
-        HttpServletRequest httpServletRequest = (HttpServletRequest) req;
+        final var httpServletRequest = (HttpServletRequest) req;
         final var token = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
         final var bearer = "Bearer ";
         if (StringUtils.startsWithIgnoreCase(token, bearer)) {
@@ -48,13 +49,14 @@ public class ClientTrackingTelemetryModule implements WebTelemetryModule, Teleme
 
                 final var properties = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getProperties();
 
-                properties.put("user_name", String.valueOf(jwtBody.get("user_name")));
-                properties.put("client_id", String.valueOf(jwtBody.get("client_id")));
+                final var user = Optional.ofNullable(jwtBody.get("user_name"));
+                user.map(String::valueOf).ifPresent(u -> properties.put("username", u));
 
-            } catch ( ExpiredJwtException e){
+                properties.put("clientId", String.valueOf(jwtBody.get("client_id")));
+
+            } catch (final ExpiredJwtException e) {
                 // Expired token which spring security will handle
             }
-
         }
     }
 
