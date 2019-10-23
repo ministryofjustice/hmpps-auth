@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.api.specs
 
+
 import groovy.json.JsonSlurper
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
@@ -18,5 +19,6 @@ class HealthSpecification extends TestSpecification {
         def details = jsonSlurper.parseText(response.body)
 
         details.status == "UP"
+        details.components.db.components.authDataSource.details == [database: 'H2', result: 1, validationQuery: 'SELECT 1']
     }
 }

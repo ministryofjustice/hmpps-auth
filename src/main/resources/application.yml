@@ -54,6 +54,7 @@ management:
       cache:
         time-to-live: 2000ms
       show-components: always
+      show-details: always
     info:
       cache:
         time-to-live: 2000ms
