@@ -23,6 +23,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices;
+import org.springframework.security.oauth2.provider.endpoint.DefaultRedirectResolver;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
@@ -50,7 +51,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final DataSource dataSource;
     private final PasswordEncoder passwordEncoder;
     private final TelemetryClient telemetryClient;
-
+    private final boolean matchSubdomains;
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy final AuthenticationManager authenticationManager,
@@ -58,6 +59,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                                            @Value("${jwt.signing.key.pair}") final String privateKeyPair,
                                            @Value("${jwt.keystore.password}") final String keystorePassword,
                                            @Value("${jwt.keystore.alias:elite2api}") final String keystoreAlias,
+                                           @Value("${application.authentication.match-subdomains}") final boolean matchSubdomains,
                                            @Qualifier("authDataSource") final DataSource dataSource,
                                            final PasswordEncoder passwordEncoder, final TelemetryClient telemetryClient) {
 
@@ -69,6 +71,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.dataSource = dataSource;
         this.passwordEncoder = passwordEncoder;
         this.telemetryClient = telemetryClient;
+        this.matchSubdomains = matchSubdomains;
     }
 
     @Bean
@@ -110,14 +113,20 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     @Override
     public void configure(final AuthorizationServerEndpointsConfigurer endpoints) {
-        endpoints
-                .tokenStore(tokenStore())
+        endpoints.tokenStore(tokenStore())
                 .accessTokenConverter(accessTokenConverter())
                 .tokenEnhancer(tokenEnhancerChain())
+                .redirectResolver(redirectResolver())
                 .authenticationManager(authenticationManager)
                 .userDetailsService(userDetailsService)
                 .authorizationCodeServices(new JdbcAuthorizationCodeServices(dataSource))
                 .tokenServices(tokenServices());
+    }
+
+    private DefaultRedirectResolver redirectResolver() {
+        final var redirectResolver = new DefaultRedirectResolver();
+        redirectResolver.setMatchSubdomains(matchSubdomains);
+        return redirectResolver;
     }
 
     @Bean

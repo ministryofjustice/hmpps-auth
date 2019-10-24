@@ -27,6 +27,8 @@ spring:
     open-in-view: false
     database: default
 
+  thymeleaf.render-hidden-markers-before-checkboxes: true
+
 # SQL Server DB - "auth"
 auth:
   datasource:
@@ -58,3 +60,54 @@ management:
     info:
       cache:
         time-to-live: 2000ms
+
+application:
+  caseload.id: NWEB
+
+  notify:
+    verify.template: 4b285841-41ba-47d1-b6b0-104440c4e312
+    reset.template: 75fca0df-7652-4339-bd14-291023bee027
+    reset-unavailable.template: e6c105cd-d5b3-48dc-981e-9a346bf2b1b7
+    reset-unavailable-email-not-found.template: 85060e77-d656-4349-bce9-fa5d8b833793
+    create-initial-password.template: e6a1a50d-b50d-4516-8aff-2558abb79c7c
+    reset-password.template: 73d9e0da-d6db-4d25-afbd-82e9c27649fa
+
+  smoketest.enabled: false
+
+  non-prod-warning:
+    enabled: false
+    prod-url: http:localhost:8080/auth/
+
+  authentication:
+    ui.whitelist: 0:0:0:0:0:0:0:1,127.0.0.1/32,172.16.0.0/12
+    lockout-count: 10
+    password-age: 7300
+    # run disable and delete auth user job every hour (specified in millis)
+    disable.frequency: 3600000
+    delete.frequency: 3600000
+    # grabbed all passwords over 8 characters with both letters and numbers from
+    # https://github.com/danielmiessler/SecLists/blob/master/Passwords/probable-v2-top12000.txt
+    # plus helloworld (which is specified on the login page) and password123456 (in codebase)
+    blacklist: password123456,h3lloworld,helloworld1,123456789a,123456789abc,12345678a,123456abc,123456qwerty,12345qwert,123qwe123,123qweasd,123qweasdzxc,123qwerty,1a2b3c4d5e,1password,1q2w3e4r5,1q2w3e4r5t,1q2w3e4r5t6y,1qa2ws3ed,1qaz2wsx3edc,2bornot2b,a12345678,a123456789,a1b2c3d4e5,abc123456,abc123abc,abcde12345,airforce1,alexander1,andrew123,asdasd123,asdfg12345,asdfghjkl1,asdqwe123,austin316,baseball1,batman123,beautiful1,benjamin1,butterfly1,charlie123,chocolate1,christian1,cocacola1,computer1,creative1,daniel123,danielle1,dragon123,elizabeth1,football1,fuckyou123,google123,hello1234,hunter123,icecream1,iloveyou1,iloveyou2,internet1,jamesbond007,jennifer1,jonathan1,jordan123,joshua123,justin123,killer123,letmein123,liverpool1,london123,love4ever,master123,matrix123,maverick1,metallica1,michelle1,midnight1,monkey123,nicholas1,nintendo64,orange123,password0,password00,password01,password1,password1,password11,password12,password123,password123,password1234,password13,password2,password22,password3,password4,password5,password7,password8,password9,password99,playstation2,pokemon123,porsche911,princess1,q1w2e3r4t5,q1w2e3r4t5y6,qazwsx123,qwe123qwe,qweasd123,qwert1234,qwert12345,qwerty123,qwerty1234,qwerty12345,qwerty123456,qwerty321,samantha1,samsung123,schalke04,sebastian1,secret123,shadow123,slayer666,slipknot1,snickers1,snowball1,spartan117,spiderman1,starwars1,summer123,sunshine1,superman1,test12345,testing123,thomas123,victoria1,warcraft1,warcraft3,welcome123,whatever1,windows98,zxcvbnm123
+    match-subdomains: false
+
+jwt:
+  keystore:
+    password: s3cre3tK3y
+    alias: elite2api
+  signing.key.pair: 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
+
+  cookie:
+    name: jwtSession
+    expiry-time: 1800s
+
+saved-request:
+  cookie:
+    name: savedrequest
+    expiry-time: 0
+
+logging.uris.exclude.regex: /auth/health|/auth/info|/auth/ping|/auth/swagger.*|/auth/webjars/.*|/auth/v2/api-docs
+
+graceful.shutdown.enabled: true
+
+azure.application-insights.web.enable-W3C: true

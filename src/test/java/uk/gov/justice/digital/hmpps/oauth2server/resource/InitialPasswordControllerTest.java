@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,33 +33,18 @@ public class InitialPasswordControllerTest {
     private UserService userService;
     @Mock
     private TelemetryClient telemetryClient;
-    @Mock
-    private HttpServletRequest request;
 
     private InitialPasswordController controller;
 
     @Before
     public void setUp() {
-        controller = new InitialPasswordController(resetPasswordService, tokenService, userService, telemetryClient, Set.of("password1"), "http://hdcurl");
+        controller = new InitialPasswordController(resetPasswordService, tokenService, userService, telemetryClient, Set.of("password1"));
     }
 
     @Test
     public void initialPasswordSuccess_checkView() {
-        final var modelAndView = controller.initialPasswordSuccess(request);
-        assertThat(modelAndView.getViewName()).isEqualTo("initialPasswordSuccess");
-    }
-
-    @Test
-    public void initialPasswordSuccess_checkModel() {
-        final var modelAndView = controller.initialPasswordSuccess(request);
-        assertThat(modelAndView.getModel()).containsOnly(entry("hdcUrl", "http://hdcurl"));
-    }
-
-    @Test
-    public void initialPasswordSuccess_hdcNotSet() {
-        when(request.getContextPath()).thenReturn("/context");
-        final var modelAndView = new InitialPasswordController(resetPasswordService, tokenService, userService, telemetryClient, Set.of("password1"), null).initialPasswordSuccess(request);
-        assertThat(modelAndView.getModel()).containsOnly(entry("hdcUrl", "/context/login"));
+        final var modelAndView = controller.initialPasswordSuccess();
+        assertThat(modelAndView).isEqualTo("initialPasswordSuccess");
     }
 
     @Test
