@@ -74,6 +74,28 @@ public class RedirectingLogoutSuccessHandlerTest {
     }
 
     @Test
+    public void onLogoutSuccess_RedirectUriMatched_SubdomainPolicyNotSet() throws IOException {
+        final var subdomainHandler = new RedirectingLogoutSuccessHandler(clientDetailsService, "/path", false);
+
+        when(request.getParameter("client_id")).thenReturn("joe");
+        when(request.getParameter("redirect_uri")).thenReturn("http://some.where");
+        when(clientDetailsService.loadClientByClientId("joe")).thenReturn(createClientDetails("http://tim.buk.tu", "http://where"));
+        subdomainHandler.onLogoutSuccess(request, response, null);
+        verify(response).sendRedirect("/path/login?logout");
+    }
+
+    @Test
+    public void onLogoutSuccess_RedirectUriMatched_Subdomain() throws IOException {
+        final var subdomainHandler = new RedirectingLogoutSuccessHandler(clientDetailsService, "/path", true);
+
+        when(request.getParameter("client_id")).thenReturn("joe");
+        when(request.getParameter("redirect_uri")).thenReturn("http://some.where");
+        when(clientDetailsService.loadClientByClientId("joe")).thenReturn(createClientDetails("http://tim.buk.tu", "http://where"));
+        subdomainHandler.onLogoutSuccess(request, response, null);
+        verify(response).sendRedirect("http://some.where");
+    }
+
+    @Test
     public void onLogoutSuccess_RedirectUriMatchedWithSlash() throws IOException {
         when(request.getParameter("client_id")).thenReturn("joe");
         when(request.getParameter("redirect_uri")).thenReturn("http://some.where/");
