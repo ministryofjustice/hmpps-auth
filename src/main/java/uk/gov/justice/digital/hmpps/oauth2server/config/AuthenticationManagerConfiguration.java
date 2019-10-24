@@ -15,6 +15,8 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.provider.endpoint.DefaultRedirectResolver;
+import org.springframework.security.oauth2.provider.endpoint.RedirectResolver;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -131,7 +133,6 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         auth.authenticationProvider(preAuthProvider());
     }
 
-
     @Bean
     public PreAuthenticatedAuthenticationProvider preAuthProvider() {
         final var preAuth = new PreAuthenticatedAuthenticationProvider();
@@ -150,5 +151,12 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         final var registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;
+    }
+
+    @Bean
+    public RedirectResolver redirectResolver(@Value("${application.authentication.match-subdomains}") final boolean matchSubdomains) {
+        final var redirectResolver = new DefaultRedirectResolver();
+        redirectResolver.setMatchSubdomains(matchSubdomains);
+        return redirectResolver;
     }
 }

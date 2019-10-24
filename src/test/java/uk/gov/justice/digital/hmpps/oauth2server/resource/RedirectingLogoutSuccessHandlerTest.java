@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import static org.mockito.Mockito.verify;
@@ -31,7 +32,7 @@ public class RedirectingLogoutSuccessHandlerTest {
 
     @Before
     public void setUp() {
-        redirectingLogoutSuccessHandler = new RedirectingLogoutSuccessHandler(clientDetailsService, "/path");
+        redirectingLogoutSuccessHandler = new RedirectingLogoutSuccessHandler(clientDetailsService, "/path", false);
     }
 
     @Test
@@ -59,7 +60,6 @@ public class RedirectingLogoutSuccessHandlerTest {
     @Test
     public void onLogoutSuccess_NoRedirectUrisConfigured() throws IOException {
         when(request.getParameter("client_id")).thenReturn("joe");
-        when(clientDetailsService.loadClientByClientId("joe")).thenReturn(new BaseClientDetails());
         redirectingLogoutSuccessHandler.onLogoutSuccess(request, response, null);
         verify(response).sendRedirect("/path/login?logout");
     }
@@ -94,6 +94,7 @@ public class RedirectingLogoutSuccessHandlerTest {
     private ClientDetails createClientDetails(final String... urls) {
         final var details = new BaseClientDetails();
         details.setRegisteredRedirectUri(Set.of(urls));
+        details.setAuthorizedGrantTypes(List.of("authorization_code"));
         return details;
     }
 }
