@@ -31,8 +31,15 @@ public class ExternalIdAuthenticationHelperTest {
     public void getUserDetails_notFound() {
         when(userDetailsService.loadUserByUsername(anyString())).thenReturn(null);
 
-        final var details = helper.getUserDetails(Map.of("username", "bobuser"));
+        final var details = helper.getUserDetails(Map.of("username", "bobuser"), false);
 
         assertThat(details).isNull();
+    }
+
+    @Test
+    public void getUserDetails_found() {
+        final var details = helper.getUserDetails(Map.of("username", "bobuser"), true);
+
+        assertThat(details).isNotNull();
     }
 }
