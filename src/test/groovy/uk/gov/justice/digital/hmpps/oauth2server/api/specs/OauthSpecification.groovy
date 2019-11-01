@@ -101,6 +101,41 @@ class OauthSpecification extends TestSpecification {
         token.additionalInformation.auth_source == 'auth'
     }
 
+    def "Client Credentials Login access token for non auth or nomis user"() {
+
+        given:
+        def oauthRestTemplate = getOauthClientGrant("community-api-client", "clientsecret", "username=NPSUser")
+
+        when:
+        def token = oauthRestTemplate.getAccessToken()
+
+        then:
+        token.value != null
+
+        and: 'expiry is in 1 hour'
+        token.expiresIn >= 3590
+        token.expiresIn <= 3600
+
+        and: 'refresh token does not exist'
+        token.refreshToken == null
+
+        and: 'authentication source is auth'
+        token.additionalInformation.auth_source == 'none'
+    }
+
+    def "Client Credentials Login failure for non auth or nomis user without scope priv"() {
+
+        given:
+        def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret", "username=NPSUser")
+
+        when:
+        def token = oauthRestTemplate.getAccessToken()
+
+        then:
+        OAuth2AccessDeniedException ex = thrown()
+    }
+
+
     def "Client Credentials Login With username identifier for auth user"() {
 
         given:
