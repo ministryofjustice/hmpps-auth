@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedExc
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,13 +29,18 @@ public class ExternalIdAuthenticationHelper {
         this.userDetailsService = userDetailsService;
     }
 
-    public UserPersonDetails getUserDetails(final Map<String, String> requestParameters) {
+    public UserPersonDetails getUserDetails(final Map<String, String> requestParameters, final boolean skipUserCheck) {
         if (requestParameters.containsKey(REQUEST_PARAM_USER_ID_TYPE) &&
                 requestParameters.containsKey(REQUEST_PARAM_USER_ID)) {
             return loadByUserIdType(requestParameters.get(REQUEST_PARAM_USER_ID_TYPE), requestParameters.get(REQUEST_PARAM_USER_ID));
         }
         if (requestParameters.containsKey(REQUEST_PARAM_USER_NAME)) {
-            return loadByUsername(requestParameters.get(REQUEST_PARAM_USER_NAME));
+            final var username = requestParameters.get(REQUEST_PARAM_USER_NAME);
+            if (skipUserCheck) {
+                return new UserDetailsImpl(username, null, List.of(), "none", null);
+            } else {
+                return loadByUsername(username);
+            }
         }
         return null;
     }
