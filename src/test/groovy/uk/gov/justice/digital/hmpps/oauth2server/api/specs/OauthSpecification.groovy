@@ -123,7 +123,7 @@ class OauthSpecification extends TestSpecification {
         token.additionalInformation.auth_source == 'none'
     }
 
-    def "Client Credentials Login failuer for non auth or nomis user without scope priv"() {
+    def "Client Credentials Login failure for non auth or nomis user without scope priv"() {
 
         given:
         def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret", "username=NPSUser")
