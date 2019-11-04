@@ -12,7 +12,7 @@ VALUES ('omicuser','1200',null,'SYSTEM_READ_ONLY','password,authorization_code,r
        ('custodyapi','28800',null,'ROLE_REPORTING','client_credentials',null,'$2a$10$ZClyyxwFbX/24Ab9KXflc.Id5cOv3qu4b1ryNkFmXzJZt9y8eJa82','43200',null,'reporting',null),-- 'password'
        ('deliusnewtech','3600',null,'SYSTEM_READ_ONLY','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'reporting',null),
        ('categorisationtool','3600',null,'ROLE_RISK_PROFILER','password,authorization_code,refresh_token,client_credentials','read,write' ,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
-       ('prisonstaffhubclient','3600',null,'ROLE_SYSTEM_READ_ONLY','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read',null),
+       ('prisonstaffhubclient','3600',null,'ROLE_SYSTEM_READ_ONLY,ROLE_COMMUNITY','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read',null),
        ('risk-profiler','3600',null,'ROLE_SYSTEM_USER,ROLE_RISK_PROFILER','client_credentials',null,'$2a$10$r12DB/sqXduodnjtAY/ykO0S3KCySdVW4zhG3jlIRaIsfVkFOEds2',null,null,'read',null),
        ('community-api-client','3600',null,'ROLE_SYSTEM_USER,ROLE_COMMUNITY','client_credentials','proxy-user','$2a$10$r12DB/sqXduodnjtAY/ykO0S3KCySdVW4zhG3jlIRaIsfVkFOEds2',null,null,'read,proxy-user',null),
        ('sentence-plan-client','3600',null,null,'authorization_code,refresh_token','read,write','$2a$10$a5WJN/AZc7Nq3rFoy5GOQ.avY.opPq/RaF59TXFaInt0Jxp6NV94a',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
@@ -110,8 +110,7 @@ INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, use
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_PF_OM_USER' and role_code = 'PATHFINDER_OM';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_PF_OM_USER' and role_code = 'GLOBAL_SEARCH';
 
-INSERT INTO groups (group_id, group_code, group_name)
-VALUES (newid(), 'SITE_1_GROUP_1', 'Site 1 - Group 1'),
+INSERT INTO groups (group_id, group_code, group_name) VALUES (newid(), 'SITE_1_GROUP_1', 'Site 1 - Group 1'),
        (newid(), 'SITE_1_GROUP_2', 'Site 1 - Group 2'),
        (newid(), 'SITE_2_GROUP_1', 'Site 2 - Group 1'),
        (newid(), 'SITE_3_GROUP_1', 'Site 3 - Group 1');
