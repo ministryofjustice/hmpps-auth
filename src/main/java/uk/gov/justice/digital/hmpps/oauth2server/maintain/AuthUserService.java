@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
+import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientApi;
@@ -70,8 +71,8 @@ public class AuthUserService {
             throws CreateUserException, NotificationClientException, VerifyEmailException {
         // ensure username always uppercase
         final var username = StringUtils.upperCase(usernameInput);
-        // and that email is always lowercase
-        final var email = StringUtils.lowerCase(emailInput);
+        // and use email helper to format input email
+        final var email = EmailHelper.format(emailInput);
 
         // validate
         validate(username, email, firstName, lastName);
@@ -155,7 +156,7 @@ public class AuthUserService {
     public String amendUser(final String usernameInput, final String emailAddressInput, final String url, final String admin, final Collection<? extends GrantedAuthority> authorities)
             throws AmendUserException, VerifyEmailException, NotificationClientException, AuthUserGroupRelationshipException {
         final var username = StringUtils.upperCase(usernameInput);
-        final var email = StringUtils.lowerCase(emailAddressInput);
+        final var email = EmailHelper.format(emailAddressInput);
 
         final var user = userRepository.findByUsernameAndMasterIsTrue(username)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));

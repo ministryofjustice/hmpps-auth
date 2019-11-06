@@ -158,6 +158,16 @@ public class AuthUserServiceTest {
     }
 
     @Test
+    public void createUser_formatEmailInput() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        authUserService.createUser("userMe", "    SARAH.o’connor@gov.uk", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+
+        assertThat(captor.getValue().getEmail()).isEqualTo("sarah.o'connor@gov.uk");
+    }
+
+    @Test
     public void createUser_setGroup() throws VerifyEmailException, CreateUserException, NotificationClientException {
         when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("SITE_1_GROUP_1", "desc")));
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
@@ -272,6 +282,17 @@ public class AuthUserServiceTest {
 
         final var user = captor.getValue();
         assertThat(user.getEmail()).isEqualTo("email");
+    }
+
+    @Test
+    public void amendUser_formatEmailInput() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
+        authUserService.amendUser("userMe", "    SARAH.o’connor@gov.uk", "url?token=", "bob", PRINCIPAL.getAuthorities());
+
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+
+        assertThat(captor.getValue().getEmail()).isEqualTo("sarah.o'connor@gov.uk");
     }
 
     @Test

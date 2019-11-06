@@ -215,11 +215,22 @@ public class ResetPasswordServiceTest {
     }
 
     @Test
+    public void requestResetPassword_emailAddressNotFound_formatEmailInput() throws NotificationClientException {
+        when(userRepository.findByEmail(any())).thenReturn(Collections.emptyList());
+
+        final var optional = resetPasswordService.requestResetPassword("some.u’ser@SOMEwhere", "url");
+        verify(notificationClient).sendEmail(eq("resetUnavailableEmailNotFoundTemplate"), eq("some.u'ser@somewhere"), mapCaptor.capture(), isNull());
+        assertThat(optional).isEmpty();
+        assertThat(mapCaptor.getValue()).isEmpty();
+    }
+
+    @Test
     public void requestResetPassword_multipleEmailAddresses() throws NotificationClientException {
-        final var user = User.builder().username("someuser").email("email").build();
-        user.setPerson(new Person("Bob", "Smith"));
-        user.setMaster(true);
-        user.setEnabled(true);
+        final var user = User.builder().username("someuser").email("email")
+                .person(new Person("Bob", "Smith"))
+                .master(true)
+                .enabled(true)
+                .build();
         when(userRepository.findByEmail(any())).thenReturn(List.of(user, user));
 
         final var optional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url");
@@ -230,10 +241,11 @@ public class ResetPasswordServiceTest {
 
     @Test
     public void requestResetPassword_multipleEmailAddresses_verifyToken() {
-        final var user = User.builder().username("someuser").email("email").build();
-        user.setPerson(new Person("Bob", "Smith"));
-        user.setMaster(true);
-        user.setEnabled(true);
+        final var user = User.builder().username("someuser").email("email")
+                .person(new Person("Bob", "Smith"))
+                .master(true)
+                .enabled(true)
+                .build();
         when(userRepository.findByEmail(any())).thenReturn(List.of(user, user));
 
         final var linkOptional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url");

@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.NonNull;
+import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 
 import javax.persistence.criteria.*;
 
@@ -42,7 +43,7 @@ public class UserFilter implements Specification<User> {
     private Predicate buildNamePredicate(final Root<User> root, final CriteriaBuilder cb) {
         final var orBuilder = ImmutableList.<Predicate>builder();
         final var pattern = "%" + name.replace(',', ' ').replaceAll(" [ ]*", "% %") + "%";
-        orBuilder.add(cb.like(root.get("email"), pattern.toLowerCase()));
+        orBuilder.add(cb.like(root.get("email"), EmailHelper.format(pattern)));
         orBuilder.add(cb.like(root.get("username"), pattern.toUpperCase()));
         final var personJoin = root.join("person", JoinType.LEFT);
         orBuilder.add(cb.like(cb.lower(cb.concat(cb.concat(personJoin.get("firstName"), " "), personJoin.get("lastName"))), pattern.toLowerCase()));

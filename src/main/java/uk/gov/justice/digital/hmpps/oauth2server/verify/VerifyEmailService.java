@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -68,7 +69,7 @@ public class VerifyEmailService {
 
     @Transactional(transactionManager = "authTransactionManager")
     public String requestVerification(final String username, final String emailInput, final String url) throws NotificationClientException, VerifyEmailException {
-        final var email = StringUtils.lowerCase(emailInput);
+        final var email = EmailHelper.format(emailInput);
         validateEmailAddress(email);
 
         final var userPersonDetails = userService.findUser(username);
