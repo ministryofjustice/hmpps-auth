@@ -86,6 +86,15 @@ public class UserServiceTest {
     }
 
     @Test
+    public void findAuthUsersByEmail_formatEmailAddress() {
+        when(userRepository.findByEmailAndMasterIsTrueOrderByUsername(anyString())).thenReturn(List.of(User.of("someuser")));
+
+        userService.findAuthUsersByEmail("  some.u’ser@SOMEwhere  ");
+
+        verify(userRepository).findByEmailAndMasterIsTrueOrderByUsername("some.u'ser@somewhere");
+    }
+
+    @Test
     public void enableUser_superUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var optionalUserEmail = createUser();
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);

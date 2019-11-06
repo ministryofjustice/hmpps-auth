@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
+import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.Collection;
@@ -73,7 +74,7 @@ public class UserService {
     }
 
     public List<User> findAuthUsersByEmail(final String email) {
-        return userRepository.findByEmailAndMasterIsTrueOrderByUsername(StringUtils.lowerCase(StringUtils.trim(email)));
+        return userRepository.findByEmailAndMasterIsTrueOrderByUsername(EmailHelper.format(email));
     }
 
     @Transactional(transactionManager = "authTransactionManager")

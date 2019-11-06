@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AlterUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -67,10 +68,11 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
         final Optional<User> optionalUser;
         final boolean multipleMatchesAndCanBeReset;
         if (StringUtils.contains(usernameOrEmailAddress, "@")) {
-            final var matches = userRepository.findByEmail(usernameOrEmailAddress.toLowerCase());
+            final var email = EmailHelper.format(usernameOrEmailAddress);
+            final var matches = userRepository.findByEmail(email);
             if (matches.isEmpty()) {
                 // no match, but got an email address so let them know
-                sendEmail(usernameOrEmailAddress, resetUnavailableEmailNotFoundTemplateId, Collections.emptyMap(), usernameOrEmailAddress.toLowerCase());
+                sendEmail(email, resetUnavailableEmailNotFoundTemplateId, Collections.emptyMap(), email);
                 return Optional.empty();
             }
 

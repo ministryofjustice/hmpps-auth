@@ -153,6 +153,12 @@ public class VerifyEmailServiceTest {
         assertThatThrownBy(() -> verifyEmailService.requestVerification("user", "email@john.com", "url")).hasMessage("message");
     }
 
+    @Test
+    public void requestVerification_formatEmailInput() throws NotificationClientException, VerifyEmailException {
+        when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
+        final var verification = verifyEmailService.requestVerification("user", "some.u’ser@SOMEwhere.COM", "url");
+        verify(notificationClient).sendEmail(eq("templateId"), eq("some.u'ser@somewhere.com"), anyMap(), eq(null));
+    }
 
     @Test
     public void verifyEmail_NoAtSign() {
