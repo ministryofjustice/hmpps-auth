@@ -143,6 +143,14 @@ public class ResetPasswordControllerTest {
     }
 
     @Test
+    public void resetPasswordRequest_emailhelperapostrophe() throws NotificationClientRuntimeException, VerifyEmailException {
+        doThrow(new VerifyEmailException("reason")).when(verifyEmailService).validateEmailAddress(anyString());
+        final var modelAndView = controller.resetPasswordRequest("us.o’er@someWHERE.com   ", request);
+        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
+        verify(verifyEmailService).validateEmailAddress("us.o'er@somewhere.com");
+    }
+
+    @Test
     public void resetPasswordConfirm_checkView() {
         setupCheckTokenValid();
         final var modelAndView = controller.resetPasswordConfirm("token");
