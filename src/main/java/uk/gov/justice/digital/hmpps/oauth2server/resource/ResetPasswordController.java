@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException;
@@ -68,7 +69,7 @@ public class ResetPasswordController extends AbstractPasswordController {
 
         if (StringUtils.contains(usernameOrEmail, "@")) {
             try {
-                verifyEmailService.validateEmailAddress(usernameOrEmail);
+                verifyEmailService.validateEmailAddress(EmailHelper.format(usernameOrEmail));
             } catch (final VerifyEmailException e) {
                 log.info("Validation failed for reset password email address due to {}", e.getReason());
                 telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("email", usernameOrEmail, "reason", "email." + e.getReason()), null);
