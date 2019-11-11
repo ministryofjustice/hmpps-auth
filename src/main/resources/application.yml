@@ -83,8 +83,11 @@ application:
     lockout-count: 10
     password-age: 7300
     # run disable and delete auth user job every hour (specified in millis)
-    disable.frequency: 3600000
-    delete.frequency: 3600000
+    disable:
+      frequency: 3600000
+      age-trigger: 90
+    delete:
+      frequency: 3600000
     # grabbed all passwords over 8 characters with both letters and numbers from
     # https://github.com/danielmiessler/SecLists/blob/master/Passwords/probable-v2-top12000.txt
     # plus helloworld (which is specified on the login page) and password123456 (in codebase)

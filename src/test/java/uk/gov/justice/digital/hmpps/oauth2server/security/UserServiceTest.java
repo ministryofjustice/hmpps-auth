@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifie
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +50,7 @@ public class UserServiceTest {
 
     @Before
     public void setUp() {
-        userService = new UserService(staffUserAccountRepository, staffIdentifierRepository, userRepository, telemetryClient, maintainUserCheck);
+        userService = new UserService(staffUserAccountRepository, staffIdentifierRepository, userRepository, telemetryClient, maintainUserCheck, 90);
     }
 
     @Test
@@ -96,17 +97,17 @@ public class UserServiceTest {
 
     @Test
     public void enableUser_superUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var optionalUserEmail = createUser();
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
+        final var optionalUser = createUser();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser);
         userService.enableUser("user", "admin", SUPER_USER);
-        assertThat(optionalUserEmail).get().extracting(User::isEnabled).isEqualTo(Boolean.TRUE);
-        verify(userRepository).save(optionalUserEmail.orElseThrow());
+        assertThat(optionalUser).get().extracting(User::isEnabled).isEqualTo(Boolean.TRUE);
+        verify(userRepository).save(optionalUser.orElseThrow());
     }
 
     @Test
     public void enableUser_invalidGroup_GroupManager() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var optionalUserEmail = createUser();
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
+        final var optionalUser = createUser();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser);
         doThrow(new MaintainUserCheck.AuthUserGroupRelationshipException("someuser", "User not with your groups")).when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any(User.class));
         assertThatThrownBy(() -> userService.enableUser("someuser", "admin", GROUP_MANAGER)).
                 isInstanceOf(MaintainUserCheck.AuthUserGroupRelationshipException.class).hasMessage("Unable to maintain user: someuser with reason: User not with your groups");
@@ -138,27 +139,47 @@ public class UserServiceTest {
 
     @Test
     public void enableUser_trackEvent() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var optionalUserEmail = createUser();
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        doNothing().when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any(User.class));
+        final var optionalUser = createUser();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser);
         userService.enableUser("someuser", "someadmin", SUPER_USER);
         verify(telemetryClient).trackEvent("AuthUserChangeEnabled", Map.of("username", "someuser", "admin", "someadmin", "enabled", "true"), null);
     }
 
     @Test
+    public void enableUser_setLastLoggedIn() throws MaintainUserCheck.AuthUserGroupRelationshipException {
+        final var optionalUser = createUser();
+        final var user = optionalUser.orElseThrow();
+        final var tooLongAgo = LocalDateTime.now().minusDays(95);
+        user.setLastLoggedIn(tooLongAgo);
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser);
+        userService.enableUser("someuser", "someadmin", SUPER_USER);
+        assertThat(user.getLastLoggedIn()).isBetween(LocalDateTime.now().minusDays(84), LocalDateTime.now().minusDays(82));
+    }
+
+    @Test
+    public void enableUser_leaveLastLoggedInAlone() throws MaintainUserCheck.AuthUserGroupRelationshipException {
+        final var optionalUser = createUser();
+        final var user = optionalUser.orElseThrow();
+        final var fiveDaysAgo = LocalDateTime.now().minusDays(5);
+        user.setLastLoggedIn(fiveDaysAgo);
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser);
+        userService.enableUser("someuser", "someadmin", SUPER_USER);
+        assertThat(user.getLastLoggedIn()).isEqualTo(fiveDaysAgo);
+    }
+
+    @Test
     public void disableUser_superUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var optionalUserEmail = createUser();
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
-        doNothing().when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any(User.class));
+        final var optionalUser = createUser();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser);
         userService.disableUser("user", "admin", SUPER_USER);
-        assertThat(optionalUserEmail).get().extracting(User::isEnabled).isEqualTo(Boolean.FALSE);
-        verify(userRepository).save(optionalUserEmail.orElseThrow());
+        assertThat(optionalUser).get().extracting(User::isEnabled).isEqualTo(Boolean.FALSE);
+        verify(userRepository).save(optionalUser.orElseThrow());
     }
 
     @Test
     public void disableUser_invalidGroup_GroupManager() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var optionalUserEmail = createUser();
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
+        final var optionalUser = createUser();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser);
         doThrow(new MaintainUserCheck.AuthUserGroupRelationshipException("someuser", "User not with your groups")).when(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any(User.class));
         assertThatThrownBy(() -> userService.disableUser("someuser", "admin", GROUP_MANAGER)).
                 isInstanceOf(MaintainUserCheck.AuthUserGroupRelationshipException.class).hasMessage("Unable to maintain user: someuser with reason: User not with your groups");
@@ -185,8 +206,8 @@ public class UserServiceTest {
 
     @Test
     public void disableUser_trackEvent() throws MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var optionalUserEmail = createUser();
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);
+        final var optionalUser = createUser();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser);
         userService.disableUser("someuser", "someadmin", SUPER_USER);
         verify(telemetryClient).trackEvent("AuthUserChangeEnabled", Map.of("username", "someuser", "admin", "someadmin", "enabled", "false"), null);
     }
