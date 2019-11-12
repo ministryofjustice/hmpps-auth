@@ -11,6 +11,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,7 +33,7 @@ public class DisableInactiveAuthUsersServiceTest {
 
     @Before
     public void setUp() {
-        service = new DisableInactiveAuthUsersService(userRepository, telemetryClient);
+        service = new DisableInactiveAuthUsersService(userRepository, telemetryClient, 10);
     }
 
     @Test
@@ -41,6 +42,17 @@ public class DisableInactiveAuthUsersServiceTest {
         when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
                 .thenReturn(users);
         assertThat(service.processInBatches()).isEqualTo(2);
+    }
+
+    @Test
+    public void findAndDisableInactiveAuthUsers_CheckAge() {
+        final var users = List.of(User.of("user"), User.of("joe"));
+        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
+                .thenReturn(users);
+        assertThat(service.processInBatches()).isEqualTo(2);
+        final var captor = ArgumentCaptor.forClass(LocalDateTime.class);
+        verify(userRepository).findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(captor.capture());
+        assertThat(captor.getValue()).isBetween(LocalDateTime.now().minusDays(11), LocalDateTime.now().minusDays(9));
     }
 
     @Test

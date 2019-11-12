@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Auth
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -30,24 +32,27 @@ public class UserService {
     private final UserRepository userRepository;
     private final TelemetryClient telemetryClient;
     private final MaintainUserCheck maintainUserCheck;
+    private final int loginDaysTrigger;
 
     public UserService(final StaffUserAccountRepository staffUserAccountRepository,
                        final StaffIdentifierRepository staffIdentifierRepository,
                        final UserRepository userRepository,
                        final TelemetryClient telemetryClient,
-                       final MaintainUserCheck maintainUserCheck) {
+                       final MaintainUserCheck maintainUserCheck,
+                       @Value("${application.authentication.disable.login-days}") final int loginDaysTrigger) {
         this.staffUserAccountRepository = staffUserAccountRepository;
         this.staffIdentifierRepository = staffIdentifierRepository;
         this.userRepository = userRepository;
         this.telemetryClient = telemetryClient;
         this.maintainUserCheck = maintainUserCheck;
+        this.loginDaysTrigger = loginDaysTrigger;
     }
 
     private Optional<StaffUserAccount> getUserByUsername(final String username) {
         return staffUserAccountRepository.findById(StringUtils.upperCase(username));
     }
 
-    public StaffUserAccount getUserByExternalIdentifier(final String idType, final String id, final boolean activeOnly) {
+    StaffUserAccount getUserByExternalIdentifier(final String idType, final String id, final boolean activeOnly) {
         final var staffIdentifier = staffIdentifierRepository.findById_TypeAndId_IdentificationNumber(idType, id);
         Optional<StaffUserAccount> userDetail = Optional.empty();
         if (staffIdentifier != null) {
@@ -94,6 +99,11 @@ public class UserService {
         maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user);
 
         user.setEnabled(enabled);
+
+        // give user 7 days grace if last logged in more than x days ago
+        if (user.getLastLoggedIn().isBefore(LocalDateTime.now().minusDays(loginDaysTrigger))) {
+            user.setLastLoggedIn(LocalDateTime.now().minusDays(loginDaysTrigger - 7));
+        }
         userRepository.save(user);
         telemetryClient.trackEvent("AuthUserChangeEnabled",
                 Map.of("username", user.getUsername(), "enabled", Boolean.toString(enabled), "admin", admin), null);

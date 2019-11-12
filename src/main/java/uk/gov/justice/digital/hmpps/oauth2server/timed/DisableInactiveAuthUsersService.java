@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.oauth2server.timed;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
@@ -11,15 +11,23 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
-@AllArgsConstructor
 @Log4j2
 public class DisableInactiveAuthUsersService implements BatchUserService {
     private final UserRepository repository;
     private final TelemetryClient telemetryClient;
+    private final int loginDays;
+
+    public DisableInactiveAuthUsersService(final UserRepository repository,
+                                           final TelemetryClient telemetryClient,
+                                           @Value("${application.authentication.disable.login-days}") final int loginDays) {
+        this.repository = repository;
+        this.telemetryClient = telemetryClient;
+        this.loginDays = loginDays;
+    }
 
     @Transactional(transactionManager = "authTransactionManager")
     public int processInBatches() {
-        final var usersToDisable = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().minusDays(90));
+        final var usersToDisable = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().minusDays(loginDays));
         usersToDisable.forEach(user -> {
             user.setEnabled(false);
             log.debug("Disabling auth user {} due to inactivity", user.getUsername());
