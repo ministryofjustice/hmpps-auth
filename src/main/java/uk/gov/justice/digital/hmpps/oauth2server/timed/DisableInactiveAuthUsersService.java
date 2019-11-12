@@ -15,19 +15,19 @@ import java.util.Map;
 public class DisableInactiveAuthUsersService implements BatchUserService {
     private final UserRepository repository;
     private final TelemetryClient telemetryClient;
-    private final int ageTrigger;
+    private final int loginDays;
 
     public DisableInactiveAuthUsersService(final UserRepository repository,
                                            final TelemetryClient telemetryClient,
-                                           @Value("${application.authentication.disable.age-trigger}") final int ageTrigger) {
+                                           @Value("${application.authentication.disable.login-days}") final int loginDays) {
         this.repository = repository;
         this.telemetryClient = telemetryClient;
-        this.ageTrigger = ageTrigger;
+        this.loginDays = loginDays;
     }
 
     @Transactional(transactionManager = "authTransactionManager")
     public int processInBatches() {
-        final var usersToDisable = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().minusDays(ageTrigger));
+        final var usersToDisable = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().minusDays(loginDays));
         usersToDisable.forEach(user -> {
             user.setEnabled(false);
             log.debug("Disabling auth user {} due to inactivity", user.getUsername());

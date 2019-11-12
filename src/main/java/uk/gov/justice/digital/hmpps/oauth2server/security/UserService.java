@@ -32,20 +32,20 @@ public class UserService {
     private final UserRepository userRepository;
     private final TelemetryClient telemetryClient;
     private final MaintainUserCheck maintainUserCheck;
-    private final int disableAgeTrigger;
+    private final int loginDaysTrigger;
 
     public UserService(final StaffUserAccountRepository staffUserAccountRepository,
                        final StaffIdentifierRepository staffIdentifierRepository,
                        final UserRepository userRepository,
                        final TelemetryClient telemetryClient,
                        final MaintainUserCheck maintainUserCheck,
-                       @Value("${application.authentication.disable.age-trigger}") final int disableAgeTrigger) {
+                       @Value("${application.authentication.disable.login-days}") final int loginDaysTrigger) {
         this.staffUserAccountRepository = staffUserAccountRepository;
         this.staffIdentifierRepository = staffIdentifierRepository;
         this.userRepository = userRepository;
         this.telemetryClient = telemetryClient;
         this.maintainUserCheck = maintainUserCheck;
-        this.disableAgeTrigger = disableAgeTrigger;
+        this.loginDaysTrigger = loginDaysTrigger;
     }
 
     private Optional<StaffUserAccount> getUserByUsername(final String username) {
@@ -101,8 +101,8 @@ public class UserService {
         user.setEnabled(enabled);
 
         // give user 7 days grace if last logged in more than x days ago
-        if (user.getLastLoggedIn().isBefore(LocalDateTime.now().minusDays(disableAgeTrigger))) {
-            user.setLastLoggedIn(LocalDateTime.now().minusDays(disableAgeTrigger - 7));
+        if (user.getLastLoggedIn().isBefore(LocalDateTime.now().minusDays(loginDaysTrigger))) {
+            user.setLastLoggedIn(LocalDateTime.now().minusDays(loginDaysTrigger - 7));
         }
         userRepository.save(user);
         telemetryClient.trackEvent("AuthUserChangeEnabled",
