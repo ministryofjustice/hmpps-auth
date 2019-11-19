@@ -99,13 +99,13 @@ class AuthUserSpecification extends TestSpecification {
         def oauthRestTemplate = getOauthPasswordGrant('ITAG_USER', 'password', 'elite2apiclient', 'clientsecret')
 
         when:
-        def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_USER', HttpMethod.GET, null, String.class)
+        def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_USER_LAST_LOGIN', HttpMethod.GET, null, String.class)
 
         then:
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ['userId': '608955ae-52ed-44cc-884c-011597a77949', 'username': 'AUTH_USER', 'email': 'auth_user@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Only']
+        userData == ['userId': 'f3daec63-ee2f-467c-a6ee-92c3008193bd', 'username': 'AUTH_USER_LAST_LOGIN', 'email': 'auth_user_last_login@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth_Last', 'lastName': 'Login', 'lastLoggedIn':'2019-01-01T12:05:10']
     }
 
     def 'Auth User endpoint returns no data for nomis user'() {
@@ -140,7 +140,9 @@ class AuthUserSpecification extends TestSpecification {
         then:
         response.statusCode == HttpStatus.OK
         def userDataList = jsonSlurper.parseText(response.body)
-
+        userDataList.each { it ->
+            it.remove 'lastLoggedIn'
+        }
         userDataList == [
             ['username': 'AUTH_ADM', 'email': 'auth_test2@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Adm', 'userId': '5105a589-75b3-4ca0-9433-b96228c1c8f3'],
             ['username': 'AUTH_EXPIRED', 'email': 'auth_test2@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Expired', 'userId': '9e84f1e4-59c8-4b10-927a-9cf9e9a30791'],
@@ -186,7 +188,7 @@ class AuthUserSpecification extends TestSpecification {
         enableResponse.statusCode == HttpStatus.NO_CONTENT
         def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
         def userData = jsonSlurper.parseText(response.body)
-
+        userData.remove 'lastLoggedIn'
         userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status', 'userId': 'fc494152-f9ad-48a0-a87c-9adc8bd75255']
     }
 
@@ -206,7 +208,7 @@ class AuthUserSpecification extends TestSpecification {
         enableResponse.statusCode == HttpStatus.NO_CONTENT
         def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
         def userData = jsonSlurper.parseText(response.body)
-
+        userData.remove 'lastLoggedIn'
         userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status', 'userId': 'fc494152-f9ad-48a0-a87c-9adc8bd75255']
     }
 
@@ -254,7 +256,7 @@ class AuthUserSpecification extends TestSpecification {
         disableResponse.statusCode == HttpStatus.NO_CONTENT
         def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
         def userData = jsonSlurper.parseText(response.body)
-
+        userData.remove 'lastLoggedIn'
         userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': false, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status', 'userId': 'fc494152-f9ad-48a0-a87c-9adc8bd75255']
     }
 
@@ -275,7 +277,7 @@ class AuthUserSpecification extends TestSpecification {
         disableResponse.statusCode == HttpStatus.NO_CONTENT
         def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_STATUS', HttpMethod.GET, null, String.class)
         def userData = jsonSlurper.parseText(response.body)
-
+        userData.remove 'lastLoggedIn'
         userData == ['username': 'AUTH_STATUS', 'email': null, 'enabled': false, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Status', 'userId': 'fc494152-f9ad-48a0-a87c-9adc8bd75255']
     }
 

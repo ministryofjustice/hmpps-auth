@@ -305,19 +305,19 @@ public class UserRepositoryTest {
     @Test
     public void findInactiveUsers_OrderByLastLoggedInOldestFirst() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
-        assertThat(inactive).extracting(User::getUsername).first().isEqualTo("AUTH_INACTIVE");
+        assertThat(inactive).extracting(User::getUsername).first().isEqualTo("AUTH_USER_LAST_LOGIN");
     }
 
     @Test
     public void findInactiveUsers_NoRows() {
-        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.parse("2019-02-03T13:23:19").minusSeconds(1));
+        final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.parse("2019-01-01T12:00:00").minusSeconds(1));
         assertThat(inactive).isEmpty();
     }
 
     @Test
     public void findInactiveUsers_SingleRow() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.parse("2019-02-03T13:23:19").plusSeconds(1));
-        assertThat(inactive).extracting(User::getUsername).containsExactly("AUTH_INACTIVE");
+        assertThat(inactive).extracting(User::getUsername).containsExactly("AUTH_USER_LAST_LOGIN", "AUTH_INACTIVE");
     }
 
     @Test

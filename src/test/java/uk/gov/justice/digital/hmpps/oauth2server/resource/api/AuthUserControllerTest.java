@@ -30,6 +30,7 @@ import uk.gov.service.notify.NotificationClientException;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -73,7 +74,7 @@ public class AuthUserControllerTest {
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(new AuthUser(USER_ID, "authentication", "email", "Joe", "Bloggs", false, true, true));
+        assertThat(responseEntity.getBody()).isEqualTo(new AuthUser(USER_ID, "authentication", "email", "Joe", "Bloggs", false, true, true, LocalDateTime.of(2019,1,1,12,0)));
     }
 
     @Test
@@ -81,7 +82,7 @@ public class AuthUserControllerTest {
         when(userService.findAuthUsersByEmail(anyString())).thenReturn(List.of(getAuthUser()));
         final var responseEntity = authUserController.searchForUser("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(List.of(new AuthUser(USER_ID, "authentication", "email", "Joe", "Bloggs", false, true, true)));
+        assertThat(responseEntity.getBody()).isEqualTo(List.of(new AuthUser(USER_ID, "authentication", "email", "Joe", "Bloggs", false, true, true, LocalDateTime.of(2019,1,1,12,0))));
     }
 
     @Test
@@ -278,7 +279,7 @@ public class AuthUserControllerTest {
     }
 
     private User getAuthUser() {
-        final var user = User.builder().id(UUID.fromString(USER_ID)).username("authentication").email("email").verified(true).enabled(true).build();
+        final var user = User.builder().id(UUID.fromString(USER_ID)).username("authentication").email("email").verified(true).enabled(true).lastLoggedIn(LocalDateTime.of(2019,1,1,12,0)).build();
         user.setPerson(new Person());
         user.getPerson().setFirstName("Joe");
         user.getPerson().setLastName("Bloggs");
