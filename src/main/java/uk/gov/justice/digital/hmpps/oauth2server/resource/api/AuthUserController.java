@@ -30,6 +30,7 @@ import uk.gov.service.notify.NotificationClientException;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -300,6 +301,9 @@ public class AuthUserController {
         private boolean enabled;
         @ApiModelProperty(required = true, value = "Email address has been verified", example = "false", position = 8)
         private boolean verified;
+        @ApiModelProperty(required = true, value = "Last time user logged in", example = "01/01/2001", position = 9)
+        private LocalDateTime lastLoggedIn;
+
 
         private static AuthUser fromUser(final User user) {
             return AuthUser.builder()
@@ -311,6 +315,7 @@ public class AuthUserController {
                     .locked(user.isLocked())
                     .enabled(user.isEnabled())
                     .verified(user.isVerified())
+                    .lastLoggedIn(user.getLastLoggedIn())
                     .build();
         }
     }
