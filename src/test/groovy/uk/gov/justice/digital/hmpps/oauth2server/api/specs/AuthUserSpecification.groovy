@@ -99,13 +99,13 @@ class AuthUserSpecification extends TestSpecification {
         def oauthRestTemplate = getOauthPasswordGrant('ITAG_USER', 'password', 'elite2apiclient', 'clientsecret')
 
         when:
-        def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_USER', HttpMethod.GET, null, String.class)
+        def response = oauthRestTemplate.exchange(getBaseUrl() + '/api/authuser/AUTH_USER_LAST_LOGIN', HttpMethod.GET, null, String.class)
 
         then:
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ['userId': '608955ae-52ed-44cc-884c-011597a77949', 'username': 'AUTH_USER', 'email': 'auth_user@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth', 'lastName': 'Only', 'lastLoggedIn':'2019-01-01T12:05:10']
+        userData == ['userId': 'f3daec63-ee2f-467c-a6ee-92c3008193bd', 'username': 'AUTH_USER_LAST_LOGIN', 'email': 'auth_user_last_login@digital.justice.gov.uk', 'enabled': true, 'locked': false, 'verified': true, 'firstName': 'Auth_Last', 'lastName': 'Login', 'lastLoggedIn':'2019-01-01T12:05:10']
     }
 
     def 'Auth User endpoint returns no data for nomis user'() {
