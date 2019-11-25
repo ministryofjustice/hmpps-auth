@@ -94,6 +94,11 @@ public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
         }
     }
 
+    //TODO need to call checkPasswordWithAccountLock above
+    protected boolean checkPassword(UserDetails userDetails, String password) {
+        return getPasswordEncoder().matches(password, userDetails.getPassword());
+    }
+
     private void trackFailure(final String username, final String type) {
         telemetryClient.trackEvent("AuthenticateFailure", Map.of("username", username, "type", type), null);
     }
