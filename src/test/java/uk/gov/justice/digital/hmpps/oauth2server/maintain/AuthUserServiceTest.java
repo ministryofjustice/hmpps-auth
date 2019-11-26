@@ -258,7 +258,7 @@ public class AuthUserServiceTest {
     public void amendUser_trackSuccess() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
         authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
-        verify(telemetryClient).trackEvent("AuthUserAmendSuccess", Map.of("username", "SOMEUSER", "admin", "bob"), null);
+        verify(telemetryClient).trackEvent("AuthUserAmendSuccess", Map.of("username", "someuser", "admin", "bob"), null);
     }
 
     @Test
