@@ -71,7 +71,7 @@ public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
 
     private void checkPasswordWithAccountLock(final UserDetails userDetails, final String password) {
         final var username = userDetails.getUsername();
-        if (getPasswordEncoder().matches(password, userDetails.getPassword())) {
+        if (checkPassword(userDetails, password)) {
             log.info("Resetting retries for user {}", username);
             userRetriesService.resetRetriesAndRecordLogin(username);
 
@@ -94,8 +94,7 @@ public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
         }
     }
 
-    //TODO need to call checkPasswordWithAccountLock above
-    protected boolean checkPassword(UserDetails userDetails, String password) {
+    protected boolean checkPassword(final UserDetails userDetails, final String password) {
         return getPasswordEncoder().matches(password, userDetails.getPassword());
     }
 

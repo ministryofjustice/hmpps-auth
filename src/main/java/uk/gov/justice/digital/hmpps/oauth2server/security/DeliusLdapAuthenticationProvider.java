@@ -18,16 +18,15 @@ public class DeliusLdapAuthenticationProvider extends LockingAuthenticationProvi
     public DeliusLdapAuthenticationProvider(final UserDetailsService userDetailsService,
                                             final UserRetriesService userRetriesService,
                                             final TelemetryClient telemetryClient,
-                                            @Value("${application.authentication.lockout-count}") final int accountLockoutCount, DeliusService deliusService) {
+                                            @Value("${application.authentication.lockout-count}") final int accountLockoutCount, final DeliusService deliusService) {
         super(userDetailsService, userRetriesService, telemetryClient, accountLockoutCount);
         this.deliusService = deliusService;
     }
 
-    protected boolean checkPassword(UserDetails userDetails, String password) {
+    protected boolean checkPassword(final UserDetails userDetails, final String password) {
         if (userDetails instanceof User) {
             return super.checkPassword(userDetails, password);
         }
         return deliusService.authenticateUser(userDetails.getUsername(), password);
     }
-
 }
