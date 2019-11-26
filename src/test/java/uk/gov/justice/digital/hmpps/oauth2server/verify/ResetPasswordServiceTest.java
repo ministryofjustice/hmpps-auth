@@ -79,7 +79,7 @@ public class ResetPasswordServiceTest {
     public void requestResetPassword_noNomisUser() throws NotificationClientException {
         final var user = User.builder().username("USER").email("email").verified(true).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
-        when(userService.findUser(anyString())).thenReturn(Optional.empty());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty());
 
         final var optional = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), mapCaptor.capture(), isNull());
@@ -93,7 +93,7 @@ public class ResetPasswordServiceTest {
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         final var staffUserAccount = getStaffUserAccountForBob();
         ((StaffUserAccount) staffUserAccount.orElseThrow()).getStaff().setStatus("inactive");
-        when(userService.findUser(anyString())).thenReturn(staffUserAccount);
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount);
 
         final var optional = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), mapCaptor.capture(), isNull());
@@ -121,7 +121,7 @@ public class ResetPasswordServiceTest {
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         final var accountOptional = getStaffUserAccountForBob();
         ((StaffUserAccount) accountOptional.orElseThrow()).getAccountDetail().setAccountStatus("LOCKED");
-        when(userService.findUser(anyString())).thenReturn(accountOptional);
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(accountOptional);
 
         final var optional = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), mapCaptor.capture(), isNull());
@@ -135,7 +135,7 @@ public class ResetPasswordServiceTest {
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         final var accountOptional = getStaffUserAccountForBob();
         ((StaffUserAccount) accountOptional.orElseThrow()).getAccountDetail().setAccountStatus("EXPIRED & LOCKED(TIMED)");
-        when(userService.findUser(anyString())).thenReturn(accountOptional);
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(accountOptional);
 
         final var optionalLink = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), mapCaptor.capture(), isNull());
@@ -147,7 +147,7 @@ public class ResetPasswordServiceTest {
     public void requestResetPassword_existingToken() throws NotificationClientRuntimeException {
         final var user = User.builder().username("someuser").email("email").verified(true).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
-        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
         final var existingUserToken = user.createToken(TokenType.RESET);
 
         resetPasswordService.requestResetPassword("user", "url");
@@ -158,7 +158,7 @@ public class ResetPasswordServiceTest {
     public void requestResetPassword_verifyToken() throws NotificationClientException {
         final var user = User.builder().username("someuser").email("email").locked(true).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
-        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
 
         final var optionalLink = resetPasswordService.requestResetPassword("user", "url");
         verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), mapCaptor.capture(), isNull());
@@ -170,18 +170,18 @@ public class ResetPasswordServiceTest {
     public void requestResetPassword_uppercaseUsername() throws NotificationClientRuntimeException {
         final var user = User.builder().username("SOMEUSER").email("email").locked(true).build();
         when(userRepository.findByUsername(any())).thenReturn(Optional.of(user));
-        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
 
         resetPasswordService.requestResetPassword("someuser", "url");
         verify(userRepository).findByUsername("SOMEUSER");
-        verify(userService).findUser("SOMEUSER");
+        verify(userService).findMasterUserPersonDetails("SOMEUSER");
     }
 
     @Test
     public void requestResetPassword_verifyNotification() throws NotificationClientRuntimeException {
         final var user = User.builder().username("someuser").email("email").locked(true).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
-        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
 
         final var linkOptional = resetPasswordService.requestResetPassword("user", "url");
         final var value = user.getTokens().stream().findFirst().orElseThrow();
@@ -194,7 +194,7 @@ public class ResetPasswordServiceTest {
     public void requestResetPassword_sendFailure() throws NotificationClientException {
         final var user = User.builder().username("someuser").email("email").locked(true).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
-        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
 
         when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), isNull())).thenThrow(new NotificationClientException("message"));
 
@@ -267,7 +267,7 @@ public class ResetPasswordServiceTest {
     public void requestResetPassword_byEmail() throws NotificationClientException {
         final var user = User.builder().username("someuser").email("email").locked(true).build();
         when(userRepository.findByEmail(anyString())).thenReturn(List.of(user));
-        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
 
         final var optionalLink = resetPasswordService.requestResetPassword("user@where", "url");
         verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), mapCaptor.capture(), isNull());
@@ -288,7 +288,7 @@ public class ResetPasswordServiceTest {
 
     @Test
     public void resetPassword() throws NotificationClientException {
-        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = User.of("user");
         final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
@@ -319,7 +319,7 @@ public class ResetPasswordServiceTest {
 
     @Test
     public void resetPassword_UserUnlocked() throws NotificationClientException {
-        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = User.of("user");
         user.setLocked(true);
         final var userToken = user.createToken(TokenType.RESET);
@@ -348,7 +348,7 @@ public class ResetPasswordServiceTest {
 
     @Test
     public void resetPassword_EmailVerified() {
-        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = User.of("user");
         user.setLocked(true);
         final var userToken = user.createToken(TokenType.RESET);
@@ -378,7 +378,7 @@ public class ResetPasswordServiceTest {
     public void resetPasswordLockedAccount() {
         final var staffUserAccount = getStaffUserAccountForBob();
         ((StaffUserAccount) staffUserAccount.orElseThrow()).getStaff().setStatus("inactive");
-        when(userService.findUser(anyString())).thenReturn(staffUserAccount);
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount);
 
         final var user = User.of("user");
         final var userToken = user.createToken(TokenType.RESET);

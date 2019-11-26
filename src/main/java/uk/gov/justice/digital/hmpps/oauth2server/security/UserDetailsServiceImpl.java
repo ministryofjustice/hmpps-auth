@@ -31,7 +31,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, Authenticatio
     @Override
     @Cacheable("loadUserByUsername")
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
-        final var userPersonDetails = userService.findUser(username).orElseThrow(() -> new UsernameNotFoundException(username));
+        final var userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow(() -> new UsernameNotFoundException(username));
 
         // ensure that any changes to user details past this point are not persisted - e.g. by calling
         // CredentialsContainer.eraseCredentials

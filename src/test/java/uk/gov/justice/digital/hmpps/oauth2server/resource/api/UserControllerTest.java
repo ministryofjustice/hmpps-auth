@@ -118,7 +118,7 @@ public class UserControllerTest {
 
     @Test
     public void getUserEmail_found() {
-        when(userService.findAuthUser(anyString())).thenReturn(Optional.of(User.builder().username("JOE").verified(true).email("someemail").build()));
+        when(userService.findUser(anyString())).thenReturn(Optional.of(User.builder().username("JOE").verified(true).email("someemail").build()));
 
         final var responseEntity = userController.getUserEmail("joe");
 
@@ -128,7 +128,7 @@ public class UserControllerTest {
 
     @Test
     public void getUserEmail_notFound() {
-        when(userService.findAuthUser(anyString())).thenReturn(Optional.empty());
+        when(userService.findUser(anyString())).thenReturn(Optional.empty());
 
         final var responseEntity = userController.getUserEmail("joe");
 
@@ -138,7 +138,7 @@ public class UserControllerTest {
 
     @Test
     public void getUserEmail_notVerified() {
-        when(userService.findAuthUser(anyString())).thenReturn(Optional.of(User.of("JOE")));
+        when(userService.findUser(anyString())).thenReturn(Optional.of(User.of("JOE")));
 
         final var responseEntity = userController.getUserEmail("joe");
 
@@ -155,7 +155,7 @@ public class UserControllerTest {
         staff.setLastName("bloggs");
         user.setStaff(staff);
         user.setAccountDetail(new AccountDetail());
-        when(userService.findUser(anyString())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user));
         return user;
     }
 
@@ -168,7 +168,7 @@ public class UserControllerTest {
                 .enabled(true)
                 .source(AuthSource.auth)
                 .build();
-        when(userService.findUser(anyString())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user));
 
     }
 }

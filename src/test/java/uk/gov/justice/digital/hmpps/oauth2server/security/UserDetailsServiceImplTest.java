@@ -52,7 +52,7 @@ public class UserDetailsServiceImplTest {
     public void testHappyUserPath() {
 
         final var user = buildStandardUser("ITAG_USER");
-        when(userService.findUser(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -69,7 +69,7 @@ public class UserDetailsServiceImplTest {
     public void testEntityDetached() {
 
         final var user = buildStandardUser("ITAG_USER");
-        when(userService.findUser(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -82,7 +82,7 @@ public class UserDetailsServiceImplTest {
     public void testAuthEntityDetached() {
 
         final var user = buildAuthUser();
-        when(userService.findUser(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -95,7 +95,7 @@ public class UserDetailsServiceImplTest {
     public void testLockedUser() {
 
         final var user = buildLockedUser();
-        when(userService.findUser(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -110,7 +110,7 @@ public class UserDetailsServiceImplTest {
     public void testExpiredUser() {
 
         final var user = buildExpiredUser();
-        when(userService.findUser(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -125,7 +125,7 @@ public class UserDetailsServiceImplTest {
     public void testAuthOnlyUser() {
 
         final var user = buildAuthUser();
-        when(userService.findUser(anyString())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -139,7 +139,7 @@ public class UserDetailsServiceImplTest {
     @Test
     public void testUserNotFound() {
 
-        when(userService.findUser(anyString())).thenReturn(Optional.empty());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.loadUserByUsername("user")).isInstanceOf(UsernameNotFoundException.class);
     }
@@ -148,7 +148,7 @@ public class UserDetailsServiceImplTest {
     public void testExpiredGraceUser() {
 
         final var user = buildExpiredGraceUser();
-        when(userService.findUser(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -163,7 +163,7 @@ public class UserDetailsServiceImplTest {
     public void testExpiredLockedUser() {
 
         final var user = buildExpiredLockedUser();
-        when(userService.findUser(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -177,7 +177,7 @@ public class UserDetailsServiceImplTest {
     public void testLockedTimedUser() {
 
         final var user = buildLockedTimedUser();
-        when(userService.findUser(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 

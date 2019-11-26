@@ -71,7 +71,7 @@ public class AuthUserControllerTest {
 
     @Test
     public void user_success() {
-        when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
+        when(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         assertThat(responseEntity.getBody()).isEqualTo(new AuthUser(USER_ID, "authentication", "email", "Joe", "Bloggs", false, true, true, LocalDateTime.of(2019,1,1,12,0)));
@@ -79,7 +79,7 @@ public class AuthUserControllerTest {
 
     @Test
     public void search() {
-        when(userService.findAuthUsersByEmail(anyString())).thenReturn(List.of(getAuthUser()));
+        when(authUserService.findAuthUsersByEmail(anyString())).thenReturn(List.of(getAuthUser()));
         final var responseEntity = authUserController.searchForUser("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         assertThat(responseEntity.getBody()).isEqualTo(List.of(new AuthUser(USER_ID, "authentication", "email", "Joe", "Bloggs", false, true, true, LocalDateTime.of(2019,1,1,12,0))));
@@ -87,7 +87,7 @@ public class AuthUserControllerTest {
 
     @Test
     public void search_noResults() {
-        when(userService.findAuthUsersByEmail(anyString())).thenReturn(List.of());
+        when(authUserService.findAuthUsersByEmail(anyString())).thenReturn(List.of());
         final var responseEntity = authUserController.searchForUser("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
         assertThat(responseEntity.getBody()).isNull();
@@ -95,7 +95,7 @@ public class AuthUserControllerTest {
 
     @Test
     public void createUser_AlreadyExists() throws NotificationClientException {
-        when(userService.findUser(anyString())).thenReturn(Optional.of(new UserDetailsImpl("name", "bob", Set.of(), null, null)));
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(new UserDetailsImpl("name", "bob", Set.of(), null, null)));
         final var responseEntity = authUserController.createUser("user", new CreateUser("email", "first", "last", null), request, authentication);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(409);
@@ -108,7 +108,7 @@ public class AuthUserControllerTest {
         final var responseEntity = authUserController.createUser("  ", new CreateUser("email", "first", "last", null), request, authentication);
 
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
-        verify(userService, never()).findUser(anyString());
+        verify(userService, never()).findMasterUserPersonDetails(anyString());
     }
 
     @Test
@@ -125,7 +125,7 @@ public class AuthUserControllerTest {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
         authUserController.createUser("   newusername   ", new CreateUser("email", "first", "last", null), request, authentication);
 
-        verify(userService).findUser("newusername");
+        verify(userService).findMasterUserPersonDetails("newusername");
         verify(authUserService).createUser("newusername", "email", "first", "last", null, "http://some.url/auth/initial-password?token=", "bob", authentication.getAuthorities());
     }
 
@@ -179,17 +179,17 @@ public class AuthUserControllerTest {
     @Test
     public void enableUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = User.builder().username("USER").email("email").verified(true).build();
-        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
+        when(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
         final var responseEntity = authUserController.enableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
-        verify(userService).enableUser("USER", "bob", authentication.getAuthorities());
+        verify(authUserService).enableUser("USER", "bob", authentication.getAuthorities());
     }
 
     @Test
     public void enableUser_notFound() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = User.builder().username("USER").email("email").verified(true).build();
-        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
-        doThrow(new EntityNotFoundException("message")).when(userService).enableUser(anyString(), anyString(),any());
+        when(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
+        doThrow(new EntityNotFoundException("message")).when(authUserService).enableUser(anyString(), anyString(), any());
         final var responseEntity = authUserController.enableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
     }
@@ -197,17 +197,17 @@ public class AuthUserControllerTest {
     @Test
     public void disableUser() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = User.builder().username("USER").email("email").verified(true).build();
-        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
+        when(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
         final var responseEntity = authUserController.disableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
-        verify(userService).disableUser("USER", "bob", authentication.getAuthorities());
+        verify(authUserService).disableUser("USER", "bob", authentication.getAuthorities());
     }
 
     @Test
     public void disableUser_notFound() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = User.builder().username("USER").email("email").verified(true).build();
-        when(userService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
-        doThrow(new EntityNotFoundException("message")).when(userService).disableUser(anyString(), anyString(), any());
+        when(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user));
+        doThrow(new EntityNotFoundException("message")).when(authUserService).disableUser(anyString(), anyString(), any());
         final var responseEntity = authUserController.disableUser("user", authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
     }

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api;
 
 import io.swagger.annotations.*;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +13,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleExistsException;
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,14 +24,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @Api(tags = {"/api/authuser/{username}/roles"})
+@AllArgsConstructor
 public class AuthUserRolesController {
-    private final UserService userService;
+    private final AuthUserService authUserService;
     private final AuthUserRoleService authUserRoleService;
-
-    public AuthUserRolesController(final UserService userService, final AuthUserRoleService authUserRoleService) {
-        this.userService = userService;
-        this.authUserRoleService = authUserRoleService;
-    }
 
     @GetMapping("/api/authuser/{username}/roles")
     @ApiOperation(value = "Get roles for user.", notes = "Get roles for user.", nickname = "roles",
@@ -40,7 +37,7 @@ public class AuthUserRolesController {
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> roles(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
-        final var userOptional = userService.getAuthUserByUsername(username);
+        final var userOptional = authUserService.getAuthUserByUsername(username);
 
         return userOptional
                 .map(u -> u.getAuthorities()
@@ -82,7 +79,7 @@ public class AuthUserRolesController {
             @ApiParam(value = "The role to be added to the user.", required = true) @PathVariable final String role,
             @ApiIgnore final Authentication authentication) {
 
-        final var userOptional = userService.getAuthUserByUsername(username);
+        final var userOptional = authUserService.getAuthUserByUsername(username);
         return userOptional.map(User::getUsername).map(usernameInDb -> {
             try {
                 authUserRoleService.addRole(usernameInDb, role, authentication.getName(), authentication.getAuthorities());
@@ -120,7 +117,7 @@ public class AuthUserRolesController {
             @ApiParam(value = "The role to be delete from the user.", required = true) @PathVariable final String role,
             @ApiIgnore final Authentication authentication) {
 
-        final var userOptional = userService.getAuthUserByUsername(username);
+        final var userOptional = authUserService.getAuthUserByUsername(username);
         return userOptional.map(u -> {
             final var usernameInDb = u.getUsername();
             try {

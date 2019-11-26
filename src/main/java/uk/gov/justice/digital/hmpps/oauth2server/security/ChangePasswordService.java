@@ -58,7 +58,7 @@ public class ChangePasswordService extends PasswordServiceImpl {
     public void setPassword(final String token, final String password) {
         final var userToken = userTokenRepository.findById(token).orElseThrow();
         final var user = userToken.getUser();
-        final var userOptional = user.isMaster() ? Optional.of(user) : userService.findUser(user.getUsername());
+        final var userOptional = user.isMaster() ? Optional.of(user) : userService.findMasterUserPersonDetails(user.getUsername());
 
         // before we set, ensure user allowed to still change their password
         if (userOptional.map(u -> !u.isEnabled() || !u.isAccountNonLocked()).orElse(Boolean.TRUE)) {
