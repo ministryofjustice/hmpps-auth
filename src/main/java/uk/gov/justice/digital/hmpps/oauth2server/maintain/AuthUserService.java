@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
@@ -97,7 +98,7 @@ public class AuthUserService {
                 .username(username)
                 .email(email)
                 .enabled(true)
-                .master(true)
+                .source(AuthSource.auth)
                 .person(person)
                 .authorities(roles)
                 .groups(groups).build();

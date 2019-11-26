@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.NonNull;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 
 import javax.persistence.criteria.*;
@@ -26,7 +27,7 @@ public class UserFilter implements Specification<User> {
     @Override
     public Predicate toPredicate(@NonNull final Root<User> root, @NonNull final CriteriaQuery<?> query, @NonNull final CriteriaBuilder cb) {
         final var andBuilder = ImmutableList.<Predicate>builder();
-        andBuilder.add(cb.equal(root.get("master"), true));
+        andBuilder.add(cb.equal(root.get("source"), AuthSource.auth));
 
         if (roleCode != null) {
             andBuilder.add(cb.equal(root.join("authorities").get("roleCode"), roleCode.toUpperCase()));

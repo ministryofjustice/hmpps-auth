@@ -55,7 +55,7 @@ public class UserControllerTest {
         setupFindUserCallForNomis();
         final var responseEntity = userController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, null, "5"));
+        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, null, "5"));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class UserControllerTest {
         staffUserAccount.setActiveCaseLoadId("somecase");
         final var responseEntity = userController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, "somecase", "5"));
+        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, "somecase", "5"));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class UserControllerTest {
         setupFindUserCallForAuth();
         final var responseEntity = userController.user("joe");
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
-        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", true, "Joe Bloggs", AuthSource.AUTH, null, null, USER_ID));
+        assertThat(responseEntity.getBody()).isEqualTo(new UserDetail("principal", true, "Joe Bloggs", AuthSource.auth, null, null, USER_ID));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class UserControllerTest {
     public void me_nomisUserNoCaseload() {
         setupFindUserCallForNomis();
         final var principal = new TestingAuthenticationToken("principal", "credentials");
-        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, null, "5"));
+        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, null, "5"));
     }
 
     @Test
@@ -93,14 +93,14 @@ public class UserControllerTest {
         final var staffUserAccount = setupFindUserCallForNomis();
         staffUserAccount.setActiveCaseLoadId("somecase");
         final var principal = new TestingAuthenticationToken("principal", "credentials");
-        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.NOMIS, 5L, "somecase", "5"));
+        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, "somecase", "5"));
     }
 
     @Test
     public void me_authUser() {
         setupFindUserCallForAuth();
         final var principal = new TestingAuthenticationToken("principal", "credentials");
-        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", true, "Joe Bloggs", AuthSource.AUTH, null, null, USER_ID));
+        assertThat(userController.me(principal)).isEqualTo(new UserDetail("principal", true, "Joe Bloggs", AuthSource.auth, null, null, USER_ID));
     }
 
     @Test
@@ -160,11 +160,14 @@ public class UserControllerTest {
     }
 
     private void setupFindUserCallForAuth() {
-        final var user = User.builder().id(UUID.fromString(USER_ID)).username("principal").email("email").verified(true).build();
-        user.setPerson(new Person());
-        user.getPerson().setFirstName("Joe");
-        user.getPerson().setLastName("Bloggs");
-        user.setEnabled(true);
+        final var user = User.builder().id(UUID.fromString(USER_ID))
+                .username("principal")
+                .email("email")
+                .verified(true)
+                .person(new Person("Joe", "Bloggs"))
+                .enabled(true)
+                .source(AuthSource.auth)
+                .build();
         when(userService.findUser(anyString())).thenReturn(Optional.of(user));
 
     }

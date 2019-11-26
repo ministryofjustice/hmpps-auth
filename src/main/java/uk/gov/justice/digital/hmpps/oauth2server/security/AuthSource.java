@@ -5,14 +5,14 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Optional;
 
 public enum AuthSource {
-    NOMIS, AUTH, NONE;
+    nomis, auth, delius, none;
 
     @JsonValue
     public String getSource() {
-        return name().toLowerCase();
+        return name();
     }
 
     public static AuthSource fromNullableString(final String source) {
-        return Optional.ofNullable(source).map(s -> valueOf(source.toUpperCase())).orElse(NONE);
+        return Optional.ofNullable(source).map(s -> valueOf(source.toLowerCase())).orElse(none);
     }
 }
