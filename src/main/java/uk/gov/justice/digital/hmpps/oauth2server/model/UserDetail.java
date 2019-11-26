@@ -47,7 +47,7 @@ public class UserDetail {
                 .name(u.getName())
                 .authSource(authSource);
 
-        if (authSource == AuthSource.NOMIS) {
+        if (authSource == AuthSource.nomis) {
             final var staffUserAccount = (StaffUserAccount) u;
             final var staffId = staffUserAccount.getStaff().getStaffId();
             builder.staffId(staffId);

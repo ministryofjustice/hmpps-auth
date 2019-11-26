@@ -67,7 +67,7 @@ public class ChangePasswordServiceTest {
     public void setPassword_AuthUser() {
         final var user = User.builder().username("user").email("email").build();
         user.setEnabled(true);
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
@@ -94,7 +94,7 @@ public class ChangePasswordServiceTest {
     public void setPassword_AuthUserPasswordSet() {
         final var user = User.builder().username("user").build();
         user.setEnabled(true);
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         when(passwordEncoder.encode(anyString())).thenReturn("hashedpassword");
@@ -146,7 +146,7 @@ public class ChangePasswordServiceTest {
     public void setPassword_LockedAuthAccount() {
         final var user = User.builder().username("user").locked(true).build();
         user.setEnabled(true);
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
@@ -157,7 +157,7 @@ public class ChangePasswordServiceTest {
     public void setPassword_AuthPasswordSameAsCurrent() {
         final var user = User.builder().username("user").build();
         user.setEnabled(true);
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         user.setPassword("oldencryptedpassword");
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(Boolean.TRUE);
         final var userToken = user.createToken(TokenType.RESET);

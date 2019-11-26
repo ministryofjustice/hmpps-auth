@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
@@ -75,7 +76,7 @@ public class VerifyEmailService {
         final var userPersonDetails = userService.findUser(username);
         final var firstName = userPersonDetails.map(UserPersonDetails::getFirstName).orElse(username);
         final var optionalUser = userRepository.findByUsername(username);
-        final var user = optionalUser.orElseGet(() -> User.of(username));
+        final var user = optionalUser.orElseGet(() -> User.builder().username(username).source(AuthSource.nomis).build());
         user.setEmail(email);
 
         final var userToken = user.createToken(TokenType.VERIFIED);

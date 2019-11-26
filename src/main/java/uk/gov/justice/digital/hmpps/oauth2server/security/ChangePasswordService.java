@@ -44,7 +44,7 @@ public class ChangePasswordService extends PasswordServiceImpl {
     public String createToken(final String username) {
         final var userOptional = userRepository.findByUsername(username);
         final var user = userOptional.orElseGet(() -> {
-            final var ue = User.of(username);
+            final var ue = User.builder().username(username).source(AuthSource.nomis).build();
             return userRepository.save(ue);
         });
         final var userToken = user.createToken(TokenType.CHANGE);

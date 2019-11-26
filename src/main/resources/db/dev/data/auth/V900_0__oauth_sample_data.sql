@@ -43,54 +43,54 @@ VALUES ('LOCKED_USER', 5),
 
 
 -- nomis users
-INSERT INTO users (user_id, username, email, verified)
- VALUES ('07395EF9-53EC-4D6C-8BB1-0DC96CD4BD2F', 'IC_USER', 'ic_user@digital.justice.gov.uk', 1),
-        ('A04C70EE-51C9-4852-8D0D-130DA5C85C42', 'ITAG_USER', 'itag_user@digital.justice.gov.uk', 1),
-        ('0181F647-C7D4-41E7-9271-288EC7C01F90', 'DM_USER', 'dm_user@digital.justice.gov.uk', 0),
-        ('151DD6BC-88EE-4246-AA18-45924819C9F5', 'EXPIRED_TEST_USER', 'expired_test_user@digital.justice.gov.uk', 1),
-        ('86192295-8652-40BB-B03F-4D56BB93C1D7', 'RESET_TEST_USER', 'reset_test@digital.justice.gov.uk', 1),
-        ('F566EEC3-32DD-4CA4-B477-56AEC62917A1', 'CA_USER_TEST', 'reset_test@digital.justice.gov.uk', 1),
-        ('846D7318-921C-4537-8E24-58306CED881B', 'PPL_USER', 'ppl_user@digital.justice.gov.uk', 1),
-        ('326A07B4-6C2F-4CF9-A904-84262EB5C4FF', 'DM_USER_TEST', 'dm_user_test@digital.justice.gov.uk', 1),
-        ('7969D655-03F6-464E-A318-9D3C8B53787A', 'EXPIRED_TEST2_USER', 'expired_test2_user@digital.justice.gov.uk', 1),
-        ('FCFC15C1-6EE5-4EB2-8312-A1302AE3CFD1', 'ITAG_USER_ADM', 'itag_user_adm@digital.justice.gov.uk', 1),
-        ('E94B2E26-DC8A-4020-9533-A509807F68DF', 'EXPIRED_TEST3_USER', 'expired_test3_user@digital.justice.gov.uk', 1),
-        ('C0279EE3-76BF-487F-833C-AA47C5DF22F8', 'CA_USER', 'ca_user@digital.justice.gov.uk', 1),
-        ('6A3F0216-BBAB-49CD-BD6E-AC09C1762EE4', 'LOCKED_USER', 'locked@somewhere.com', 1),
-        ('79CDC23C-510F-4CE2-8C98-AC251296EC39', 'RO_DEMO', null, 0),
-        ('AB8DA2CA-3E79-42D3-883E-CEE6C3F693CA', 'RO_USER_TEST', 'ro_user_test@digital.justice.gov.uk', 1),
-        ('5C72B180-5211-454D-9605-CF29573B946F', 'UOF_REVIEWER_USER', 'uof_reviewer@digital.justice.gov.uk', 1),
-        ('98FBF8D7-4164-47B3-826F-ECD3BB643005', 'RCTL_USER1', 'rctl_user1@digital.justice.gov.uk', 1),
-        ('26912E22-E313-4164-8434-0D2623483123', 'PPL_RCTL_USER1', 'ppl_rctl_user1@digital.justice.gov.uk', 1);
+INSERT INTO users (user_id, username, email, verified, source)
+ VALUES ('07395EF9-53EC-4D6C-8BB1-0DC96CD4BD2F', 'IC_USER', 'ic_user@digital.justice.gov.uk', 1, 'nomis'),
+        ('A04C70EE-51C9-4852-8D0D-130DA5C85C42', 'ITAG_USER', 'itag_user@digital.justice.gov.uk', 1, 'nomis'),
+        ('0181F647-C7D4-41E7-9271-288EC7C01F90', 'DM_USER', 'dm_user@digital.justice.gov.uk', 0, 'nomis'),
+        ('151DD6BC-88EE-4246-AA18-45924819C9F5', 'EXPIRED_TEST_USER', 'expired_test_user@digital.justice.gov.uk', 1, 'nomis'),
+        ('86192295-8652-40BB-B03F-4D56BB93C1D7', 'RESET_TEST_USER', 'reset_test@digital.justice.gov.uk', 1, 'nomis'),
+        ('F566EEC3-32DD-4CA4-B477-56AEC62917A1', 'CA_USER_TEST', 'reset_test@digital.justice.gov.uk', 1, 'nomis'),
+        ('846D7318-921C-4537-8E24-58306CED881B', 'PPL_USER', 'ppl_user@digital.justice.gov.uk', 1, 'nomis'),
+        ('326A07B4-6C2F-4CF9-A904-84262EB5C4FF', 'DM_USER_TEST', 'dm_user_test@digital.justice.gov.uk', 1, 'nomis'),
+        ('7969D655-03F6-464E-A318-9D3C8B53787A', 'EXPIRED_TEST2_USER', 'expired_test2_user@digital.justice.gov.uk', 1, 'nomis'),
+        ('FCFC15C1-6EE5-4EB2-8312-A1302AE3CFD1', 'ITAG_USER_ADM', 'itag_user_adm@digital.justice.gov.uk', 1, 'nomis'),
+        ('E94B2E26-DC8A-4020-9533-A509807F68DF', 'EXPIRED_TEST3_USER', 'expired_test3_user@digital.justice.gov.uk', 1, 'nomis'),
+        ('C0279EE3-76BF-487F-833C-AA47C5DF22F8', 'CA_USER', 'ca_user@digital.justice.gov.uk', 1, 'nomis'),
+        ('6A3F0216-BBAB-49CD-BD6E-AC09C1762EE4', 'LOCKED_USER', 'locked@somewhere.com', 1, 'nomis'),
+        ('79CDC23C-510F-4CE2-8C98-AC251296EC39', 'RO_DEMO', null, 0, 'nomis'),
+        ('AB8DA2CA-3E79-42D3-883E-CEE6C3F693CA', 'RO_USER_TEST', 'ro_user_test@digital.justice.gov.uk', 1, 'nomis'),
+        ('5C72B180-5211-454D-9605-CF29573B946F', 'UOF_REVIEWER_USER', 'uof_reviewer@digital.justice.gov.uk', 1, 'nomis'),
+        ('98FBF8D7-4164-47B3-826F-ECD3BB643005', 'RCTL_USER1', 'rctl_user1@digital.justice.gov.uk', 1, 'nomis'),
+        ('26912E22-E313-4164-8434-0D2623483123', 'PPL_RCTL_USER1', 'ppl_rctl_user1@digital.justice.gov.uk', 1, 'nomis');
 
-INSERT INTO users (user_id, username, email, verified, last_logged_in)
- VALUES ('A2B6E3C0-2CE4-4148-9DFB-42E94BC78D02', 'NOMIS_DELETE', 'locked@somewhere.com', 1, '2018-02-04 13:23:19.0000000');
+INSERT INTO users (user_id, username, email, verified, last_logged_in, source)
+ VALUES ('A2B6E3C0-2CE4-4148-9DFB-42E94BC78D02', 'NOMIS_DELETE', 'locked@somewhere.com', 1, '2018-02-04 13:23:19.0000000', 'nomis');
 
 -- auth users
-INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, master,last_logged_in)
- VALUES ('f3daec63-ee2f-467c-a6ee-92c3008193bd', 'AUTH_USER_LAST_LOGIN', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_user_last_login@digital.justice.gov.uk', 'Auth_Last', 'Login', 1, 1, 0, 1, '2019-01-01 12:05:10');
+INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, source, last_logged_in)
+ VALUES ('f3daec63-ee2f-467c-a6ee-92c3008193bd', 'AUTH_USER_LAST_LOGIN', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_user_last_login@digital.justice.gov.uk', 'Auth_Last', 'Login', 1, 1, 0, 'auth', '2019-01-01 12:05:10');
 
-INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, master)
- VALUES ('608955AE-52ED-44CC-884C-011597A77949', 'AUTH_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_user@digital.justice.gov.uk', 'Auth', 'Only', 1, 1, 0, 1),
-        ('C36E5A30-53C7-4F6F-9591-0547A2E4897C', 'AUTH_NO_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'NoEmail', 1, 1, 0, 1),
-        ('0E7AFB2E-A326-4AB6-920C-0A7098F5031F', 'AUTH_LOCKED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Locked', 1, 1, 1, 1),
-        ('90F930E1-2195-4AFD-92CE-0EB5672DA02A', 'AUTH_RO_USER_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user_test@digital.justice.gov.uk', 'Ryan-Auth', 'Orton', 1, 1, 0, 1),
-        ('D9873CB3-24BD-4CFF-9CFE-1E64CE6BBCC4', 'AUTH_LOCKED2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_locked2@digital.justice.gov.uk', 'Auth', 'Locked2', 1, 1, 1, 1),
-        ('5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8', 'AUTH_RO_VARY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user@digital.justice.gov.uk', 'Ryan-Auth-Vary', 'Orton', 1, 1, 0, 1),
-        ('AD7D37E2-DBAD-4B98-AF8D-429E822A6BDC', 'AUTH_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Disabled', 1, 0, 0, 1),
-        ('7CA04ED7-8275-45B2-AFB4-4FF51432D1EA', 'AUTH_RO_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user@digital.justice.gov.uk', 'Ryan-Auth', 'Orton', 1, 1, 0, 1),
-        ('1F650F15-0993-4DB7-9A32-5B930FF86035', 'AUTH_GROUP_MANAGER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_group_manager@digital.justice.gov.uk', 'Group', 'Manager', 1, 1, 0, 1),
-        ('7CC5368B-C912-47AC-AB7E-7ED0DC832AE4', 'AUTH_PF_OM_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_pf_om_user@digital.justice.gov.uk', 'Offender', 'Manager', 1, 1, 0, 1),
-        ('FC494152-F9AD-48A0-A87C-9ADC8BD75255', 'AUTH_STATUS', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Status', 1, 0, 0, 1),
-        ('9E84F1E4-59C8-4B10-927A-9CF9E9A30791', 'AUTH_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2013-01-28 13:23:19.0000000', 'auth_test2@digital.justice.gov.uk', 'Auth', 'Expired', 1, 1, 0, 1),
-        ('5105A589-75B3-4CA0-9433-B96228C1C8F3', 'AUTH_ADM', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_test2@digital.justice.gov.uk', 'Auth', 'Adm', 1, 1, 0, 1),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2A3E', 'AUTH_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_test@digital.justice.gov.uk', 'Auth', 'Test', 1, 1, 0, 1),
-        ('67A789DE-7D29-4863-B9C2-F2CE715DC4BC', 'AUTH_NEW_USER', null, '3013-01-28 13:23:19.0000000', 'a@b.com', 'Auth', 'New-User', 0, 1, 0, 1);
+INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, source)
+ VALUES ('608955AE-52ED-44CC-884C-011597A77949', 'AUTH_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_user@digital.justice.gov.uk', 'Auth', 'Only', 1, 1, 0, 'auth'),
+        ('C36E5A30-53C7-4F6F-9591-0547A2E4897C', 'AUTH_NO_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'NoEmail', 1, 1, 0, 'auth'),
+        ('0E7AFB2E-A326-4AB6-920C-0A7098F5031F', 'AUTH_LOCKED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Locked', 1, 1, 1, 'auth'),
+        ('90F930E1-2195-4AFD-92CE-0EB5672DA02A', 'AUTH_RO_USER_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user_test@digital.justice.gov.uk', 'Ryan-Auth', 'Orton', 1, 1, 0, 'auth'),
+        ('D9873CB3-24BD-4CFF-9CFE-1E64CE6BBCC4', 'AUTH_LOCKED2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_locked2@digital.justice.gov.uk', 'Auth', 'Locked2', 1, 1, 1, 'auth'),
+        ('5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8', 'AUTH_RO_VARY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user@digital.justice.gov.uk', 'Ryan-Auth-Vary', 'Orton', 1, 1, 0, 'auth'),
+        ('AD7D37E2-DBAD-4B98-AF8D-429E822A6BDC', 'AUTH_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Disabled', 1, 0, 0, 'auth'),
+        ('7CA04ED7-8275-45B2-AFB4-4FF51432D1EA', 'AUTH_RO_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user@digital.justice.gov.uk', 'Ryan-Auth', 'Orton', 1, 1, 0, 'auth'),
+        ('1F650F15-0993-4DB7-9A32-5B930FF86035', 'AUTH_GROUP_MANAGER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_group_manager@digital.justice.gov.uk', 'Group', 'Manager', 1, 1, 0, 'auth'),
+        ('7CC5368B-C912-47AC-AB7E-7ED0DC832AE4', 'AUTH_PF_OM_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_pf_om_user@digital.justice.gov.uk', 'Offender', 'Manager', 1, 1, 0, 'auth'),
+        ('FC494152-F9AD-48A0-A87C-9ADC8BD75255', 'AUTH_STATUS', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Status', 1, 0, 0, 'auth'),
+        ('9E84F1E4-59C8-4B10-927A-9CF9E9A30791', 'AUTH_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2013-01-28 13:23:19.0000000', 'auth_test2@digital.justice.gov.uk', 'Auth', 'Expired', 1, 1, 0, 'auth'),
+        ('5105A589-75B3-4CA0-9433-B96228C1C8F3', 'AUTH_ADM', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_test2@digital.justice.gov.uk', 'Auth', 'Adm', 1, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2A3E', 'AUTH_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_test@digital.justice.gov.uk', 'Auth', 'Test', 1, 1, 0, 'auth'),
+        ('67A789DE-7D29-4863-B9C2-F2CE715DC4BC', 'AUTH_NEW_USER', null, '3013-01-28 13:23:19.0000000', 'a@b.com', 'Auth', 'New-User', 0, 1, 0, 'auth');
 
-INSERT INTO users (user_id, username, password, last_logged_in, first_name, last_name, verified, enabled, locked, master)
- VALUES ('7B59A818-BC14-43F3-A1C3-93004E173B2A', 'AUTH_DELETE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2018-01-02 13:23:19.0000000', 'Auth', 'Delete', 1, 0, 0, 1),
-        ('DA28D339-85FA-42C1-9CFA-AC67055A51A5', 'AUTH_INACTIVE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2019-02-03 13:23:19.0000000', 'Auth', 'Inactive', 1, 1, 0, 1),
-        ('7112EC3B-88C1-48C3-BCC3-F82874E3F2C3', 'AUTH_DELETEALL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2018-02-03 13:23:19.0000000', 'Auth', 'DeleteAll', 1, 0, 0, 1);
+INSERT INTO users (user_id, username, password, last_logged_in, first_name, last_name, verified, enabled, locked, source)
+ VALUES ('7B59A818-BC14-43F3-A1C3-93004E173B2A', 'AUTH_DELETE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2018-01-02 13:23:19.0000000', 'Auth', 'Delete', 1, 0, 0, 'auth'),
+        ('DA28D339-85FA-42C1-9CFA-AC67055A51A5', 'AUTH_INACTIVE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2019-02-03 13:23:19.0000000', 'Auth', 'Inactive', 1, 1, 0, 'auth'),
+        ('7112EC3B-88C1-48C3-BCC3-F82874E3F2C3', 'AUTH_DELETEALL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2018-02-03 13:23:19.0000000', 'Auth', 'DeleteAll', 1, 0, 0, 'auth');
 
 INSERT INTO user_token (token, token_type, token_expiry, user_id)
  VALUES ('reset', 'RESET', '2018-12-10 08:55:45.0000000', '6A3F0216-BBAB-49CD-BD6E-AC09C1762EE4'),

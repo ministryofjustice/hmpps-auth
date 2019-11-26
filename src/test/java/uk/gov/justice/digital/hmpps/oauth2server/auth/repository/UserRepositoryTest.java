@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -54,7 +55,7 @@ public class UserRepositoryTest {
 
     @Test
     public void givenATransientEntityItCanBePersisted() {
-        final var transientEntity = User.builder().username("transiententity").email("transient@b.com").build();
+        final var transientEntity = User.builder().username("transiententity").email("transient@b.com").source(AuthSource.delius).build();
 
         final var persistedEntity = repository.save(transientEntity);
 
@@ -106,7 +107,7 @@ public class UserRepositoryTest {
 
     @Test
     public void persistUserWithoutEmail() {
-        final var transientEntity = User.of("userb");
+        final var transientEntity = User.builder().username("userb").source(AuthSource.nomis).build();
         final var persistedEntity = repository.save(transientEntity);
 
         TestTransaction.flagForCommit();
@@ -348,6 +349,6 @@ public class UserRepositoryTest {
     }
 
     private User transientEntity() {
-        return User.builder().username("user").email("a@b.com").build();
+        return User.builder().username("user").source(AuthSource.nomis).email("a@b.com").build();
     }
 }

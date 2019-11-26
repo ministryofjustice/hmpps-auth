@@ -5,6 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.springframework.security.core.CredentialsContainer;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import javax.persistence.*;
@@ -51,8 +52,9 @@ public class User implements UserPersonDetails, CredentialsContainer {
     /**
      * Whether we are masters of this user record here in auth
      */
-    @Column(name = "master", nullable = false)
-    private boolean master;
+    @Column(name = "source", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AuthSource source;
 
     /**
      * Used for NOMIS accounts to force change password so that they don't get locked out due to not changing password
@@ -128,7 +130,7 @@ public class User implements UserPersonDetails, CredentialsContainer {
 
     @Override
     public String getAuthSource() {
-        return "auth";
+        return source.toString();
     }
 
     @Override
@@ -146,5 +148,9 @@ public class User implements UserPersonDetails, CredentialsContainer {
 
     public void removeToken(final UserToken userToken) {
         tokens.remove(userToken);
+    }
+
+    public boolean isMaster() {
+        return source == AuthSource.auth;
     }
 }

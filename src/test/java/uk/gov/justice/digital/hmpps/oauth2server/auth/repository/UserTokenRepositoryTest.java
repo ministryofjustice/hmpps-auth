@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 
 import java.time.LocalDateTime;
 
@@ -67,6 +68,6 @@ public class UserTokenRepositoryTest {
     }
 
     private User transientUser() {
-        return User.builder().username("userTokenRepository").email("a@b.com").build();
+        return User.builder().username("userTokenRepository").email("a@b.com").source(AuthSource.auth).build();
     }
 }

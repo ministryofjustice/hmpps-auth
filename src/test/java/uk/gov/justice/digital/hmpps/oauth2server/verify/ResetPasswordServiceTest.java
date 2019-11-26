@@ -18,10 +18,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenReposi
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
-import uk.gov.justice.digital.hmpps.oauth2server.security.AlterUserService;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.*;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -108,7 +105,7 @@ public class ResetPasswordServiceTest {
     public void requestResetPassword_authLocked() throws NotificationClientException {
         final var user = User.builder().username("someuser").email("email").verified(true).locked(true).build();
         user.setPerson(new Person("Bob", "Smith"));
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         user.setEnabled(true);
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
 
@@ -228,7 +225,7 @@ public class ResetPasswordServiceTest {
     public void requestResetPassword_multipleEmailAddresses() throws NotificationClientException {
         final var user = User.builder().username("someuser").email("email")
                 .person(new Person("Bob", "Smith"))
-                .master(true)
+                .source(AuthSource.auth)
                 .enabled(true)
                 .build();
         when(userRepository.findByEmail(any())).thenReturn(List.of(user, user));
@@ -243,7 +240,7 @@ public class ResetPasswordServiceTest {
     public void requestResetPassword_multipleEmailAddresses_verifyToken() {
         final var user = User.builder().username("someuser").email("email")
                 .person(new Person("Bob", "Smith"))
-                .master(true)
+                .source(AuthSource.auth)
                 .enabled(true)
                 .build();
         when(userRepository.findByEmail(any())).thenReturn(List.of(user, user));
@@ -257,7 +254,7 @@ public class ResetPasswordServiceTest {
     public void requestResetPassword_multipleEmailAddresses_noneCanBeReset() throws NotificationClientException {
         final var user = User.builder().username("someuser").email("email").build();
         user.setPerson(new Person("Bob", "Smith"));
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         when(userRepository.findByEmail(any())).thenReturn(List.of(user, user));
 
         final var optional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url");
@@ -308,7 +305,7 @@ public class ResetPasswordServiceTest {
     public void resetPassword_authUser() throws NotificationClientException {
         final var user = User.of("user");
         user.setEnabled(true);
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         resetPasswordService.setPassword("bob", "pass");
@@ -338,7 +335,7 @@ public class ResetPasswordServiceTest {
     public void resetPassword_authUser_UserUnlocked() throws NotificationClientException {
         final var user = User.of("user");
         user.setEnabled(true);
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         user.setLocked(true);
         final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
@@ -365,7 +362,7 @@ public class ResetPasswordServiceTest {
     public void resetPassword_authUser_passwordSet() {
         final var user = User.of("user");
         user.setEnabled(true);
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         when(passwordEncoder.encode(anyString())).thenReturn("hashedpassword");
         user.setLocked(true);
         final var userToken = user.createToken(TokenType.RESET);
@@ -393,7 +390,7 @@ public class ResetPasswordServiceTest {
     @Test
     public void resetPasswordLockedAccount_authUser() {
         final var user = User.of("user");
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
 
         final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
@@ -404,7 +401,7 @@ public class ResetPasswordServiceTest {
     @Test
     public void resetPassword_authUserPasswordSameAsCurrent() {
         final var user = User.builder().username("user").email("email").verified(true).build();
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         user.setEnabled(true);
         user.setPassword("oldencryptedpassword");
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(Boolean.TRUE);
@@ -447,7 +444,7 @@ public class ResetPasswordServiceTest {
     public void moveTokenToAccount_sameUserAccount() {
         final var user = User.builder().username("USER").email("email").verified(true).build();
         user.setEnabled(true);
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         when(userTokenRepository.findById("token")).thenReturn(Optional.of(user.createToken(TokenType.RESET)));
         final var newToken = resetPasswordService.moveTokenToAccount("token", "USER");
@@ -458,7 +455,7 @@ public class ResetPasswordServiceTest {
     public void moveTokenToAccount_differentAccount() {
         final var user = User.builder().username("USER").email("email").verified(true).build();
         user.setEnabled(true);
-        user.setMaster(true);
+        user.setSource(AuthSource.auth);
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         final var builtUser = User.builder().username("other").email("email").verified(true).build();
         final var userToken = builtUser.createToken(TokenType.RESET);

@@ -93,7 +93,7 @@ public class UserRetriesServiceTest {
     @Test
     public void lockAccount_NoAlterUserForAuthOnlyAccounts() {
         final var existingUserEmail = User.of("username");
-        existingUserEmail.setMaster(true);
+        existingUserEmail.setSource(AuthSource.auth);
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(existingUserEmail));
         service.lockAccount("bob");
         verify(alterUserService, never()).lockAccount(anyString());
