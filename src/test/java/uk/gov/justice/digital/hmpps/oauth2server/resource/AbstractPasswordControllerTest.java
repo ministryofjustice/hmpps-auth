@@ -265,7 +265,7 @@ public class AbstractPasswordControllerTest {
         final var detail = new AccountDetail();
         detail.setProfile(profile);
         user.setAccountDetail(detail);
-        when(userService.findUser(anyString())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user));
     }
 
     private MapEntry<String, List<Object>> listEntry(final String key, final Object... values) {

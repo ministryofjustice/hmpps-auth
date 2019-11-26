@@ -12,9 +12,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupExistsException;
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
 import java.security.Principal;
 import java.util.stream.Collectors;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Api(tags = {"/api/authuser/{username}/groups"})
 @AllArgsConstructor
 public class AuthUserGroupsController {
-    private final UserService userService;
+    private final AuthUserService authUserService;
     private final AuthUserGroupService authUserGroupService;
 
     @GetMapping("/api/authuser/{username}/groups")
@@ -59,7 +59,7 @@ public class AuthUserGroupsController {
             @ApiParam(value = "The group to be added to the user.", required = true) @PathVariable final String group,
             @ApiIgnore final Principal principal) {
 
-        final var userOptional = userService.getAuthUserByUsername(username);
+        final var userOptional = authUserService.getAuthUserByUsername(username);
         return userOptional.map(User::getUsername).map(usernameInDb -> {
             try {
                 authUserGroupService.addGroup(usernameInDb, group, principal.getName());
@@ -92,7 +92,7 @@ public class AuthUserGroupsController {
             @ApiParam(value = "The group to be delete from the user.", required = true) @PathVariable final String group,
             @ApiIgnore final Principal principal) {
 
-        final var userOptional = userService.getAuthUserByUsername(username);
+        final var userOptional = authUserService.getAuthUserByUsername(username);
         return userOptional.map(u -> {
             final var usernameInDb = u.getUsername();
             try {

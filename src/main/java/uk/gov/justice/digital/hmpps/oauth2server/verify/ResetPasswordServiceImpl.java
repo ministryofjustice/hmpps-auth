@@ -102,7 +102,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
         if (user.isMaster()) {
             userDetails = user;
         } else {
-            final var userOptional = userService.findUser(user.getUsername());
+            final var userOptional = userService.findMasterUserPersonDetails(user.getUsername());
             if (userOptional.isEmpty()) {
                 // shouldn't really happen, means that a nomis user exists in auth but not in nomis
                 return new TemplateAndParameters(resetUnavailableTemplateId, user.getUsername());
@@ -206,7 +206,7 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
     }
 
     private boolean passwordAllowedToBeReset(final User ue) {
-        final var userPersonDetailsOptional = ue.isMaster() ? Optional.of(ue) : userService.findUser(ue.getUsername());
+        final var userPersonDetailsOptional = ue.isMaster() ? Optional.of(ue) : userService.findMasterUserPersonDetails(ue.getUsername());
         return userPersonDetailsOptional.map(upd -> passwordAllowedToBeReset(ue, upd)).orElse(false);
     }
 

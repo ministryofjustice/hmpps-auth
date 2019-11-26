@@ -53,7 +53,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_AlterUser() {
-        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = User.of("user");
         user.setLocked(true);
         final var userToken = user.createToken(TokenType.RESET);
@@ -78,7 +78,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_SaveAndDelete() {
-        when(userService.findUser(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
         final var user = User.of("user");
         user.setLocked(true);
         final var userToken = user.createToken(TokenType.RESET);
@@ -107,7 +107,7 @@ public class ChangePasswordServiceTest {
 
     @Test
     public void setPassword_NotFound() {
-        when(userService.findUser(anyString())).thenReturn(Optional.empty());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty());
 
         final var user = User.of("user");
         final var userToken = user.createToken(TokenType.RESET);
@@ -120,7 +120,7 @@ public class ChangePasswordServiceTest {
     public void setPassword_LockedAccount() {
         final var staffUserAccount = getStaffUserAccountForBob();
         staffUserAccount.map(StaffUserAccount.class::cast).get().getAccountDetail().setAccountStatus("LOCKED");
-        when(userService.findUser(anyString())).thenReturn(staffUserAccount);
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount);
 
         final var user = User.of("user");
         final var userToken = user.createToken(TokenType.RESET);
@@ -133,7 +133,7 @@ public class ChangePasswordServiceTest {
     public void setPassword_DisabledAccount() {
         final var optionalUser = buildAuthUser();
         optionalUser.map(User.class::cast).get().setEnabled(false);
-        when(userService.findUser(anyString())).thenReturn(optionalUser);
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(optionalUser);
 
         final var user = User.of("user");
         final var userToken = user.createToken(TokenType.RESET);

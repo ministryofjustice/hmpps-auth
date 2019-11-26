@@ -119,7 +119,7 @@ public class AbstractPasswordController {
         }
 
         // user must be present in order for authenticate to work above
-        final var user = userService.findUser(username).orElseThrow();
+        final var user = userService.findMasterUserPersonDetails(username).orElseThrow();
 
         // Ensuring alphanumeric will ensure that we can't get SQL Injection attacks - since for oracle the password
         // cannot be used in a prepared statement
@@ -182,7 +182,7 @@ public class AbstractPasswordController {
 
     private void addIsAdminToModel(@SuppressWarnings("OptionalUsedAsFieldOrParameterType") final Optional<UserToken> userToken,
                                    final ModelAndView modelAndView) {
-        final boolean isAdmin = userToken.flatMap(ut -> userService.findUser(ut.getUser().getUsername())).
+        final boolean isAdmin = userToken.flatMap(ut -> userService.findMasterUserPersonDetails(ut.getUser().getUsername())).
                 map(UserPersonDetails::isAdmin).
                 orElse(Boolean.FALSE);
         modelAndView.addObject("isAdmin", isAdmin);

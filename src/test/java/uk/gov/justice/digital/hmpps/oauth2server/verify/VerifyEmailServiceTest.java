@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -38,7 +38,7 @@ public class VerifyEmailServiceTest {
     @Mock
     private UserTokenRepository userTokenRepository;
     @Mock
-    private UserService userService;
+    private NomisUserService nomisUserService;
     @Mock
     private JdbcTemplate jdbcTemplate;
     @Mock
@@ -54,7 +54,7 @@ public class VerifyEmailServiceTest {
 
     @Before
     public void setUp() {
-        verifyEmailService = new VerifyEmailService(userRepository, userTokenRepository, userService, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId");
+        verifyEmailService = new VerifyEmailService(userRepository, userTokenRepository, nomisUserService, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId");
     }
 
     @Test
@@ -106,7 +106,7 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void requestVerification_firstNamePresent() throws NotificationClientException, VerifyEmailException {
-        when(userService.findUser(anyString())).thenReturn(Optional.of(getStaffUserAccountForBob()));
+        when(nomisUserService.getNomisUserByUsername(anyString())).thenReturn(Optional.of(getStaffUserAccountForBob()));
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         final var verification = verifyEmailService.requestVerification("user", "eMail@john.COM", "url");
         verify(notificationClient).sendEmail(eq("templateId"), eq("email@john.com"), mapCaptor.capture(), eq(null));
@@ -156,7 +156,7 @@ public class VerifyEmailServiceTest {
     @Test
     public void requestVerification_formatEmailInput() throws NotificationClientException, VerifyEmailException {
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
-        final var verification = verifyEmailService.requestVerification("user", "some.u’ser@SOMEwhere.COM", "url");
+        verifyEmailService.requestVerification("user", "some.u’ser@SOMEwhere.COM", "url");
         verify(notificationClient).sendEmail(eq("templateId"), eq("some.u'ser@somewhere.com"), anyMap(), eq(null));
     }
 

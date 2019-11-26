@@ -208,7 +208,7 @@ public class ChangePasswordControllerTest {
     private StaffUserAccount setupGetUserCallForProfile() {
         final var user = new StaffUserAccount();
         user.setAccountDetail(new AccountDetail());
-        when(userService.findUser(anyString())).thenReturn(Optional.of(user));
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user));
         return user;
     }
 

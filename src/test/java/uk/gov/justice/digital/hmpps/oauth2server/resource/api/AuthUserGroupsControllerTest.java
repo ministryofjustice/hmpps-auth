@@ -11,9 +11,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupExistsException;
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
 import java.security.Principal;
 import java.util.List;
@@ -29,7 +29,7 @@ public class AuthUserGroupsControllerTest {
     private final Principal principal = new UsernamePasswordAuthenticationToken("bob", "pass");
 
     @Mock
-    private UserService userService;
+    private AuthUserService authUserService;
     @Mock
     private AuthUserGroupService authUserGroupService;
 
@@ -37,7 +37,7 @@ public class AuthUserGroupsControllerTest {
 
     @Before
     public void setUp() {
-        authUserGroupsController = new AuthUserGroupsController(userService, authUserGroupService);
+        authUserGroupsController = new AuthUserGroupsController(authUserService, authUserGroupService);
     }
 
     @Test
@@ -67,7 +67,7 @@ public class AuthUserGroupsControllerTest {
 
     @Test
     public void addGroup_success() throws AuthUserGroupException {
-        when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
+        when(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserGroupsController.addGroup("someuser", "group", principal);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
         verify(authUserGroupService).addGroup("USER", "group", "bob");
@@ -75,7 +75,7 @@ public class AuthUserGroupsControllerTest {
 
     @Test
     public void addGroup_conflict() throws AuthUserGroupException {
-        when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
+        when(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         doThrow(new AuthUserGroupExistsException()).when(authUserGroupService).addGroup(anyString(), anyString(), anyString());
 
         final var responseEntity = authUserGroupsController.addGroup("someuser", "joe", principal);
@@ -84,7 +84,7 @@ public class AuthUserGroupsControllerTest {
 
     @Test
     public void addGroup_validation() throws AuthUserGroupException {
-        when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
+        when(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
 
         doThrow(new AuthUserGroupException("group", "error")).when(authUserGroupService).addGroup(anyString(), anyString(), anyString());
         final var responseEntity = authUserGroupsController.addGroup("someuser", "harry", principal);
@@ -101,7 +101,7 @@ public class AuthUserGroupsControllerTest {
 
     @Test
     public void removeGroup_success() throws AuthUserGroupException {
-        when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
+        when(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         final var responseEntity = authUserGroupsController.removeGroup("someuser", "joe", principal);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(204);
         verify(authUserGroupService).removeGroup("USER", "joe", "bob");
@@ -109,7 +109,7 @@ public class AuthUserGroupsControllerTest {
 
     @Test
     public void removeGroup_groupMissing() throws AuthUserGroupException {
-        when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
+        when(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(getAuthUser()));
         doThrow(new AuthUserGroupException("group", "error")).when(authUserGroupService).removeGroup(anyString(), anyString(), anyString());
 
         final var responseEntity = authUserGroupsController.removeGroup("someuser", "harry", principal);

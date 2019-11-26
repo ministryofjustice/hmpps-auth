@@ -34,7 +34,7 @@ public class UserController {
             @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
             @ApiResponse(code = 401, message = "Unauthorized", response = ErrorDetail.class)})
     public UserDetail me(@ApiIgnore final Principal principal) {
-        final var user = userService.findUser(principal.getName());
+        final var user = userService.findMasterUserPersonDetails(principal.getName());
 
         return user.map(UserDetail::fromPerson).orElse(UserDetail.fromUsername(principal.getName()));
     }
@@ -59,7 +59,7 @@ public class UserController {
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> user(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
-        final var user = userService.findUser(username);
+        final var user = userService.findMasterUserPersonDetails(username);
 
         return user.map(UserDetail::fromPerson).map(Object.class::cast).map(ResponseEntity::ok).
                 orElse(notFoundResponse(username));
@@ -73,7 +73,7 @@ public class UserController {
             @ApiResponse(code = 204, message = "No content.  No verified email address found for user"),
             @ApiResponse(code = 404, message = "User not found.  The user doesn't exist in auth so could have never logged in", response = ErrorDetail.class)})
     public ResponseEntity<Object> getUserEmail(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
-        final var user = userService.findAuthUser(username);
+        final var user = userService.findUser(username);
 
         if (user.isEmpty()) {
             return notFoundResponse(username);

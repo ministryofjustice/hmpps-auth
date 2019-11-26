@@ -62,7 +62,7 @@ public class AuthUserController {
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> user(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
-        final var user = userService.getAuthUserByUsername(username);
+        final var user = authUserService.getAuthUserByUsername(username);
 
         return user.map(AuthUser::fromUser).map(Object.class::cast).map(ResponseEntity::ok).
                 orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(username)));
@@ -76,7 +76,7 @@ public class AuthUserController {
             @ApiResponse(code = 204, message = "No users found."),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class)})
     public ResponseEntity<Object> searchForUser(@ApiParam(value = "The email address of the user.", required = true) @RequestParam final String email) {
-        final var users = userService.findAuthUsersByEmail(email).stream().map(AuthUser::fromUser).collect(Collectors.toList());
+        final var users = authUserService.findAuthUsersByEmail(email).stream().map(AuthUser::fromUser).collect(Collectors.toList());
 
         return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
     }
@@ -132,7 +132,7 @@ public class AuthUserController {
             @ApiIgnore final HttpServletRequest request,
             @ApiIgnore final Authentication authentication) throws NotificationClientException {
 
-        final var user = StringUtils.isNotBlank(username) ? userService.findUser(StringUtils.trim(username)) : Optional.empty();
+        final var user = StringUtils.isNotBlank(username) ? userService.findMasterUserPersonDetails(StringUtils.trim(username)) : Optional.empty();
 
         // check that we're not asked to create a user that is already in nomis or auth
         if (user.isPresent()) {
@@ -178,11 +178,11 @@ public class AuthUserController {
     public ResponseEntity<Object> enableUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
                                              @ApiIgnore final Authentication authentication) {
 
-        final var userOptional = userService.getAuthUserByUsername(username);
+        final var userOptional = authUserService.getAuthUserByUsername(username);
         return userOptional.map(u -> {
             final var usernameInDb = u.getUsername();
             try {
-                userService.enableUser(usernameInDb, authentication.getName(), authentication.getAuthorities());
+                authUserService.enableUser(usernameInDb, authentication.getName(), authentication.getAuthorities());
                 return ResponseEntity.noContent().build();
             } catch (final AuthUserGroupRelationshipException e) {
                 log.info("enable user failed  with reason {}", e.getErrorCode());
@@ -205,12 +205,12 @@ public class AuthUserController {
             @ApiResponse(code = 404, message = "User not found.", response = ErrorDetail.class)})
     public ResponseEntity<Object> disableUser(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
                                               @ApiIgnore final Authentication authentication) {
-        final var userOptional = userService.getAuthUserByUsername(username);
+        final var userOptional = authUserService.getAuthUserByUsername(username);
         return userOptional.map(u -> {
             final var usernameInDb = u.getUsername();
 
             try {
-                userService.disableUser(usernameInDb, authentication.getName(), authentication.getAuthorities());
+                authUserService.disableUser(usernameInDb, authentication.getName(), authentication.getAuthorities());
                 return ResponseEntity.noContent().build();
             } catch (final AuthUserGroupRelationshipException e) {
                 log.info("Disable user failed  with reason {}", e.getErrorCode());

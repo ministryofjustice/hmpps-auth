@@ -24,10 +24,7 @@ import uk.gov.service.notify.NotificationClientException;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +38,7 @@ public class AuthUserService {
     private final AuthUserGroupService authUserGroupService;
     private final MaintainUserCheck maintainUserCheck;
     private final String initialPasswordTemplateId;
+    private final int loginDaysTrigger;
 
     // Data item field size validation checks
     private static final int MAX_LENGTH_USERNAME = 30;
@@ -56,7 +54,8 @@ public class AuthUserService {
                            final VerifyEmailService verifyEmailService,
                            final AuthUserGroupService authUserGroupService,
                            final MaintainUserCheck maintainUserCheck,
-                           @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId) {
+                           @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId,
+                           @Value("${application.authentication.disable.login-days}") final int loginDaysTrigger) {
         this.userRepository = userRepository;
         this.notificationClient = notificationClient;
         this.telemetryClient = telemetryClient;
@@ -64,6 +63,7 @@ public class AuthUserService {
         this.authUserGroupService = authUserGroupService;
         this.maintainUserCheck = maintainUserCheck;
         this.initialPasswordTemplateId = initialPasswordTemplateId;
+        this.loginDaysTrigger = loginDaysTrigger;
     }
 
     @Transactional(transactionManager = "authTransactionManager")
@@ -171,6 +171,41 @@ public class AuthUserService {
         verifyEmailService.validateEmailAddress(email);
         user.setEmail(email);
         return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend");
+    }
+
+    public List<User> findAuthUsersByEmail(final String email) {
+        return userRepository.findByEmailAndMasterIsTrueOrderByUsername(EmailHelper.format(email));
+    }
+
+    public Optional<User> getAuthUserByUsername(final String username) {
+        return userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)));
+    }
+
+    @Transactional(transactionManager = "authTransactionManager")
+    public void enableUser(final String usernameInDb, final String admin, final Collection<? extends GrantedAuthority> authorities) throws AuthUserGroupRelationshipException {
+        changeUserEnabled(usernameInDb, true, admin, authorities);
+    }
+
+    @Transactional(transactionManager = "authTransactionManager")
+    public void disableUser(final String usernameInDb, final String admin, final Collection<? extends GrantedAuthority> authorities) throws AuthUserGroupRelationshipException {
+        changeUserEnabled(usernameInDb, false, admin, authorities);
+    }
+
+    private void changeUserEnabled(final String username, final boolean enabled, final String admin, final Collection<? extends GrantedAuthority> authorities) throws AuthUserGroupRelationshipException {
+        final var user = userRepository.findByUsernameAndMasterIsTrue(username)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
+
+        maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user);
+
+        user.setEnabled(enabled);
+
+        // give user 7 days grace if last logged in more than x days ago
+        if (user.getLastLoggedIn().isBefore(LocalDateTime.now().minusDays(loginDaysTrigger))) {
+            user.setLastLoggedIn(LocalDateTime.now().minusDays(loginDaysTrigger - 7));
+        }
+        userRepository.save(user);
+        telemetryClient.trackEvent("AuthUserChangeEnabled",
+                Map.of("username", user.getUsername(), "enabled", Boolean.toString(enabled), "admin", admin), null);
     }
 
     private void validate(final String username, final String email, final String firstName, final String lastName)
