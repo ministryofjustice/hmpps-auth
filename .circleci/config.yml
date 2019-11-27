@@ -56,7 +56,7 @@ jobs:
         background: true
     - run:
         name: Wait for java app to start
-        command: sleep 15
+        command: sleep 20
     - restore_cache:
         key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
     - restore_cache:
