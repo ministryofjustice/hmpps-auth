@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -8,58 +9,59 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.oauth2.provider.endpoint.DefaultRedirectResolver;
 import org.springframework.security.oauth2.provider.endpoint.RedirectResolver;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.JwtCookieAuthenticationFilter;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsServiceImpl;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler;
+import uk.gov.justice.digital.hmpps.oauth2server.security.*;
 
 @Configuration
 @Order(4)
 public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final UserDetailsService userDetailsService;
     private final LoggingAccessDeniedHandler accessDeniedHandler;
     private final RedirectingLogoutSuccessHandler logoutSuccessHandler;
     private final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
     private final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter;
     private final String jwtCookieName;
     private final CookieRequestCache cookieRequestCache;
-    private final DaoAuthenticationProvider daoAuthenticationProvider;
+    private final AuthAuthenticationProvider authAuthenticationProvider;
+    private final NomisAuthenticationProvider nomisAuthenticationProvider;
     private final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler;
+    private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> nomisUserDetailsService;
+    private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authUserDetailsService;
 
     @Autowired
-    public AuthenticationManagerConfiguration(final UserDetailsService userDetailsService,
+    public AuthenticationManagerConfiguration(@Qualifier("nomisUserDetailsService") final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> nomisUserDetailsService,
+                                              @Qualifier("authUserDetailsService") final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authUserDetailsService,
                                               final LoggingAccessDeniedHandler accessDeniedHandler,
                                               final RedirectingLogoutSuccessHandler logoutSuccessHandler,
                                               final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
                                               final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter,
                                               @Value("${jwt.cookie.name}") final String jwtCookieName,
                                               final CookieRequestCache cookieRequestCache,
-                                              final DaoAuthenticationProvider daoAuthenticationProvider,
-                                              final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler) {
-        this.userDetailsService = userDetailsService;
+                                              final AuthAuthenticationProvider authAuthenticationProvider, final NomisAuthenticationProvider nomisAuthenticationProvider, final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler) {
+        this.nomisUserDetailsService = nomisUserDetailsService;
+        this.authUserDetailsService = authUserDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
         this.jwtCookieAuthenticationFilter = jwtCookieAuthenticationFilter;
         this.jwtCookieName = jwtCookieName;
         this.cookieRequestCache = cookieRequestCache;
-        this.daoAuthenticationProvider = daoAuthenticationProvider;
+        this.authAuthenticationProvider = authAuthenticationProvider;
+        this.nomisAuthenticationProvider = nomisAuthenticationProvider;
         this.userStateAuthenticationFailureHandler = userStateAuthenticationFailureHandler;
     }
 
@@ -129,14 +131,15 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     @Override
     protected void configure(final AuthenticationManagerBuilder auth) {
-        auth.authenticationProvider(daoAuthenticationProvider);
-        auth.authenticationProvider(preAuthProvider());
+        auth.authenticationProvider(authAuthenticationProvider);
+        auth.authenticationProvider(nomisAuthenticationProvider);
+        auth.authenticationProvider(preAuthProvider(authUserDetailsService));
+        auth.authenticationProvider(preAuthProvider(nomisUserDetailsService));
     }
 
-    @Bean
-    public PreAuthenticatedAuthenticationProvider preAuthProvider() {
+    private PreAuthenticatedAuthenticationProvider preAuthProvider(final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> userDetailsService) {
         final var preAuth = new PreAuthenticatedAuthenticationProvider();
-        preAuth.setPreAuthenticatedUserDetailsService((UserDetailsServiceImpl) userDetailsService);
+        preAuth.setPreAuthenticatedUserDetailsService(userDetailsService);
         return preAuth;
     }
 

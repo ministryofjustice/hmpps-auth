@@ -7,13 +7,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.*;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,24 +23,23 @@ import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatu
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class UserDetailsServiceImplTest {
-
-    private UserDetailsServiceImpl service;
+public class NomisUserDetailsServiceTest {
+    private static final Caseload NWEB_CASELOAD = Caseload.builder().id("NWEB").type("APP").build();
+    private static final Caseload MDI_CASELOAD = Caseload.builder().id("MDI").type("INST").build();
+    private static final long ROLE_ID = 1L;
 
     @Mock
-    private UserService userService;
+    private NomisUserService userService;
     @Mock
     private EntityManager nomisEntityManager;
     @Mock
     private EntityManager authEntityManager;
 
-    private static final Caseload NWEB_CASELOAD = Caseload.builder().id("NWEB").type("APP").build();
-    private static final Caseload MDI_CASELOAD = Caseload.builder().id("MDI").type("INST").build();
-    private static final long ROLE_ID = 1L;
+    private NomisUserDetailsService service;
 
     @Before
     public void setup() {
-        service = new UserDetailsServiceImpl(userService);
+        service = new NomisUserDetailsService(userService);
         ReflectionTestUtils.setField(service, "nomisEntityManager", nomisEntityManager);
         ReflectionTestUtils.setField(service, "authEntityManager", authEntityManager);
     }
@@ -52,7 +48,7 @@ public class UserDetailsServiceImplTest {
     public void testHappyUserPath() {
 
         final var user = buildStandardUser("ITAG_USER");
-        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -69,7 +65,7 @@ public class UserDetailsServiceImplTest {
     public void testEntityDetached() {
 
         final var user = buildStandardUser("ITAG_USER");
-        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -79,23 +75,10 @@ public class UserDetailsServiceImplTest {
     }
 
     @Test
-    public void testAuthEntityDetached() {
-
-        final var user = buildAuthUser();
-        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
-
-        final var itagUser = service.loadUserByUsername(user.getUsername());
-
-        verify(authEntityManager).detach(user);
-
-        assertThat(((UserPersonDetails) itagUser).getName()).isEqualTo("first last");
-    }
-
-    @Test
     public void testLockedUser() {
 
         final var user = buildLockedUser();
-        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -110,7 +93,7 @@ public class UserDetailsServiceImplTest {
     public void testExpiredUser() {
 
         final var user = buildExpiredUser();
-        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -122,24 +105,9 @@ public class UserDetailsServiceImplTest {
     }
 
     @Test
-    public void testAuthOnlyUser() {
-
-        final var user = buildAuthUser();
-        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user));
-
-        final var itagUser = service.loadUserByUsername(user.getUsername());
-
-        assertThat(itagUser).isNotNull();
-        assertThat(itagUser.isAccountNonExpired()).isTrue();
-        assertThat(itagUser.isAccountNonLocked()).isTrue();
-        assertThat(itagUser.isCredentialsNonExpired()).isTrue();
-        assertThat(itagUser.isEnabled()).isTrue();
-    }
-
-    @Test
     public void testUserNotFound() {
 
-        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty());
+        when(userService.getNomisUserByUsername(anyString())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.loadUserByUsername("user")).isInstanceOf(UsernameNotFoundException.class);
     }
@@ -148,7 +116,7 @@ public class UserDetailsServiceImplTest {
     public void testExpiredGraceUser() {
 
         final var user = buildExpiredGraceUser();
-        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -163,7 +131,7 @@ public class UserDetailsServiceImplTest {
     public void testExpiredLockedUser() {
 
         final var user = buildExpiredLockedUser();
-        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -177,7 +145,7 @@ public class UserDetailsServiceImplTest {
     public void testLockedTimedUser() {
 
         final var user = buildLockedTimedUser();
-        when(userService.findMasterUserPersonDetails(user.getUsername())).thenReturn(Optional.of(user));
+        when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
         final var itagUser = service.loadUserByUsername(user.getUsername());
 
@@ -267,13 +235,5 @@ public class UserDetailsServiceImplTest {
                 .lastName("USER")
                 .status("ACTIVE")
                 .build();
-    }
-
-    private User buildAuthUser() {
-        final var user = User.builder().username("user").email("email").verified(true).build();
-        user.setPerson(new Person("first", "last"));
-        user.setEnabled(true);
-        user.setPasswordExpiry(LocalDateTime.now().plusDays(1));
-        return user;
     }
 }
