@@ -38,20 +38,26 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     private final CookieRequestCache cookieRequestCache;
     private final AuthAuthenticationProvider authAuthenticationProvider;
     private final NomisAuthenticationProvider nomisAuthenticationProvider;
+    private final DeliusAuthenticationProvider deliusAuthenticationProvider;
     private final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler;
     private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> nomisUserDetailsService;
     private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authUserDetailsService;
+    private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> deliusUserDetailsService;
 
     @Autowired
     public AuthenticationManagerConfiguration(@Qualifier("nomisUserDetailsService") final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> nomisUserDetailsService,
                                               @Qualifier("authUserDetailsService") final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authUserDetailsService,
+                                              @Qualifier("deliusUserDetailsService") final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> deliusUserDetailsService,
                                               final LoggingAccessDeniedHandler accessDeniedHandler,
                                               final RedirectingLogoutSuccessHandler logoutSuccessHandler,
                                               final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
                                               final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter,
                                               @Value("${jwt.cookie.name}") final String jwtCookieName,
                                               final CookieRequestCache cookieRequestCache,
-                                              final AuthAuthenticationProvider authAuthenticationProvider, final NomisAuthenticationProvider nomisAuthenticationProvider, final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler) {
+                                              final AuthAuthenticationProvider authAuthenticationProvider,
+                                              final NomisAuthenticationProvider nomisAuthenticationProvider,
+                                              final DeliusAuthenticationProvider deliusAuthenticationProvider,
+                                              final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler) {
         this.nomisUserDetailsService = nomisUserDetailsService;
         this.authUserDetailsService = authUserDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
@@ -62,9 +68,12 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         this.cookieRequestCache = cookieRequestCache;
         this.authAuthenticationProvider = authAuthenticationProvider;
         this.nomisAuthenticationProvider = nomisAuthenticationProvider;
+        this.deliusAuthenticationProvider = deliusAuthenticationProvider;
         this.userStateAuthenticationFailureHandler = userStateAuthenticationFailureHandler;
+        this.deliusUserDetailsService = deliusUserDetailsService;
     }
 
+    @SuppressWarnings("SpringElInspection")
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
 
@@ -133,8 +142,10 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     protected void configure(final AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(authAuthenticationProvider);
         auth.authenticationProvider(nomisAuthenticationProvider);
+        auth.authenticationProvider(deliusAuthenticationProvider);
         auth.authenticationProvider(preAuthProvider(authUserDetailsService));
         auth.authenticationProvider(preAuthProvider(nomisUserDetailsService));
+        auth.authenticationProvider(preAuthProvider(deliusUserDetailsService));
     }
 
     private PreAuthenticatedAuthenticationProvider preAuthProvider(final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> userDetailsService) {
@@ -156,6 +167,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         return registration;
     }
 
+    @SuppressWarnings("deprecation")
     @Bean
     public RedirectResolver redirectResolver(@Value("${application.authentication.match-subdomains}") final boolean matchSubdomains) {
         final var redirectResolver = new DefaultRedirectResolver();

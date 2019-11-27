@@ -1,49 +1,38 @@
-package uk.gov.justice.digital.hmpps.oauth2server.config;
+package uk.gov.justice.digital.hmpps.oauth2server.config
 
-import org.hibernate.validator.constraints.URL;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
-
-import java.time.Duration;
-
+import org.hibernate.validator.constraints.URL
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.boot.web.client.RootUriTemplateHandler
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.security.oauth2.client.OAuth2RestTemplate
+import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails
+import org.springframework.web.client.RestTemplate
+import java.time.Duration
 
 @Configuration
-public class RestTemplateConfiguration {
+open class RestTemplateConfiguration(private val apiDetails: ClientCredentialsResourceDetails,
+                                     @param:Value("\${delius.endpoint.url}") private val deliusEndpointUrl: @URL String,
+                                     @param:Value("\${delius.health.timeout:1s}") private val healthTimeout: Duration) {
 
-    private final String deliusEndpointUrl;
-    private final Duration healthTimeout;
+  @Bean(name = ["deliusApiRestTemplate"])
+  open fun deliusRestTemplate(): OAuth2RestTemplate {
 
-    public RestTemplateConfiguration(@Value("${delius.endpoint.url}") @URL final String deliusEndpointUrl,
-                                     @Value("${delius.health.timeout:1s") final Duration healthTimeout) {
-        this.deliusEndpointUrl = deliusEndpointUrl;
-        this.healthTimeout = healthTimeout;
-    }
+    val deliusApiRestTemplate = OAuth2RestTemplate(apiDetails)
+    RootUriTemplateHandler.addTo(deliusApiRestTemplate, "${deliusEndpointUrl}/secure")
 
-    @Bean(name = "deliusApiRestTemplate")
-    public RestTemplate deliusApiRestTemplate(final RestTemplateBuilder restTemplateBuilder) {
-        return getRestTemplate(restTemplateBuilder, deliusEndpointUrl);
-    }
+    return deliusApiRestTemplate
+  }
 
-    @Bean(name = "deliusApiHealthRestTemplate")
-    public RestTemplate deliusApiHealthRestTemplate(final RestTemplateBuilder restTemplateBuilder) {
-        return getHealthRestTemplate(restTemplateBuilder, deliusEndpointUrl);
-    }
+  @Bean(name = ["deliusApiHealthRestTemplate"])
+  open fun deliusHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate =
+      getHealthRestTemplate(restTemplateBuilder, deliusEndpointUrl)
 
-    private RestTemplate getRestTemplate(final RestTemplateBuilder restTemplateBuilder, final String uri) {
-        return restTemplateBuilder
-                .rootUri(uri)
-                .build();
-    }
-
-    private RestTemplate getHealthRestTemplate(final RestTemplateBuilder restTemplateBuilder, final String uri) {
-        return restTemplateBuilder
-                .rootUri(uri)
-                .setConnectTimeout(healthTimeout)
-                .setReadTimeout(healthTimeout)
-                .build();
-    }
-
+  private fun getHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder, uri: String?): RestTemplate =
+      restTemplateBuilder
+          .rootUri(uri)
+          .setConnectTimeout(healthTimeout)
+          .setReadTimeout(healthTimeout)
+          .build()
 }

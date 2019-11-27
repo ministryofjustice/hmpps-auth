@@ -109,6 +109,9 @@ saved-request:
     name: savedrequest
     expiry-time: 0
 
+oauth:
+  token.url: ${oauth.endpoint.url}/oauth/token
+
 delius:
   client:
     client-id: ${oauth.client.id}

@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.oauth2server.delius.model;
 
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import java.util.Collection;
 
+@Data
 public class DeliusUserPersonDetails implements UserPersonDetails {
     private String surname;
     private String firstName;
@@ -23,11 +25,6 @@ public class DeliusUserPersonDetails implements UserPersonDetails {
     }
 
     @Override
-    public String getFirstName() {
-        return firstName;
-    }
-
-    @Override
     public boolean isAdmin() {
         return false;
     }
@@ -39,7 +36,6 @@ public class DeliusUserPersonDetails implements UserPersonDetails {
 
     @Override
     public void eraseCredentials() {
-
     }
 
     @Override
@@ -50,11 +46,6 @@ public class DeliusUserPersonDetails implements UserPersonDetails {
     @Override
     public String getPassword() {
         return "password";
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
     }
 
     @Override
@@ -75,25 +66,5 @@ public class DeliusUserPersonDetails implements UserPersonDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setRoles(Collection<? extends GrantedAuthority> roles) {
-        this.roles = roles;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
     }
 }
