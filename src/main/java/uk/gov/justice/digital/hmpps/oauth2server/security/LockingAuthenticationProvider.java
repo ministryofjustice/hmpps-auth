@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,12 +13,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Slf4j
-@Component
 public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserRetriesService userRetriesService;
     private final TelemetryClient telemetryClient;
@@ -28,7 +25,7 @@ public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
     public LockingAuthenticationProvider(final UserDetailsService userDetailsService,
                                          final UserRetriesService userRetriesService,
                                          final TelemetryClient telemetryClient,
-                                         @Value("${application.authentication.lockout-count}") final int accountLockoutCount) {
+                                         final int accountLockoutCount) {
         this.userRetriesService = userRetriesService;
         this.telemetryClient = telemetryClient;
         this.accountLockoutCount = accountLockoutCount;
@@ -55,7 +52,7 @@ public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
         } catch (final AuthenticationException e) {
             final var reason = e.getClass().getSimpleName();
             final var username = authentication.getName();
-            log.info("Authenticate failed for user {} with reason {}", username, reason, e);
+            log.info("Authenticate failed for user {} with reason {} and message {}", username, reason, e.getMessage());
             trackFailure(username, reason);
             throw e;
         }

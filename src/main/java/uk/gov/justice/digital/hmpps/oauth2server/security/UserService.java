@@ -30,13 +30,13 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    StaffUserAccount getUserByExternalIdentifier(final String idType, final String id, final boolean activeOnly) {
+    StaffUserAccount getUserByExternalIdentifier(final String idType, final String id) {
         final var staffIdentifier = staffIdentifierRepository.findById_TypeAndId_IdentificationNumber(idType, id);
         Optional<StaffUserAccount> userDetail = Optional.empty();
         if (staffIdentifier != null) {
             final var staff = staffIdentifier.getStaff();
 
-            if (activeOnly && !staff.isActive()) {
+            if (!staff.isActive()) {
                 log.info("Staff member found for external identifier with idType [{}] and id [{}] but not active.", idType, id);
             } else {
                 userDetail = Optional.ofNullable(staff.getAccountByType("GENERAL"));
