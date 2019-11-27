@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -15,7 +16,7 @@ import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 
 @Service("authUserDetailsService")
-@Transactional(readOnly = true)
+@Transactional(transactionManager = "authTransactionManager", readOnly = true)
 open class AuthUserDetailsService(private val authUserService: AuthUserService) :
     UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
 
@@ -33,6 +34,7 @@ open class AuthUserDetailsService(private val authUserService: AuthUserService) 
 }
 
 @Component
+@Transactional(transactionManager = "authTransactionManager", readOnly = true, noRollbackFor = [BadCredentialsException::class])
 open class AuthAuthenticationProvider(authUserDetailsService: AuthUserDetailsService,
                                       userRetriesService: UserRetriesService,
                                       telemetryClient: TelemetryClient,

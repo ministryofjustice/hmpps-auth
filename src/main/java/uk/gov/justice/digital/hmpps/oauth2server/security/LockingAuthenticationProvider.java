@@ -52,7 +52,7 @@ public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
         } catch (final AuthenticationException e) {
             final var reason = e.getClass().getSimpleName();
             final var username = authentication.getName();
-            log.info("Authenticate failed for user {} with reason {}", username, reason, e);
+            log.info("Authenticate failed for user {} with reason {} and message {}", username, reason, e.getMessage());
             trackFailure(username, reason);
             throw e;
         }

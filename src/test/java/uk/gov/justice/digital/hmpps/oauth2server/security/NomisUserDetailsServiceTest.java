@@ -32,8 +32,6 @@ public class NomisUserDetailsServiceTest {
     private NomisUserService userService;
     @Mock
     private EntityManager nomisEntityManager;
-    @Mock
-    private EntityManager authEntityManager;
 
     private NomisUserDetailsService service;
 
@@ -41,7 +39,6 @@ public class NomisUserDetailsServiceTest {
     public void setup() {
         service = new NomisUserDetailsService(userService);
         ReflectionTestUtils.setField(service, "nomisEntityManager", nomisEntityManager);
-        ReflectionTestUtils.setField(service, "authEntityManager", authEntityManager);
     }
 
     @Test

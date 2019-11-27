@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("dev")
-public class LockingAuthenticationProviderIntTest {
+public class NomisAuthenticationProviderIntTest {
     @Autowired
-    private LockingAuthenticationProvider provider;
+    private NomisAuthenticationProvider provider;
 
     @Test
     public void authenticate_Success() {
@@ -34,13 +34,6 @@ public class LockingAuthenticationProviderIntTest {
         final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER_ADM", "password123456"));
         assertThat(auth).isNotNull();
         assertThat(auth.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_KW_MIGRATION", "ROLE_MAINTAIN_OAUTH_USERS");
-    }
-
-    @Test
-    public void authenticate_AuthUserSuccessWithAuthorities() {
-        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_ADM", "password123456"));
-        assertThat(auth).isNotNull();
-        assertThat(auth.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS");
     }
 
     @Test
@@ -80,21 +73,6 @@ public class LockingAuthenticationProviderIntTest {
     }
 
     @Test
-    public void authenticate_AuthUserLockAfterThreeFailures() {
-        assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
-        ).isInstanceOf(BadCredentialsException.class);
-
-        assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
-        ).isInstanceOf(BadCredentialsException.class);
-
-        assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_TEST", "wrong"))
-        ).isInstanceOf(LockedException.class);
-    }
-
-    @Test
     public void authenticate_ResetAfterSuccess() {
         assertThatThrownBy(() ->
                 provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "wrong"))
@@ -110,25 +88,6 @@ public class LockingAuthenticationProviderIntTest {
 
         assertThatThrownBy(() ->
                 provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER", "wrong"))
-        ).isInstanceOf(BadCredentialsException.class);
-    }
-
-    @Test
-    public void authenticate_AuthUserResetAfterSuccess() {
-        assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
-        ).isInstanceOf(BadCredentialsException.class);
-
-        assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
-        ).isInstanceOf(BadCredentialsException.class);
-
-        // success in middle should cause reset of count
-        final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "password123456"));
-        assertThat(auth).isNotNull();
-
-        assertThatThrownBy(() ->
-                provider.authenticate(new UsernamePasswordAuthenticationToken("AUTH_USER", "wrong"))
         ).isInstanceOf(BadCredentialsException.class);
     }
 

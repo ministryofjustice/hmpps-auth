@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Controller;
@@ -32,19 +32,19 @@ import static uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.Tok
 @Validated
 public class ChangePasswordController extends AbstractPasswordController {
     private final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
-    private final DaoAuthenticationProvider daoAuthenticationProvider;
+    private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
     private final TelemetryClient telemetryClient;
 
     public ChangePasswordController(final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
-                                    final DaoAuthenticationProvider daoAuthenticationProvider,
+                                    final AuthenticationManager authenticationManager,
                                     final ChangePasswordService changePasswordService,
                                     final TokenService tokenService, final UserService userService,
                                     final TelemetryClient telemetryClient,
                                     final @Value("${application.authentication.blacklist}") Set<String> passwordBlacklist) {
         super(changePasswordService, tokenService, userService, telemetryClient, "redirect:/login?error=%s", "changePassword", passwordBlacklist);
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
-        this.daoAuthenticationProvider = daoAuthenticationProvider;
+        this.authenticationManager = authenticationManager;
         this.tokenService = tokenService;
         this.telemetryClient = telemetryClient;
     }
@@ -89,6 +89,6 @@ public class ChangePasswordController extends AbstractPasswordController {
 
     private Authentication authenticate(final String username, final String password) {
         final var token = new UsernamePasswordAuthenticationToken(username.toUpperCase(), password);
-        return daoAuthenticationProvider.authenticate(token);
+        return authenticationManager.authenticate(token);
     }
 }

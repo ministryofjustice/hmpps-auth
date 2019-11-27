@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -32,6 +33,7 @@ open class NomisUserDetailsService(private val nomisUserService: NomisUserServic
 }
 
 @Component
+@Transactional(readOnly = true, noRollbackFor = [BadCredentialsException::class])
 open class NomisAuthenticationProvider(nomisUserDetailsService: NomisUserDetailsService,
                                        userRetriesService: UserRetriesService,
                                        telemetryClient: TelemetryClient,

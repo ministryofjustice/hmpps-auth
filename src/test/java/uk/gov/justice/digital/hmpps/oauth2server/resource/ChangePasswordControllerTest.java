@@ -11,8 +11,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
@@ -44,7 +44,7 @@ public class ChangePasswordControllerTest {
     @Mock
     private JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
     @Mock
-    private DaoAuthenticationProvider daoAuthenticationProvider;
+    private AuthenticationManager authenticationManager;
     @Mock
     private ChangePasswordService changePasswordService;
     @Mock
@@ -65,7 +65,7 @@ public class ChangePasswordControllerTest {
     @Before
     public void setUp() {
         controller = new ChangePasswordController(jwtAuthenticationSuccessHandler,
-                daoAuthenticationProvider, changePasswordService, tokenService, userService, telemetryClient, Set.of("password1"));
+                authenticationManager, changePasswordService, tokenService, userService, telemetryClient, Set.of("password1"));
     }
 
     @Test
@@ -132,11 +132,11 @@ public class ChangePasswordControllerTest {
         final var token = new UsernamePasswordAuthenticationToken("bob", "pass");
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile();
-        when(daoAuthenticationProvider.authenticate(any())).thenReturn(token);
+        when(authenticationManager.authenticate(any())).thenReturn(token);
         final var redirect = controller.changePassword("user", "password2", "password2", request, response);
         assertThat(redirect).isNull();
         final var authCapture = ArgumentCaptor.forClass(Authentication.class);
-        verify(daoAuthenticationProvider).authenticate(authCapture.capture());
+        verify(authenticationManager).authenticate(authCapture.capture());
         final var value = authCapture.getValue();
         assertThat(value.getPrincipal()).isEqualTo("USER");
         assertThat(value.getCredentials()).isEqualTo("password2");
@@ -149,7 +149,7 @@ public class ChangePasswordControllerTest {
         final var token = new UsernamePasswordAuthenticationToken("bob", "pass");
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile();
-        when(daoAuthenticationProvider.authenticate(any())).thenReturn(token);
+        when(authenticationManager.authenticate(any())).thenReturn(token);
         controller.changePassword("user", "password2", "password2", request, response);
 
         verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), mapCaptor.capture(), isNull());
@@ -161,7 +161,7 @@ public class ChangePasswordControllerTest {
         final var token = new UsernamePasswordAuthenticationToken("bob", "pass");
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile();
-        when(daoAuthenticationProvider.authenticate(any())).thenReturn(token);
+        when(authenticationManager.authenticate(any())).thenReturn(token);
         controller.changePassword("user", "password2", "password2", request, response);
 
         verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateSuccess"), mapCaptor.capture(), isNull());
@@ -172,11 +172,11 @@ public class ChangePasswordControllerTest {
     public void changePassword_SuccessAccountExpired() throws Exception {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile();
-        when(daoAuthenticationProvider.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
+        when(authenticationManager.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
         final var redirect = controller.changePassword("user", "password2", "password2", request, response);
         assertThat(redirect.getViewName()).isEqualTo("redirect:/login?error=changepassword");
         final var authCapture = ArgumentCaptor.forClass(Authentication.class);
-        verify(daoAuthenticationProvider).authenticate(authCapture.capture());
+        verify(authenticationManager).authenticate(authCapture.capture());
         final var value = authCapture.getValue();
         assertThat(value.getPrincipal()).isEqualTo("USER");
         assertThat(value.getCredentials()).isEqualTo("password2");
@@ -187,7 +187,7 @@ public class ChangePasswordControllerTest {
     public void changePassword_SuccessAccountExpired_TelemetryFailure() throws Exception {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile();
-        when(daoAuthenticationProvider.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
+        when(authenticationManager.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
         controller.changePassword("user", "password2", "password2", request, response);
 
         verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateFailure"), mapCaptor.capture(), isNull());
@@ -198,7 +198,7 @@ public class ChangePasswordControllerTest {
     public void changePassword_SuccessAccountExpired_TelemetrySuccess() throws Exception {
         setupCheckAndGetTokenValid();
         setupGetUserCallForProfile();
-        when(daoAuthenticationProvider.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
+        when(authenticationManager.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
         controller.changePassword("user", "password2", "password2", request, response);
 
         verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), mapCaptor.capture(), isNull());
