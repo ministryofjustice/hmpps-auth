@@ -4,6 +4,7 @@ defaults: &defaults
     JAVA_TOOL_OPTIONS: -Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
 
 version: 2.1
+
 orbs:
   owasp: entur/owasp@0.0.6
 
@@ -137,11 +138,12 @@ workflows:
   scheduled:
     triggers:
       - schedule:
-          cron: "15 9 * * 1-5"
-#          filters:
-#            branches:
-#              only:
-#                - master
+          cron: "35 9 * * 1-5"
+          filters:
+            branches:
+              only:
+                - master
+                - pgp-DT-390-owasp
     jobs:
       - owasp/gradle_owasp_dependency_check:
           executor: deployer
