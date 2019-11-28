@@ -110,6 +110,7 @@ saved-request:
     expiry-time: 0
 
 oauth:
+  endpoint.url: http://localhost:8080/auth
   token.url: ${oauth.endpoint.url}/oauth/token
 
 delius:
