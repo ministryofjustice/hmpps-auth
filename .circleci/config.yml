@@ -146,4 +146,4 @@ workflows:
                 - pgp-DT-390-owasp
     jobs:
       - owasp/gradle_owasp_dependency_check:
-          executor: deployer
+          executor: builder
