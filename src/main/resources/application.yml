@@ -42,6 +42,8 @@ auth:
     properties:
       hibernate:
         show_sql: true
+  endpoint.url: http://localhost:8080/auth
+  token.url: ${auth.endpoint.url}/oauth/token
 
 logging.level.uk.gov: INFO
 
@@ -109,15 +111,9 @@ saved-request:
     name: savedrequest
     expiry-time: 0
 
-oauth:
-  endpoint.url: http://localhost:8080/auth
-  token.url: ${oauth.endpoint.url}/oauth/token
-
 delius:
   client:
-    client-id: ${oauth.client.id}
-    client-secret: ${oauth.client.secret}
-    access-token-uri: ${oauth.token.url}
+    access-token-uri: ${auth.token.url}
     authentication-scheme: header
     client-authentication-scheme: header
 
