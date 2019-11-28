@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
+@SuppressWarnings("deprecation")
 @Configuration
 @Order(1)
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
@@ -40,7 +41,7 @@ public class ResourceConfiguration extends ResourceServerConfigurerAdapter {
 
     @Bean
     @ConfigurationProperties("delius.client")
-    public ClientCredentialsResourceDetails caseNotesClientCredentials(){
+    public ClientCredentialsResourceDetails deliusClientCredentials() {
         return new ClientCredentialsResourceDetails();
     }
 }

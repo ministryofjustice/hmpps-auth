@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.delius.model;
 
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import java.util.Collection;
 
+@Builder
 @Data
 public class DeliusUserPersonDetails implements UserPersonDetails {
     private String surname;

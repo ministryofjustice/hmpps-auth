@@ -7,7 +7,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Collections;
@@ -19,7 +18,7 @@ public class LockingAuthenticationProviderTest {
     @Mock
     private UserRetriesService userRetriesService;
     @Mock
-    private UserDetailsService userDetailsService;
+    private AuthUserDetailsService userDetailsService;
     @Mock
     private TelemetryClient telemetryClient;
 
@@ -27,7 +26,7 @@ public class LockingAuthenticationProviderTest {
 
     @Before
     public void setUp() {
-        lockingAuthenticationProvider = new LockingAuthenticationProvider(userDetailsService, userRetriesService, telemetryClient, 3);
+        lockingAuthenticationProvider = new AuthAuthenticationProvider(userDetailsService, userRetriesService, telemetryClient, 3);
     }
 
     @Test

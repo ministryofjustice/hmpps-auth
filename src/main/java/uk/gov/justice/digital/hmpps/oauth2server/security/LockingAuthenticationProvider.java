@@ -17,7 +17,7 @@ import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import java.util.Map;
 
 @Slf4j
-public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
+public abstract class LockingAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserRetriesService userRetriesService;
     private final TelemetryClient telemetryClient;
     private final int accountLockoutCount;

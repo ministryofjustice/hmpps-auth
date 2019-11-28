@@ -66,13 +66,13 @@ public class DeliusUserService {
     }
 
     private DeliusUserPersonDetails mapUserDetailsToDeliusUser(final UserDetails userDetails, final String username) {
-        final var deliusUserPersonDetails = new DeliusUserPersonDetails();
-        deliusUserPersonDetails.setFirstName(userDetails.getFirstName());
-        deliusUserPersonDetails.setSurname(userDetails.getSurname());
-        deliusUserPersonDetails.setRoles(mapUserRolesToAuthorities(userDetails.getRoles()));
-        deliusUserPersonDetails.setUsername(username);
-        deliusUserPersonDetails.setLocked(userDetails.isLocked());
-        return deliusUserPersonDetails;
+        return DeliusUserPersonDetails.builder()
+                .firstName(userDetails.getFirstName())
+                .surname(userDetails.getSurname())
+                // TODO: Sort out removal of roles in community api
+                .roles(mapUserRolesToAuthorities(Collections.emptyList()))
+                .username(username)
+                .locked(userDetails.isLocked()).build();
     }
 
     public Collection<? extends GrantedAuthority> mapUserRolesToAuthorities(final List<UserRole> userRoles) {

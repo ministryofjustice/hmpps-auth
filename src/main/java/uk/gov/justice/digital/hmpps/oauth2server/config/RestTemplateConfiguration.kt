@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.client.token.grant.client.ClientCrede
 import org.springframework.web.client.RestTemplate
 import java.time.Duration
 
+@Suppress("DEPRECATION")
 @Configuration
 open class RestTemplateConfiguration(private val apiDetails: ClientCredentialsResourceDetails,
                                      @param:Value("\${delius.endpoint.url}") private val deliusEndpointUrl: @URL String,
@@ -29,7 +30,7 @@ open class RestTemplateConfiguration(private val apiDetails: ClientCredentialsRe
   open fun deliusHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate =
       getHealthRestTemplate(restTemplateBuilder, deliusEndpointUrl)
 
-  private fun getHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder, uri: String?): RestTemplate =
+  private fun getHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder, uri: String): RestTemplate =
       restTemplateBuilder
           .rootUri(uri)
           .setConnectTimeout(healthTimeout)
