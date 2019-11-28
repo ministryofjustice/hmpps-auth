@@ -5,6 +5,9 @@ defaults: &defaults
 
 version: 2.1
 
+orbs:
+  owasp: entur/owasp@0.0.6
+
 executors:
   builder:
     <<: *defaults
@@ -29,11 +32,11 @@ jobs:
       - save_cache:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
-          - /home/circleci/.gradle/wrapper
+            - /home/circleci/.gradle/wrapper
       - save_cache:
           key: gradle-cache-{{ checksum "build.gradle" }}
           paths:
-          - /home/circleci/.gradle/caches
+            - /home/circleci/.gradle/caches
       - store_test_results:
           path: build/test-results/test
       - store_artifacts:
@@ -47,36 +50,36 @@ jobs:
   integration_tests:
     executor: builder
     steps:
-    - checkout
-    - attach_workspace:
-        at: ~/app
-    - run:
-        name: Run the java app.
-        command: env spring.profiles.active=dev java -Xmx512m -jar build/libs/oauth2server-*.jar
-        background: true
-    - run:
-        name: Wait for java app to start
-        command: sleep 20
-    - restore_cache:
-        key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-    - restore_cache:
-        key: gradle-cache-{{ checksum "build.gradle" }}
-    - run:
-        name: Run Integration Tests
-        command: ./gradlew testIntegration
-    - save_cache:
-        key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-        paths:
-        - /home/circleci/.gradle/wrapper
-    - save_cache:
-        key: gradle-cache-{{ checksum "build.gradle" }}
-        paths:
-        - /home/circleci/.gradle/caches
-    - store_artifacts:
-        path: build/reports/tests/testIntegration
-        destination: integration/spock
-    - store_test_results:
-        path: build/test-results/testIntegration
+      - checkout
+      - attach_workspace:
+          at: ~/app
+      - run:
+          name: Run the java app.
+          command: env spring.profiles.active=dev java -Xmx512m -jar build/libs/oauth2server-*.jar
+          background: true
+      - run:
+          name: Wait for java app to start
+          command: sleep 20
+      - restore_cache:
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: gradle-cache-{{ checksum "build.gradle" }}
+      - run:
+          name: Run Integration Tests
+          command: ./gradlew testIntegration
+      - save_cache:
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - /home/circleci/.gradle/wrapper
+      - save_cache:
+          key: gradle-cache-{{ checksum "build.gradle" }}
+          paths:
+            - /home/circleci/.gradle/caches
+      - store_artifacts:
+          path: build/reports/tests/testIntegration
+          destination: integration/spock
+      - store_test_results:
+          path: build/test-results/testIntegration
 
   build_docker:
     executor: deployer
@@ -124,7 +127,7 @@ workflows:
               ignore: /.*/
       - integration_tests:
           requires:
-          - build
+            - build
       - build_docker:
           requires:
             - integration_tests
@@ -132,3 +135,14 @@ workflows:
             branches:
               only:
                 - master
+  scheduled:
+    triggers:
+      - schedule:
+          cron: "0 7 * * 1-5"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - owasp/gradle_owasp_dependency_check:
+          executor: builder
