@@ -37,6 +37,14 @@ ext {
     }
 }
 
+dependencyCheck {
+  failBuildOnCVSS = 5
+  suppressionFiles = ['dependency-check-suppress-spring.xml']
+  analyzers {
+    assemblyEnabled = false
+  }
+}
+
 group = 'uk.gov.justice.digital.hmpps'
 
 def today = Instant.now()
@@ -73,6 +81,7 @@ dependencies {
 
   implementation files('lib/ojdbc10-19.3.jar')
   implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+  implementation 'org.jetbrains.kotlin:kotlin-reflect'
 
   implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.springframework.security:spring-security-jwt:1.1.0.RELEASE'
@@ -109,6 +118,7 @@ dependencies {
   implementation 'org.apache.commons:commons-text:1.8'
   implementation 'com.microsoft.sqlserver:mssql-jdbc:7.4.1.jre11'
   implementation 'com.github.timpeeters:spring-boot-graceful-shutdown:2.1.1'
+  implementation 'com.google.guava:guava:28.1-jre'
 
   implementation configurations.agentDeps
 
@@ -140,6 +150,9 @@ dependencies {
   testImplementation 'com.github.tomjankes:wiremock-groovy:0.2.0'
   testImplementation 'org.slf4j:slf4j-api:1.7.25'
   testImplementation 'com.auth0:java-jwt:3.8.3'
+
+  testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.11.1'
+  testImplementation 'com.nhaarman:mockito-kotlin-kt1.1:1.6.0'
 }
 
 task copyAgent(type: Copy) {
