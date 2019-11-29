@@ -17,7 +17,7 @@ import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import java.util.Map;
 
 @Slf4j
-public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
+public abstract class LockingAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserRetriesService userRetriesService;
     private final TelemetryClient telemetryClient;
     private final int accountLockoutCount;
@@ -71,7 +71,7 @@ public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
 
     private void checkPasswordWithAccountLock(final UserDetails userDetails, final String password) {
         final var username = userDetails.getUsername();
-        if (getPasswordEncoder().matches(password, userDetails.getPassword())) {
+        if (checkPassword(userDetails, password)) {
             log.info("Resetting retries for user {}", username);
             userRetriesService.resetRetriesAndRecordLogin(username);
 
@@ -92,6 +92,10 @@ public class LockingAuthenticationProvider extends DaoAuthenticationProvider {
             trackFailure(username, "credentials", "incorrect");
             throw new BadCredentialsException("Authentication failed: password does not match stored value");
         }
+    }
+
+    protected boolean checkPassword(final UserDetails userDetails, final String password) {
+        return getPasswordEncoder().matches(password, userDetails.getPassword());
     }
 
     private void trackFailure(final String username, final String type) {

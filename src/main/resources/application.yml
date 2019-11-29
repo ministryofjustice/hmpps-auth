@@ -42,6 +42,8 @@ auth:
     properties:
       hibernate:
         show_sql: true
+  endpoint.url: http://localhost:8080/auth
+  token.url: ${auth.endpoint.url}/oauth/token
 
 logging.level.uk.gov: INFO
 
@@ -108,6 +110,12 @@ saved-request:
   cookie:
     name: savedrequest
     expiry-time: 0
+
+delius:
+  client:
+    access-token-uri: ${auth.token.url}
+    authentication-scheme: header
+    client-authentication-scheme: header
 
 logging.uris.exclude.regex: /auth/health|/auth/info|/auth/ping|/auth/swagger.*|/auth/webjars/.*|/auth/v2/api-docs
 

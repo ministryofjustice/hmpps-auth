@@ -4,3 +4,6 @@ jwt:
   keystore:
     password: s3cre3tK3y
     alias: elite2api
+
+delius:
+  endpoint.url: http://localhost:8099
