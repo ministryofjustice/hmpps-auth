@@ -1,55 +1,65 @@
-package uk.gov.justice.digital.hmpps.oauth2server.nomis.model;
+package uk.gov.justice.digital.hmpps.oauth2server.nomis.model
 
-import org.junit.Test;
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
+class StaffUserAccountTest {
+  @Test
+  fun `isCredentialsNonExpired status expired`() {
+    val account = createStaffUserAccount("EXPIRED")
+    assertThat(account.isCredentialsNonExpired).isFalse()
+  }
 
-import static org.assertj.core.api.Assertions.assertThat;
+  @Test
+  fun `isCredentialsNonExpired status expired Locked`() {
+    val account = createStaffUserAccount("EXPIRED(LOCKED)")
+    assertThat(account.isCredentialsNonExpired).isTrue()
+  }
 
-public class StaffUserAccountTest {
+  @Test
+  fun `isCredentialsNonExpired status expired Timed`() {
+    val account = createStaffUserAccount("EXPIRED(TIMED)")
+    assertThat(account.isCredentialsNonExpired).isTrue()
+  }
 
-    @Test
-    public void isCredentialsNonExpired_statusExpired() {
-        final var account = createStaffUserAccount("EXPIRED", null);
+  @Test
+  fun `isCredentialsNonExpired open status date expired`() {
+    val account = createStaffUserAccount("OPEN", LocalDateTime.now().minusMinutes(1))
+    assertThat(account.isCredentialsNonExpired).isTrue()
+  }
 
-        assertThat(account.isCredentialsNonExpired()).isFalse();
-    }
+  @Test
+  fun `isCredentialsNonExpired status grace expired`() {
+    val account = createStaffUserAccount("EXPIRED(GRACE)")
+    assertThat(account.isCredentialsNonExpired).isTrue()
+  }
 
-    @Test
-    public void isCredentialsNonExpired_statusExpiredLocked() {
-        final var account = createStaffUserAccount("EXPIRED(LOCKED)", null);
+  @Test
+  fun `to user copy username`() {
+    val user = createStaffUserAccount().toUser()
+    assertThat(user.username).isEqualTo("user")
+  }
 
-        assertThat(account.isCredentialsNonExpired()).isTrue();
-    }
+  @Test
+  fun `to user unverified email address`() {
+    val user = createStaffUserAccount().toUser()
+    assertThat(user.isVerified).isEqualTo(false)
+  }
 
-    @Test
-    public void isCredentialsNonExpired_statusExpiredTimed() {
-        final var account = createStaffUserAccount("EXPIRED(TIMED)", null);
+  @Test
+  fun `to user nomis source`() {
+    val user = createStaffUserAccount().toUser()
+    assertThat(user.source).isEqualTo(AuthSource.nomis)
+  }
 
-        assertThat(account.isCredentialsNonExpired()).isTrue();
-    }
-
-    @Test
-    public void isCredentialsNonExpired_openStatusDateExpired() {
-        final var account = createStaffUserAccount("OPEN", LocalDateTime.now().minusMinutes(1));
-
-        assertThat(account.isCredentialsNonExpired()).isTrue();
-    }
-
-    @Test
-    public void isCredentialsNonExpired_statusGraceExpired() {
-        final var account = createStaffUserAccount("EXPIRED(GRACE)", null);
-
-        assertThat(account.isCredentialsNonExpired()).isTrue();
-    }
-
-    private StaffUserAccount createStaffUserAccount(final String status, final LocalDateTime passwordExpiry) {
-        final var account = new StaffUserAccount();
-        final var detail = new AccountDetail();
-        account.setAccountDetail(detail);
-
-        detail.setAccountStatus(status);
-        return account;
-    }
-
+  private fun createStaffUserAccount(status: String = "STATUS", passwordExpiry: LocalDateTime? = null): StaffUserAccount {
+    val account = StaffUserAccount()
+    val detail = AccountDetail()
+    account.accountDetail = detail
+    account.username = "user"
+    detail.accountStatus = status
+    return account
+  }
 }

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
@@ -33,7 +32,7 @@ public class UserRetriesService {
 
         // and record last logged in as now too (doing for all users to prevent confusion)
         final var userOptional = userRepository.findByUsername(username);
-        final var user = userOptional.orElseGet(() -> User.fromUserPersonDetails(userPersonDetails));
+        final var user = userOptional.orElseGet(() -> userPersonDetails.toUser());
         user.setLastLoggedIn(LocalDateTime.now());
         userRepository.save(user);
     }

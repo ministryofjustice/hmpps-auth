@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
@@ -31,7 +30,7 @@ public class ChangePasswordService implements PasswordService {
         final var userOptional = userRepository.findByUsername(username);
         final var user = userOptional.orElseGet(() -> {
             final var userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow();
-            final var ue = User.fromUserPersonDetails(userPersonDetails);
+            final var ue = userPersonDetails.toUser();
             return userRepository.save(ue);
         });
         final var userToken = user.createToken(TokenType.CHANGE);

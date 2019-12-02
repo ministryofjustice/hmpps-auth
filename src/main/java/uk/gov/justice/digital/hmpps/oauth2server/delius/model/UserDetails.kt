@@ -1,14 +1,9 @@
-package uk.gov.justice.digital.hmpps.oauth2server.delius.model;
+package uk.gov.justice.digital.hmpps.oauth2server.delius.model
 
-import lombok.Data;
+data class UserDetails(val surname: String,
+                       val firstName: String,
+                       val email: String,
+                       val locked: Boolean,
+                       val roles: List<UserRole>)
 
-import java.util.List;
-
-@Data
-public class UserDetails {
-    private String surname;
-    private String firstName;
-    private String email;
-    private boolean locked;
-    private List<UserRole> roles;
-}
+data class UserRole(val name: String, val description: String)

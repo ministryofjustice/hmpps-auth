@@ -1,44 +1,29 @@
-package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
+package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
-import org.junit.Test;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 
-import static org.assertj.core.api.Assertions.assertThat;
+class UserTest {
+  @Test
+  fun `test create token overwrites previous`() {
+    val user = User.of("user")
+    user.createToken(UserToken.TokenType.RESET)
+    val changeToken = user.createToken(UserToken.TokenType.CHANGE)
+    val resetToken = user.createToken(UserToken.TokenType.RESET)
+    assertThat(user.tokens).containsOnly(changeToken, resetToken)
+    assertThat(user.tokens).extracting<String, RuntimeException> { obj: UserToken -> obj.token }.containsOnly(changeToken.token, resetToken.token)
+  }
 
-public class UserTest {
-    @Test
-    public void testCreateTokenOverwritesPrevious() {
-        final var user = User.of("user");
-        user.createToken(TokenType.RESET);
-        final var changeToken = user.createToken(TokenType.CHANGE);
-        final var resetToken = user.createToken(TokenType.RESET);
+  @Test
+  fun toUser() {
+    val user = User.of("user")
+    assertThat(user.toUser()).isSameAs(user)
+  }
 
-        assertThat(user.getTokens()).containsOnly(changeToken, resetToken);
-        assertThat(user.getTokens()).extracting(UserToken::getToken).containsOnly(changeToken.getToken(), resetToken.getToken());
-    }
-
-    @Test
-    public void fromUserPersonDetails() {
-        final var staffUserAccountForBob = getStaffUserAccountForBob();
-        final var user = User.fromUserPersonDetails(staffUserAccountForBob);
-        assertThat(user.getUsername()).isEqualTo("bob");
-        assertThat(user.getSource()).isEqualTo(AuthSource.nomis);
-    }
-
-    private UserPersonDetails getStaffUserAccountForBob() {
-        final var staffUserAccount = new StaffUserAccount();
-        final var staff = new Staff();
-        staff.setFirstName("bOb");
-        staff.setStatus("ACTIVE");
-        staffUserAccount.setStaff(staff);
-        final var detail = new AccountDetail("user", "OPEN", "profile", null);
-        staffUserAccount.setAccountDetail(detail);
-        staffUserAccount.setUsername("bob");
-        return staffUserAccount;
-    }
+  @Test
+  fun `to user auth source`() {
+    val user = User.builder().username("user").source(AuthSource.auth).build().toUser()
+    assertThat(user.source).isEqualTo(AuthSource.auth)
+  }
 }

@@ -73,7 +73,8 @@ public class DeliusUserService {
                 // TODO: Sort out removal of roles in community api
                 .roles(mapUserRolesToAuthorities(Collections.emptyList()))
                 .username(username)
-                .locked(userDetails.isLocked()).build();
+                .email(userDetails.getEmail())
+                .locked(userDetails.getLocked()).build();
     }
 
     private Collection<? extends GrantedAuthority> mapUserRolesToAuthorities(final List<UserRole> userRoles) {
