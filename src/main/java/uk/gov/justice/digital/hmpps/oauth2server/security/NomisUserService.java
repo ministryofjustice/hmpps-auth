@@ -14,10 +14,16 @@ import java.util.Optional;
 @Slf4j
 @Transactional(readOnly = true)
 @AllArgsConstructor
-public class NomisUserService {
+public abstract class NomisUserService {
     private final StaffUserAccountRepository staffUserAccountRepository;
 
     public Optional<StaffUserAccount> getNomisUserByUsername(final String username) {
         return staffUserAccountRepository.findById(StringUtils.upperCase(username));
     }
+
+    public abstract void changePassword(String username, String password);
+
+    public abstract void changePasswordWithUnlock(String username, String password);
+
+    public abstract void lockAccount(String username);
 }

@@ -93,6 +93,13 @@ public class User implements UserPersonDetails, CredentialsContainer {
         return User.builder().username(username).build();
     }
 
+    public static User fromUserPersonDetails(final UserPersonDetails userPersonDetails) {
+        return User.builder()
+                .username(userPersonDetails.getUsername())
+                .source(AuthSource.valueOf(userPersonDetails.getAuthSource()))
+                .build();
+    }
+
     @Override
     public void eraseCredentials() {
         password = null;

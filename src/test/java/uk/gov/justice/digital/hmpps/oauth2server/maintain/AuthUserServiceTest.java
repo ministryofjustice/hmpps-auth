@@ -12,13 +12,19 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
+import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
@@ -53,12 +59,14 @@ public class AuthUserServiceTest {
     private AuthUserGroupService authUserGroupService;
     @Mock
     private MaintainUserCheck maintainUserCheck;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     private AuthUserService authUserService;
 
     @Before
     public void setUp() {
-        authUserService = new AuthUserService(userRepository, notificationClient, telemetryClient, verifyEmailService, authUserGroupService, maintainUserCheck, "licences", 90);
+        authUserService = new AuthUserService(userRepository, notificationClient, telemetryClient, verifyEmailService, authUserGroupService, maintainUserCheck, passwordEncoder, "licences", 90, 10);
     }
 
     @Test
@@ -480,5 +488,94 @@ public class AuthUserServiceTest {
         final var captor = ArgumentCaptor.forClass(UserFilter.class);
         verify(userRepository).findAll(captor.capture(), eq(unpaged));
         assertThat(captor.getValue()).extracting("name", "roleCode", "groupCode").containsExactly("somename", "somerole", "somegroup");
+    }
+
+    @Test
+    public void lockUser_alreadyExists() {
+        final var user = User.builder().username("user").build();
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
+
+        authUserService.lockUser(user);
+
+        assertThat(user.isLocked()).isTrue();
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    public void lockUser_newUser() {
+        final var user = getStaffUserAccountForBob();
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+
+        authUserService.lockUser(user);
+
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+        final var savedUser = captor.getValue();
+        assertThat(savedUser.isLocked()).isTrue();
+        assertThat(savedUser.getUsername()).isEqualTo("bob");
+        assertThat(savedUser.getSource()).isEqualTo(AuthSource.nomis);
+    }
+
+    @Test
+    public void unlockUser_alreadyExists() {
+        final var user = User.builder().username("user").locked(true).build();
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
+
+        authUserService.unlockUser(user);
+
+        assertThat(user.isLocked()).isFalse();
+        assertThat(user.isVerified()).isTrue();
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    public void unlockUser_newUser() {
+        final var user = getStaffUserAccountForBob();
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+
+        authUserService.unlockUser(user);
+
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+        final var savedUser = captor.getValue();
+        assertThat(savedUser.isLocked()).isFalse();
+        assertThat(savedUser.isVerified()).isTrue();
+        assertThat(savedUser.getUsername()).isEqualTo("bob");
+        assertThat(savedUser.getSource()).isEqualTo(AuthSource.nomis);
+    }
+
+    @Test
+    public void changePassword() {
+        final var user = User.builder().username("user").build();
+        when(passwordEncoder.encode(anyString())).thenReturn("hashedpassword");
+
+        authUserService.changePassword(user, "pass");
+
+        assertThat(user.getPassword()).isEqualTo("hashedpassword");
+        assertThat(user.getPasswordExpiry()).isAfterOrEqualTo(LocalDateTime.now().plusDays(9));
+        verify(passwordEncoder).encode("pass");
+    }
+
+    @Test
+    public void changePassword_PasswordSameAsCurrent() {
+        final var user = User.builder().username("user").build();
+        user.setPassword("oldencryptedpassword");
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
+        assertThatThrownBy(() -> authUserService.changePassword(user, "pass")).isInstanceOf(ReusedPasswordException.class);
+
+        verify(passwordEncoder).matches("pass", "oldencryptedpassword");
+    }
+
+    private UserPersonDetails getStaffUserAccountForBob() {
+        final var staffUserAccount = new StaffUserAccount();
+        final var staff = new Staff();
+        staff.setFirstName("bOb");
+        staff.setStatus("ACTIVE");
+        staffUserAccount.setStaff(staff);
+        final var detail = new AccountDetail("user", "OPEN", "profile", null);
+        staffUserAccount.setAccountDetail(detail);
+        staffUserAccount.setUsername("bob");
+        return staffUserAccount;
     }
 }

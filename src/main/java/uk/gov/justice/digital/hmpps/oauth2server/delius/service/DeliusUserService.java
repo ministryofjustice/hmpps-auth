@@ -4,10 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails;
@@ -78,27 +82,23 @@ public class DeliusUserService {
                 .orElseGet(Set::of);
     }
 
-//    public void changePassword(final String username, final String password) {
-//        final var headers = new HttpHeaders();
-//        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-//
-//        final var requestEntity = new HttpEntity<>(new LinkedMultiValueMap<>(Map.of("password", List.of(password))), headers);
-//        restTemplate.postForEntity("/users/{username}/password", requestEntity, Void.class, Map.of("username", username));
-//    }
-//
-//    public void lockAccount(final String username) {
-//        final var headers = new HttpHeaders();
-//        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-//        final var requestEntity = new HttpEntity<>(new LinkedMultiValueMap<>(), headers);
-//        restTemplate.postForEntity("/users/{username}/lock", requestEntity, Void.class, Map.of("username", username));
-//    }
-//
-//    public void unlockAccount(final String username) {
-//        final var headers = new HttpHeaders();
-//        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-//        final var requestEntity = new HttpEntity<>(new LinkedMultiValueMap<>(), headers);
-//        restTemplate.postForEntity("/users/{username}/unlock", requestEntity, Void.class, Map.of("username", username));
-//    }
+    public void changePassword(final String username, final String password) {
+        final var headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        final var requestEntity = new HttpEntity<>(new LinkedMultiValueMap<>(Map.of("password", List.of(password))), headers);
+        restTemplate.postForEntity("/users/{username}/password", requestEntity, Void.class, Map.of("username", username));
+    }
+
+    public void lockAccount(final String username) {
+        restTemplate.postForEntity("/users/{username}/lock", null, Void.class, Map.of("username", username));
+    }
+
+    public void changePasswordWithUnlock(final String username, final String password) {
+        changePassword(username, password);
+
+        restTemplate.postForEntity("/users/{username}/unlock", null, Void.class, Map.of("username", username));
+    }
 
     @Getter
     @AllArgsConstructor

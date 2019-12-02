@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.LockedException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
@@ -14,9 +13,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
-import uk.gov.justice.digital.hmpps.oauth2server.security.AlterUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -28,12 +27,12 @@ import java.util.Optional;
 @Service
 @Slf4j
 @Transactional
-public class ResetPasswordServiceImpl extends PasswordServiceImpl implements ResetPasswordService {
+public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordService {
 
     private final UserRepository userRepository;
     private final UserTokenRepository userTokenRepository;
     private final UserService userService;
-    private final AlterUserService alterUserService;
+    private final DelegatingUserService delegatingUserService;
     private final NotificationClientApi notificationClient;
     private final String resetTemplateId;
     private final String resetUnavailableTemplateId;
@@ -42,19 +41,16 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
 
     public ResetPasswordServiceImpl(final UserRepository userRepository,
                                     final UserTokenRepository userTokenRepository, final UserService userService,
-                                    final AlterUserService alterUserService,
+                                    final DelegatingUserService delegatingUserService,
                                     final NotificationClientApi notificationClient,
                                     @Value("${application.notify.reset.template}") final String resetTemplateId,
                                     @Value("${application.notify.reset-unavailable.template}") final String resetUnavailableTemplateId,
                                     @Value("${application.notify.reset-unavailable-email-not-found.template}") final String resetUnavailableEmailNotFoundTemplateId,
-                                    @Value("${application.notify.reset-password.template}") final String resetPasswordConfirmedTemplateId,
-                                    final PasswordEncoder passwordEncoder,
-                                    @Value("${application.authentication.password-age}") final long passwordAge) {
-        super(passwordEncoder, passwordAge);
+                                    @Value("${application.notify.reset-password.template}") final String resetPasswordConfirmedTemplateId) {
         this.userRepository = userRepository;
         this.userTokenRepository = userTokenRepository;
         this.userService = userService;
-        this.alterUserService = alterUserService;
+        this.delegatingUserService = delegatingUserService;
         this.notificationClient = notificationClient;
         this.resetTemplateId = resetTemplateId;
         this.resetUnavailableTemplateId = resetUnavailableTemplateId;
@@ -161,20 +157,13 @@ public class ResetPasswordServiceImpl extends PasswordServiceImpl implements Res
         final var userToken = userTokenRepository.findById(token).orElseThrow();
         final var user = userToken.getUser();
 
-        if (!passwordAllowedToBeReset(user)) {
+        final var userPersonDetails = user.isMaster() ? user : userService.findMasterUserPersonDetails(user.getUsername()).orElseThrow();
+        if (!passwordAllowedToBeReset(user, userPersonDetails)) {
             // failed, so let user know
             throw new LockedException("locked");
         }
 
-        user.setVerified(true);
-        user.setLocked(false);
-
-        // if we're the master of this user record deal with the change of password here
-        if (user.isMaster()) {
-            changeAuthPassword(user, password);
-        } else {
-            alterUserService.changePasswordWithUnlock(user.getUsername(), password);
-        }
+        delegatingUserService.changePasswordWithUnlock(userPersonDetails, password);
 
         user.removeToken(userToken);
         userRepository.save(user);

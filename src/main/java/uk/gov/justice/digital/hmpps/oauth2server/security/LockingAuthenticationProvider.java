@@ -63,17 +63,17 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
         final var username = userDetails.getUsername();
         final var password = authentication.getCredentials().toString();
 
-        checkPasswordWithAccountLock(userDetails, password);
+        checkPasswordWithAccountLock((UserPersonDetails) userDetails, password);
 
         log.info("Successful login for user {}", username);
         telemetryClient.trackEvent("AuthenticateSuccess", Map.of("username", username), null);
     }
 
-    private void checkPasswordWithAccountLock(final UserDetails userDetails, final String password) {
+    private void checkPasswordWithAccountLock(final UserPersonDetails userDetails, final String password) {
         final var username = userDetails.getUsername();
         if (checkPassword(userDetails, password)) {
             log.info("Resetting retries for user {}", username);
-            userRetriesService.resetRetriesAndRecordLogin(username);
+            userRetriesService.resetRetriesAndRecordLogin(userDetails);
 
         } else {
             final var newRetryCount = userRetriesService.incrementRetries(username);
@@ -82,7 +82,7 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
             if (newRetryCount >= accountLockoutCount) {
 
                 // need to reset the retry count otherwise when the user is then unlocked they will have to get the password right first time
-                userRetriesService.lockAccount(username);
+                userRetriesService.lockAccount(userDetails);
 
                 log.info("Locking account for user {}", username);
                 trackFailure(username, "locked", "exceeded");

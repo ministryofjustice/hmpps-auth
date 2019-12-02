@@ -1,0 +1,120 @@
+package uk.gov.justice.digital.hmpps.oauth2server.service
+
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.never
+import com.nhaarman.mockito_kotlin.verify
+import org.junit.Before
+import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService
+
+class DelegatingUserServiceTest {
+  private val nomisUserService: NomisUserService = mock()
+  private val authUserService: AuthUserService = mock()
+  private val deliusUserService: DeliusUserService = mock()
+  private lateinit var service: DelegatingUserService
+
+  @Before
+  fun before() {
+    service = DelegatingUserService(nomisUserService, authUserService, deliusUserService)
+  }
+
+  @Test
+  fun `lock account auth user`() {
+    service.lockAccount(User.of("bob"))
+
+    verify(authUserService).lockUser(any())
+    verify(nomisUserService, never()).lockAccount(anyString())
+    verify(deliusUserService, never()).lockAccount(anyString())
+  }
+
+  @Test
+  fun `lock account nomis user`() {
+    val userPersonDetails = StaffUserAccount()
+    userPersonDetails.username = "bob"
+    service.lockAccount(userPersonDetails)
+
+    verify(authUserService).lockUser(any())
+    verify(nomisUserService).lockAccount("bob")
+    verify(deliusUserService, never()).lockAccount(anyString())
+  }
+
+  @Test
+  fun `lock account delius user`() {
+    service.lockAccount(DeliusUserPersonDetails.builder().username("bob").build())
+
+    verify(authUserService).lockUser(any())
+    verify(nomisUserService, never()).lockAccount(anyString())
+    verify(deliusUserService).lockAccount("bob")
+  }
+
+  @Test
+  fun `change password with unlock auth user`() {
+    val user = User.builder().username("bob").source(AuthSource.auth).build()
+    service.changePasswordWithUnlock(user, "pass")
+
+    verify(authUserService).unlockUser(any())
+    verify(authUserService).changePassword(user, "pass")
+    verify(nomisUserService, never()).changePasswordWithUnlock(anyString(), anyString())
+    verify(deliusUserService, never()).changePasswordWithUnlock(anyString(), anyString())
+  }
+
+  @Test
+  fun `change password with unlock nomis user`() {
+    val userPersonDetails = StaffUserAccount()
+    userPersonDetails.username = "bob"
+    service.changePasswordWithUnlock(userPersonDetails, "pass")
+
+    verify(authUserService).unlockUser(any())
+    verify(authUserService, never()).changePassword(any(), anyString())
+    verify(nomisUserService).changePasswordWithUnlock("bob", "pass")
+    verify(deliusUserService, never()).changePasswordWithUnlock(anyString(), anyString())
+  }
+
+  @Test
+  fun `change password with unlock delius user`() {
+    service.changePasswordWithUnlock(DeliusUserPersonDetails.builder().username("bob").build(), "pass")
+
+    verify(authUserService).unlockUser(any())
+    verify(authUserService, never()).changePassword(any(), anyString())
+    verify(nomisUserService, never()).changePasswordWithUnlock(anyString(), anyString())
+    verify(deliusUserService).changePasswordWithUnlock("bob", "pass")
+  }
+
+  @Test
+  fun `change password auth user`() {
+    val user = User.builder().username("bob").source(AuthSource.auth).build()
+    service.changePassword(user, "pass")
+
+    verify(authUserService).changePassword(user, "pass")
+    verify(nomisUserService, never()).changePassword(anyString(), anyString())
+    verify(deliusUserService, never()).changePassword(anyString(), anyString())
+  }
+
+  @Test
+  fun `change password nomis user`() {
+    val userPersonDetails = StaffUserAccount()
+    userPersonDetails.username = "bob"
+    service.changePassword(userPersonDetails, "pass")
+
+    verify(authUserService, never()).changePassword(any(), anyString())
+    verify(nomisUserService).changePassword("bob", "pass")
+    verify(deliusUserService, never()).changePassword(anyString(), anyString())
+  }
+
+  @Test
+  fun `change password delius user`() {
+    service.changePassword(DeliusUserPersonDetails.builder().username("bob").build(), "pass")
+
+    verify(authUserService, never()).changePassword(any(), anyString())
+    verify(nomisUserService, never()).changePassword(anyString(), anyString())
+    verify(deliusUserService).changePassword("bob", "pass")
+  }
+}

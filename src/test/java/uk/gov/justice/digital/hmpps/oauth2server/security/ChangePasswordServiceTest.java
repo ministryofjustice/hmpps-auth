@@ -7,7 +7,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.LockedException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
@@ -16,14 +15,15 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenReposi
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChangePasswordServiceTest {
@@ -34,9 +34,7 @@ public class ChangePasswordServiceTest {
     @Mock
     private UserService userService;
     @Mock
-    private AlterUserService alterUserService;
-    @Mock
-    private PasswordEncoder passwordEncoder;
+    private DelegatingUserService delegatingUserService;
     @Mock
     private TelemetryClient telemetryClient;
 
@@ -44,23 +42,20 @@ public class ChangePasswordServiceTest {
 
     @Before
     public void setUp() {
-        changePasswordService = new ChangePasswordService(userTokenRepository, userRepository, userService, alterUserService, passwordEncoder, telemetryClient, 10);
-    }
-
-    @Test
-    public void createToken() {
+        changePasswordService = new ChangePasswordService(userTokenRepository, userRepository, userService, delegatingUserService, telemetryClient);
     }
 
     @Test
     public void setPassword_AlterUser() {
-        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
+        final var staffUserAccountForBob = getStaffUserAccountForBob();
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccountForBob));
         final var user = User.of("user");
         user.setLocked(true);
         final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         changePasswordService.setPassword("bob", "pass");
 
-        verify(alterUserService).changePassword("user", "pass");
+        verify(delegatingUserService).changePassword(staffUserAccountForBob, "pass");
     }
 
     @Test
@@ -73,12 +68,12 @@ public class ChangePasswordServiceTest {
 
         changePasswordService.setPassword("bob", "pass");
 
-        verify(alterUserService, never()).changePassword(anyString(), anyString());
+        verify(delegatingUserService).changePassword(user, "pass");
     }
 
     @Test
     public void setPassword_SaveAndDelete() {
-        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBob());
+        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBobOptional());
         final var user = User.of("user");
         user.setLocked(true);
         final var userToken = user.createToken(TokenType.RESET);
@@ -97,28 +92,14 @@ public class ChangePasswordServiceTest {
         user.setSource(AuthSource.auth);
         final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
-        when(passwordEncoder.encode(anyString())).thenReturn("hashedpassword");
         changePasswordService.setPassword("bob", "pass");
 
-        assertThat(user.getPassword()).isEqualTo("hashedpassword");
-        assertThat(user.getPasswordExpiry()).isAfterOrEqualTo(LocalDateTime.now().plusDays(9));
-        verify(passwordEncoder).encode("pass");
-    }
-
-    @Test
-    public void setPassword_NotFound() {
-        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty());
-
-        final var user = User.of("user");
-        final var userToken = user.createToken(TokenType.RESET);
-        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
-
-        assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
+        verify(delegatingUserService).changePassword(user, "pass");
     }
 
     @Test
     public void setPassword_LockedAccount() {
-        final var staffUserAccount = getStaffUserAccountForBob();
+        final var staffUserAccount = getStaffUserAccountForBobOptional();
         staffUserAccount.map(StaffUserAccount.class::cast).get().getAccountDetail().setAccountStatus("LOCKED");
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount);
 
@@ -153,21 +134,6 @@ public class ChangePasswordServiceTest {
         assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(LockedException.class);
     }
 
-    @Test
-    public void setPassword_AuthPasswordSameAsCurrent() {
-        final var user = User.builder().username("user").build();
-        user.setEnabled(true);
-        user.setSource(AuthSource.auth);
-        user.setPassword("oldencryptedpassword");
-        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(Boolean.TRUE);
-        final var userToken = user.createToken(TokenType.RESET);
-        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
-
-        assertThatThrownBy(() -> changePasswordService.setPassword("bob", "pass")).isInstanceOf(ReusedPasswordException.class);
-
-        verify(passwordEncoder).matches("pass", "oldencryptedpassword");
-    }
-
     private Optional<UserPersonDetails> buildAuthUser() {
         final var user = User.builder().username("user").email("email").verified(true).build();
         user.setPerson(new Person("first", "last"));
@@ -175,7 +141,7 @@ public class ChangePasswordServiceTest {
         return Optional.of(user);
     }
 
-    private Optional<UserPersonDetails> getStaffUserAccountForBob() {
+    private UserPersonDetails getStaffUserAccountForBob() {
         final var staffUserAccount = new StaffUserAccount();
         final var staff = new Staff();
         staff.setFirstName("bOb");
@@ -183,6 +149,11 @@ public class ChangePasswordServiceTest {
         staffUserAccount.setStaff(staff);
         final var detail = new AccountDetail("user", "OPEN", "profile", null);
         staffUserAccount.setAccountDetail(detail);
-        return Optional.of(staffUserAccount);
+        staffUserAccount.setUsername("bob");
+        return staffUserAccount;
+    }
+
+    private Optional<UserPersonDetails> getStaffUserAccountForBobOptional() {
+        return Optional.of(getStaffUserAccountForBob());
     }
 }
