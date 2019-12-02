@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
@@ -16,6 +17,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
+import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
@@ -37,8 +40,10 @@ public class AuthUserService {
     private final VerifyEmailService verifyEmailService;
     private final AuthUserGroupService authUserGroupService;
     private final MaintainUserCheck maintainUserCheck;
+    private final PasswordEncoder passwordEncoder;
     private final String initialPasswordTemplateId;
     private final int loginDaysTrigger;
+    private final long passwordAge;
 
     // Data item field size validation checks
     private static final int MAX_LENGTH_USERNAME = 30;
@@ -54,16 +59,20 @@ public class AuthUserService {
                            final VerifyEmailService verifyEmailService,
                            final AuthUserGroupService authUserGroupService,
                            final MaintainUserCheck maintainUserCheck,
+                           final PasswordEncoder passwordEncoder,
                            @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId,
-                           @Value("${application.authentication.disable.login-days}") final int loginDaysTrigger) {
+                           @Value("${application.authentication.disable.login-days}") final int loginDaysTrigger,
+                           @Value("${application.authentication.password-age}") final long passwordAge) {
         this.userRepository = userRepository;
         this.notificationClient = notificationClient;
         this.telemetryClient = telemetryClient;
         this.verifyEmailService = verifyEmailService;
         this.authUserGroupService = authUserGroupService;
         this.maintainUserCheck = maintainUserCheck;
+        this.passwordEncoder = passwordEncoder;
         this.initialPasswordTemplateId = initialPasswordTemplateId;
         this.loginDaysTrigger = loginDaysTrigger;
+        this.passwordAge = passwordAge;
     }
 
     @Transactional(transactionManager = "authTransactionManager")
@@ -234,6 +243,34 @@ public class AuthUserService {
         }
 
         verifyEmailService.validateEmailAddress(email);
+    }
+
+    public void lockUser(final UserPersonDetails userPersonDetails) {
+        final var username = userPersonDetails.getUsername();
+        final var userOptional = userRepository.findByUsername(username);
+        final var user = userOptional.orElseGet(() -> User.fromUserPersonDetails(userPersonDetails));
+        user.setLocked(true);
+        userRepository.save(user);
+    }
+
+    public void unlockUser(final UserPersonDetails userPersonDetails) {
+        final var username = userPersonDetails.getUsername();
+        final var userOptional = userRepository.findByUsername(username);
+        final var user = userOptional.orElseGet(() -> User.fromUserPersonDetails(userPersonDetails));
+        user.setLocked(false);
+        // TODO: This isn't quite right - shouldn't always verify a user when unlocking...
+        user.setVerified(true);
+        userRepository.save(user);
+    }
+
+    public void changePassword(final User user, final String password) {
+        // check user not setting password to existing password
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            throw new ReusedPasswordException();
+        }
+
+        user.setPassword(passwordEncoder.encode(password));
+        user.setPasswordExpiry(LocalDateTime.now().plusDays(passwordAge));
     }
 
     @Getter

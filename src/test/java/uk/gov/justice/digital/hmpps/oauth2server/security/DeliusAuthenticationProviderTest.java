@@ -90,10 +90,12 @@ public class DeliusAuthenticationProviderTest {
 
     @Test
     public void authenticate_ResetAfterSuccess() {
-        when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(DeliusUserPersonDetails.builder().username("bob").build()));
+        final var deliusUser = DeliusUserPersonDetails.builder().username("bob").build();
+        when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(deliusUser));
         when(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(Boolean.TRUE);
+
         provider.authenticate(new UsernamePasswordAuthenticationToken("DELIUS_USER", "password"));
 
-        verify(userRetriesService).resetRetriesAndRecordLogin("bob");
+        verify(userRetriesService).resetRetriesAndRecordLogin(deliusUser);
     }
 }

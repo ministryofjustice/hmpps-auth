@@ -10,13 +10,18 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserRetriesServiceTest {
@@ -25,18 +30,18 @@ public class UserRetriesServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private AlterUserService alterUserService;
+    private DelegatingUserService delegatingUserService;
 
     private UserRetriesService service;
 
     @Before
     public void setUp() {
-        service = new UserRetriesService(userRetriesRepository, userRepository, alterUserService);
+        service = new UserRetriesService(userRetriesRepository, userRepository, delegatingUserService);
     }
 
     @Test
     public void resetRetries() {
-        service.resetRetriesAndRecordLogin("bob");
+        service.resetRetriesAndRecordLogin(getUserPersonDetailsForBob());
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
         verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 0));
@@ -46,14 +51,14 @@ public class UserRetriesServiceTest {
     public void resetRetries_RecordLastLogginIn() {
         final var user = User.builder().username("joe").lastLoggedIn(LocalDateTime.now().minusDays(1)).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
-        service.resetRetriesAndRecordLogin("bob");
+        service.resetRetriesAndRecordLogin(getUserPersonDetailsForBob());
 
         assertThat(user.getLastLoggedIn()).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now());
     }
 
     @Test
     public void resetRetries_SaveNewUser() {
-        service.resetRetriesAndRecordLogin("bob");
+        service.resetRetriesAndRecordLogin(getUserPersonDetailsForBob());
 
         final var captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(captor.capture());
@@ -64,45 +69,17 @@ public class UserRetriesServiceTest {
 
     @Test
     public void lockAccount_retriesTo0() {
-        service.lockAccount("bob");
+        service.lockAccount(getUserPersonDetailsForBob());
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
         verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 0));
     }
 
     @Test
-    public void lockAccount_lockUserEmailNoRecord() {
-        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
-        service.lockAccount("bob");
-        final var captor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(captor.capture());
-        assertThat(captor.getValue().isLocked()).isEqualTo(true);
-    }
-
-    @Test
-    public void lockAccount_lockUserEmailExistingRecord() {
-        final var existingUserEmail = User.of("username");
-        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(existingUserEmail));
-        service.lockAccount("bob");
-        final var captor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(captor.capture());
-        assertThat(captor.getValue().isLocked()).isEqualTo(true);
-        assertThat(captor.getValue()).isSameAs(existingUserEmail);
-    }
-
-    @Test
-    public void lockAccount_NoAlterUserForAuthOnlyAccounts() {
-        final var existingUserEmail = User.of("username");
-        existingUserEmail.setSource(AuthSource.auth);
-        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(existingUserEmail));
-        service.lockAccount("bob");
-        verify(alterUserService, never()).lockAccount(anyString());
-    }
-
-    @Test
     public void lockAccount_alterUser() {
-        service.lockAccount("bob");
-        verify(alterUserService).lockAccount("bob");
+        final var userPersonDetailsForBob = getUserPersonDetailsForBob();
+        service.lockAccount(userPersonDetailsForBob);
+        verify(delegatingUserService).lockAccount(userPersonDetailsForBob);
     }
 
     @Test
@@ -121,5 +98,17 @@ public class UserRetriesServiceTest {
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
         verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 6));
+    }
+
+    private UserPersonDetails getUserPersonDetailsForBob() {
+        final var staffUserAccount = new StaffUserAccount();
+        final var staff = new Staff();
+        staff.setFirstName("bOb");
+        staff.setStatus("ACTIVE");
+        staffUserAccount.setStaff(staff);
+        final var detail = new AccountDetail("user", "OPEN", "profile", null);
+        staffUserAccount.setAccountDetail(detail);
+        staffUserAccount.setUsername("bob");
+        return staffUserAccount;
     }
 }

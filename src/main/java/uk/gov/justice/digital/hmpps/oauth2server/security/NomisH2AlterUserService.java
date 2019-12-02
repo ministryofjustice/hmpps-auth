@@ -6,23 +6,28 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 
 import javax.sql.DataSource;
 
 @Service
 @Profile("!oracle")
-public class H2AlterUserService implements AlterUserService {
+public class NomisH2AlterUserService extends NomisUserService {
+    @SuppressWarnings("SqlResolve")
     private static final String UPDATE_STATUS = "UPDATE dba_users SET account_status = ? WHERE username = ?";
 
     private final JdbcTemplate jdbcTemplate;
     private final PasswordEncoder encoder;
 
-    public H2AlterUserService(@Qualifier("dataSource") final DataSource dataSource,
-                              final PasswordEncoder passwordEncoder) {
+    public NomisH2AlterUserService(@Qualifier("dataSource") final DataSource dataSource,
+                                   final PasswordEncoder passwordEncoder,
+                                   final StaffUserAccountRepository staffUserAccountRepository) {
+        super(staffUserAccountRepository);
         jdbcTemplate = new JdbcTemplate(dataSource);
-        this.encoder = passwordEncoder;
+        encoder = passwordEncoder;
     }
 
+    @SuppressWarnings("SqlResolve")
     @Transactional
     public void changePassword(final String username, final String password) {
         jdbcTemplate.update(String.format("ALTER USER %s SET PASSWORD ?", username), password);
