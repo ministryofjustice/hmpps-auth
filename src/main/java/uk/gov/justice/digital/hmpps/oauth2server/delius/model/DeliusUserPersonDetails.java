@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.oauth2server.delius.model;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import java.util.Collection;
@@ -14,6 +16,7 @@ public class DeliusUserPersonDetails implements UserPersonDetails {
     private String firstName;
     private String username;
     private boolean locked;
+    private String email;
     private Collection<? extends GrantedAuthority> roles;
 
     @Override
@@ -34,6 +37,11 @@ public class DeliusUserPersonDetails implements UserPersonDetails {
     @Override
     public String getAuthSource() {
         return "delius";
+    }
+
+    @Override
+    public User toUser() {
+        return User.builder().username(username).source(AuthSource.delius).email(email).verified(true).build();
     }
 
     @Override

@@ -248,7 +248,7 @@ public class AuthUserService {
     public void lockUser(final UserPersonDetails userPersonDetails) {
         final var username = userPersonDetails.getUsername();
         final var userOptional = userRepository.findByUsername(username);
-        final var user = userOptional.orElseGet(() -> User.fromUserPersonDetails(userPersonDetails));
+        final var user = userOptional.orElseGet(userPersonDetails::toUser);
         user.setLocked(true);
         userRepository.save(user);
     }
@@ -256,7 +256,7 @@ public class AuthUserService {
     public void unlockUser(final UserPersonDetails userPersonDetails) {
         final var username = userPersonDetails.getUsername();
         final var userOptional = userRepository.findByUsername(username);
-        final var user = userOptional.orElseGet(() -> User.fromUserPersonDetails(userPersonDetails));
+        final var user = userOptional.orElseGet(userPersonDetails::toUser);
         user.setLocked(false);
         // TODO: This isn't quite right - shouldn't always verify a user when unlocking...
         user.setVerified(true);

@@ -42,4 +42,9 @@ public class UserDetailsImpl extends User implements UserPersonDetails {
     public boolean isAdmin() {
         return false;
     }
+
+    @Override
+    public uk.gov.justice.digital.hmpps.oauth2server.auth.model.User toUser() {
+        throw new IllegalStateException("Can't be converted into user");
+    }
 }

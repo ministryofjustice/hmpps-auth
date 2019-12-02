@@ -4,6 +4,8 @@ import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import javax.persistence.*;
@@ -91,6 +93,11 @@ public class StaffUserAccount implements UserPersonDetails {
     @Override
     public String getAuthSource() {
         return "nomis";
+    }
+
+    @Override
+    public User toUser() {
+        return User.builder().username(username).source(AuthSource.nomis).build();
     }
 
     @Override

@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
@@ -54,6 +55,16 @@ public class UserRetriesServiceTest {
         service.resetRetriesAndRecordLogin(getUserPersonDetailsForBob());
 
         assertThat(user.getLastLoggedIn()).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now());
+    }
+
+    @Test
+    public void resetRetries_SaveDeliusEmailAddress() {
+        final var user = User.builder().username("joe").lastLoggedIn(LocalDateTime.now().minusDays(1)).build();
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
+        service.resetRetriesAndRecordLogin(DeliusUserPersonDetails.builder().username("any").email("newemail@bob.com").build());
+
+        assertThat(user.getEmail()).isEqualTo("newemail@bob.com");
+        assertThat(user.isVerified()).isTrue();
     }
 
     @Test
