@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
 import geb.driver.CachingDriverFactory
-import geb.spock.GebReportingSpec
 import groovy.json.JsonSlurper
 import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.http.HttpEntity
@@ -11,7 +10,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
-class LoginSpecification extends GebReportingSpec {
+class LoginSpecification extends DeliusIntegrationSpec {
 
     public static final String clientBaseUrl = 'http://localhost:8081/login'
 
@@ -77,6 +76,18 @@ class LoginSpecification extends GebReportingSpec {
 
         when: "I login with locked auth user"
         loginAs AUTH_LOCKED, 'password123456'
+
+        then: 'My credentials are rejected and I am still on the Login page'
+        at LoginErrorPage
+        errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
+    }
+
+    def "Attempt login with locked delius user"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login with locked delius user"
+        loginAs DELIUS_LOCKED, 'password123456'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
@@ -176,6 +187,33 @@ class LoginSpecification extends GebReportingSpec {
         body.user_id == '608955ae-52ed-44cc-884c-011597a77949'
     }
 
+    def "Log in with valid delius credentials"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login using valid credentials"
+        loginAs DELIUS_USER, 'password'
+
+        then: 'My credentials are accepted and I am shown the Home page'
+        at HomePage
+        principalName == 'Delius Smith'
+    }
+
+    def "Log in with valid delius credentials sets jwt cookie"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I login using valid credentials"
+        loginAs DELIUS_USER, 'password'
+
+        then: 'My credentials are accepted and I have a cookie with my name and authentication source'
+        at HomePage
+        def body = parseJwt()
+        body.name == 'Delius Smith'
+        body.auth_source == 'delius'
+        body.user_id == 'delius'
+    }
+
     def "Log in with valid credentials in lower case"() {
         given: 'I am on the Login page'
         to LoginPage
@@ -268,6 +306,36 @@ class LoginSpecification extends GebReportingSpec {
         response.user_name == AUTH_USER.username
         response.auth_source == 'auth'
         response.user_id == '608955ae-52ed-44cc-884c-011597a77949'
+
+        cleanup:
+        CachingDriverFactory.clearCache()
+    }
+
+    def "I can sign in from another client as delius only user"() {
+        given: 'I am using SSO auth token to login'
+        def state = RandomStringUtils.random(6, true, true)
+        browser.go("/auth/oauth/authorize?client_id=elite2apiclient&redirect_uri=$clientBaseUrl&response_type=code&state=$state")
+        at LoginPage
+
+        when: "I login using valid credentials"
+        loginAs DELIUS_USER, 'password'
+
+        then: 'I am redirected back'
+        browser.getCurrentUrl() startsWith("$clientBaseUrl?code")
+
+        and: 'state is returned'
+        browser.getCurrentUrl() contains("state=$state")
+
+        and: 'auth code is returned'
+        def params = splitQuery(new URL(browser.getCurrentUrl()))
+        def authCode = params.get('code')
+        authCode != null
+
+        and: 'auth code can be redeemed for access token'
+        def response = getAccessToken(authCode)
+        response.user_name == DELIUS_USER.username
+        response.auth_source == 'delius'
+        response.user_id == 'delius'
 
         cleanup:
         CachingDriverFactory.clearCache()

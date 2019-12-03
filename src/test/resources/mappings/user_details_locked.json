@@ -1,0 +1,25 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPattern": "/secure/users/dellocked/details"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "firstName": "John",
+      "surname": "Smith",
+      "email": "test@digital.justice.gov.uk",
+      "locked": true,
+      "roles": [
+        {
+          "name": "TEST_ROLE",
+          "description": "A Test Role"
+        }
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

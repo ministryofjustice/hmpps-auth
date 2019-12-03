@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPattern": "/secure/authenticate",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "username": "delius",
+          "password": "password"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200
+  }
+}

@@ -42,7 +42,7 @@ auth:
     properties:
       hibernate:
         show_sql: true
-  endpoint.url: http://localhost:8080/auth
+  endpoint.url: http://localhost:${server.port}/auth
   token.url: ${auth.endpoint.url}/oauth/token
 
 logging.level.uk.gov: INFO

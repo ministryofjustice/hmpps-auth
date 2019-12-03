@@ -1,13 +1,28 @@
 package uk.gov.justice.digital.hmpps.oauth2server.api.specs
 
 import groovy.json.JsonSlurper
+import org.junit.Rule
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.security.oauth2.client.OAuth2RestTemplate
 import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException
+import uk.gov.justice.digital.hmpps.oauth2server.integration.wiremock.CommunityApiMockServer
 
+@SuppressWarnings("GrDeprecatedAPIUsage")
 class OauthSpecification extends TestSpecification {
+    @Rule
+    CommunityApiMockServer communityApi = new CommunityApiMockServer()
+
+    @Autowired
+    OAuth2RestTemplate deliusApiRestTemplate
 
     def jsonSlurper = new JsonSlurper()
+
+    void setup() {
+        // need to override port as random port only assigned on server startup
+        deliusApiRestTemplate.getResource().accessTokenUri = "http://localhost:${randomServerPort}/auth/oauth/token"
+    }
 
     def "Client Credentials Login"() {
 
@@ -194,6 +209,28 @@ class OauthSpecification extends TestSpecification {
         token.additionalInformation.auth_source == 'auth'
     }
 
+    def "Password Credentials Login for delius user"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("delius", "password", "elite2apiclient", "clientsecret")
+
+        when:
+        def token = oauthRestTemplate.getAccessToken()
+
+        then:
+        token.value != null
+
+        and: 'expiry is in 8 hours'
+        token.expiresIn >= 28790
+
+        and: 'refresh token exists'
+        token.refreshToken.value != null
+
+        and: 'authentication source is auth'
+        token.additionalInformation.auth_source == 'delius'
+    }
+
+
     def "Refresh token can be obtained"() {
 
         given: 'I create an access token'
@@ -280,6 +317,18 @@ class OauthSpecification extends TestSpecification {
 
         given:
         def oauthRestTemplate = getOauthPasswordGrant("LOCKED_USER", "password123456", "elite2apiclient", "clientsecret")
+
+        when:
+        oauthRestTemplate.getAccessToken()
+
+        then:
+        OAuth2AccessDeniedException ex = thrown()
+    }
+
+    def "Password Credentials Login with Locked Login for Delius User"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("dellocked", "password123456", "elite2apiclient", "clientsecret")
 
         when:
         oauthRestTemplate.getAccessToken()
