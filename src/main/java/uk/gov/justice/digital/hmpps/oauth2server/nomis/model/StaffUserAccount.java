@@ -10,11 +10,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.*;
 
@@ -102,10 +100,10 @@ public class StaffUserAccount implements UserPersonDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return filterRolesByCaseload("NWEB").stream()
+        final var roles = filterRolesByCaseload("NWEB").stream()
                 .filter(Objects::nonNull)
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(role.getRole().getCode().replace('-', '_'))))
-                .collect(Collectors.toSet());
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + StringUtils.upperCase(role.getRole().getCode().replace('-', '_'))));
+        return Stream.concat(roles, Set.of(new SimpleGrantedAuthority("ROLE_PRISON")).stream()).collect(Collectors.toSet());
     }
 
     @Override

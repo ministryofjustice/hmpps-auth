@@ -32,7 +32,6 @@ class DelegatingUserServiceTest {
 
     verify(authUserService).lockUser(any())
     verify(nomisUserService, never()).lockAccount(anyString())
-    verify(deliusUserService, never()).lockAccount(anyString())
   }
 
   @Test
@@ -43,7 +42,6 @@ class DelegatingUserServiceTest {
 
     verify(authUserService).lockUser(any())
     verify(nomisUserService).lockAccount("bob")
-    verify(deliusUserService, never()).lockAccount(anyString())
   }
 
   @Test
@@ -52,7 +50,6 @@ class DelegatingUserServiceTest {
 
     verify(authUserService).lockUser(any())
     verify(nomisUserService, never()).lockAccount(anyString())
-    verify(deliusUserService).lockAccount("bob")
   }
 
   @Test
@@ -63,7 +60,7 @@ class DelegatingUserServiceTest {
     verify(authUserService).unlockUser(any())
     verify(authUserService).changePassword(user, "pass")
     verify(nomisUserService, never()).changePasswordWithUnlock(anyString(), anyString())
-    verify(deliusUserService, never()).changePasswordWithUnlock(anyString(), anyString())
+    verify(deliusUserService, never()).changePassword(anyString(), anyString())
   }
 
   @Test
@@ -75,7 +72,7 @@ class DelegatingUserServiceTest {
     verify(authUserService).unlockUser(any())
     verify(authUserService, never()).changePassword(any(), anyString())
     verify(nomisUserService).changePasswordWithUnlock("bob", "pass")
-    verify(deliusUserService, never()).changePasswordWithUnlock(anyString(), anyString())
+    verify(deliusUserService, never()).changePassword(anyString(), anyString())
   }
 
   @Test
@@ -85,7 +82,7 @@ class DelegatingUserServiceTest {
     verify(authUserService).unlockUser(any())
     verify(authUserService, never()).changePassword(any(), anyString())
     verify(nomisUserService, never()).changePasswordWithUnlock(anyString(), anyString())
-    verify(deliusUserService).changePasswordWithUnlock("bob", "pass")
+    verify(deliusUserService).changePassword("bob", "pass")
   }
 
   @Test
