@@ -91,16 +91,6 @@ public class DeliusUserService {
         restTemplate.postForEntity("/users/{username}/password", requestEntity, Void.class, Map.of("username", username));
     }
 
-    public void lockAccount(final String username) {
-        restTemplate.postForEntity("/users/{username}/lock", null, Void.class, Map.of("username", username));
-    }
-
-    public void changePasswordWithUnlock(final String username, final String password) {
-        changePassword(username, password);
-
-        restTemplate.postForEntity("/users/{username}/unlock", null, Void.class, Map.of("username", username));
-    }
-
     @Getter
     @AllArgsConstructor
     private static class AuthUser {

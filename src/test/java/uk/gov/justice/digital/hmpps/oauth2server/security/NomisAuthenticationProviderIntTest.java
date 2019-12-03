@@ -33,7 +33,8 @@ public class NomisAuthenticationProviderIntTest {
     public void authenticate_SuccessWithAuthorities() {
         final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER_ADM", "password123456"));
         assertThat(auth).isNotNull();
-        assertThat(auth.getAuthorities()).extracting(GrantedAuthority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_KW_MIGRATION", "ROLE_MAINTAIN_OAUTH_USERS");
+        assertThat(auth.getAuthorities()).extracting(GrantedAuthority::getAuthority)
+                .containsOnly("ROLE_PRISON", "ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_KW_MIGRATION", "ROLE_MAINTAIN_OAUTH_USERS");
     }
 
     @Test

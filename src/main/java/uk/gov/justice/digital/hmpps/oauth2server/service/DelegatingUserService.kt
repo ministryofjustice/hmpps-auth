@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
-import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount
@@ -21,7 +20,7 @@ open class DelegatingUserService(
 
     when (userPersonDetails) {
       is StaffUserAccount -> nomisUserService.lockAccount(userPersonDetails.username)
-      is DeliusUserPersonDetails -> deliusUserService.lockAccount(userPersonDetails.username)
+      // don't lock the delius account, they will have x retries left there so will be handled by ldap anyway
     }
   }
 
@@ -32,7 +31,7 @@ open class DelegatingUserService(
     when (userPersonDetails.authSource) {
       "auth" -> authUserService.changePassword(userPersonDetails as User, password)
       "nomis" -> nomisUserService.changePasswordWithUnlock(userPersonDetails.username, password)
-      "delius" -> deliusUserService.changePasswordWithUnlock(userPersonDetails.username, password)
+      "delius" -> deliusUserService.changePassword(userPersonDetails.username, password)
     }
   }
 
