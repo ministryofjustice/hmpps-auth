@@ -55,7 +55,7 @@ jobs:
           at: ~/app
       - run:
           name: Run the java app.
-          command: env spring.profiles.active=dev java -Xmx512m -jar build/libs/oauth2server-*.jar
+          command: env spring.profiles.active=dev java -Xmx256m -jar build/libs/oauth2server-*.jar
           background: true
       - run:
           name: Wait for java app to start
