@@ -7,7 +7,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.security.oauth2.client.OAuth2RestTemplate
 import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException
-import uk.gov.justice.digital.hmpps.oauth2server.integration.wiremock.CommunityApiMockServer
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.CommunityApiMockServer
 
 @SuppressWarnings("GrDeprecatedAPIUsage")
 class OauthSpecification extends TestSpecification {
