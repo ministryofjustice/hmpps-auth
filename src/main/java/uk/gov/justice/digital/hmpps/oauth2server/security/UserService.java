@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -17,21 +18,13 @@ import java.util.Optional;
 @Service
 @Slf4j
 @Transactional(readOnly = true)
+@AllArgsConstructor
 public class UserService {
     private final NomisUserService nomisUserService;
     private final AuthUserService authUserService;
     private final DeliusUserService deliusUserService;
     private final StaffIdentifierRepository staffIdentifierRepository;
     private final UserRepository userRepository;
-
-    public UserService(final NomisUserService nomisUserService, final AuthUserService authUserService, final DeliusUserService deliusUserService, final StaffIdentifierRepository staffIdentifierRepository,
-                       final UserRepository userRepository) {
-        this.nomisUserService = nomisUserService;
-        this.authUserService = authUserService;
-        this.deliusUserService = deliusUserService;
-        this.staffIdentifierRepository = staffIdentifierRepository;
-        this.userRepository = userRepository;
-    }
 
     StaffUserAccount getUserByExternalIdentifier(final String idType, final String id) {
         final var staffIdentifier = staffIdentifierRepository.findById_TypeAndId_IdentificationNumber(idType, id);

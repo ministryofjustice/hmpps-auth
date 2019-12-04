@@ -4,10 +4,7 @@
     "urlPattern": "/secure/authenticate",
     "bodyPatterns": [
       {
-        "equalToJson": {
-          "username": "delius",
-          "password": "password"
-        }
+        "matchesJsonPath": "$[?(@.username =~ /delius.*/i)]"
       }
     ]
   },
