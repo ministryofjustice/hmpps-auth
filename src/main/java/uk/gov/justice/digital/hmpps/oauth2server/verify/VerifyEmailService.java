@@ -28,6 +28,7 @@ import java.util.Optional;
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
 public class VerifyEmailService {
 
+    @SuppressWarnings("SqlResolve")
     private static final String EXISTING_EMAIL_SQL = "select distinct internet_address from internet_addresses i " +
             "inner join STAFF_USER_ACCOUNTS s on i.owner_id = s.staff_id and owner_class = 'STF' " +
             "where internet_address_class = 'EMAIL' and s.username = ?";

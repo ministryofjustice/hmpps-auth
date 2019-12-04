@@ -1,0 +1,12 @@
+{
+  "firstName": "John",
+  "surname": "Smith",
+  "email": "test@digital.justice.gov.uk",
+  "locked": false,
+  "roles": [
+    {
+      "name": "TEST_ROLE",
+      "description": "A Test Role"
+    }
+  ]
+}

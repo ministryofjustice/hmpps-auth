@@ -1,0 +1,12 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/secure/users/.*/details"
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

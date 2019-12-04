@@ -1,9 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.delius.model
 
-data class UserDetails(val surname: String,
-                       val firstName: String,
-                       val email: String,
-                       val locked: Boolean,
-                       val roles: List<UserRole>)
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 
-data class UserRole(val name: String, val description: String)
+data class UserDetails @JsonCreator constructor(@JsonProperty("surname") val surname: String,
+                                                @JsonProperty("firstName") val firstName: String,
+                                                @JsonProperty("email") val email: String,
+                                                @JsonProperty("locked") val locked: Boolean,
+                                                @JsonProperty("roles") val roles: List<UserRole>)
+
+data class UserRole @JsonCreator constructor(@JsonProperty("name") val name: String,
+                                             @JsonProperty("description") val description: String)

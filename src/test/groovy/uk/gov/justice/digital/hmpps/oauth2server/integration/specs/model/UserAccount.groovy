@@ -27,7 +27,9 @@ enum UserAccount {
     AUTH_LOCKED('AUTH_LOCKED'),
     AUTH_LOCKED2('AUTH_LOCKED2'),
     AUTH_DISABLED('AUTH_DISABLED'),
-    AUTH_EXPIRED('AUTH_EXPIRED')
+    AUTH_EXPIRED('AUTH_EXPIRED'),
+    DELIUS_USER('delius'),
+    DELIUS_LOCKED('dellocked');
 
     String username
 }

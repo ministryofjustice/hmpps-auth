@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPattern": "/secure/authenticate",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "username": "delfail",
+          "ignoreExtraElements": true
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 401,
+    "jsonBody": {
+      "status": 401,
+      "developerMessage": "User with username delfail"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

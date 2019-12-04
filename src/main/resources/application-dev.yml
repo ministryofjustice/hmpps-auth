@@ -4,3 +4,6 @@ spring:
 
 delius:
   endpoint.url: http://localhost:8099
+  client:
+    client-id: delius-auth-api-client
+    client-secret: delius-auth-api-client

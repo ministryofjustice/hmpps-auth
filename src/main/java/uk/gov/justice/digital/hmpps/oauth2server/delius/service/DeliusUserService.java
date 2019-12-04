@@ -33,8 +33,7 @@ public class DeliusUserService {
 
     public Optional<DeliusUserPersonDetails> getDeliusUserByUsername(final String username) {
         try {
-            final var userDetails = (UserDetails) null;
-//            restTemplate.getForObject("/users/{username}/details", UserDetails.class, username);
+            final var userDetails = restTemplate.getForObject("/users/{username}/details", UserDetails.class, username);
             return Optional.ofNullable(userDetails).map(u -> mapUserDetailsToDeliusUser(u, username));
         } catch (final HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
@@ -51,8 +50,8 @@ public class DeliusUserService {
 
     public boolean authenticateUser(final String username, final String password) {
         try {
-//            restTemplate.postForEntity("/authenticate", new AuthUser(username, password), String.class);
-            return false;
+            restTemplate.postForEntity("/authenticate", new AuthUser(username, password), String.class);
+            return true;
         } catch (final HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
                 log.debug("User not authorised in delius due to {}", e.getMessage());
