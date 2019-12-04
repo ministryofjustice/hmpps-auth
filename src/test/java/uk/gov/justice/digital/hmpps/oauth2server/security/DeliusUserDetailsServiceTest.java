@@ -42,7 +42,7 @@ public class DeliusUserDetailsServiceTest {
         assertThat(itagUser.isAccountNonExpired()).isTrue();
         assertThat(itagUser.isAccountNonLocked()).isTrue();
         assertThat(itagUser.isCredentialsNonExpired()).isTrue();
-        assertThat(itagUser.isEnabled()).isTrue();
+        assertThat(itagUser.isEnabled()).isFalse();
 
         assertThat(((UserPersonDetails) itagUser).getName()).isEqualTo("Itag User");
     }
@@ -59,7 +59,7 @@ public class DeliusUserDetailsServiceTest {
         return DeliusUserPersonDetails.builder()
                 .username(username)
                 .firstName("Itag")
-                .locked(false)
+                .enabled(false)
                 .surname("User")
                 .roles(List.of())
                 .build();

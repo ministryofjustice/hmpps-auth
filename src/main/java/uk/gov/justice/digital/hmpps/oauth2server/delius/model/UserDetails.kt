@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class UserDetails @JsonCreator constructor(@JsonProperty("surname") val surname: String,
                                                 @JsonProperty("firstName") val firstName: String,
                                                 @JsonProperty("email") val email: String,
-                                                @JsonProperty("locked") val locked: Boolean,
+                                                @JsonProperty("enabled") val enabled: Boolean,
                                                 @JsonProperty("roles") val roles: List<UserRole>)
 
 data class UserRole @JsonCreator constructor(@JsonProperty("name") val name: String,

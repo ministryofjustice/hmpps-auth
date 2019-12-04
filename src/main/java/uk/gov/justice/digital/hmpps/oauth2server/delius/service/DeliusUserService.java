@@ -73,7 +73,7 @@ public class DeliusUserService {
                 .roles(mapUserRolesToAuthorities(Collections.emptyList()))
                 .username(username)
                 .email(userDetails.getEmail())
-                .locked(userDetails.getLocked()).build();
+                .enabled(userDetails.getEnabled()).build();
     }
 
     private Collection<? extends GrantedAuthority> mapUserRolesToAuthorities(final List<UserRole> userRoles) {

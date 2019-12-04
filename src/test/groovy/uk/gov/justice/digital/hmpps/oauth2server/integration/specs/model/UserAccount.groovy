@@ -29,7 +29,7 @@ enum UserAccount {
     AUTH_DISABLED('AUTH_DISABLED'),
     AUTH_EXPIRED('AUTH_EXPIRED'),
     DELIUS_USER('delius'),
-    DELIUS_LOCKED('dellocked');
+    DELIUS_DISABLED('deldisabled');
 
     String username
 }

@@ -82,16 +82,16 @@ class LoginSpecification extends DeliusIntegrationSpec {
         errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
     }
 
-    def "Attempt login with locked delius user"() {
+    def "Attempt login with disabled delius user"() {
         given: 'I am on the Login page'
         to LoginPage
 
-        when: "I login with locked delius user"
-        loginAs DELIUS_LOCKED, 'password123456'
+        when: "I login with disabled delius user"
+        loginAs DELIUS_DISABLED, 'password123456'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
-        errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
+        errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times."
     }
 
     def "Attempt login with disabled auth user"() {

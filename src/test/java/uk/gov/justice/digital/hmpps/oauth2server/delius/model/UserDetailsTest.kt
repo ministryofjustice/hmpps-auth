@@ -14,7 +14,7 @@ class UserDetailsTest {
         UserDetails(surname = "Smith",
             firstName = "John",
             email = "test@digital.justice.gov.uk",
-            locked = false,
+            enabled = true,
             roles = listOf(UserRole(name = "TEST_ROLE", description = "A Test Role"))))
   }
 
@@ -26,7 +26,7 @@ class UserDetailsTest {
         UserDetails(surname = "Smith",
             firstName = "John",
             email = "test@digital.justice.gov.uk",
-            locked = false,
+            enabled = false,
             roles = listOf()))
   }
 }
