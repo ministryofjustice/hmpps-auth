@@ -1,12 +1,27 @@
 package uk.gov.justice.digital.hmpps.oauth2server.api.specs
 
 import groovy.json.JsonSlurper
+import org.junit.Rule
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.security.oauth2.client.OAuth2RestTemplate
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.CommunityApiMockServer
 
+@SuppressWarnings("GrDeprecatedAPIUsage")
 class UserSpecification extends TestSpecification {
+    @Rule
+    CommunityApiMockServer communityApi = new CommunityApiMockServer()
+
+    @Autowired
+    OAuth2RestTemplate deliusApiRestTemplate
 
     def jsonSlurper = new JsonSlurper()
+
+    void setup() {
+        // need to override port as random port only assigned on server startup
+        deliusApiRestTemplate.getResource().accessTokenUri = "http://localhost:${randomServerPort}/auth/oauth/token"
+    }
 
     def "User Me endpoint returns principal user data"() {
 
@@ -53,6 +68,21 @@ class UserSpecification extends TestSpecification {
         userData == ["username": "AUTH_USER", "active": true, "name": "Auth Only", "authSource": "auth", 'userId': '608955ae-52ed-44cc-884c-011597a77949']
     }
 
+    def "User Me endpoint returns principal user data for delius user"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("delius", "password", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/me", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ["username": "delius", "active": true, "name": "Delius Smith", "authSource": "delius", 'userId': 'delius']
+    }
+
     def "User username endpoint returns user data"() {
 
         given:
@@ -83,6 +113,21 @@ class UserSpecification extends TestSpecification {
         userData == ["username": "AUTH_USER", "active": true, "name": "Auth Only", "authSource": "auth", 'userId': '608955ae-52ed-44cc-884c-011597a77949']
     }
 
+    def "User username endpoint returns user data for delius user"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("delius", "password", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/delius", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ["username": "delius", "active": true, "name": "Delius Smith", "authSource": "delius", 'userId': 'delius']
+    }
+
     def "User email endpoint returns user data for auth user"() {
 
         given:
@@ -96,6 +141,21 @@ class UserSpecification extends TestSpecification {
         def userData = jsonSlurper.parseText(response.body)
 
         userData == ["username": "AUTH_USER", "email": "auth_user@digital.justice.gov.uk"]
+    }
+
+    def "User email endpoint returns user data for delius user"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("delius_email", "password", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/delius_email/email", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        userData == ["username": "DELIUS_EMAIL", "email": "delius_user@digital.justice.gov.uk"]
     }
 
     def "User email endpoint returns no user data for unverified email address"() {

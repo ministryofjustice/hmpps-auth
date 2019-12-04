@@ -14,7 +14,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -36,6 +35,7 @@ import javax.sql.DataSource;
 import java.util.Arrays;
 
 
+@SuppressWarnings("deprecation")
 @Configuration
 @EnableAuthorizationServer
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
@@ -47,7 +47,6 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final String keystorePassword;
     private final String keystoreAlias;
     private final AuthenticationManager authenticationManager;
-    private final UserDetailsService userDetailsService;
     private final DataSource dataSource;
     private final PasswordEncoder passwordEncoder;
     private final TelemetryClient telemetryClient;
@@ -55,7 +54,6 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy final AuthenticationManager authenticationManager,
-                                           @Lazy final UserDetailsService userDetailsService,
                                            @Value("${jwt.signing.key.pair}") final String privateKeyPair,
                                            @Value("${jwt.keystore.password}") final String keystorePassword,
                                            @Value("${jwt.keystore.alias:elite2api}") final String keystoreAlias,
@@ -66,7 +64,6 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.keystorePassword = keystorePassword;
         this.keystoreAlias = keystoreAlias;
-        this.userDetailsService = userDetailsService;
         this.authenticationManager = authenticationManager;
         this.dataSource = dataSource;
         this.passwordEncoder = passwordEncoder;
@@ -118,7 +115,6 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                 .tokenEnhancer(tokenEnhancerChain())
                 .redirectResolver(redirectResolver)
                 .authenticationManager(authenticationManager)
-                .userDetailsService(userDetailsService)
                 .authorizationCodeServices(new JdbcAuthorizationCodeServices(dataSource))
                 .tokenServices(tokenServices());
     }

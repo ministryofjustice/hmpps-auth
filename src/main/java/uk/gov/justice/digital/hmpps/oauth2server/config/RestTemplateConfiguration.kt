@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.config
 
 import org.hibernate.validator.constraints.URL
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.boot.web.client.RootUriTemplateHandler
 import org.springframework.context.annotation.Bean
@@ -36,4 +37,10 @@ open class RestTemplateConfiguration(private val apiDetails: ClientCredentialsRe
           .setConnectTimeout(healthTimeout)
           .setReadTimeout(healthTimeout)
           .build()
+
 }
+
+@Suppress("DEPRECATION")
+@Configuration
+@ConfigurationProperties("delius.client")
+open class deliusClientCredentials: ClientCredentialsResourceDetails()

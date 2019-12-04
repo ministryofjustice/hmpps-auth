@@ -2,7 +2,7 @@
   "priority": 1,
   "request": {
     "method": "GET",
-    "urlPattern": "/secure/users/delius/details"
+    "urlPattern": "/secure/users/delius.*/details"
   },
   "response": {
     "status": 200,
@@ -10,7 +10,7 @@
       "firstName": "Delius",
       "surname": "Smith",
       "email": "test@digital.justice.gov.uk",
-      "locked": false,
+      "enabled": true,
       "roles": [
         {
           "name": "TEST_ROLE",

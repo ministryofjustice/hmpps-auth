@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails;
+import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
@@ -27,6 +29,8 @@ public class UserServiceTest {
     @Mock
     private AuthUserService authUserService;
     @Mock
+    private DeliusUserService deliusUserService;
+    @Mock
     private StaffIdentifierRepository staffIdentifierRepository;
     @Mock
     private UserRepository userRepository;
@@ -35,7 +39,7 @@ public class UserServiceTest {
 
     @Before
     public void setUp() {
-        userService = new UserService(nomisUserService, authUserService, staffIdentifierRepository, userRepository);
+        userService = new UserService(nomisUserService, authUserService, deliusUserService, staffIdentifierRepository, userRepository);
     }
 
     @Test
@@ -54,6 +58,15 @@ public class UserServiceTest {
         final var user = userService.findMasterUserPersonDetails("bob");
 
         assertThat(user).isPresent().get().extracting(UserPersonDetails::getUsername).isEqualTo("nomisuser");
+    }
+
+    @Test
+    public void findMasterUserPersonDetails_DeliusUser() {
+        when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(getDeliusUserAccountForBob());
+
+        final var user = userService.findMasterUserPersonDetails("bob");
+
+        assertThat(user).isPresent().get().extracting(UserPersonDetails::getUsername).isEqualTo("deliusUser");
     }
 
     @Test
@@ -81,5 +94,11 @@ public class UserServiceTest {
         final var detail = new AccountDetail("user", "OPEN", "profile", null);
         staffUserAccount.setAccountDetail(detail);
         return Optional.of(staffUserAccount);
+    }
+
+    private Optional<DeliusUserPersonDetails> getDeliusUserAccountForBob() {
+        return Optional.ofNullable(DeliusUserPersonDetails.builder()
+                .username("deliusUser")
+                .build());
     }
 }

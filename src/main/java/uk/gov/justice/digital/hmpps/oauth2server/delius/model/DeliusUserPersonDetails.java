@@ -19,7 +19,7 @@ public class DeliusUserPersonDetails implements UserPersonDetails {
     private String surname;
     private String firstName;
     private String username;
-    private boolean locked;
+    private boolean enabled;
     private String email;
     private Collection<? extends GrantedAuthority> roles;
 
@@ -69,7 +69,7 @@ public class DeliusUserPersonDetails implements UserPersonDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return !locked;
+        return true;
     }
 
     @Override
@@ -79,6 +79,6 @@ public class DeliusUserPersonDetails implements UserPersonDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 }

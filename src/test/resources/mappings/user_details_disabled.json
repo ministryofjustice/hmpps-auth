@@ -10,7 +10,7 @@
       "firstName": "John",
       "surname": "Smith",
       "email": "test@digital.justice.gov.uk",
-      "locked": true,
+      "enabled": false,
       "roles": [
         {
           "name": "TEST_ROLE",
