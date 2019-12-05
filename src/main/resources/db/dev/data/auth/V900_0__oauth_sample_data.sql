@@ -95,7 +95,8 @@ INSERT INTO users (user_id, username, password, last_logged_in, first_name, last
 
 -- delius users
 INSERT INTO users (user_id, username, email, last_logged_in, first_name, last_name, verified, enabled, locked, source)
- VALUES ('7B59A818-BC14-43F3-A1C3-93004E173B2B', 'DELIUS_EMAIL', 'delius_user@digital.justice.gov.uk', '3013-01-02 13:23:19.0000000', 'Delius', 'Smith', 1, 1, 0, 'delius');
+ VALUES ('7B59A818-BC14-43F3-A1C3-93004E173B2B', 'DELIUS_EMAIL', 'delius_user@digital.justice.gov.uk', '3013-01-02 13:23:19.0000000', 'Delius', 'Smith', 1, 1, 0, 'delius'),
+        ('7B59A818-BC14-43F3-A1C3-93004E173B22', 'DELIUS_PASSWORD_RESET', 'delius_locked@digital.justice.gov.uk', '3013-01-02 13:23:19.0000000', 'Delius', 'Smith', 1, 1, 0, 'delius');
 
 INSERT INTO user_token (token, token_type, token_expiry, user_id)
  VALUES ('reset', 'RESET', '2018-12-10 08:55:45.0000000', '6A3F0216-BBAB-49CD-BD6E-AC09C1762EE4'),

@@ -5,14 +5,10 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails;
@@ -99,17 +95,20 @@ public class DeliusUserService {
             log.debug("Delius integration disabled, returning empty for {}", username);
             return;
         }
-        final var headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        final var requestEntity = new HttpEntity<>(new LinkedMultiValueMap<>(Map.of("password", List.of(password))), headers);
-        restTemplate.postForEntity("/users/{username}/password", requestEntity, Void.class, Map.of("username", username));
+        restTemplate.postForEntity("/users/{username}/password", new AuthPassword(password), Void.class, username);
     }
 
     @Getter
     @AllArgsConstructor
     public static class AuthUser {
         private final String username;
+        private final String password;
+    }
+
+
+    @Getter
+    @AllArgsConstructor
+    private static class AuthPassword {
         private final String password;
     }
 }
