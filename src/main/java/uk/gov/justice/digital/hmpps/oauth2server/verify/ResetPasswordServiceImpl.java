@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService;
@@ -141,9 +142,9 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
     }
 
     private boolean passwordAllowedToBeReset(final User user, final UserPersonDetails userPersonDetails) {
-        if (user.isMaster()) {
-            // for auth users they must be enabled (so can be locked)
-            return user.isEnabled();
+        if (user.getSource() != AuthSource.nomis) {
+            // for non nomis users they must be enabled (so can be locked)
+            return userPersonDetails.isEnabled();
         }
         // otherwise must be nomis user so will have a staff account instead.
         final var staffUserAccount = (StaffUserAccount) userPersonDetails;

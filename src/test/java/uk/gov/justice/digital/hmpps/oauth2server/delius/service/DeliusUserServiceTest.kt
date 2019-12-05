@@ -51,12 +51,12 @@ class DeliusUserServiceTest {
   @Test
   fun `changePassword disabled`() {
     disabledDeliusService.changePassword("user", "pass")
-    verify(restTemplate, never()).postForEntity<Void>(anyString(), any(), any(), any())
+    verify(restTemplate, never()).postForEntity<Void>(anyString(), any(), any(), anyString())
   }
 
   @Test
   fun `changePassword enabled`() {
     deliusService.changePassword("user", "pass")
-    verify(restTemplate).postForEntity<Void>(anyString(), any(), any(), any())
+    verify(restTemplate).postForEntity<Void>(anyString(), any(), any(), anyString())
   }
 }
