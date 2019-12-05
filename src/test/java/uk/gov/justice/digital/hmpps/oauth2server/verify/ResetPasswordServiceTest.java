@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
@@ -89,7 +90,7 @@ public class ResetPasswordServiceTest {
 
     @Test
     public void requestResetPassword_inactive() throws NotificationClientException {
-        final var user = User.builder().username("someuser").email("email").verified(true).build();
+        final var user = User.builder().username("someuser").email("email").source(AuthSource.nomis).verified(true).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         final var staffUserAccount = getStaffUserAccountForBobOptional();
         ((StaffUserAccount) staffUserAccount.orElseThrow()).getStaff().setStatus("inactive");
@@ -131,7 +132,7 @@ public class ResetPasswordServiceTest {
 
     @Test
     public void requestResetPassword_userLocked() throws NotificationClientException {
-        final var user = User.builder().username("someuser").email("email").verified(true).build();
+        final var user = User.builder().username("someuser").email("email").source(AuthSource.nomis).verified(true).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         final var accountOptional = getStaffUserAccountForBobOptional();
         ((StaffUserAccount) accountOptional.orElseThrow()).getAccountDetail().setAccountStatus("EXPIRED & LOCKED(TIMED)");
@@ -323,12 +324,28 @@ public class ResetPasswordServiceTest {
     }
 
     @Test
+    public void resetPassword_deliusUser() throws NotificationClientException {
+        final var user = User.builder().username("user").enabled(true).source(AuthSource.delius).build();
+        final var userToken = user.createToken(TokenType.RESET);
+        final var deliusUserPersonDetails = DeliusUserPersonDetails.builder().username("user").enabled(true).build();
+        when(userService.findMasterUserPersonDetails("user")).thenReturn(Optional.of(deliusUserPersonDetails));
+        when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
+        resetPasswordService.setPassword("bob", "pass");
+
+        assertThat(user.getTokens()).isEmpty();
+        verify(userRepository).save(user);
+        verify(delegatingUserService).changePasswordWithUnlock(any(), anyString());
+        verify(notificationClient).sendEmail("reset-confirm", null, Map.of("firstName", "user", "username", "user"), null);
+
+    }
+
+    @Test
     public void resetPasswordLockedAccount() {
         final var staffUserAccount = getStaffUserAccountForBobOptional();
         ((StaffUserAccount) staffUserAccount.orElseThrow()).getStaff().setStatus("inactive");
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount);
 
-        final var user = User.of("user");
+        final var user = User.builder().username("user").source(AuthSource.nomis).build();
         final var userToken = user.createToken(TokenType.RESET);
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
 
