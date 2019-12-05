@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,12 +27,19 @@ import java.util.stream.Collectors;
 public class DeliusUserService {
 
     private final RestTemplate restTemplate;
+    private final boolean deliusEnabled;
 
-    public DeliusUserService(@Qualifier("deliusApiRestTemplate") final RestTemplate restTemplate) {
+    public DeliusUserService(@Qualifier("deliusApiRestTemplate") final RestTemplate restTemplate,
+                             @Value("${delius.enabled:false}") final boolean deliusEnabled) {
         this.restTemplate = restTemplate;
+        this.deliusEnabled = deliusEnabled;
     }
 
     public Optional<DeliusUserPersonDetails> getDeliusUserByUsername(final String username) {
+        if (!deliusEnabled) {
+            log.debug("Delius integration disabled, returning empty for {}", username);
+            return Optional.empty();
+        }
         try {
             final var userDetails = restTemplate.getForObject("/users/{username}/details", UserDetails.class, username);
             return Optional.ofNullable(userDetails).map(u -> mapUserDetailsToDeliusUser(u, username));
@@ -49,6 +57,10 @@ public class DeliusUserService {
     }
 
     public boolean authenticateUser(final String username, final String password) {
+        if (!deliusEnabled) {
+            log.debug("Delius integration disabled, returning empty for {}", username);
+            return false;
+        }
         try {
             restTemplate.postForEntity("/authenticate", new AuthUser(username, password), String.class);
             return true;
@@ -83,6 +95,10 @@ public class DeliusUserService {
     }
 
     public void changePassword(final String username, final String password) {
+        if (!deliusEnabled) {
+            log.debug("Delius integration disabled, returning empty for {}", username);
+            return;
+        }
         final var headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
@@ -92,7 +108,7 @@ public class DeliusUserService {
 
     @Getter
     @AllArgsConstructor
-    private static class AuthUser {
+    public static class AuthUser {
         private final String username;
         private final String password;
     }
