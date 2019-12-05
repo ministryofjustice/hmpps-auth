@@ -3,6 +3,7 @@ spring:
     include: dev-config,auth-seed,nomis-seed
 
 delius:
+  enabled: true
   endpoint.url: http://localhost:8099
   client:
     client-id: delius-auth-api-client
