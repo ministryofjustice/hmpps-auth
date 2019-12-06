@@ -5,8 +5,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
-import java.util.stream.Collectors
-import java.util.stream.Stream
 
 data class DeliusUserPersonDetails(private val surname: String,
                                    private val firstName: String,
@@ -33,8 +31,7 @@ data class DeliusUserPersonDetails(private val surname: String,
   override fun eraseCredentials() {}
 
   // add in ROLE_PROBATION to standard roles
-  override fun getAuthorities(): Collection<GrantedAuthority?> =
-      Stream.concat(roles.stream(), setOf(SimpleGrantedAuthority("ROLE_PROBATION")).stream()).collect(Collectors.toSet())
+  override fun getAuthorities(): Collection<GrantedAuthority?> = roles.plus(SimpleGrantedAuthority("ROLE_PROBATION"))
 
   override fun getPassword(): String = "password"
 
