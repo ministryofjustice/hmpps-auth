@@ -11,8 +11,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDe
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
 
 import java.util.Optional;
@@ -84,8 +84,8 @@ public class UserServiceTest {
         return Optional.of(User.of("someuser"));
     }
 
-    private Optional<StaffUserAccount> getStaffUserAccountForBob() {
-        final var staffUserAccount = new StaffUserAccount();
+    private Optional<NomisUserPersonDetails> getStaffUserAccountForBob() {
+        final var staffUserAccount = new NomisUserPersonDetails();
         staffUserAccount.setUsername("nomisuser");
         final var staff = new Staff();
         staff.setFirstName("bOb");

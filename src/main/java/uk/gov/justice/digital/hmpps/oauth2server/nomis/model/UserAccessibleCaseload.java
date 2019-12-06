@@ -25,7 +25,7 @@ public class UserAccessibleCaseload implements Serializable {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USERNAME", updatable = false, insertable = false)
-    private StaffUserAccount user;
+    private NomisUserPersonDetails user;
 
     @Column(name = "START_DATE")
     private LocalDate startDate;

@@ -33,7 +33,7 @@ public class Staff {
     private String status;
 
     @OneToMany(mappedBy = "staff")
-    private List<StaffUserAccount> users;
+    private List<NomisUserPersonDetails> users;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "STAFF_ID")
@@ -61,7 +61,7 @@ public class Staff {
                 .findFirst().orElse(null);
     }
 
-    public StaffUserAccount getAccountByType(final String type) {
+    public NomisUserPersonDetails getAccountByType(final String type) {
         return users.stream()
                 .filter(r -> r.getType().equals(type))
                 .findFirst().orElse(null);

@@ -12,8 +12,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService;
 
 import java.time.LocalDateTime;
@@ -112,7 +112,7 @@ public class UserRetriesServiceTest {
     }
 
     private UserPersonDetails getUserPersonDetailsForBob() {
-        final var staffUserAccount = new StaffUserAccount();
+        final var staffUserAccount = new NomisUserPersonDetails();
         final var staff = new Staff();
         staff.setFirstName("bOb");
         staff.setStatus("ACTIVE");

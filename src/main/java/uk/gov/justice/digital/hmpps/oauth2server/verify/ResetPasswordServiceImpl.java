@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
@@ -147,7 +147,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
             return userPersonDetails.isEnabled();
         }
         // otherwise must be nomis user so will have a staff account instead.
-        final var staffUserAccount = (StaffUserAccount) userPersonDetails;
+        final var staffUserAccount = (NomisUserPersonDetails) userPersonDetails;
         final var status = staffUserAccount.getAccountDetail().getStatus();
         return staffUserAccount.getStaff().isActive() && (!status.isLocked() || status.isUserLocked() || user.isLocked());
     }

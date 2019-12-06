@@ -5,7 +5,7 @@ import org.junit.Test
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import java.time.LocalDateTime
 
-class StaffUserAccountTest {
+class NomisUserPersonDetailsTest {
   @Test
   fun `isCredentialsNonExpired status expired`() {
     val account = createStaffUserAccount("EXPIRED")
@@ -54,8 +54,8 @@ class StaffUserAccountTest {
     assertThat(user.source).isEqualTo(AuthSource.nomis)
   }
 
-  private fun createStaffUserAccount(status: String = "STATUS", passwordExpiry: LocalDateTime? = null): StaffUserAccount {
-    val account = StaffUserAccount()
+  private fun createStaffUserAccount(status: String = "STATUS", passwordExpiry: LocalDateTime? = null): NomisUserPersonDetails {
+    val account = NomisUserPersonDetails()
     val detail = AccountDetail()
     account.accountDetail = detail
     account.username = "user"

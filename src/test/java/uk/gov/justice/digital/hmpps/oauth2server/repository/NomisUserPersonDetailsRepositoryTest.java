@@ -13,8 +13,8 @@ import org.springframework.test.context.transaction.TestTransaction;
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("dev")
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-public class StaffUserAccountRepositoryTest {
+public class NomisUserPersonDetailsRepositoryTest {
 
     private static final Staff DEFAULT_STAFF = Staff.builder().staffId(5L).build();
 
@@ -81,8 +81,8 @@ public class StaffUserAccountRepositoryTest {
         assertThat(entity.getPassword()).startsWith("{bcrypt}");
     }
 
-    private StaffUserAccount transientEntity() {
-        return StaffUserAccount
+    private NomisUserPersonDetails transientEntity() {
+        return NomisUserPersonDetails
                 .builder()
                 .username("TEST_USER")
                 .type("ADMIN")

@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
@@ -48,7 +48,7 @@ public class UserDetail {
                 .authSource(authSource);
 
         if (authSource == AuthSource.nomis) {
-            final var staffUserAccount = (StaffUserAccount) u;
+            final var staffUserAccount = (NomisUserPersonDetails) u;
             final var staffId = staffUserAccount.getStaff().getStaffId();
             builder.staffId(staffId);
             if (staffUserAccount.getActiveCaseLoadId() != null) {

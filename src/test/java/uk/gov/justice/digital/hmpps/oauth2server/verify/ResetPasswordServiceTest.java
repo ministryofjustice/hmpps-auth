@@ -16,8 +16,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
@@ -93,7 +93,7 @@ public class ResetPasswordServiceTest {
         final var user = User.builder().username("someuser").email("email").source(AuthSource.nomis).verified(true).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         final var staffUserAccount = getStaffUserAccountForBobOptional();
-        ((StaffUserAccount) staffUserAccount.orElseThrow()).getStaff().setStatus("inactive");
+        ((NomisUserPersonDetails) staffUserAccount.orElseThrow()).getStaff().setStatus("inactive");
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount);
 
         final var optional = resetPasswordService.requestResetPassword("user", "url");
@@ -121,7 +121,7 @@ public class ResetPasswordServiceTest {
         final var user = User.builder().username("someuser").email("email").verified(true).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         final var accountOptional = getStaffUserAccountForBobOptional();
-        ((StaffUserAccount) accountOptional.orElseThrow()).getAccountDetail().setAccountStatus("LOCKED");
+        ((NomisUserPersonDetails) accountOptional.orElseThrow()).getAccountDetail().setAccountStatus("LOCKED");
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(accountOptional);
 
         final var optional = resetPasswordService.requestResetPassword("user", "url");
@@ -135,7 +135,7 @@ public class ResetPasswordServiceTest {
         final var user = User.builder().username("someuser").email("email").source(AuthSource.nomis).verified(true).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         final var accountOptional = getStaffUserAccountForBobOptional();
-        ((StaffUserAccount) accountOptional.orElseThrow()).getAccountDetail().setAccountStatus("EXPIRED & LOCKED(TIMED)");
+        ((NomisUserPersonDetails) accountOptional.orElseThrow()).getAccountDetail().setAccountStatus("EXPIRED & LOCKED(TIMED)");
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(accountOptional);
 
         final var optionalLink = resetPasswordService.requestResetPassword("user", "url");
@@ -277,7 +277,7 @@ public class ResetPasswordServiceTest {
     }
 
     private UserPersonDetails getStaffUserAccountForBob() {
-        final var staffUserAccount = new StaffUserAccount();
+        final var staffUserAccount = new NomisUserPersonDetails();
         final var staff = new Staff();
         staff.setFirstName("bOb");
         staff.setStatus("ACTIVE");
@@ -342,7 +342,7 @@ public class ResetPasswordServiceTest {
     @Test
     public void resetPasswordLockedAccount() {
         final var staffUserAccount = getStaffUserAccountForBobOptional();
-        ((StaffUserAccount) staffUserAccount.orElseThrow()).getStaff().setStatus("inactive");
+        ((NomisUserPersonDetails) staffUserAccount.orElseThrow()).getStaff().setStatus("inactive");
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount);
 
         final var user = User.builder().username("user").source(AuthSource.nomis).build();

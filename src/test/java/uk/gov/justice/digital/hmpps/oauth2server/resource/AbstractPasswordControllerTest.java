@@ -14,7 +14,7 @@ import org.springframework.security.authentication.LockedException;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
@@ -261,7 +261,7 @@ public class AbstractPasswordControllerTest {
     }
 
     private void setupGetUserCallForProfile(final String profile) {
-        final var user = new StaffUserAccount();
+        final var user = new NomisUserPersonDetails();
         final var detail = new AccountDetail();
         detail.setProfile(profile);
         user.setAccountDetail(detail);

@@ -28,5 +28,5 @@ public class UserCaseloadRole implements Serializable {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USERNAME", updatable = false, insertable = false)
-    private StaffUserAccount user;
+    private NomisUserPersonDetails user;
 }

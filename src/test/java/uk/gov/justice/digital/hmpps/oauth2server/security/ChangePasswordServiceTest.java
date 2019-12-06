@@ -13,8 +13,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService;
 
 import java.util.Optional;
@@ -100,7 +100,7 @@ public class ChangePasswordServiceTest {
     @Test
     public void setPassword_LockedAccount() {
         final var staffUserAccount = getStaffUserAccountForBobOptional();
-        staffUserAccount.map(StaffUserAccount.class::cast).get().getAccountDetail().setAccountStatus("LOCKED");
+        staffUserAccount.map(NomisUserPersonDetails.class::cast).get().getAccountDetail().setAccountStatus("LOCKED");
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount);
 
         final var user = User.of("user");
@@ -142,7 +142,7 @@ public class ChangePasswordServiceTest {
     }
 
     private UserPersonDetails getStaffUserAccountForBob() {
-        final var staffUserAccount = new StaffUserAccount();
+        final var staffUserAccount = new NomisUserPersonDetails();
         final var staff = new Staff();
         staff.setFirstName("bOb");
         staff.setStatus("ACTIVE");
