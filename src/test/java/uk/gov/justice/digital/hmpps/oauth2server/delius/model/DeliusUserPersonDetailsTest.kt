@@ -29,5 +29,5 @@ class DeliusUserPersonDetailsTest {
     assertThat(user.source).isEqualTo(AuthSource.delius)
   }
 
-  private fun createDeliusUser() = DeliusUserPersonDetails(username = "user", email = "a@b.com", firstName = "F", surname = "L")
+  private fun createDeliusUser() = DeliusUserPersonDetails(username = "user", firstName = "F", surname = "L", email = "a@b.com")
 }

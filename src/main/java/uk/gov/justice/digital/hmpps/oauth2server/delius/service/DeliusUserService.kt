@@ -20,7 +20,9 @@ import java.util.*
 @Service
 open class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemplate: RestTemplate,
                              @Value("\${delius.enabled:false}") private val deliusEnabled: Boolean,
-                             private val mappings: DeliusRoleMappings) {
+                             deliusRoleMappings: DeliusRoleMappings) {
+  private val mappings: Map<String, List<String>> = deliusRoleMappings.mappings.mapKeys { it.key.toUpperCase().replace('.', '_') }
+
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
@@ -71,16 +73,15 @@ open class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val res
 
   private fun mapUserDetailsToDeliusUser(userDetails: UserDetails, username: String): DeliusUserPersonDetails =
       DeliusUserPersonDetails(
+          username = username,
           firstName = userDetails.firstName,
           surname = userDetails.surname,
-          roles = mapUserRolesToAuthorities(userDetails.roles),
-          username = username,
           email = userDetails.email,
-          enabled = userDetails.enabled)
+          enabled = userDetails.enabled,
+          roles = mapUserRolesToAuthorities(userDetails.roles))
 
   private fun mapUserRolesToAuthorities(userRoles: List<UserRole>): Collection<GrantedAuthority> =
-      userRoles.map { (name) -> mappings.mappings[name] }
-          .filterNotNull()
+      userRoles.mapNotNull { (name) -> mappings[name] }
           .flatMap { r -> r.map(::SimpleGrantedAuthority) }
           .toSet()
 

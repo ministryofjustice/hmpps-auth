@@ -20,8 +20,8 @@ class DeliusUserServiceTest {
   private lateinit var disabledDeliusService: DeliusUserService
   private lateinit var deliusService: DeliusUserService
   private val mappings = DeliusRoleMappings(mapOf(
-      Pair("joe", listOf("role1", "role2")),
-      Pair("fred", listOf("role1", "role3"))))
+      Pair("arole", listOf("role1", "role2")),
+      Pair("test.role", listOf("role1", "role3"))))
 
   @Before
   fun before() {
@@ -47,41 +47,41 @@ class DeliusUserServiceTest {
     val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
-            surname = "Smith",
-            firstName = "Delius",
-            enabled = true,
-            email = "a@where.com",
             username = "bob",
+            firstName = "Delius",
+            surname = "Smith",
+            email = "a@where.com",
+            enabled = true,
             roles = emptySet()))
   }
 
   @Test
   fun `deliusUserByUsername test role mappings`() {
     whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
-        createUserDetails().copy(roles = listOf(UserRole("joe", "desc 1"), UserRole("bob", "desc 2"))))
+        createUserDetails().copy(roles = listOf(UserRole("AROLE", "desc 1"), UserRole("bob", "desc 2"))))
     val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
-            surname = "Smith",
-            firstName = "Delius",
-            enabled = true,
-            email = "a@where.com",
             username = "bob",
+            firstName = "Delius",
+            surname = "Smith",
+            email = "a@where.com",
+            enabled = true,
             roles = setOf(SimpleGrantedAuthority("role1"), SimpleGrantedAuthority("role2"))))
   }
 
   @Test
   fun `deliusUserByUsername test role mappings multiple roles`() {
     whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
-        createUserDetails().copy(roles = listOf(UserRole("fred", "desc 1"), UserRole("joe", "desc 2"), UserRole("other", "other desc"))))
+        createUserDetails().copy(roles = listOf(UserRole("TEST_ROLE", "desc 1"), UserRole("AROLE", "desc 2"), UserRole("other", "other desc"))))
     val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
-            surname = "Smith",
-            firstName = "Delius",
-            enabled = true,
-            email = "a@where.com",
             username = "bob",
+            firstName = "Delius",
+            surname = "Smith",
+            email = "a@where.com",
+            enabled = true,
             roles = setOf(SimpleGrantedAuthority("role1"), SimpleGrantedAuthority("role2"), SimpleGrantedAuthority("role3"))))
   }
 
