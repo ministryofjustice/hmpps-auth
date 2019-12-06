@@ -34,6 +34,6 @@ open class DeliusAuthenticationProvider(private val deliusUserService: DeliusUse
     LockingAuthenticationProvider(deliusUserDetailsService, userRetriesService, telemetryClient, accountLockoutCount) {
 
 
-  override fun checkPassword(userDetails: UserDetails, password: String?): Boolean =
+  override fun checkPassword(userDetails: UserDetails, password: String): Boolean =
       deliusUserService.authenticateUser(userDetails.username, password)
 }

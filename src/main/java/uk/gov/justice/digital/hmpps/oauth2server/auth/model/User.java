@@ -22,7 +22,6 @@ import static javax.persistence.FetchType.EAGER;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"id"})
-@Builder
 public class User implements UserPersonDetails, CredentialsContainer {
     @Id
     @GeneratedValue(generator = "UUID")
@@ -60,11 +59,9 @@ public class User implements UserPersonDetails, CredentialsContainer {
      * Used for NOMIS accounts to force change password so that they don't get locked out due to not changing password
      */
     @Column(name = "password_expiry")
-    @Builder.Default
     private LocalDateTime passwordExpiry = LocalDateTime.now();
 
     @Column(name = "last_logged_in")
-    @Builder.Default
     private LocalDateTime lastLoggedIn = LocalDateTime.now();
 
     @Embedded
@@ -74,23 +71,24 @@ public class User implements UserPersonDetails, CredentialsContainer {
     @JoinTable(name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-    @Builder.Default
     private Set<Authority> authorities = new HashSet<>();
 
     @OneToMany
     @JoinTable(name = "user_group",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "group_id"))
-    @Builder.Default
     private Set<Group> groups = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
     @Setter(AccessLevel.NONE)
     private Set<UserToken> tokens = new HashSet<>();
 
     public static User of(final String username) {
         return User.builder().username(username).build();
+    }
+
+    public static UserBuilder builder() {
+        return new UserBuilder();
     }
 
     @Override
@@ -157,5 +155,103 @@ public class User implements UserPersonDetails, CredentialsContainer {
 
     public boolean isMaster() {
         return source == AuthSource.auth;
+    }
+
+    public static class UserBuilder {
+        private UUID id;
+        private String username;
+        private String password;
+        private String email;
+        private boolean verified;
+        private boolean locked;
+        private boolean enabled;
+        private AuthSource source;
+        private LocalDateTime passwordExpiry = LocalDateTime.now();
+        private LocalDateTime lastLoggedIn = LocalDateTime.now();
+        private Person person;
+        private Set<Authority> authorities = new HashSet<>();
+        private Set<Group> groups = new HashSet<>();
+        private Set<UserToken> tokens = new HashSet<>();
+
+        UserBuilder() {
+        }
+
+        public UserBuilder id(final UUID id) {
+            this.id = id;
+            return this;
+        }
+
+        public UserBuilder username(final String username) {
+            this.username = username;
+            return this;
+        }
+
+        public UserBuilder password(final String password) {
+            this.password = password;
+            return this;
+        }
+
+        public UserBuilder email(final String email) {
+            this.email = email;
+            return this;
+        }
+
+        public UserBuilder verified(final boolean verified) {
+            this.verified = verified;
+            return this;
+        }
+
+        public UserBuilder locked(final boolean locked) {
+            this.locked = locked;
+            return this;
+        }
+
+        public UserBuilder enabled(final boolean enabled) {
+            this.enabled = enabled;
+            return this;
+        }
+
+        public UserBuilder source(final AuthSource source) {
+            this.source = source;
+            return this;
+        }
+
+        public UserBuilder passwordExpiry(final LocalDateTime passwordExpiry) {
+            this.passwordExpiry = passwordExpiry;
+            return this;
+        }
+
+        public UserBuilder lastLoggedIn(final LocalDateTime lastLoggedIn) {
+            this.lastLoggedIn = lastLoggedIn;
+            return this;
+        }
+
+        public UserBuilder person(final Person person) {
+            this.person = person;
+            return this;
+        }
+
+        public UserBuilder authorities(final Set<Authority> authorities) {
+            this.authorities = authorities;
+            return this;
+        }
+
+        public UserBuilder groups(final Set<Group> groups) {
+            this.groups = groups;
+            return this;
+        }
+
+        public UserBuilder tokens(final Set<UserToken> tokens) {
+            this.tokens = tokens;
+            return this;
+        }
+
+        public User build() {
+            return new User(id, username, password, email, verified, locked, enabled, source, passwordExpiry, lastLoggedIn, person, authorities, groups, tokens);
+        }
+
+        public String toString() {
+            return "User.UserBuilder(id=" + this.id + ", username=" + this.username + ", password=" + this.password + ", email=" + this.email + ", verified=" + this.verified + ", locked=" + this.locked + ", enabled=" + this.enabled + ", source=" + this.source + ", passwordExpiry=" + this.passwordExpiry + ", lastLoggedIn=" + this.lastLoggedIn + ", person=" + this.person + ", authorities=" + this.authorities + ", groups=" + this.groups + ", tokens=" + this.tokens + ")";
+        }
     }
 }

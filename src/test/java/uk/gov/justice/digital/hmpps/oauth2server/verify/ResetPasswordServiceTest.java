@@ -26,10 +26,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -327,7 +324,7 @@ public class ResetPasswordServiceTest {
     public void resetPassword_deliusUser() throws NotificationClientException {
         final var user = User.builder().username("user").enabled(true).source(AuthSource.delius).build();
         final var userToken = user.createToken(TokenType.RESET);
-        final var deliusUserPersonDetails = DeliusUserPersonDetails.builder().username("user").enabled(true).build();
+        final var deliusUserPersonDetails = new DeliusUserPersonDetails("user", "Delius", "Smith", "a@b.com", true, Set.of());
         when(userService.findMasterUserPersonDetails("user")).thenReturn(Optional.of(deliusUserPersonDetails));
         when(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken));
         resetPasswordService.setPassword("bob", "pass");

@@ -219,6 +219,23 @@ class UserSpecification extends TestSpecification {
         }.sort() == ['MAINTAIN_ACCESS_ROLES', 'MAINTAIN_OAUTH_USERS', 'OAUTH_ADMIN']
     }
 
+    def "User Roles endpoint returns principal user data for delius user"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("delius", "password123456", "elite2apiclient", "clientsecret")
+
+        when:
+        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/me/roles", HttpMethod.GET, null, String.class)
+
+        then:
+        response.statusCode == HttpStatus.OK
+        def userData = jsonSlurper.parseText(response.body)
+
+        assert userData.collect {
+            it.roleCode
+        }.sort() == ['GLOBAL_SEARCH', 'LICENCE_RO', 'PROBATION']
+    }
+
     def "User Me endpoint not accessible without valid token"() {
 
         when:

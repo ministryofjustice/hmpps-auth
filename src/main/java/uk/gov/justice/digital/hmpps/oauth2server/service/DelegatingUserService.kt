@@ -24,7 +24,7 @@ open class DelegatingUserService(
     }
   }
 
-  open fun changePasswordWithUnlock(userPersonDetails: UserPersonDetails, password: String?) {
+  open fun changePasswordWithUnlock(userPersonDetails: UserPersonDetails, password: String) {
     // need to unlock the user in auth too
     authUserService.unlockUser(userPersonDetails)
 
@@ -35,7 +35,7 @@ open class DelegatingUserService(
     }
   }
 
-  open fun changePassword(userPersonDetails: UserPersonDetails, password: String?) {
+  open fun changePassword(userPersonDetails: UserPersonDetails, password: String) {
     when (userPersonDetails.authSource) {
       "auth" -> authUserService.changePassword(userPersonDetails as User, password)
       "nomis" -> nomisUserService.changePassword(userPersonDetails.username, password)

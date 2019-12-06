@@ -1,27 +1,32 @@
 package uk.gov.justice.digital.hmpps.oauth2server.delius.service
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.never
-import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.*
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.junit.MockitoJUnitRunner
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.web.client.RestTemplate
+import uk.gov.justice.digital.hmpps.oauth2server.config.DeliusRoleMappings
+import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
+import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole
 
 @RunWith(MockitoJUnitRunner::class)
 class DeliusUserServiceTest {
   private val restTemplate: RestTemplate = mock()
   private lateinit var disabledDeliusService: DeliusUserService
   private lateinit var deliusService: DeliusUserService
+  private val mappings = DeliusRoleMappings(mapOf(
+      Pair("arole", listOf("role1", "role2")),
+      Pair("test.role", listOf("role1", "role3"))))
 
   @Before
   fun before() {
-    disabledDeliusService = DeliusUserService(restTemplate, false)
-    deliusService = DeliusUserService(restTemplate, true)
+    disabledDeliusService = DeliusUserService(restTemplate, false, mappings)
+    deliusService = DeliusUserService(restTemplate, true, mappings)
   }
 
   @Test
@@ -35,6 +40,53 @@ class DeliusUserServiceTest {
     deliusService.getDeliusUserByUsername("bob")
     verify(restTemplate).getForObject<UserDetails>(anyString(), any(), anyString())
   }
+
+  @Test
+  fun `deliusUserByUsername test role mappings no roles granted`() {
+    whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(createUserDetails())
+    val optionalDetails = deliusService.getDeliusUserByUsername("bob")
+    assertThat(optionalDetails).get().isEqualTo(
+        DeliusUserPersonDetails(
+            username = "bob",
+            firstName = "Delius",
+            surname = "Smith",
+            email = "a@where.com",
+            enabled = true,
+            roles = emptySet()))
+  }
+
+  @Test
+  fun `deliusUserByUsername test role mappings`() {
+    whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
+        createUserDetails().copy(roles = listOf(UserRole("AROLE", "desc 1"), UserRole("bob", "desc 2"))))
+    val optionalDetails = deliusService.getDeliusUserByUsername("bob")
+    assertThat(optionalDetails).get().isEqualTo(
+        DeliusUserPersonDetails(
+            username = "bob",
+            firstName = "Delius",
+            surname = "Smith",
+            email = "a@where.com",
+            enabled = true,
+            roles = setOf(SimpleGrantedAuthority("role1"), SimpleGrantedAuthority("role2"))))
+  }
+
+  @Test
+  fun `deliusUserByUsername test role mappings multiple roles`() {
+    whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
+        createUserDetails().copy(roles = listOf(UserRole("TEST_ROLE", "desc 1"), UserRole("AROLE", "desc 2"), UserRole("other", "other desc"))))
+    val optionalDetails = deliusService.getDeliusUserByUsername("bob")
+    assertThat(optionalDetails).get().isEqualTo(
+        DeliusUserPersonDetails(
+            username = "bob",
+            firstName = "Delius",
+            surname = "Smith",
+            email = "a@where.com",
+            enabled = true,
+            roles = setOf(SimpleGrantedAuthority("role1"), SimpleGrantedAuthority("role2"), SimpleGrantedAuthority("role3"))))
+  }
+
+  private fun createUserDetails(): UserDetails =
+      UserDetails(surname = "Smith", firstName = "Delius", enabled = true, email = "a@where.com", roles = emptyList())
 
   @Test
   fun `authenticateUser disabled`() {

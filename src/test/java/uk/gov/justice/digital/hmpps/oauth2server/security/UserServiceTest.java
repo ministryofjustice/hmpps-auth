@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -97,8 +98,6 @@ public class UserServiceTest {
     }
 
     private Optional<DeliusUserPersonDetails> getDeliusUserAccountForBob() {
-        return Optional.ofNullable(DeliusUserPersonDetails.builder()
-                .username("deliusUser")
-                .build());
+        return Optional.of(new DeliusUserPersonDetails("deliusUser", "Delius", "Smith", "a@b.com", true, Set.of()));
     }
 }

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.config
 import org.hibernate.validator.constraints.URL
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.boot.web.client.RootUriTemplateHandler
 import org.springframework.context.annotation.Bean
@@ -12,9 +13,9 @@ import org.springframework.security.oauth2.client.token.grant.client.ClientCrede
 import org.springframework.web.client.RestTemplate
 import java.time.Duration
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION", "SpringJavaInjectionPointsAutowiringInspection")
 @Configuration
-open class RestTemplateConfiguration(private val apiDetails: ClientCredentialsResourceDetails,
+open class RestTemplateConfiguration(private val apiDetails: DeliusClientCredentials,
                                      @param:Value("\${delius.endpoint.url}") private val deliusEndpointUrl: @URL String,
                                      @param:Value("\${delius.health.timeout:1s}") private val healthTimeout: Duration) {
 
@@ -40,7 +41,11 @@ open class RestTemplateConfiguration(private val apiDetails: ClientCredentialsRe
 
 }
 
-@Suppress("DEPRECATION")
-@Configuration
+@Suppress("DEPRECATION", "ConfigurationProperties")
 @ConfigurationProperties("delius.client")
-open class deliusClientCredentials: ClientCredentialsResourceDetails()
+open class DeliusClientCredentials : ClientCredentialsResourceDetails()
+
+@Suppress("ConfigurationProperties", "ConfigurationProperties")
+@ConstructorBinding
+@ConfigurationProperties("delius.roles")
+open class DeliusRoleMappings(val mappings: Map<String, List<String>>)
