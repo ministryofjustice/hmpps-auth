@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 
 data class DeliusUserPersonDetails(private val username: String,
+                                   private val userId: String,
                                    private val firstName: String,
                                    private val surname: String,
                                    val email: String,
@@ -15,9 +16,9 @@ data class DeliusUserPersonDetails(private val username: String,
 
   override fun getUsername(): String = username
 
-  override fun getFirstName(): String = firstName
+  override fun getUserId(): String = userId
 
-  override fun getUserId(): String = username
+  override fun getFirstName(): String = firstName
 
   override fun getName(): String = String.format("%s %s", firstName, surname)
 

@@ -48,6 +48,7 @@ class DeliusUserServiceTest {
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
             username = "BOB",
+            userId = "12345",
             firstName = "Delius",
             surname = "Smith",
             email = "a@where.com",
@@ -63,6 +64,7 @@ class DeliusUserServiceTest {
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
             username = "BOB",
+            userId = "12345",
             firstName = "Delius",
             surname = "Smith",
             email = "a@where.com",
@@ -78,6 +80,7 @@ class DeliusUserServiceTest {
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
             username = "BOB",
+            userId = "12345",
             firstName = "Delius",
             surname = "Smith",
             email = "a@where.com",
@@ -92,6 +95,7 @@ class DeliusUserServiceTest {
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
             username = "BOB",
+            userId = "12345",
             firstName = "Delius",
             surname = "Smith",
             email = "a@where.com",
@@ -107,6 +111,7 @@ class DeliusUserServiceTest {
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
             username = "BOB",
+            userId = "12345",
             firstName = "Delius",
             surname = "Smith",
             email = "somewhere@bob.com",
@@ -115,7 +120,7 @@ class DeliusUserServiceTest {
   }
 
   private fun createUserDetails(): UserDetails =
-      UserDetails(surname = "Smith", firstName = "Delius", enabled = true, email = "a@where.com", roles = emptyList())
+      UserDetails(userId = "12345", surname = "Smith", firstName = "Delius", enabled = true, email = "a@where.com", roles = emptyList())
 
   @Test
   fun `authenticateUser disabled`() {

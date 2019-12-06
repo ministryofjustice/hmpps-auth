@@ -98,6 +98,6 @@ public class UserServiceTest {
     }
 
     private Optional<DeliusUserPersonDetails> getDeliusUserAccountForBob() {
-        return Optional.of(new DeliusUserPersonDetails("deliusUser", "Delius", "Smith", "a@b.com", true, Set.of()));
+        return Optional.of(new DeliusUserPersonDetails("deliusUser", "12345", "Delius", "Smith", "a@b.com", true, Set.of()));
     }
 }

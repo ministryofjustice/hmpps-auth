@@ -74,6 +74,7 @@ open class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val res
   private fun mapUserDetailsToDeliusUser(userDetails: UserDetails, username: String): DeliusUserPersonDetails =
       DeliusUserPersonDetails(
           username = username.toUpperCase(),
+          userId = userDetails.userId,
           firstName = userDetails.firstName,
           surname = userDetails.surname,
           email = userDetails.email.toLowerCase(),

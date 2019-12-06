@@ -11,7 +11,8 @@ class UserDetailsTest {
     val stream = UserDetailsTest::class.java.getResourceAsStream("user_details.json")
     val userDetails = ObjectMapper().readValue(stream, UserDetails::class.java)
     assertThat(userDetails).isEqualTo(
-        UserDetails(surname = "Smith",
+        UserDetails(userId = "2500077027",
+            surname = "Smith",
             firstName = "John",
             email = "test@digital.justice.gov.uk",
             enabled = true,
@@ -23,7 +24,8 @@ class UserDetailsTest {
     val stream = UserDetailsTest::class.java.getResourceAsStream("user_details_no_roles.json")
     val userDetails = ObjectMapper().readValue(stream, UserDetails::class.java)
     assertThat(userDetails).isEqualTo(
-        UserDetails(surname = "Smith",
+        UserDetails(userId = "2500077027",
+            surname = "Smith",
             firstName = "John",
             email = "test@digital.justice.gov.uk",
             enabled = false,
