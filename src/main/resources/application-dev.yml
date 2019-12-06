@@ -8,3 +8,8 @@ delius:
   client:
     client-id: delius-auth-api-client
     client-secret: delius-auth-api-client
+  roles:
+    mappings:
+      TEST_ROLE:
+        - 'ROLE_LICENCE_RO'
+        - 'ROLE_GLOBAL_SEARCH'

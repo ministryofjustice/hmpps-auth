@@ -1,114 +1,98 @@
-package uk.gov.justice.digital.hmpps.oauth2server.delius.service;
+package uk.gov.justice.digital.hmpps.oauth2server.delius.service
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole;
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.RestTemplate
+import uk.gov.justice.digital.hmpps.oauth2server.config.DeliusRoleMappings
+import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
+import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole
+import java.util.*
 
-import java.util.*;
-import java.util.stream.Collectors;
-
+@Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Service
-@Log4j2
-public class DeliusUserService {
+open class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemplate: RestTemplate,
+                             @Value("\${delius.enabled:false}") private val deliusEnabled: Boolean,
+                             private val mappings: DeliusRoleMappings) {
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 
-    private final RestTemplate restTemplate;
-    private final boolean deliusEnabled;
-
-    public DeliusUserService(@Qualifier("deliusApiRestTemplate") final RestTemplate restTemplate,
-                             @Value("${delius.enabled:false}") final boolean deliusEnabled) {
-        this.restTemplate = restTemplate;
-        this.deliusEnabled = deliusEnabled;
+  open fun getDeliusUserByUsername(username: String): Optional<DeliusUserPersonDetails> {
+    if (!deliusEnabled) {
+      log.debug("Delius integration disabled, returning empty for {}", username)
+      return Optional.empty()
     }
 
-    public Optional<DeliusUserPersonDetails> getDeliusUserByUsername(final String username) {
-        if (!deliusEnabled) {
-            log.debug("Delius integration disabled, returning empty for {}", username);
-            return Optional.empty();
-        }
-        try {
-            final var userDetails = restTemplate.getForObject("/users/{username}/details", UserDetails.class, username);
-            return Optional.ofNullable(userDetails).map(u -> mapUserDetailsToDeliusUser(u, username));
-        } catch (final HttpClientErrorException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                log.debug("User not found in delius due to {}", e.getMessage());
-            } else {
-                log.warn("Unable to get delius user details for user {}", username, e);
-            }
-            return Optional.empty();
-        } catch (final Exception e) {
-            log.warn("Unable to get delius user details for user {}", username, e);
-            return Optional.empty();
-        }
+    return try {
+      val userDetails = restTemplate.getForObject("/users/{username}/details", UserDetails::class.java, username)
+      Optional.ofNullable(userDetails).map { u: UserDetails -> mapUserDetailsToDeliusUser(u, username) }
+    } catch (e: HttpClientErrorException) {
+      if (e.statusCode == HttpStatus.NOT_FOUND) {
+        log.debug("User not found in delius due to {}", e.message)
+      } else {
+        log.warn("Unable to get delius user details for user {}", username, e)
+      }
+      Optional.empty()
+    } catch (e: Exception) {
+      log.warn("Unable to get delius user details for user {}", username, e)
+      Optional.empty()
+    }
+  }
+
+  open fun authenticateUser(username: String, password: String): Boolean {
+    if (!deliusEnabled) {
+      log.debug("Delius integration disabled, returning empty for {}", username)
+      return false
     }
 
-    public boolean authenticateUser(final String username, final String password) {
-        if (!deliusEnabled) {
-            log.debug("Delius integration disabled, returning empty for {}", username);
-            return false;
-        }
-        try {
-            restTemplate.postForEntity("/authenticate", new AuthUser(username, password), String.class);
-            return true;
-        } catch (final HttpClientErrorException e) {
-            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-                log.debug("User not authorised in delius due to {}", e.getMessage());
-            } else {
-                log.warn("Unable to authenticate user {}", username, e);
-            }
-            return false;
-        } catch (final Exception e) {
-            log.warn("Unable to authenticate user for user {}", username, e);
-            return false;
-        }
+    return try {
+      restTemplate.postForEntity("/authenticate", AuthUser(username, password), String::class.java)
+      true
+    } catch (e: HttpClientErrorException) {
+      if (e.statusCode == HttpStatus.UNAUTHORIZED) {
+        log.debug("User not authorised in delius due to {}", e.message)
+      } else {
+        log.warn("Unable to authenticate user {}", username, e)
+      }
+      false
+    } catch (e: Exception) {
+      log.warn("Unable to authenticate user for user {}", username, e)
+      false
     }
+  }
 
-    private DeliusUserPersonDetails mapUserDetailsToDeliusUser(final UserDetails userDetails, final String username) {
-        return DeliusUserPersonDetails.builder()
-                .firstName(userDetails.getFirstName())
-                .surname(userDetails.getSurname())
-                // TODO: Sort out removal of roles in community api
-                .roles(mapUserRolesToAuthorities(Collections.emptyList()))
-                .username(username)
-                .email(userDetails.getEmail())
-                .enabled(userDetails.getEnabled()).build();
+  private fun mapUserDetailsToDeliusUser(userDetails: UserDetails, username: String): DeliusUserPersonDetails =
+      DeliusUserPersonDetails(
+          firstName = userDetails.firstName,
+          surname = userDetails.surname,
+          roles = mapUserRolesToAuthorities(userDetails.roles),
+          username = username,
+          email = userDetails.email,
+          enabled = userDetails.enabled)
+
+  private fun mapUserRolesToAuthorities(userRoles: List<UserRole>): Collection<GrantedAuthority> =
+      userRoles.map { (name) -> mappings.mappings[name] }
+          .filterNotNull()
+          .flatMap { r -> r.map(::SimpleGrantedAuthority) }
+          .toSet()
+
+  open fun changePassword(username: String, password: String) {
+    if (!deliusEnabled) {
+      log.debug("Delius integration disabled, returning empty for {}", username)
+      return
     }
+    restTemplate.postForEntity("/users/{username}/password", AuthPassword(password), Void::class.java, username)
+  }
 
-    private Collection<? extends GrantedAuthority> mapUserRolesToAuthorities(final List<UserRole> userRoles) {
-        return Optional.ofNullable(userRoles)
-                .map(roles -> roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName())).collect(Collectors.toSet()))
-                .orElseGet(Set::of);
-    }
+  data class AuthUser(val username: String, val password: String)
 
-    public void changePassword(final String username, final String password) {
-        if (!deliusEnabled) {
-            log.debug("Delius integration disabled, returning empty for {}", username);
-            return;
-        }
-        restTemplate.postForEntity("/users/{username}/password", new AuthPassword(password), Void.class, username);
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public static class AuthUser {
-        private final String username;
-        private final String password;
-    }
-
-
-    @Getter
-    @AllArgsConstructor
-    private static class AuthPassword {
-        private final String password;
-    }
+  data class AuthPassword(val password: String)
 }

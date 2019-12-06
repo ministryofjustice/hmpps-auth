@@ -9,8 +9,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,12 +56,6 @@ public class DeliusUserDetailsServiceTest {
     }
 
     private DeliusUserPersonDetails buildStandardUser(final String username) {
-        return DeliusUserPersonDetails.builder()
-                .username(username)
-                .firstName("Itag")
-                .enabled(false)
-                .surname("User")
-                .roles(List.of())
-                .build();
+        return new DeliusUserPersonDetails("User", "Itag", username, false, "a@b.com", Set.of());
     }
 }

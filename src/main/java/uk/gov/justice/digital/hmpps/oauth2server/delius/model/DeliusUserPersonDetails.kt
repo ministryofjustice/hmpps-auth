@@ -1,84 +1,48 @@
-package uk.gov.justice.digital.hmpps.oauth2server.delius.model;
+package uk.gov.justice.digital.hmpps.oauth2server.delius.model
 
-import lombok.Builder;
-import lombok.Data;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+data class DeliusUserPersonDetails(private val surname: String,
+                                   private val firstName: String,
+                                   private val username: String,
+                                   private val enabled: Boolean = false,
+                                   val email: String,
+                                   private val roles: Collection<GrantedAuthority?> = emptySet()) : UserPersonDetails {
 
-@Builder
-@Data
-public class DeliusUserPersonDetails implements UserPersonDetails {
-    private String surname;
-    private String firstName;
-    private String username;
-    private boolean enabled;
-    private String email;
-    private Collection<? extends GrantedAuthority> roles;
+  override fun getUsername(): String = username
 
-    @Override
-    public String getUserId() {
-        return username;
-    }
+  override fun getFirstName(): String = firstName
 
-    @Override
-    public String getName() {
-        return String.format("%s %s", firstName, surname);
-    }
+  override fun getUserId(): String = username
 
-    @Override
-    public boolean isAdmin() {
-        return false;
-    }
+  override fun getName(): String = String.format("%s %s", firstName, surname)
 
-    @Override
-    public String getAuthSource() {
-        return "delius";
-    }
+  override fun isAdmin(): Boolean = false
 
-    @Override
-    public User toUser() {
-        return User.builder().username(username).source(AuthSource.delius).email(email).verified(true).build();
-    }
+  override fun getAuthSource(): String = "delius"
 
-    @Override
-    public void eraseCredentials() {
-    }
+  override fun toUser(): User =
+      User.builder().username(username).source(AuthSource.delius).email(email).verified(true).build()
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Stream.concat(roles.stream(), Set.of(new SimpleGrantedAuthority("ROLE_PROBATION")).stream()).collect(Collectors.toSet());
-    }
+  override fun eraseCredentials() {}
 
-    @Override
-    public String getPassword() {
-        return "password";
-    }
+  // add in ROLE_PROBATION to standard roles
+  override fun getAuthorities(): Collection<GrantedAuthority?> =
+      Stream.concat(roles.stream(), setOf(SimpleGrantedAuthority("ROLE_PROBATION")).stream()).collect(Collectors.toSet())
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+  override fun getPassword(): String = "password"
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+  override fun isAccountNonExpired(): Boolean = true
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+  override fun isAccountNonLocked(): Boolean = true
 
-    @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
+  override fun isCredentialsNonExpired(): Boolean = true
+
+  override fun isEnabled(): Boolean = enabled
 }

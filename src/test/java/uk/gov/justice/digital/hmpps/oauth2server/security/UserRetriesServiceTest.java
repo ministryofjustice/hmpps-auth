@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -61,7 +62,7 @@ public class UserRetriesServiceTest {
     public void resetRetries_SaveDeliusEmailAddress() {
         final var user = User.builder().username("joe").lastLoggedIn(LocalDateTime.now().minusDays(1)).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
-        service.resetRetriesAndRecordLogin(DeliusUserPersonDetails.builder().username("any").email("newemail@bob.com").build());
+        service.resetRetriesAndRecordLogin(new DeliusUserPersonDetails("Smith", "Delius", "deliusUser", true, "newemail@bob.com", Set.of()));
 
         assertThat(user.getEmail()).isEqualTo("newemail@bob.com");
         assertThat(user.isVerified()).isTrue();

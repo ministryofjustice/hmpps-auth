@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserServic
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -42,7 +43,8 @@ public class DeliusAuthenticationProviderTest {
 
     @Test
     public void authenticate_Success() {
-        when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(DeliusUserPersonDetails.builder().username("bob").enabled(true).roles(List.of()).build()));
+        when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(
+                Optional.of(new DeliusUserPersonDetails("Smith", "Delius", "bob", true, "a@b.com", Set.of())));
         when(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(Boolean.TRUE);
         final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("DELIUS_USER", "password"));
         assertThat(auth).isNotNull();
@@ -51,7 +53,7 @@ public class DeliusAuthenticationProviderTest {
     @Test
     public void authenticate_SuccessWithAuthorities() {
         when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(
-                DeliusUserPersonDetails.builder().username("bob").roles(List.of(new SimpleGrantedAuthority("ROLE_BOB"))).enabled(true).build()));
+                new DeliusUserPersonDetails("Smith", "Delius", "bob", true, "a@b.com", List.of(new SimpleGrantedAuthority("ROLE_BOB")))));
         when(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(Boolean.TRUE);
         final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER_ADM", "password123456"));
         assertThat(auth).isNotNull();
@@ -81,7 +83,8 @@ public class DeliusAuthenticationProviderTest {
 
     @Test
     public void authenticate_LockAfterThreeFailures() {
-        when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(DeliusUserPersonDetails.builder().username("bob").enabled(true).build()));
+        when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(
+                Optional.of(new DeliusUserPersonDetails("Smith", "Delius", "bob", true, "a@b.com", Set.of())));
         when(userRetriesService.incrementRetries(anyString())).thenReturn(4);
         assertThatThrownBy(() ->
                 provider.authenticate(new UsernamePasswordAuthenticationToken("CA_USER", "wrong"))
@@ -90,7 +93,7 @@ public class DeliusAuthenticationProviderTest {
 
     @Test
     public void authenticate_ResetAfterSuccess() {
-        final var deliusUser = DeliusUserPersonDetails.builder().username("bob").enabled(true).roles(List.of()).build();
+        final var deliusUser = new DeliusUserPersonDetails("Smith", "Delius", "bob", true, "a@b.com", Set.of());
         when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(deliusUser));
         when(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(Boolean.TRUE);
 
