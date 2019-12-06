@@ -14,8 +14,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientApi;
@@ -226,8 +226,8 @@ public class VerifyEmailServiceTest {
                 isInstanceOf(VerifyEmailException.class).extracting("reason").isEqualTo(reason);
     }
 
-    private StaffUserAccount getStaffUserAccountForBob() {
-        final var staffUserAccount = new StaffUserAccount();
+    private NomisUserPersonDetails getStaffUserAccountForBob() {
+        final var staffUserAccount = new NomisUserPersonDetails();
         final var staff = new Staff();
         staff.setFirstName("bOb");
         staffUserAccount.setStaff(staff);

@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
 
 import javax.persistence.EntityNotFoundException;
@@ -26,9 +26,9 @@ public class UserService {
     private final StaffIdentifierRepository staffIdentifierRepository;
     private final UserRepository userRepository;
 
-    StaffUserAccount getUserByExternalIdentifier(final String idType, final String id) {
+    NomisUserPersonDetails getUserByExternalIdentifier(final String idType, final String id) {
         final var staffIdentifier = staffIdentifierRepository.findById_TypeAndId_IdentificationNumber(idType, id);
-        Optional<StaffUserAccount> userDetail = Optional.empty();
+        Optional<NomisUserPersonDetails> userDetail = Optional.empty();
         if (staffIdentifier != null) {
             final var staff = staffIdentifier.getStaff();
 

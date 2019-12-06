@@ -15,8 +15,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
@@ -146,8 +146,8 @@ public class UserControllerTest {
         assertThat(responseEntity.getBody()).isNull();
     }
 
-    private StaffUserAccount setupFindUserCallForNomis() {
-        final var user = new StaffUserAccount();
+    private NomisUserPersonDetails setupFindUserCallForNomis() {
+        final var user = new NomisUserPersonDetails();
         user.setUsername("principal");
         final var staff = new Staff();
         staff.setStaffId(5L);

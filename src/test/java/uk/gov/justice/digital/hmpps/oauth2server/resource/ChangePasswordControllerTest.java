@@ -17,7 +17,7 @@ import org.springframework.security.core.Authentication;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffUserAccount;
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException;
@@ -205,8 +205,8 @@ public class ChangePasswordControllerTest {
         assertThat(mapCaptor.getValue()).containsExactly(entry("username", "user"));
     }
 
-    private StaffUserAccount setupGetUserCallForProfile() {
-        final var user = new StaffUserAccount();
+    private NomisUserPersonDetails setupGetUserCallForProfile() {
+        final var user = new NomisUserPersonDetails();
         user.setAccountDetail(new AccountDetail());
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user));
         return user;

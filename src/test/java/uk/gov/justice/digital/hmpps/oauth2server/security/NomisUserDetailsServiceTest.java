@@ -153,10 +153,10 @@ public class NomisUserDetailsServiceTest {
         assertThat(itagUser.isCredentialsNonExpired()).isTrue();
     }
 
-    private StaffUserAccount buildStandardUser(final String username) {
+    private NomisUserPersonDetails buildStandardUser(final String username) {
         final var staff = buildStaff();
 
-        final var userAccount = StaffUserAccount.builder()
+        final var userAccount = NomisUserPersonDetails.builder()
                 .username(username)
                 .password("pass")
                 .type("GENERAL")
@@ -177,31 +177,31 @@ public class NomisUserDetailsServiceTest {
         return userAccount;
     }
 
-    private StaffUserAccount buildExpiredUser() {
+    private NomisUserPersonDetails buildExpiredUser() {
         final var userAccount = buildStandardUser("EXPIRED_USER");
         userAccount.setAccountDetail(buildAccountDetail("EXPIRED_USER", EXPIRED));
         return userAccount;
     }
 
-    private StaffUserAccount buildLockedUser() {
+    private NomisUserPersonDetails buildLockedUser() {
         final var userAccount = buildStandardUser("LOCKED_USER");
         userAccount.setAccountDetail(buildAccountDetail("LOCKED_USER", LOCKED));
         return userAccount;
     }
 
-    private StaffUserAccount buildExpiredLockedUser() {
+    private NomisUserPersonDetails buildExpiredLockedUser() {
         final var userAccount = buildStandardUser("EXPIRED_USER");
         userAccount.setAccountDetail(buildAccountDetail("EXPIRED_USER", EXPIRED_LOCKED));
         return userAccount;
     }
 
-    private StaffUserAccount buildLockedTimedUser() {
+    private NomisUserPersonDetails buildLockedTimedUser() {
         final var userAccount = buildStandardUser("LOCKED_USER");
         userAccount.setAccountDetail(buildAccountDetail("LOCKED_USER", LOCKED_TIMED));
         return userAccount;
     }
 
-    private StaffUserAccount buildExpiredGraceUser() {
+    private NomisUserPersonDetails buildExpiredGraceUser() {
         final var userAccount = buildStandardUser("EXPIRED_USER");
         userAccount.setAccountDetail(buildAccountDetail("EXPIRED_USER", EXPIRED_GRACE));
         return userAccount;

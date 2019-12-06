@@ -25,7 +25,7 @@ import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatu
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = {"username"})
 @ToString(of = {"username", "type"})
-public class StaffUserAccount implements UserPersonDetails {
+public class NomisUserPersonDetails implements UserPersonDetails {
 
     @Id
     @Column(name = "USERNAME", nullable = false)
