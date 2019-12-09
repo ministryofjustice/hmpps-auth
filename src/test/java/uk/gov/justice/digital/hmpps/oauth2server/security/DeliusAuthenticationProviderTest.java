@@ -44,7 +44,7 @@ public class DeliusAuthenticationProviderTest {
     @Test
     public void authenticate_Success() {
         when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(
-                Optional.of(new DeliusUserPersonDetails("bob", "Delius", "Smith", "a@b.com", true, Set.of())));
+                Optional.of(new DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, Set.of())));
         when(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(Boolean.TRUE);
         final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("DELIUS_USER", "password"));
         assertThat(auth).isNotNull();
@@ -53,7 +53,7 @@ public class DeliusAuthenticationProviderTest {
     @Test
     public void authenticate_SuccessWithAuthorities() {
         when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(
-                new DeliusUserPersonDetails("bob", "Delius", "Smith", "a@b.com", true, List.of(new SimpleGrantedAuthority("ROLE_BOB")))));
+                new DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, List.of(new SimpleGrantedAuthority("ROLE_BOB")))));
         when(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(Boolean.TRUE);
         final var auth = provider.authenticate(new UsernamePasswordAuthenticationToken("ITAG_USER_ADM", "password123456"));
         assertThat(auth).isNotNull();
@@ -84,7 +84,7 @@ public class DeliusAuthenticationProviderTest {
     @Test
     public void authenticate_LockAfterThreeFailures() {
         when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(
-                Optional.of(new DeliusUserPersonDetails("bob", "Delius", "Smith", "a@b.com", true, Set.of())));
+                Optional.of(new DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, Set.of())));
         when(userRetriesService.incrementRetries(anyString())).thenReturn(4);
         assertThatThrownBy(() ->
                 provider.authenticate(new UsernamePasswordAuthenticationToken("CA_USER", "wrong"))
@@ -93,7 +93,7 @@ public class DeliusAuthenticationProviderTest {
 
     @Test
     public void authenticate_ResetAfterSuccess() {
-        final var deliusUser = new DeliusUserPersonDetails("bob", "Delius", "Smith", "a@b.com", true, Set.of());
+        final var deliusUser = new DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, Set.of());
         when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(deliusUser));
         when(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(Boolean.TRUE);
 

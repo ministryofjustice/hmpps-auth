@@ -56,6 +56,6 @@ public class DeliusUserDetailsServiceTest {
     }
 
     private DeliusUserPersonDetails buildStandardUser(final String username) {
-        return new DeliusUserPersonDetails(username, "Itag", "User", "a@b.com", false, Set.of());
+        return new DeliusUserPersonDetails(username, "12345", "Itag", "User", "a@b.com", false, Set.of());
     }
 }

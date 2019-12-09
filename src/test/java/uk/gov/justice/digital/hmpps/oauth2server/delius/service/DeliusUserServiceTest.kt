@@ -47,7 +47,8 @@ class DeliusUserServiceTest {
     val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
-            username = "bob",
+            username = "BOB",
+            userId = "12345",
             firstName = "Delius",
             surname = "Smith",
             email = "a@where.com",
@@ -62,7 +63,8 @@ class DeliusUserServiceTest {
     val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
-            username = "bob",
+            username = "BOB",
+            userId = "12345",
             firstName = "Delius",
             surname = "Smith",
             email = "a@where.com",
@@ -77,7 +79,8 @@ class DeliusUserServiceTest {
     val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
-            username = "bob",
+            username = "BOB",
+            userId = "12345",
             firstName = "Delius",
             surname = "Smith",
             email = "a@where.com",
@@ -85,8 +88,39 @@ class DeliusUserServiceTest {
             roles = setOf(SimpleGrantedAuthority("role1"), SimpleGrantedAuthority("role2"), SimpleGrantedAuthority("role3"))))
   }
 
+  @Test
+  fun `deliusUserByUsername test username upper case`() {
+    whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(createUserDetails())
+    val optionalDetails = deliusService.getDeliusUserByUsername("bob")
+    assertThat(optionalDetails).get().isEqualTo(
+        DeliusUserPersonDetails(
+            username = "BOB",
+            userId = "12345",
+            firstName = "Delius",
+            surname = "Smith",
+            email = "a@where.com",
+            enabled = true,
+            roles = emptySet()))
+  }
+
+  @Test
+  fun `deliusUserByUsername test email lower case`() {
+    whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
+        createUserDetails().copy(email = "someWHERE@bob.COM"))
+    val optionalDetails = deliusService.getDeliusUserByUsername("BoB")
+    assertThat(optionalDetails).get().isEqualTo(
+        DeliusUserPersonDetails(
+            username = "BOB",
+            userId = "12345",
+            firstName = "Delius",
+            surname = "Smith",
+            email = "somewhere@bob.com",
+            enabled = true,
+            roles = emptySet()))
+  }
+
   private fun createUserDetails(): UserDetails =
-      UserDetails(surname = "Smith", firstName = "Delius", enabled = true, email = "a@where.com", roles = emptyList())
+      UserDetails(userId = "12345", surname = "Smith", firstName = "Delius", enabled = true, email = "a@where.com", roles = emptyList())
 
   @Test
   fun `authenticateUser disabled`() {

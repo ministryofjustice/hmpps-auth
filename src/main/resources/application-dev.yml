@@ -1,15 +1,3 @@
 spring:
   profiles:
     include: dev-config,auth-seed,nomis-seed
-
-delius:
-  enabled: true
-  endpoint.url: http://localhost:8099
-  client:
-    client-id: delius-auth-api-client
-    client-secret: delius-auth-api-client
-  roles:
-    mappings:
-      TEST_ROLE:
-        - 'ROLE_LICENCE_RO'
-        - 'ROLE_GLOBAL_SEARCH'

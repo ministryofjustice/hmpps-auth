@@ -80,7 +80,7 @@ class UserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "delius", "active": true, "name": "Delius Smith", "authSource": "delius", 'userId': 'delius']
+        userData == ["username": "DELIUS", "active": true, "name": "Delius Smith", "authSource": "delius", 'userId': '2500077027']
     }
 
     def "User username endpoint returns user data"() {
@@ -125,7 +125,7 @@ class UserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "delius", "active": true, "name": "Delius Smith", "authSource": "delius", 'userId': 'delius']
+        userData == ["username": "DELIUS", "active": true, "name": "Delius Smith", "authSource": "delius", 'userId': '2500077027']
     }
 
     def "User email endpoint returns user data for auth user"() {
@@ -155,7 +155,7 @@ class UserSpecification extends TestSpecification {
         response.statusCode == HttpStatus.OK
         def userData = jsonSlurper.parseText(response.body)
 
-        userData == ["username": "DELIUS_EMAIL", "email": "delius_user@digital.justice.gov.uk"]
+        userData == ["username": "DELIUS_EMAIL", "email": "test@digital.justice.gov.uk"]
     }
 
     def "User email endpoint returns no user data for unverified email address"() {

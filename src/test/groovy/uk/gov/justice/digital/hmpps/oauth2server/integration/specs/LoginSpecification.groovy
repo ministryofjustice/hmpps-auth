@@ -211,7 +211,7 @@ class LoginSpecification extends DeliusIntegrationSpec {
         def body = parseJwt()
         body.name == 'Delius Smith'
         body.auth_source == 'delius'
-        body.user_id == 'delius'
+        body.user_id == '2500077027'
     }
 
     def "Log in with valid credentials in lower case"() {
@@ -333,9 +333,9 @@ class LoginSpecification extends DeliusIntegrationSpec {
 
         and: 'auth code can be redeemed for access token'
         def response = getAccessToken(authCode)
-        response.user_name == DELIUS_USER.username
+        response.user_name == 'DELIUS'
         response.auth_source == 'delius'
-        response.user_id == 'delius'
+        response.user_id == '2500077027'
 
         cleanup:
         CachingDriverFactory.clearCache()
