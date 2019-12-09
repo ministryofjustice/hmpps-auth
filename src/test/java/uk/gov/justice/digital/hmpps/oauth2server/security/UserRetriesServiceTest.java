@@ -62,7 +62,7 @@ public class UserRetriesServiceTest {
     public void resetRetries_SaveDeliusEmailAddress() {
         final var user = User.builder().username("joe").lastLoggedIn(LocalDateTime.now().minusDays(1)).build();
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
-        service.resetRetriesAndRecordLogin(new DeliusUserPersonDetails("deliusUser", "12345", "Delius", "Smith", "newemail@bob.com", true, Set.of()));
+        service.resetRetriesAndRecordLogin(new DeliusUserPersonDetails("deliusUser", "12345", "Delius", "Smith", "newemail@bob.com", true, false, Set.of()));
 
         assertThat(user.getEmail()).isEqualTo("newemail@bob.com");
         assertThat(user.isVerified()).isTrue();

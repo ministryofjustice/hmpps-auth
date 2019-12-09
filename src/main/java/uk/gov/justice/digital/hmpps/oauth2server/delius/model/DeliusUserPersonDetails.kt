@@ -12,6 +12,7 @@ data class DeliusUserPersonDetails(private val username: String,
                                    private val surname: String,
                                    val email: String,
                                    private val enabled: Boolean = false,
+                                   private val locked: Boolean = false,
                                    private val roles: Collection<GrantedAuthority?> = emptySet()) : UserPersonDetails {
 
   override fun getUsername(): String = username
@@ -38,7 +39,7 @@ data class DeliusUserPersonDetails(private val username: String,
 
   override fun isAccountNonExpired(): Boolean = true
 
-  override fun isAccountNonLocked(): Boolean = true
+  override fun isAccountNonLocked(): Boolean = !locked
 
   override fun isCredentialsNonExpired(): Boolean = true
 
