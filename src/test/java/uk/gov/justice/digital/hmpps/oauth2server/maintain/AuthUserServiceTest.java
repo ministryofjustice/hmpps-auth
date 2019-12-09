@@ -305,26 +305,6 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUser_verifiedEmail() {
-        final var user = User.of("SOMEUSER");
-        user.setVerified(true);
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
-        assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
-                isInstanceOf(AmendUserException.class).
-                hasMessageContaining("reason: notinitial");
-    }
-
-    @Test
-    public void amendUser_passwordSet() {
-        final var user = User.of("SOMEUSER");
-        user.setPassword("some pass");
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
-        assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
-                isInstanceOf(AmendUserException.class).
-                hasMessageContaining("reason: notinitial");
-    }
-
-    @Test
     public void getAuthUserByUsername() {
         final var createdUser = createUser();
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createdUser);
