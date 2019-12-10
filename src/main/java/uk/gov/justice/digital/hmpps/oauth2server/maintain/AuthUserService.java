@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
@@ -41,6 +42,7 @@ public class AuthUserService {
     private final AuthUserGroupService authUserGroupService;
     private final MaintainUserCheck maintainUserCheck;
     private final PasswordEncoder passwordEncoder;
+    private final OauthServiceRepository oauthServiceRepository;
     private final String initialPasswordTemplateId;
     private final int loginDaysTrigger;
     private final long passwordAge;
@@ -60,6 +62,7 @@ public class AuthUserService {
                            final AuthUserGroupService authUserGroupService,
                            final MaintainUserCheck maintainUserCheck,
                            final PasswordEncoder passwordEncoder,
+                           final OauthServiceRepository oauthServiceRepository,
                            @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId,
                            @Value("${application.authentication.disable.login-days}") final int loginDaysTrigger,
                            @Value("${application.authentication.password-age}") final long passwordAge) {
@@ -70,6 +73,7 @@ public class AuthUserService {
         this.authUserGroupService = authUserGroupService;
         this.maintainUserCheck = maintainUserCheck;
         this.passwordEncoder = passwordEncoder;
+        this.oauthServiceRepository = oauthServiceRepository;
         this.initialPasswordTemplateId = initialPasswordTemplateId;
         this.loginDaysTrigger = loginDaysTrigger;
         this.passwordAge = passwordAge;
@@ -111,7 +115,16 @@ public class AuthUserService {
                 .person(person)
                 .authorities(roles)
                 .groups(groups).build();
-        return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate");
+
+        return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate", groups);
+    }
+
+    private String getInitialEmailSupportLink(Collection<Group> groups) {
+        String serviceCode = "NOMIS";
+        if (groups.stream().anyMatch(group -> group.getGroupCode().startsWith("PECS"))) {
+            serviceCode = "BOOK_NOW";
+        }
+        return oauthServiceRepository.findById(serviceCode).map(service -> service.getEmail()).orElseThrow();
     }
 
     public Page<User> findAuthUsers(final String name, final String roleCode, final String groupCode, final Pageable pageable) {
@@ -129,17 +142,19 @@ public class AuthUserService {
         return Optional.of(authUserGroups.stream().filter(g -> g.getGroupCode().equals(groupCode)).findFirst().orElseThrow(() -> new CreateUserException("groupCode", "notfound")));
     }
 
-    private String saveAndSendInitialEmail(final String url, final User user, final String creator, final String eventPrefix) throws NotificationClientException {
+    private String saveAndSendInitialEmail(final String url, final User user, final String creator, final String eventPrefix, Collection<Group> groups) throws NotificationClientException {
         // then the reset token
         final var userToken = user.createToken(TokenType.RESET);
         // give users more time to do the reset
         userToken.setTokenExpiry(LocalDateTime.now().plusDays(7));
         userRepository.save(user);
+        // support link
+        final var supportLink = getInitialEmailSupportLink(groups);
 
         final var setPasswordLink = url + userToken.getToken();
         final var username = user.getUsername();
         final var email = user.getEmail();
-        final var parameters = Map.of("firstName", user.getFirstName(), "resetLink", setPasswordLink);
+        final var parameters = Map.of("firstName", user.getFirstName(), "resetLink", setPasswordLink, "supportLink", supportLink);
 
         // send the email
         try {
@@ -179,7 +194,7 @@ public class AuthUserService {
         }
         verifyEmailService.validateEmailAddress(email);
         user.setEmail(email);
-        return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend");
+        return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.getGroups());
     }
 
     public List<User> findAuthUsersByEmail(final String email) {

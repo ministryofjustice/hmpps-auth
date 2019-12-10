@@ -15,6 +15,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException;
@@ -34,6 +35,7 @@ import uk.gov.service.notify.NotificationClientException;
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -61,12 +63,14 @@ public class AuthUserServiceTest {
     private MaintainUserCheck maintainUserCheck;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private OauthServiceRepository oauthServiceRepository;
 
     private AuthUserService authUserService;
 
     @Before
     public void setUp() {
-        authUserService = new AuthUserService(userRepository, notificationClient, telemetryClient, verifyEmailService, authUserGroupService, maintainUserCheck, passwordEncoder, "licences", 90, 10);
+        authUserService = new AuthUserService(userRepository, notificationClient, telemetryClient, verifyEmailService, authUserGroupService, maintainUserCheck, passwordEncoder, oauthServiceRepository, "licences", 90, 10);
     }
 
     @Test
@@ -122,6 +126,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_successLinkReturned() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         final var link = authUserService.createUser("userme", "email", "se", "xx", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         assertThat(link).startsWith("url?token=").hasSize("url?token=".length() + 36);
@@ -129,12 +134,15 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_trackSuccess() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.createUser("userme", "email", "se", "xx", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
+
         verify(telemetryClient).trackEvent("AuthUserCreateSuccess", Map.of("username", "USERME", "admin", "bob"), null);
     }
 
     @Test
     public void createUser_saveUserRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         final var link = authUserService.createUser("userme", "email", "se", "xx", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -150,6 +158,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_saveEmailRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.createUser("userMe", "eMail", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -168,6 +177,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_formatEmailInput() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.createUser("userMe", "    SARAH.o’connor@gov.uk", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -179,6 +189,7 @@ public class AuthUserServiceTest {
     @Test
     public void createUser_setGroup() throws VerifyEmailException, CreateUserException, NotificationClientException {
         when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("SITE_1_GROUP_1", "desc")));
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -190,6 +201,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_noRoles() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("SITE_1_GROUP_1", "desc")));
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
@@ -207,6 +219,7 @@ public class AuthUserServiceTest {
                 new GroupAssignableRole(new Authority("AUTH_AUTO", "Auth Name"), group, true),
                 new GroupAssignableRole(new Authority("AUTH_MANUAL", "Auth Name"), group, false)));
         when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(group));
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -231,9 +244,44 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_callNotify() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         final var link = authUserService.createUser("userme", "email", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
-        verify(notificationClient).sendEmail("licences", "email", Map.of("resetLink", link, "firstName", "first"), null);
+        verify(notificationClient).sendEmail("licences", "email", Map.of("resetLink", link, "firstName", "first", "supportLink", "nomis_support_link"), null);
+    }
+
+    @Test
+    public void createUser_pecsUserGroupSupportLink() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        mockServiceOfNameWithSupportLink("BOOK_NOW", "book_now_support_link");
+        when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("PECS_GROUP", "desc")));
+
+        authUserService.createUser("userMe", "eMail", "first", "last", "PECS_GROUP", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var emailParamsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(notificationClient).sendEmail(anyString(), anyString(), emailParamsCaptor.capture(), any());
+        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("book_now_support_link");
+    }
+
+    @Test
+    public void createUser_nonPecsUserGroupSupportLink() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
+
+        authUserService.createUser("userMe", "eMail", "first", "last", "", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var emailParamsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(notificationClient).sendEmail(anyString(), anyString(), emailParamsCaptor.capture(), any());
+        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("nomis_support_link");
+    }
+
+    @Test
+    public void createUser_noGroupsSupportLink() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
+
+        authUserService.createUser("userMe", "eMail", "first", "last", "", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var emailParamsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(notificationClient).sendEmail(anyString(), anyString(), emailParamsCaptor.capture(), any());
+        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("nomis_support_link");
     }
 
     @Test
@@ -257,6 +305,7 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_successLinkReturned() throws VerifyEmailException, NotificationClientException, AmendUserException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         final var link = authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         assertThat(link).startsWith("url?token=").hasSize("url?token=".length() + 36);
@@ -265,7 +314,9 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_trackSuccess() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
+
         verify(telemetryClient).trackEvent("AuthUserAmendSuccess", Map.of("username", "someuser", "admin", "bob"), null);
     }
 
@@ -273,6 +324,7 @@ public class AuthUserServiceTest {
     public void amendUser_saveTokenRepository() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         final var user = createUser();
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(user);
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         final var link = authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         final var userToken = user.orElseThrow().getTokens().stream().findFirst().orElseThrow();
@@ -284,6 +336,7 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_saveEmailRepository() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.amendUser("userMe", "eMail", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -296,6 +349,7 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_formatEmailInput() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.amendUser("userMe", "    SARAH.o’connor@gov.uk", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -322,6 +376,65 @@ public class AuthUserServiceTest {
         assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
                 isInstanceOf(AmendUserException.class).
                 hasMessageContaining("reason: notinitial");
+    }
+
+    @Test
+    public void amendUser_pecsUserGroupSupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("PECS_GROUP")));
+        mockServiceOfNameWithSupportLink("BOOK_NOW", "book_now_support_link");
+
+        authUserService.amendUser("ANY_USER_NAME", "ANY_USER-EMAIL", "ANY_URL", "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var emailParamsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(notificationClient).sendEmail(anyString(), anyString(), emailParamsCaptor.capture(), any());
+        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("book_now_support_link");
+    }
+
+    @Test
+    public void amendUser_nonPecsUserGroupSupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("NON_PECS_GROUP")));
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
+
+        authUserService.amendUser("ANY_USER_NAME", "ANY_USER-EMAIL", "ANY_URL", "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var emailParamsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(notificationClient).sendEmail(anyString(), anyString(), emailParamsCaptor.capture(), any());
+        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("nomis_support_link");
+    }
+
+    @Test
+    public void amendUser_onePecsGroupOfManySupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("NON_PECS_GROUP", "PECS_GROUP")));
+        mockServiceOfNameWithSupportLink("BOOK_NOW", "book_now_support_link");
+
+        authUserService.amendUser("ANY_USER_NAME", "ANY_USER-EMAIL", "ANY_URL", "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var emailParamsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(notificationClient).sendEmail(anyString(), anyString(), emailParamsCaptor.capture(), any());
+        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("book_now_support_link");
+    }
+
+    @Test
+    public void amendUser_noGroupSupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups()));
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
+
+        authUserService.amendUser("ANY_USER_NAME", "ANY_USER-EMAIL", "ANY_URL", "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var emailParamsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(notificationClient).sendEmail(anyString(), anyString(), emailParamsCaptor.capture(), any());
+        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("nomis_support_link");
+    }
+
+    private User userOfGroups(String... groupList) {
+        final var USER_PERSON = new Person("ANY_FIRST_NAME", "ANY_LAST_NAME");
+        Set<Group> groups = Arrays.stream(groupList).map(groupName -> new Group(groupName, "any desc")).collect(Collectors.toSet());
+        return User.builder().groups(groups).email("ANY_EMAIL").person(USER_PERSON).username("ANY ANY").build();
+    }
+
+    private void mockServiceOfNameWithSupportLink(String serviceCode, String supportLink) {
+        final var SERVICE = new Service(serviceCode, "service", "service", "ANY_ROLES", "ANY_URL", true, supportLink);
+        when(oauthServiceRepository.findById(serviceCode)).thenReturn(Optional.of(SERVICE));
     }
 
     @Test
