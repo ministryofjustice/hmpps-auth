@@ -1,11 +1,12 @@
 {
+  "priority": 1,
   "request": {
     "method": "POST",
     "urlPattern": "/secure/authenticate",
     "bodyPatterns": [
       {
         "equalToJson": {
-          "username": "DELFAIL"
+          "username": "DELIUSLOCKED"
         },
         "ignoreExtraElements": true
       }
@@ -15,7 +16,7 @@
     "status": 401,
     "jsonBody": {
       "status": 401,
-      "developerMessage": "User with username delfail"
+      "developerMessage": "User with username deliuslocked"
     },
     "headers": {
       "Content-Type": "application/json"

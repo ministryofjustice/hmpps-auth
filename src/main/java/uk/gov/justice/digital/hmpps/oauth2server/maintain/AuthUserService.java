@@ -187,11 +187,6 @@ public class AuthUserService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
 
         maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user);
-
-        // if unverified and password not set then still in the initial state
-        if (user.isVerified() || user.getPassword() != null) {
-            throw new AmendUserException("email", "notinitial");
-        }
         verifyEmailService.validateEmailAddress(email);
         user.setEmail(email);
         return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.getGroups());

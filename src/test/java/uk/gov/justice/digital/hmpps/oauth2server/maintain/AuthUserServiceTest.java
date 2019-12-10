@@ -359,26 +359,6 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUser_verifiedEmail() {
-        final var user = User.of("SOMEUSER");
-        user.setVerified(true);
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
-        assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
-                isInstanceOf(AmendUserException.class).
-                hasMessageContaining("reason: notinitial");
-    }
-
-    @Test
-    public void amendUser_passwordSet() {
-        final var user = User.of("SOMEUSER");
-        user.setPassword("some pass");
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
-        assertThatThrownBy(() -> authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities())).
-                isInstanceOf(AmendUserException.class).
-                hasMessageContaining("reason: notinitial");
-    }
-
-    @Test
     public void amendUser_pecsUserGroupSupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("PECS_GROUP")));
         mockServiceOfNameWithSupportLink("BOOK_NOW", "book_now_support_link");
