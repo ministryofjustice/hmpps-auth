@@ -20,7 +20,7 @@ class AuthUserSpecification extends TestSpecification {
 
     def 'Create User endpoint succeeds to create user data'() {
         def username = RandomStringUtils.randomAlphanumeric(10)
-        def user = [email: 'bob@bobdigital.justice.gov.uk', firstName: 'Bob', lastName: 'Smith', groupCode: 'SITE_1_GROUP_1'] as NewUser
+        def user = [email: 'bob@bobdigital.justice.gov.uk', firstName: 'Bob', lastName: 'Smith'] as NewUser
 
         given:
         def oauthRestTemplate = getOauthPasswordGrant('ITAG_USER_ADM', 'password123456', 'elite2apiclient', 'clientsecret')
