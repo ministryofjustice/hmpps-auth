@@ -71,6 +71,7 @@ public class AuthUserServiceTest {
     @Before
     public void setUp() {
         authUserService = new AuthUserService(userRepository, notificationClient, telemetryClient, verifyEmailService, authUserGroupService, maintainUserCheck, passwordEncoder, oauthServiceRepository, "licences", 90, 10);
+        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
     }
 
     @Test
@@ -126,7 +127,6 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_successLinkReturned() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         final var link = authUserService.createUser("userme", "email", "se", "xx", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         assertThat(link).startsWith("url?token=").hasSize("url?token=".length() + 36);
@@ -134,7 +134,6 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_trackSuccess() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.createUser("userme", "email", "se", "xx", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         verify(telemetryClient).trackEvent("AuthUserCreateSuccess", Map.of("username", "USERME", "admin", "bob"), null);
@@ -142,7 +141,6 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_saveUserRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         final var link = authUserService.createUser("userme", "email", "se", "xx", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -158,7 +156,6 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_saveEmailRepository() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.createUser("userMe", "eMail", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -177,7 +174,6 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_formatEmailInput() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.createUser("userMe", "    SARAH.o’connor@gov.uk", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -189,7 +185,6 @@ public class AuthUserServiceTest {
     @Test
     public void createUser_setGroup() throws VerifyEmailException, CreateUserException, NotificationClientException {
         when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("SITE_1_GROUP_1", "desc")));
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -201,7 +196,6 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_noRoles() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("SITE_1_GROUP_1", "desc")));
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
@@ -219,7 +213,6 @@ public class AuthUserServiceTest {
                 new GroupAssignableRole(new Authority("AUTH_AUTO", "Auth Name"), group, true),
                 new GroupAssignableRole(new Authority("AUTH_MANUAL", "Auth Name"), group, false)));
         when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(group));
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.createUser("userMe", "eMail", "first", "last", "SITE_1_GROUP_1", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -244,7 +237,6 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_callNotify() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         final var link = authUserService.createUser("userme", "email", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         verify(notificationClient).sendEmail("licences", "email", Map.of("resetLink", link, "firstName", "first", "supportLink", "nomis_support_link"), null);
@@ -264,7 +256,6 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_nonPecsUserGroupSupportLink() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
 
         authUserService.createUser("userMe", "eMail", "first", "last", "", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
@@ -275,8 +266,6 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_noGroupsSupportLink() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
-
         authUserService.createUser("userMe", "eMail", "first", "last", "", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var emailParamsCaptor = ArgumentCaptor.forClass(Map.class);
@@ -305,7 +294,6 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_successLinkReturned() throws VerifyEmailException, NotificationClientException, AmendUserException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         final var link = authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         assertThat(link).startsWith("url?token=").hasSize("url?token=".length() + 36);
@@ -314,7 +302,6 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_trackSuccess() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         verify(telemetryClient).trackEvent("AuthUserAmendSuccess", Map.of("username", "someuser", "admin", "bob"), null);
@@ -324,7 +311,6 @@ public class AuthUserServiceTest {
     public void amendUser_saveTokenRepository() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         final var user = createUser();
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(user);
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         final var link = authUserService.amendUser("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         final var userToken = user.orElseThrow().getTokens().stream().findFirst().orElseThrow();
@@ -336,7 +322,6 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_saveEmailRepository() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.amendUser("userMe", "eMail", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -349,7 +334,6 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_formatEmailInput() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
         authUserService.amendUser("userMe", "    SARAH.o’connor@gov.uk", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
         final var captor = ArgumentCaptor.forClass(User.class);
@@ -373,7 +357,6 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_nonPecsUserGroupSupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("NON_PECS_GROUP")));
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
 
         authUserService.amendUser("ANY_USER_NAME", "ANY_USER-EMAIL", "ANY_URL", "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
 
@@ -397,7 +380,6 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_noGroupSupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups()));
-        mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link");
 
         authUserService.amendUser("ANY_USER_NAME", "ANY_USER-EMAIL", "ANY_URL", "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
 
