@@ -119,12 +119,10 @@ public class AuthUserService {
         return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate", groups);
     }
 
-    private String getInitialEmailSupportLink(Collection<Group> groups) {
-        String serviceCode = "NOMIS";
-        if (groups.stream().anyMatch(group -> group.getGroupCode().startsWith("PECS"))) {
-            serviceCode = "BOOK_NOW";
-        }
-        return oauthServiceRepository.findById(serviceCode).map(service -> service.getEmail()).orElseThrow();
+    private String getInitialEmailSupportLink(final Collection<Group> groups) {
+        final var serviceCode = groups.stream().map(Group::getGroupCode).filter(g -> g.startsWith("PECS")).map(g -> "BOOK_NOW").findFirst().orElse("NOMIS");
+
+        return oauthServiceRepository.findById(serviceCode).map(uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service::getEmail).orElseThrow();
     }
 
     public Page<User> findAuthUsers(final String name, final String roleCode, final String groupCode, final Pageable pageable) {
@@ -142,7 +140,7 @@ public class AuthUserService {
         return Optional.of(authUserGroups.stream().filter(g -> g.getGroupCode().equals(groupCode)).findFirst().orElseThrow(() -> new CreateUserException("groupCode", "notfound")));
     }
 
-    private String saveAndSendInitialEmail(final String url, final User user, final String creator, final String eventPrefix, Collection<Group> groups) throws NotificationClientException {
+    private String saveAndSendInitialEmail(final String url, final User user, final String creator, final String eventPrefix, final Collection<Group> groups) throws NotificationClientException {
         // then the reset token
         final var userToken = user.createToken(TokenType.RESET);
         // give users more time to do the reset
