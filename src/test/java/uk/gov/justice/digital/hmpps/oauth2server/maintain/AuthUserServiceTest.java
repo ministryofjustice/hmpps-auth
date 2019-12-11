@@ -244,14 +244,14 @@ public class AuthUserServiceTest {
 
     @Test
     public void createUser_pecsUserGroupSupportLink() throws VerifyEmailException, CreateUserException, NotificationClientException {
-        mockServiceOfNameWithSupportLink("BOOK_NOW", "book_now_support_link");
+        mockServiceOfNameWithSupportLink("BOOK_MOVE", "book_move_support_link");
         when(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(List.of(new Group("PECS_GROUP", "desc")));
 
         authUserService.createUser("userMe", "eMail", "first", "last", "PECS_GROUP", "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
         final var emailParamsCaptor = ArgumentCaptor.forClass(Map.class);
         verify(notificationClient).sendEmail(anyString(), anyString(), emailParamsCaptor.capture(), any());
-        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("book_now_support_link");
+        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("book_move_support_link");
     }
 
     @Test
@@ -345,13 +345,13 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_pecsUserGroupSupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("PECS_GROUP")));
-        mockServiceOfNameWithSupportLink("BOOK_NOW", "book_now_support_link");
+        mockServiceOfNameWithSupportLink("BOOK_MOVE", "book_move_support_link");
 
         authUserService.amendUser("ANY_USER_NAME", "ANY_USER-EMAIL", "ANY_URL", "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
 
         final var emailParamsCaptor = ArgumentCaptor.forClass(Map.class);
         verify(notificationClient).sendEmail(anyString(), anyString(), emailParamsCaptor.capture(), any());
-        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("book_now_support_link");
+        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("book_move_support_link");
     }
 
     @Test
@@ -368,13 +368,13 @@ public class AuthUserServiceTest {
     @Test
     public void amendUser_onePecsGroupOfManySupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("NON_PECS_GROUP", "PECS_GROUP")));
-        mockServiceOfNameWithSupportLink("BOOK_NOW", "book_now_support_link");
+        mockServiceOfNameWithSupportLink("BOOK_MOVE", "book_move_support_link");
 
         authUserService.amendUser("ANY_USER_NAME", "ANY_USER-EMAIL", "ANY_URL", "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
 
         final var emailParamsCaptor = ArgumentCaptor.forClass(Map.class);
         verify(notificationClient).sendEmail(anyString(), anyString(), emailParamsCaptor.capture(), any());
-        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("book_now_support_link");
+        assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("book_move_support_link");
     }
 
     @Test
