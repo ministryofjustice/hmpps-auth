@@ -120,7 +120,7 @@ public class AuthUserService {
     }
 
     private String getInitialEmailSupportLink(final Collection<Group> groups) {
-        final var serviceCode = groups.stream().map(Group::getGroupCode).filter(g -> g.startsWith("PECS")).map(g -> "BOOK_NOW").findFirst().orElse("NOMIS");
+        final var serviceCode = groups.stream().map(Group::getGroupCode).filter(g -> g.startsWith("PECS")).map(g -> "BOOK_MOVE").findFirst().orElse("NOMIS");
 
         return oauthServiceRepository.findById(serviceCode).map(uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service::getEmail).orElseThrow();
     }
