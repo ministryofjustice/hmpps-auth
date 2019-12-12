@@ -187,7 +187,14 @@ public class AuthUserService {
         maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user);
         verifyEmailService.validateEmailAddress(email);
         user.setEmail(email);
-        return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.getGroups());
+
+        if (user.isVerified()) {
+            user.setVerified(false);
+            userRepository.save(user);
+            return verifyEmailService.requestVerification(usernameInput, emailAddressInput, url.replace("initial-password", "verify-email-conf"));
+        } else {
+            return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.getGroups());
+        }
     }
 
     public List<User> findAuthUsersByEmail(final String email) {

@@ -388,9 +388,56 @@ public class AuthUserServiceTest {
         assertThat(emailParamsCaptor.getValue().get("supportLink")).isEqualTo("nomis_support_link");
     }
 
+    @Test
+    public void amendUser_unverifiedEmail_sendsInitialEmail() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+        final var USER_UNVERIFIED_EMAIL = User.builder().username("SOME_USER_NAME").verified(false).build();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(USER_UNVERIFIED_EMAIL));
+
+        authUserService.amendUser(
+                "SOME_USER_NAME",
+                "some_user_email@gov.uk",
+                "ANY_HOST/initial-password?token=SOME_TOKEN",
+                "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
+
+        verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), isNull());
+        verify(verifyEmailService, times(0)).requestVerification(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void amendUser_verifiedEmail_requestsVerification() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+        final var USER_VERIFIED_EMAIL = User.builder().username("SOME_USER_NAME").verified(true).build();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(USER_VERIFIED_EMAIL));
+        when(verifyEmailService.requestVerification(anyString(), anyString(), anyString())).thenReturn("SOME_VERIFY_LINK");
+
+        authUserService.amendUser(
+                "SOME_USER_NAME",
+                "some_user_email@gov.uk",
+                "ANY_HOST/initial-password?token=SOME_TOKEN",
+                "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
+
+        verify(verifyEmailService).requestVerification(eq("SOME_USER_NAME"), eq("some_user_email@gov.uk"), contains("verify-email-conf"));
+        verify(notificationClient, times(0)).sendEmail(anyString(), anyString(), anyMap(), anyString());
+    }
+
+    @Test
+    public void amendUser_verifiedEmail_savesUnverifiedUser() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+        final var USER_VERIFIED_EMAIL = User.builder().username("SOME_USER_NAME").verified(true).build();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(USER_VERIFIED_EMAIL));
+
+        authUserService.amendUser(
+                "SOME_USER_NAME",
+                "some_user_email@gov.uk",
+                "ANY_HOST/initial-password?token=SOME_TOKEN",
+                "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
+
+        ArgumentCaptor<User> user = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(user.capture());
+        assertThat(user.getValue().isVerified()).isFalse();
+    }
+
     private User userOfGroups(String... groupList) {
         final var USER_PERSON = new Person("ANY_FIRST_NAME", "ANY_LAST_NAME");
-        Set<Group> groups = Arrays.stream(groupList).map(groupName -> new Group(groupName, "any desc")).collect(Collectors.toSet());
+        final var groups = Arrays.stream(groupList).map(groupName -> new Group(groupName, "any desc")).collect(Collectors.toSet());
         return User.builder().groups(groups).email("ANY_EMAIL").person(USER_PERSON).username("ANY ANY").build();
     }
 
