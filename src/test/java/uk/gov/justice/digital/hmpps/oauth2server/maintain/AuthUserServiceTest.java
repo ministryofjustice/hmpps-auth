@@ -400,7 +400,7 @@ public class AuthUserServiceTest {
                 "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
 
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), isNull());
-        verify(verifyEmailService, times(0)).requestVerification(anyString(), anyString(), anyString());
+        verify(verifyEmailService, never()).requestVerification(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -412,11 +412,11 @@ public class AuthUserServiceTest {
         authUserService.amendUserEmail(
                 "SOME_USER_NAME",
                 "some_user_email@gov.uk",
-                "ANY_HOST/initial-password?token=SOME_TOKEN",
+                "SOME_HOST/initial-password?token=SOME_TOKEN",
                 "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
 
-        verify(verifyEmailService).requestVerification(eq("SOME_USER_NAME"), eq("some_user_email@gov.uk"), contains("verify-email-conf"));
-        verify(notificationClient, times(0)).sendEmail(anyString(), anyString(), anyMap(), anyString());
+        verify(verifyEmailService).requestVerification("SOME_USER_NAME", "some_user_email@gov.uk", "SOME_HOST/verify-email-confirm?token=SOME_TOKEN");
+        verify(notificationClient, never()).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
 
     @Test
