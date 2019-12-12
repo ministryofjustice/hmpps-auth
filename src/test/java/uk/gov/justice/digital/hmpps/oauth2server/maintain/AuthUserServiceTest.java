@@ -430,9 +430,7 @@ public class AuthUserServiceTest {
                 "ANY_HOST/initial-password?token=SOME_TOKEN",
                 "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
 
-        ArgumentCaptor<User> user = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(user.capture());
-        assertThat(user.getValue().isVerified()).isFalse();
+        assertThat(userVerifiedEmail.isVerified()).isFalse();
     }
 
     private User userOfGroups(String... groupList) {
