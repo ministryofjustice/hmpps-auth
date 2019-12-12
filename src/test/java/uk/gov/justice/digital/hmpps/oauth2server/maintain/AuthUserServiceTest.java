@@ -400,14 +400,14 @@ public class AuthUserServiceTest {
                 "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
 
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), isNull());
-        verify(verifyEmailService, never()).requestVerification(anyString(), anyString(), anyString());
+        verify(verifyEmailService, never()).requestVerification(anyString(), anyString(), anyString(), anyString(), any(User.class));
     }
 
     @Test
     public void amendUserEmail_verifiedEmail_requestsVerification() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         final var userVerifiedEmail = User.builder().username("SOME_USER_NAME").verified(true).build();
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail));
-        when(verifyEmailService.requestVerification(anyString(), anyString(), anyString())).thenReturn("SOME_VERIFY_LINK");
+        when(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), any(User.class))).thenReturn("SOME_VERIFY_LINK");
 
         authUserService.amendUserEmail(
                 "SOME_USER_NAME",
@@ -415,7 +415,7 @@ public class AuthUserServiceTest {
                 "SOME_HOST/initial-password?token=SOME_TOKEN",
                 "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
 
-        verify(verifyEmailService).requestVerification("SOME_USER_NAME", "some_user_email@gov.uk", "SOME_HOST/verify-email-confirm?token=SOME_TOKEN");
+        verify(verifyEmailService).requestVerification("SOME_USER_NAME", "some_user_email@gov.uk", "SOME_USER_NAME", "SOME_HOST/verify-email-confirm?token=SOME_TOKEN", userVerifiedEmail);
         verify(notificationClient, never()).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
 

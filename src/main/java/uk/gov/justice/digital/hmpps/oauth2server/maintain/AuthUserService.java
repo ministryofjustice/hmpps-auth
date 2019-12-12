@@ -191,7 +191,12 @@ public class AuthUserService {
         if (user.isVerified()) {
             user.setVerified(false);
             userRepository.save(user);
-            return verifyEmailService.requestVerification(usernameInput, emailAddressInput, url.replace("initial-password", "verify-email-confirm"));
+            return verifyEmailService.requestVerification(
+                    usernameInput,
+                    emailAddressInput,
+                    user.getFirstName(),
+                    url.replace("initial-password", "verify-email-confirm"),
+                    user);
         }
 
         return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.getGroups());

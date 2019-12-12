@@ -99,7 +99,7 @@ public class VerifyEmailControllerTest {
     @Test
     public void verifyEmail_Exception() throws NotificationClientException, IOException, ServletException, VerifyEmailException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url"));
-        when(verifyEmailService.requestVerification(anyString(), anyString(), anyString())).thenThrow(new NotificationClientException("something went wrong"));
+        when(verifyEmailService.requestVerificationForNomisUser(anyString(), anyString(), anyString())).thenThrow(new NotificationClientException("something went wrong"));
         final var modelAndView = verifyEmailController.verifyEmail("a@b.com", null, principal, request, response);
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
         assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("email", "a@b.com"), MapEntry.entry("error", "other"));
@@ -107,7 +107,7 @@ public class VerifyEmailControllerTest {
 
     @Test
     public void verifyEmail_Success() throws NotificationClientException, IOException, ServletException, VerifyEmailException {
-        when(verifyEmailService.requestVerification(anyString(), anyString(), anyString())).thenReturn("link");
+        when(verifyEmailService.requestVerificationForNomisUser(anyString(), anyString(), anyString())).thenReturn("link");
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url"));
         final var email = "o'there+bob@b-c.d";
 
@@ -115,7 +115,7 @@ public class VerifyEmailControllerTest {
 
         assertThat(modelAndView.getViewName()).isEqualTo("verifyEmailSent");
         assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("verifyLink", "link"), MapEntry.entry("email", email));
-        verify(verifyEmailService).requestVerification("user", email, "http://some.url-confirm?token=");
+        verify(verifyEmailService).requestVerificationForNomisUser("user", email, "http://some.url-confirm?token=");
     }
 
     @Test
