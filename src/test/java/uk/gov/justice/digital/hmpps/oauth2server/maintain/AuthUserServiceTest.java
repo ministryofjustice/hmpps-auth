@@ -390,8 +390,8 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUserEmail_unverifiedEmail_sendsInitialEmail() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
-        final var USER_UNVERIFIED_EMAIL = User.builder().username("SOME_USER_NAME").verified(false).build();
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(USER_UNVERIFIED_EMAIL));
+        final var userUnverifiedEmail = User.builder().username("SOME_USER_NAME").verified(false).build();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userUnverifiedEmail));
 
         authUserService.amendUserEmail(
                 "SOME_USER_NAME",
@@ -405,8 +405,8 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUserEmail_verifiedEmail_requestsVerification() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
-        final var USER_VERIFIED_EMAIL = User.builder().username("SOME_USER_NAME").verified(true).build();
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(USER_VERIFIED_EMAIL));
+        final var userVerifiedEmail = User.builder().username("SOME_USER_NAME").verified(true).build();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail));
         when(verifyEmailService.requestVerification(anyString(), anyString(), anyString())).thenReturn("SOME_VERIFY_LINK");
 
         authUserService.amendUserEmail(
@@ -421,8 +421,8 @@ public class AuthUserServiceTest {
 
     @Test
     public void amendUserEmail_verifiedEmail_savesUnverifiedUser() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
-        final var USER_VERIFIED_EMAIL = User.builder().username("SOME_USER_NAME").verified(true).build();
-        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(USER_VERIFIED_EMAIL));
+        final var userVerifiedEmail = User.builder().username("SOME_USER_NAME").verified(true).build();
+        when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail));
 
         authUserService.amendUserEmail(
                 "SOME_USER_NAME",
@@ -436,14 +436,14 @@ public class AuthUserServiceTest {
     }
 
     private User userOfGroups(String... groupList) {
-        final var USER_PERSON = new Person("ANY_FIRST_NAME", "ANY_LAST_NAME");
+        final var userPerson = new Person("ANY_FIRST_NAME", "ANY_LAST_NAME");
         final var groups = Arrays.stream(groupList).map(groupName -> new Group(groupName, "any desc")).collect(Collectors.toSet());
-        return User.builder().groups(groups).email("ANY_EMAIL").person(USER_PERSON).username("ANY ANY").build();
+        return User.builder().groups(groups).email("ANY_EMAIL").person(userPerson).username("ANY ANY").build();
     }
 
     private void mockServiceOfNameWithSupportLink(String serviceCode, String supportLink) {
-        final var SERVICE = new Service(serviceCode, "service", "service", "ANY_ROLES", "ANY_URL", true, supportLink);
-        when(oauthServiceRepository.findById(serviceCode)).thenReturn(Optional.of(SERVICE));
+        final var service = new Service(serviceCode, "service", "service", "ANY_ROLES", "ANY_URL", true, supportLink);
+        when(oauthServiceRepository.findById(serviceCode)).thenReturn(Optional.of(service));
     }
 
     @Test
