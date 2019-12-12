@@ -238,7 +238,7 @@ public class AuthUserController {
                                             @ApiIgnore final Authentication authentication) throws NotificationClientException {
         try {
             final var setPasswordUrl = createInitialPasswordUrl(request);
-            final var resetLink = authUserService.amendUser(username, amendUser.getEmail(), setPasswordUrl, authentication.getName(), authentication.getAuthorities());
+            final var resetLink = authUserService.amendUserEmail(username, amendUser.getEmail(), setPasswordUrl, authentication.getName(), authentication.getAuthorities());
             log.info("Amend user succeeded for user {}", username);
             if (smokeTestEnabled) {
                 return ResponseEntity.ok(resetLink);

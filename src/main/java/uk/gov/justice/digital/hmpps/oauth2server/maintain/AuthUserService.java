@@ -176,7 +176,7 @@ public class AuthUserService {
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public String amendUser(final String usernameInput, final String emailAddressInput, final String url, final String admin, final Collection<? extends GrantedAuthority> authorities)
+    public String amendUserEmail(final String usernameInput, final String emailAddressInput, final String url, final String admin, final Collection<? extends GrantedAuthority> authorities)
             throws AmendUserException, VerifyEmailException, NotificationClientException, AuthUserGroupRelationshipException {
         final var username = StringUtils.upperCase(usernameInput);
         final var email = EmailHelper.format(emailAddressInput);
