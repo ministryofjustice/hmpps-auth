@@ -1,23 +1,19 @@
 {
-  "priority": 2,
+  "priority": 1,
   "request": {
     "method": "GET",
-    "urlPattern": "/secure/users/[dD][eE][lL][iI][uU][sS].*/details"
+    "urlPattern": "/secure/users/deliustimeout/details"
   },
   "response": {
     "status": 200,
+    "fixedDelayMilliseconds": 2000,
     "jsonBody": {
       "userId": 2500077027,
       "firstName": "Delius",
-      "surname": "Smith",
+      "surname": "Timeout",
       "email": "test@digital.justice.gov.uk",
       "enabled": true,
-      "roles": [
-        {
-          "name": "TEST_ROLE",
-          "description": "A Test Role"
-        }
-      ]
+      "roles": []
     },
     "headers": {
       "Content-Type": "application/json"

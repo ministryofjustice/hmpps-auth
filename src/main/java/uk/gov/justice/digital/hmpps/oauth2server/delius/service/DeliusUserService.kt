@@ -40,7 +40,7 @@ open class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val res
       if (e.statusCode == HttpStatus.NOT_FOUND) {
         log.debug("User not found in delius due to {}", e.message)
       } else {
-        log.warn("Unable to get delius user details for user {}", username, e)
+        log.warn("Unable to get delius user details for user {} due to {}", username, e.statusCode, e)
       }
       Optional.empty()
     } catch (e: Exception) {

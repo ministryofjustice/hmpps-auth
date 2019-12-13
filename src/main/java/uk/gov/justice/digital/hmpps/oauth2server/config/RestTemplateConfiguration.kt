@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.boot.web.client.RootUriTemplateHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.oauth2.client.OAuth2RestTemplate
@@ -16,17 +15,17 @@ import java.time.Duration
 @Suppress("DEPRECATION", "SpringJavaInjectionPointsAutowiringInspection")
 @Configuration
 open class RestTemplateConfiguration(private val apiDetails: DeliusClientCredentials,
-                                     @param:Value("\${delius.endpoint.url}") private val deliusEndpointUrl: @URL String,
-                                     @param:Value("\${delius.health.timeout:1s}") private val healthTimeout: Duration) {
+                                     @Value("\${delius.endpoint.url}") private val deliusEndpointUrl: @URL String,
+                                     @Value("\${delius.health.timeout:1s}") private val healthTimeout: Duration,
+                                     @Value("\${delius.endpoint.timeout:5s}") private val apiTimeout: Duration) {
 
   @Bean(name = ["deliusApiRestTemplate"])
-  open fun deliusRestTemplate(): OAuth2RestTemplate {
-
-    val deliusApiRestTemplate = OAuth2RestTemplate(apiDetails)
-    RootUriTemplateHandler.addTo(deliusApiRestTemplate, "${deliusEndpointUrl}/secure")
-
-    return deliusApiRestTemplate
-  }
+  open fun deliusRestTemplate(restTemplateBuilder: RestTemplateBuilder): OAuth2RestTemplate =
+      restTemplateBuilder
+          .rootUri("${deliusEndpointUrl}/secure")
+          .setConnectTimeout(apiTimeout)
+          .setReadTimeout(apiTimeout)
+          .configure(OAuth2RestTemplate(apiDetails))
 
   @Bean(name = ["deliusApiHealthRestTemplate"])
   open fun deliusHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate =
