@@ -18,7 +18,8 @@ import static javax.persistence.FetchType.EAGER;
 
 @Entity
 @Table(name = "USERS")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"id"})
@@ -157,6 +158,24 @@ public class User implements UserPersonDetails, CredentialsContainer {
         return source == AuthSource.auth;
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", verified=" + verified +
+                ", locked=" + locked +
+                ", enabled=" + enabled +
+                ", source=" + source +
+                ", passwordExpiry=" + passwordExpiry +
+                ", lastLoggedIn=" + lastLoggedIn +
+                ", person=" + person +
+                ", authorities=" + authorities +
+                '}';
+    }
+
     public static class UserBuilder {
         private UUID id;
         private String username;
@@ -251,7 +270,7 @@ public class User implements UserPersonDetails, CredentialsContainer {
         }
 
         public String toString() {
-            return "User.UserBuilder(id=" + this.id + ", username=" + this.username + ", password=" + this.password + ", email=" + this.email + ", verified=" + this.verified + ", locked=" + this.locked + ", enabled=" + this.enabled + ", source=" + this.source + ", passwordExpiry=" + this.passwordExpiry + ", lastLoggedIn=" + this.lastLoggedIn + ", person=" + this.person + ", authorities=" + this.authorities + ")";
+            return "User.UserBuilder(id=" + this.id + ", username=" + this.username + ", password=" + this.password + ", email=" + this.email + ", verified=" + this.verified + ", locked=" + this.locked + ", enabled=" + this.enabled + ", source=" + this.source + ", passwordExpiry=" + this.passwordExpiry + ", lastLoggedIn=" + this.lastLoggedIn + ", person=" + this.person + ", authorities=" + this.authorities + ", groups=" + this.groups + ", tokens=" + this.tokens + ")";
         }
     }
 }

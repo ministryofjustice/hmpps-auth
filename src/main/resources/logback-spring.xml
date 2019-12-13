@@ -30,7 +30,7 @@
         <appender-ref ref="aiAppender"/>
     </logger>
 
-    <logger name="org.springframework" additivity="false" level="INFO" >
+    <logger name="org.springframework" additivity="false" level="DEBUG" >
         <appender-ref ref="consoleAppender"/>
         <appender-ref ref="aiAppender"/>
     </logger>
