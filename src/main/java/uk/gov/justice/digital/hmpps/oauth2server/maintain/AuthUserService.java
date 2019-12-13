@@ -176,17 +176,30 @@ public class AuthUserService {
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public String amendUser(final String usernameInput, final String emailAddressInput, final String url, final String admin, final Collection<? extends GrantedAuthority> authorities)
+    public String amendUserEmail(final String usernameInput, final String emailAddressInput, final String url, final String admin, final Collection<? extends GrantedAuthority> authorities)
             throws AmendUserException, VerifyEmailException, NotificationClientException, AuthUserGroupRelationshipException {
         final var username = StringUtils.upperCase(usernameInput);
-        final var email = EmailHelper.format(emailAddressInput);
 
         final var user = userRepository.findByUsernameAndMasterIsTrue(username)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
 
         maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user);
+
+        if (user.isVerified()) {
+            user.setVerified(false);
+            userRepository.save(user);
+            return verifyEmailService.requestVerification(
+                    usernameInput,
+                    emailAddressInput,
+                    user.getFirstName(),
+                    url.replace("initial-password", "verify-email-confirm"),
+                    user);
+        }
+
+        final var email = EmailHelper.format(emailAddressInput);
         verifyEmailService.validateEmailAddress(email);
         user.setEmail(email);
+
         return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.getGroups());
     }
 

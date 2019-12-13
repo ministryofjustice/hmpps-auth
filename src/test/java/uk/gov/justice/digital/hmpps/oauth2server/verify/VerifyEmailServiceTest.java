@@ -96,19 +96,23 @@ public class VerifyEmailServiceTest {
     }
 
     @Test
-    public void requestVerification_firstNameMissing() throws NotificationClientException, VerifyEmailException {
+    public void requestVerificationForNomisUser_firstNameMissing() throws NotificationClientException, VerifyEmailException {
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
-        final var verification = verifyEmailService.requestVerification("user", "email@john.com", "url");
+
+        final var verification = verifyEmailService.requestVerificationForNomisUser("user", "email@john.com", "url");
+
         verify(notificationClient).sendEmail(eq("templateId"), eq("email@john.com"), mapCaptor.capture(), eq(null));
         final var params = mapCaptor.getValue();
         assertThat(params).containsEntry("firstName", "user").containsEntry("verifyLink", verification);
     }
 
     @Test
-    public void requestVerification_firstNamePresent() throws NotificationClientException, VerifyEmailException {
+    public void requestVerificationForNomisUser_firstNamePresent() throws NotificationClientException, VerifyEmailException {
         when(nomisUserService.getNomisUserByUsername(anyString())).thenReturn(Optional.of(getStaffUserAccountForBob()));
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
-        final var verification = verifyEmailService.requestVerification("user", "eMail@john.COM", "url");
+
+        final var verification = verifyEmailService.requestVerificationForNomisUser("user", "eMail@john.COM", "url");
+
         verify(notificationClient).sendEmail(eq("templateId"), eq("email@john.com"), mapCaptor.capture(), eq(null));
         final var params = mapCaptor.getValue();
         assertThat(params).containsEntry("firstName", "Bob").containsEntry("verifyLink", verification);
@@ -117,19 +121,21 @@ public class VerifyEmailServiceTest {
     @Test
     public void requestVerification_existingToken() throws NotificationClientException, VerifyEmailException {
         final var user = User.of("someuser");
-        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
         final var existingUserToken = user.createToken(TokenType.VERIFIED);
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
-        verifyEmailService.requestVerification("user", "email@john.com", "url");
+
+        verifyEmailService.requestVerification("user", "email@john.com", "firstname", "url", user);
+
         assertThat(user.getTokens()).hasSize(1).extracting(UserToken::getToken).doesNotContain(existingUserToken.getToken());
     }
 
     @Test
     public void requestVerification_verifyToken() throws NotificationClientException, VerifyEmailException {
         final var user = User.of("someuser");
-        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
-        final var verification = verifyEmailService.requestVerification("user", "email@john.com", "url");
+
+        final var verification = verifyEmailService.requestVerification("user", "email@john.com", "firstname", "url", user);
+
         final var value = user.getTokens().stream().findFirst().orElseThrow();
         assertThat(verification).isEqualTo("url" + value.getToken());
     }
@@ -137,9 +143,10 @@ public class VerifyEmailServiceTest {
     @Test
     public void requestVerification_saveEmail() throws NotificationClientException, VerifyEmailException {
         final var user = User.of("someuser");
-        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
-        verifyEmailService.requestVerification("user", "eMail@john.COM", "url");
+
+        verifyEmailService.requestVerification("user", "eMail@john.COM", "firstname", "url", user);
+
         verify(userRepository).save(user);
         assertThat(user.getEmail()).isEqualTo("email@john.com");
         assertThat(user.isVerified()).isFalse();
@@ -147,16 +154,18 @@ public class VerifyEmailServiceTest {
 
     @Test
     public void requestVerification_sendFailure() throws NotificationClientException {
+        final var user = User.of("someuser");
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
         when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), isNull())).thenThrow(new NotificationClientException("message"));
 
-        assertThatThrownBy(() -> verifyEmailService.requestVerification("user", "email@john.com", "url")).hasMessage("message");
+        assertThatThrownBy(() -> verifyEmailService.requestVerification("user", "email@john.com", "firstname", "url", user)).hasMessage("message");
     }
 
     @Test
     public void requestVerification_formatEmailInput() throws NotificationClientException, VerifyEmailException {
+        final var user = User.of("someuser");
         when(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(Boolean.TRUE);
-        verifyEmailService.requestVerification("user", "some.u’ser@SOMEwhere.COM", "url");
+        verifyEmailService.requestVerification("user", "some.u’ser@SOMEwhere.COM", "firstname", "url", user);
         verify(notificationClient).sendEmail(eq("templateId"), eq("some.u'ser@somewhere.com"), anyMap(), eq(null));
     }
 

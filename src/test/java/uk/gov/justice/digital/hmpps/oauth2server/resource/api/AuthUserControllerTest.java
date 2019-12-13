@@ -218,7 +218,7 @@ public class AuthUserControllerTest {
 
         authUserController.amendUser("user", new AmendUser("a@b.com"), request, authentication);
 
-        verify(authUserService).amendUser("user", "a@b.com", "http://some.url/auth/initial-password?token=", "bob", authentication.getAuthorities());
+        verify(authUserService).amendUserEmail("user", "a@b.com", "http://some.url/auth/initial-password?token=", "bob", authentication.getAuthorities());
     }
 
     @Test
@@ -233,7 +233,7 @@ public class AuthUserControllerTest {
     @Test
     public void amendUser_notFound() throws NotificationClientException, VerifyEmailException, AmendUserException, AuthUserGroupRelationshipException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
-        when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new EntityNotFoundException("not found"));
+        when(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new EntityNotFoundException("not found"));
 
         final var responseEntity = authUserController.amendUser("user", new AmendUser("a@b.com"), request, authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(404);
@@ -242,7 +242,7 @@ public class AuthUserControllerTest {
     @Test
     public void amendUser_amendException() throws NotificationClientException, VerifyEmailException, AmendUserException, AuthUserGroupRelationshipException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
-        when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new AmendUserException("fiel", "cod"));
+        when(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new AmendUserException("fiel", "cod"));
 
         final var responseEntity = authUserController.amendUser("user", new AmendUser("a@b.com"), request, authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
@@ -252,7 +252,7 @@ public class AuthUserControllerTest {
     @Test
     public void amendUser_verifyException() throws NotificationClientException, VerifyEmailException, AmendUserException, AuthUserGroupRelationshipException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
-        when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new VerifyEmailException("reason"));
+        when(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new VerifyEmailException("reason"));
 
         final var responseEntity = authUserController.amendUser("user", new AmendUser("a@b.com"), request, authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(400);
@@ -262,7 +262,7 @@ public class AuthUserControllerTest {
     @Test
     public void amendUser_groupException() throws NotificationClientException, VerifyEmailException, AmendUserException, AuthUserGroupRelationshipException {
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url/auth/api/authuser/newusername"));
-        when(authUserService.amendUser(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new AuthUserGroupRelationshipException("user", "reason"));
+        when(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(new AuthUserGroupRelationshipException("user", "reason"));
 
         final var responseEntity = authUserController.amendUser("user", new AmendUser("a@b.com"), request, authentication);
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(403);

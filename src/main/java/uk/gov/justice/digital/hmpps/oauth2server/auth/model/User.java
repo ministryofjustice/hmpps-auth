@@ -18,7 +18,8 @@ import static javax.persistence.FetchType.EAGER;
 
 @Entity
 @Table(name = "USERS")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"id"})
@@ -155,6 +156,24 @@ public class User implements UserPersonDetails, CredentialsContainer {
 
     public boolean isMaster() {
         return source == AuthSource.auth;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", verified=" + verified +
+                ", locked=" + locked +
+                ", enabled=" + enabled +
+                ", source=" + source +
+                ", passwordExpiry=" + passwordExpiry +
+                ", lastLoggedIn=" + lastLoggedIn +
+                ", person=" + person +
+                ", authorities=" + authorities +
+                '}';
     }
 
     public static class UserBuilder {

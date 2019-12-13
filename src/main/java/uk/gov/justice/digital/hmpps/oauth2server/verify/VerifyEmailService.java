@@ -70,19 +70,24 @@ public class VerifyEmailService {
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public String requestVerification(final String username, final String emailInput, final String url) throws NotificationClientException, VerifyEmailException {
-        final var email = EmailHelper.format(emailInput);
-        validateEmailAddress(email);
+    public String requestVerificationForNomisUser(final String username, final String emailInput, final String url) throws NotificationClientException, VerifyEmailException {
 
         final var userPersonDetails = nomisUserService.getNomisUserByUsername(username);
         final var firstName = userPersonDetails.map(UserPersonDetails::getFirstName).orElse(username);
         final var optionalUser = userRepository.findByUsername(username);
         final var user = optionalUser.orElseGet(() -> User.builder().username(username).source(AuthSource.nomis).build());
-        user.setEmail(email);
 
-        final var userToken = user.createToken(TokenType.VERIFIED);
-        final var verifyLink = url + userToken.getToken();
+        return requestVerification(username, emailInput, firstName, url, user);
+    }
+
+    @Transactional(transactionManager = "authTransactionManager")
+    public String requestVerification(final String username, final String emailInput, final String firstName, final String url, final User user) throws NotificationClientException, VerifyEmailException {
+        final var verifyLink = url + user.createToken(TokenType.VERIFIED).getToken();
         final var parameters = Map.of("firstName", firstName, "verifyLink", verifyLink);
+
+        final var email = EmailHelper.format(emailInput);
+        validateEmailAddress(email);
+        user.setEmail(email);
 
         try {
             log.info("Sending email verification to notify for user {}", username);

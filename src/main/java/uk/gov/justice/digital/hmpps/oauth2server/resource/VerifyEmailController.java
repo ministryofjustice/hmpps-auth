@@ -92,7 +92,7 @@ public class VerifyEmailController {
         final var chosenEmail = StringUtils.trim(StringUtils.isBlank(candidate) || "other".equals(candidate) ? email : candidate);
 
         try {
-            final var verifyLink = verifyEmailService.requestVerification(username, chosenEmail, request.getRequestURL().append("-confirm?token=").toString());
+            final var verifyLink = verifyEmailService.requestVerificationForNomisUser(username, chosenEmail, request.getRequestURL().append("-confirm?token=").toString());
 
             final var modelAndView = new ModelAndView("verifyEmailSent");
             if (smokeTestEnabled) {
