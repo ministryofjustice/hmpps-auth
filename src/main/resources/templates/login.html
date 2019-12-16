@@ -46,6 +46,7 @@
           <a th:case="'invalid'" href="#username"
              th:text="#{login.invalid(${@environment.getProperty('application.authentication.lockout-count')})}">
             Invalid message</a>
+          <a th:case="'deliusdown'" href="#username" th:text="#{login.deliusdown}">Delius unavailable message</a>
           <a th:case="*" href="#username" th:text="#{${'login.' + error}}">Username message</a>
         </li>
       </ul>

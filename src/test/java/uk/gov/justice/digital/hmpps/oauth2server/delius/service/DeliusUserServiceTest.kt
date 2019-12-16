@@ -8,11 +8,13 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.config.DeliusRoleMappings
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole
+import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
 
 @RunWith(MockitoJUnitRunner::class)
 class DeliusUserServiceTest {
@@ -117,6 +119,13 @@ class DeliusUserServiceTest {
             email = "somewhere@bob.com",
             enabled = true,
             roles = emptySet()))
+  }
+
+  @Test(expected = DeliusAuthenticationServiceException::class)
+  fun `getDeliusUserByUsername converts ResourceAccessException and rethrows`() {
+    whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenThrow(ResourceAccessException::class.java)
+
+    deliusService.getDeliusUserByUsername("any_username")
   }
 
   private fun createUserDetails(): UserDetails =

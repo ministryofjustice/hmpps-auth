@@ -9,11 +9,13 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.config.DeliusRoleMappings
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole
+import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
 import java.util.*
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
@@ -43,6 +45,8 @@ open class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val res
         log.warn("Unable to get delius user details for user {} due to {}", username, e.statusCode, e)
       }
       Optional.empty()
+    } catch(e: ResourceAccessException) {
+      throw DeliusAuthenticationServiceException()
     } catch (e: Exception) {
       log.warn("Unable to get delius user details for user {}", username, e)
       Optional.empty()

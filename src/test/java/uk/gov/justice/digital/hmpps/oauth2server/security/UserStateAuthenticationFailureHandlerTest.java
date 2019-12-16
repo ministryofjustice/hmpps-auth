@@ -88,6 +88,13 @@ public class UserStateAuthenticationFailureHandlerTest {
     }
 
     @Test
+    public void onAuthenticationFailure_deliusDown() throws IOException {
+        handler.onAuthenticationFailure(request, response, new DeliusAuthenticationServiceException());
+
+        verify(redirectStrategy).sendRedirect(request, response, "/login?error=invalid&error=deliusdown");
+    }
+
+    @Test
     public void onAuthenticationFailure_other() throws IOException {
         handler.onAuthenticationFailure(request, response, new BadCredentialsException("msg"));
 
