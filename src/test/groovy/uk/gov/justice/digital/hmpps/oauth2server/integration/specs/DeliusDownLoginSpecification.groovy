@@ -8,7 +8,7 @@ import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.DELIUS_USER
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.ITAG_USER
 
-class DeliusDownLoginSepcification extends BrowserReportingSpec {
+class DeliusDownLoginSpecification extends BrowserReportingSpec {
 
     def "Delius unavailable shows in error"() {
         given: 'I am on the Login page'
