@@ -171,6 +171,19 @@ class LoginSpecification extends DeliusIntegrationSpec {
                 "\nDelius is experiencing issues. Please try later if you are attempting to login using your Delius credentials."
     }
 
+    def "Attempt login with Delius unavailable (gateway returns 503)"() {
+        given: 'I am on the Login page'
+        to LoginPage
+
+        when: "I attempt to login and receive a server error"
+        loginAs DELIUS_SERVER_ERROR, 'password'
+
+        then: 'My credentials are rejected and I am still on the Login page'
+        at LoginErrorPage
+        errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times." +
+                "\nDelius is experiencing issues. Please try later if you are attempting to login using your Delius credentials."
+    }
+
     def "Log in with valid credentials"() {
         given: 'I am on the Login page'
         to LoginPage
