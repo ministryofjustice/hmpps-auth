@@ -49,11 +49,11 @@ public class ClientTrackingTelemetryModule implements WebTelemetryModule, Teleme
 
     }
 
-    private void addClientIpAddress(Map<String, String> properties,HttpServletRequest req) {
+    private void addClientIpAddress(final Map<String, String> properties, final HttpServletRequest req) {
         properties.put("clientIpAddress", IpAddressHelper.retrieveIpFromRemoteAddr(req));
     }
 
-    private void addClientId(Map<String, String> properties, HttpServletRequest httpServletRequest) {
+    private void addClientId(final Map<String, String> properties, final HttpServletRequest httpServletRequest) {
         final var token = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
         final var bearer = "Bearer ";
         if (StringUtils.startsWithIgnoreCase(token, bearer)) {
