@@ -62,7 +62,7 @@ public class ClientTrackingTelemetryModuleTest {
 
         final var insightTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getProperties();
 
-        assertThat(insightTelemetry).containsOnly(entry("username", "bob"), entry("clientId", "elite2apiclient"));
+        assertThat(insightTelemetry).contains(entry("username", "bob"), entry("clientId", "elite2apiclient"));
     }
 
     @Test
@@ -76,7 +76,7 @@ public class ClientTrackingTelemetryModuleTest {
 
         final var insightTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getProperties();
 
-        assertThat(insightTelemetry).isEmpty();
+        assertThat(insightTelemetry).doesNotContain(entry("username", "Fred"), entry("clientId", "elite2apiclient"));
     }
 
     private String createJwt(final String user, final Long duration) {
@@ -86,6 +86,17 @@ public class ClientTrackingTelemetryModuleTest {
                 .scope(List.of("read", "write"))
                 .expiryTime(Duration.ofDays(duration))
                 .build());
+    }
+
+    @Test
+    public void shouldAddClientIpToInsightTelemetry() {
+        final var SOME_IP_ADDRESS = "12.13.14.15";
+        req.setRemoteAddr(SOME_IP_ADDRESS);
+
+        clientTrackingTelemetryModule.onBeginRequest(req, res);
+
+        final var insightTelemetry = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getProperties();
+        assertThat(insightTelemetry).contains(entry("clientIpAddress", SOME_IP_ADDRESS));
     }
 
 }

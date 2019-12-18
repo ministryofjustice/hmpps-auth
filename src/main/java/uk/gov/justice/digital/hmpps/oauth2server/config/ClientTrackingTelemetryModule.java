@@ -15,11 +15,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
+import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.security.KeyPair;
+import java.util.Map;
 import java.util.Optional;
 
 @Configuration
@@ -39,15 +41,25 @@ public class ClientTrackingTelemetryModule implements WebTelemetryModule, Teleme
     @Override
     public void onBeginRequest(final ServletRequest req, final ServletResponse res) {
 
+        final var telemetryProperties = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getProperties();
         final var httpServletRequest = (HttpServletRequest) req;
+
+        addClientIdAndUser(telemetryProperties, httpServletRequest);
+        addClientIpAddress(telemetryProperties, httpServletRequest);
+
+    }
+
+    private void addClientIpAddress(final Map<String, String> properties, final HttpServletRequest req) {
+        properties.put("clientIpAddress", IpAddressHelper.retrieveIpFromRemoteAddr(req));
+    }
+
+    private void addClientIdAndUser(final Map<String, String> properties, final HttpServletRequest httpServletRequest) {
         final var token = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
         final var bearer = "Bearer ";
         if (StringUtils.startsWithIgnoreCase(token, bearer)) {
 
             try {
                 final var jwtBody = getClaimsFromJWT(token);
-
-                final var properties = ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getProperties();
 
                 final var user = Optional.ofNullable(jwtBody.get("user_name"));
                 user.map(String::valueOf).ifPresent(u -> properties.put("username", u));
