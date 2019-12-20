@@ -3,12 +3,17 @@ package uk.gov.justice.digital.hmpps.oauth2server.api.specs
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import org.apache.commons.lang3.RandomStringUtils
+import org.junit.Rule
 import org.springframework.http.*
 import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpClientErrorException.NotFound
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.CommunityApiMockServer
 
 class AuthUserSpecification extends TestSpecification {
+    @Rule
+    CommunityApiMockServer communityApi = new CommunityApiMockServer()
+
     class NewUser {
         String email
         String firstName

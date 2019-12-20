@@ -32,7 +32,8 @@ enum UserAccount {
     DELIUS_DISABLED('deldisabled'),
     DELIUS_LOCKED('deliuslocked'),
     DELIUS_PASSWORD_RESET('delius_password_reset'),
-    DELIUS_TIMEOUT('deliustimeout');
+    DELIUS_TIMEOUT('deliustimeout'),
+    DELIUS_SERVER_ERROR('delius_server_error');
 
     String username
 }

@@ -138,6 +138,11 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         return super.authenticationManagerBean();
     }
 
+    /**
+     * An assumption is made in DeliusUserService that the delius auth provider is checked last and if Delius is down
+     * then we do not check with any further providers.
+     *
+     */
     @Override
     protected void configure(final AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(authAuthenticationProvider);

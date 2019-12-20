@@ -43,6 +43,8 @@ public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticati
             if (StringUtils.isBlank(request.getParameter("password"))) {
                 builder.add("missingpass");
             }
+        } else if (exception instanceof DeliusAuthenticationServiceException) {
+            builder.add("invalid").add("deliusdown");
         } else {
             builder.add("invalid");
         }
