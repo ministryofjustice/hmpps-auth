@@ -92,14 +92,14 @@ public class AbstractPasswordController {
                 return trackAndReturn(tokenType, username, modelAndView, "state");
             }
             // let any other exception bubble up
-            log.info("Failed to {} password due to {}", tokenType.getDescription(), e.getClass().getName(), e);
-            telemetryClient.trackEvent(String.format("%sPasswordFailure", tokenType.getDescription()),
+            log.info("Failed to {} due to {}", tokenType.getDescription(), e.getClass().getName(), e);
+            telemetryClient.trackEvent(String.format("%sFailure", tokenType.getDescription()),
                     Map.of("username", username, "reason", e.getClass().getSimpleName()), null);
             throw e;
         }
 
         log.info("Successfully changed password for {}", username);
-        telemetryClient.trackEvent(String.format("%sPasswordSuccess", metricsPrefix),
+        telemetryClient.trackEvent(String.format("%sSuccess", metricsPrefix),
                 Map.of("username", username), null);
         return Optional.empty();
     }
@@ -163,8 +163,8 @@ public class AbstractPasswordController {
 
     private Optional<ModelAndView> trackAndReturn(final TokenType tokenType, final String username, final ModelAndView modelAndView,
                                                   final MultiValueMap<String, Object> validationResult) {
-        log.info("Failed to {} password due to {}", tokenType.getDescription(), validationResult.toString());
-        telemetryClient.trackEvent(String.format("%sPasswordFailure", tokenType.getDescription()),
+        log.info("Failed to {} due to {}", tokenType.getDescription(), validationResult.toString());
+        telemetryClient.trackEvent(String.format("%sFailure", tokenType.getDescription()),
                 Map.of("username", username, "reason", validationResult.toString()), null);
         modelAndView.addAllObjects(validationResult);
         modelAndView.addObject("error", Boolean.TRUE);
@@ -172,8 +172,8 @@ public class AbstractPasswordController {
     }
 
     private Optional<ModelAndView> trackAndReturn(final TokenType tokenType, final String username, final ModelAndView modelAndView, final String reason) {
-        log.info("Failed to {} password due to {}", tokenType.getDescription(), reason);
-        telemetryClient.trackEvent(String.format("%sPasswordFailure", tokenType.getDescription()),
+        log.info("Failed to {} due to {}", tokenType.getDescription(), reason);
+        telemetryClient.trackEvent(String.format("%sFailure", tokenType.getDescription()),
                 Map.of("username", username, "reason", reason), null);
         modelAndView.addObject("errornew", reason);
         modelAndView.addObject("error", Boolean.TRUE);

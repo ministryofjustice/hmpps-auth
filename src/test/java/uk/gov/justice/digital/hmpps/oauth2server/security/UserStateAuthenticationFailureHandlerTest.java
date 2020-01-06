@@ -9,11 +9,14 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.web.RedirectStrategy;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,7 +28,7 @@ public class UserStateAuthenticationFailureHandlerTest {
     @Mock
     private HttpServletResponse response;
     @Mock
-    private ChangePasswordService changePasswordService;
+    private TokenService tokenService;
     @Mock
     private RedirectStrategy redirectStrategy;
 
@@ -46,20 +49,20 @@ public class UserStateAuthenticationFailureHandlerTest {
     @Test
     public void onAuthenticationFailure_expired() throws IOException {
         when(request.getParameter("username")).thenReturn("bob");
-        when(changePasswordService.createToken(anyString())).thenReturn("sometoken");
+        when(tokenService.createToken(any(), anyString())).thenReturn("sometoken");
         handler.onAuthenticationFailure(request, response, new CredentialsExpiredException("msg"));
 
         verify(redirectStrategy).sendRedirect(request, response, "/change-password?token=sometoken");
-        verify(changePasswordService).createToken("BOB");
+        verify(tokenService).createToken(TokenType.CHANGE, "BOB");
     }
 
     @Test
     public void onAuthenticationFailure_expiredTrimUppercase() throws IOException {
         when(request.getParameter("username")).thenReturn("   Joe  ");
-        when(changePasswordService.createToken(anyString())).thenReturn("sometoken");
+        when(tokenService.createToken(any(), anyString())).thenReturn("sometoken");
         handler.onAuthenticationFailure(request, response, new CredentialsExpiredException("msg"));
 
-        verify(changePasswordService).createToken("JOE");
+        verify(tokenService).createToken(TokenType.CHANGE, "JOE");
     }
 
     @Test
@@ -102,7 +105,7 @@ public class UserStateAuthenticationFailureHandlerTest {
     }
 
     private void setupHandler() {
-        handler = new UserStateAuthenticationFailureHandler(changePasswordService);
+        handler = new UserStateAuthenticationFailureHandler(tokenService);
         handler.setRedirectStrategy(redirectStrategy);
     }
 }

@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "USER_TOKEN")
-@Data
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"tokenType"})
@@ -43,13 +43,32 @@ public class UserToken {
         return tokenExpiry.isBefore(LocalDateTime.now());
     }
 
-    @Getter
+    public String getToken() {
+        return this.token;
+    }
+
+    public TokenType getTokenType() {
+        return this.tokenType;
+    }
+
+    public LocalDateTime getTokenExpiry() {
+        return this.tokenExpiry;
+    }
+
+    public User getUser() {
+        return this.user;
+    }
+
     @AllArgsConstructor
     public enum TokenType {
-        RESET("Reset"),
-        VERIFIED("Verified"),
-        CHANGE("Change");
+        RESET("ResetPassword"),
+        VERIFIED("VerifiedPassword"),
+        CHANGE("ChangePassword");
 
         private final String description;
+
+        public String getDescription() {
+            return this.description;
+        }
     }
 }

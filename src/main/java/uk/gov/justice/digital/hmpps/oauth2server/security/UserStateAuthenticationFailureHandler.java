@@ -6,6 +6,8 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,12 +17,11 @@ import java.util.StringJoiner;
 @Component
 public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
     private static final String FAILURE_URL = "/login";
-    private final ChangePasswordService changePasswordService;
+    private final TokenService tokenService;
 
-
-    public UserStateAuthenticationFailureHandler(final ChangePasswordService changePasswordService) {
+    public UserStateAuthenticationFailureHandler(final TokenService tokenService) {
         super(FAILURE_URL);
-        this.changePasswordService = changePasswordService;
+        this.tokenService = tokenService;
         setAllowSessionCreation(false);
     }
 
@@ -33,7 +34,7 @@ public class UserStateAuthenticationFailureHandler extends SimpleUrlAuthenticati
         } else if (exception instanceof CredentialsExpiredException) {
             // special handling for expired users and feature switch turned on
             final var username = StringUtils.trim(request.getParameter("username").toUpperCase());
-            final var token = changePasswordService.createToken(username);
+            final var token = tokenService.createToken(TokenType.CHANGE, username);
             getRedirectStrategy().sendRedirect(request, response, "/change-password?token=" + token);
             return;
         } else if (exception instanceof MissingCredentialsException) {
