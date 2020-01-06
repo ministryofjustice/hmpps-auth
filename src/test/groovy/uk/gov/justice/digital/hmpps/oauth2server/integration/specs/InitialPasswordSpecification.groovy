@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.api.specs.AuthUserSpecification.NewUser
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
-class InitialPasswordSpecification extends GebReportingSpec {
+class InitialPasswordSpecification extends DeliusIntegrationSpec {
 
     def "A licences user can be created and new password saved"() {
         given: 'A licence RO user has been created'

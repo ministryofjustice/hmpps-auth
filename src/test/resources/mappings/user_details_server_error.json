@@ -1,0 +1,17 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPattern": "/secure/users/delius_server_error/details"
+  },
+  "response": {
+    "status": 502,
+    "jsonBody": {
+      "status": 502,
+      "developerMessage": "Service Error"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
