@@ -49,7 +49,7 @@ if [[ ! -f "$FILE" ]]; then
 fi
 
 # Get token for the client name / secret and store it in the environment variable TOKEN
-TOKEN_RESPONSE=$(curl -s -k -d "" -X POST "$HOST/auth/oauth/token?grant_type=client_credentials&username=$USER" -H "Authorization: Basic $(echo -n $CLIENT | base64 -w0)")
+TOKEN_RESPONSE=$(curl -s -k -d "" -X POST "$HOST/auth/oauth/token?grant_type=client_credentials&username=$USER" -H "Authorization: Basic $(echo -n "$CLIENT" | base64)")
 TOKEN=$(echo "$TOKEN_RESPONSE" | jq -er .access_token)
 if [[ $? -ne 0 ]]; then
   echo "Failed to read token from credentials response"
@@ -72,13 +72,10 @@ addGroup() {
 
 cnt=0
 
-while read LINE
+while IFS=, read -r user email first last group group2 group3 group4 group5 group6 group7 group8 group9
 do
 
-  IFS=","
-  read user email first last group group2 group3 group4 group5 group6 <<< `echo "$LINE"`
-
-  echo "Processing | $user | $email | $first | $last | $group | $group2 | $group3 | $group4 | $group5 | $group6"
+  echo "Processing | $user | $email | $first | $last | $group | $group2 | $group3 | $group4 | $group5 | $group6 | $group7 | $group8 | $group9"
 
   # Create the user
   curl -X PUT "$HOST/auth/api/authuser/$user" -H "Authorization: $AUTH_TOKEN" -H "accept: */*" -H "Content-Type: application/json" -d "{ \"groupCode\": \"$group\", \"email\": \"$email\", \"firstName\": \"$first\", \"lastName\": \"$last\"}"
@@ -106,6 +103,9 @@ do
     addGroup $user $group4
     addGroup $user $group5
     addGroup $user $group6
+    addGroup $user $group7
+    addGroup $user $group8
+    addGroup $user $group9
   fi
 
   # Pause for 5 seconds every BATCH number of records
@@ -117,6 +117,6 @@ do
     sleep 5
   fi
 
-done < $FILE
+done < "$FILE"
 
 # End
