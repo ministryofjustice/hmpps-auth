@@ -1,18 +1,14 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.PasswordService;
-
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -23,21 +19,6 @@ public class ChangePasswordService implements PasswordService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final DelegatingUserService delegatingUserService;
-    private final TelemetryClient telemetryClient;
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public String createToken(final String username) {
-        final var userOptional = userRepository.findByUsername(username);
-        final var user = userOptional.orElseGet(() -> {
-            final var userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow();
-            final var ue = userPersonDetails.toUser();
-            return userRepository.save(ue);
-        });
-        final var userToken = user.createToken(TokenType.CHANGE);
-        log.info("Requesting change password for {}", username);
-        telemetryClient.trackEvent("ChangePasswordRequest", Map.of("username", username), null);
-        return userToken.getToken();
-    }
 
     @Override
     @Transactional(transactionManager = "authTransactionManager")
