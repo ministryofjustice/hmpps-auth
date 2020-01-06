@@ -6,7 +6,7 @@ import java.time.LocalDate
 plugins {
   id 'java'
   id 'groovy'
-  id 'org.springframework.boot' version '2.2.2.RELEASE'
+  id 'org.springframework.boot' version '2.2.2.RELEASE' // remove pinning of tomcat version to 9.0.30 when next upgrading
   id 'io.spring.dependency-management' version '1.0.8.RELEASE'
   id 'org.owasp.dependencycheck' version '5.2.4'
   id 'com.github.ben-manes.versions' version '0.27.0'
@@ -48,6 +48,7 @@ ext {
         drivers = ['chromeHeadless']
     }
 }
+ext['tomcat.version'] = '9.0.30'
 
 dependencyCheck {
   failBuildOnCVSS = 5
@@ -131,7 +132,7 @@ dependencies {
   implementation 'org.apache.commons:commons-text:1.8'
   implementation 'com.microsoft.sqlserver:mssql-jdbc:7.4.1.jre11'
   implementation 'com.github.timpeeters:spring-boot-graceful-shutdown:2.1.1'
-  implementation 'com.google.guava:guava:28.1-jre'
+  implementation 'com.google.guava:guava:28.2-jre'
 
   implementation configurations.agentDeps
 
