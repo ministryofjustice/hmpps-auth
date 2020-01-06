@@ -99,7 +99,7 @@ public class AbstractPasswordController {
         }
 
         log.info("Successfully changed password for {}", username);
-        telemetryClient.trackEvent(String.format("%sSuccess", metricsPrefix),
+        telemetryClient.trackEvent(String.format("%sPasswordSuccess", metricsPrefix),
                 Map.of("username", username), null);
         return Optional.empty();
     }
