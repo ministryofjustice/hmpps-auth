@@ -86,7 +86,9 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('9E84F1E4-59C8-4B10-927A-9CF9E9A30791', 'AUTH_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2013-01-28 13:23:19.0000000', 'auth_test2@digital.justice.gov.uk', 'Auth', 'Expired', 1, 1, 0, 'auth'),
         ('5105A589-75B3-4CA0-9433-B96228C1C8F3', 'AUTH_ADM', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_test2@digital.justice.gov.uk', 'Auth', 'Adm', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2A3E', 'AUTH_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_test@digital.justice.gov.uk', 'Auth', 'Test', 1, 1, 0, 'auth'),
-        ('67A789DE-7D29-4863-B9C2-F2CE715DC4BC', 'AUTH_NEW_USER', null, '3013-01-28 13:23:19.0000000', 'a@b.com', 'Auth', 'New-User', 0, 1, 0, 'auth');
+        ('67A789DE-7D29-4863-B9C2-F2CE715DC4BC', 'AUTH_NEW_USER', null, '3013-01-28 13:23:19.0000000', 'a@b.com', 'Auth', 'New-User', 0, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2A3F', 'AUTH_MFA_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'mfa_user@digital.justice.gov.uk', 'Mfa', 'User', 1, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2A4F', 'AUTH_MFA_EXPIRED_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'mfa_user@digital.justice.gov.uk', 'Mfa', 'User', 1, 1, 0, 'auth');
 
 INSERT INTO users (user_id, username, password, last_logged_in, first_name, last_name, verified, enabled, locked, source)
  VALUES ('7B59A818-BC14-43F3-A1C3-93004E173B2A', 'AUTH_DELETE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2018-01-02 13:23:19.0000000', 'Auth', 'Delete', 1, 0, 0, 'auth'),
@@ -101,7 +103,8 @@ INSERT INTO users (user_id, username, email, last_logged_in, first_name, last_na
 INSERT INTO user_token (token, token_type, token_expiry, user_id)
  VALUES ('reset', 'RESET', '2018-12-10 08:55:45.0000000', '6A3F0216-BBAB-49CD-BD6E-AC09C1762EE4'),
         ('reset2', 'RESET', '2018-12-10 08:55:45.0000000', '7112EC3B-88C1-48C3-BCC3-F82874E3F2C3'),
-        ('verified', 'VERIFIED', '2018-12-10 08:55:45.0000000', '7112EC3B-88C1-48C3-BCC3-F82874E3F2C3');
+        ('verified', 'VERIFIED', '2018-12-10 08:55:45.0000000', '7112EC3B-88C1-48C3-BCC3-F82874E3F2C3'),
+        ('mfa_expired', 'MFA', '2018-12-10 08:55:45.0000000', '2E285CCD-DCFD-4497-9E22-D6E8E10A2A4F');
 
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_ADM' and role_code = 'OAUTH_ADMIN';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_ADM' and role_code = 'MAINTAIN_ACCESS_ROLES';
@@ -118,6 +121,7 @@ INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, use
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_DELETEALL' and role_code = 'LICENCE_RO';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_PF_OM_USER' and role_code = 'PATHFINDER_OM';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_PF_OM_USER' and role_code = 'GLOBAL_SEARCH';
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_USER' and role_code = 'MFA';
 
 INSERT INTO groups (group_id, group_code, group_name) VALUES (newid(), 'SITE_1_GROUP_1', 'Site 1 - Group 1'),
        (newid(), 'SITE_1_GROUP_2', 'Site 1 - Group 2'),

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -22,12 +23,12 @@ open class TokenService(private val userTokenRepository: UserTokenRepository,
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  open fun getToken(tokenType: UserToken.TokenType, token: String): Optional<UserToken> {
+  open fun getToken(tokenType: TokenType, token: String): Optional<UserToken> {
     val userTokenOptional = userTokenRepository.findById(token)
     return userTokenOptional.filter { t -> t.tokenType == tokenType }
   }
 
-  open fun checkToken(tokenType: UserToken.TokenType, token: String): Optional<String> {
+  open fun checkToken(tokenType: TokenType, token: String): Optional<String> {
     val userTokenOptional = getToken(tokenType, token)
     if (userTokenOptional.isEmpty) {
       log.info("Failed to {} due to invalid token", tokenType.description)
@@ -47,7 +48,7 @@ open class TokenService(private val userTokenRepository: UserTokenRepository,
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  open fun createToken(tokenType: UserToken.TokenType, username: String): String {
+  open fun createToken(tokenType: TokenType, username: String): String {
     log.info("Requesting {} for {}", tokenType.description, username)
     val userOptional = userRepository.findByUsername(username)
     val user = userOptional.orElseGet {
@@ -59,4 +60,8 @@ open class TokenService(private val userTokenRepository: UserTokenRepository,
         mapOf("username" to username), null)
     return userToken.token
   }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  open fun removeToken(tokenType: TokenType, username: String) =
+      getToken(tokenType, username).ifPresent { userTokenRepository.delete(it) }
 }

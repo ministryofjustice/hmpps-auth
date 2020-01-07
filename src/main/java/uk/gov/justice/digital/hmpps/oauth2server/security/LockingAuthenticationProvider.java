@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,20 +14,24 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService;
 
 import java.util.Map;
 
 @Slf4j
 public abstract class LockingAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserRetriesService userRetriesService;
+    private final MfaService mfaService;
     private final TelemetryClient telemetryClient;
     private final int accountLockoutCount;
 
     public LockingAuthenticationProvider(final UserDetailsService userDetailsService,
                                          final UserRetriesService userRetriesService,
+                                         final MfaService mfaService,
                                          final TelemetryClient telemetryClient,
                                          final int accountLockoutCount) {
         this.userRetriesService = userRetriesService;
+        this.mfaService = mfaService;
         this.telemetryClient = telemetryClient;
         this.accountLockoutCount = accountLockoutCount;
         setUserDetailsService(userDetailsService);
@@ -75,6 +80,10 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
             log.info("Resetting retries for user {}", username);
             userRetriesService.resetRetriesAndRecordLogin(userDetails);
 
+            // now check if mfa is enabled for the user
+            if (mfaService.needsMfa(userDetails.getAuthorities())) {
+                throw new MfaRequiredException("MFA required");
+            }
         } else {
             final var newRetryCount = userRetriesService.incrementRetries(username);
 
@@ -104,5 +113,11 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
 
     private void trackFailure(final String username, final String type, final String subType) {
         telemetryClient.trackEvent("AuthenticateFailure", Map.of("username", username, "type", type, "subType", subType), null);
+    }
+
+    public static class MfaRequiredException extends AccountStatusException {
+        MfaRequiredException(final String msg) {
+            super(msg);
+        }
     }
 }

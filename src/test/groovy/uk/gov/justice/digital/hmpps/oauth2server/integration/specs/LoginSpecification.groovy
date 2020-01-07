@@ -396,12 +396,12 @@ class LoginSpecification extends DeliusIntegrationSpec {
         CachingDriverFactory.clearCache()
     }
 
-    private static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+    static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
         return url.query.split('&')
                 .collectEntries { it.split('=').collect { URLDecoder.decode(it, 'UTF-8') } }
     }
 
-    private Object getAccessToken(String authCode) {
+    Object getAccessToken(String authCode) {
         def headers = new HttpHeaders()
         headers.put('Authorization', List.of('Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA=='))
         def entity = new HttpEntity<>('', headers)

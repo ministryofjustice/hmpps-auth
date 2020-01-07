@@ -17,6 +17,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import java.util.*
 
 @RunWith(MockitoJUnitRunner::class)
@@ -24,12 +25,13 @@ class DeliusAuthenticationProviderTest {
   private val deliusUserService: DeliusUserService = mock()
   private val userService: UserService = mock()
   private val userRetriesService: UserRetriesService = mock()
+  private val mfaService: MfaService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private var provider: DeliusAuthenticationProvider = mock()
   @Before
   fun setUp() {
     val deliusUserDetailsService = DeliusUserDetailsService(deliusUserService, userService)
-    provider = DeliusAuthenticationProvider(deliusUserService, deliusUserDetailsService, userRetriesService, telemetryClient, 3)
+    provider = DeliusAuthenticationProvider(deliusUserService, deliusUserDetailsService, userRetriesService, mfaService, telemetryClient, 3)
   }
 
   @Test
