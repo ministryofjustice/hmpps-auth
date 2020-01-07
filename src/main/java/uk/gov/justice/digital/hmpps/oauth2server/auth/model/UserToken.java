@@ -36,7 +36,7 @@ public class UserToken {
         this.user = user;
 
         final var now = LocalDateTime.now();
-        this.tokenExpiry = tokenType == TokenType.CHANGE ? now.plusMinutes(20) : now.plusDays(1);
+        this.tokenExpiry = tokenType == TokenType.CHANGE || tokenType == TokenType.MFA ? now.plusMinutes(20) : now.plusDays(1);
     }
 
     public boolean hasTokenExpired() {
@@ -63,7 +63,9 @@ public class UserToken {
     public enum TokenType {
         RESET("ResetPassword"),
         VERIFIED("VerifiedPassword"),
-        CHANGE("ChangePassword");
+        CHANGE("ChangePassword"),
+        MFA("MFA"),
+        MFA_CODE("MFACode");
 
         private final String description;
 

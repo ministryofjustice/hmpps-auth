@@ -49,4 +49,18 @@ public class UserTokenTest {
         final var userToken = new UserToken(TokenType.VERIFIED, null);
         assertThat(userToken.getTokenExpiry()).isBeforeOrEqualTo(oneDayAndTwoMinutesTime);
     }
+
+    @Test
+    public void testMfaPasswordTokenLastsTwentyMinutes() {
+        final var twentyMinutesTime = LocalDateTime.now().plusMinutes(20);
+        final var userToken = new UserToken(TokenType.MFA, null);
+        assertThat(userToken.getTokenExpiry()).isAfterOrEqualTo(twentyMinutesTime);
+    }
+
+    @Test
+    public void testMfaPasswordTokenLastsNoMoreThanTwentyTwoMinutes() {
+        final var twentyTwoMinutesTime = LocalDateTime.now().plusMinutes(22);
+        final var userToken = new UserToken(TokenType.MFA, null);
+        assertThat(userToken.getTokenExpiry()).isBeforeOrEqualTo(twentyTwoMinutesTime);
+    }
 }

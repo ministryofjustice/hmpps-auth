@@ -1,16 +1,16 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.check
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.MapEntry.entry
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.*
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.ArgumentMatchers.eq
+import org.mockito.ArgumentMatchers.isNull
 import org.mockito.junit.MockitoJUnitRunner
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.*
@@ -26,7 +26,7 @@ class TokenServiceTest {
   private val userRepository: UserRepository = mock()
   private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private var tokenService: TokenService = mock()
+  private lateinit var tokenService: TokenService
 
   @Before
   fun setUp() {
@@ -114,5 +114,28 @@ class TokenServiceTest {
     val token = tokenService.createToken(RESET, "token")
     assertThat(token).isNotNull()
     assertThat(user.tokens.map { it.token }).contains(token)
+  }
+
+  @Test
+  fun `remove token notfound`() {
+    whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.empty())
+    tokenService.removeToken(RESET, "token")
+    verify(userTokenRepository, never()).delete(any())
+  }
+
+  @Test
+  fun `remove token WrongType`() {
+    val userToken = User.of("user").createToken(VERIFIED)
+    whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
+    tokenService.removeToken(RESET, "token")
+    verify(userTokenRepository, never()).delete(any())
+  }
+
+  @Test
+  fun `remove token`() {
+    val userToken = User.of("user").createToken(RESET)
+    whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
+    tokenService.removeToken(RESET, "token")
+    verify(userTokenRepository).delete(userToken)
   }
 }

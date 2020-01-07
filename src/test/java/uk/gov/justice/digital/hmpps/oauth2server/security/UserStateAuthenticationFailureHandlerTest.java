@@ -10,6 +10,8 @@ import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.web.RedirectStrategy;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaRequiredException;
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +31,8 @@ public class UserStateAuthenticationFailureHandlerTest {
     private HttpServletResponse response;
     @Mock
     private TokenService tokenService;
+    @Mock
+    private MfaService mfaService;
     @Mock
     private RedirectStrategy redirectStrategy;
 
@@ -104,8 +108,18 @@ public class UserStateAuthenticationFailureHandlerTest {
         verify(redirectStrategy).sendRedirect(request, response, "/login?error=invalid");
     }
 
+    @Test
+    public void onAuthenticationFailure_mfa() throws IOException {
+        when(request.getParameter("username")).thenReturn("bob");
+        when(mfaService.createTokenAndSendEmail(anyString())).thenReturn("sometoken");
+        handler.onAuthenticationFailure(request, response, new MfaRequiredException("msg"));
+
+        verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken");
+        verify(mfaService).createTokenAndSendEmail("BOB");
+    }
+
     private void setupHandler() {
-        handler = new UserStateAuthenticationFailureHandler(tokenService);
+        handler = new UserStateAuthenticationFailureHandler(tokenService, mfaService);
         handler.setRedirectStrategy(redirectStrategy);
     }
 }

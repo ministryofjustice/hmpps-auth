@@ -11,6 +11,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 
@@ -36,6 +37,7 @@ open class NomisUserDetailsService(private val nomisUserService: NomisUserServic
 @Transactional(readOnly = true, noRollbackFor = [BadCredentialsException::class])
 open class NomisAuthenticationProvider(nomisUserDetailsService: NomisUserDetailsService,
                                        userRetriesService: UserRetriesService,
+                                       mfaService: MfaService,
                                        telemetryClient: TelemetryClient,
                                        @Value("\${application.authentication.lockout-count}") accountLockoutCount: Int) :
-    LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, telemetryClient, accountLockoutCount)
+    LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, mfaService, telemetryClient, accountLockoutCount)
