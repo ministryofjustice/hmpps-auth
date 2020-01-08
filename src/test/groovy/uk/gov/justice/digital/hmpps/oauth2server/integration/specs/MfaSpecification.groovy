@@ -7,9 +7,7 @@ import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.web.client.RestTemplate
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginErrorPage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.AUTH_MFA_USER
 
@@ -41,11 +39,18 @@ class MfaSpecification extends GebReportingSpec {
     when: 'I login'
     loginAs AUTH_MFA_USER, 'password123456'
 
-//        and: 'I am redirected to the mfa page'
-//        at MfaPage
-//
-//        when: "I enter my MFA credentials"
-//        enterCode '123456'
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I don't enter a code"
+    submitCode " "
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Enter the code received in the email'
+
+    when: "I enter my MFA credentials"
+    submitCode '123456'
 
     then: 'My credentials are accepted and I am shown the Home page'
     at HomePage
@@ -63,6 +68,12 @@ class MfaSpecification extends GebReportingSpec {
 
     when: "I login using valid credentials"
     loginAs AUTH_MFA_USER, 'password123456'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials"
+    submitCode '123456'
 
     then: 'I am redirected back'
     browser.getCurrentUrl() startsWith("$clientBaseUrl?code")

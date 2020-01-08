@@ -44,4 +44,14 @@ class MfaServiceTest {
   fun `needsMfa non whitelisted IP enabled role`() {
     assertThat(service.needsMfa(setOf(SimpleGrantedAuthority("MFA")))).isTrue()
   }
+
+  @Test
+  fun `validateMfaCode null`() {
+    assertThat(service.validateMfaCode(null)).get().isEqualTo("missingcode")
+  }
+
+  @Test
+  fun `validateMfaCode blank`() {
+    assertThat(service.validateMfaCode("   ")).get().isEqualTo("missingcode")
+  }
 }

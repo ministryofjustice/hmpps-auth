@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <title>Email verification</title>
+
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <div th:unless="${#arrays.isEmpty(error)}" class="govuk-error-summary" aria-labelledby="error-summary-title"
+       role="alert"
+       data-module="govuk-error-summary">
+    <h2 class="govuk-error-summary__title" id="error-summary">
+      There is a problem
+    </h2>
+    <div class="govuk-error-summary__body" id="error-detail">
+      <ul class="govuk-list govuk-error-summary__list">
+        <li th:each="error: ${error}" th:switch="${error}">
+          <a th:case="'missingcode'" href="#code" th:text="#{mfa.missingcode}">Missing code</a>
+          <a th:case="'invalid'" href="#code"
+             th:text="#{mfa.invalid(${@environment.getProperty('application.authentication.lockout-count')})}">
+            Invalid message</a>
+          <a th:case="*" href="#code" th:text="#{${'mfa.' + error}}">Username message</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <h1 class="govuk-heading-xl">Check your email</h1>
+
+  <p class="govuk-body">We've sent you an email with a security code.</p>
+
+  <form th:action="@{/mfa-challenge}" method="POST" id="mfaForm" autocomplete="off" novalidate>
+    <div class="govuk-form-group">
+      <input id="token" name="token" type="hidden" data-element-id="token"
+             th:value="${#strings.isEmpty(token) ? param.token : token}">
+    </div>
+
+    <div>
+      <div th:with="missingcode=${error != null and #arrays.contains(error, 'missingcode')}"
+           th:class="'govuk-form-group' + (${missingcode} ? ' govuk-form-group--error' : '')">
+        <label class="govuk-label" for="code">Email code</label>
+        <span id="code-hint" class="govuk-hint">
+          For example 321456
+        </span>
+        <span th:if="${missingcode}" id="password-error" class="govuk-error-message" th:text="#{mfa.missingcode}">
+          Missing code
+        </span>
+        <input
+            th:class="'govuk-input--width-4 govuk-input' + (${missingcode} ? ' govuk-input--error' : '')"
+            id="code" name="code" type="tel" pattern="[0-9]*" autocomplete="off" autocapitalize="off"
+            spellcheck="false" data-element-id="code" aria-describedby="code-error" maxlength="6">
+      </div>
+    </div>
+    <div class="govuk-form-group">
+      <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="continue-button"
+             value="Continue">
+    </div>
+  </form>
+
+  <!--  <div class="govuk-form-group">-->
+  <!--    <ul class="govuk-list">-->
+  <!--      <li><a th:href="@{/mfa-resend}" id="resend-mfa">Not received an email?</a></li>-->
+  <!--    </ul>-->
+  <!--  </div>-->
+</div>
+</body>
+</html>
+reset
