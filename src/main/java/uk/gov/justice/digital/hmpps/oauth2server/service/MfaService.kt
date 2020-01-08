@@ -12,14 +12,12 @@ import java.util.*
 
 @Service
 open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelist: Set<String>,
-                      @Value("\${application.authentication.mfa.roles}") roles: Set<String>,
+                      @Value("\${application.authentication.mfa.roles}") private val mfaRoles: Set<String>,
                       private val tokenService: TokenService) {
   private val ipMatchers: List<IpAddressMatcher>
-  private val roles: Set<String>
 
   init {
     ipMatchers = whitelist.map { ip -> IpAddressMatcher(ip) }
-    this.roles = roles
   }
 
   open fun needsMfa(authorities: Collection<GrantedAuthority>): Boolean {
@@ -28,7 +26,7 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     return if (ipMatchers.any { it.matches(ip) }) {
       false
       // otherwise check that they have a role that requires mfa
-    } else authorities.stream().map { it.authority }.anyMatch { r -> roles.contains(r) }
+    } else authorities.stream().map { it.authority }.anyMatch { r -> mfaRoles.contains(r) }
   }
 
   @Transactional(transactionManager = "authTransactionManager")
@@ -38,7 +36,8 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     // 1. Create token for login for the user
     val token = tokenService.createToken(TokenType.MFA, username)
 
-    // 2. Generate MFA token for user
+    // 2. Generate MFA code for user
+    val code = tokenService.createToken(TokenType.MFA_CODE, username)
 
     // 3. Create email with both login and mfa token
 
@@ -46,9 +45,9 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     return token
   }
 
-  open fun validateToken(code: String): Optional<String> {
+  open fun validateMfaCode(code: String): Optional<String> {
     // 1. look up mfa code
-    // 2. fail if expired or invalid
+    // 2. fail if expired or invalid - incorrect password attempts?
     // 3. return empty if okay
     return Optional.empty()
   }
