@@ -45,7 +45,8 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     return token
   }
 
-  open fun validateMfaCode(code: String): Optional<String> {
+  open fun validateMfaCode(code: String?): Optional<String> {
+    if (code.isNullOrBlank()) return Optional.of("missingcode");
     // 1. look up mfa code
     // 2. fail if expired or invalid - incorrect password attempts?
     // 3. return empty if okay

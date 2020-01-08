@@ -50,7 +50,7 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
 
     val optionalErrorForCode = mfaService.validateMfaCode(code)
     if (optionalErrorForCode.isPresent) {
-      return ModelAndView("mfaChallenge", mapOf("token" to token, "error" to optionalErrorForToken.get()))
+      return ModelAndView("mfaChallenge", mapOf("token" to token, "error" to optionalErrorForCode.get()))
     }
 
     // can just grab token here as validated above

@@ -62,6 +62,6 @@ open class TokenService(private val userTokenRepository: UserTokenRepository,
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  open fun removeToken(tokenType: TokenType, username: String) =
-      getToken(tokenType, username).ifPresent { userTokenRepository.delete(it) }
+  open fun removeToken(tokenType: TokenType, token: String) =
+      getToken(tokenType, token).ifPresent { userTokenRepository.delete(it) }
 }
