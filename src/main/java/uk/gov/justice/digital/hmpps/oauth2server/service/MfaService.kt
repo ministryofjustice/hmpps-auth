@@ -52,4 +52,10 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     // 3. return empty if okay
     return Optional.empty()
   }
+
+  open fun resendMfaCode(token: String) {
+    // 1. look up mfa token and find user
+    // 2. Find mfa code for user
+    // 3. send email to user again with token and code
+  }
 }

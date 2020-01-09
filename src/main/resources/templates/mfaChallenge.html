@@ -7,7 +7,8 @@
 
 </head>
 <body>
-<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+<div layout:fragment="content" class="govuk-grid-column-two-thirds"
+     th:with="token=${#strings.isEmpty(token) ? param.token : token}">
   <div th:unless="${#arrays.isEmpty(error)}" class="govuk-error-summary" aria-labelledby="error-summary-title"
        role="alert"
        data-module="govuk-error-summary">
@@ -32,8 +33,7 @@
 
   <form th:action="@{/mfa-challenge}" method="POST" id="mfaForm" autocomplete="off" novalidate>
     <div class="govuk-form-group">
-      <input id="token" name="token" type="hidden" data-element-id="token"
-             th:value="${#strings.isEmpty(token) ? param.token : token}">
+      <input id="token" name="token" type="hidden" data-element-id="token" th:value="${token}">
     </div>
 
     <div>
@@ -58,12 +58,11 @@
     </div>
   </form>
 
-  <!--  <div class="govuk-form-group">-->
-  <!--    <ul class="govuk-list">-->
-  <!--      <li><a th:href="@{/mfa-resend}" id="resend-mfa">Not received an email?</a></li>-->
-  <!--    </ul>-->
-  <!--  </div>-->
+  <div class="govuk-form-group">
+    <ul class="govuk-list">
+      <li><a th:href="@{/mfa-resend(token=${token})}" id="resend-mfa">Not received an email?</a></li>
+    </ul>
+  </div>
 </div>
 </body>
 </html>
-reset

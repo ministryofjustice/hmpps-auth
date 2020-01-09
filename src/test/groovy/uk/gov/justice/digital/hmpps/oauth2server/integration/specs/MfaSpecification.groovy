@@ -60,6 +60,41 @@ class MfaSpecification extends GebReportingSpec {
     body.name == 'Mfa User'
   }
 
+  def "MFA code is required"() {
+    when: 'I try to login with a user with MFA enabled'
+    browser.go("/auth/mfa-challenge?token=mfa_token")
+
+    then: 'I am taken to the mfa page'
+    at MfaPage
+
+    when: "I don't enter a code"
+    submitCode " "
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Enter the code received in the email'
+  }
+
+  def "I would like the MFA code to be resent"() {
+    when: 'I try to login with a user with MFA enabled'
+    browser.go("/auth/mfa-challenge?token=mfa_token")
+
+    then: 'I am taken to the mfa page'
+    at MfaPage
+
+    when: "I select that I don't have a code"
+    resendMfa()
+
+    then: "I am taken to the resend MFA page"
+    at MfaResendPage
+
+    when: "I continue"
+    resendCode()
+
+    then: "I am now back at the MFA code page"
+    at MfaPage
+  }
+
   def "I can sign in from another client with MFA enabled"() {
     given: 'I am using SSO auth token to login'
     def state = RandomStringUtils.random(6, true, true)

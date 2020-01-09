@@ -7,7 +7,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
@@ -22,14 +21,13 @@ import javax.servlet.http.HttpServletResponse
 
 @Controller
 @Validated
-@RequestMapping("/mfa-challenge")
 open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler,
                          private val tokenService: TokenService,
                          private val userService: UserService,
                          private val telemetryClient: TelemetryClient,
                          private val mfaService: MfaService,
                          @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) {
-  @GetMapping
+  @GetMapping("/mfa-challenge")
   open fun mfaChallengeRequest(@RequestParam token: String): ModelAndView {
 
     val optionalError = tokenService.checkToken(TokenType.MFA, token)
@@ -38,7 +36,7 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
         .orElse(ModelAndView("mfaChallenge", "token", token))
   }
 
-  @PostMapping
+  @PostMapping("/mfa-challenge")
   @Throws(IOException::class, ServletException::class)
   open fun mfaChallenge(@RequestParam token: String,
                         @RequestParam code: String,
@@ -70,5 +68,27 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
 
     // return here is not required, since the success handler will have redirected
     return null
+  }
+
+  @GetMapping("/mfa-resend")
+  open fun mfaResendRequest(@RequestParam token: String): ModelAndView {
+
+    val optionalError = tokenService.checkToken(TokenType.MFA, token)
+
+    return optionalError.map { ModelAndView("redirect:/login?error=mfa${it}") }
+        .orElse(ModelAndView("mfaResend", "token", token))
+  }
+
+  @PostMapping("/mfa-resend")
+  @Throws(IOException::class, ServletException::class)
+  open fun mfaResend(@RequestParam token: String, request: HttpServletRequest, response: HttpServletResponse): ModelAndView {
+    val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
+    if (optionalErrorForToken.isPresent) {
+      return ModelAndView("redirect:/login?error=mfa${optionalErrorForToken.get()}")
+    }
+
+    mfaService.resendMfaCode(token)
+
+    return ModelAndView("redirect:/mfa-challenge?token=${token}")
   }
 }
