@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import java.util.*
@@ -15,7 +14,6 @@ import java.util.*
 @Service
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
 open class TokenService(private val userTokenRepository: UserTokenRepository,
-                        private val userRepository: UserRepository,
                         private val userService: UserService,
                         private val telemetryClient: TelemetryClient) {
 
@@ -50,11 +48,7 @@ open class TokenService(private val userTokenRepository: UserTokenRepository,
   @Transactional(transactionManager = "authTransactionManager")
   open fun createToken(tokenType: TokenType, username: String): String {
     log.info("Requesting {} for {}", tokenType.description, username)
-    val userOptional = userRepository.findByUsername(username)
-    val user = userOptional.orElseGet {
-      val userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow()
-      userRepository.save(userPersonDetails.toUser())
-    }
+    val user = userService.getOrCreateUser(username)
     val userToken = user.createToken(tokenType)
     telemetryClient.trackEvent("${tokenType.description}Request",
         mapOf("username" to username), null)

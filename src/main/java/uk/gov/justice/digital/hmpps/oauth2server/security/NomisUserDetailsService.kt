@@ -38,6 +38,7 @@ open class NomisUserDetailsService(private val nomisUserService: NomisUserServic
 open class NomisAuthenticationProvider(nomisUserDetailsService: NomisUserDetailsService,
                                        userRetriesService: UserRetriesService,
                                        mfaService: MfaService,
+                                       userService: UserService,
                                        telemetryClient: TelemetryClient,
                                        @Value("\${application.authentication.lockout-count}") accountLockoutCount: Int) :
-    LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, mfaService, telemetryClient, accountLockoutCount)
+    LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, mfaService, userService, telemetryClient, accountLockoutCount)

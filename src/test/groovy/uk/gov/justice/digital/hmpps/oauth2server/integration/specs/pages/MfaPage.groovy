@@ -16,6 +16,7 @@ class MfaPage extends Page {
     continueButton { $("input", type: 'submit') }
     resendCodeLink { $("a", id: 'resend-mfa') }
     errorText { $('#error-detail').text() }
+    mfaCode { $('[data-qa="mfa-code"]').text() }
   }
 
   void submitCode(String code) {

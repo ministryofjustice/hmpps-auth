@@ -39,6 +39,7 @@ open class AuthUserDetailsService(private val authUserService: AuthUserService) 
 open class AuthAuthenticationProvider(authUserDetailsService: AuthUserDetailsService,
                                       userRetriesService: UserRetriesService,
                                       mfaService: MfaService,
+                                      userService: UserService,
                                       telemetryClient: TelemetryClient,
                                       @Value("\${application.authentication.lockout-count}") accountLockoutCount: Int) :
-    LockingAuthenticationProvider(authUserDetailsService, userRetriesService, mfaService, telemetryClient, accountLockoutCount)
+    LockingAuthenticationProvider(authUserDetailsService, userRetriesService, mfaService, userService, telemetryClient, accountLockoutCount)
