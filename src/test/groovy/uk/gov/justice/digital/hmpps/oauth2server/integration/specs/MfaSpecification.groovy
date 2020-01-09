@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
+import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.AUTH_MFA_NOEMAIL_USER
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.AUTH_MFA_USER
 
 class MfaSpecification extends GebReportingSpec {
@@ -51,6 +52,19 @@ class MfaSpecification extends GebReportingSpec {
 
     def body = parseJwt()
     body.name == 'Mfa User'
+  }
+
+  def "Login as user with MFA enabled but no email address"() {
+    given: 'I try to login with a user with MFA enabled'
+    to LoginPage
+
+    when: 'I login'
+    loginAs AUTH_MFA_NOEMAIL_USER, 'password123456'
+
+    then: 'I am taken to the Login page'
+    at LoginErrorPage
+    errorText == 'We need to send you a security code to login, but we can\'t find a verified email address. ' +
+        'Please login on an approved network and verify your email address.'
   }
 
   def "MFA code is required"() {

@@ -78,6 +78,24 @@ class UserServiceTest {
     assertThat(newUser).isSameAs(user)
   }
 
+  @Test
+  fun `hasVerifiedEmail success`() {
+    val user = User.builder().username("joe").email("someemail").verified(true).build()
+    assertThat(userService.hasVerifiedEmail(user)).isTrue()
+  }
+
+  @Test
+  fun `hasVerifiedEmail no email`() {
+    val user = User.builder().username("joe").verified(true).build()
+    assertThat(userService.hasVerifiedEmail(user)).isFalse()
+  }
+
+  @Test
+  fun `hasVerifiedEmail not verified`() {
+    val user = User.builder().username("joe").email("someemail").build()
+    assertThat(userService.hasVerifiedEmail(user)).isFalse()
+  }
+
   private fun createUser() = Optional.of(User.of("someuser"))
 
   private val staffUserAccountForBob: Optional<NomisUserPersonDetails>

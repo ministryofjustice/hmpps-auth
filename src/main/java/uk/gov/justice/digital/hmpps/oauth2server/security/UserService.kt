@@ -49,10 +49,8 @@ open class UserService(private val nomisUserService: NomisUserService,
 
   open fun findMasterUserPersonDetails(username: String): Optional<UserPersonDetails> =
       authUserService.getAuthUserByUsername(username).map { UserPersonDetails::class.java.cast(it) }
-          .or {
-            nomisUserService.getNomisUserByUsername(username).map { UserPersonDetails::class.java.cast(it) }
-                .or { deliusUserService.getDeliusUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
-          }
+          .or { nomisUserService.getNomisUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
+          .or { deliusUserService.getDeliusUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
 
   open fun findUser(username: String): Optional<User> = userRepository.findByUsername(StringUtils.upperCase(username))
 
@@ -65,6 +63,6 @@ open class UserService(private val nomisUserService: NomisUserService,
 
   open fun hasVerifiedEmail(userDetails: UserPersonDetails): Boolean {
     val user: User = findUser(userDetails.username).orElseGet { userDetails.toUser() }
-    return user.email.isNotBlank() && user.isVerified
+    return StringUtils.isNotEmpty(user.email) && user.isVerified
   }
 }
