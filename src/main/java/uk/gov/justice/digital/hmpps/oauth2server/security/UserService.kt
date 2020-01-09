@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
-import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -17,7 +16,6 @@ import java.util.*
 import javax.persistence.EntityNotFoundException
 
 @Service
-@Slf4j
 @Transactional(readOnly = true)
 open class UserService(private val nomisUserService: NomisUserService,
                        private val authUserService: AuthUserService,
