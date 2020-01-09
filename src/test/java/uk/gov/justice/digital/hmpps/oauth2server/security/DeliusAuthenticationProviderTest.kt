@@ -31,7 +31,7 @@ class DeliusAuthenticationProviderTest {
   @Before
   fun setUp() {
     val deliusUserDetailsService = DeliusUserDetailsService(deliusUserService, userService)
-    provider = DeliusAuthenticationProvider(deliusUserService, deliusUserDetailsService, userRetriesService, mfaService, telemetryClient, 3)
+    provider = DeliusAuthenticationProvider(deliusUserService, deliusUserDetailsService, userRetriesService, mfaService, userService, telemetryClient, 3)
   }
 
   @Test

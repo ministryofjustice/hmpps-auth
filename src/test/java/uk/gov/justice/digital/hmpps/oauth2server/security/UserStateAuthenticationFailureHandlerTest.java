@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
+import kotlin.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +12,7 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.web.RedirectStrategy;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaRequiredException;
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaUnavailableException;
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
@@ -40,7 +42,7 @@ public class UserStateAuthenticationFailureHandlerTest {
 
     @Before
     public void setUp() {
-        setupHandler();
+        handler = setupHandler(false);
     }
 
     @Test
@@ -111,15 +113,33 @@ public class UserStateAuthenticationFailureHandlerTest {
     @Test
     public void onAuthenticationFailure_mfa() throws IOException {
         when(request.getParameter("username")).thenReturn("bob");
-        when(mfaService.createTokenAndSendEmail(anyString())).thenReturn("sometoken");
+        when(mfaService.createTokenAndSendEmail(anyString())).thenReturn(new Pair<>("sometoken", "somecode"));
         handler.onAuthenticationFailure(request, response, new MfaRequiredException("msg"));
 
         verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken");
         verify(mfaService).createTokenAndSendEmail("BOB");
     }
 
-    private void setupHandler() {
-        handler = new UserStateAuthenticationFailureHandler(tokenService, mfaService);
-        handler.setRedirectStrategy(redirectStrategy);
+    @Test
+    public void onAuthenticationFailure_mfa_smokeTestEnabled() throws IOException {
+        when(request.getParameter("username")).thenReturn("bob");
+        when(mfaService.createTokenAndSendEmail(anyString())).thenReturn(new Pair<>("sometoken", "somecode"));
+        setupHandler(true).onAuthenticationFailure(request, response, new MfaRequiredException("msg"));
+
+        verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken&code=somecode");
+        verify(mfaService).createTokenAndSendEmail("BOB");
+    }
+
+    @Test
+    public void onAuthenticationFailure_mfaUnavailable() throws IOException {
+        handler.onAuthenticationFailure(request, response, new MfaUnavailableException("msg"));
+
+        verify(redirectStrategy).sendRedirect(request, response, "/login?error=mfaunavailable");
+    }
+
+    private UserStateAuthenticationFailureHandler setupHandler(final boolean smokeTestEnabled) {
+        final var setupHandler = new UserStateAuthenticationFailureHandler(tokenService, mfaService, smokeTestEnabled);
+        setupHandler.setRedirectStrategy(redirectStrategy);
+        return setupHandler;
     }
 }

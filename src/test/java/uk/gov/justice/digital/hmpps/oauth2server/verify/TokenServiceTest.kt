@@ -14,7 +14,6 @@ import org.mockito.ArgumentMatchers.isNull
 import org.mockito.junit.MockitoJUnitRunner
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.*
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import java.time.LocalDateTime
@@ -23,14 +22,13 @@ import java.util.*
 @RunWith(MockitoJUnitRunner::class)
 class TokenServiceTest {
   private val userTokenRepository: UserTokenRepository = mock()
-  private val userRepository: UserRepository = mock()
   private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private lateinit var tokenService: TokenService
 
   @Before
   fun setUp() {
-    tokenService = TokenService(userTokenRepository, userRepository, userService, telemetryClient)
+    tokenService = TokenService(userTokenRepository, userService, telemetryClient)
   }
 
   @Test
@@ -89,7 +87,7 @@ class TokenServiceTest {
   @Test
   fun createToken() {
     val user = User.of("joe")
-    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
     val token = tokenService.createToken(RESET, "token")
     assertThat(token).isNotNull()
     assertThat(user.tokens.map { it.token }).contains(token)
@@ -98,22 +96,11 @@ class TokenServiceTest {
   @Test
   fun `createToken check telemetry`() {
     val user = User.of("joe")
-    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
     tokenService.createToken(RESET, "token")
     verify(telemetryClient).trackEvent(eq("ResetPasswordRequest"), check {
       assertThat(it).containsOnly(entry("username", "token"))
     }, isNull())
-  }
-
-  @Test
-  fun `createToken no user already`() {
-    val user = User.of("joe")
-    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
-    whenever(userRepository.save<User>(any())).thenReturn(user)
-    val token = tokenService.createToken(RESET, "token")
-    assertThat(token).isNotNull()
-    assertThat(user.tokens.map { it.token }).contains(token)
   }
 
   @Test

@@ -38,9 +38,10 @@ open class DeliusAuthenticationProvider(private val deliusUserService: DeliusUse
                                         deliusUserDetailsService: DeliusUserDetailsService,
                                         userRetriesService: UserRetriesService,
                                         mfaService: MfaService,
+                                        userService: UserService,
                                         telemetryClient: TelemetryClient,
                                         @Value("\${application.authentication.lockout-count}") accountLockoutCount: Int) :
-    LockingAuthenticationProvider(deliusUserDetailsService, userRetriesService, mfaService, telemetryClient, accountLockoutCount) {
+    LockingAuthenticationProvider(deliusUserDetailsService, userRetriesService, mfaService, userService, telemetryClient, accountLockoutCount) {
 
 
   override fun checkPassword(userDetails: UserDetails, password: String): Boolean =

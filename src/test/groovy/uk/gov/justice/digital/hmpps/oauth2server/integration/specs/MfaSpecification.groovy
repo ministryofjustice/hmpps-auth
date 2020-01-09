@@ -42,15 +42,8 @@ class MfaSpecification extends GebReportingSpec {
     then: 'I am redirected to the mfa page'
     at MfaPage
 
-    when: "I don't enter a code"
-    submitCode " "
-
-    then: "I am shown an error message"
-    at MfaErrorPage
-    errorText == 'Enter the code received in the email'
-
     when: "I enter my MFA credentials"
-    submitCode '123456'
+    submitCode mfaCode
 
     then: 'My credentials are accepted and I am shown the Home page'
     at HomePage

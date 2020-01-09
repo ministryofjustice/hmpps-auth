@@ -21,4 +21,11 @@ public class StaffIdentifier {
     @JoinColumn(name = "STAFF_ID", updatable = false, insertable = false)
     private Staff staff;
 
+    public StaffIdentifierIdentity getId() {
+        return this.id;
+    }
+
+    public Staff getStaff() {
+        return this.staff;
+    }
 }

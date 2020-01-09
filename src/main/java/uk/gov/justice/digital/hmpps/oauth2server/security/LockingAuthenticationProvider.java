@@ -22,16 +22,19 @@ import java.util.Map;
 public abstract class LockingAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserRetriesService userRetriesService;
     private final MfaService mfaService;
+    private final UserService userService;
     private final TelemetryClient telemetryClient;
     private final int accountLockoutCount;
 
     public LockingAuthenticationProvider(final UserDetailsService userDetailsService,
                                          final UserRetriesService userRetriesService,
                                          final MfaService mfaService,
+                                         final UserService userService,
                                          final TelemetryClient telemetryClient,
                                          final int accountLockoutCount) {
         this.userRetriesService = userRetriesService;
         this.mfaService = mfaService;
+        this.userService = userService;
         this.telemetryClient = telemetryClient;
         this.accountLockoutCount = accountLockoutCount;
         setUserDetailsService(userDetailsService);
@@ -82,7 +85,10 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
 
             // now check if mfa is enabled for the user
             if (mfaService.needsMfa(userDetails.getAuthorities())) {
-                throw new MfaRequiredException("MFA required");
+                if (userService.hasVerifiedEmail(userDetails)) {
+                    throw new MfaRequiredException("MFA required");
+                }
+                throw new MfaUnavailableException("MFA required, but no email set");
             }
         } else {
             final var newRetryCount = userRetriesService.incrementRetries(username);
@@ -117,6 +123,12 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
 
     public static class MfaRequiredException extends AccountStatusException {
         MfaRequiredException(final String msg) {
+            super(msg);
+        }
+    }
+
+    public static class MfaUnavailableException extends AccountStatusException {
+        MfaUnavailableException(final String msg) {
             super(msg);
         }
     }

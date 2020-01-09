@@ -18,7 +18,6 @@ import static javax.persistence.FetchType.EAGER;
 
 @Entity
 @Table(name = "USERS")
-@Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -174,6 +173,62 @@ public class User implements UserPersonDetails, CredentialsContainer {
                 ", person=" + person +
                 ", authorities=" + authorities +
                 '}';
+    }
+
+    public UUID getId() {
+        return this.id;
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public boolean isVerified() {
+        return this.verified;
+    }
+
+    public boolean isLocked() {
+        return this.locked;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public AuthSource getSource() {
+        return this.source;
+    }
+
+    public LocalDateTime getPasswordExpiry() {
+        return this.passwordExpiry;
+    }
+
+    public LocalDateTime getLastLoggedIn() {
+        return this.lastLoggedIn;
+    }
+
+    public Person getPerson() {
+        return this.person;
+    }
+
+    public Set<Authority> getAuthorities() {
+        return this.authorities;
+    }
+
+    public Set<Group> getGroups() {
+        return this.groups;
+    }
+
+    public Set<UserToken> getTokens() {
+        return this.tokens;
     }
 
     public static class UserBuilder {

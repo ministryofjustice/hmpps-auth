@@ -63,6 +63,12 @@
       <li><a th:href="@{/mfa-resend(token=${token})}" id="resend-mfa">Not received an email?</a></li>
     </ul>
   </div>
+
+  <p th:if="${param.code}" class="govuk-body">
+    <br>
+    <code>application.smoketest.enabled</code> environment variable is set.
+    Code that was sent in the email is <span data-qa="mfa-code" th:text="${param.code}">123456</span>.
+  </p>
 </div>
 </body>
 </html>

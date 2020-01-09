@@ -1,103 +1,98 @@
-package uk.gov.justice.digital.hmpps.oauth2server.security;
+package uk.gov.justice.digital.hmpps.oauth2server.security
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService;
-import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository;
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
+import org.junit.Test
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.anyString
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository
+import java.util.*
 
-import java.util.Optional;
-import java.util.Set;
+class UserServiceTest {
+  private val nomisUserService: NomisUserService = mock()
+  private val authUserService: AuthUserService = mock()
+  private val deliusUserService: DeliusUserService = mock()
+  private val staffIdentifierRepository: StaffIdentifierRepository = mock()
+  private val userRepository: UserRepository = mock()
+  private lateinit var userService: UserService
+  @Before
+  fun setUp() {
+    userService = UserService(nomisUserService, authUserService, deliusUserService, staffIdentifierRepository, userRepository)
+  }
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+  @Test
+  fun `findMasterUserPersonDetails auth user`() {
+    whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(createUser())
+    val user = userService.findMasterUserPersonDetails("   bob   ")
+    assertThat(user).isPresent.get().extracting { it.username }.isEqualTo("someuser")
+  }
 
-@RunWith(MockitoJUnitRunner.class)
-public class UserServiceTest {
-    @Mock
-    private NomisUserService nomisUserService;
-    @Mock
-    private AuthUserService authUserService;
-    @Mock
-    private DeliusUserService deliusUserService;
-    @Mock
-    private StaffIdentifierRepository staffIdentifierRepository;
-    @Mock
-    private UserRepository userRepository;
+  @Test
+  fun `findMasterUserPersonDetails nomis user`() {
+    whenever(nomisUserService.getNomisUserByUsername(anyString())).thenReturn(staffUserAccountForBob)
+    val user = userService.findMasterUserPersonDetails("bob")
+    assertThat(user).isPresent.get().extracting { it.username }.isEqualTo("nomisuser")
+  }
 
-    private UserService userService;
+  @Test
+  fun `findMasterUserPersonDetails delius user`() {
+    whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(deliusUserAccountForBob)
+    val user = userService.findMasterUserPersonDetails("bob")
+    assertThat(user).isPresent.get().extracting { it.username }.isEqualTo("deliusUser")
+  }
 
-    @Before
-    public void setUp() {
-        userService = new UserService(nomisUserService, authUserService, deliusUserService, staffIdentifierRepository, userRepository);
+  @Test
+  fun findUser() {
+    val user = createUser()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(user)
+    val found = userService.findUser("bob")
+    assertThat(found).isSameAs(user)
+    verify(userRepository).findByUsername("BOB")
+  }
+
+  @Test
+  fun `getOrCreateUser user exists already`() {
+    val user = User.of("joe")
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    val newUser = userService.getOrCreateUser("bob")
+    assertThat(newUser).isSameAs(user)
+  }
+
+  @Test
+  fun `getOrCreateUser no user already`() {
+    val user = User.of("joe")
+    whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(user))
+    whenever(userRepository.save<User>(any())).thenReturn(user)
+    val newUser = userService.getOrCreateUser("bob")
+    assertThat(newUser).isSameAs(user)
+  }
+
+  private fun createUser() = Optional.of(User.of("someuser"))
+
+  private val staffUserAccountForBob: Optional<NomisUserPersonDetails>
+    get() {
+      val staffUserAccount = NomisUserPersonDetails()
+      staffUserAccount.username = "nomisuser"
+      val staff = Staff()
+      staff.firstName = "bOb"
+      staff.status = "ACTIVE"
+      staffUserAccount.staff = staff
+      val detail = AccountDetail("user", "OPEN", "profile", null)
+      staffUserAccount.accountDetail = detail
+      return Optional.of(staffUserAccount)
     }
 
-    @Test
-    public void findMasterUserPersonDetails_AuthUser() {
-        when(authUserService.getAuthUserByUsername(anyString())).thenReturn(createUser());
-
-        final var user = userService.findMasterUserPersonDetails("   bob   ");
-
-        assertThat(user).isPresent().get().extracting(UserPersonDetails::getUsername).isEqualTo("someuser");
-    }
-
-    @Test
-    public void findMasterUserPersonDetails_NomisUser() {
-        when(nomisUserService.getNomisUserByUsername(anyString())).thenReturn(getStaffUserAccountForBob());
-
-        final var user = userService.findMasterUserPersonDetails("bob");
-
-        assertThat(user).isPresent().get().extracting(UserPersonDetails::getUsername).isEqualTo("nomisuser");
-    }
-
-    @Test
-    public void findMasterUserPersonDetails_DeliusUser() {
-        when(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(getDeliusUserAccountForBob());
-
-        final var user = userService.findMasterUserPersonDetails("bob");
-
-        assertThat(user).isPresent().get().extracting(UserPersonDetails::getUsername).isEqualTo("deliusUser");
-    }
-
-    @Test
-    public void findUserEmail() {
-        final var user = createUser();
-        when(userRepository.findByUsername(anyString())).thenReturn(user);
-
-        final var found = userService.findUser("bob");
-
-        assertThat(found).isSameAs(user);
-        verify(userRepository).findByUsername("BOB");
-    }
-
-    private Optional<User> createUser() {
-        return Optional.of(User.of("someuser"));
-    }
-
-    private Optional<NomisUserPersonDetails> getStaffUserAccountForBob() {
-        final var staffUserAccount = new NomisUserPersonDetails();
-        staffUserAccount.setUsername("nomisuser");
-        final var staff = new Staff();
-        staff.setFirstName("bOb");
-        staff.setStatus("ACTIVE");
-        staffUserAccount.setStaff(staff);
-        final var detail = new AccountDetail("user", "OPEN", "profile", null);
-        staffUserAccount.setAccountDetail(detail);
-        return Optional.of(staffUserAccount);
-    }
-
-    private Optional<DeliusUserPersonDetails> getDeliusUserAccountForBob() {
-        return Optional.of(new DeliusUserPersonDetails("deliusUser", "12345", "Delius", "Smith", "a@b.com", true, false, Set.of()));
-    }
+  private val deliusUserAccountForBob =
+      Optional.of(DeliusUserPersonDetails("deliusUser", "12345", "Delius", "Smith", "a@b.com", true, false, setOf()))
 }

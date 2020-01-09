@@ -1,23 +1,35 @@
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.web.util.matcher.IpAddressMatcher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
+import uk.gov.service.notify.NotificationClientApi
 import java.util.*
 
 @Service
 open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelist: Set<String>,
                       @Value("\${application.authentication.mfa.roles}") private val mfaRoles: Set<String>,
-                      private val tokenService: TokenService) {
+                      @Value("\${application.notify.mfa.template}") private val mfaTemplateId: String,
+                      private val tokenService: TokenService,
+                      private val userService: UserService,
+                      private val notificationClient: NotificationClientApi) {
+
   private val ipMatchers: List<IpAddressMatcher>
 
   init {
     ipMatchers = whitelist.map { ip -> IpAddressMatcher(ip) }
+  }
+
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
   open fun needsMfa(authorities: Collection<GrantedAuthority>): Boolean {
@@ -30,19 +42,18 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  open fun createTokenAndSendEmail(username: String): String {
-    // TODO: ensure that there is an email address for the user
+  open fun createTokenAndSendEmail(username: String): Pair<String, String> {
+    log.info("Creating token and sending email for {}", username)
+    val user = userService.getOrCreateUser(username)
 
-    // 1. Create token for login for the user
     val token = tokenService.createToken(TokenType.MFA, username)
-
-    // 2. Generate MFA code for user
     val code = tokenService.createToken(TokenType.MFA_CODE, username)
 
-    // 3. Create email with both login and mfa token
+    val firstName = userService.findMasterUserPersonDetails(username).map { it.firstName }.orElseThrow()
 
-    // 4. Send email
-    return token
+    notificationClient.sendEmail(mfaTemplateId, user.email, mapOf("firstName" to firstName, "code" to code), null)
+
+    return Pair(token, code)
   }
 
   open fun validateMfaCode(code: String?): Optional<String> {
