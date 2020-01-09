@@ -107,4 +107,51 @@ class MfaControllerTest {
       assertThat(it.principal).isEqualTo(user)
     })
   }
+
+  @Test
+  fun `mfaResendRequest check view`() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+    val modelAndView = controller.mfaResendRequest("some token")
+    assertThat(modelAndView.viewName).isEqualTo("mfaResend")
+  }
+
+  @Test
+  fun `mfaResendRequest check model`() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+    val modelAndView = controller.mfaResendRequest("some token")
+    assertThat(modelAndView.model).containsExactly(entry("token", "some token"))
+  }
+
+  @Test
+  fun `mfaResendRequest check service call`() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+    controller.mfaResendRequest("some token")
+    verify(tokenService).checkToken(TokenType.MFA, "some token")
+  }
+
+  @Test
+  fun `mfaResendRequest error`() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
+    val modelAndView = controller.mfaResendRequest("some token")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/login?error=mfainvalid")
+  }
+
+  @Test
+  fun `mfaResend token invalid`() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
+    val modelAndView = controller.mfaResend("some token", request, response)
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/login?error=mfainvalid")
+  }
+
+  @Test
+  fun `mfaResend check view`() {
+    val modelAndView = controller.mfaResend("some token", request, response)
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/mfa-challenge?token=some token")
+  }
+
+  @Test
+  fun `mfaResend check service call`() {
+    controller.mfaResend("some token", request, response)
+    verify(mfaService).resendMfaCode("some token")
+  }
 }
