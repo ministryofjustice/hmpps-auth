@@ -82,6 +82,21 @@ class MfaSpecification extends GebReportingSpec {
     errorText == 'Enter the code received in the email'
   }
 
+  def "MFA code is incorrect"() {
+    when: 'I try to login with a user with MFA enabled'
+    browser.go("/auth/mfa-challenge?token=mfa_token")
+
+    then: 'I am taken to the mfa page'
+    at MfaPage
+
+    when: "I enter an incorrect code"
+    submitCode "123456"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+  }
+
   def "I would like the MFA code to be resent"() {
     when: 'I try to login with a user with MFA enabled'
     browser.go("/auth/mfa-challenge?token=mfa_token")
@@ -100,6 +115,7 @@ class MfaSpecification extends GebReportingSpec {
 
     then: "I am now back at the MFA code page"
     at MfaPage
+    mfaCode == 'mfa_code'
   }
 
   def "I can sign in from another client with MFA enabled"() {
@@ -115,7 +131,7 @@ class MfaSpecification extends GebReportingSpec {
     at MfaPage
 
     when: "I enter my MFA credentials"
-    submitCode '123456'
+    submitCode mfaCode
 
     then: 'I am redirected back'
     browser.getCurrentUrl() startsWith("$clientBaseUrl?code")

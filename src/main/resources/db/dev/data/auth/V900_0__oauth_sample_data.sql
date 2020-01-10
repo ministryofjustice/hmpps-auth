@@ -108,6 +108,7 @@ INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset2
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'verified', 'VERIFIED', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_DELETEALL';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'mfa_expired', 'MFA', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_MFA_EXPIRED_USER';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'mfa_token', 'MFA', '3031-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_MFA_TOKEN_USER';
+INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'mfa_code', 'MFA_CODE', '3031-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_MFA_TOKEN_USER';
 
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_ADM' and role_code = 'OAUTH_ADMIN';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_ADM' and role_code = 'MAINTAIN_ACCESS_ROLES';
