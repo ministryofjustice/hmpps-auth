@@ -32,7 +32,7 @@ class MfaControllerTest {
 
   @Before
   fun setUp() {
-    controller = MfaController(jwtAuthenticationSuccessHandler, tokenService, userService, telemetryClient, mfaService, true);
+    controller = MfaController(jwtAuthenticationSuccessHandler, tokenService, userService, telemetryClient, mfaService, false)
   }
 
   @Test
@@ -57,6 +57,12 @@ class MfaControllerTest {
   }
 
   @Test
+  fun `mfaChallengeRequest no token`() {
+    val modelAndView = controller.mfaChallengeRequest(null)
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/login?error=mfainvalid")
+  }
+
+  @Test
   fun `mfaChallengeRequest error`() {
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
     val modelAndView = controller.mfaChallengeRequest("some token")
@@ -72,7 +78,10 @@ class MfaControllerTest {
 
   @Test
   fun `mfaChallenge code invalid`() {
-    whenever(mfaService.validateMfaCode(anyString())).thenReturn(Optional.of("invalid"))
+    val user = User.of("someuser")
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))
+    whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenReturn(Optional.of("invalid"))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     val modelAndView = controller.mfaChallenge("some token", "some code", request, response)
     assertThat(modelAndView!!.viewName).isEqualTo("mfaChallenge")
     assertThat(modelAndView.model).containsOnly(entry("token", "some token"), entry("error", "invalid"))
@@ -85,16 +94,6 @@ class MfaControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     val modelAndView = controller.mfaChallenge("some token", "some code", request, response)
     assertThat(modelAndView).isNull()
-  }
-
-  @Test
-  fun `mfaChallenge check remove tokens`() {
-    val user = User.of("someuser")
-    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
-    controller.mfaChallenge("some token", "some code", request, response)
-    verify(tokenService).removeToken(TokenType.MFA, "some token");
-    verify(tokenService).removeToken(TokenType.MFA_CODE, "some code");
   }
 
   @Test
@@ -144,13 +143,29 @@ class MfaControllerTest {
   }
 
   @Test
+  fun `mfaResend no code found`() {
+    val modelAndView = controller.mfaResend("some token", request, response)
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/login?error=mfainvalid")
+  }
+
+  @Test
   fun `mfaResend check view`() {
+    whenever(mfaService.resendMfaCode(anyString())).thenReturn("code")
     val modelAndView = controller.mfaResend("some token", request, response)
     assertThat(modelAndView.viewName).isEqualTo("redirect:/mfa-challenge?token=some token")
   }
 
   @Test
+  fun `mfaResend check view some test enabled`() {
+    whenever(mfaService.resendMfaCode(anyString())).thenReturn("code")
+    val modelAndView = MfaController(jwtAuthenticationSuccessHandler, tokenService, userService, telemetryClient, mfaService, true)
+        .mfaResend("some token", request, response)
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/mfa-challenge?token=some token&smokeCode=code")
+  }
+
+  @Test
   fun `mfaResend check service call`() {
+    whenever(mfaService.resendMfaCode(anyString())).thenReturn("code")
     controller.mfaResend("some token", request, response)
     verify(mfaService).resendMfaCode("some token")
   }

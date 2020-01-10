@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.util.UriComponentsBuilder
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -28,7 +29,9 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
                          private val mfaService: MfaService,
                          @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) {
   @GetMapping("/mfa-challenge")
-  open fun mfaChallengeRequest(@RequestParam token: String): ModelAndView {
+  open fun mfaChallengeRequest(@RequestParam token: String?): ModelAndView {
+
+    if (token.isNullOrBlank()) return ModelAndView("redirect:/login?error=mfainvalid")
 
     val optionalError = tokenService.checkToken(TokenType.MFA, token)
 
@@ -46,24 +49,20 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
       return ModelAndView("redirect:/login?error=mfa${optionalErrorForToken.get()}")
     }
 
-    val optionalErrorForCode = mfaService.validateMfaCode(code)
-    if (optionalErrorForCode.isPresent) {
-      return ModelAndView("mfaChallenge", mapOf("token" to token, "error" to optionalErrorForCode.get()))
-    }
-
     // can just grab token here as validated above
     val username = tokenService.getToken(TokenType.MFA, token).map { it.user.username }.orElseThrow()
 
     // now load the user
     val userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow()
-    val successToken = UsernamePasswordAuthenticationToken(userPersonDetails, "code")
 
-    // now remove tokens to ensure it can't be used again
-    tokenService.removeToken(TokenType.MFA, token)
-    tokenService.removeToken(TokenType.MFA_CODE, code)
+    val optionalErrorForCode = mfaService.validateAndRemoveMfaCode(token, code)
+    if (optionalErrorForCode.isPresent) {
+      return ModelAndView("mfaChallenge", mapOf("token" to token, "error" to optionalErrorForCode.get()))
+    }
 
     // success, so forward on
     telemetryClient.trackEvent("MfaAuthenticateSuccess", mapOf("username" to username), null)
+    val successToken = UsernamePasswordAuthenticationToken(userPersonDetails, "code")
     jwtAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, successToken)
 
     // return here is not required, since the success handler will have redirected
@@ -87,8 +86,16 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
       return ModelAndView("redirect:/login?error=mfa${optionalErrorForToken.get()}")
     }
 
-    mfaService.resendMfaCode(token)
+    val code = mfaService.resendMfaCode(token)
+    // shouldn't really get a code without a valid token, but cope with the scenario anyway
+    if (code.isNullOrEmpty()) {
+      return ModelAndView("redirect:/login?error=mfainvalid")
+    }
 
-    return ModelAndView("redirect:/mfa-challenge?token=${token}")
+    val urlBuilder = UriComponentsBuilder.fromPath("/mfa-challenge").queryParam("token", token)
+    if (smokeTestEnabled) urlBuilder.queryParam("smokeCode", code)
+    val url = urlBuilder.build().toString()
+
+    return ModelAndView("redirect:${url}")
   }
 }

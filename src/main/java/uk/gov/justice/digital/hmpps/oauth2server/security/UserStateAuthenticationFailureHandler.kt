@@ -47,10 +47,10 @@ class UserStateAuthenticationFailureHandler(private val tokenService: TokenServi
       is MfaRequiredException -> {
         // need to break out to perform mfa for the user
         val username = StringUtils.trim(request.getParameter("username").toUpperCase())
-        val mfaPair = mfaService.createTokenAndSendEmail(username)
+        val (token, code) = mfaService.createTokenAndSendEmail(username)
 
-        val urlBuilder = UriComponentsBuilder.fromPath("/mfa-challenge").queryParam("token", mfaPair.first)
-        if (smokeTestEnabled) urlBuilder.queryParam("code", mfaPair.second)
+        val urlBuilder = UriComponentsBuilder.fromPath("/mfa-challenge").queryParam("token", token)
+        if (smokeTestEnabled) urlBuilder.queryParam("smokeCode", code)
         val url = urlBuilder.build().toString()
 
         redirectStrategy.sendRedirect(request, response, url)

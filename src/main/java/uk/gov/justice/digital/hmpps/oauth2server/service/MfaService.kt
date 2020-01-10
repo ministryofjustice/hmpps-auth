@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.web.util.matcher.IpAddressMatcher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper
@@ -15,6 +16,7 @@ import uk.gov.service.notify.NotificationClientApi
 import java.util.*
 
 @Service
+@Transactional(transactionManager = "authTransactionManager", readOnly = true)
 open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelist: Set<String>,
                       @Value("\${application.authentication.mfa.roles}") private val mfaRoles: Set<String>,
                       @Value("\${application.notify.mfa.template}") private val mfaTemplateId: String,
@@ -49,24 +51,37 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     val token = tokenService.createToken(TokenType.MFA, username)
     val code = tokenService.createToken(TokenType.MFA_CODE, username)
 
-    val firstName = userService.findMasterUserPersonDetails(username).map { it.firstName }.orElseThrow()
-
-    notificationClient.sendEmail(mfaTemplateId, user.email, mapOf("firstName" to firstName, "code" to code), null)
+    emailCode(user, code)
 
     return Pair(token, code)
   }
 
-  open fun validateMfaCode(code: String?): Optional<String> {
-    if (code.isNullOrBlank()) return Optional.of("missingcode");
-    // 1. look up mfa code
-    // 2. fail if expired or invalid - incorrect password attempts?
-    // 3. return empty if okay
-    return Optional.empty()
+  @Transactional(transactionManager = "authTransactionManager")
+  open fun validateAndRemoveMfaCode(token: String, code: String?): Optional<String> {
+    if (code.isNullOrBlank()) return Optional.of("missingcode")
+
+    val errors = tokenService.checkToken(TokenType.MFA_CODE, code)
+    // no errors so remove tokens to ensure they can't be used again
+    if (errors.isEmpty) {
+      tokenService.removeToken(TokenType.MFA, token)
+      tokenService.removeToken(TokenType.MFA_CODE, code)
+    }
+    return errors
   }
 
-  open fun resendMfaCode(token: String) {
-    // 1. look up mfa token and find user
-    // 2. Find mfa code for user
-    // 3. send email to user again with token and code
+  open fun resendMfaCode(token: String): String? {
+    val userToken = tokenService.getToken(TokenType.MFA, token).orElseThrow()
+
+    val code = userToken.user.tokens.filter { it.tokenType == TokenType.MFA_CODE }.map { it.token }.firstOrNull()
+
+    code?.run { emailCode(userToken.user, code) }
+
+    return code
+  }
+
+  private fun emailCode(user: User, code: String) {
+    val firstName = userService.findMasterUserPersonDetails(user.username).map { it.firstName }.orElseThrow()
+
+    notificationClient.sendEmail(mfaTemplateId, user.email, mapOf("firstName" to firstName, "code" to code), null)
   }
 }

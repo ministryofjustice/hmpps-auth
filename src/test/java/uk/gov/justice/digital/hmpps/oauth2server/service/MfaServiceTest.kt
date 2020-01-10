@@ -1,9 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
-import com.nhaarman.mockito_kotlin.eq
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
@@ -59,12 +56,30 @@ class MfaServiceTest {
 
   @Test
   fun `validateMfaCode null`() {
-    assertThat(service.validateMfaCode(null)).get().isEqualTo("missingcode")
+    assertThat(service.validateAndRemoveMfaCode("", null)).get().isEqualTo("missingcode")
   }
 
   @Test
   fun `validateMfaCode blank`() {
-    assertThat(service.validateMfaCode("   ")).get().isEqualTo("missingcode")
+    assertThat(service.validateAndRemoveMfaCode("", "   ")).get().isEqualTo("missingcode")
+  }
+
+  @Test
+  fun `validateMfaCode token error`() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("someproblem"))
+    assertThat(service.validateAndRemoveMfaCode("", "somecode")).get().isEqualTo("someproblem")
+  }
+
+  @Test
+  fun `validateMfaCode success`() {
+    assertThat(service.validateAndRemoveMfaCode("sometoken", "somecode")).isEmpty
+  }
+
+  @Test
+  fun `validateMfaCode remove tokens`() {
+    assertThat(service.validateAndRemoveMfaCode("sometoken", "somecode")).isEmpty
+    verify(tokenService).removeToken(TokenType.MFA, "sometoken")
+    verify(tokenService).removeToken(TokenType.MFA_CODE, "somecode")
   }
 
   @Test
@@ -90,4 +105,39 @@ class MfaServiceTest {
 
     verify(notificationClientApi).sendEmail("template", "email", mapOf("firstName" to "first", "code" to "somecode"), null)
   }
+
+  @Test
+  fun `resendMfaCode no code`() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+
+    val code = service.resendMfaCode("sometoken")
+    assertThat(code).isEqualTo(null)
+    verify(userService, never()).findMasterUserPersonDetails(anyString())
+  }
+
+  @Test
+  fun `resendMfaCode check code`() {
+    val user = User.of("user")
+    val userToken = user.createToken(TokenType.MFA)
+    val userCode = user.createToken(TokenType.MFA_CODE)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+
+    assertThat(service.resendMfaCode("sometoken")).isEqualTo(userCode.token)
+  }
+
+  @Test
+  fun `resendMfaCode check email`() {
+    val user = User.builder().username("user").email("email").build()
+    val userToken = user.createToken(TokenType.MFA)
+    val userCode = user.createToken(TokenType.MFA_CODE)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+
+    service.resendMfaCode("sometoken")
+
+    verify(notificationClientApi).sendEmail("template", "email", mapOf("firstName" to "user", "code" to userCode.token), null)
+  }
+
 }

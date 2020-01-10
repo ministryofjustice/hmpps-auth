@@ -126,7 +126,7 @@ public class UserStateAuthenticationFailureHandlerTest {
         when(mfaService.createTokenAndSendEmail(anyString())).thenReturn(new Pair<>("sometoken", "somecode"));
         setupHandler(true).onAuthenticationFailure(request, response, new MfaRequiredException("msg"));
 
-        verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken&code=somecode");
+        verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken&smokeCode=somecode");
         verify(mfaService).createTokenAndSendEmail("BOB");
     }
 
