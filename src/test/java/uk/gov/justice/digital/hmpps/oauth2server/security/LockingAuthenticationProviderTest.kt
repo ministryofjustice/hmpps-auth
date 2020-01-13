@@ -7,15 +7,12 @@ import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaRequiredException
 import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaUnavailableException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 
-@RunWith(MockitoJUnitRunner::class)
 class LockingAuthenticationProviderTest {
   private val userRetriesService: UserRetriesService = mock()
   private val userDetailsService: AuthUserDetailsService = mock()
@@ -27,7 +24,7 @@ class LockingAuthenticationProviderTest {
 
   @Before
   fun setUp() {
-    lockingAuthenticationProvider = AuthAuthenticationProvider(userDetailsService, userRetriesService, mfaService, userService, telemetryClient, 3)
+    lockingAuthenticationProvider = AuthAuthenticationProvider(userDetailsService, userRetriesService, mfaService, userService, telemetryClient)
   }
 
   @Test

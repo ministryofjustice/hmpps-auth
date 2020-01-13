@@ -24,19 +24,16 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
     private final MfaService mfaService;
     private final UserService userService;
     private final TelemetryClient telemetryClient;
-    private final int accountLockoutCount;
 
     public LockingAuthenticationProvider(final UserDetailsService userDetailsService,
                                          final UserRetriesService userRetriesService,
                                          final MfaService mfaService,
                                          final UserService userService,
-                                         final TelemetryClient telemetryClient,
-                                         final int accountLockoutCount) {
+                                         final TelemetryClient telemetryClient) {
         this.userRetriesService = userRetriesService;
         this.mfaService = mfaService;
         this.userService = userService;
         this.telemetryClient = telemetryClient;
-        this.accountLockoutCount = accountLockoutCount;
         setUserDetailsService(userDetailsService);
 
         final var oracleSha1PasswordEncoder = new OracleSha1PasswordEncoder();
@@ -91,15 +88,11 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
                 throw new MfaUnavailableException("MFA required, but no email set");
             }
         } else {
-            final var newRetryCount = userRetriesService.incrementRetries(username);
+            final var locked = userRetriesService.incrementRetriesAndLockAccountIfNecessary(userDetails);
 
             // check the number of retries
-            if (newRetryCount >= accountLockoutCount) {
-
-                // need to reset the retry count otherwise when the user is then unlocked they will have to get the password right first time
-                userRetriesService.lockAccount(userDetails);
-
-                log.info("Locking account for user {}", username);
+            if (locked) {
+                log.info("Locked account for user {}", username);
                 trackFailure(username, "locked", "exceeded");
                 throw new LockedException("Account is locked, number of retries exceeded");
             }
