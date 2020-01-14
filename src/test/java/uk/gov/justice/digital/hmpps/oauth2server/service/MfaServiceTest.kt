@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.service
 
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -13,6 +14,7 @@ import org.springframework.web.context.request.ServletRequestAttributes
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.service.notify.NotificationClientApi
@@ -21,13 +23,14 @@ import java.util.*
 class MfaServiceTest {
   private val tokenService: TokenService = mock()
   private val userService: UserService = mock()
+  private val userRetriesService: UserRetriesService = mock()
   private val notificationClientApi: NotificationClientApi = mock()
   private val request = MockHttpServletRequest()
   private lateinit var service: MfaService
 
   @Before
   fun setUp() {
-    service = MfaService(setOf("12.21.23.24"), setOf("MFA"), "template", tokenService, userService, notificationClientApi)
+    service = MfaService(setOf("12.21.23.24"), setOf("MFA"), "template", tokenService, userService, notificationClientApi, userRetriesService)
     request.remoteAddr = "0:0:0:0:0:0:0:1"
     RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request, null))
   }
@@ -55,31 +58,90 @@ class MfaServiceTest {
   }
 
   @Test
-  fun `validateMfaCode null`() {
-    assertThat(service.validateAndRemoveMfaCode("", null)).get().isEqualTo("missingcode")
+  fun `validateAndRemoveMfaCode null`() {
+    assertThatThrownBy { service.validateAndRemoveMfaCode("", null) }.isInstanceOf(MfaFlowException::class.java).withFailMessage("missingcode")
   }
 
   @Test
-  fun `validateMfaCode blank`() {
-    assertThat(service.validateAndRemoveMfaCode("", "   ")).get().isEqualTo("missingcode")
+  fun `validateAndRemoveMfaCode blank`() {
+    assertThatThrownBy { service.validateAndRemoveMfaCode("", "   ") }.isInstanceOf(MfaFlowException::class.java).withFailMessage("missingcode")
   }
 
   @Test
-  fun `validateMfaCode token error`() {
+  fun `validateAndRemoveMfaCode token error`() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("someproblem"))
-    assertThat(service.validateAndRemoveMfaCode("", "somecode")).get().isEqualTo("someproblem")
+    assertThatThrownBy { service.validateAndRemoveMfaCode("", "somecode") }.isInstanceOf(MfaFlowException::class.java).withFailMessage("someproblem")
   }
 
   @Test
-  fun `validateMfaCode success`() {
-    assertThat(service.validateAndRemoveMfaCode("sometoken", "somecode")).isEmpty
+  fun `validateAndRemoveMfaCode success`() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    service.validateAndRemoveMfaCode("sometoken", "somecode")
   }
 
   @Test
-  fun `validateMfaCode remove tokens`() {
-    assertThat(service.validateAndRemoveMfaCode("sometoken", "somecode")).isEmpty
+  fun `validateAndRemoveMfaCode success get token call`() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    service.validateAndRemoveMfaCode("sometoken", "somecode")
+
+    verify(tokenService).getToken(TokenType.MFA, "sometoken")
+  }
+
+  @Test
+  fun `validateAndRemoveMfaCode success check token call`() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    service.validateAndRemoveMfaCode("sometoken", "somecode")
+
+    verify(tokenService).checkToken(TokenType.MFA_CODE, "somecode")
+  }
+
+  @Test
+  fun `validateAndRemoveMfaCode success find master details`() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    service.validateAndRemoveMfaCode("sometoken", "somecode")
+
+    verify(userService).findMasterUserPersonDetails("user")
+  }
+
+  @Test
+  fun `validateAndRemoveMfaCode success remove tokens`() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    service.validateAndRemoveMfaCode("sometoken", "somecode")
+
     verify(tokenService).removeToken(TokenType.MFA, "sometoken")
     verify(tokenService).removeToken(TokenType.MFA_CODE, "somecode")
+  }
+
+  @Test
+  fun `validateAndRemoveMfaCode success reset retries `() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    service.validateAndRemoveMfaCode("sometoken", "somecode")
+
+    verify(userRetriesService).resetRetries("bob")
+  }
+
+  @Test
+  fun `validateAndRemoveMfaCode account locked`() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.builder().username("bob").locked(true).build()))
+    assertThatThrownBy { service.validateAndRemoveMfaCode("sometoken", "somecode") }.isInstanceOf(LoginFlowException::class.java).withFailMessage("locked")
   }
 
   @Test

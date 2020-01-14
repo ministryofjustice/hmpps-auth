@@ -13,6 +13,8 @@ import org.springframework.web.util.UriComponentsBuilder
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.service.LoginFlowException
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import java.io.IOException
@@ -55,9 +57,12 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
     // now load the user
     val userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow()
 
-    val optionalErrorForCode = mfaService.validateAndRemoveMfaCode(token, code)
-    if (optionalErrorForCode.isPresent) {
-      return ModelAndView("mfaChallenge", mapOf("token" to token, "error" to optionalErrorForCode.get()))
+    try {
+      mfaService.validateAndRemoveMfaCode(token, code)
+    } catch (e: MfaFlowException) {
+      return ModelAndView("mfaChallenge", mapOf("token" to token, "error" to e.error))
+    } catch (e: LoginFlowException) {
+      return ModelAndView("redirect:/login?error=${e.error}")
     }
 
     // success, so forward on

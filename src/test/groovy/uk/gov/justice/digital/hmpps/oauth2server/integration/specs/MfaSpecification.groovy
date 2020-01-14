@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
 import geb.driver.CachingDriverFactory
-import geb.spock.GebReportingSpec
 import groovy.json.JsonSlurper
 import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.http.HttpEntity
@@ -9,10 +8,9 @@ import org.springframework.http.HttpHeaders
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
-import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.AUTH_MFA_NOEMAIL_USER
-import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.AUTH_MFA_USER
+import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
-class MfaSpecification extends GebReportingSpec {
+class MfaSpecification extends DeliusIntegrationSpec {
   public static final String clientBaseUrl = 'http://localhost:8081/login'
 
   def "Attempt MFA challenge with invalid token"() {
@@ -95,6 +93,134 @@ class MfaSpecification extends GebReportingSpec {
     then: "I am shown an error message"
     at MfaErrorPage
     errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+  }
+
+  def "MFA user gets locked after 3 invalid MFA attempts"() {
+    given: 'I try to login with a user with MFA enabled'
+    to LoginPage
+
+    when: 'I login'
+    loginAs AUTH_MFA_LOCKED, 'password123456'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at LoginErrorPage
+    errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
+
+    when: 'I login'
+    loginAs AUTH_MFA_LOCKED, 'password123456'
+
+    then: "My account is now locked"
+    at LoginErrorPage
+    errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
+  }
+
+  def "MFA user gets locked after mix of MFA and login attempts"() {
+    given: 'I try to login with a user with MFA enabled'
+    to LoginPage
+
+    when: 'I login with incorrect password'
+    loginAs AUTH_MFA_LOCKED2, 'wrongpass'
+
+    then: 'My credentials are rejected and I am still on the Login page'
+    at LoginErrorPage
+    errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times."
+
+    // successful username password resets retries so count starts again at 0
+    when: 'I login'
+    loginAs AUTH_MFA_LOCKED2, 'password123456'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I start again at login page and login with incorrect credentials"
+    to LoginPage
+    loginAs AUTH_MFA_LOCKED2, 'wrongpass'
+
+    then: "My account is now locked"
+    at LoginErrorPage
+    errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
+  }
+
+  def "Locked count gets reset after successful MFA login"() {
+    given: 'I try to login with a user with MFA enabled'
+    to LoginPage
+
+    when: 'I login'
+    loginAs AUTH_MFA_USER, 'password123456'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials incorrectly"
+    def validMfaCode = mfaCode
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials"
+    submitCode validMfaCode
+
+    then: 'My credentials are accepted and I am shown the Home page'
+    at HomePage
+
+    when: "I start again at login page and login with incorrect credentials"
+    to LoginPage
+    loginAs AUTH_MFA_USER, 'wrongpass'
+
+    then: 'My credentials are rejected and I am still on the Login page'
+    at LoginErrorPage
+    errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times."
+
+    when: "I login with incorrect credentials"
+    to LoginPage
+    loginAs AUTH_MFA_USER, 'wrongpass'
+
+    then: 'My credentials are rejected and I am still on the Login page'
+    at LoginErrorPage
+    errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times."
   }
 
   def "I would like the MFA code to be resent"() {
