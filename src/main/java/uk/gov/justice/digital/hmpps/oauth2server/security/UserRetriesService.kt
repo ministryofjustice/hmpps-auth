@@ -52,7 +52,7 @@ open class UserRetriesService(private val userRetriesRepository: UserRetriesRepo
     return true
   }
 
-  private fun resetRetries(username: String) { // reset their retry count
+  open fun resetRetries(username: String) { // reset their retry count
     userRetriesRepository.save(UserRetries(username, 0))
   }
 }

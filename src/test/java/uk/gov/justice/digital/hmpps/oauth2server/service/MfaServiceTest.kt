@@ -86,13 +86,54 @@ class MfaServiceTest {
   }
 
   @Test
-  fun `validateAndRemoveMfaCode remove tokens`() {
+  fun `validateAndRemoveMfaCode success get token call`() {
     val userToken = User.of("user").createToken(TokenType.MFA)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
     service.validateAndRemoveMfaCode("sometoken", "somecode")
+
+    verify(tokenService).getToken(TokenType.MFA, "sometoken")
+  }
+
+  @Test
+  fun `validateAndRemoveMfaCode success check token call`() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    service.validateAndRemoveMfaCode("sometoken", "somecode")
+
+    verify(tokenService).checkToken(TokenType.MFA_CODE, "somecode")
+  }
+
+  @Test
+  fun `validateAndRemoveMfaCode success find master details`() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    service.validateAndRemoveMfaCode("sometoken", "somecode")
+
+    verify(userService).findMasterUserPersonDetails("user")
+  }
+
+  @Test
+  fun `validateAndRemoveMfaCode success remove tokens`() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    service.validateAndRemoveMfaCode("sometoken", "somecode")
+
     verify(tokenService).removeToken(TokenType.MFA, "sometoken")
     verify(tokenService).removeToken(TokenType.MFA_CODE, "somecode")
+  }
+
+  @Test
+  fun `validateAndRemoveMfaCode success reset retries `() {
+    val userToken = User.of("user").createToken(TokenType.MFA)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    service.validateAndRemoveMfaCode("sometoken", "somecode")
+
+    verify(userRetriesService).resetRetries("bob")
   }
 
   @Test
@@ -101,9 +142,6 @@ class MfaServiceTest {
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.builder().username("bob").locked(true).build()))
     assertThatThrownBy { service.validateAndRemoveMfaCode("sometoken", "somecode") }.isInstanceOf(LoginFlowException::class.java).withFailMessage("locked")
-
-    verify(tokenService).removeToken(TokenType.MFA, "sometoken")
-    verify(tokenService).removeToken(TokenType.MFA_CODE, "somecode")
   }
 
   @Test
