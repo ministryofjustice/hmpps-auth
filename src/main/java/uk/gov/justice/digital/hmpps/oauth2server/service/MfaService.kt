@@ -64,19 +64,21 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     val userToken = tokenService.getToken(TokenType.MFA, token).orElseThrow()
     val userPersonDetails = userService.findMasterUserPersonDetails(userToken.user.username).orElseThrow()
 
+    if (!userPersonDetails.isAccountNonLocked) throw LoginFlowException("locked")
+
     val errors = tokenService.checkToken(TokenType.MFA_CODE, code)
-    errors.map { MfaFlowException(it) }.ifPresent {
-      if (it.error.equals("invalid")) {
+    errors.ifPresent {
+      if (it == "invalid") {
         val locked = userRetriesService.incrementRetriesAndLockAccountIfNecessary(userPersonDetails)
         if (locked) throw LoginFlowException("locked")
       }
-      throw it
+      throw MfaFlowException(it)
     }
 
     tokenService.removeToken(TokenType.MFA, token)
     tokenService.removeToken(TokenType.MFA_CODE, code)
 
-    if (!userPersonDetails.isAccountNonLocked) throw LoginFlowException("locked")
+    userRetriesService.resetRetries(userPersonDetails.username)
   }
 
   open fun resendMfaCode(token: String): String? {
