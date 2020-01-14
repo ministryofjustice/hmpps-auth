@@ -1,43 +1,25 @@
-package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
+package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
 @Table(name = "USER_RETRIES")
-@Data
-@EqualsAndHashCode(of = {"username"})
-public class UserRetries {
-
+data class UserRetries(
     @Id
     @Column(name = "username", nullable = false)
-    private String username;
+    val username: String? = null) {
 
-    @Column(name = "retry_count")
-    private int retryCount;
+  @Column(name = "retry_count")
+  var retryCount: Int = 0
 
-    public UserRetries(final String username, final int retryCount) {
-        this.username = username;
-        this.retryCount = retryCount;
-    }
+  constructor(username: String, retryCount: Int) : this(username) {
+    this.retryCount = retryCount
+  }
 
-    public UserRetries() {
-    }
-
-    public void incrementRetryCount() {
-        retryCount++;
-    }
-
-    public String getUsername() {
-        return this.username;
-    }
-
-    public int getRetryCount() {
-        return this.retryCount;
-    }
+  fun incrementRetryCount() {
+    retryCount++
+  }
 }
