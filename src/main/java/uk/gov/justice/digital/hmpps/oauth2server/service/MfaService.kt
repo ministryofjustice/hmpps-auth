@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.service.notify.NotificationClientApi
-import java.util.*
 
 @Service
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
@@ -22,7 +22,8 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
                       @Value("\${application.notify.mfa.template}") private val mfaTemplateId: String,
                       private val tokenService: TokenService,
                       private val userService: UserService,
-                      private val notificationClient: NotificationClientApi) {
+                      private val notificationClient: NotificationClientApi,
+                      private val userRetriesService: UserRetriesService) {
 
   private val ipMatchers: List<IpAddressMatcher>
 
@@ -56,17 +57,26 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     return Pair(token, code)
   }
 
-  @Transactional(transactionManager = "authTransactionManager")
-  open fun validateAndRemoveMfaCode(token: String, code: String?): Optional<String> {
-    if (code.isNullOrBlank()) return Optional.of("missingcode")
+  @Transactional(transactionManager = "authTransactionManager", noRollbackFor = [LoginFlowException::class, MfaFlowException::class])
+  open fun validateAndRemoveMfaCode(token: String, code: String?) {
+    if (code.isNullOrBlank()) throw MfaFlowException("missingcode")
+
+    val userToken = tokenService.getToken(TokenType.MFA, token).orElseThrow()
+    val userPersonDetails = userService.findMasterUserPersonDetails(userToken.user.username).orElseThrow()
 
     val errors = tokenService.checkToken(TokenType.MFA_CODE, code)
-    // no errors so remove tokens to ensure they can't be used again
-    if (errors.isEmpty) {
-      tokenService.removeToken(TokenType.MFA, token)
-      tokenService.removeToken(TokenType.MFA_CODE, code)
+    errors.map { MfaFlowException(it) }.ifPresent {
+      if (it.error.equals("invalid")) {
+        val locked = userRetriesService.incrementRetriesAndLockAccountIfNecessary(userPersonDetails)
+        if (locked) throw LoginFlowException("locked")
+      }
+      throw it
     }
-    return errors
+
+    tokenService.removeToken(TokenType.MFA, token)
+    tokenService.removeToken(TokenType.MFA_CODE, code)
+
+    if (!userPersonDetails.isAccountNonLocked) throw LoginFlowException("locked")
   }
 
   open fun resendMfaCode(token: String): String? {
@@ -85,3 +95,6 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     notificationClient.sendEmail(mfaTemplateId, user.email, mapOf("firstName" to firstName, "code" to code), null)
   }
 }
+
+class MfaFlowException(val error: String) : RuntimeException(error)
+class LoginFlowException(val error: String) : RuntimeException(error)

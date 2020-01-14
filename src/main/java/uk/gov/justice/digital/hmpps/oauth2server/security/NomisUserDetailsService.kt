@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
@@ -39,6 +38,5 @@ open class NomisAuthenticationProvider(nomisUserDetailsService: NomisUserDetails
                                        userRetriesService: UserRetriesService,
                                        mfaService: MfaService,
                                        userService: UserService,
-                                       telemetryClient: TelemetryClient,
-                                       @Value("\${application.authentication.lockout-count}") accountLockoutCount: Int) :
-    LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, mfaService, userService, telemetryClient, accountLockoutCount)
+                                       telemetryClient: TelemetryClient) :
+    LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, mfaService, userService, telemetryClient)

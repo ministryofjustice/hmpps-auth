@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
@@ -8,9 +9,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers
-import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.LockedException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
@@ -20,34 +19,34 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserServic
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import java.util.*
 
-@RunWith(MockitoJUnitRunner::class)
 class DeliusAuthenticationProviderTest {
   private val deliusUserService: DeliusUserService = mock()
   private val userService: UserService = mock()
   private val userRetriesService: UserRetriesService = mock()
   private val mfaService: MfaService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private var provider: DeliusAuthenticationProvider = mock()
+  private lateinit var provider: DeliusAuthenticationProvider
+
   @Before
   fun setUp() {
     val deliusUserDetailsService = DeliusUserDetailsService(deliusUserService, userService)
-    provider = DeliusAuthenticationProvider(deliusUserService, deliusUserDetailsService, userRetriesService, mfaService, userService, telemetryClient, 3)
+    provider = DeliusAuthenticationProvider(deliusUserService, deliusUserDetailsService, userRetriesService, mfaService, userService, telemetryClient)
   }
 
   @Test
   fun authenticate_Success() {
-    whenever(deliusUserService.getDeliusUserByUsername(ArgumentMatchers.anyString())).thenReturn(
+    whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(
         Optional.of(DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, false, emptySet())))
-    whenever(deliusUserService.authenticateUser(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenReturn(true)
+    whenever(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(true)
     val auth = provider.authenticate(UsernamePasswordAuthenticationToken("DELIUS_USER", "password"))
     assertThat(auth).isNotNull()
   }
 
   @Test
   fun authenticate_SuccessWithAuthorities() {
-    whenever(deliusUserService.getDeliusUserByUsername(ArgumentMatchers.anyString())).thenReturn(Optional.of(
+    whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(
         DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, false, listOf(SimpleGrantedAuthority("ROLE_BOB")))))
-    whenever(deliusUserService.authenticateUser(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenReturn(true)
+    whenever(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(true)
     val auth = provider.authenticate(UsernamePasswordAuthenticationToken("ITAG_USER_ADM", "password123456"))
     assertThat(auth).isNotNull()
     assertThat(auth.authorities).extracting<String, RuntimeException> { obj: GrantedAuthority -> obj.authority }.containsOnly("ROLE_PROBATION", "ROLE_BOB")
@@ -70,17 +69,17 @@ class DeliusAuthenticationProviderTest {
 
   @Test
   fun authenticate_LockAfterThreeFailures() {
-    whenever(deliusUserService.getDeliusUserByUsername(ArgumentMatchers.anyString())).thenReturn(
-        Optional.of(DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, false, emptySet())))
-    whenever(userRetriesService.incrementRetries(ArgumentMatchers.anyString())).thenReturn(4)
+    val deliusUserPersonDetails = DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, false, emptySet())
+    whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(deliusUserPersonDetails))
+    whenever(userRetriesService.incrementRetriesAndLockAccountIfNecessary(any())).thenReturn(true)
     assertThatThrownBy { provider.authenticate(UsernamePasswordAuthenticationToken("CA_USER", "wrong")) }.isInstanceOf(LockedException::class.java)
   }
 
   @Test
   fun authenticate_ResetAfterSuccess() {
     val deliusUser = DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, false, emptySet())
-    whenever(deliusUserService.getDeliusUserByUsername(ArgumentMatchers.anyString())).thenReturn(Optional.of(deliusUser))
-    whenever(deliusUserService.authenticateUser(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenReturn(true)
+    whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(deliusUser))
+    whenever(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(true)
     provider.authenticate(UsernamePasswordAuthenticationToken("DELIUS_USER", "password"))
     verify(userRetriesService).resetRetriesAndRecordLogin(deliusUser)
   }

@@ -22,8 +22,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserRetriesServiceTest {
@@ -38,7 +37,7 @@ public class UserRetriesServiceTest {
 
     @Before
     public void setUp() {
-        service = new UserRetriesService(userRetriesRepository, userRepository, delegatingUserService);
+        service = new UserRetriesService(userRetriesRepository, userRepository, delegatingUserService, 3);
     }
 
     @Test
@@ -80,33 +79,42 @@ public class UserRetriesServiceTest {
     }
 
     @Test
-    public void lockAccount_retriesTo0() {
-        service.lockAccount(getUserPersonDetailsForBob());
+    public void incrementRetriesAndLockAccountIfNecessary_retriesTo0() {
+        service.incrementRetriesAndLockAccountIfNecessary(getUserPersonDetailsForBob());
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
         verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 0));
     }
 
     @Test
-    public void lockAccount_alterUser() {
+    public void incrementRetriesAndLockAccountIfNecessary_moreAttemptsAllowed() {
+        when(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(new UserRetries("bob", 1)));
         final var userPersonDetailsForBob = getUserPersonDetailsForBob();
-        service.lockAccount(userPersonDetailsForBob);
+        service.incrementRetriesAndLockAccountIfNecessary(userPersonDetailsForBob);
+        verify(delegatingUserService, never()).lockAccount(any());
+    }
+
+    @Test
+    public void incrementRetriesAndLockAccountIfNecessary_lockAccount() {
+        when(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(new UserRetries("bob", 2)));
+        final var userPersonDetailsForBob = getUserPersonDetailsForBob();
+        service.incrementRetriesAndLockAccountIfNecessary(userPersonDetailsForBob);
         verify(delegatingUserService).lockAccount(userPersonDetailsForBob);
     }
 
     @Test
-    public void incrementRetries_NoExistingRow() {
+    public void incrementRetriesAndLockAccountIfNecessary_NoExistingRow() {
         when(userRetriesRepository.findById(anyString())).thenReturn(Optional.empty());
-        assertThat(service.incrementRetries("bob")).isEqualTo(1);
+        assertThat(service.incrementRetriesAndLockAccountIfNecessary(getUserPersonDetailsForBob())).isEqualTo(false);
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
         verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 11));
     }
 
     @Test
-    public void incrementRetries_ExistingRow() {
+    public void incrementRetriesAndLockAccountIfNecessary_ExistingRow() {
         when(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(new UserRetries("bob", 5)));
-        assertThat(service.incrementRetries("bob")).isEqualTo(6);
+        assertThat(service.incrementRetriesAndLockAccountIfNecessary(getUserPersonDetailsForBob())).isEqualTo(true);
         final var captor = ArgumentCaptor.forClass(UserRetries.class);
         verify(userRetriesRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(new UserRetries("bob", 6));

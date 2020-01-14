@@ -14,6 +14,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.service.LoginFlowException
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import java.util.*
@@ -80,11 +82,21 @@ class MfaControllerTest {
   fun `mfaChallenge code invalid`() {
     val user = User.of("someuser")
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))
-    whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenReturn(Optional.of("invalid"))
+    whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(MfaFlowException("invalid"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     val modelAndView = controller.mfaChallenge("some token", "some code", request, response)
     assertThat(modelAndView!!.viewName).isEqualTo("mfaChallenge")
     assertThat(modelAndView.model).containsOnly(entry("token", "some token"), entry("error", "invalid"))
+  }
+
+  @Test
+  fun `mfaChallenge code locked`() {
+    val user = User.of("someuser")
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))
+    whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(LoginFlowException("locked"))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+    val modelAndView = controller.mfaChallenge("some token", "some code", request, response)
+    assertThat(modelAndView!!.viewName).isEqualTo("redirect:/login?error=locked")
   }
 
   @Test

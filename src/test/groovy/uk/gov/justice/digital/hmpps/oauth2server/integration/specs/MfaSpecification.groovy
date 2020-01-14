@@ -9,8 +9,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
-import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.AUTH_MFA_NOEMAIL_USER
-import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.AUTH_MFA_USER
+import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
 class MfaSpecification extends GebReportingSpec {
   public static final String clientBaseUrl = 'http://localhost:8081/login'
@@ -95,6 +94,45 @@ class MfaSpecification extends GebReportingSpec {
     then: "I am shown an error message"
     at MfaErrorPage
     errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+  }
+
+  def "MFA user gets locked after 3 invalid attempts"() {
+    given: 'I try to login with a user with MFA enabled'
+    to LoginPage
+
+    when: 'I login'
+    loginAs AUTH_MFA_LOCKED_USER, 'password123456'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at LoginErrorPage
+    errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
+
+    when: 'I login'
+    loginAs AUTH_MFA_LOCKED_USER, 'password123456'
+
+    then: "My account is now locked"
+    at LoginErrorPage
+    errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
   }
 
   def "I would like the MFA code to be resent"() {
