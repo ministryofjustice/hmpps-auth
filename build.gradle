@@ -126,12 +126,12 @@ dependencies {
   implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1'
   implementation 'uk.gov.service.notify:notifications-java-client:3.15.1-RELEASE'
 
-  implementation 'org.flywaydb:flyway-core:6.1.0'
-  implementation 'com.zaxxer:HikariCP:3.4.1'
+  implementation 'org.flywaydb:flyway-core:6.1.4'
+  implementation 'com.zaxxer:HikariCP:3.4.2'
   implementation 'org.apache.commons:commons-lang3:3.9'
   implementation 'org.apache.commons:commons-text:1.8'
   implementation 'com.microsoft.sqlserver:mssql-jdbc:7.4.1.jre11'
-  implementation 'com.github.timpeeters:spring-boot-graceful-shutdown:2.1.1'
+  implementation 'com.github.timpeeters:spring-boot-graceful-shutdown:2.2.0'
   implementation 'com.google.guava:guava:28.2-jre'
 
   implementation configurations.agentDeps
@@ -153,8 +153,8 @@ dependencies {
     exclude group: 'org.codehaus.groovy'
   }
 
-  testImplementation 'org.gebish:geb-core:3.2'
-  testImplementation 'org.gebish:geb-spock:3.2'
+  testImplementation 'org.gebish:geb-core:3.3'
+  testImplementation 'org.gebish:geb-spock:3.3'
   testImplementation 'org.seleniumhq.selenium:selenium-support:3.141.59'
   testImplementation 'org.seleniumhq.selenium:selenium-chrome-driver:3.141.59'
   testImplementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.141.59'
@@ -162,8 +162,8 @@ dependencies {
 
   testImplementation 'com.github.tomakehurst:wiremock-standalone:2.25.1'
   testImplementation 'com.github.tomjankes:wiremock-groovy:0.2.0'
-  testImplementation 'org.slf4j:slf4j-api:1.7.29'
-  testImplementation 'com.auth0:java-jwt:3.8.3'
+  testImplementation 'org.slf4j:slf4j-api:1.7.30'
+  testImplementation 'com.auth0:java-jwt:3.9.0'
 
   testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.11.1'
   testImplementation 'com.nhaarman:mockito-kotlin-kt1.1:1.6.0'
