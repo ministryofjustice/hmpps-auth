@@ -117,7 +117,7 @@ class MfaControllerTest {
     controller.mfaChallenge("some token", "some code", request, response)
     verify(jwtAuthenticationSuccessHandler).onAuthenticationSuccess(eq(request), eq(response), check {
       assertThat(it.principal).isEqualTo(user)
-      assertThat(it.authorities.map { it.authority }).containsOnly("ROLE_BOB", "ROLE_JOE")
+      assertThat(it.authorities.map { a -> a.authority }).containsOnly("ROLE_BOB", "ROLE_JOE")
     })
   }
 
