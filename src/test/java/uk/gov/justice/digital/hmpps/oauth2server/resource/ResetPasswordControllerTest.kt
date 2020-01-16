@@ -1,310 +1,302 @@
-package uk.gov.justice.digital.hmpps.oauth2server.resource;
+package uk.gov.justice.digital.hmpps.oauth2server.resource
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
-import uk.gov.service.notify.NotificationClientException;
+import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockito_kotlin.*
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
+import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.service.notify.NotificationClientException
+import java.util.*
+import java.util.Map.entry
+import javax.servlet.http.HttpServletRequest
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+class ResetPasswordControllerTest {
+  private val resetPasswordService: ResetPasswordService = mock()
+  private val tokenService: TokenService = mock()
+  private val userService: UserService = mock()
+  private val verifyEmailService: VerifyEmailService = mock()
+  private val telemetryClient: TelemetryClient = mock()
+  private val request: HttpServletRequest = mock()
+  private lateinit var controller: ResetPasswordController
+  @Before
+  fun setUp() {
+    controller = ResetPasswordController(resetPasswordService, tokenService, userService, verifyEmailService, telemetryClient, true, setOf("password1"))
+  }
 
-import static java.util.Map.entry;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+  @Test
+  fun resetPasswordRequest() {
+    assertThat(controller.resetPasswordRequest()).isEqualTo("resetPassword")
+  }
 
-@RunWith(MockitoJUnitRunner.class)
-public class ResetPasswordControllerTest {
-    @Mock
-    private ResetPasswordService resetPasswordService;
-    @Mock
-    private TokenService tokenService;
-    @Mock
-    private UserService userService;
-    @Mock
-    private VerifyEmailService verifyEmailService;
-    @Mock
-    private TelemetryClient telemetryClient;
-    @Mock
-    private HttpServletRequest request;
-    @Captor
-    private ArgumentCaptor<Map<String, String>> mapCaptor;
+  @Test
+  fun resetPasswordSuccess() {
+    assertThat(controller.resetPasswordSuccess()).isEqualTo("resetPasswordSuccess")
+  }
 
-    private ResetPasswordController controller;
+  @Test
+  fun resetPasswordRequest_missing() {
+    val modelAndView = controller.resetPasswordRequest("   ", request)
+    assertThat(modelAndView.viewName).isEqualTo("resetPassword")
+    assertThat(modelAndView.model).containsExactly(entry("error", "missing"))
+  }
 
-    @Before
-    public void setUp() {
-        controller = new ResetPasswordController(resetPasswordService, tokenService, userService, verifyEmailService, telemetryClient, true, Set.of("password1"));
-    }
+  @Test
+  @Throws(NotificationClientRuntimeException::class)
+  fun resetPasswordRequest_successSmokeWithLink() {
+    whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
+    whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("url"))
+    val modelAndView = controller.resetPasswordRequest("user", request)
+    assertThat(modelAndView.viewName).isEqualTo("resetPasswordSent")
+    assertThat(modelAndView.model).containsExactly(entry("resetLink", "url"))
+  }
 
-    @Test
-    public void resetPasswordRequest() {
-        assertThat(controller.resetPasswordRequest()).isEqualTo("resetPassword");
-    }
+  @Test
+  @Throws(NotificationClientRuntimeException::class)
+  fun resetPasswordRequest_successSmokeNoLink() {
+    whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
+    whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty())
+    val modelAndView = controller.resetPasswordRequest("user", request)
+    assertThat(modelAndView.viewName).isEqualTo("resetPasswordSent")
+    assertThat(modelAndView.model).containsExactly(entry("resetLinkMissing", true))
+  }
 
-    @Test
-    public void resetPasswordSuccess() {
-        assertThat(controller.resetPasswordSuccess()).isEqualTo("resetPasswordSuccess");
-    }
+  @Test
+  @Throws(NotificationClientRuntimeException::class)
+  fun resetPasswordRequest_successNoLinkTelemetry() {
+    whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
+    whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty())
+    controller.resetPasswordRequest("user", request)
+    verify(telemetryClient).trackEvent(eq("ResetPasswordRequestFailure"), check {
+      assertThat(it).containsOnly(entry("username", "user"), entry("error", "nolink"))
+    }, isNull())
+  }
 
-    @Test
-    public void resetPasswordRequest_missing() {
-        final var modelAndView = controller.resetPasswordRequest("   ", request);
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-        assertThat(modelAndView.getModel()).containsExactly(entry("error", "missing"));
-    }
+  @Test
+  @Throws(NotificationClientRuntimeException::class)
+  fun resetPasswordRequest_successVerifyServiceCall() {
+    whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
+    whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty())
+    controller.resetPasswordRequest("user", request)
+    verify(resetPasswordService).requestResetPassword("user", "someurl")
+  }
 
-    @Test
-    public void resetPasswordRequest_successSmokeWithLink() throws NotificationClientRuntimeException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
-        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("url"));
-        final var modelAndView = controller.resetPasswordRequest("user", request);
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPasswordSent");
-        assertThat(modelAndView.getModel()).containsExactly(entry("resetLink", "url"));
-    }
+  @Test
+  @Throws(NotificationClientRuntimeException::class)
+  fun resetPasswordRequest_successLinkTelemetry() {
+    whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
+    whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("somelink"))
+    controller.resetPasswordRequest("user", request)
+    verify(telemetryClient).trackEvent(eq("ResetPasswordRequestSuccess"), check {
+      assertThat(it).containsOnly(entry("username", "user"))
+    }, isNull())
+  }
 
-    @Test
-    public void resetPasswordRequest_successSmokeNoLink() throws NotificationClientRuntimeException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
-        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
-        final var modelAndView = controller.resetPasswordRequest("user", request);
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPasswordSent");
-        assertThat(modelAndView.getModel()).containsExactly(entry("resetLinkMissing", Boolean.TRUE));
-    }
+  @Test
+  @Throws(NotificationClientRuntimeException::class)
+  fun resetPasswordRequest_success() {
+    whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
+    whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty())
+    val modelAndView = ResetPasswordController(resetPasswordService, tokenService, userService, verifyEmailService, telemetryClient, false, null).resetPasswordRequest("user", request)
+    assertThat(modelAndView.viewName).isEqualTo("resetPasswordSent")
+    assertThat(modelAndView.model).isEmpty()
+  }
 
-    @Test
-    public void resetPasswordRequest_successNoLinkTelemetry() throws NotificationClientRuntimeException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
-        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
-        controller.resetPasswordRequest("user", request);
-        verify(telemetryClient).trackEvent(eq("ResetPasswordRequestFailure"), mapCaptor.capture(), isNull());
-        assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"), entry("error", "nolink"));
-    }
+  @Test
+  @Throws(NotificationClientRuntimeException::class)
+  fun resetPasswordRequest_failed() {
+    whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
+    whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(NotificationClientRuntimeException(NotificationClientException("failure message")))
+    val modelAndView = controller.resetPasswordRequest("user", request)
+    assertThat(modelAndView.viewName).isEqualTo("resetPassword")
+    assertThat(modelAndView.model).containsExactly(entry("error", "other"))
+  }
 
-    @Test
-    public void resetPasswordRequest_successVerifyServiceCall() throws NotificationClientRuntimeException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
-        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
-        controller.resetPasswordRequest("user", request);
-        verify(resetPasswordService).requestResetPassword("user", "someurl");
-    }
+  @Test
+  @Throws(NotificationClientRuntimeException::class, VerifyEmailException::class)
+  fun resetPasswordRequest_emailfailed() {
+    Mockito.doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddress(anyString())
+    val modelAndView = controller.resetPasswordRequest("user@somewhere", request)
+    assertThat(modelAndView.viewName).isEqualTo("resetPassword")
+    assertThat(modelAndView.model).containsOnly(entry("error", "email.reason"), entry("usernameOrEmail", "user@somewhere"))
+  }
 
-    @Test
-    public void resetPasswordRequest_successLinkTelemetry() throws NotificationClientRuntimeException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
-        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("somelink"));
-        controller.resetPasswordRequest("user", request);
-        verify(telemetryClient).trackEvent(eq("ResetPasswordRequestSuccess"), mapCaptor.capture(), isNull());
-        assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"));
-    }
+  @Test
+  @Throws(NotificationClientRuntimeException::class, VerifyEmailException::class)
+  fun resetPasswordRequest_emailhelperapostrophe() {
+    Mockito.doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddress(anyString())
+    val modelAndView = controller.resetPasswordRequest("us.o’er@someWHERE.com   ", request)
+    assertThat(modelAndView.viewName).isEqualTo("resetPassword")
+    verify(verifyEmailService).validateEmailAddress("us.o'er@somewhere.com")
+  }
 
-    @Test
-    public void resetPasswordRequest_success() throws NotificationClientRuntimeException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
-        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty());
-        final var modelAndView = new ResetPasswordController(resetPasswordService, tokenService, userService, verifyEmailService, telemetryClient, false, null).resetPasswordRequest("user", request);
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPasswordSent");
-        assertThat(modelAndView.getModel()).isEmpty();
-    }
+  @Test
+  fun resetPasswordConfirm_checkView() {
+    setupCheckTokenValid()
+    val modelAndView = controller.resetPasswordConfirm("token")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
+  }
 
-    @Test
-    public void resetPasswordRequest_failed() throws NotificationClientRuntimeException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("someurl"));
-        when(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(new NotificationClientRuntimeException(new NotificationClientException("failure message")));
-        final var modelAndView = controller.resetPasswordRequest("user", request);
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-        assertThat(modelAndView.getModel()).containsExactly(entry("error", "other"));
-    }
+  @Test
+  fun resetPasswordConfirm_checkModel() {
+    setupCheckTokenValid()
+    val modelAndView = controller.resetPasswordConfirm("sometoken")
+    assertThat(modelAndView.model).containsOnly(entry("token", "sometoken"), entry("isAdmin", false))
+  }
 
-    @Test
-    public void resetPasswordRequest_emailfailed() throws NotificationClientRuntimeException, VerifyEmailException {
-        doThrow(new VerifyEmailException("reason")).when(verifyEmailService).validateEmailAddress(anyString());
-        final var modelAndView = controller.resetPasswordRequest("user@somewhere", request);
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("error", "email.reason"), entry("usernameOrEmail", "user@somewhere"));
-    }
+  @Test
+  fun resetPasswordConfirm_checkModelAdminUser() {
+    val user = setupGetUserCallForProfile()
+    user.accountDetail.profile = "TAG_ADMIN"
+    setupCheckAndGetTokenValid()
+    val modelAndView = controller.resetPasswordConfirm("sometoken")
+    assertThat(modelAndView.model).containsOnly(entry("token", "sometoken"), entry("isAdmin", true))
+  }
 
-    @Test
-    public void resetPasswordRequest_emailhelperapostrophe() throws NotificationClientRuntimeException, VerifyEmailException {
-        doThrow(new VerifyEmailException("reason")).when(verifyEmailService).validateEmailAddress(anyString());
-        final var modelAndView = controller.resetPasswordRequest("us.o’er@someWHERE.com   ", request);
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-        verify(verifyEmailService).validateEmailAddress("us.o'er@somewhere.com");
-    }
+  @Test
+  fun resetPasswordConfirm_FailureCheckView() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
+    val modelAndView = controller.resetPasswordConfirm("token")
+    assertThat(modelAndView.viewName).isEqualTo("resetPassword")
+  }
 
-    @Test
-    public void resetPasswordConfirm_checkView() {
-        setupCheckTokenValid();
-        final var modelAndView = controller.resetPasswordConfirm("token");
-        assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-    }
+  @Test
+  fun resetPasswordConfirm_FailureCheckModel() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
+    val modelAndView = controller.resetPasswordConfirm("sometoken")
+    assertThat(modelAndView.model).containsOnly(entry("error", "expired"))
+  }
 
-    @Test
-    public void resetPasswordConfirm_checkModel() {
-        setupCheckTokenValid();
-        final var modelAndView = controller.resetPasswordConfirm("sometoken");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.FALSE));
-    }
+  @Test
+  fun setPassword_Success() {
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    val modelAndView = controller.setPassword("d", "password123456", "password123456", null)
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/reset-password-success")
+  }
 
-    @Test
-    public void resetPasswordConfirm_checkModelAdminUser() {
-        final var user = setupGetUserCallForProfile();
-        user.getAccountDetail().setProfile("TAG_ADMIN");
-        setupCheckAndGetTokenValid();
-        final var modelAndView = controller.resetPasswordConfirm("sometoken");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("isAdmin", Boolean.TRUE));
-    }
+  @Test
+  fun setPassword_Failure() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
+    val modelAndView = controller.setPassword("sometoken", "new", "confirm", null)
+    assertThat(modelAndView.viewName).isEqualTo("resetPassword")
+    assertThat(modelAndView.model).containsOnly(entry("error", "expired"))
+  }
 
-    @Test
-    public void resetPasswordConfirm_FailureCheckView() {
-        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"));
-        final var modelAndView = controller.resetPasswordConfirm("token");
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-    }
+  @Test
+  fun setPassword_SuccessWithContext() {
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    val modelAndView = controller.setPassword("d", "password123456", "password123456", true)
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/initial-password-success")
+  }
 
-    @Test
-    public void resetPasswordConfirm_FailureCheckModel() {
-        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
-        final var modelAndView = controller.resetPasswordConfirm("sometoken");
-        assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"));
-    }
+  @Test
+  fun setPassword_FailureWithContext() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
+    val modelAndView = controller.setPassword("sometoken", "new", "confirm", true)
+    assertThat(modelAndView.viewName).isEqualTo("resetPassword")
+    assertThat(modelAndView.model).containsOnly(entry("error", "expired"), entry("initial", true))
+  }
 
-    @Test
-    public void setPassword_Success() {
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        final var modelAndView = controller.setPassword("d", "password123456", "password123456", null);
-        assertThat(modelAndView.getViewName()).isEqualTo("redirect:/reset-password-success");
-    }
+  @Test
+  fun setPasswordSelect_checkView() {
+    setupCheckTokenValid()
+    val modelAndView = controller.resetPasswordSelect("token")
+    assertThat(modelAndView.viewName).isEqualTo("setPasswordSelect")
+  }
 
-    @Test
-    public void setPassword_Failure() {
-        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
-        final var modelAndView = controller.setPassword("sometoken", "new", "confirm", null);
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"));
-    }
+  @Test
+  fun setPasswordSelect_checkModel() {
+    setupCheckTokenValid()
+    val modelAndView = controller.resetPasswordSelect("sometoken")
+    assertThat(modelAndView.model).containsOnly(entry("token", "sometoken"))
+  }
 
-    @Test
-    public void setPassword_SuccessWithContext() {
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        final var modelAndView = controller.setPassword("d", "password123456", "password123456", Boolean.TRUE);
-        assertThat(modelAndView.getViewName()).isEqualTo("redirect:/initial-password-success");
-    }
+  @Test
+  fun setPasswordSelect_tokenInvalid_checkView() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
+    val modelAndView = controller.resetPasswordSelect("sometoken")
+    assertThat(modelAndView.viewName).isEqualTo("resetPassword")
+  }
 
-    @Test
-    public void setPassword_FailureWithContext() {
-        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
-        final var modelAndView = controller.setPassword("sometoken", "new", "confirm", Boolean.TRUE);
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"), entry("initial", Boolean.TRUE));
-    }
+  @Test
+  fun setPasswordSelect_tokenInvalid_checkModel() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
+    val modelAndView = controller.resetPasswordSelect("sometoken")
+    assertThat(modelAndView.model).containsOnly(entry("error", "expired"))
+  }
 
-    @Test
-    public void setPasswordSelect_checkView() {
-        setupCheckTokenValid();
-        final var modelAndView = controller.resetPasswordSelect("token");
-        assertThat(modelAndView.getViewName()).isEqualTo("setPasswordSelect");
-    }
+  @Test
+  fun setPasswordChosen_tokenInvalid_checkView() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
+    val modelAndView = controller.resetPasswordChosen("sometoken", "user")
+    assertThat(modelAndView.viewName).isEqualTo("resetPassword")
+  }
 
-    @Test
-    public void setPasswordSelect_checkModel() {
-        setupCheckTokenValid();
-        final var modelAndView = controller.resetPasswordSelect("sometoken");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"));
-    }
+  @Test
+  fun setPasswordChosen_tokenInvalid_checkModel() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
+    val modelAndView = controller.resetPasswordChosen("sometoken", "user")
+    assertThat(modelAndView.model).containsOnly(entry("error", "expired"))
+  }
 
-    @Test
-    public void setPasswordSelect_tokenInvalid_checkView() {
-        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
-        final var modelAndView = controller.resetPasswordSelect("sometoken");
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-    }
+  @Test
+  fun setPasswordChosen_checkView() {
+    whenever(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenReturn("token")
+    val modelAndView = controller.resetPasswordChosen("sometoken", "user")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
+  }
 
-    @Test
-    public void setPasswordSelect_tokenInvalid_checkModel() {
-        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
-        final var modelAndView = controller.resetPasswordSelect("sometoken");
-        assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"));
-    }
+  @Test
+  fun setPasswordChosen_checkModel() {
+    whenever(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenReturn("token")
+    val modelAndView = controller.resetPasswordChosen("sometoken", "user")
+    assertThat(modelAndView.model).containsOnly(entry("token", "token"), entry("isAdmin", false))
+  }
 
-    @Test
-    public void setPasswordChosen_tokenInvalid_checkView() {
-        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
-        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
-        assertThat(modelAndView.getViewName()).isEqualTo("resetPassword");
-    }
+  @Test
+  fun setPasswordChosen_validationFailure_checkView() {
+    setupCheckAndGetTokenValid()
+    whenever(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenThrow(ResetPasswordException("reason"))
+    val modelAndView = controller.resetPasswordChosen("sometoken", "user")
+    assertThat(modelAndView.viewName).isEqualTo("setPasswordSelect")
+  }
 
-    @Test
-    public void setPasswordChosen_tokenInvalid_checkModel() {
-        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"));
-        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
-        assertThat(modelAndView.getModel()).containsOnly(entry("error", "expired"));
-    }
+  @Test
+  fun setPasswordChosen_validationFailure_checkModel() {
+    setupCheckAndGetTokenValid()
+    whenever(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenThrow(ResetPasswordException("reason"))
+    val modelAndView = controller.resetPasswordChosen("sometoken", "user")
+    assertThat(modelAndView.model).containsOnly(entry("token", "sometoken"), entry("username", "user"), entry("error", "reason"))
+  }
 
-    @Test
-    public void setPasswordChosen_checkView() {
-        when(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenReturn("token");
-        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
-        assertThat(modelAndView.getViewName()).isEqualTo("setPassword");
-    }
+  private fun setupCheckTokenValid() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+  }
 
-    @Test
-    public void setPasswordChosen_checkModel() {
-        when(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenReturn("token");
-        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "token"), entry("isAdmin", Boolean.FALSE));
-    }
+  private fun setupCheckAndGetTokenValid() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+    val user = User.builder().username("user").email("email@somewhere.com").verified(true).build()
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(user.createToken(UserToken.TokenType.RESET)))
+  }
 
-    @Test
-    public void setPasswordChosen_validationFailure_checkView() {
-        setupCheckAndGetTokenValid();
-        when(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenThrow(new ResetPasswordException("reason"));
-        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
-        assertThat(modelAndView.getViewName()).isEqualTo("setPasswordSelect");
-    }
-
-    @Test
-    public void setPasswordChosen_validationFailure_checkModel() {
-        setupCheckAndGetTokenValid();
-        when(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenThrow(new ResetPasswordException("reason"));
-        final var modelAndView = controller.resetPasswordChosen("sometoken", "user");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "sometoken"), entry("username", "user"), entry("error", "reason"));
-    }
-
-    private void setupCheckTokenValid() {
-        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
-    }
-
-    private void setupCheckAndGetTokenValid() {
-        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
-        final var user = User.builder().username("user").email("email@somewhere.com").verified(true).build();
-        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(user.createToken(TokenType.RESET)));
-    }
-
-    private NomisUserPersonDetails setupGetUserCallForProfile() {
-        final var user = new NomisUserPersonDetails();
-        user.setAccountDetail(new AccountDetail());
-        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user));
-        return user;
-    }
+  private fun setupGetUserCallForProfile(): NomisUserPersonDetails {
+    val user = NomisUserPersonDetails()
+    user.accountDetail = AccountDetail()
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+    return user
+  }
 }

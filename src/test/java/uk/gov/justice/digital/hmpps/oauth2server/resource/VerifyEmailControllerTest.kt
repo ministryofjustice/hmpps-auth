@@ -1,136 +1,126 @@
-package uk.gov.justice.digital.hmpps.oauth2server.resource;
+package uk.gov.justice.digital.hmpps.oauth2server.resource
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import org.assertj.core.data.MapEntry;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
-import uk.gov.service.notify.NotificationClientException;
+import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.data.MapEntry.entry
+import org.junit.Before
+import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.service.notify.NotificationClientException
+import java.io.IOException
+import java.util.*
+import javax.servlet.ServletException
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+class VerifyEmailControllerTest {
+  private val request: HttpServletRequest = mock()
+  private val response: HttpServletResponse = mock()
+  private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler = mock()
+  private val verifyEmailService: VerifyEmailService = mock()
+  private val telemetryClient: TelemetryClient = mock()
+  private lateinit var verifyEmailController: VerifyEmailController
+  private val principal = UsernamePasswordAuthenticationToken("user", "pass")
+  @Before
+  fun setUp() {
+    verifyEmailController = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, telemetryClient, true)
+  }
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+  @Test
+  @Throws(IOException::class, ServletException::class)
+  fun verifyEmailRequest() {
+    val emails = listOf("bob")
+    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(emails)
+    val modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
+    assertThat(modelAndView.model).containsExactly(entry("candidates", emails))
+  }
 
-@RunWith(MockitoJUnitRunner.class)
-public class VerifyEmailControllerTest {
-    @Mock
-    private HttpServletRequest request;
-    @Mock
-    private HttpServletResponse response;
-    @Mock
-    private JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
-    @Mock
-    private VerifyEmailService verifyEmailService;
-    @Mock
-    private TelemetryClient telemetryClient;
+  @Test
+  @Throws(IOException::class, ServletException::class)
+  fun verifyEmailRequest_existingUserEmail() {
+    val user = User.of("bob")
+    user.email = "email"
+    whenever(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(user))
+    val modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
+    assertThat(modelAndView.model).containsExactly(entry("suggestion", user.email))
+  }
 
-    private VerifyEmailController verifyEmailController;
-    private final UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken("user", "pass");
+  @Test
+  @Throws(IOException::class, ServletException::class)
+  fun verifyEmailRequest_existingUserEmailVerified() {
+    val user = User.of("bob")
+    user.isVerified = true
+    whenever(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(user))
+    SecurityContextHolder.getContext().authentication = principal
+    val modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null)
+    assertThat(modelAndView).isNull()
+    verify(jwtAuthenticationSuccessHandler).proceed(request, response, principal)
+  }
 
-    @Before
-    public void setUp() {
-        verifyEmailController = new VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, telemetryClient, true);
-    }
+  @Test
+  @Throws(IOException::class, ServletException::class)
+  fun verifyEmailContinue() {
+    SecurityContextHolder.getContext().authentication = principal
+    verifyEmailController.verifyEmailContinue(request, response)
+    verify(jwtAuthenticationSuccessHandler).proceed(request, response, principal)
+  }
 
-    @Test
-    public void verifyEmailRequest() throws IOException, ServletException {
-        final var emails = Collections.singletonList("bob");
-        when(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(emails);
-        final var modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null);
-        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
-        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("candidates", emails));
-    }
+  @Test
+  @Throws(IOException::class, ServletException::class)
+  fun verifyEmail_noselection() {
+    val candidates = listOf("joe", "bob")
+    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(candidates)
+    val modelAndView = verifyEmailController.verifyEmail("", "", principal, request, response)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
+    assertThat(modelAndView.model).containsExactly(entry("error", "noselection"), entry("candidates", candidates))
+  }
 
-    @Test
-    public void verifyEmailRequest_existingUserEmail() throws IOException, ServletException {
-        final var user = User.of("bob");
-        user.setEmail("email");
-        when(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(user));
-        final var modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null);
-        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
-        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("suggestion", user.getEmail()));
-    }
+  @Test
+  @Throws(NotificationClientException::class, IOException::class, ServletException::class, VerifyEmailException::class)
+  fun verifyEmail_Exception() {
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
+    whenever(verifyEmailService.requestVerificationForNomisUser(anyString(), anyString(), anyString())).thenThrow(NotificationClientException("something went wrong"))
+    val modelAndView = verifyEmailController.verifyEmail("a@b.com", null, principal, request, response)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
+    assertThat(modelAndView.model).containsExactly(entry("email", "a@b.com"), entry("error", "other"))
+  }
 
-    @Test
-    public void verifyEmailRequest_existingUserEmailVerified() throws IOException, ServletException {
-        final var user = User.of("bob");
-        user.setVerified(true);
-        when(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(user));
-        SecurityContextHolder.getContext().setAuthentication(principal);
-        final var modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null);
-        assertThat(modelAndView).isNull();
-        verify(jwtAuthenticationSuccessHandler).proceed(request, response, principal);
-    }
+  @Test
+  @Throws(NotificationClientException::class, IOException::class, ServletException::class, VerifyEmailException::class)
+  fun verifyEmail_Success() {
+    whenever(verifyEmailService.requestVerificationForNomisUser(anyString(), anyString(), anyString())).thenReturn("link")
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
+    val email = "o'there+bob@b-c.d"
+    val modelAndView = verifyEmailController.verifyEmail("other", email, principal, request, response)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
+    assertThat(modelAndView.model).containsExactly(entry("verifyLink", "link"), entry("email", email))
+    verify(verifyEmailService).requestVerificationForNomisUser("user", email, "http://some.url-confirm?token=")
+  }
 
-    @Test
-    public void verifyEmailContinue() throws IOException, ServletException {
-        SecurityContextHolder.getContext().setAuthentication(principal);
-        verifyEmailController.verifyEmailContinue(request, response);
-        verify(jwtAuthenticationSuccessHandler).proceed(request, response, principal);
-    }
+  @Test
+  fun verifyEmailConfirm() {
+    whenever(verifyEmailService.confirmEmail(anyString())).thenReturn(Optional.empty())
+    val modelAndView = verifyEmailController.verifyEmailConfirm("token")
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailSuccess")
+    assertThat(modelAndView.model).isEmpty()
+  }
 
-    @Test
-    public void verifyEmail_noselection() throws IOException, ServletException {
-        final var candidates = List.of("joe", "bob");
-        when(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(candidates);
-
-        final var modelAndView = verifyEmailController.verifyEmail("", "", principal, request, response);
-        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
-        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("error", "noselection"), MapEntry.entry("candidates", candidates));
-    }
-
-    @Test
-    public void verifyEmail_Exception() throws NotificationClientException, IOException, ServletException, VerifyEmailException {
-        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url"));
-        when(verifyEmailService.requestVerificationForNomisUser(anyString(), anyString(), anyString())).thenThrow(new NotificationClientException("something went wrong"));
-        final var modelAndView = verifyEmailController.verifyEmail("a@b.com", null, principal, request, response);
-        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmail");
-        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("email", "a@b.com"), MapEntry.entry("error", "other"));
-    }
-
-    @Test
-    public void verifyEmail_Success() throws NotificationClientException, IOException, ServletException, VerifyEmailException {
-        when(verifyEmailService.requestVerificationForNomisUser(anyString(), anyString(), anyString())).thenReturn("link");
-        when(request.getRequestURL()).thenReturn(new StringBuffer("http://some.url"));
-        final var email = "o'there+bob@b-c.d";
-
-        final var modelAndView = verifyEmailController.verifyEmail("other", email, principal, request, response);
-
-        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmailSent");
-        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("verifyLink", "link"), MapEntry.entry("email", email));
-        verify(verifyEmailService).requestVerificationForNomisUser("user", email, "http://some.url-confirm?token=");
-    }
-
-    @Test
-    public void verifyEmailConfirm() {
-        when(verifyEmailService.confirmEmail(anyString())).thenReturn(Optional.empty());
-        final var modelAndView = verifyEmailController.verifyEmailConfirm("token");
-        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmailSuccess");
-        assertThat(modelAndView.getModel()).isEmpty();
-    }
-
-    @Test
-    public void verifyEmailConfirm_Failure() {
-        when(verifyEmailService.confirmEmail(anyString())).thenReturn(Optional.of("failed"));
-        final var modelAndView = verifyEmailController.verifyEmailConfirm("token");
-        assertThat(modelAndView.getViewName()).isEqualTo("verifyEmailFailure");
-        assertThat(modelAndView.getModel()).containsExactly(MapEntry.entry("error", "failed"));
-    }
+  @Test
+  fun verifyEmailConfirm_Failure() {
+    whenever(verifyEmailService.confirmEmail(anyString())).thenReturn(Optional.of("failed"))
+    val modelAndView = verifyEmailController.verifyEmailConfirm("token")
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailFailure")
+    assertThat(modelAndView.model).containsExactly(entry("error", "failed"))
+  }
 }

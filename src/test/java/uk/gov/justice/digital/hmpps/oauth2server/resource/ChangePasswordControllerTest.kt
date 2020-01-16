@@ -1,223 +1,207 @@
-package uk.gov.justice.digital.hmpps.oauth2server.resource;
+package uk.gov.justice.digital.hmpps.oauth2server.resource
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import org.assertj.core.data.MapEntry;
-import org.assertj.core.util.Arrays;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.security.authentication.AccountExpiredException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService;
-import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
+import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockito_kotlin.*
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.data.MapEntry
+import org.junit.Before
+import org.junit.Test
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito.doThrow
+import org.springframework.security.authentication.AccountExpiredException
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
+import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
+import java.io.IOException
+import java.util.*
+import java.util.Map.entry
+import javax.servlet.ServletException
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+class ChangePasswordControllerTest {
+  private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler = mock()
+  private val authenticationManager: AuthenticationManager = mock()
+  private val changePasswordService: ChangePasswordService = mock()
+  private val userService: UserService = mock()
+  private val tokenService: TokenService = mock()
+  private val telemetryClient: TelemetryClient = mock()
+  private val request: HttpServletRequest = mock()
+  private val response: HttpServletResponse = mock()
+  private lateinit var controller: ChangePasswordController
+  @Before
+  fun setUp() {
+    controller = ChangePasswordController(jwtAuthenticationSuccessHandler,
+        authenticationManager, changePasswordService, tokenService, userService, telemetryClient, setOf("password1"))
+  }
 
-import static java.util.Map.entry;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+  @Test
+  fun changePasswordRequest() {
+    val view = controller.changePasswordRequest("token")
+    assertThat(view.viewName).isEqualTo("changePassword")
+  }
 
-@RunWith(MockitoJUnitRunner.class)
-public class ChangePasswordControllerTest {
-    @Mock
-    private JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
-    @Mock
-    private AuthenticationManager authenticationManager;
-    @Mock
-    private ChangePasswordService changePasswordService;
-    @Mock
-    private UserService userService;
-    @Mock
-    private TokenService tokenService;
-    @Mock
-    private TelemetryClient telemetryClient;
-    @Mock
-    private HttpServletRequest request;
-    @Mock
-    private HttpServletResponse response;
-    @Captor
-    private ArgumentCaptor<Map<String, String>> mapCaptor;
+  @Test
+  fun changePasswordRequest_adminUser() {
+    setupCheckAndGetTokenValid()
+    val user = setupGetUserCallForProfile()
+    user.accountDetail.profile = "TAG_ADMIN"
+    val model = controller.changePasswordRequest("token")
+    assertThat(model.model["isAdmin"]).isEqualTo(true)
+  }
 
-    private ChangePasswordController controller;
+  @Test
+  fun changePasswordRequest_generalUser() {
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    val model = controller.changePasswordRequest("token")
+    assertThat(model.model["isAdmin"]).isEqualTo(false)
+  }
 
-    @Before
-    public void setUp() {
-        controller = new ChangePasswordController(jwtAuthenticationSuccessHandler,
-                authenticationManager, changePasswordService, tokenService, userService, telemetryClient, Set.of("password1"));
-    }
+  @Test
+  fun changePasswordRequest_tokenInvalid() {
+    val model = controller.changePasswordRequest("token")
+    assertThat(model.model["isAdmin"]).isEqualTo(false)
+  }
 
-    @Test
-    public void changePasswordRequest() {
-        final var view = controller.changePasswordRequest("token");
-        assertThat(view.getViewName()).isEqualTo("changePassword");
-    }
+  @Test
+  @Throws(IOException::class, ServletException::class)
+  fun changePasswordRequest_NotAlphanumeric() {
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    val modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response)
+    assertThat(modelAndView.viewName).isEqualTo("changePassword")
+    assertThat(modelAndView.model).containsOnly(entry("token", "d"), entry("error", true), listEntry("errornew", "alphanumeric"), entry("isAdmin", false))
+  }
 
-    @Test
-    public void changePasswordRequest_adminUser() {
-        setupCheckAndGetTokenValid();
-        final var user = setupGetUserCallForProfile();
-        user.getAccountDetail().setProfile("TAG_ADMIN");
-        final var model = controller.changePasswordRequest("token");
-        assertThat(model.getModel().get("isAdmin")).isEqualTo(Boolean.TRUE);
-    }
+  @Test
+  @Throws(Exception::class)
+  fun changePassword_ValidationFailure() {
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    doThrow(PasswordValidationFailureException()).whenever(changePasswordService).setPassword(anyString(), anyString())
+    val redirect = controller.changePassword("user", "password2", "password2", request, response)
+    assertThat(redirect.viewName).isEqualTo("changePassword")
+    assertThat(redirect.model).containsOnly(entry("token", "user"), entry("error", true), entry("errornew", "validation"), entry("isAdmin", false))
+  }
 
-    @Test
-    public void changePasswordRequest_generalUser() {
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        final var model = controller.changePasswordRequest("token");
-        assertThat(model.getModel().get("isAdmin")).isEqualTo(Boolean.FALSE);
-    }
+  @Test
+  fun changePassword_OtherException() {
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    val exception = RuntimeException()
+    doThrow(exception).whenever(changePasswordService).setPassword(anyString(), anyString())
+    Assertions.assertThatThrownBy { controller.changePassword("user", "password2", "password2", request, response) }.isEqualTo(exception)
+  }
 
-    @Test
-    public void changePasswordRequest_tokenInvalid() {
-        final var model = controller.changePasswordRequest("token");
-        assertThat(model.getModel().get("isAdmin")).isEqualTo(Boolean.FALSE);
-    }
+  @Test
+  @Throws(Exception::class)
+  fun changePassword_Success() {
+    val token = UsernamePasswordAuthenticationToken("bob", "pass")
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    whenever(authenticationManager.authenticate(any())).thenReturn(token)
+    val redirect = controller.changePassword("user", "password2", "password2", request, response)
+    assertThat(redirect).isNull()
+    val authCapture = ArgumentCaptor.forClass(Authentication::class.java)
+    verify(authenticationManager).authenticate(authCapture.capture())
+    val value = authCapture.value
+    assertThat(value.principal).isEqualTo("USER")
+    assertThat(value.credentials).isEqualTo("password2")
+    verify(changePasswordService).setPassword("user", "password2")
+    verify(jwtAuthenticationSuccessHandler).onAuthenticationSuccess(request, response, token)
+  }
 
-    @Test
-    public void changePasswordRequest_NotAlphanumeric() throws IOException, ServletException {
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        final var modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response);
-        assertThat(modelAndView.getViewName()).isEqualTo("changePassword");
-        assertThat(modelAndView.getModel()).containsOnly(entry("token", "d"), entry("error", Boolean.TRUE), listEntry("errornew", "alphanumeric"), entry("isAdmin", Boolean.FALSE));
-    }
+  @Test
+  @Throws(Exception::class)
+  fun changePassword_Success_Telemetry() {
+    val token = UsernamePasswordAuthenticationToken("bob", "pass")
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    whenever(authenticationManager.authenticate(any())).thenReturn(token)
+    controller.changePassword("user", "password2", "password2", request, response)
+    verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), check {
+      assertThat(it).containsExactly(entry("username", "user"))
+    }, isNull())
+  }
 
-    @Test
-    public void changePassword_ValidationFailure() throws Exception {
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        doThrow(new PasswordValidationFailureException()).when(changePasswordService).setPassword(anyString(), anyString());
-        final var redirect = controller.changePassword("user", "password2", "password2", request, response);
-        assertThat(redirect.getViewName()).isEqualTo("changePassword");
-        assertThat(redirect.getModel()).containsOnly(entry("token", "user"), entry("error", Boolean.TRUE), entry("errornew", "validation"), entry("isAdmin", Boolean.FALSE));
-    }
+  @Test
+  @Throws(Exception::class)
+  fun changePassword_AuthenticateSuccess_Telemetry() {
+    val token = UsernamePasswordAuthenticationToken("bob", "pass")
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    whenever(authenticationManager.authenticate(any())).thenReturn(token)
+    controller.changePassword("user", "password2", "password2", request, response)
+    verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateSuccess"), check {
+      assertThat(it).containsExactly(entry("username", "user"))
+    }, isNull())
+  }
 
-    @Test
-    public void changePassword_OtherException() {
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        final var exception = new RuntimeException();
-        doThrow(exception).when(changePasswordService).setPassword(anyString(), anyString());
-        assertThatThrownBy(
-                () -> controller.changePassword("user", "password2", "password2", request, response)
-        ).isEqualTo(exception);
-    }
+  @Test
+  @Throws(Exception::class)
+  fun changePassword_SuccessAccountExpired() {
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    whenever(authenticationManager.authenticate(any())).thenThrow(AccountExpiredException("msg"))
+    val redirect = controller.changePassword("user", "password2", "password2", request, response)
+    assertThat(redirect.viewName).isEqualTo("redirect:/login?error=changepassword")
+    val authCapture = ArgumentCaptor.forClass(Authentication::class.java)
+    verify(authenticationManager).authenticate(authCapture.capture())
+    val value = authCapture.value
+    assertThat(value.principal).isEqualTo("USER")
+    assertThat(value.credentials).isEqualTo("password2")
+    verify(changePasswordService).setPassword("user", "password2")
+  }
 
-    @Test
-    public void changePassword_Success() throws Exception {
-        final var token = new UsernamePasswordAuthenticationToken("bob", "pass");
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        when(authenticationManager.authenticate(any())).thenReturn(token);
-        final var redirect = controller.changePassword("user", "password2", "password2", request, response);
-        assertThat(redirect).isNull();
-        final var authCapture = ArgumentCaptor.forClass(Authentication.class);
-        verify(authenticationManager).authenticate(authCapture.capture());
-        final var value = authCapture.getValue();
-        assertThat(value.getPrincipal()).isEqualTo("USER");
-        assertThat(value.getCredentials()).isEqualTo("password2");
-        verify(changePasswordService).setPassword("user", "password2");
-        verify(jwtAuthenticationSuccessHandler).onAuthenticationSuccess(request, response, token);
-    }
+  @Test
+  @Throws(Exception::class)
+  fun changePassword_SuccessAccountExpired_TelemetryFailure() {
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    whenever(authenticationManager.authenticate(any())).thenThrow(AccountExpiredException("msg"))
+    controller.changePassword("user", "password2", "password2", request, response)
+    verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateFailure"), check {
+      assertThat(it).containsOnly(entry("username", "user"), entry("reason", "AccountExpiredException"))
+    }, isNull())
+  }
 
-    @Test
-    public void changePassword_Success_Telemetry() throws Exception {
-        final var token = new UsernamePasswordAuthenticationToken("bob", "pass");
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        when(authenticationManager.authenticate(any())).thenReturn(token);
-        controller.changePassword("user", "password2", "password2", request, response);
+  @Test
+  @Throws(Exception::class)
+  fun changePassword_SuccessAccountExpired_TelemetrySuccess() {
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    whenever(authenticationManager.authenticate(any())).thenThrow(AccountExpiredException("msg"))
+    controller.changePassword("user", "password2", "password2", request, response)
+    verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), check {
+      assertThat(it).containsExactly(entry("username", "user"))
+    }, isNull())
+  }
 
-        verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), mapCaptor.capture(), isNull());
-        assertThat(mapCaptor.getValue()).containsExactly(entry("username", "user"));
-    }
+  private fun setupGetUserCallForProfile(): NomisUserPersonDetails {
+    val user = NomisUserPersonDetails()
+    user.accountDetail = AccountDetail()
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+    return user
+  }
 
-    @Test
-    public void changePassword_AuthenticateSuccess_Telemetry() throws Exception {
-        final var token = new UsernamePasswordAuthenticationToken("bob", "pass");
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        when(authenticationManager.authenticate(any())).thenReturn(token);
-        controller.changePassword("user", "password2", "password2", request, response);
+  private fun setupCheckAndGetTokenValid() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(User.of("user").createToken(UserToken.TokenType.RESET)))
+  }
 
-        verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateSuccess"), mapCaptor.capture(), isNull());
-        assertThat(mapCaptor.getValue()).containsExactly(entry("username", "user"));
-    }
-
-    @Test
-    public void changePassword_SuccessAccountExpired() throws Exception {
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        when(authenticationManager.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
-        final var redirect = controller.changePassword("user", "password2", "password2", request, response);
-        assertThat(redirect.getViewName()).isEqualTo("redirect:/login?error=changepassword");
-        final var authCapture = ArgumentCaptor.forClass(Authentication.class);
-        verify(authenticationManager).authenticate(authCapture.capture());
-        final var value = authCapture.getValue();
-        assertThat(value.getPrincipal()).isEqualTo("USER");
-        assertThat(value.getCredentials()).isEqualTo("password2");
-        verify(changePasswordService).setPassword("user", "password2");
-    }
-
-    @Test
-    public void changePassword_SuccessAccountExpired_TelemetryFailure() throws Exception {
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        when(authenticationManager.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
-        controller.changePassword("user", "password2", "password2", request, response);
-
-        verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateFailure"), mapCaptor.capture(), isNull());
-        assertThat(mapCaptor.getValue()).containsOnly(entry("username", "user"), entry("reason", "AccountExpiredException"));
-    }
-
-    @Test
-    public void changePassword_SuccessAccountExpired_TelemetrySuccess() throws Exception {
-        setupCheckAndGetTokenValid();
-        setupGetUserCallForProfile();
-        when(authenticationManager.authenticate(any())).thenThrow(new AccountExpiredException("msg"));
-        controller.changePassword("user", "password2", "password2", request, response);
-
-        verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), mapCaptor.capture(), isNull());
-        assertThat(mapCaptor.getValue()).containsExactly(entry("username", "user"));
-    }
-
-    private NomisUserPersonDetails setupGetUserCallForProfile() {
-        final var user = new NomisUserPersonDetails();
-        user.setAccountDetail(new AccountDetail());
-        when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user));
-        return user;
-    }
-
-    private void setupCheckAndGetTokenValid() {
-        when(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty());
-        when(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(User.of("user").createToken(TokenType.RESET)));
-    }
-
-    private MapEntry<String, List<Object>> listEntry(final String key, final Object... values) {
-        return MapEntry.entry(key, Arrays.asList(values));
-    }
+  private fun listEntry(key: String, vararg values: String): MapEntry<String, List<String>> {
+    return MapEntry.entry(key, values.asList())
+  }
 }

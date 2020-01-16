@@ -1,24 +1,22 @@
-package uk.gov.justice.digital.hmpps.oauth2server.resource;
+package uk.gov.justice.digital.hmpps.oauth2server.resource
 
-import org.junit.Test;
-import org.springframework.http.HttpStatus;
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
+import org.springframework.http.HttpStatus
 
-import static org.assertj.core.api.Assertions.assertThat;
+class LoginControllerTest {
+  private val controller = LoginController()
+  @Test
+  fun loginPage_NoError() {
+    val modelAndView = controller.loginPage(null)
+    assertThat(modelAndView.viewName).isEqualTo("login")
+    assertThat(modelAndView.status).isNull()
+  }
 
-public class LoginControllerTest {
-    private final LoginController controller = new LoginController();
-
-    @Test
-    public void loginPage_NoError() {
-        final var modelAndView = controller.loginPage(null);
-        assertThat(modelAndView.getViewName()).isEqualTo("login");
-        assertThat(modelAndView.getStatus()).isNull();
-    }
-
-    @Test
-    public void loginPage_CurrentError() {
-        final var modelAndView = controller.loginPage("bad");
-        assertThat(modelAndView.getViewName()).isEqualTo("login");
-        assertThat(modelAndView.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
-    }
+  @Test
+  fun loginPage_CurrentError() {
+    val modelAndView = controller.loginPage("bad")
+    assertThat(modelAndView.viewName).isEqualTo("login")
+    assertThat(modelAndView.status).isEqualTo(HttpStatus.BAD_REQUEST)
+  }
 }
