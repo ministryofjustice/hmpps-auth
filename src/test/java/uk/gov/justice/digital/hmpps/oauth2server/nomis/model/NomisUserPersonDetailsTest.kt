@@ -27,6 +27,12 @@ class NomisUserPersonDetailsTest {
   @Test
   fun `isCredentialsNonExpired open status date expired`() {
     val account = createStaffUserAccount("OPEN", LocalDateTime.now().minusMinutes(1))
+    assertThat(account.isCredentialsNonExpired).isFalse()
+  }
+
+  @Test
+  fun `isCredentialsNonExpired open status date not expired`() {
+    val account = createStaffUserAccount("OPEN")
     assertThat(account.isCredentialsNonExpired).isTrue()
   }
 
@@ -60,6 +66,7 @@ class NomisUserPersonDetailsTest {
     account.accountDetail = detail
     account.username = "user"
     detail.accountStatus = status
+    detail.passwordExpiry = passwordExpiry
     return account
   }
 }

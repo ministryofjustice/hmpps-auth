@@ -9,6 +9,7 @@ import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
@@ -110,12 +111,13 @@ class MfaControllerTest {
 
   @Test
   fun `mfaChallenge check success handler`() {
-    val user = User.of("someuser")
+    val user = User.builder().authorities(setOf("ROLE_BOB", "ROLE_JOE").map { Authority(it, "role name") }.toSet()).username("someuser").build()
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     controller.mfaChallenge("some token", "some code", request, response)
     verify(jwtAuthenticationSuccessHandler).onAuthenticationSuccess(eq(request), eq(response), check {
       assertThat(it.principal).isEqualTo(user)
+      assertThat(it.authorities.map { a -> a.authority }).containsOnly("ROLE_BOB", "ROLE_JOE")
     })
   }
 

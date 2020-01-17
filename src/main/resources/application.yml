@@ -1,7 +1,7 @@
 server:
   servlet:
     context-path: /auth
-  use-forward-headers: true
+  forward-headers-strategy: native
   tomcat:
     remote-ip-header: x-forwarded-for
     protocol_header: x-forwarded-proto
@@ -124,5 +124,3 @@ delius:
 logging.uris.exclude.regex: /auth/health|/auth/info|/auth/ping|/auth/swagger.*|/auth/webjars/.*|/auth/v2/api-docs
 
 graceful.shutdown.enabled: true
-
-azure.application-insights.web.enable-W3C: true
