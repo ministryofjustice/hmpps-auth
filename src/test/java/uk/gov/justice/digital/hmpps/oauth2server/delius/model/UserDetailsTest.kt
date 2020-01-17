@@ -16,7 +16,7 @@ class UserDetailsTest {
             firstName = "John",
             email = "test@digital.justice.gov.uk",
             enabled = true,
-            roles = listOf(UserRole(name = "TEST_ROLE", description = "A Test Role"))))
+            roles = listOf(UserRole(name = "TEST_ROLE"))))
   }
 
   @Test

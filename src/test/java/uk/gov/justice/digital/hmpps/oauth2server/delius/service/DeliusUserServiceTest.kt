@@ -61,7 +61,7 @@ class DeliusUserServiceTest {
   @Test
   fun `deliusUserByUsername test role mappings`() {
     whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
-        createUserDetails().copy(roles = listOf(UserRole("AROLE", "desc 1"), UserRole("bob", "desc 2"))))
+        createUserDetails().copy(roles = listOf(UserRole("AROLE"), UserRole("bob"))))
     val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
@@ -77,7 +77,7 @@ class DeliusUserServiceTest {
   @Test
   fun `deliusUserByUsername test role mappings multiple roles`() {
     whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
-        createUserDetails().copy(roles = listOf(UserRole("TEST_ROLE", "desc 1"), UserRole("AROLE", "desc 2"), UserRole("other", "other desc"))))
+        createUserDetails().copy(roles = listOf(UserRole("TEST_ROLE"), UserRole("AROLE"), UserRole("other"))))
     val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
