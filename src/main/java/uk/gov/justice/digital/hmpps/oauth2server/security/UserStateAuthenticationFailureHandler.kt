@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.apache.commons.lang3.StringUtils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.CredentialsExpiredException
@@ -21,7 +22,8 @@ import javax.servlet.http.HttpServletResponse
 @Component
 class UserStateAuthenticationFailureHandler(private val tokenService: TokenService,
                                             private val mfaService: MfaService,
-                                            @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) : SimpleUrlAuthenticationFailureHandler(FAILURE_URL) {
+                                            @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
+                                            private val telemetryClient: TelemetryClient) : SimpleUrlAuthenticationFailureHandler(FAILURE_URL) {
   companion object {
     private const val FAILURE_URL = "/login"
   }
@@ -33,20 +35,22 @@ class UserStateAuthenticationFailureHandler(private val tokenService: TokenServi
   @Throws(IOException::class)
   override fun onAuthenticationFailure(request: HttpServletRequest, response: HttpServletResponse,
                                        exception: AuthenticationException) {
-    val builder = StringJoiner("&error=", "?error=", "")
 
-    when (exception) {
-      is LockedException -> builder.add("locked")
+    val usernameParam: String? = request.getParameter("username")?.trim()?.toUpperCase()
+
+    val failures = when (exception) {
+      is LockedException -> Pair("locked", null)
       is CredentialsExpiredException -> {
         // special handling for expired users and feature switch turned on
-        val username = StringUtils.trim(request.getParameter("username").toUpperCase())
+        val username = StringUtils.trim(usernameParam)
         val token = tokenService.createToken(TokenType.CHANGE, username)
+        trackFailure(usernameParam, "expired")
         redirectStrategy.sendRedirect(request, response, "/change-password?token=$token")
         return
       }
       is MfaRequiredException -> {
         // need to break out to perform mfa for the user
-        val username = StringUtils.trim(request.getParameter("username").toUpperCase())
+        val username = StringUtils.trim(usernameParam)
         val (token, code) = mfaService.createTokenAndSendEmail(username)
 
         val urlBuilder = UriComponentsBuilder.fromPath("/mfa-challenge").queryParam("token", token)
@@ -57,21 +61,36 @@ class UserStateAuthenticationFailureHandler(private val tokenService: TokenServi
         return
       }
       is MfaUnavailableException -> {
-        builder.add("mfaunavailable")
+        Pair("mfaunavailable", null)
       }
       is MissingCredentialsException -> {
-        if (StringUtils.isBlank(request.getParameter("username"))) {
-          builder.add("missinguser")
-        }
-        if (StringUtils.isBlank(request.getParameter("password"))) {
-          builder.add("missingpass")
+        if (usernameParam.isNullOrBlank()) {
+          if (StringUtils.isBlank(request.getParameter("password"))) {
+            Pair("missinguser", "missingpass")
+          } else {
+            Pair("missinguser", null)
+          }
+        } else {
+          Pair("missingpass", null)
         }
       }
-      is DeliusAuthenticationServiceException -> builder.add("invalid").add("deliusdown")
-      else -> builder.add("invalid")
+      is DeliusAuthenticationServiceException -> Pair("invalid", "deliusdown")
+      else -> Pair("invalid", null)
+    }
+
+    val builder = StringJoiner("&error=", "?error=", "")
+    with(failures) {
+      builder.add(first)
+      second?.run { builder.add(this) }
+      trackFailure(usernameParam, first)
     }
 
     val redirectUrl = FAILURE_URL + builder.toString()
     redirectStrategy.sendRedirect(request, response, redirectUrl)
+  }
+
+  private fun trackFailure(usernameParam: String?, type: String) {
+    telemetryClient.trackEvent("AuthenticateFailure",
+        mapOf("username" to (usernameParam ?: "missinguser"), "type" to type), null)
   }
 }

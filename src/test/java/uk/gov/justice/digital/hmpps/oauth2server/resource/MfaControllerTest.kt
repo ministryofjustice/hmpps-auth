@@ -110,6 +110,15 @@ class MfaControllerTest {
   }
 
   @Test
+  fun `mfaChallenge success telemetry`() {
+    val user = User.of("someuser")
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+    controller.mfaChallenge("some token", "some code", request, response)
+    verify(telemetryClient).trackEvent("MFAAuthenticateSuccess", mapOf("username" to "someuser"), null)
+  }
+
+  @Test
   fun `mfaChallenge check success handler`() {
     val user = User.builder().authorities(setOf("ROLE_BOB", "ROLE_JOE").map { Authority(it, "role name") }.toSet()).username("someuser").build()
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))

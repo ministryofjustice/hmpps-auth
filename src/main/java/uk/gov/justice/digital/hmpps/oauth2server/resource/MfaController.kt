@@ -66,7 +66,7 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
     }
 
     // success, so forward on
-    telemetryClient.trackEvent("MfaAuthenticateSuccess", mapOf("username" to username), null)
+    telemetryClient.trackEvent("MFAAuthenticateSuccess", mapOf("username" to username), null)
     val successToken = UsernamePasswordAuthenticationToken(userPersonDetails, "code", userPersonDetails.authorities)
     jwtAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, successToken)
 
