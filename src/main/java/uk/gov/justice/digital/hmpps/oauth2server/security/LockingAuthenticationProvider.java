@@ -48,7 +48,6 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
         if (StringUtils.isBlank(authentication.getName()) || authentication.getCredentials() == null ||
                 StringUtils.isBlank(authentication.getCredentials().toString())) {
             log.info("Credentials missing for user {}", authentication.getName());
-            trackFailure(authentication.getName(), "credentials", "missing");
             throw new MissingCredentialsException();
         }
 
@@ -58,7 +57,6 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
             final var reason = e.getClass().getSimpleName();
             final var username = authentication.getName();
             log.info("Authenticate failed for user {} with reason {} and message {}", username, reason, e.getMessage());
-            trackFailure(username, reason);
             throw e;
         }
     }
@@ -93,25 +91,15 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
             // check the number of retries
             if (locked) {
                 log.info("Locked account for user {}", username);
-                trackFailure(username, "locked", "exceeded");
                 throw new LockedException("Account is locked, number of retries exceeded");
             }
             log.info("Credentials incorrect for user {}", username);
-            trackFailure(username, "credentials", "incorrect");
             throw new BadCredentialsException("Authentication failed: password does not match stored value");
         }
     }
 
     protected boolean checkPassword(final UserDetails userDetails, final String password) {
         return getPasswordEncoder().matches(password, userDetails.getPassword());
-    }
-
-    private void trackFailure(final String username, final String type) {
-        telemetryClient.trackEvent("AuthenticateFailure", Map.of("username", username, "type", type), null);
-    }
-
-    private void trackFailure(final String username, final String type, final String subType) {
-        telemetryClient.trackEvent("AuthenticateFailure", Map.of("username", username, "type", type, "subType", subType), null);
     }
 
     public static class MfaRequiredException extends AccountStatusException {

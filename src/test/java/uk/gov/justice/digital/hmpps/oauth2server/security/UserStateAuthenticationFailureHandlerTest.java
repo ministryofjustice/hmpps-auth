@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
+import com.microsoft.applicationinsights.TelemetryClient;
 import kotlin.Pair;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -37,6 +39,8 @@ public class UserStateAuthenticationFailureHandlerTest {
     private MfaService mfaService;
     @Mock
     private RedirectStrategy redirectStrategy;
+    @Mock
+    private TelemetryClient telemetryClient;
 
     private UserStateAuthenticationFailureHandler handler;
 
@@ -50,6 +54,7 @@ public class UserStateAuthenticationFailureHandlerTest {
         handler.onAuthenticationFailure(request, response, new LockedException("msg"));
 
         verify(redirectStrategy).sendRedirect(request, response, "/login?error=locked");
+        verify(telemetryClient).trackEvent("AuthenticateFailure", Map.of("username", "missinguser", "type", "locked"), null);
     }
 
     @Test
@@ -60,6 +65,7 @@ public class UserStateAuthenticationFailureHandlerTest {
 
         verify(redirectStrategy).sendRedirect(request, response, "/change-password?token=sometoken");
         verify(tokenService).createToken(TokenType.CHANGE, "BOB");
+        verify(telemetryClient).trackEvent("AuthenticateFailure", Map.of("username", "BOB", "type", "expired"), null);
     }
 
     @Test
@@ -69,6 +75,7 @@ public class UserStateAuthenticationFailureHandlerTest {
         handler.onAuthenticationFailure(request, response, new CredentialsExpiredException("msg"));
 
         verify(tokenService).createToken(TokenType.CHANGE, "JOE");
+        verify(telemetryClient).trackEvent("AuthenticateFailure", Map.of("username", "JOE", "type", "expired"), null);
     }
 
     @Test
@@ -78,6 +85,7 @@ public class UserStateAuthenticationFailureHandlerTest {
         handler.onAuthenticationFailure(request, response, new MissingCredentialsException());
 
         verify(redirectStrategy).sendRedirect(request, response, "/login?error=missingpass");
+        verify(telemetryClient).trackEvent("AuthenticateFailure", Map.of("username", "BOB", "type", "missingpass"), null);
     }
 
     @Test
@@ -87,6 +95,7 @@ public class UserStateAuthenticationFailureHandlerTest {
         handler.onAuthenticationFailure(request, response, new MissingCredentialsException());
 
         verify(redirectStrategy).sendRedirect(request, response, "/login?error=missinguser");
+        verify(telemetryClient).trackEvent("AuthenticateFailure", Map.of("username", "missinguser", "type", "missinguser"), null);
     }
 
     @Test
@@ -94,6 +103,7 @@ public class UserStateAuthenticationFailureHandlerTest {
         handler.onAuthenticationFailure(request, response, new MissingCredentialsException());
 
         verify(redirectStrategy).sendRedirect(request, response, "/login?error=missinguser&error=missingpass");
+        verify(telemetryClient).trackEvent("AuthenticateFailure", Map.of("username", "missinguser", "type", "missinguser"), null);
     }
 
     @Test
@@ -101,6 +111,7 @@ public class UserStateAuthenticationFailureHandlerTest {
         handler.onAuthenticationFailure(request, response, new DeliusAuthenticationServiceException());
 
         verify(redirectStrategy).sendRedirect(request, response, "/login?error=invalid&error=deliusdown");
+        verify(telemetryClient).trackEvent("AuthenticateFailure", Map.of("username", "missinguser", "type", "invalid"), null);
     }
 
     @Test
@@ -108,6 +119,7 @@ public class UserStateAuthenticationFailureHandlerTest {
         handler.onAuthenticationFailure(request, response, new BadCredentialsException("msg"));
 
         verify(redirectStrategy).sendRedirect(request, response, "/login?error=invalid");
+        verify(telemetryClient).trackEvent("AuthenticateFailure", Map.of("username", "missinguser", "type", "invalid"), null);
     }
 
     @Test
@@ -135,10 +147,11 @@ public class UserStateAuthenticationFailureHandlerTest {
         handler.onAuthenticationFailure(request, response, new MfaUnavailableException("msg"));
 
         verify(redirectStrategy).sendRedirect(request, response, "/login?error=mfaunavailable");
+        verify(telemetryClient).trackEvent("AuthenticateFailure", Map.of("username", "missinguser", "type", "mfaunavailable"), null);
     }
 
     private UserStateAuthenticationFailureHandler setupHandler(final boolean smokeTestEnabled) {
-        final var setupHandler = new UserStateAuthenticationFailureHandler(tokenService, mfaService, smokeTestEnabled);
+        final var setupHandler = new UserStateAuthenticationFailureHandler(tokenService, mfaService, smokeTestEnabled, telemetryClient);
         setupHandler.setRedirectStrategy(redirectStrategy);
         return setupHandler;
     }
