@@ -4,7 +4,6 @@ import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
@@ -29,11 +28,8 @@ class VerifyEmailServiceTest {
   private val telemetryClient: TelemetryClient = mock()
   private val notificationClient: NotificationClientApi = mock()
   private val referenceCodesService: ReferenceCodesService = mock()
-  private lateinit var verifyEmailService: VerifyEmailService
-  @Before
-  fun setUp() {
-    verifyEmailService = VerifyEmailService(userRepository, userTokenRepository, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId")
-  }
+  private val verifyEmailService = VerifyEmailService(userRepository, userTokenRepository, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId")
+
 
   @Test
   fun email() {

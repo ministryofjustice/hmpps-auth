@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,12 +16,9 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(transactionManager = "authTransactionManager")
 open class VerifyEmailServiceIntTest {
   @Autowired
-  private val jdbcTemplate: JdbcTemplate? = null
-  private lateinit var verifyEmailService: VerifyEmailService
-  @Before
-  fun setUp() {
-    verifyEmailService = VerifyEmailService(null, null, jdbcTemplate, null, null, null, "templateId")
-  }
+  private lateinit var jdbcTemplate: JdbcTemplate
+  private val verifyEmailService = VerifyEmailService(null, null, jdbcTemplate, null, null, null, "templateId")
+
 
   @Test
   fun existingEmailAddresses() {
