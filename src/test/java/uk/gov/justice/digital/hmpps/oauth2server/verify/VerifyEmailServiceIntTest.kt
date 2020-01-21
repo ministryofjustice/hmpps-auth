@@ -26,13 +26,13 @@ open class VerifyEmailServiceIntTest {
 
   @Test
   fun existingEmailAddresses() {
-      val emails = verifyEmailService.getExistingEmailAddresses("RO_USER")
-      assertThat(emails).containsExactlyInAnyOrder("phillips@bobjustice.gov.uk", "phillips@fredjustice.gov.uk")
-    }
+    val emails = verifyEmailService.getExistingEmailAddresses("RO_USER")
+    assertThat(emails).containsExactlyInAnyOrder("phillips@bobjustice.gov.uk", "phillips@fredjustice.gov.uk")
+  }
 
   @Test
   fun existingEmailAddresses_NotFound() {
-      val emails = verifyEmailService.getExistingEmailAddresses("CA_USER")
-      assertThat(emails).isEmpty()
-    }
+    val emails = verifyEmailService.getExistingEmailAddresses("CA_USER")
+    assertThat(emails).isEmpty()
+  }
 }

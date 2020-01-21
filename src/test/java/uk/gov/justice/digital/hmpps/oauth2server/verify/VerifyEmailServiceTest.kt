@@ -33,11 +33,11 @@ class VerifyEmailServiceTest {
 
   @Test
   fun email() {
-      val user = User.builder().username("bob").email("joe@bob.com").build()
-      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-      val userOptional = verifyEmailService.getEmail("user")
-      assertThat(userOptional).get().isEqualTo(user)
-    }
+    val user = User.builder().username("bob").email("joe@bob.com").build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    val userOptional = verifyEmailService.getEmail("user")
+    assertThat(userOptional).get().isEqualTo(user)
+  }
 
   @Test
   fun email_NoEmailSet() {
@@ -49,25 +49,25 @@ class VerifyEmailServiceTest {
 
   @Test
   fun isNotVerified_userMissing() {
-      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
-      assertThat(verifyEmailService.isNotVerified("user")).isTrue()
-      verify(userRepository).findByUsername("user")
-    }
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
+    assertThat(verifyEmailService.isNotVerified("user")).isTrue()
+    verify(userRepository).findByUsername("user")
+  }
 
   @Test
   fun isNotVerified_userFoundNotVerified() {
-      val user = User.of("bob")
-      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-      assertThat(verifyEmailService.isNotVerified("user")).isTrue()
-    }
+    val user = User.of("bob")
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    assertThat(verifyEmailService.isNotVerified("user")).isTrue()
+  }
 
   @Test
   fun isNotVerified_userFoundVerified() {
-      val user = User.builder().username("bob").email("joe@bob.com").build()
-      user.isVerified = true
-      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-      assertThat(verifyEmailService.isNotVerified("user")).isFalse()
-    }
+    val user = User.builder().username("bob").email("joe@bob.com").build()
+    user.isVerified = true
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    assertThat(verifyEmailService.isNotVerified("user")).isFalse()
+  }
 
   @Test
   @Throws(NotificationClientException::class, VerifyEmailException::class)
