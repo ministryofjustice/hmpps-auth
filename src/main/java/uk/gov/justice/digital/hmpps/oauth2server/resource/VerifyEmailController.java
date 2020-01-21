@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientException;
@@ -29,14 +30,17 @@ import java.util.Map;
 public class VerifyEmailController {
     private final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
     private final VerifyEmailService verifyEmailService;
+    private final UserService userService;
+
     private final TelemetryClient telemetryClient;
     private final boolean smokeTestEnabled;
 
     public VerifyEmailController(final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
                                  final VerifyEmailService verifyEmailService,
-                                 final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
+                                 final UserService userService, final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
         this.verifyEmailService = verifyEmailService;
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
+        this.userService = userService;
         this.telemetryClient = telemetryClient;
         this.smokeTestEnabled = smokeTestEnabled;
     }
@@ -92,7 +96,7 @@ public class VerifyEmailController {
         final var chosenEmail = StringUtils.trim(StringUtils.isBlank(candidate) || "other".equals(candidate) ? email : candidate);
 
         try {
-            final var verifyLink = verifyEmailService.requestVerificationForNomisUser(username, chosenEmail, request.getRequestURL().append("-confirm?token=").toString());
+            final var verifyLink = requestVerificationForUser(username, chosenEmail, request.getRequestURL().append("-confirm?token=").toString());
 
             final var modelAndView = new ModelAndView("verifyEmailSent");
             if (smokeTestEnabled) {
@@ -108,6 +112,14 @@ public class VerifyEmailController {
             log.error("Failed to send email due to", e);
             return createVerifyEmailError(chosenEmail, "other");
         }
+    }
+
+    private String requestVerificationForUser(final String username, final String emailInput, final String url) throws NotificationClientException, VerifyEmailException {
+
+        final var userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow();
+        final var firstName = userPersonDetails.getFirstName();
+
+        return verifyEmailService.requestVerification(username, emailInput, firstName, url);
     }
 
     private ModelAndView createVerifyEmailError(final String chosenEmail, final String reason) {

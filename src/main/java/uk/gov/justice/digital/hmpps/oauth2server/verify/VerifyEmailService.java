@@ -12,9 +12,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
-import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
@@ -34,7 +31,6 @@ public class VerifyEmailService {
             "where internet_address_class = 'EMAIL' and s.username = ?";
     private final UserRepository userRepository;
     private final UserTokenRepository userTokenRepository;
-    private final NomisUserService nomisUserService;
     private final JdbcTemplate jdbcTemplate;
     private final TelemetryClient telemetryClient;
     private final NotificationClientApi notificationClient;
@@ -43,13 +39,12 @@ public class VerifyEmailService {
 
     public VerifyEmailService(final UserRepository userRepository,
                               final UserTokenRepository userTokenRepository,
-                              final NomisUserService nomisUserService, final JdbcTemplate jdbcTemplate,
+                              final JdbcTemplate jdbcTemplate,
                               final TelemetryClient telemetryClient,
                               final NotificationClientApi notificationClient,
                               final ReferenceCodesService referenceCodesService, @Value("${application.notify.verify.template}") final String notifyTemplateId) {
         this.userRepository = userRepository;
         this.userTokenRepository = userTokenRepository;
-        this.nomisUserService = nomisUserService;
         this.jdbcTemplate = jdbcTemplate;
         this.telemetryClient = telemetryClient;
         this.notificationClient = notificationClient;
@@ -70,18 +65,8 @@ public class VerifyEmailService {
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public String requestVerificationForNomisUser(final String username, final String emailInput, final String url) throws NotificationClientException, VerifyEmailException {
-
-        final var userPersonDetails = nomisUserService.getNomisUserByUsername(username);
-        final var firstName = userPersonDetails.map(UserPersonDetails::getFirstName).orElse(username);
-        final var optionalUser = userRepository.findByUsername(username);
-        final var user = optionalUser.orElseGet(() -> User.builder().username(username).source(AuthSource.nomis).build());
-
-        return requestVerification(username, emailInput, firstName, url, user);
-    }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public String requestVerification(final String username, final String emailInput, final String firstName, final String url, final User user) throws NotificationClientException, VerifyEmailException {
+    public String requestVerification(final String username, final String emailInput, final String firstName, final String url) throws NotificationClientException, VerifyEmailException {
+        final var user = userRepository.findByUsername(username).orElseThrow();
         final var verifyLink = url + user.createToken(TokenType.VERIFIED).getToken();
         final var parameters = Map.of("firstName", firstName, "verifyLink", verifyLink);
 

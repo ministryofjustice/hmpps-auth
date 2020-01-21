@@ -11,7 +11,10 @@ import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import uk.gov.service.notify.NotificationClientException
 import java.util.*
@@ -23,8 +26,9 @@ class VerifyEmailControllerTest {
   private val response: HttpServletResponse = mock()
   private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler = mock()
   private val verifyEmailService: VerifyEmailService = mock()
+  private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val verifyEmailController = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, telemetryClient, true)
+  private val verifyEmailController = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, userService, telemetryClient, true)
   private val principal = UsernamePasswordAuthenticationToken("user", "pass")
 
   @Test
@@ -76,7 +80,9 @@ class VerifyEmailControllerTest {
   @Test
   fun verifyEmail_Exception() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
-    whenever(verifyEmailService.requestVerificationForNomisUser(anyString(), anyString(), anyString())).thenThrow(NotificationClientException("something went wrong"))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(User()))
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString())).thenThrow(NotificationClientException("something went wrong"))
     val modelAndView = verifyEmailController.verifyEmail("a@b.com", null, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView.model).containsExactly(entry("email", "a@b.com"), entry("error", "other"))
@@ -84,13 +90,14 @@ class VerifyEmailControllerTest {
 
   @Test
   fun verifyEmail_Success() {
-    whenever(verifyEmailService.requestVerificationForNomisUser(anyString(), anyString(), anyString())).thenReturn("link")
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString() )).thenReturn("link")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
     val modelAndView = verifyEmailController.verifyEmail("other", email, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
     assertThat(modelAndView.model).containsExactly(entry("verifyLink", "link"), entry("email", email))
-    verify(verifyEmailService).requestVerificationForNomisUser("user", email, "http://some.url-confirm?token=")
+    verify(verifyEmailService).requestVerification("user", email, "Bob","http://some.url-confirm?token=")
   }
 
   @Test
@@ -107,5 +114,14 @@ class VerifyEmailControllerTest {
     val modelAndView = verifyEmailController.verifyEmailConfirm("token")
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailFailure")
     assertThat(modelAndView.model).containsExactly(entry("error", "failed"))
+  }
+
+  private fun getUserPersonalDetails(): NomisUserPersonDetails {
+    val account = NomisUserPersonDetails()
+    val staff = Staff()
+    account.staff = staff
+    account.username = "user"
+    staff.firstName = "bob"
+    return account
   }
 }

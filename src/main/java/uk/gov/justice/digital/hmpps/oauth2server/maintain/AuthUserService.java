@@ -192,8 +192,7 @@ public class AuthUserService {
                     usernameInput,
                     emailAddressInput,
                     user.getFirstName(),
-                    url.replace("initial-password", "verify-email-confirm"),
-                    user);
+                    url.replace("initial-password", "verify-email-confirm"));
         }
 
         final var email = EmailHelper.format(emailAddressInput);
