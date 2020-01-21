@@ -5,7 +5,6 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.isNull
@@ -14,7 +13,6 @@ import org.mockito.Mockito.never
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
@@ -29,7 +27,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
-import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.EntityNotFoundException
@@ -40,12 +37,8 @@ class AuthUserControllerTest {
   private val authUserService: AuthUserService = mock()
   private val authUserGroupService: AuthUserGroupService = mock()
   private val request: HttpServletRequest = mock()
-  private lateinit var authUserController: AuthUserController
-  private val authentication: Authentication = UsernamePasswordAuthenticationToken("bob", "pass")
-  @Before
-  fun setUp() {
-    authUserController = AuthUserController(userService, authUserService, authUserGroupService, false)
-  }
+  private val authUserController = AuthUserController(userService, authUserService, authUserGroupService, false)
+  private val authentication = UsernamePasswordAuthenticationToken("bob", "pass")
 
   @Test
   fun user_userNotFound() {
@@ -79,7 +72,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class)
   fun createUser_AlreadyExists() {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(UserDetailsImpl("name", "bob", setOf(), null, null)))
     val responseEntity = authUserController.createUser("user", CreateUser("email", "first", "last", null), request, authentication)
@@ -88,7 +80,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class)
   fun createUser_BlankDoesntCallUserService() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     val responseEntity = authUserController.createUser("  ", CreateUser("email", "first", "last", null), request, authentication)
@@ -97,7 +88,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class)
   fun createUser_Success() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     val responseEntity = authUserController.createUser("newusername", CreateUser("email", "first", "last", null), request, authentication)
@@ -106,7 +96,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, CreateUserException::class, VerifyEmailException::class)
   fun createUser_trim() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     authUserController.createUser("   newusername   ", CreateUser("email", "first", "last", null), request, authentication)
@@ -115,7 +104,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, CreateUserException::class, VerifyEmailException::class)
   fun createUser_CreateUserError() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     whenever(authUserService.createUser(anyString(), anyString(), anyString(), anyString(), isNull(), anyString(), anyString(), any())).thenThrow(CreateUserException("username", "errorcode"))
@@ -125,7 +113,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, CreateUserException::class, VerifyEmailException::class)
   fun createUser_VerifyUserError() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     whenever(authUserService.createUser(anyString(), anyString(), anyString(), anyString(), isNull(), anyString(), anyString(), any())).thenThrow(VerifyEmailException("reason"))
@@ -135,7 +122,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, CreateUserException::class, VerifyEmailException::class)
   fun createUser_InitialPasswordUrl() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     authUserController.createUser("newusername", CreateUser("email", "first", "last", null), request, authentication)
@@ -143,7 +129,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, CreateUserException::class, VerifyEmailException::class)
   fun createUser_NoAdditionalRoles() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     authUserController.createUser("newusername", CreateUser("email", "first", "last", null), request, authentication)
@@ -151,7 +136,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class)
   fun createUser() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/api/authuser/newusername"))
     val responseEntity = authUserController.createUser("newusername", CreateUser("email", "first", "last", null), request, authentication)
@@ -160,7 +144,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(AuthUserGroupRelationshipException::class)
   fun enableUser() {
     val user = User.builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
@@ -170,7 +153,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(AuthUserGroupRelationshipException::class)
   fun enableUser_notFound() {
     val user = User.builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
@@ -180,7 +162,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(AuthUserGroupRelationshipException::class)
   fun disableUser() {
     val user = User.builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
@@ -190,7 +171,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(AuthUserGroupRelationshipException::class)
   fun disableUser_notFound() {
     val user = User.builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
@@ -200,7 +180,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, VerifyEmailException::class, AmendUserException::class, AuthUserGroupRelationshipException::class)
   fun amendUser_checkService() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
@@ -208,7 +187,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class)
   fun amendUser_statusCode() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     val responseEntity = authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
@@ -217,7 +195,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, VerifyEmailException::class, AmendUserException::class, AuthUserGroupRelationshipException::class)
   fun amendUser_notFound() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(EntityNotFoundException("not found"))
@@ -226,7 +203,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, VerifyEmailException::class, AmendUserException::class, AuthUserGroupRelationshipException::class)
   fun amendUser_amendException() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(AmendUserException("fiel", "cod"))
@@ -236,7 +212,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, VerifyEmailException::class, AmendUserException::class, AuthUserGroupRelationshipException::class)
   fun amendUser_verifyException() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(VerifyEmailException("reason"))
@@ -246,7 +221,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, VerifyEmailException::class, AmendUserException::class, AuthUserGroupRelationshipException::class)
   fun amendUser_groupException() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(AuthUserGroupRelationshipException("user", "reason"))

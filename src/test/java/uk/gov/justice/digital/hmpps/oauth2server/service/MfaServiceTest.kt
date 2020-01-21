@@ -26,11 +26,10 @@ class MfaServiceTest {
   private val userRetriesService: UserRetriesService = mock()
   private val notificationClientApi: NotificationClientApi = mock()
   private val request = MockHttpServletRequest()
-  private lateinit var service: MfaService
+  private val service = MfaService(setOf("12.21.23.24"), setOf("MFA"), "template", tokenService, userService, notificationClientApi, userRetriesService)
 
   @Before
   fun setUp() {
-    service = MfaService(setOf("12.21.23.24"), setOf("MFA"), "template", tokenService, userService, notificationClientApi, userRetriesService)
     request.remoteAddr = "0:0:0:0:0:0:0:1"
     RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request, null))
   }

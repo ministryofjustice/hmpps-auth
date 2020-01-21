@@ -5,7 +5,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
-import org.junit.Before
 import org.junit.Test
 import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.ClientDetailsService
@@ -18,11 +17,7 @@ class RedirectingLogoutSuccessHandlerTest {
   private val clientDetailsService: ClientDetailsService = mock()
   private val request: HttpServletRequest = mock()
   private val response: HttpServletResponse = mock()
-  private lateinit var redirectingLogoutSuccessHandler: RedirectingLogoutSuccessHandler
-  @Before
-  fun setUp() {
-    redirectingLogoutSuccessHandler = RedirectingLogoutSuccessHandler(clientDetailsService, "/path", false)
-  }
+  private val redirectingLogoutSuccessHandler = RedirectingLogoutSuccessHandler(clientDetailsService, "/path", false)
 
   @Test
   @Throws(IOException::class)

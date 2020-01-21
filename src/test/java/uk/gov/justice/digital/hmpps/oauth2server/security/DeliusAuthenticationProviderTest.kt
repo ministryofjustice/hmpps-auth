@@ -7,7 +7,6 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.LockedException
@@ -25,13 +24,7 @@ class DeliusAuthenticationProviderTest {
   private val userRetriesService: UserRetriesService = mock()
   private val mfaService: MfaService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private lateinit var provider: DeliusAuthenticationProvider
-
-  @Before
-  fun setUp() {
-    val deliusUserDetailsService = DeliusUserDetailsService(deliusUserService, userService)
-    provider = DeliusAuthenticationProvider(deliusUserService, deliusUserDetailsService, userRetriesService, mfaService, userService, telemetryClient)
-  }
+  private val provider = DeliusAuthenticationProvider(deliusUserService, DeliusUserDetailsService(deliusUserService, userService), userRetriesService, mfaService, userService, telemetryClient)
 
   @Test
   fun authenticate_Success() {

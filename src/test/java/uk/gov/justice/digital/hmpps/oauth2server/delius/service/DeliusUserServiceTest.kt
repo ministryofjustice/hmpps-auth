@@ -2,11 +2,8 @@ package uk.gov.justice.digital.hmpps.oauth2server.delius.service
 
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.client.RestTemplate
@@ -16,20 +13,13 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole
 import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
 
-@RunWith(MockitoJUnitRunner::class)
 class DeliusUserServiceTest {
   private val restTemplate: RestTemplate = mock()
-  private lateinit var disabledDeliusService: DeliusUserService
-  private lateinit var deliusService: DeliusUserService
   private val mappings = DeliusRoleMappings(mapOf(
       Pair("arole", listOf("role1", "role2")),
       Pair("test.role", listOf("role1", "role3"))))
-
-  @Before
-  fun before() {
-    disabledDeliusService = DeliusUserService(restTemplate, false, mappings)
-    deliusService = DeliusUserService(restTemplate, true, mappings)
-  }
+  private val disabledDeliusService = DeliusUserService(restTemplate, false, mappings)
+  private val deliusService = DeliusUserService(restTemplate, true, mappings)
 
   @Test
   fun `deliusUserByUsername disabled`() {

@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
@@ -22,12 +21,7 @@ class UserRetriesServiceTest {
   private val userRetriesRepository: UserRetriesRepository = mock()
   private val userRepository: UserRepository = mock()
   private val delegatingUserService: DelegatingUserService = mock()
-  private lateinit var service: UserRetriesService
-
-  @Before
-  fun setUp() {
-    service = UserRetriesService(userRetriesRepository, userRepository, delegatingUserService, 3)
-  }
+  private val service = UserRetriesService(userRetriesRepository, userRepository, delegatingUserService, 3)
 
   @Test
   fun resetRetriesAndRecordLogin() {

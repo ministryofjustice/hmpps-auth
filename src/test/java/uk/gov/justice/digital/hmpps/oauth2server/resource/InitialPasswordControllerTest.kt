@@ -6,7 +6,6 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
@@ -23,11 +22,7 @@ class InitialPasswordControllerTest {
   private val tokenService: TokenService = mock()
   private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private lateinit var controller: InitialPasswordController
-  @Before
-  fun setUp() {
-    controller = InitialPasswordController(resetPasswordService, tokenService, userService, telemetryClient, setOf("password1"))
-  }
+  private val controller = InitialPasswordController(resetPasswordService, tokenService, userService, telemetryClient, setOf("password1"))
 
   @Test
   fun initialPasswordSuccess_checkView() {

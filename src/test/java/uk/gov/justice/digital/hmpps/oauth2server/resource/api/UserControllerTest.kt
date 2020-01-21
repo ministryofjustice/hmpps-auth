@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
@@ -24,11 +23,7 @@ import java.util.*
 
 class UserControllerTest {
   private val userService: UserService = mock()
-  private lateinit var userController: UserController
-  @Before
-  fun setUp() {
-    userController = UserController(userService)
-  }
+  private val userController = UserController(userService)
 
   @Test
   fun user_userNotFound() {

@@ -4,14 +4,11 @@ import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.MapEntry.entry
-import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.ArgumentMatchers.isNull
-import org.mockito.junit.MockitoJUnitRunner
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.*
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
@@ -19,17 +16,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import java.time.LocalDateTime
 import java.util.*
 
-@RunWith(MockitoJUnitRunner::class)
 class TokenServiceTest {
   private val userTokenRepository: UserTokenRepository = mock()
   private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private lateinit var tokenService: TokenService
-
-  @Before
-  fun setUp() {
-    tokenService = TokenService(userTokenRepository, userService, telemetryClient)
-  }
+  private val tokenService = TokenService(userTokenRepository, userService, telemetryClient)
 
   @Test
   fun `get token notfound`() {

@@ -5,7 +5,6 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.Before
 import org.junit.Test
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -20,12 +19,7 @@ class LockingAuthenticationProviderTest {
   private val telemetryClient: TelemetryClient = mock()
   private val mfaService: MfaService = mock()
 
-  private lateinit var lockingAuthenticationProvider: LockingAuthenticationProvider
-
-  @Before
-  fun setUp() {
-    lockingAuthenticationProvider = AuthAuthenticationProvider(userDetailsService, userRetriesService, mfaService, userService, telemetryClient)
-  }
+  private val lockingAuthenticationProvider = AuthAuthenticationProvider(userDetailsService, userRetriesService, mfaService, userService, telemetryClient)
 
   @Test
   fun `authenticate nomisUser`() { // test that oracle passwords are authenticated okay
