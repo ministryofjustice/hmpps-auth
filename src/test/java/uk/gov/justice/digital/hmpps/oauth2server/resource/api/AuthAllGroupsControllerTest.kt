@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
@@ -12,11 +11,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 
 class AuthAllGroupsControllerTest {
   private val authUserGroupService: AuthUserGroupService = mock()
-  private lateinit var controller: AuthAllGroupsController
-  @Before
-  fun setUp() {
-    controller = AuthAllGroupsController(authUserGroupService)
-  }
+  private val controller = AuthAllGroupsController(authUserGroupService)
 
   @Test
   fun allGroups() {

@@ -5,7 +5,6 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doThrow
@@ -25,11 +24,7 @@ class AuthUserRolesControllerTest {
   private val principal: Authentication = UsernamePasswordAuthenticationToken("bob", "pass")
   private val authUserService: AuthUserService = mock()
   private val authUserRoleService: AuthUserRoleService = mock()
-  private lateinit var authUserRolesController: AuthUserRolesController
-  @Before
-  fun setUp() {
-    authUserRolesController = AuthUserRolesController(authUserService, authUserRoleService)
-  }
+  private val authUserRolesController = AuthUserRolesController(authUserService, authUserRoleService)
 
   @Test
   fun roles_userNotFound() {
@@ -54,7 +49,6 @@ class AuthUserRolesControllerTest {
   }
 
   @Test
-  @Throws(AuthUserRoleException::class, AuthUserGroupRelationshipException::class)
   fun addRole_success() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     val responseEntity = authUserRolesController.addRole("someuser", "role", principal)
@@ -63,7 +57,6 @@ class AuthUserRolesControllerTest {
   }
 
   @Test
-  @Throws(AuthUserRoleException::class, AuthUserGroupRelationshipException::class)
   fun addRole_conflict() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     doThrow(AuthUserGroupRelationshipException("someuser", "User not with your groups")).whenever(authUserRoleService).addRole(anyString(), anyString(), anyString(), any())
@@ -72,7 +65,6 @@ class AuthUserRolesControllerTest {
   }
 
   @Test
-  @Throws(AuthUserRoleException::class, AuthUserGroupRelationshipException::class)
   fun addRole_validation() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     doThrow(AuthUserRoleException("role", "error")).whenever(authUserRoleService).addRole(anyString(), anyString(), anyString(), any())
@@ -89,7 +81,6 @@ class AuthUserRolesControllerTest {
   }
 
   @Test
-  @Throws(AuthUserRoleException::class, AuthUserGroupRelationshipException::class)
   fun removeRole_success() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     val responseEntity = authUserRolesController.removeRole("someuser", "joe", principal)
@@ -98,7 +89,6 @@ class AuthUserRolesControllerTest {
   }
 
   @Test
-  @Throws(AuthUserRoleException::class, AuthUserGroupRelationshipException::class)
   fun removeRole_roleMissing() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     doThrow(AuthUserRoleException("role", "error")).whenever(authUserRoleService).removeRole(anyString(), anyString(), anyString(), any())

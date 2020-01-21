@@ -5,7 +5,6 @@ import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.MapEntry
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyString
@@ -39,12 +38,8 @@ class ChangePasswordControllerTest {
   private val telemetryClient: TelemetryClient = mock()
   private val request: HttpServletRequest = mock()
   private val response: HttpServletResponse = mock()
-  private lateinit var controller: ChangePasswordController
-  @Before
-  fun setUp() {
-    controller = ChangePasswordController(jwtAuthenticationSuccessHandler,
-        authenticationManager, changePasswordService, tokenService, userService, telemetryClient, setOf("password1"))
-  }
+  private val controller = ChangePasswordController(jwtAuthenticationSuccessHandler,
+      authenticationManager, changePasswordService, tokenService, userService, telemetryClient, setOf("password1"))
 
   @Test
   fun changePasswordRequest() {

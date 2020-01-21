@@ -4,7 +4,6 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
@@ -25,11 +24,7 @@ class UserServiceTest {
   private val deliusUserService: DeliusUserService = mock()
   private val staffIdentifierRepository: StaffIdentifierRepository = mock()
   private val userRepository: UserRepository = mock()
-  private lateinit var userService: UserService
-  @Before
-  fun setUp() {
-    userService = UserService(nomisUserService, authUserService, deliusUserService, staffIdentifierRepository, userRepository)
-  }
+  private val userService = UserService(nomisUserService, authUserService, deliusUserService, staffIdentifierRepository, userRepository)
 
   @Test
   fun `findMasterUserPersonDetails auth user`() {

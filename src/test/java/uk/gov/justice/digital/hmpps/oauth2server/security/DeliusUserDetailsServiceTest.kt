@@ -4,26 +4,18 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import java.util.*
 
-@RunWith(MockitoJUnitRunner::class)
 class DeliusUserDetailsServiceTest {
   private val deliusUserService: DeliusUserService = mock()
   private val userService: UserService = mock()
-  private lateinit var service: DeliusUserDetailsService
-  @Before
-  fun setup() {
-    service = DeliusUserDetailsService(deliusUserService, userService)
-  }
+  private val service = DeliusUserDetailsService(deliusUserService, userService)
 
   @Test
   fun `happy user path`() {

@@ -6,7 +6,6 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.MapEntry.entry
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -14,11 +13,8 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
-import java.io.IOException
 import java.util.*
-import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -28,15 +24,10 @@ class VerifyEmailControllerTest {
   private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler = mock()
   private val verifyEmailService: VerifyEmailService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private lateinit var verifyEmailController: VerifyEmailController
+  private val verifyEmailController = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, telemetryClient, true)
   private val principal = UsernamePasswordAuthenticationToken("user", "pass")
-  @Before
-  fun setUp() {
-    verifyEmailController = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, telemetryClient, true)
-  }
 
   @Test
-  @Throws(IOException::class, ServletException::class)
   fun verifyEmailRequest() {
     val emails = listOf("bob")
     whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(emails)
@@ -46,7 +37,6 @@ class VerifyEmailControllerTest {
   }
 
   @Test
-  @Throws(IOException::class, ServletException::class)
   fun verifyEmailRequest_existingUserEmail() {
     val user = User.of("bob")
     user.email = "email"
@@ -57,7 +47,6 @@ class VerifyEmailControllerTest {
   }
 
   @Test
-  @Throws(IOException::class, ServletException::class)
   fun verifyEmailRequest_existingUserEmailVerified() {
     val user = User.of("bob")
     user.isVerified = true
@@ -69,7 +58,6 @@ class VerifyEmailControllerTest {
   }
 
   @Test
-  @Throws(IOException::class, ServletException::class)
   fun verifyEmailContinue() {
     SecurityContextHolder.getContext().authentication = principal
     verifyEmailController.verifyEmailContinue(request, response)
@@ -77,7 +65,6 @@ class VerifyEmailControllerTest {
   }
 
   @Test
-  @Throws(IOException::class, ServletException::class)
   fun verifyEmail_noselection() {
     val candidates = listOf("joe", "bob")
     whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(candidates)
@@ -87,7 +74,6 @@ class VerifyEmailControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, IOException::class, ServletException::class, VerifyEmailException::class)
   fun verifyEmail_Exception() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(verifyEmailService.requestVerificationForNomisUser(anyString(), anyString(), anyString())).thenThrow(NotificationClientException("something went wrong"))
@@ -97,7 +83,6 @@ class VerifyEmailControllerTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, IOException::class, ServletException::class, VerifyEmailException::class)
   fun verifyEmail_Success() {
     whenever(verifyEmailService.requestVerificationForNomisUser(anyString(), anyString(), anyString())).thenReturn("link")
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))

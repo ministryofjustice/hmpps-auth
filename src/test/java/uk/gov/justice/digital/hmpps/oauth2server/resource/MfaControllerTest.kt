@@ -4,7 +4,6 @@ import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.mock.web.MockHttpServletRequest
@@ -31,12 +30,7 @@ class MfaControllerTest {
   private val mfaService: MfaService = mock()
   private val request: HttpServletRequest = MockHttpServletRequest()
   private val response: HttpServletResponse = MockHttpServletResponse()
-  private lateinit var controller: MfaController
-
-  @Before
-  fun setUp() {
-    controller = MfaController(jwtAuthenticationSuccessHandler, tokenService, userService, telemetryClient, mfaService, false)
-  }
+  private val controller = MfaController(jwtAuthenticationSuccessHandler, tokenService, userService, telemetryClient, mfaService, false)
 
   @Test
   fun `mfaChallengeRequest check view`() {

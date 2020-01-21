@@ -4,7 +4,6 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doThrow
@@ -24,11 +23,7 @@ class AuthUserGroupsControllerTest {
   private val principal: Principal = UsernamePasswordAuthenticationToken("bob", "pass")
   private val authUserService: AuthUserService = mock()
   private val authUserGroupService: AuthUserGroupService = mock()
-  private lateinit var authUserGroupsController: AuthUserGroupsController
-  @Before
-  fun setUp() {
-    authUserGroupsController = AuthUserGroupsController(authUserService, authUserGroupService)
-  }
+  private val authUserGroupsController = AuthUserGroupsController(authUserService, authUserGroupService)
 
   @Test
   fun groups_userNotFound() {
@@ -55,7 +50,6 @@ class AuthUserGroupsControllerTest {
   }
 
   @Test
-  @Throws(AuthUserGroupException::class)
   fun addGroup_success() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     val responseEntity = authUserGroupsController.addGroup("someuser", "group", principal)
@@ -64,7 +58,6 @@ class AuthUserGroupsControllerTest {
   }
 
   @Test
-  @Throws(AuthUserGroupException::class)
   fun addGroup_conflict() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     doThrow(AuthUserGroupExistsException()).whenever(authUserGroupService).addGroup(anyString(), anyString(), anyString())
@@ -73,7 +66,6 @@ class AuthUserGroupsControllerTest {
   }
 
   @Test
-  @Throws(AuthUserGroupException::class)
   fun addGroup_validation() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     doThrow(AuthUserGroupException("group", "error")).whenever(authUserGroupService).addGroup(anyString(), anyString(), anyString())
@@ -90,7 +82,6 @@ class AuthUserGroupsControllerTest {
   }
 
   @Test
-  @Throws(AuthUserGroupException::class)
   fun removeGroup_success() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     val responseEntity = authUserGroupsController.removeGroup("someuser", "joe", principal)
@@ -99,7 +90,6 @@ class AuthUserGroupsControllerTest {
   }
 
   @Test
-  @Throws(AuthUserGroupException::class)
   fun removeGroup_groupMissing() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     doThrow(AuthUserGroupException("group", "error")).whenever(authUserGroupService).removeGroup(anyString(), anyString(), anyString())
