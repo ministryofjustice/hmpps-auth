@@ -249,6 +249,12 @@ public class AuthUserService {
         if (!username.matches("^[A-Z0-9_]*$")) {
             throw new CreateUserException("username", "format");
         }
+        validate(firstName, lastName);
+
+        verifyEmailService.validateEmailAddress(email);
+    }
+
+    private void validate(final String firstName, final String lastName) throws CreateUserException {
         if (StringUtils.length(firstName) < MIN_LENGTH_FIRST_NAME) {
             throw new CreateUserException("firstName", "length");
         }
@@ -261,10 +267,9 @@ public class AuthUserService {
         if (StringUtils.length(lastName) > MAX_LENGTH_LAST_NAME) {
             throw new CreateUserException("lastName", "maxlength");
         }
-
-        verifyEmailService.validateEmailAddress(email);
     }
 
+    @Transactional(transactionManager = "authTransactionManager")
     public void lockUser(final UserPersonDetails userPersonDetails) {
         final var username = userPersonDetails.getUsername();
         final var userOptional = userRepository.findByUsername(username);
@@ -273,6 +278,7 @@ public class AuthUserService {
         userRepository.save(user);
     }
 
+    @Transactional(transactionManager = "authTransactionManager")
     public void unlockUser(final UserPersonDetails userPersonDetails) {
         final var username = userPersonDetails.getUsername();
         final var userOptional = userRepository.findByUsername(username);
@@ -283,6 +289,7 @@ public class AuthUserService {
         userRepository.save(user);
     }
 
+    @Transactional(transactionManager = "authTransactionManager")
     public void changePassword(final User user, final String password) {
         // check user not setting password to existing password
         if (passwordEncoder.matches(password, user.getPassword())) {
@@ -293,7 +300,17 @@ public class AuthUserService {
         user.setPasswordExpiry(LocalDateTime.now().plusDays(passwordAge));
     }
 
-    @Getter
+    @Transactional(transactionManager = "authTransactionManager")
+    public void amendUser(final String username, final String firstName, final String lastName) throws CreateUserException {
+        validate(firstName, lastName);
+
+        // will always be a user at this stage since we're retrieved it from the authentication
+        final var user = userRepository.findByUsernameAndSource(username, AuthSource.auth).orElseThrow();
+        user.getPerson().setFirstName(firstName);
+        user.getPerson().setLastName(lastName);
+        userRepository.save(user);
+    }
+
     public static class CreateUserException extends Exception {
         private final String errorCode;
         private final String field;
@@ -303,6 +320,14 @@ public class AuthUserService {
 
             this.field = field;
             this.errorCode = errorCode;
+        }
+
+        public String getErrorCode() {
+            return this.errorCode;
+        }
+
+        public String getField() {
+            return this.field;
         }
     }
 
