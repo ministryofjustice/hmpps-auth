@@ -24,4 +24,12 @@ public class Person {
     public String getName() {
         return String.format("%s %s", firstName, lastName);
     }
+
+    public String getFirstName() {
+        return this.firstName;
+    }
+
+    public String getLastName() {
+        return this.lastName;
+    }
 }

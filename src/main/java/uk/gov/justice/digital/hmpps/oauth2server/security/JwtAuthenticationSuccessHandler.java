@@ -36,8 +36,7 @@ public class JwtAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
     public void onAuthenticationSuccess(final HttpServletRequest request, final HttpServletResponse response,
                                         final Authentication authentication) throws IOException, ServletException {
 
-        final var jwt = jwtAuthenticationHelper.createJwt(authentication);
-        jwtCookieHelper.addCookieToResponse(request, response, jwt);
+        addAuthenticationToRequest(request, response, authentication);
 
         // we have successfully authenticated and added the cookie.  Now need to check that they have a validated email address
         if (verifyEmailService.isNotVerified(authentication.getName())) {
@@ -46,6 +45,11 @@ public class JwtAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
         }
 
         proceed(request, response, authentication);
+    }
+
+    public void addAuthenticationToRequest(final HttpServletRequest request, final HttpServletResponse response, final Authentication authentication) {
+        final var jwt = jwtAuthenticationHelper.createJwt(authentication);
+        jwtCookieHelper.addCookieToResponse(request, response, jwt);
     }
 
     public void proceed(final HttpServletRequest request, final HttpServletResponse response,

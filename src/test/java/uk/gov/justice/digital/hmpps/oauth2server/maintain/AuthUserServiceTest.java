@@ -687,6 +687,50 @@ public class AuthUserServiceTest {
         verify(passwordEncoder).matches("pass", "oldencryptedpassword");
     }
 
+    @Test
+    public void amendUser_firstNameLength() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "s", "last")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: length");
+    }
+
+    @Test
+    public void amendUser_firstNameMaxLength() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "ThisFirstNameIsMoreThanFiftyCharactersInLengthAndInvalid", "last")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: maxlength");
+    }
+
+    @Test
+    public void amendUser_lastNameLength() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "se", "x")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: length");
+    }
+
+    @Test
+    public void amendUser_lastNameMaxLength() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "se", "ThisLastNameIsMoreThanFiftyCharactersInLengthAndInvalid")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: maxlength");
+    }
+
+    @Test
+    public void amendUser_checkPerson() throws CreateUserException {
+        final var user = User.builder().username("me").person(new Person("old", "name")).build();
+        when(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user));
+
+        authUserService.amendUser("user", "first", "last");
+
+        assertThat(user.getPerson()).isEqualTo(new Person("first", "last"));
+    }
+
+    @Test
+    public void amendUser_checkRepositoryCall() throws CreateUserException {
+        final var user = User.builder().username("me").person(new Person("old", "name")).build();
+        when(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user));
+
+        authUserService.amendUser("user", "first", "last");
+
+        verify(userRepository).findByUsernameAndSource("user", AuthSource.auth);
+    }
+
     private UserPersonDetails getStaffUserAccountForBob() {
         final var staffUserAccount = new NomisUserPersonDetails();
         final var staff = new Staff();
