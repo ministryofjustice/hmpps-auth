@@ -31,6 +31,9 @@ open class UserDetailsController(private val authUserService: AuthUserService,
     }
   }
 
+  @GetMapping("cancel")
+  open fun cancel() = ModelAndView("redirect:/")
+
   @PostMapping
   open fun changeDetails(@RequestParam firstName: String?,
                          @RequestParam lastName: String?,
