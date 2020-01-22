@@ -82,6 +82,6 @@ class UserDetailsSpecification extends GebReportingSpec {
 
     then: 'The error page is displayed with messages'
     at UserDetailsErrorPage
-    errorText == "Your last name must be at 50 characters or less"
+    errorText == "Your last name must be 50 characters or less"
   }
 }
