@@ -46,7 +46,7 @@ open class AuthUserService(private val userRepository: UserRepository,
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(CreateUserException::class, NotificationClientException::class, VerifyEmailException::class)
-  open fun createUser(usernameInput: String?, emailInput: String?, firstName: String, lastName: String,
+  open fun createUser(usernameInput: String?, emailInput: String?, firstName: String?, lastName: String?,
                       groupCode: String?, url: String, creator: String, authorities: Collection<GrantedAuthority>): String {
     // ensure username always uppercase
     val username = StringUtils.upperCase(usernameInput)
@@ -241,7 +241,7 @@ open class AuthUserService(private val userRepository: UserRepository,
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(CreateUserException::class)
-  open fun amendUser(username: String, firstName: String, lastName: String) {
+  open fun amendUser(username: String, firstName: String?, lastName: String?) {
     validate(firstName, lastName)
     // will always be a user at this stage since we're retrieved it from the authentication
     val user = userRepository.findByUsernameAndSource(username, AuthSource.auth).orElseThrow()

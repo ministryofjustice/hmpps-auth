@@ -48,7 +48,7 @@ open class UserDetailsController(private val authUserService: AuthUserService,
 
     return try {
       val username = getUserName(authentication)
-      authUserService.amendUser(username, firstName!!, lastName!!)
+      authUserService.amendUser(username, firstName, lastName)
       telemetryClient.trackEvent("UpdateName", mapOf("username" to username), null)
 
       // have to amend the token in the session as it will contain different user details
