@@ -1,346 +1,267 @@
-package uk.gov.justice.digital.hmpps.oauth2server.maintain;
+package uk.gov.justice.digital.hmpps.oauth2server.maintain
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
-import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
-import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException;
-import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
-import uk.gov.service.notify.NotificationClientApi;
-import uk.gov.service.notify.NotificationClientException;
-
-import javax.persistence.EntityNotFoundException;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.microsoft.applicationinsights.TelemetryClient
+import lombok.extern.slf4j.Slf4j
+import org.apache.commons.lang3.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
+import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.service.notify.NotificationClientApi
+import uk.gov.service.notify.NotificationClientException
+import java.time.LocalDateTime
+import java.util.*
+import javax.persistence.EntityNotFoundException
 
 @Service
 @Slf4j
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
-public class AuthUserService {
-    private final UserRepository userRepository;
-    private final NotificationClientApi notificationClient;
-    private final TelemetryClient telemetryClient;
-    private final VerifyEmailService verifyEmailService;
-    private final AuthUserGroupService authUserGroupService;
-    private final MaintainUserCheck maintainUserCheck;
-    private final PasswordEncoder passwordEncoder;
-    private final OauthServiceRepository oauthServiceRepository;
-    private final String initialPasswordTemplateId;
-    private final int loginDaysTrigger;
-    private final long passwordAge;
+open class AuthUserService(private val userRepository: UserRepository,
+                           private val notificationClient: NotificationClientApi,
+                           private val telemetryClient: TelemetryClient,
+                           private val verifyEmailService: VerifyEmailService,
+                           private val authUserGroupService: AuthUserGroupService,
+                           private val maintainUserCheck: MaintainUserCheck,
+                           private val passwordEncoder: PasswordEncoder,
+                           private val oauthServiceRepository: OauthServiceRepository,
+                           @Value("\${application.notify.create-initial-password.template}") private val initialPasswordTemplateId: String,
+                           @Value("\${application.authentication.disable.login-days}") private val loginDaysTrigger: Int,
+                           @Value("\${application.authentication.password-age}") private val passwordAge: Long) {
 
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(CreateUserException::class, NotificationClientException::class, VerifyEmailException::class)
+  open fun createUser(usernameInput: String?, emailInput: String?, firstName: String, lastName: String,
+                      groupCode: String?, url: String, creator: String, authorities: Collection<GrantedAuthority>): String {
+    // ensure username always uppercase
+    val username = StringUtils.upperCase(usernameInput)
+    // and use email helper to format input email
+    val email = EmailHelper.format(emailInput)
+    // validate
+    validate(username, email, firstName, lastName)
+    // get the initial group to assign to - only allowed to be empty if super user
+    val group = getInitialGroup(groupCode, creator, authorities)
+    // create the user
+    val person = Person(firstName, lastName)
+    // obtain list of authorities that should be assigned for group
+    val roles = group?.assignableRoles?.filter { it.isAutomatic }?.map { it.role }?.toSet() ?: emptySet()
+    val groups: Set<Group> = group?.let { setOf(it) } ?: emptySet()
+    val user = User.builder()
+        .username(username)
+        .email(email)
+        .enabled(true)
+        .source(AuthSource.auth)
+        .person(person)
+        .authorities(roles)
+        .groups(groups).build()
+    return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate", groups)
+  }
+
+  private fun getInitialEmailSupportLink(groups: Collection<Group>): String {
+    val serviceCode = groups.firstOrNull { it.groupCode.startsWith("PECS") }?.let { "BOOK_MOVE" } ?: "NOMIS"
+    return oauthServiceRepository.findById(serviceCode).map { it.email }.orElseThrow()
+  }
+
+  open fun findAuthUsers(name: String?, roleCode: String?, groupCode: String?, pageable: Pageable): Page<User> {
+    val userFilter = UserFilter.builder().name(name).roleCode(roleCode).groupCode(groupCode).build()
+    return userRepository.findAll(userFilter, pageable)
+  }
+
+  @Throws(CreateUserException::class)
+  private fun getInitialGroup(groupCode: String?, creator: String, authorities: Collection<GrantedAuthority>): Group? {
+    if (groupCode.isNullOrEmpty()) {
+      return if (authorities.any { it.authority == "ROLE_MAINTAIN_OAUTH_USERS" }) {
+        null
+      } else throw CreateUserException("groupCode", "missing")
+    }
+    val authUserGroups = authUserGroupService.getAssignableGroups(creator, authorities)
+    return authUserGroups.firstOrNull { it.groupCode == groupCode }
+        ?: throw CreateUserException("groupCode", "notfound")
+  }
+
+  @Throws(NotificationClientException::class)
+  private fun saveAndSendInitialEmail(url: String, user: User, creator: String, eventPrefix: String, groups: Collection<Group>): String { // then the reset token
+    val userToken = user.createToken(UserToken.TokenType.RESET)
+    // give users more time to do the reset
+    userToken.tokenExpiry = LocalDateTime.now().plusDays(7)
+    userRepository.save(user)
+    // support link
+    val supportLink = getInitialEmailSupportLink(groups)
+    val setPasswordLink = url + userToken.token
+    val username = user.username
+    val email = user.email
+    val parameters = mapOf("firstName" to user.firstName, "resetLink" to setPasswordLink, "supportLink" to supportLink)
+    // send the email
+    try {
+      log.info("Sending initial set password to notify for user {}", username)
+      notificationClient.sendEmail(initialPasswordTemplateId, email, parameters, null)
+      telemetryClient.trackEvent("${eventPrefix}Success", mapOf("username" to username, "admin" to creator), null)
+    } catch (e: NotificationClientException) {
+      val reason = (e.cause?.let { e.cause } ?: e).javaClass.simpleName
+      log.warn("Failed to send create user notify for user {}", username, e)
+      telemetryClient.trackEvent("${eventPrefix}Failure", mapOf("username" to username, "reason" to reason, "admin" to creator), null)
+      if (e.httpResult >= 500) { // second time lucky
+        notificationClient.sendEmail(initialPasswordTemplateId, email, parameters, null, null)
+        telemetryClient.trackEvent("${eventPrefix}Success", mapOf("username" to username, "admin" to creator), null)
+      }
+      throw e
+    }
+    // return the reset link to the controller
+    return setPasswordLink
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(VerifyEmailException::class, NotificationClientException::class, AuthUserGroupRelationshipException::class)
+  open fun amendUserEmail(usernameInput: String?, emailAddressInput: String?, url: String, admin: String, authorities: Collection<GrantedAuthority?>?): String {
+    val username = StringUtils.upperCase(usernameInput)
+    val user = userRepository.findByUsernameAndMasterIsTrue(username)
+        .orElseThrow { EntityNotFoundException("User not found with username $username") }
+    maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
+    if (user.isVerified) {
+      user.isVerified = false
+      userRepository.save(user)
+      return verifyEmailService.requestVerification(
+          usernameInput,
+          emailAddressInput,
+          user.firstName,
+          url.replace("initial-password", "verify-email-confirm"))
+    }
+    val email = EmailHelper.format(emailAddressInput)
+    verifyEmailService.validateEmailAddress(email)
+    user.email = email
+    return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.groups)
+  }
+
+  open fun findAuthUsersByEmail(email: String?): List<User> =
+      userRepository.findByEmailAndMasterIsTrueOrderByUsername(EmailHelper.format(email))
+
+  open fun getAuthUserByUsername(username: String?): Optional<User> =
+      userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)))
+
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(AuthUserGroupRelationshipException::class)
+  open fun enableUser(usernameInDb: String, admin: String, authorities: Collection<GrantedAuthority>) =
+      changeUserEnabled(usernameInDb, true, admin, authorities)
+
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(AuthUserGroupRelationshipException::class)
+  open fun disableUser(usernameInDb: String, admin: String, authorities: Collection<GrantedAuthority>) =
+      changeUserEnabled(usernameInDb, false, admin, authorities)
+
+  @Throws(AuthUserGroupRelationshipException::class)
+  private fun changeUserEnabled(username: String, enabled: Boolean, admin: String, authorities: Collection<GrantedAuthority>) {
+    val user = userRepository.findByUsernameAndMasterIsTrue(username)
+        .orElseThrow { EntityNotFoundException("User not found with username $username") }
+    maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
+    user.isEnabled = enabled
+    // give user 7 days grace if last logged in more than x days ago
+    if (user.lastLoggedIn.isBefore(LocalDateTime.now().minusDays(loginDaysTrigger.toLong()))) {
+      user.lastLoggedIn = LocalDateTime.now().minusDays(loginDaysTrigger - 7.toLong())
+    }
+    userRepository.save(user)
+    telemetryClient.trackEvent("AuthUserChangeEnabled",
+        mapOf("username" to user.username, "enabled" to enabled.toString(), "admin" to admin), null)
+  }
+
+  @Throws(CreateUserException::class, VerifyEmailException::class)
+  private fun validate(username: String?, email: String?, firstName: String?, lastName: String?) {
+    if (username.isNullOrBlank() || StringUtils.length(username) < MIN_LENGTH_USERNAME) {
+      throw CreateUserException("username", "length")
+    }
+    if (StringUtils.length(username) > MAX_LENGTH_USERNAME) {
+      throw CreateUserException("username", "maxlength")
+    }
+    if (!username.matches("^[A-Z0-9_]*\$".toRegex())) {
+      throw CreateUserException("username", "format")
+    }
+    validate(firstName, lastName)
+    verifyEmailService.validateEmailAddress(email)
+  }
+
+  @Throws(CreateUserException::class)
+  private fun validate(firstName: String?, lastName: String?) {
+    if (StringUtils.length(firstName) < MIN_LENGTH_FIRST_NAME) {
+      throw CreateUserException("firstName", "length")
+    }
+    if (StringUtils.length(firstName) > MAX_LENGTH_FIRST_NAME) {
+      throw CreateUserException("firstName", "maxlength")
+    }
+    if (StringUtils.length(lastName) < MIN_LENGTH_LAST_NAME) {
+      throw CreateUserException("lastName", "length")
+    }
+    if (StringUtils.length(lastName) > MAX_LENGTH_LAST_NAME) {
+      throw CreateUserException("lastName", "maxlength")
+    }
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  open fun lockUser(userPersonDetails: UserPersonDetails) {
+    val username = userPersonDetails.username
+    val userOptional = userRepository.findByUsername(username)
+    val user = userOptional.orElseGet { userPersonDetails.toUser() }
+    user.isLocked = true
+    userRepository.save(user)
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  open fun unlockUser(userPersonDetails: UserPersonDetails) {
+    val username = userPersonDetails.username
+    val userOptional = userRepository.findByUsername(username)
+    val user = userOptional.orElseGet { userPersonDetails.toUser() }
+    user.isLocked = false
+    // TODO: This isn't quite right - shouldn't always verify a user when unlocking...
+    user.isVerified = true
+    userRepository.save(user)
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  open fun changePassword(user: User, password: String) {
+    // check user not setting password to existing password
+    if (passwordEncoder.matches(password, user.password)) {
+      throw ReusedPasswordException()
+    }
+    user.password = passwordEncoder.encode(password)
+    user.passwordExpiry = LocalDateTime.now().plusDays(passwordAge)
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(CreateUserException::class)
+  open fun amendUser(username: String, firstName: String, lastName: String) {
+    validate(firstName, lastName)
+    // will always be a user at this stage since we're retrieved it from the authentication
+    val user = userRepository.findByUsernameAndSource(username, AuthSource.auth).orElseThrow()
+    user.person.firstName = firstName
+    user.person.lastName = lastName
+    userRepository.save(user)
+  }
+
+  class CreateUserException(val field: String, val errorCode: String) :
+      Exception("Create user failed for field $field with reason: $errorCode")
+
+  companion object {
+    private val log: Logger = LoggerFactory.getLogger(this::class.java)
     // Data item field size validation checks
-    private static final int MAX_LENGTH_USERNAME = 30;
-    private static final int MAX_LENGTH_FIRST_NAME = 50;
-    private static final int MAX_LENGTH_LAST_NAME = 50;
-    private static final int MIN_LENGTH_USERNAME = 6;
-    private static final int MIN_LENGTH_FIRST_NAME = 2;
-    private static final int MIN_LENGTH_LAST_NAME = 2;
+    private const val MAX_LENGTH_USERNAME = 30
+    private const val MAX_LENGTH_FIRST_NAME = 50
+    private const val MAX_LENGTH_LAST_NAME = 50
+    private const val MIN_LENGTH_USERNAME = 6
+    private const val MIN_LENGTH_FIRST_NAME = 2
+    private const val MIN_LENGTH_LAST_NAME = 2
+  }
 
-    public AuthUserService(final UserRepository userRepository,
-                           final NotificationClientApi notificationClient,
-                           final TelemetryClient telemetryClient,
-                           final VerifyEmailService verifyEmailService,
-                           final AuthUserGroupService authUserGroupService,
-                           final MaintainUserCheck maintainUserCheck,
-                           final PasswordEncoder passwordEncoder,
-                           final OauthServiceRepository oauthServiceRepository,
-                           @Value("${application.notify.create-initial-password.template}") final String initialPasswordTemplateId,
-                           @Value("${application.authentication.disable.login-days}") final int loginDaysTrigger,
-                           @Value("${application.authentication.password-age}") final long passwordAge) {
-        this.userRepository = userRepository;
-        this.notificationClient = notificationClient;
-        this.telemetryClient = telemetryClient;
-        this.verifyEmailService = verifyEmailService;
-        this.authUserGroupService = authUserGroupService;
-        this.maintainUserCheck = maintainUserCheck;
-        this.passwordEncoder = passwordEncoder;
-        this.oauthServiceRepository = oauthServiceRepository;
-        this.initialPasswordTemplateId = initialPasswordTemplateId;
-        this.loginDaysTrigger = loginDaysTrigger;
-        this.passwordAge = passwordAge;
-    }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public String createUser(final String usernameInput, final String emailInput, final String firstName, final String lastName,
-                             final String groupCode, final String url, final String creator, final Collection<? extends GrantedAuthority> authorities)
-            throws CreateUserException, NotificationClientException, VerifyEmailException {
-        // ensure username always uppercase
-        final var username = StringUtils.upperCase(usernameInput);
-        // and use email helper to format input email
-        final var email = EmailHelper.format(emailInput);
-
-        // validate
-        validate(username, email, firstName, lastName);
-
-        // get the initial group to assign to - only allowed to be empty if super user
-        final var group = getInitialGroup(groupCode, creator, authorities);
-
-        // create the user
-        final var person = new Person(firstName, lastName);
-
-        // obtain list of authorities that should be assigned for group
-        final var roles = group.map(Group::getAssignableRoles)
-                .map(gar -> gar.stream()
-                        .filter(GroupAssignableRole::isAutomatic)
-                        .map(GroupAssignableRole::getRole)
-                        .collect(Collectors.toSet()))
-                .orElse(Set.of());
-
-        final var groups = group.map(Set::of).orElse(Set.of());
-
-        final var user = User.builder()
-                .username(username)
-                .email(email)
-                .enabled(true)
-                .source(AuthSource.auth)
-                .person(person)
-                .authorities(roles)
-                .groups(groups).build();
-
-        return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate", groups);
-    }
-
-    private String getInitialEmailSupportLink(final Collection<Group> groups) {
-        final var serviceCode = groups.stream().map(Group::getGroupCode).filter(g -> g.startsWith("PECS")).map(g -> "BOOK_MOVE").findFirst().orElse("NOMIS");
-
-        return oauthServiceRepository.findById(serviceCode).map(uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service::getEmail).orElseThrow();
-    }
-
-    public Page<User> findAuthUsers(final String name, final String roleCode, final String groupCode, final Pageable pageable) {
-        final var userFilter = UserFilter.builder().name(name).roleCode(roleCode).groupCode(groupCode).build();
-        return userRepository.findAll(userFilter, pageable);
-    }
-
-    private Optional<Group> getInitialGroup(final String groupCode, final String creator, final Collection<? extends GrantedAuthority> authorities) throws CreateUserException {
-        if (StringUtils.isEmpty(groupCode)) {
-            if (authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_MAINTAIN_OAUTH_USERS"::equals)) {
-                return Optional.empty();
-            } else throw new CreateUserException("groupCode", "missing");
-        }
-        final var authUserGroups = authUserGroupService.getAssignableGroups(creator, authorities);
-        return Optional.of(authUserGroups.stream().filter(g -> g.getGroupCode().equals(groupCode)).findFirst().orElseThrow(() -> new CreateUserException("groupCode", "notfound")));
-    }
-
-    private String saveAndSendInitialEmail(final String url, final User user, final String creator, final String eventPrefix, final Collection<Group> groups) throws NotificationClientException {
-        // then the reset token
-        final var userToken = user.createToken(TokenType.RESET);
-        // give users more time to do the reset
-        userToken.setTokenExpiry(LocalDateTime.now().plusDays(7));
-        userRepository.save(user);
-        // support link
-        final var supportLink = getInitialEmailSupportLink(groups);
-
-        final var setPasswordLink = url + userToken.getToken();
-        final var username = user.getUsername();
-        final var email = user.getEmail();
-        final var parameters = Map.of("firstName", user.getFirstName(), "resetLink", setPasswordLink, "supportLink", supportLink);
-
-        // send the email
-        try {
-            log.info("Sending initial set password to notify for user {}", username);
-            notificationClient.sendEmail(initialPasswordTemplateId, email, parameters, null);
-            telemetryClient.trackEvent(String.format("%sSuccess", eventPrefix), Map.of("username", username, "admin", creator), null);
-        } catch (final NotificationClientException e) {
-            final var reason = (e.getCause() != null ? e.getCause() : e).getClass().getSimpleName();
-            log.warn("Failed to send create user notify for user {}", username, e);
-            telemetryClient.trackEvent(String.format("%sFailure", eventPrefix), Map.of("username", username, "reason", reason, "admin", creator), null);
-            if (e.getHttpResult() >= 500) {
-                // second time lucky
-                notificationClient.sendEmail(initialPasswordTemplateId, email, parameters, null, null);
-                telemetryClient.trackEvent(String.format("%sSuccess", eventPrefix), Map.of("username", username, "admin", creator), null);
-            }
-            throw e;
-        }
-
-        // return the reset link to the controller
-        return setPasswordLink;
-    }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public String amendUserEmail(final String usernameInput, final String emailAddressInput, final String url, final String admin, final Collection<? extends GrantedAuthority> authorities)
-            throws AmendUserException, VerifyEmailException, NotificationClientException, AuthUserGroupRelationshipException {
-        final var username = StringUtils.upperCase(usernameInput);
-
-        final var user = userRepository.findByUsernameAndMasterIsTrue(username)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
-
-        maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user);
-
-        if (user.isVerified()) {
-            user.setVerified(false);
-            userRepository.save(user);
-            return verifyEmailService.requestVerification(
-                    usernameInput,
-                    emailAddressInput,
-                    user.getFirstName(),
-                    url.replace("initial-password", "verify-email-confirm"));
-        }
-
-        final var email = EmailHelper.format(emailAddressInput);
-        verifyEmailService.validateEmailAddress(email);
-        user.setEmail(email);
-
-        return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.getGroups());
-    }
-
-    public List<User> findAuthUsersByEmail(final String email) {
-        return userRepository.findByEmailAndMasterIsTrueOrderByUsername(EmailHelper.format(email));
-    }
-
-    public Optional<User> getAuthUserByUsername(final String username) {
-        return userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)));
-    }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public void enableUser(final String usernameInDb, final String admin, final Collection<? extends GrantedAuthority> authorities) throws AuthUserGroupRelationshipException {
-        changeUserEnabled(usernameInDb, true, admin, authorities);
-    }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public void disableUser(final String usernameInDb, final String admin, final Collection<? extends GrantedAuthority> authorities) throws AuthUserGroupRelationshipException {
-        changeUserEnabled(usernameInDb, false, admin, authorities);
-    }
-
-    private void changeUserEnabled(final String username, final boolean enabled, final String admin, final Collection<? extends GrantedAuthority> authorities) throws AuthUserGroupRelationshipException {
-        final var user = userRepository.findByUsernameAndMasterIsTrue(username)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)));
-
-        maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user);
-
-        user.setEnabled(enabled);
-
-        // give user 7 days grace if last logged in more than x days ago
-        if (user.getLastLoggedIn().isBefore(LocalDateTime.now().minusDays(loginDaysTrigger))) {
-            user.setLastLoggedIn(LocalDateTime.now().minusDays(loginDaysTrigger - 7));
-        }
-        userRepository.save(user);
-        telemetryClient.trackEvent("AuthUserChangeEnabled",
-                Map.of("username", user.getUsername(), "enabled", Boolean.toString(enabled), "admin", admin), null);
-    }
-
-    private void validate(final String username, final String email, final String firstName, final String lastName)
-            throws CreateUserException, VerifyEmailException {
-
-        if (StringUtils.length(username) < MIN_LENGTH_USERNAME) {
-            throw new CreateUserException("username", "length");
-        }
-        if (StringUtils.length(username) > MAX_LENGTH_USERNAME) {
-            throw new CreateUserException("username", "maxlength");
-        }
-        if (!username.matches("^[A-Z0-9_]*$")) {
-            throw new CreateUserException("username", "format");
-        }
-        validate(firstName, lastName);
-
-        verifyEmailService.validateEmailAddress(email);
-    }
-
-    private void validate(final String firstName, final String lastName) throws CreateUserException {
-        if (StringUtils.length(firstName) < MIN_LENGTH_FIRST_NAME) {
-            throw new CreateUserException("firstName", "length");
-        }
-        if (StringUtils.length(firstName) > MAX_LENGTH_FIRST_NAME) {
-            throw new CreateUserException("firstName", "maxlength");
-        }
-        if (StringUtils.length(lastName) < MIN_LENGTH_LAST_NAME) {
-            throw new CreateUserException("lastName", "length");
-        }
-        if (StringUtils.length(lastName) > MAX_LENGTH_LAST_NAME) {
-            throw new CreateUserException("lastName", "maxlength");
-        }
-    }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public void lockUser(final UserPersonDetails userPersonDetails) {
-        final var username = userPersonDetails.getUsername();
-        final var userOptional = userRepository.findByUsername(username);
-        final var user = userOptional.orElseGet(userPersonDetails::toUser);
-        user.setLocked(true);
-        userRepository.save(user);
-    }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public void unlockUser(final UserPersonDetails userPersonDetails) {
-        final var username = userPersonDetails.getUsername();
-        final var userOptional = userRepository.findByUsername(username);
-        final var user = userOptional.orElseGet(userPersonDetails::toUser);
-        user.setLocked(false);
-        // TODO: This isn't quite right - shouldn't always verify a user when unlocking...
-        user.setVerified(true);
-        userRepository.save(user);
-    }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public void changePassword(final User user, final String password) {
-        // check user not setting password to existing password
-        if (passwordEncoder.matches(password, user.getPassword())) {
-            throw new ReusedPasswordException();
-        }
-
-        user.setPassword(passwordEncoder.encode(password));
-        user.setPasswordExpiry(LocalDateTime.now().plusDays(passwordAge));
-    }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public void amendUser(final String username, final String firstName, final String lastName) throws CreateUserException {
-        validate(firstName, lastName);
-
-        // will always be a user at this stage since we're retrieved it from the authentication
-        final var user = userRepository.findByUsernameAndSource(username, AuthSource.auth).orElseThrow();
-        user.getPerson().setFirstName(firstName);
-        user.getPerson().setLastName(lastName);
-        userRepository.save(user);
-    }
-
-    public static class CreateUserException extends Exception {
-        private final String errorCode;
-        private final String field;
-
-        public CreateUserException(final String field, final String errorCode) {
-            super(String.format("Create user failed for field %s with reason: %s", field, errorCode));
-
-            this.field = field;
-            this.errorCode = errorCode;
-        }
-
-        public String getErrorCode() {
-            return this.errorCode;
-        }
-
-        public String getField() {
-            return this.field;
-        }
-    }
-
-    @Getter
-    public static class AmendUserException extends Exception {
-        private final String errorCode;
-        private final String field;
-
-        public AmendUserException(final String field, final String errorCode) {
-            super(String.format("Amend user failed for field %s with reason: %s", field, errorCode));
-
-            this.field = field;
-            this.errorCode = errorCode;
-        }
-    }
 }

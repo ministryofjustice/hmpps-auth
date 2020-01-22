@@ -30,6 +30,18 @@ public class GroupAssignableRole implements Serializable {
 
     private boolean automatic;
 
+    public Authority getRole() {
+        return this.role;
+    }
+
+    public Group getGroup() {
+        return this.group;
+    }
+
+    public boolean isAutomatic() {
+        return this.automatic;
+    }
+
     public static class GroupAssignableRoleId implements Serializable {
         private UUID group;
         private UUID role;

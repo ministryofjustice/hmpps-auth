@@ -19,7 +19,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService;
-import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup;
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail;
@@ -246,10 +245,6 @@ public class AuthUserController {
             return ResponseEntity.noContent().build();
         } catch (final EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
-        } catch (final AmendUserException e) {
-            log.info("Amend user failed for user {} for field {} with reason {}", username, e.getField(), e.getErrorCode());
-            return ResponseEntity.badRequest().body(new ErrorDetail(String.format("%s.%s", e.getField(), e.getErrorCode()),
-                    String.format("%s failed validation", e.getField()), e.getField()));
         } catch (final VerifyEmailException e) {
             log.info("Amend user failed for user {} for field email with reason {}", username, e.getReason());
             return ResponseEntity.badRequest().body(new ErrorDetail(String.format("email.%s", e.getReason()), "Email address failed validation", "email"));

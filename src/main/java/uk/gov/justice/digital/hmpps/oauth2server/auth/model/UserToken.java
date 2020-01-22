@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.security.NoSuchAlgorithmException;
@@ -10,7 +13,6 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "USER_TOKEN")
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"tokenType"})
@@ -69,6 +71,22 @@ public class UserToken {
 
     public User getUser() {
         return this.user;
+    }
+
+    public void setToken(final String token) {
+        this.token = token;
+    }
+
+    public void setTokenType(final TokenType tokenType) {
+        this.tokenType = tokenType;
+    }
+
+    public void setTokenExpiry(final LocalDateTime tokenExpiry) {
+        this.tokenExpiry = tokenExpiry;
+    }
+
+    public void setUser(final User user) {
+        this.user = user;
     }
 
     @AllArgsConstructor
