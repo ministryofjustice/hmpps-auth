@@ -38,4 +38,20 @@ public class Group implements Serializable {
         this.groupCode = groupCode;
         this.groupName = groupName;
     }
+
+    public UUID getId() {
+        return this.id;
+    }
+
+    public String getGroupCode() {
+        return this.groupCode;
+    }
+
+    public String getGroupName() {
+        return this.groupName;
+    }
+
+    public Set<GroupAssignableRole> getAssignableRoles() {
+        return this.assignableRoles;
+    }
 }
