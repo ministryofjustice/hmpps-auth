@@ -32,4 +32,12 @@ public class Person {
     public String getLastName() {
         return this.lastName;
     }
+
+    public void setFirstName(final String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(final String lastName) {
+        this.lastName = lastName;
+    }
 }

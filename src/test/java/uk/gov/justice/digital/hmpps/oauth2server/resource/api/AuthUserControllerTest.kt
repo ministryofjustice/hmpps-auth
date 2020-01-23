@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
-import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
@@ -200,15 +199,6 @@ class AuthUserControllerTest {
     whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(EntityNotFoundException("not found"))
     val responseEntity = authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(404)
-  }
-
-  @Test
-  fun amendUser_amendException() {
-    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
-    whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(AmendUserException("fiel", "cod"))
-    val responseEntity = authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
-    assertThat(responseEntity.statusCodeValue).isEqualTo(400)
-    assertThat(responseEntity.body).isEqualTo(ErrorDetail("fiel.cod", "fiel failed validation", "fiel"))
   }
 
   @Test
