@@ -40,12 +40,6 @@ open class UserDetailsController(private val authUserService: AuthUserService,
                          authentication: Authentication,
                          request: HttpServletRequest, response: HttpServletResponse): ModelAndView {
 
-    val modelAndView = ModelAndView("userDetails").validateBlankInputs(firstName, lastName)
-    if (modelAndView.modelMap.isNotEmpty()) {
-      return modelAndView.addObject("error", true)
-          .addFirstAndLastName(firstName, lastName)
-    }
-
     return try {
       val username = getUserName(authentication)
       authUserService.amendUser(username, firstName, lastName)
@@ -58,23 +52,14 @@ open class UserDetailsController(private val authUserService: AuthUserService,
 
       return ModelAndView("redirect:/")
     } catch (e: CreateUserException) {
-      modelAndView.addObject("error_${e.field}", e.errorCode)
+      ModelAndView("userDetails")
+          .addObject("error_${e.field}", e.errorCode)
           .addObject("error", true)
           .addFirstAndLastName(firstName, lastName)
     }
   }
 
   private fun getUserName(authentication: Authentication) = (authentication.principal as UserDetailsImpl).username
-
-  private fun ModelAndView.validateBlankInputs(firstName: String?, lastName: String?): ModelAndView {
-    if (firstName.isNullOrBlank()) {
-      addObject("error_firstName", "required")
-    }
-    if (lastName.isNullOrBlank()) {
-      addObject("error_lastName", "required")
-    }
-    return this
-  }
 
   private fun ModelAndView.addFirstAndLastName(firstName: String?, lastName: String?): ModelAndView =
       addObject("firstName", firstName).addObject("lastName", lastName)
