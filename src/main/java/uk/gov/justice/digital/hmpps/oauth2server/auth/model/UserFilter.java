@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
 import com.google.common.collect.ImmutableList;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
@@ -11,7 +10,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 
 import javax.persistence.criteria.*;
 
-@Builder
 @EqualsAndHashCode
 public class UserFilter implements Specification<User> {
     private final String name;
@@ -22,6 +20,10 @@ public class UserFilter implements Specification<User> {
         this.name = StringUtils.trimToNull(name);
         this.roleCode = StringUtils.trimToNull(roleCode);
         this.groupCode = StringUtils.trimToNull(groupCode);
+    }
+
+    public static UserFilterBuilder builder() {
+        return new UserFilterBuilder();
     }
 
     @Override
@@ -50,5 +52,37 @@ public class UserFilter implements Specification<User> {
         orBuilder.add(cb.like(cb.lower(cb.concat(cb.concat(personJoin.get("firstName"), " "), personJoin.get("lastName"))), pattern.toLowerCase()));
         orBuilder.add(cb.like(cb.lower(cb.concat(cb.concat(personJoin.get("lastName"), " "), personJoin.get("firstName"))), pattern.toLowerCase()));
         return cb.or(orBuilder.build().toArray(new Predicate[0]));
+    }
+
+    public static class UserFilterBuilder {
+        private String name;
+        private String roleCode;
+        private String groupCode;
+
+        UserFilterBuilder() {
+        }
+
+        public UserFilterBuilder name(final String name) {
+            this.name = name;
+            return this;
+        }
+
+        public UserFilterBuilder roleCode(final String roleCode) {
+            this.roleCode = roleCode;
+            return this;
+        }
+
+        public UserFilterBuilder groupCode(final String groupCode) {
+            this.groupCode = groupCode;
+            return this;
+        }
+
+        public UserFilter build() {
+            return new UserFilter(name, roleCode, groupCode);
+        }
+
+        public String toString() {
+            return "UserFilter.UserFilterBuilder(name=" + this.name + ", roleCode=" + this.roleCode + ", groupCode=" + this.groupCode + ")";
+        }
     }
 }

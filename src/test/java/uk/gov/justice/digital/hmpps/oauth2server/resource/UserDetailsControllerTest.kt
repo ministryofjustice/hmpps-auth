@@ -39,35 +39,6 @@ class UserDetailsControllerTest {
   }
 
   @Test
-  fun `changeDetails no first name or last name`() {
-    val modelAndView = controller.changeDetails(null, null, token, request, response)
-    assertThat(modelAndView.modelMap).containsExactlyInAnyOrderEntriesOf(
-        mapOf("error_firstName" to "required", "error_lastName" to "required", "error" to true, "firstName" to null, "lastName" to null))
-    assertThat(modelAndView.viewName).isEqualTo("userDetails")
-  }
-
-  @Test
-  fun `changeDetails blank first name and last name`() {
-    val modelAndView = controller.changeDetails("  ", "   ", token, request, response)
-    assertThat(modelAndView.modelMap).containsExactlyInAnyOrderEntriesOf(
-        mapOf("error_firstName" to "required", "error_lastName" to "required", "error" to true, "firstName" to "  ", "lastName" to "   "))
-  }
-
-  @Test
-  fun `changeDetails blank first name`() {
-    val modelAndView = controller.changeDetails("  ", "bloggs", token, request, response)
-    assertThat(modelAndView.modelMap).containsExactlyInAnyOrderEntriesOf(
-        mapOf("error_firstName" to "required", "error" to true, "firstName" to "  ", "lastName" to "bloggs"))
-  }
-
-  @Test
-  fun `changeDetails blank last name`() {
-    val modelAndView = controller.changeDetails("joe", "   ", token, request, response)
-    assertThat(modelAndView.modelMap).containsExactlyInAnyOrderEntriesOf(
-        mapOf("error_lastName" to "required", "error" to true, "firstName" to "joe", "lastName" to "   "))
-  }
-
-  @Test
   fun `changeDetails exception`() {
     whenever(authUserService.amendUser(anyString(), anyString(), anyString())).thenThrow(CreateUserException("lastName", "someerror"))
     val modelAndView = controller.changeDetails("joe", "bloggs", token, request, response)

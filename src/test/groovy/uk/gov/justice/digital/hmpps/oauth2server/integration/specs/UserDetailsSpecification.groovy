@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
 import geb.spock.GebReportingSpec
-import org.apache.commons.lang3.RandomStringUtils
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.UserDetailsErrorPage
@@ -26,12 +25,19 @@ class UserDetailsSpecification extends GebReportingSpec {
     "${firstNameInput} ${lastNameInput}" == currentName
 
     when: 'I change my name'
-    def randomLastName = RandomStringUtils.random(6, true, true)
-    userDetails("Joe", randomLastName)
+    userDetails("   Joe  ", "  New Name  ")
 
     then: 'The Home page is displayed with my new name'
     at HomePage
-    principalName == "Joe $randomLastName"
+    principalName == "Joe New Name"
+
+    when: 'I then check my details are updated'
+    to UserDetailsPage
+
+    then: 'The user details page is displayed with new name'
+    at UserDetailsPage
+    firstNameInput == 'Joe'
+    lastNameInput == 'New Name'
   }
 
   def "A user can cancel changing their user details"() {
@@ -77,11 +83,17 @@ class UserDetailsSpecification extends GebReportingSpec {
     lastNameInput == "     "
 
     when: 'I change my name'
-    def tooLongLastName = RandomStringUtils.random(51, true, true)
-    userDetails("Jo", tooLongLastName)
+    userDetails("Jo", "NewUserNameThatisExactly FiftyOneCharactersInLength")
 
     then: 'The error page is displayed with messages'
     at UserDetailsErrorPage
     errorText == "Your last name must be 50 characters or less"
+
+    when: 'I try some cheeky xss injection'
+    userDetails("Jo", "<script>alert('hello')</script>")
+
+    then: 'The error page is displayed with messages'
+    at UserDetailsErrorPage
+    errorText == "Your last name cannot contain < or > characters"
   }
 }
