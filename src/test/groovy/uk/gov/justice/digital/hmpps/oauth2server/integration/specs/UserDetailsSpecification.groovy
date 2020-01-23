@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
 import geb.spock.GebReportingSpec
-import org.apache.commons.lang3.RandomStringUtils
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.UserDetailsErrorPage
@@ -26,12 +25,11 @@ class UserDetailsSpecification extends GebReportingSpec {
     "${firstNameInput} ${lastNameInput}" == currentName
 
     when: 'I change my name'
-    def randomLastName = RandomStringUtils.random(6, true, true)
-    userDetails("Joe", randomLastName)
+    userDetails("Joe", "NewName")
 
     then: 'The Home page is displayed with my new name'
     at HomePage
-    principalName == "Joe $randomLastName"
+    principalName == "Joe NewName"
   }
 
   def "A user can cancel changing their user details"() {
@@ -77,8 +75,7 @@ class UserDetailsSpecification extends GebReportingSpec {
     lastNameInput == "     "
 
     when: 'I change my name'
-    def tooLongLastName = RandomStringUtils.random(51, true, true)
-    userDetails("Jo", tooLongLastName)
+    userDetails("Jo", "NewUserNameThatisExactly FiftyOneCharactersInLength")
 
     then: 'The error page is displayed with messages'
     at UserDetailsErrorPage
