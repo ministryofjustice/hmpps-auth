@@ -25,11 +25,19 @@ class UserDetailsSpecification extends GebReportingSpec {
     "${firstNameInput} ${lastNameInput}" == currentName
 
     when: 'I change my name'
-    userDetails("Joe", "NewName")
+    userDetails("   Joe  ", "  New Name  ")
 
     then: 'The Home page is displayed with my new name'
     at HomePage
-    principalName == "Joe NewName"
+    principalName == "Joe New Name"
+
+    when: 'I then check my details are updated'
+    to UserDetailsPage
+
+    then: 'The user details page is displayed with new name'
+    at UserDetailsPage
+    firstNameInput == 'Joe'
+    lastNameInput == 'New Name'
   }
 
   def "A user can cancel changing their user details"() {
@@ -80,5 +88,12 @@ class UserDetailsSpecification extends GebReportingSpec {
     then: 'The error page is displayed with messages'
     at UserDetailsErrorPage
     errorText == "Your last name must be 50 characters or less"
+
+    when: 'I try some cheeky xss injection'
+    userDetails("Jo", "<script>alert('hello')</script>")
+
+    then: 'The error page is displayed with messages'
+    at UserDetailsErrorPage
+    errorText == "Your last name cannot contain < or > characters"
   }
 }

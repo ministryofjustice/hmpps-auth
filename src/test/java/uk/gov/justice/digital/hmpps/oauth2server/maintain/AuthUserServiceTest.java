@@ -173,6 +173,17 @@ public class AuthUserServiceTest {
     }
 
     @Test
+    public void createUser_trimName() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        authUserService.createUser("userMe", "eMail", "first  ", "  last ", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+
+        final var user = captor.getValue();
+        assertThat(user.getName()).isEqualTo("first last");
+    }
+
+    @Test
     public void createUser_formatEmailInput() throws VerifyEmailException, CreateUserException, NotificationClientException {
         authUserService.createUser("userMe", "    SARAH.o’connor@gov.uk", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
@@ -696,6 +707,53 @@ public class AuthUserServiceTest {
     }
 
     @Test
+    public void amendUser_firstNameBlank() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "  ", "last")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: required");
+    }
+
+    @Test
+    public void amendUser_firstNameNull() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", null, "last")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: required");
+    }
+
+    @Test
+    public void amendUser_firstNameLessThan() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "hello<input", "last")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: invalid");
+    }
+
+    @Test
+    public void amendUser_firstNameGreaterThan() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "helloinput>", "last")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: invalid");
+    }
+
+    @Test
+    public void amendUser_lastNameBlank() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "first", "  ")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: required");
+    }
+
+    @Test
+    public void amendUser_lastNameNull() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "first", null)).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: required");
+    }
+
+    @Test
+    public void amendUser_lastNameLessThan() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "last", "hello<input")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: invalid");
+    }
+
+    @Test
+    public void amendUser_lastNameGreaterThan() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "last", "helloinput>")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: invalid");
+    }
+    @Test
     public void amendUser_firstNameMaxLength() {
         assertThatThrownBy(() -> authUserService.amendUser("userme", "ThisFirstNameIsMoreThanFiftyCharactersInLengthAndInvalid", "last")).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: maxlength");
@@ -719,6 +777,16 @@ public class AuthUserServiceTest {
         when(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user));
 
         authUserService.amendUser("user", "first", "last");
+
+        assertThat(user.getPerson()).isEqualTo(new Person("first", "last"));
+    }
+
+    @Test
+    public void amendUser_trimPerson() throws CreateUserException {
+        final var user = User.builder().username("me").person(new Person("old", "name")).build();
+        when(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user));
+
+        authUserService.amendUser("user", "  first  ", "   last ");
 
         assertThat(user.getPerson()).isEqualTo(new Person("first", "last"));
     }
