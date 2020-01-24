@@ -124,6 +124,15 @@ class VerifyEmailServiceTest {
   }
 
   @Test
+  @Throws(NotificationClientException::class, VerifyEmailException::class)
+  fun requestVerification_gsiEmail() {
+    val user = Optional.of(User.of("someuser"))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(user)
+    whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
+    verifyEmailFailure("some.u'ser@SOMEwhe.gsi.gov.uk", "gsi")
+  }
+
+  @Test
   fun verifyEmail_NoAtSign() {
     verifyEmailFailure("a", "format")
   }
