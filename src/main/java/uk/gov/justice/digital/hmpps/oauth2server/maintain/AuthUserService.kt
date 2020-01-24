@@ -57,7 +57,7 @@ open class AuthUserService(private val userRepository: UserRepository,
     // get the initial group to assign to - only allowed to be empty if super user
     val group = getInitialGroup(groupCode, creator, authorities)
     // create the user
-    val person = Person(firstName, lastName)
+    val person = Person(firstName?.trim(), lastName?.trim())
     // obtain list of authorities that should be assigned for group
     val roles = group?.assignableRoles?.filter { it.isAutomatic }?.map { it.role }?.toSet() ?: emptySet()
     val groups: Set<Group> = group?.let { setOf(it) } ?: emptySet()
@@ -171,7 +171,7 @@ open class AuthUserService(private val userRepository: UserRepository,
     user.isEnabled = enabled
     // give user 7 days grace if last logged in more than x days ago
     if (user.lastLoggedIn.isBefore(LocalDateTime.now().minusDays(loginDaysTrigger.toLong()))) {
-      user.lastLoggedIn = LocalDateTime.now().minusDays(loginDaysTrigger - 7.toLong())
+      user.lastLoggedIn = LocalDateTime.now().minusDays(loginDaysTrigger - 7L)
     }
     userRepository.save(user)
     telemetryClient.trackEvent("AuthUserChangeEnabled",
@@ -180,32 +180,28 @@ open class AuthUserService(private val userRepository: UserRepository,
 
   @Throws(CreateUserException::class, VerifyEmailException::class)
   private fun validate(username: String?, email: String?, firstName: String?, lastName: String?) {
-    if (username.isNullOrBlank() || StringUtils.length(username) < MIN_LENGTH_USERNAME) {
-      throw CreateUserException("username", "length")
-    }
-    if (StringUtils.length(username) > MAX_LENGTH_USERNAME) {
-      throw CreateUserException("username", "maxlength")
-    }
-    if (!username.matches("^[A-Z0-9_]*\$".toRegex())) {
-      throw CreateUserException("username", "format")
-    }
+    if (username.isNullOrBlank() || username.length < MIN_LENGTH_USERNAME) throw CreateUserException("username", "length")
+
+    if (username.length > MAX_LENGTH_USERNAME) throw CreateUserException("username", "maxlength")
+    if (!username.matches("^[A-Z0-9_]*\$".toRegex())) throw CreateUserException("username", "format")
     validate(firstName, lastName)
     verifyEmailService.validateEmailAddress(email)
   }
 
   @Throws(CreateUserException::class)
   private fun validate(firstName: String?, lastName: String?) {
-    if (StringUtils.length(firstName) < MIN_LENGTH_FIRST_NAME) {
-      throw CreateUserException("firstName", "length")
+    if (firstName.isNullOrBlank()) throw CreateUserException("firstName", "required")
+    else {
+      if (firstName.contains('<') || firstName.contains('>')) throw CreateUserException("firstName", "invalid")
+      if (firstName.length < MIN_LENGTH_FIRST_NAME) throw CreateUserException("firstName", "length")
+      else if (firstName.length > MAX_LENGTH_FIRST_NAME) throw CreateUserException("firstName", "maxlength")
     }
-    if (StringUtils.length(firstName) > MAX_LENGTH_FIRST_NAME) {
-      throw CreateUserException("firstName", "maxlength")
-    }
-    if (StringUtils.length(lastName) < MIN_LENGTH_LAST_NAME) {
-      throw CreateUserException("lastName", "length")
-    }
-    if (StringUtils.length(lastName) > MAX_LENGTH_LAST_NAME) {
-      throw CreateUserException("lastName", "maxlength")
+
+    if (lastName.isNullOrBlank()) throw CreateUserException("lastName", "required")
+    else {
+      if (lastName.contains('<') || lastName.contains('>')) throw CreateUserException("lastName", "invalid")
+      if (lastName.length < MIN_LENGTH_LAST_NAME) throw CreateUserException("lastName", "length")
+      else if (lastName.length > MAX_LENGTH_LAST_NAME) throw CreateUserException("lastName", "maxlength")
     }
   }
 
@@ -245,8 +241,8 @@ open class AuthUserService(private val userRepository: UserRepository,
     validate(firstName, lastName)
     // will always be a user at this stage since we're retrieved it from the authentication
     val user = userRepository.findByUsernameAndSource(username, AuthSource.auth).orElseThrow()
-    user.person.firstName = firstName
-    user.person.lastName = lastName
+    user.person.firstName = firstName?.trim()
+    user.person.lastName = lastName?.trim()
     userRepository.save(user)
   }
 

@@ -5,7 +5,7 @@ import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito
+import org.mockito.Mockito.doThrow
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
@@ -122,7 +122,7 @@ class ResetPasswordControllerTest {
   @Test
   @Throws(NotificationClientRuntimeException::class, VerifyEmailException::class)
   fun resetPasswordRequest_emailfailed() {
-    Mockito.doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddress(anyString())
+    doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddressExcludingGsi(anyString())
     val modelAndView = controller.resetPasswordRequest("user@somewhere", request)
     assertThat(modelAndView.viewName).isEqualTo("resetPassword")
     assertThat(modelAndView.model).containsOnly(entry("error", "email.reason"), entry("usernameOrEmail", "user@somewhere"))
@@ -131,10 +131,10 @@ class ResetPasswordControllerTest {
   @Test
   @Throws(NotificationClientRuntimeException::class, VerifyEmailException::class)
   fun resetPasswordRequest_emailhelperapostrophe() {
-    Mockito.doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddress(anyString())
+    doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddressExcludingGsi(anyString())
     val modelAndView = controller.resetPasswordRequest("us.o’er@someWHERE.com   ", request)
     assertThat(modelAndView.viewName).isEqualTo("resetPassword")
-    verify(verifyEmailService).validateEmailAddress("us.o'er@somewhere.com")
+    verify(verifyEmailService).validateEmailAddressExcludingGsi("us.o'er@somewhere.com")
   }
 
   @Test
