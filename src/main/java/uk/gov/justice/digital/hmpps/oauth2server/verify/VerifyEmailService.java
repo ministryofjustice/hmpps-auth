@@ -95,6 +95,11 @@ public class VerifyEmailService {
     }
 
     public void validateEmailAddress(final String email) throws VerifyEmailException {
+        validateEmailAddressExcludingGsi(email);
+        if (email.matches(".*@.*\\.gsi\\.gov\\.uk")) throw new VerifyEmailException("gsi");
+    }
+
+    public void validateEmailAddressExcludingGsi(final String email) throws VerifyEmailException {
         if (StringUtils.isBlank(email)) {
             throw new VerifyEmailException("blank");
         }

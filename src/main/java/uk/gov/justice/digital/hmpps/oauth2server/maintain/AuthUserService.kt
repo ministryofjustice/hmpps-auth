@@ -171,7 +171,7 @@ open class AuthUserService(private val userRepository: UserRepository,
     user.isEnabled = enabled
     // give user 7 days grace if last logged in more than x days ago
     if (user.lastLoggedIn.isBefore(LocalDateTime.now().minusDays(loginDaysTrigger.toLong()))) {
-      user.lastLoggedIn = LocalDateTime.now().minusDays(loginDaysTrigger - 7.toLong())
+      user.lastLoggedIn = LocalDateTime.now().minusDays(loginDaysTrigger - 7L)
     }
     userRepository.save(user)
     telemetryClient.trackEvent("AuthUserChangeEnabled",

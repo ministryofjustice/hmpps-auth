@@ -69,7 +69,7 @@ public class ResetPasswordController extends AbstractPasswordController {
 
         if (StringUtils.contains(usernameOrEmail, "@")) {
             try {
-                verifyEmailService.validateEmailAddress(EmailHelper.format(usernameOrEmail));
+                verifyEmailService.validateEmailAddressExcludingGsi(EmailHelper.format(usernameOrEmail));
             } catch (final VerifyEmailException e) {
                 log.info("Validation failed for reset password email address due to {}", e.getReason());
                 telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("email", usernameOrEmail, "reason", "email." + e.getReason()), null);
