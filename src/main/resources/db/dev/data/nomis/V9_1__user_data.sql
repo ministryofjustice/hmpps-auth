@@ -105,7 +105,7 @@ VALUES ('ITAG_USER', 'GENERAL', 1, 'MDI'),
   ('PPL_USER', 'GENERAL', 24, 'BEL'),
   ('UOF_REVIEWER_USER', 'GENERAL', 26, 'BEL'),
   ('RCTL_USER', 'GENERAL', 27, 'BEL'),
-  ('POM_USER', 'GENERAL', 29, 'BEL');
+  ('POM_USER', 'GENERAL', 29, 'BEL'),
   ('PF_RO_USER', 'GENERAL', 30, 'BEL');
 
 INSERT INTO STAFF_USER_ACCOUNTS (username, staff_user_type, staff_id)
@@ -147,7 +147,7 @@ VALUES ('ITAG_USER', 'OPEN', 'TAG_GENERAL'),
   ('PPL_USER', 'OPEN', 'TAG_GENERAL'),
   ('UOF_REVIEWER_USER', 'OPEN', 'TAG_GENERAL'),
   ('RCTL_USER', 'OPEN', 'TAG_GENERAL'),
-  ('POM_USER', 'OPEN', 'TAG_GENERAL');
+  ('POM_USER', 'OPEN', 'TAG_GENERAL'),
   ('PF_RO_USER', 'OPEN', 'TAG_GENERAL');
 
 INSERT INTO SYS.USER$ (name, spare4)
@@ -178,7 +178,7 @@ VALUES ('ITAG_USER', '{bcrypt}$2a$10$9rVgms..dZ3gnPSt4JWPA.Oan4MrDHvcx1c.HuYqeMD
   ('PPL_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy'),
   ('UOF_REVIEWER_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy'),
   ('RCTL_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy'),
-  ('POM_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy');
+  ('POM_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy'),
   ('PF_RO_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy');
 
 INSERT INTO PERSONNEL_IDENTIFICATIONS (STAFF_ID, IDENTIFICATION_TYPE, IDENTIFICATION_NUMBER) VALUES (1, 'YJAF', 'test@yjaf.gov.uk');
@@ -246,7 +246,7 @@ VALUES (1, 'OMIC_ADMIN', 'Omic Administrator', 1, 'APP', 'GENERAL'),
   (24, 'PF_STD_PRISON', 'Pathfinder Standard Prison', 99, 'APP', 'GENERAL'),
   (26, 'USE_OF_FORCE_REVIEWER', 'Use of force reviewer', 99, 'APP', 'GENERAL'),
   (27, 'PF_APPROVAL', 'Pathfinder Approval', 99, 'APP', 'GENERAL'),
-  (29, 'POM', 'Prisoner Offender Manager', 99, 'APP', 'GENERAL');
+  (29, 'POM', 'Prisoner Offender Manager', 99, 'APP', 'GENERAL'),
   (30, 'PF_STD_PRISON_RO', 'Pathfinder Prison Read Only', 99, 'APP', 'GENERAL');
 
 
@@ -286,8 +286,8 @@ VALUES (-1, 'MDI', 'ITAG_USER'),
   (23, 'NWEB', 'SECURE_CASENOTE_USER'),
   (24, 'NWEB', 'PPL_USER'),
   (26, 'NWEB', 'UOF_REVIEWER_USER'),
-  (27, 'NWEB', 'RCTL_USER')
-  (29, 'NWEB', 'POM_USER');
+  (27, 'NWEB', 'RCTL_USER'),
+  (29, 'NWEB', 'POM_USER'),
   (30, 'NWEB', 'PF_RO_USER');
 
 Insert into internet_addresses (INTERNET_ADDRESS_ID, OWNER_CLASS, OWNER_ID, OWNER_SEQ, OWNER_CODE,
