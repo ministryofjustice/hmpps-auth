@@ -46,8 +46,7 @@ VALUES ('LOCKED_USER', 5),
 
 -- nomis users
 INSERT INTO users (user_id, username, email, verified, source)
- VALUES ('07395EF9-53EC-4D6C-8BB1-0DC96CD4BD2F', 'IC_USER', 'ic_user@digital.justice.gov.uk', 1, 'nomis'),
-        ('A04C70EE-51C9-4852-8D0D-130DA5C85C42', 'ITAG_USER', 'itag_user@digital.justice.gov.uk', 1, 'nomis'),
+ VALUES ('A04C70EE-51C9-4852-8D0D-130DA5C85C42', 'ITAG_USER', 'itag_user@digital.justice.gov.uk', 1, 'nomis'),
         ('0181F647-C7D4-41E7-9271-288EC7C01F90', 'DM_USER', 'dm_user@digital.justice.gov.uk', 0, 'nomis'),
         ('151DD6BC-88EE-4246-AA18-45924819C9F5', 'EXPIRED_TEST_USER', 'expired_test_user@digital.justice.gov.uk', 1, 'nomis'),
         ('86192295-8652-40BB-B03F-4D56BB93C1D7', 'RESET_TEST_USER', 'reset_test@digital.justice.gov.uk', 1, 'nomis'),
@@ -62,8 +61,8 @@ INSERT INTO users (user_id, username, email, verified, source)
         ('79CDC23C-510F-4CE2-8C98-AC251296EC39', 'RO_DEMO', null, 0, 'nomis'),
         ('AB8DA2CA-3E79-42D3-883E-CEE6C3F693CA', 'RO_USER_TEST', 'ro_user_test@digital.justice.gov.uk', 1, 'nomis'),
         ('5C72B180-5211-454D-9605-CF29573B946F', 'UOF_REVIEWER_USER', 'uof_reviewer@digital.justice.gov.uk', 1, 'nomis'),
-        ('98FBF8D7-4164-47B3-826F-ECD3BB643005', 'RCTL_USER1', 'rctl_user1@digital.justice.gov.uk', 1, 'nomis'),
-        ('26912E22-E313-4164-8434-0D2623483123', 'PPL_RCTL_USER1', 'ppl_rctl_user1@digital.justice.gov.uk', 1, 'nomis');
+        ('98FBF8D7-4164-47B3-826F-ECD3BB643005', 'RCTL_USER', 'rctl_user@digital.justice.gov.uk', 1, 'nomis');
+        ('AAABF8D7-4164-47B3-826F-ECD3BB64300F', 'PF_RO_USER', 'pf_ro_user@digital.justice.gov.uk', 1, 'nomis')
 
 INSERT INTO users (user_id, username, email, verified, last_logged_in, source)
  VALUES ('A2B6E3C0-2CE4-4148-9DFB-42E94BC78D02', 'NOMIS_DELETE', 'locked@somewhere.com', 1, '2018-02-04 13:23:19.0000000', 'nomis');
