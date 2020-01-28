@@ -15,16 +15,14 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository
 import java.util.*
 
 class UserServiceTest {
   private val nomisUserService: NomisUserService = mock()
   private val authUserService: AuthUserService = mock()
   private val deliusUserService: DeliusUserService = mock()
-  private val staffIdentifierRepository: StaffIdentifierRepository = mock()
   private val userRepository: UserRepository = mock()
-  private val userService = UserService(nomisUserService, authUserService, deliusUserService, staffIdentifierRepository, userRepository)
+  private val userService = UserService(nomisUserService, authUserService, deliusUserService, userRepository)
 
   @Test
   fun `findMasterUserPersonDetails auth user`() {

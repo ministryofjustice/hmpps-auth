@@ -753,6 +753,7 @@ public class AuthUserServiceTest {
         assertThatThrownBy(() -> authUserService.amendUser("userme", "last", "helloinput>")).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: invalid");
     }
+
     @Test
     public void amendUser_firstNameMaxLength() {
         assertThatThrownBy(() -> authUserService.amendUser("userme", "ThisFirstNameIsMoreThanFiftyCharactersInLengthAndInvalid", "last")).

@@ -42,21 +42,6 @@ class OauthSpecification extends TestSpecification {
         token.refreshToken == null
     }
 
-    def "Client Credentials Login With Identifier"() {
-
-        given:
-        def oauthRestTemplate = getOauthClientGrant("yjaftrustedclient", "clientsecret", "user_id_type=YJAF&user_id=test@yjaf.gov.uk")
-
-        when:
-        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/me", HttpMethod.GET, null, String.class)
-
-        then:
-        response.statusCode == HttpStatus.OK
-        def userData = jsonSlurper.parseText(response.body)
-
-        userData.name == "Itag User"
-    }
-
     def "Client Credentials Login With username identifier"() {
 
         given:
