@@ -22,10 +22,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSucce
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
-import java.io.IOException
 import java.util.*
 import java.util.Map.entry
-import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -71,23 +69,21 @@ class ChangePasswordControllerTest {
   }
 
   @Test
-  @Throws(IOException::class, ServletException::class)
   fun changePasswordRequest_NotAlphanumeric() {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
     val modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response)
-    assertThat(modelAndView.viewName).isEqualTo("changePassword")
+    assertThat(modelAndView!!.viewName).isEqualTo("changePassword")
     assertThat(modelAndView.model).containsOnly(entry("token", "d"), entry("error", true), listEntry("errornew", "alphanumeric"), entry("isAdmin", false))
   }
 
   @Test
-  @Throws(Exception::class)
   fun changePassword_ValidationFailure() {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
     doThrow(PasswordValidationFailureException()).whenever(changePasswordService).setPassword(anyString(), anyString())
     val redirect = controller.changePassword("user", "password2", "password2", request, response)
-    assertThat(redirect.viewName).isEqualTo("changePassword")
+    assertThat(redirect!!.viewName).isEqualTo("changePassword")
     assertThat(redirect.model).containsOnly(entry("token", "user"), entry("error", true), entry("errornew", "validation"), entry("isAdmin", false))
   }
 
@@ -101,7 +97,6 @@ class ChangePasswordControllerTest {
   }
 
   @Test
-  @Throws(Exception::class)
   fun changePassword_Success() {
     val token = UsernamePasswordAuthenticationToken("bob", "pass")
     setupCheckAndGetTokenValid()
@@ -119,7 +114,6 @@ class ChangePasswordControllerTest {
   }
 
   @Test
-  @Throws(Exception::class)
   fun changePassword_Success_Telemetry() {
     val token = UsernamePasswordAuthenticationToken("bob", "pass")
     setupCheckAndGetTokenValid()
@@ -132,7 +126,6 @@ class ChangePasswordControllerTest {
   }
 
   @Test
-  @Throws(Exception::class)
   fun changePassword_AuthenticateSuccess_Telemetry() {
     val token = UsernamePasswordAuthenticationToken("bob", "pass")
     setupCheckAndGetTokenValid()
@@ -145,13 +138,12 @@ class ChangePasswordControllerTest {
   }
 
   @Test
-  @Throws(Exception::class)
   fun changePassword_SuccessAccountExpired() {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
     whenever(authenticationManager.authenticate(any())).thenThrow(AccountExpiredException("msg"))
     val redirect = controller.changePassword("user", "password2", "password2", request, response)
-    assertThat(redirect.viewName).isEqualTo("redirect:/login?error=changepassword")
+    assertThat(redirect!!.viewName).isEqualTo("redirect:/login?error=changepassword")
     val authCapture = ArgumentCaptor.forClass(Authentication::class.java)
     verify(authenticationManager).authenticate(authCapture.capture())
     val value = authCapture.value
@@ -161,7 +153,6 @@ class ChangePasswordControllerTest {
   }
 
   @Test
-  @Throws(Exception::class)
   fun changePassword_SuccessAccountExpired_TelemetryFailure() {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
@@ -173,7 +164,6 @@ class ChangePasswordControllerTest {
   }
 
   @Test
-  @Throws(Exception::class)
   fun changePassword_SuccessAccountExpired_TelemetrySuccess() {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
@@ -196,7 +186,5 @@ class ChangePasswordControllerTest {
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(User.of("user").createToken(UserToken.TokenType.RESET)))
   }
 
-  private fun listEntry(key: String, vararg values: String): MapEntry<String, List<String>> {
-    return MapEntry.entry(key, values.asList())
-  }
+  private fun listEntry(key: String, vararg values: String) = MapEntry.entry(key, values.asList())
 }
