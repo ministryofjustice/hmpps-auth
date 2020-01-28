@@ -9,40 +9,17 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.StaffIdentifier
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffIdentifierRepository
 import java.util.*
-import javax.persistence.EntityNotFoundException
 
 @Service
 @Transactional(readOnly = true)
 open class UserService(private val nomisUserService: NomisUserService,
                        private val authUserService: AuthUserService,
                        private val deliusUserService: DeliusUserService,
-                       private val staffIdentifierRepository: StaffIdentifierRepository,
                        private val userRepository: UserRepository) {
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
-  }
-
-  open fun getUserByExternalIdentifier(idType: String?, id: String?): NomisUserPersonDetails? {
-    val staffIdentifier: StaffIdentifier? = staffIdentifierRepository.findById_TypeAndId_IdentificationNumber(idType, id)
-    val userDetail = if (staffIdentifier != null) {
-      val staff = staffIdentifier.staff
-      if (!staff.isActive) {
-        log.info("Staff member found for external identifier with idType [{}] and id [{}] but not active.", idType, id)
-        Optional.empty()
-      } else {
-        Optional.ofNullable(staff.getAccountByType("GENERAL"))
-      }
-    } else {
-      Optional.empty()
-    }
-    return userDetail.orElseThrow {
-      EntityNotFoundException(String.format("User not found for external identifier with idType [%s] and id [%s].", idType, id))
-    }
   }
 
   open fun findMasterUserPersonDetails(username: String): Optional<UserPersonDetails> =

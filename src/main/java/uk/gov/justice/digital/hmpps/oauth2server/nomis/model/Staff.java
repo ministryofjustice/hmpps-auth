@@ -4,7 +4,6 @@ import lombok.*;
 import org.apache.commons.text.WordUtils;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -34,38 +33,6 @@ public class Staff {
 
     @OneToMany(mappedBy = "staff")
     private List<NomisUserPersonDetails> users;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "STAFF_ID")
-    private List<StaffIdentifier> identifiers;
-
-    public StaffIdentifier addIdentifier(final String type, final String identificationNumber) {
-        if (identifiers == null) {
-            identifiers = new ArrayList<>();
-        }
-        final var id = StaffIdentifier.builder()
-                .id(StaffIdentifierIdentity.builder()
-                        .type(type)
-                        .identificationNumber(identificationNumber)
-                        .staffId(getStaffId())
-                        .build())
-                .staff(this)
-                .build();
-        identifiers.add(id);
-        return id;
-    }
-
-    public StaffIdentifier findIdentifier(final String type) {
-        return identifiers.stream()
-                .filter(r -> r.getId().getType().equals(type))
-                .findFirst().orElse(null);
-    }
-
-    public NomisUserPersonDetails getAccountByType(final String type) {
-        return users.stream()
-                .filter(r -> r.getType().equals(type))
-                .findFirst().orElse(null);
-    }
 
     public String getFirstName() {
         return WordUtils.capitalizeFully(firstName);
