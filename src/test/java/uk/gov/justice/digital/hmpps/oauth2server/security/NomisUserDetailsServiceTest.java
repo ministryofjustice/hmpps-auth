@@ -10,7 +10,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.*;
 
 import javax.persistence.EntityManager;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,8 +23,6 @@ import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatu
 
 @RunWith(MockitoJUnitRunner.class)
 public class NomisUserDetailsServiceTest {
-    private static final Caseload NWEB_CASELOAD = Caseload.builder().id("NWEB").type("APP").build();
-    private static final Caseload MDI_CASELOAD = Caseload.builder().id("MDI").type("INST").build();
     private static final long ROLE_ID = 1L;
 
     @Mock
@@ -160,20 +157,14 @@ public class NomisUserDetailsServiceTest {
                 .username(username)
                 .password("pass")
                 .type("GENERAL")
-                .caseloads(List.of(
-                        buildUserAccessibleCaseload("NWEB", NWEB_CASELOAD, username),
-                        buildUserAccessibleCaseload("MDI", MDI_CASELOAD, username)))
                 .staff(staff)
                 .roles(List.of(UserCaseloadRole.builder()
                         .id(UserCaseloadRoleIdentity.builder().caseload("NWEB").roleId(ROLE_ID).username(username).build())
-                        .role(Role.builder().code("ROLE1").id(ROLE_ID).function("General").name("A Role").sequence(1).build())
-                        .caseload(NWEB_CASELOAD)
+                        .role(Role.builder().code("ROLE1").id(ROLE_ID).build())
                         .build()))
                 .accountDetail(buildAccountDetail(username, OPEN))
                 .build();
 
-        userAccount.getRoles().forEach(r -> r.setUser(userAccount));
-        userAccount.getCaseloads().forEach(c -> c.setUser(userAccount));
         return userAccount;
     }
 
@@ -213,16 +204,6 @@ public class NomisUserDetailsServiceTest {
                 .accountStatus(status.getDesc())
                 .profile("TAG_GENERAL")
                 .build();
-    }
-
-    private UserAccessibleCaseload buildUserAccessibleCaseload(final String caseloadId, final Caseload caseload, final String username) {
-        return UserAccessibleCaseload.builder()
-                .id(UserCaseloadIdentity.builder()
-                        .username(username)
-                        .caseload(caseloadId)
-                        .build())
-                .caseload(caseload)
-                .startDate(LocalDate.now()).build();
     }
 
     private Staff buildStaff() {
