@@ -3,8 +3,10 @@ package uk.gov.justice.digital.hmpps.oauth2server.nomis.model;
 import lombok.*;
 import org.apache.commons.text.WordUtils;
 
-import javax.persistence.*;
-import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "STAFF_MEMBERS")
@@ -30,9 +32,6 @@ public class Staff {
 
     @Column(name = "STATUS")
     private String status;
-
-    @OneToMany(mappedBy = "staff")
-    private List<NomisUserPersonDetails> users;
 
     public String getFirstName() {
         return WordUtils.capitalizeFully(firstName);
