@@ -152,7 +152,7 @@ class LoginSpecification extends DeliusIntegrationSpec {
         loginAs EXPIRED_USER, 'password123456'
 
         then: 'I am taken to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
     }
 
     def "Attempt login when delius connections time out"() {

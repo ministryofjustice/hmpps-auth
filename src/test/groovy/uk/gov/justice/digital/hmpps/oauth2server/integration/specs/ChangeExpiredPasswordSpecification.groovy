@@ -2,14 +2,14 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
 import geb.spock.GebReportingSpec
 import org.apache.commons.lang3.RandomStringUtils
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangePasswordErrorPage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangePasswordPage
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangeExpiredPasswordErrorPage
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangeExpiredPasswordPage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
-class ChangePasswordSpecification extends GebReportingSpec {
+class ChangeExpiredPasswordSpecification extends GebReportingSpec {
     public static final String clientBaseUrl = 'http://localhost:8081/login'
 
     def "Attempt change password without credentials"() {
@@ -18,13 +18,13 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs EXPIRED_TEST_USER, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password without credentials"
         changePasswordAs '', ''
 
         then: 'My credentials are rejected and I am still on the Change Password page'
-        at ChangePasswordErrorPage
+        at ChangeExpiredPasswordErrorPage
         errorText == 'Enter your new password\nEnter your new password again'
         errorNewText == 'Enter your new password'
         errorConfirmText == 'Enter your new password again'
@@ -36,13 +36,13 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs EXPIRED_TEST_USER, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password without credentials"
         changePasswordAs 'somepass', 'd'
 
         then: 'My credentials are rejected and I am still on the Change Password page'
-        at ChangePasswordErrorPage
+        at ChangeExpiredPasswordErrorPage
         errorText == 'Your password must have both letters and numbers\n' +
                 'Your password must have at least 9 characters\n' +
                 'Your passwords do not match. Enter matching passwords.'
@@ -57,13 +57,13 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs EXPIRED_TEST_USER, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password without credentials"
         changePasswordAs 'iLoveYou2', 'iLoveYou2'
 
         then: 'My credentials are rejected and I am still on the Change Password page'
-        at ChangePasswordErrorPage
+        at ChangeExpiredPasswordErrorPage
         errorText == 'Your password is commonly used and may not be secure'
         errorNewText == 'Your password is commonly used and may not be secure'
     }
@@ -75,7 +75,7 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs EXPIRED_TEST2_USER, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password using valid credentials"
         changePasswordAs 'helloworld2', 'helloworld2'
@@ -99,7 +99,7 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs AUTH_EXPIRED, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password using valid credentials"
         changePasswordAs 'helloworld2', 'helloworld2'
@@ -125,7 +125,7 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs EXPIRED_TEST3_USER, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password using valid credentials"
         changePasswordAs 'dodgypass1', 'dodgypass1'

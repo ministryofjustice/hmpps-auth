@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages
 
-class ChangePasswordErrorPage extends ChangePasswordPage {
+class ChangeExpiredPasswordErrorPage extends ChangeExpiredPasswordPage {
 
     static at = {
         title == 'Error: HMPPS Digital Services - Change Password'
