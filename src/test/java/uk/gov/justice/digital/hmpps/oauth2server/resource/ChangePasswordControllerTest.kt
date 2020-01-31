@@ -2,9 +2,8 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.data.MapEntry
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyString
@@ -40,6 +39,18 @@ class ChangePasswordControllerTest {
       authenticationManager, changePasswordService, tokenService, userService, telemetryClient, setOf("password1"))
 
   @Test
+  fun newPasswordRequest() {
+    val view = controller.newPasswordRequest("token")
+    assertThat(view.viewName).isEqualTo("changePassword")
+  }
+
+  @Test
+  fun `newPasswordRequest expired route`() {
+    val model = controller.newPasswordRequest("token")
+    assertThat(model.model).doesNotContainKey("expired")
+  }
+
+  @Test
   fun changePasswordRequest() {
     val view = controller.changePasswordRequest("token")
     assertThat(view.viewName).isEqualTo("changePassword")
@@ -52,6 +63,12 @@ class ChangePasswordControllerTest {
     user.accountDetail.profile = "TAG_ADMIN"
     val model = controller.changePasswordRequest("token")
     assertThat(model.model["isAdmin"]).isEqualTo(true)
+  }
+
+  @Test
+  fun `changePasswordRequest expired route`() {
+    val model = controller.changePasswordRequest("token")
+    assertThat(model.model["expired"]).isEqualTo(true)
   }
 
   @Test
@@ -72,9 +89,25 @@ class ChangePasswordControllerTest {
   fun changePasswordRequest_NotAlphanumeric() {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
-    val modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response)
+    val modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response, true)
     assertThat(modelAndView!!.viewName).isEqualTo("changePassword")
-    assertThat(modelAndView.model).containsOnly(entry("token", "d"), entry("error", true), listEntry("errornew", "alphanumeric"), entry("isAdmin", false))
+    assertThat(modelAndView.model).containsOnly(entry("token", "d"), entry("error", true), errorNewListEntry("alphanumeric"), entry("isAdmin", false), entry("expired", true))
+  }
+
+  @Test
+  fun changePasswordRequest_NotExpired() {
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    val modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response, false)
+    assertThat(modelAndView!!.model).containsEntry("expired", false)
+  }
+
+  @Test
+  fun changePasswordRequest_ExpiredNotSet() {
+    setupCheckAndGetTokenValid()
+    setupGetUserCallForProfile()
+    val modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response, null)
+    assertThat(modelAndView!!.model).containsEntry("expired", null)
   }
 
   @Test
@@ -82,9 +115,9 @@ class ChangePasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
     doThrow(PasswordValidationFailureException()).whenever(changePasswordService).setPassword(anyString(), anyString())
-    val redirect = controller.changePassword("user", "password2", "password2", request, response)
+    val redirect = controller.changePassword("user", "password2", "password2", request, response, true)
     assertThat(redirect!!.viewName).isEqualTo("changePassword")
-    assertThat(redirect.model).containsOnly(entry("token", "user"), entry("error", true), entry("errornew", "validation"), entry("isAdmin", false))
+    assertThat(redirect.model).containsOnly(entry("token", "user"), entry("error", true), entry("errornew", "validation"), entry("isAdmin", false), entry("expired", true))
   }
 
   @Test
@@ -93,7 +126,7 @@ class ChangePasswordControllerTest {
     setupGetUserCallForProfile()
     val exception = RuntimeException()
     doThrow(exception).whenever(changePasswordService).setPassword(anyString(), anyString())
-    Assertions.assertThatThrownBy { controller.changePassword("user", "password2", "password2", request, response) }.isEqualTo(exception)
+    assertThatThrownBy { controller.changePassword("user", "password2", "password2", request, response, true) }.isEqualTo(exception)
   }
 
   @Test
@@ -102,7 +135,7 @@ class ChangePasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
     whenever(authenticationManager.authenticate(any())).thenReturn(token)
-    val redirect = controller.changePassword("user", "password2", "password2", request, response)
+    val redirect = controller.changePassword("user", "password2", "password2", request, response, true)
     assertThat(redirect).isNull()
     val authCapture = ArgumentCaptor.forClass(Authentication::class.java)
     verify(authenticationManager).authenticate(authCapture.capture())
@@ -119,7 +152,7 @@ class ChangePasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
     whenever(authenticationManager.authenticate(any())).thenReturn(token)
-    controller.changePassword("user", "password2", "password2", request, response)
+    controller.changePassword("user", "password2", "password2", request, response, true)
     verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), check {
       assertThat(it).containsExactly(entry("username", "user"))
     }, isNull())
@@ -131,7 +164,7 @@ class ChangePasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
     whenever(authenticationManager.authenticate(any())).thenReturn(token)
-    controller.changePassword("user", "password2", "password2", request, response)
+    controller.changePassword("user", "password2", "password2", request, response, true)
     verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateSuccess"), check {
       assertThat(it).containsExactly(entry("username", "user"))
     }, isNull())
@@ -142,7 +175,7 @@ class ChangePasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
     whenever(authenticationManager.authenticate(any())).thenThrow(AccountExpiredException("msg"))
-    val redirect = controller.changePassword("user", "password2", "password2", request, response)
+    val redirect = controller.changePassword("user", "password2", "password2", request, response, true)
     assertThat(redirect!!.viewName).isEqualTo("redirect:/login?error=changepassword")
     val authCapture = ArgumentCaptor.forClass(Authentication::class.java)
     verify(authenticationManager).authenticate(authCapture.capture())
@@ -157,7 +190,7 @@ class ChangePasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
     whenever(authenticationManager.authenticate(any())).thenThrow(AccountExpiredException("msg"))
-    controller.changePassword("user", "password2", "password2", request, response)
+    controller.changePassword("user", "password2", "password2", request, response, true)
     verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateFailure"), check {
       assertThat(it).containsOnly(entry("username", "user"), entry("reason", "AccountExpiredException"))
     }, isNull())
@@ -168,7 +201,7 @@ class ChangePasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile()
     whenever(authenticationManager.authenticate(any())).thenThrow(AccountExpiredException("msg"))
-    controller.changePassword("user", "password2", "password2", request, response)
+    controller.changePassword("user", "password2", "password2", request, response, true)
     verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), check {
       assertThat(it).containsExactly(entry("username", "user"))
     }, isNull())
@@ -186,5 +219,5 @@ class ChangePasswordControllerTest {
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(User.of("user").createToken(UserToken.TokenType.RESET)))
   }
 
-  private fun listEntry(key: String, vararg values: String) = MapEntry.entry(key, values.asList())
+  private fun errorNewListEntry(vararg values: String) = entry("errornew", values.asList())
 }

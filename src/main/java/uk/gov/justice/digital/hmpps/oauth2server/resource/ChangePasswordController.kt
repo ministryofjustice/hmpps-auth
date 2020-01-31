@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,15 +34,21 @@ class ChangePasswordController(private val jwtAuthenticationSuccessHandler: JwtA
   @GetMapping("/change-password")
   fun changePasswordRequest(@RequestParam token: String?) =
       createModelWithTokenAndAddIsAdmin(UserToken.TokenType.CHANGE, token, "changePassword")
+          .addObject("expired", true)
+
+  @GetMapping("/new-password")
+  fun newPasswordRequest(@RequestParam token: String?) =
+      createModelWithTokenAndAddIsAdmin(UserToken.TokenType.CHANGE, token, "changePassword")
 
   @PostMapping("/change-password")
-  fun changePassword(@RequestParam token: String?,
+  fun changePassword(@RequestParam token: String,
                      @RequestParam newPassword: String?, @RequestParam confirmPassword: String?,
-                     request: HttpServletRequest?, response: HttpServletResponse?): ModelAndView? {
-    val userToken = tokenService.getToken(UserToken.TokenType.CHANGE, token!!)
+                     request: HttpServletRequest?, response: HttpServletResponse?,
+                     @RequestParam expired: Boolean?): ModelAndView? {
+    val userToken = tokenService.getToken(UserToken.TokenType.CHANGE, token)
     val modelAndView = processSetPassword(UserToken.TokenType.CHANGE, "Change", token, newPassword, confirmPassword)
     if (modelAndView.isPresent) {
-      return modelAndView.get()
+      return modelAndView.get().addObject("expired", expired)
     }
     // will be error if unable to get token here as set password process has been successful
     val username = userToken.orElseThrow().user.username
@@ -65,7 +70,7 @@ class ChangePasswordController(private val jwtAuthenticationSuccessHandler: JwtA
     }
   }
 
-  private fun authenticate(username: String, password: String): Authentication =
+  private fun authenticate(username: String, password: String) =
       authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username.toUpperCase(), password))
 
   companion object {

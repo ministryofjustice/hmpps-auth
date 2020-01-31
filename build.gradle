@@ -188,6 +188,7 @@ drivers.each { driver ->
 
 test {
   exclude '**/integration/*'
+  useJUnitPlatform()
 }
 
 task testIntegration(type: Test) {
