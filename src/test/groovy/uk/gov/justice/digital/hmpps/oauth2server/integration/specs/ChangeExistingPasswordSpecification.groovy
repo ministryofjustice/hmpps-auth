@@ -101,4 +101,28 @@ class ChangeExistingPasswordSpecification extends DeliusIntegrationSpec {
     at HomePage
     principalName == 'Auth Test'
   }
+
+  def "Change password mfa user"() {
+    given: 'I try to change my password'
+    browser.go("/auth/existing-password")
+
+    when: 'I login as an MFA user'
+    at LoginPage
+    loginAs AUTH_MFA_USER, 'password123456'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials"
+    submitCode mfaCode
+
+    then: 'I am taken to the existing password page'
+    at ExistingPasswordPage
+
+    when: "I enter existing password"
+    existingPasswordAs AUTH_MFA_USER, 'password123456'
+
+    then: 'My credentials are accepted and I am taken to the enter new password page'
+    at ChangeExistingPasswordPage
+  }
 }

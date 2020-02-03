@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ExistingPasswordController
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaRequiredException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 
@@ -53,7 +54,15 @@ class ExistingPasswordControllerTest {
       val mandv = controller.existingPassword("somepass", token)
       assertThat(mandv.viewName).isEqualTo("redirect:/new-password")
       assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken"))
+    }
 
+    @Test
+    fun `authenticate mfa required`() {
+      whenever(authenticationManager.authenticate(any())).thenThrow(MfaRequiredException("some message"))
+      whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
+      val mandv = controller.existingPassword("somepass", token)
+      assertThat(mandv.viewName).isEqualTo("redirect:/new-password")
+      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken"))
     }
 
     @Test
