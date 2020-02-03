@@ -48,9 +48,7 @@ class ExistingPasswordController(private val authenticationManager: Authenticati
       when (e::class) {
         DeliusAuthenticationServiceException::class -> createModelAndViewWithUsername(authentication).addObject("error", listOf("invalid", "deliusdown"))
         BadCredentialsException::class -> createModelAndViewWithUsername(authentication).addObject("error", "invalid")
-        // TODO: need to add message to locked scenario
         LockedException::class -> ModelAndView("redirect:/logout", "error", "locked")
-        // TODO: need to add message to invalid scenario
         else -> ModelAndView("redirect:/logout", "error", "invalid")
       }
     }

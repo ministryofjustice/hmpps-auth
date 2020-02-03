@@ -21,7 +21,7 @@ class ChangeExpiredPasswordSpecification extends GebReportingSpec {
         at ChangeExpiredPasswordPage
 
         when: "I change password without credentials"
-        changePasswordAs '', ''
+        changePasswordAs EXPIRED_TEST_USER, '', ''
 
         then: 'My credentials are rejected and I am still on the Change Password page'
         at ChangeExpiredPasswordErrorPage
@@ -39,7 +39,7 @@ class ChangeExpiredPasswordSpecification extends GebReportingSpec {
         at ChangeExpiredPasswordPage
 
         when: "I change password without credentials"
-        changePasswordAs 'somepass', 'd'
+        changePasswordAs EXPIRED_TEST_USER, 'somepass', 'd'
 
         then: 'My credentials are rejected and I am still on the Change Password page'
         at ChangeExpiredPasswordErrorPage
@@ -60,7 +60,7 @@ class ChangeExpiredPasswordSpecification extends GebReportingSpec {
         at ChangeExpiredPasswordPage
 
         when: "I change password without credentials"
-        changePasswordAs 'iLoveYou2', 'iLoveYou2'
+        changePasswordAs EXPIRED_TEST_USER, 'iLoveYou2', 'iLoveYou2'
 
         then: 'My credentials are rejected and I am still on the Change Password page'
         at ChangeExpiredPasswordErrorPage
@@ -78,7 +78,7 @@ class ChangeExpiredPasswordSpecification extends GebReportingSpec {
         at ChangeExpiredPasswordPage
 
         when: "I change password using valid credentials"
-        changePasswordAs 'helloworld2', 'helloworld2'
+        changePasswordAs EXPIRED_TEST2_USER, 'helloworld2', 'helloworld2'
 
         and: 'My credentials are accepted and I am shown the Home page'
         at HomePage
@@ -102,7 +102,7 @@ class ChangeExpiredPasswordSpecification extends GebReportingSpec {
         at ChangeExpiredPasswordPage
 
         when: "I change password using valid credentials"
-        changePasswordAs 'helloworld2', 'helloworld2'
+        changePasswordAs AUTH_EXPIRED, 'helloworld2', 'helloworld2'
 
         and: 'My credentials are accepted and I am shown the Home page'
         at HomePage
@@ -128,7 +128,7 @@ class ChangeExpiredPasswordSpecification extends GebReportingSpec {
         at ChangeExpiredPasswordPage
 
         when: "I change password using valid credentials"
-        changePasswordAs 'dodgypass1', 'dodgypass1'
+        changePasswordAs EXPIRED_TEST3_USER, 'dodgypass1', 'dodgypass1'
 
         then: 'I am redirected back'
         browser.getCurrentUrl() startsWith(clientBaseUrl + '?code')
