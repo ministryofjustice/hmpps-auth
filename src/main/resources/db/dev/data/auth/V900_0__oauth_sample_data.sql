@@ -17,6 +17,7 @@ VALUES ('omicuser','1200',null,'SYSTEM_READ_ONLY','password,authorization_code,r
        ('community-api-client','3600',null,'ROLE_SYSTEM_USER,ROLE_COMMUNITY','client_credentials','proxy-user','$2a$10$r12DB/sqXduodnjtAY/ykO0S3KCySdVW4zhG3jlIRaIsfVkFOEds2',null,null,'read,proxy-user',null),
        ('sentence-plan-client','3600',null,null,'authorization_code,refresh_token','read,write','$2a$10$a5WJN/AZc7Nq3rFoy5GOQ.avY.opPq/RaF59TXFaInt0Jxp6NV94a',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
        ('use-of-force-client','3600',null,null,'authorization_code,refresh_token','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
+       ('use-of-force-system','3600',null,'ROLE_SYSTEM_READ_ONLY','client_credentials','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
        ('whereabouts-api-client','3600',null,'ROLE_PAY, ROLE_CASE_NOTE_ADMIN','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read,write',null),
        ('pathfinder-client','3600',null,null,'authorization_code,refresh_token','read,write','$2a$10$WzgtydqXSuhdivpWDR3WXO.yjLBm4yuDqP64Og.7E4XURdrSfhOTi',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
        ('pathfinder-admin','3600',null,'ROLE_SYSTEM_USER','client_credentials','read,write','$2a$10$ajGimbJNWF1/FmZQMJWvieeQ/OdYaxWHQPgOjYDvvWu/4/744Yw7S',43200,null,'read,write',null),
@@ -62,7 +63,8 @@ INSERT INTO users (user_id, username, email, verified, source)
         ('AB8DA2CA-3E79-42D3-883E-CEE6C3F693CA', 'RO_USER_TEST', 'ro_user_test@digital.justice.gov.uk', 1, 'nomis'),
         ('5C72B180-5211-454D-9605-CF29573B946F', 'UOF_REVIEWER_USER', 'uof_reviewer@digital.justice.gov.uk', 1, 'nomis'),
         ('98FBF8D7-4164-47B3-826F-ECD3BB643005', 'RCTL_USER1', 'rctl_user1@digital.justice.gov.uk', 1, 'nomis'),
-        ('26912E22-E313-4164-8434-0D2623483123', 'PPL_RCTL_USER1', 'ppl_rctl_user1@digital.justice.gov.uk', 1, 'nomis');
+        ('26912E22-E313-4164-8434-0D2623483123', 'PPL_RCTL_USER1', 'ppl_rctl_user1@digital.justice.gov.uk', 1, 'nomis'),
+        ('C3B15C4B-ADF5-493B-9424-DBCC65E7BFED', 'UOF_COORDINATOR_USER', 'uof_coordinator@digital.justice.gov.uk', 1, 'nomis');
 
 INSERT INTO users (user_id, username, email, verified, last_logged_in, source)
  VALUES ('A2B6E3C0-2CE4-4148-9DFB-42E94BC78D02', 'NOMIS_DELETE', 'locked@somewhere.com', 1, '2018-02-04 13:23:19.0000000', 'nomis');
