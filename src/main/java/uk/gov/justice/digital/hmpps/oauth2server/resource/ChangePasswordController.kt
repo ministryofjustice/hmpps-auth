@@ -33,12 +33,12 @@ class ChangePasswordController(private val jwtAuthenticationSuccessHandler: JwtA
 
   @GetMapping("/change-password")
   fun changePasswordRequest(@RequestParam token: String?) =
-      createModelWithTokenAndAddIsAdmin(UserToken.TokenType.CHANGE, token, "changePassword")
+      createModelWithTokenUsernameAndIsAdmin(UserToken.TokenType.CHANGE, token, "changePassword")
           .addObject("expired", true)
 
   @GetMapping("/new-password")
   fun newPasswordRequest(@RequestParam token: String?) =
-      createModelWithTokenAndAddIsAdmin(UserToken.TokenType.CHANGE, token, "changePassword")
+      createModelWithTokenUsernameAndIsAdmin(UserToken.TokenType.CHANGE, token, "changePassword")
 
   @PostMapping("/change-password")
   fun changePassword(@RequestParam token: String,

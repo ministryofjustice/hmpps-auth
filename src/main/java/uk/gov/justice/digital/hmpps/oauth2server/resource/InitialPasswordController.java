@@ -40,6 +40,6 @@ public class InitialPasswordController extends AbstractPasswordController {
     public ModelAndView initialPassword(@RequestParam final String token) {
         final var optionalErrorCode = tokenService.checkToken(RESET, token);
         return optionalErrorCode.map(s -> new ModelAndView("resetPassword", "error", s)).
-                orElseGet(() -> createModelWithTokenAndAddIsAdmin(RESET, token, "setPassword").addObject("initial", Boolean.TRUE));
+                orElseGet(() -> createModelWithTokenUsernameAndIsAdmin(RESET, token, "setPassword").addObject("initial", Boolean.TRUE));
     }
 }
