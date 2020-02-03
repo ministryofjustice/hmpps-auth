@@ -9,7 +9,6 @@ import org.junit.Test
 import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
-import java.io.IOException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -20,14 +19,12 @@ class RedirectingLogoutSuccessHandlerTest {
   private val redirectingLogoutSuccessHandler = RedirectingLogoutSuccessHandler(clientDetailsService, "/path", false)
 
   @Test
-  @Throws(IOException::class)
   fun onLogoutSuccess_NoClientId() {
     redirectingLogoutSuccessHandler.onLogoutSuccess(request, response, null)
     verify(response).sendRedirect("/path/login?logout")
   }
 
   @Test
-  @Throws(IOException::class)
   fun onLogoutSuccess_ClientIdNotMatched() {
     whenever(request.getParameter("client_id")).thenReturn("joe")
     redirectingLogoutSuccessHandler.onLogoutSuccess(request, response, null)
@@ -35,7 +32,6 @@ class RedirectingLogoutSuccessHandlerTest {
   }
 
   @Test
-  @Throws(IOException::class)
   fun onLogoutSuccess_RedirectUriNotMatched() {
     whenever(request.getParameter("client_id")).thenReturn("joe")
     whenever(request.getParameter("redirect_uri")).thenReturn("http://some.where")
@@ -45,7 +41,6 @@ class RedirectingLogoutSuccessHandlerTest {
   }
 
   @Test
-  @Throws(IOException::class)
   fun onLogoutSuccess_NoRedirectUrisConfigured() {
     whenever(request.getParameter("client_id")).thenReturn("joe")
     redirectingLogoutSuccessHandler.onLogoutSuccess(request, response, null)
@@ -53,7 +48,6 @@ class RedirectingLogoutSuccessHandlerTest {
   }
 
   @Test
-  @Throws(IOException::class)
   fun onLogoutSuccess_RedirectUriMatched() {
     whenever(request.getParameter("client_id")).thenReturn("joe")
     whenever(request.getParameter("redirect_uri")).thenReturn("http://some.where")
@@ -63,7 +57,6 @@ class RedirectingLogoutSuccessHandlerTest {
   }
 
   @Test
-  @Throws(IOException::class)
   fun onLogoutSuccess_RedirectUriMatched_SubdomainPolicyNotSet() {
     val subdomainHandler = RedirectingLogoutSuccessHandler(clientDetailsService, "/path", false)
     whenever(request.getParameter("client_id")).thenReturn("joe")
@@ -74,7 +67,15 @@ class RedirectingLogoutSuccessHandlerTest {
   }
 
   @Test
-  @Throws(IOException::class)
+  fun onLogoutSuccess_ErrorSet() {
+    val subdomainHandler = RedirectingLogoutSuccessHandler(clientDetailsService, "/path", false)
+    whenever(request.getParameter("client_id")).thenReturn("joe")
+    whenever(request.getParameter("error")).thenReturn("somevalue")
+    subdomainHandler.onLogoutSuccess(request, response, null)
+    verify(response).sendRedirect("/path/login?logout&error=somevalue")
+  }
+
+  @Test
   fun onLogoutSuccess_RedirectUriMatched_Subdomain() {
     val subdomainHandler = RedirectingLogoutSuccessHandler(clientDetailsService, "/path", true)
     whenever(request.getParameter("client_id")).thenReturn("joe")
@@ -85,7 +86,6 @@ class RedirectingLogoutSuccessHandlerTest {
   }
 
   @Test
-  @Throws(IOException::class)
   fun onLogoutSuccess_RedirectUriMatchedWithSlash() {
     whenever(request.getParameter("client_id")).thenReturn("joe")
     whenever(request.getParameter("redirect_uri")).thenReturn("http://some.where/")
@@ -95,7 +95,6 @@ class RedirectingLogoutSuccessHandlerTest {
   }
 
   @Test
-  @Throws(IOException::class)
   fun onLogoutSuccess_RedirectUriMatchedWithoutSlash() {
     whenever(request.getParameter("client_id")).thenReturn("joe")
     whenever(request.getParameter("redirect_uri")).thenReturn("http://some.where")

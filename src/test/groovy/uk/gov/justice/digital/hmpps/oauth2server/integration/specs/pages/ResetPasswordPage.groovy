@@ -21,9 +21,7 @@ class ResetPasswordPage extends Page {
     }
 
     void resetPasswordAs(UserAccount account) {
-        usernameInput = account.username
-        assert resetPasswordButton.value() == 'Continue'
-        resetPasswordButton.click()
+        resetPasswordAs account.username
     }
 
     void resetPasswordAs(String username) {
