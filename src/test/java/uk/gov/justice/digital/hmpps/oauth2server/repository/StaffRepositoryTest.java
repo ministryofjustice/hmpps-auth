@@ -53,30 +53,6 @@ public class StaffRepositoryTest {
 
     }
 
-    @Test
-    public void givenAnExistingStaffMemberTheyCanBeRetrieved() {
-
-        final var retrievedEntity = repository.findById(1L).orElseThrow();
-
-        assertThat(retrievedEntity.getUsers()).hasSize(2);
-        assertThat(retrievedEntity.getIdentifiers()).hasSize(1);
-
-        final var generalUser = retrievedEntity.getAccountByType("GENERAL");
-        assertThat(generalUser.getUsername()).isEqualTo("ITAG_USER");
-        assertThat(retrievedEntity.getAccountByType("ADMIN").getUsername()).isEqualTo("ITAG_USER_ADM");
-
-        assertThat(generalUser.getRoles().stream().map(r -> r.getRole().getName()))
-                .containsExactly("Some Old Role", "Omic Administrator", "KW Migration", "Maintain Access Roles Admin", "Global Search",
-                        "Create Category assessments", "Approve Category assessments", "Security Cat tool role");
-
-        assertThat(generalUser.getCaseloads().stream().map(c -> c.getCaseload().getName()))
-                .containsExactly("Magic API Caseload", "Moorlands");
-
-        assertThat(generalUser.filterRolesByCaseload("NWEB").stream().map(r -> r.getRole().getName()))
-                .containsExactly("Omic Administrator", "KW Migration", "Maintain Access Roles Admin", "Global Search",
-                        "Create Category assessments", "Approve Category assessments", "Security Cat tool role");
-    }
-
     private Staff transientEntity() {
         return Staff
                 .builder()

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <title>Update Personal Details</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <div th:if="${error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
+       data-module="govuk-error-summary">
+    <h2 class="govuk-error-summary__title" id="error-summary">
+      There is a problem
+    </h2>
+    <div class="govuk-error-summary__body" id="error-detail">
+      <ul class="govuk-list govuk-error-summary__list">
+        <li th:each="e: ${error_firstName}">
+          <a href="#firstName" th:text="#{${'userdetails.firstName.' + e}}">First name message</a>
+        </li>
+        <li th:each="e: ${error_lastName}">
+          <a href="#lastName" th:text="#{${'userdetails.lastName.' + e}}">Last name message</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div role="alert">
+    <h1 class="govuk-heading-xl">Update personal details</h1>
+  </div>
+
+  <form class="form" th:action="@{/user-details}" method="POST" id="userDetailsForm">
+    <fieldset class="govuk-fieldset">
+      <div th:class="'govuk-form-group' + (${error_firstName} ? ' govuk-form-group--error' : '')">
+        <label class="govuk-label" for="firstName">First name</label>
+        <span th:if="${error_firstName}" id="firstName-error" class="govuk-error-message"
+              th:text="#{${'userdetails.firstName.' + error_firstName}}">
+          First name error
+        </span>
+        <input th:class="'govuk-input' + (${error_firstName} ? ' govuk-input--error' : '')" id="firstName"
+               name="firstName"
+               type="text" data-element-id="firstName" autofocus autocomplete="given-name" spellcheck="false"
+               th:value="${firstName}"
+               aria-describedby="firstName-error">
+      </div>
+      <div th:class="'govuk-form-group' + (${error_lastName} ? ' govuk-form-group--error' : '')">
+        <label class="govuk-label" for="lastName">Last name</label>
+        <span th:if="${error_lastName}" id="lastName-error" class="govuk-error-message"
+              th:text="#{${'userdetails.lastName.' + error_lastName}}">
+          Last name error
+        </span>
+        <input th:class="'govuk-input' + (${error_lastName} ? ' govuk-input--error' : '')" id="lastName" name="lastName"
+               type="text" data-element-id="lastName" autocomplete="family-name" spellcheck="false"
+               th:value="${lastName}"
+               aria-describedby="lastName-error">
+      </div>
+
+      <div class="govuk-form-group">
+        <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="continue-button"
+               value="Save">
+        <a class="govuk-button" role="button" id="cancel" th:href="@{/user-details/cancel}">Cancel</a>
+      </div>
+    </fieldset>
+  </form>
+</div>
+</body>
+</html>

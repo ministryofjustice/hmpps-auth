@@ -6,8 +6,7 @@
   "enabled": true,
   "roles": [
     {
-      "name": "TEST_ROLE",
-      "description": "A Test Role"
+      "name": "TEST_ROLE"
     }
   ]
 }

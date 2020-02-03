@@ -6,9 +6,9 @@ import java.time.LocalDate
 plugins {
   id 'java'
   id 'groovy'
-  id 'org.springframework.boot' version '2.2.2.RELEASE'
-  id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-  id 'org.owasp.dependencycheck' version '5.2.4'
+  id 'org.springframework.boot' version '2.2.4.RELEASE'
+  id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+  id 'org.owasp.dependencycheck' version '5.3.0'
   id 'com.github.ben-manes.versions' version '0.27.0'
   id 'org.jetbrains.kotlin.jvm' version '1.3.61'
 }
@@ -44,9 +44,9 @@ configurations {
 }
 
 ext {
-    ext {
-        drivers = ['chromeHeadless']
-    }
+  ext {
+    drivers = ['chromeHeadless']
+  }
 }
 
 dependencyCheck {
@@ -65,21 +65,21 @@ def todaysDate = LocalDate.now().format('yyyy-MM-dd')
 version = System.getenv('CI') ? "${todaysDate}.${System.getenv('CIRCLE_BUILD_NUM')}" : todaysDate
 
 springBoot {
-    buildInfo {
-        properties {
-            artifact = rootProject.name
-            version = version
-            group = group
-            name = rootProject.name
-            time = today
-            additional = [
-                    by                   : System.properties['user.name'],
-                    operatingSystem      : "${System.properties['os.name']} (${System.properties['os.version']})",
-                    continuousIntegration: System.getenv('CI') ? true : false,
-                    machine              : InetAddress.localHost.hostName
-            ]
-        }
+  buildInfo {
+    properties {
+      artifact = rootProject.name
+      version = version
+      group = group
+      name = rootProject.name
+      time = today
+      additional = [
+          by                   : System.properties['user.name'],
+          operatingSystem      : "${System.properties['os.name']} (${System.properties['os.version']})",
+          continuousIntegration: System.getenv('CI') ? true : false,
+          machine              : InetAddress.localHost.hostName
+      ]
     }
+  }
 }
 
 dependencyManagement {
@@ -125,13 +125,13 @@ dependencies {
   implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1'
   implementation 'uk.gov.service.notify:notifications-java-client:3.15.1-RELEASE'
 
-  implementation 'org.flywaydb:flyway-core:6.1.0'
-  implementation 'com.zaxxer:HikariCP:3.4.1'
+  implementation 'org.flywaydb:flyway-core:6.2.0'
+  implementation 'com.zaxxer:HikariCP:3.4.2'
   implementation 'org.apache.commons:commons-lang3:3.9'
   implementation 'org.apache.commons:commons-text:1.8'
   implementation 'com.microsoft.sqlserver:mssql-jdbc:7.4.1.jre11'
-  implementation 'com.github.timpeeters:spring-boot-graceful-shutdown:2.1.1'
-  implementation 'com.google.guava:guava:28.1-jre'
+  implementation 'com.github.timpeeters:spring-boot-graceful-shutdown:2.2.0'
+  implementation 'com.google.guava:guava:28.2-jre'
 
   implementation configurations.agentDeps
 
@@ -146,14 +146,14 @@ dependencies {
   testImplementation 'org.springframework.security:spring-security-test'
   testRuntime 'com.h2database:h2:1.4.196'
 
-  testImplementation 'org.codehaus.groovy:groovy-all:2.5.8'
-  testImplementation 'org.spockframework:spock-spring:1.2-groovy-2.5'
-  testImplementation('org.spockframework:spock-core:1.2-groovy-2.5') {
+  testImplementation 'org.codehaus.groovy:groovy-all:2.5.9'
+  testImplementation 'org.spockframework:spock-spring:1.3-groovy-2.5'
+  testImplementation('org.spockframework:spock-core:1.3-groovy-2.5') {
     exclude group: 'org.codehaus.groovy'
   }
 
-  testImplementation 'org.gebish:geb-core:3.2'
-  testImplementation 'org.gebish:geb-spock:3.2'
+  testImplementation 'org.gebish:geb-core:3.3'
+  testImplementation 'org.gebish:geb-spock:3.3'
   testImplementation 'org.seleniumhq.selenium:selenium-support:3.141.59'
   testImplementation 'org.seleniumhq.selenium:selenium-chrome-driver:3.141.59'
   testImplementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.141.59'
@@ -161,16 +161,16 @@ dependencies {
 
   testImplementation 'com.github.tomakehurst:wiremock-standalone:2.25.1'
   testImplementation 'com.github.tomjankes:wiremock-groovy:0.2.0'
-  testImplementation 'org.slf4j:slf4j-api:1.7.29'
-  testImplementation 'com.auth0:java-jwt:3.8.3'
+  testImplementation 'org.slf4j:slf4j-api:1.7.30'
+  testImplementation 'com.auth0:java-jwt:3.9.0'
 
-  testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.11.1'
+  testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.12.0'
   testImplementation 'com.nhaarman:mockito-kotlin-kt1.1:1.6.0'
 }
 
 task copyAgent(type: Copy) {
-    from configurations.agentDeps
-    into "$buildDir/libs"
+  from configurations.agentDeps
+  into "$buildDir/libs"
 }
 
 assemble.dependsOn copyAgent
@@ -188,8 +188,11 @@ drivers.each { driver ->
 
 test {
   exclude '**/integration/*'
+  useJUnitPlatform()
 }
 
 task testIntegration(type: Test) {
   include 'uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*'
+
+  maxHeapSize = "512m"
 }

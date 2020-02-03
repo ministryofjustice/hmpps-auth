@@ -1,14 +1,18 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "USER_TOKEN")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"tokenType"})
@@ -31,25 +35,72 @@ public class UserToken {
     private User user;
 
     UserToken(final TokenType tokenType, final User user) {
-        this.token = UUID.randomUUID().toString();
+        this.token = tokenType == TokenType.MFA_CODE ? generateIntAsString() : UUID.randomUUID().toString();
         this.tokenType = tokenType;
         this.user = user;
 
         final var now = LocalDateTime.now();
-        this.tokenExpiry = tokenType == TokenType.CHANGE ? now.plusMinutes(20) : now.plusDays(1);
+        this.tokenExpiry = tokenType == TokenType.CHANGE || tokenType == TokenType.MFA ? now.plusMinutes(20) : now.plusDays(1);
+    }
+
+    private String generateIntAsString() {
+        try {
+            final var random = SecureRandom.getInstance("DRBG").nextInt(1000000);
+            return String.format("%06d", random);
+
+        } catch (final NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean hasTokenExpired() {
         return tokenExpiry.isBefore(LocalDateTime.now());
     }
 
-    @Getter
+    public String getToken() {
+        return this.token;
+    }
+
+    public TokenType getTokenType() {
+        return this.tokenType;
+    }
+
+    public LocalDateTime getTokenExpiry() {
+        return this.tokenExpiry;
+    }
+
+    public User getUser() {
+        return this.user;
+    }
+
+    public void setToken(final String token) {
+        this.token = token;
+    }
+
+    public void setTokenType(final TokenType tokenType) {
+        this.tokenType = tokenType;
+    }
+
+    public void setTokenExpiry(final LocalDateTime tokenExpiry) {
+        this.tokenExpiry = tokenExpiry;
+    }
+
+    public void setUser(final User user) {
+        this.user = user;
+    }
+
     @AllArgsConstructor
     public enum TokenType {
-        RESET("Reset"),
-        VERIFIED("Verified"),
-        CHANGE("Change");
+        RESET("ResetPassword"),
+        VERIFIED("VerifiedPassword"),
+        CHANGE("ChangePassword"),
+        MFA("MFA"),
+        MFA_CODE("MFACode");
 
         private final String description;
+
+        public String getDescription() {
+            return this.description;
+        }
     }
 }

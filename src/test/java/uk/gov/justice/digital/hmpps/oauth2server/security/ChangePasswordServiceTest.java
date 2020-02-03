@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,14 +34,12 @@ public class ChangePasswordServiceTest {
     private UserService userService;
     @Mock
     private DelegatingUserService delegatingUserService;
-    @Mock
-    private TelemetryClient telemetryClient;
 
     private ChangePasswordService changePasswordService;
 
     @Before
     public void setUp() {
-        changePasswordService = new ChangePasswordService(userTokenRepository, userRepository, userService, delegatingUserService, telemetryClient);
+        changePasswordService = new ChangePasswordService(userTokenRepository, userRepository, userService, delegatingUserService);
     }
 
     @Test

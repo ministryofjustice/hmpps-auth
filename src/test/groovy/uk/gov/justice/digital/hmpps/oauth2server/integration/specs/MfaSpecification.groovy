@@ -1,0 +1,289 @@
+package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
+
+import geb.driver.CachingDriverFactory
+import groovy.json.JsonSlurper
+import org.apache.commons.lang3.RandomStringUtils
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.web.client.RestTemplate
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
+
+import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
+
+class MfaSpecification extends DeliusIntegrationSpec {
+  public static final String clientBaseUrl = 'http://localhost:8081/login'
+
+  def "Attempt MFA challenge with invalid token"() {
+    when: 'I go to the MFA page'
+    browser.go('/auth/mfa-challenge?token=invalidtoken')
+
+    then: 'I am taken to the Login page'
+    at LoginErrorPage
+    errorText == 'Your authentication request failed. You will be locked out if you enter the wrong details 3 times.'
+  }
+
+  def "Attempt MFA challenge with expired token"() {
+    when: 'I go to the MFA page'
+    browser.go('/auth/mfa-challenge?token=mfa_expired')
+
+    then: 'I am taken to the Login page'
+    at LoginErrorPage
+    errorText == 'Your authentication request has timed out. Enter your username and password to start again.'
+  }
+
+  def "Login as user with MFA enabled"() {
+    given: 'I try to login with a user with MFA enabled'
+    to LoginPage
+
+    when: 'I login'
+    loginAs AUTH_MFA_USER, 'password123456'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials"
+    submitCode mfaCode
+
+    then: 'My credentials are accepted and I am shown the Home page'
+    at HomePage
+    principalName == 'Mfa User'
+
+    def body = parseJwt()
+    body.name == 'Mfa User'
+  }
+
+  def "Login as user with MFA enabled but no email address"() {
+    given: 'I try to login with a user with MFA enabled'
+    to LoginPage
+
+    when: 'I login'
+    loginAs AUTH_MFA_NOEMAIL_USER, 'password123456'
+
+    then: 'I am taken to the Login page'
+    at LoginErrorPage
+    errorText == 'We need to send you a security code to login, but we can\'t find a verified email address. ' +
+        'Please login on an approved network and verify your email address.'
+  }
+
+  def "MFA code is required"() {
+    when: 'I try to login with a user with MFA enabled'
+    browser.go("/auth/mfa-challenge?token=mfa_token")
+
+    then: 'I am taken to the mfa page'
+    at MfaPage
+
+    when: "I don't enter a code"
+    submitCode " "
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Enter the code received in the email'
+  }
+
+  def "MFA code is incorrect"() {
+    when: 'I try to login with a user with MFA enabled'
+    browser.go("/auth/mfa-challenge?token=mfa_token")
+
+    then: 'I am taken to the mfa page'
+    at MfaPage
+
+    when: "I enter an incorrect code"
+    submitCode "123456"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+  }
+
+  def "MFA user gets locked after 3 invalid MFA attempts"() {
+    given: 'I try to login with a user with MFA enabled'
+    to LoginPage
+
+    when: 'I login'
+    loginAs AUTH_MFA_LOCKED, 'password123456'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at LoginErrorPage
+    errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
+
+    when: 'I login'
+    loginAs AUTH_MFA_LOCKED, 'password123456'
+
+    then: "My account is now locked"
+    at LoginErrorPage
+    errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
+  }
+
+  def "MFA user gets locked after mix of MFA and login attempts"() {
+    given: 'I try to login with a user with MFA enabled'
+    to LoginPage
+
+    when: 'I login with incorrect password'
+    loginAs AUTH_MFA_LOCKED2, 'wrongpass'
+
+    then: 'My credentials are rejected and I am still on the Login page'
+    at LoginErrorPage
+    errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times."
+
+    // successful username password resets retries so count starts again at 0
+    when: 'I login'
+    loginAs AUTH_MFA_LOCKED2, 'password123456'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I start again at login page and login with incorrect credentials"
+    to LoginPage
+    loginAs AUTH_MFA_LOCKED2, 'wrongpass'
+
+    then: "My account is now locked"
+    at LoginErrorPage
+    errorText == "Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below."
+  }
+
+  def "Locked count gets reset after successful MFA login"() {
+    given: 'I try to login with a user with MFA enabled'
+    to LoginPage
+
+    when: 'I login'
+    loginAs AUTH_MFA_USER, 'password123456'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials incorrectly"
+    def validMfaCode = mfaCode
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials incorrectly"
+    submitCode "123"
+
+    then: "I am shown an error message"
+    at MfaErrorPage
+    errorText == 'Email code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.'
+
+    when: "I enter my MFA credentials"
+    submitCode validMfaCode
+
+    then: 'My credentials are accepted and I am shown the Home page'
+    at HomePage
+
+    when: "I start again at login page and login with incorrect credentials"
+    to LoginPage
+    loginAs AUTH_MFA_USER, 'wrongpass'
+
+    then: 'My credentials are rejected and I am still on the Login page'
+    at LoginErrorPage
+    errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times."
+
+    when: "I login with incorrect credentials"
+    to LoginPage
+    loginAs AUTH_MFA_USER, 'wrongpass'
+
+    then: 'My credentials are rejected and I am still on the Login page'
+    at LoginErrorPage
+    errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times."
+  }
+
+  def "I would like the MFA code to be resent"() {
+    when: 'I try to login with a user with MFA enabled'
+    browser.go("/auth/mfa-challenge?token=mfa_token")
+
+    then: 'I am taken to the mfa page'
+    at MfaPage
+
+    when: "I select that I don't have a code"
+    resendMfa()
+
+    then: "I am taken to the resend MFA page"
+    at MfaResendPage
+
+    when: "I continue"
+    resendCode()
+
+    then: "I am now back at the MFA code page"
+    at MfaPage
+    mfaCode == 'mfa_code'
+  }
+
+  def "I can sign in from another client with MFA enabled"() {
+    given: 'I am using SSO auth token to login'
+    def state = RandomStringUtils.random(6, true, true)
+    browser.go("/auth/oauth/authorize?client_id=elite2apiclient&redirect_uri=$clientBaseUrl&response_type=code&state=$state")
+    at LoginPage
+
+    when: "I login using valid credentials"
+    loginAs AUTH_MFA_USER, 'password123456'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials"
+    submitCode mfaCode
+
+    then: 'I am redirected back'
+    browser.getCurrentUrl() startsWith("$clientBaseUrl?code")
+
+    and: 'state is returned'
+    browser.getCurrentUrl() contains("state=$state")
+
+    and: 'auth code is returned'
+    def params = LoginSpecification.splitQuery(new URL(browser.getCurrentUrl()))
+    def authCode = params.get('code')
+    authCode != null
+
+    and: 'auth code can be redeemed for access token'
+    def response = getAccessToken(authCode)
+    response.user_name == AUTH_MFA_USER.username
+    response.auth_source == 'auth'
+
+    cleanup:
+    CachingDriverFactory.clearCache()
+  }
+
+  Object getAccessToken(String authCode) {
+    def headers = new HttpHeaders()
+    headers.put('Authorization', List.of('Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA=='))
+    def entity = new HttpEntity<>('', headers)
+    String response = new RestTemplate().postForEntity("$baseUrl/auth/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=$clientBaseUrl", entity, String.class).getBody()
+    new JsonSlurper().parseText(response)
+  }
+}

@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.springframework.security.core.CredentialsContainer;
@@ -18,8 +21,6 @@ import static javax.persistence.FetchType.EAGER;
 
 @Entity
 @Table(name = "USERS")
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"id"})
@@ -81,7 +82,6 @@ public class User implements UserPersonDetails, CredentialsContainer {
     private Set<Group> groups = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Setter(AccessLevel.NONE)
     private Set<UserToken> tokens = new HashSet<>();
 
     public static User of(final String username) {
@@ -174,6 +174,114 @@ public class User implements UserPersonDetails, CredentialsContainer {
                 ", person=" + person +
                 ", authorities=" + authorities +
                 '}';
+    }
+
+    public UUID getId() {
+        return this.id;
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public boolean isVerified() {
+        return this.verified;
+    }
+
+    public boolean isLocked() {
+        return this.locked;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public AuthSource getSource() {
+        return this.source;
+    }
+
+    public LocalDateTime getPasswordExpiry() {
+        return this.passwordExpiry;
+    }
+
+    public LocalDateTime getLastLoggedIn() {
+        return this.lastLoggedIn;
+    }
+
+    public Person getPerson() {
+        return this.person;
+    }
+
+    public Set<Authority> getAuthorities() {
+        return this.authorities;
+    }
+
+    public Set<Group> getGroups() {
+        return this.groups;
+    }
+
+    public Set<UserToken> getTokens() {
+        return this.tokens;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void setSource(AuthSource source) {
+        this.source = source;
+    }
+
+    public void setPasswordExpiry(LocalDateTime passwordExpiry) {
+        this.passwordExpiry = passwordExpiry;
+    }
+
+    public void setLastLoggedIn(LocalDateTime lastLoggedIn) {
+        this.lastLoggedIn = lastLoggedIn;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public void setAuthorities(Set<Authority> authorities) {
+        this.authorities = authorities;
+    }
+
+    public void setGroups(Set<Group> groups) {
+        this.groups = groups;
     }
 
     public static class UserBuilder {

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 
 @Service("deliusUserDetailsService")
 @Transactional(readOnly = true)
@@ -36,9 +36,10 @@ open class DeliusUserDetailsService(private val deliusUserService: DeliusUserSer
 open class DeliusAuthenticationProvider(private val deliusUserService: DeliusUserService,
                                         deliusUserDetailsService: DeliusUserDetailsService,
                                         userRetriesService: UserRetriesService,
-                                        telemetryClient: TelemetryClient,
-                                        @Value("\${application.authentication.lockout-count}") accountLockoutCount: Int) :
-    LockingAuthenticationProvider(deliusUserDetailsService, userRetriesService, telemetryClient, accountLockoutCount) {
+                                        mfaService: MfaService,
+                                        userService: UserService,
+                                        telemetryClient: TelemetryClient) :
+    LockingAuthenticationProvider(deliusUserDetailsService, userRetriesService, mfaService, userService, telemetryClient) {
 
 
   override fun checkPassword(userDetails: UserDetails, password: String): Boolean =

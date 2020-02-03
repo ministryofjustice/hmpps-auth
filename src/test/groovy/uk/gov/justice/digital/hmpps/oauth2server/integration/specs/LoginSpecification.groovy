@@ -152,7 +152,7 @@ class LoginSpecification extends DeliusIntegrationSpec {
         loginAs EXPIRED_USER, 'password123456'
 
         then: 'I am taken to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
     }
 
     def "Attempt login when delius connections time out"() {
@@ -396,12 +396,12 @@ class LoginSpecification extends DeliusIntegrationSpec {
         CachingDriverFactory.clearCache()
     }
 
-    private static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+    static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
         return url.query.split('&')
                 .collectEntries { it.split('=').collect { URLDecoder.decode(it, 'UTF-8') } }
     }
 
-    private Object getAccessToken(String authCode) {
+    Object getAccessToken(String authCode) {
         def headers = new HttpHeaders()
         headers.put('Authorization', List.of('Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA=='))
         def entity = new HttpEntity<>('', headers)

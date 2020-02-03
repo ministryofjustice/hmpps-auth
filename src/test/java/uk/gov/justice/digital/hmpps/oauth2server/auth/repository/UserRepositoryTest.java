@@ -263,7 +263,7 @@ public class UserRepositoryTest {
     public void findAll_UserFilter_ByUsername() {
         assertThat(repository.findAll(UserFilter.builder().name("_expired").build()))
                 .extracting(User::getUsername)
-                .containsExactly("AUTH_EXPIRED");
+                .containsExactly("AUTH_EXPIRED", "AUTH_MFA_EXPIRED_USER");
     }
 
     @Test
@@ -277,7 +277,7 @@ public class UserRepositoryTest {
     public void findAll_UserFilter_ByFirstNameLastName() {
         assertThat(repository.findAll(UserFilter.builder().name("a no").build()))
                 .extracting(User::getUsername)
-                .containsExactly("AUTH_NO_EMAIL");
+                .containsExactly("AUTH_NO_EMAIL", "AUTH_MFA_NOEMAIL_USER");
     }
 
     @Test

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,22 +14,26 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService;
 
 import java.util.Map;
 
 @Slf4j
 public abstract class LockingAuthenticationProvider extends DaoAuthenticationProvider {
     private final UserRetriesService userRetriesService;
+    private final MfaService mfaService;
+    private final UserService userService;
     private final TelemetryClient telemetryClient;
-    private final int accountLockoutCount;
 
     public LockingAuthenticationProvider(final UserDetailsService userDetailsService,
                                          final UserRetriesService userRetriesService,
-                                         final TelemetryClient telemetryClient,
-                                         final int accountLockoutCount) {
+                                         final MfaService mfaService,
+                                         final UserService userService,
+                                         final TelemetryClient telemetryClient) {
         this.userRetriesService = userRetriesService;
+        this.mfaService = mfaService;
+        this.userService = userService;
         this.telemetryClient = telemetryClient;
-        this.accountLockoutCount = accountLockoutCount;
         setUserDetailsService(userDetailsService);
 
         final var oracleSha1PasswordEncoder = new OracleSha1PasswordEncoder();
@@ -43,7 +48,6 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
         if (StringUtils.isBlank(authentication.getName()) || authentication.getCredentials() == null ||
                 StringUtils.isBlank(authentication.getCredentials().toString())) {
             log.info("Credentials missing for user {}", authentication.getName());
-            trackFailure(authentication.getName(), "credentials", "missing");
             throw new MissingCredentialsException();
         }
 
@@ -53,7 +57,6 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
             final var reason = e.getClass().getSimpleName();
             final var username = authentication.getName();
             log.info("Authenticate failed for user {} with reason {} and message {}", username, reason, e.getMessage());
-            trackFailure(username, reason);
             throw e;
         }
     }
@@ -75,21 +78,22 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
             log.info("Resetting retries for user {}", username);
             userRetriesService.resetRetriesAndRecordLogin(userDetails);
 
+            // now check if mfa is enabled for the user
+            if (mfaService.needsMfa(userDetails.getAuthorities())) {
+                if (userService.hasVerifiedEmail(userDetails)) {
+                    throw new MfaRequiredException("MFA required");
+                }
+                throw new MfaUnavailableException("MFA required, but no email set");
+            }
         } else {
-            final var newRetryCount = userRetriesService.incrementRetries(username);
+            final var locked = userRetriesService.incrementRetriesAndLockAccountIfNecessary(userDetails);
 
             // check the number of retries
-            if (newRetryCount >= accountLockoutCount) {
-
-                // need to reset the retry count otherwise when the user is then unlocked they will have to get the password right first time
-                userRetriesService.lockAccount(userDetails);
-
-                log.info("Locking account for user {}", username);
-                trackFailure(username, "locked", "exceeded");
+            if (locked) {
+                log.info("Locked account for user {}", username);
                 throw new LockedException("Account is locked, number of retries exceeded");
             }
             log.info("Credentials incorrect for user {}", username);
-            trackFailure(username, "credentials", "incorrect");
             throw new BadCredentialsException("Authentication failed: password does not match stored value");
         }
     }
@@ -98,11 +102,15 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
         return getPasswordEncoder().matches(password, userDetails.getPassword());
     }
 
-    private void trackFailure(final String username, final String type) {
-        telemetryClient.trackEvent("AuthenticateFailure", Map.of("username", username, "type", type), null);
+    public static class MfaRequiredException extends AccountStatusException {
+        MfaRequiredException(final String msg) {
+            super(msg);
+        }
     }
 
-    private void trackFailure(final String username, final String type, final String subType) {
-        telemetryClient.trackEvent("AuthenticateFailure", Map.of("username", username, "type", type, "subType", subType), null);
+    public static class MfaUnavailableException extends AccountStatusException {
+        MfaUnavailableException(final String msg) {
+            super(msg);
+        }
     }
 }

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 
@@ -37,6 +37,7 @@ open class AuthUserDetailsService(private val authUserService: AuthUserService) 
 @Transactional(transactionManager = "authTransactionManager", readOnly = true, noRollbackFor = [BadCredentialsException::class])
 open class AuthAuthenticationProvider(authUserDetailsService: AuthUserDetailsService,
                                       userRetriesService: UserRetriesService,
-                                      telemetryClient: TelemetryClient,
-                                      @Value("\${application.authentication.lockout-count}") accountLockoutCount: Int) :
-    LockingAuthenticationProvider(authUserDetailsService, userRetriesService, telemetryClient, accountLockoutCount)
+                                      mfaService: MfaService,
+                                      userService: UserService,
+                                      telemetryClient: TelemetryClient) :
+    LockingAuthenticationProvider(authUserDetailsService, userRetriesService, mfaService, userService, telemetryClient)

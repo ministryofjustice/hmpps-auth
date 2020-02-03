@@ -4,7 +4,6 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.never
 import com.nhaarman.mockito_kotlin.verify
-import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
@@ -19,12 +18,7 @@ class DelegatingUserServiceTest {
   private val nomisUserService: NomisUserService = mock()
   private val authUserService: AuthUserService = mock()
   private val deliusUserService: DeliusUserService = mock()
-  private lateinit var service: DelegatingUserService
-
-  @Before
-  fun before() {
-    service = DelegatingUserService(nomisUserService, authUserService, deliusUserService)
-  }
+  private val service = DelegatingUserService(nomisUserService, authUserService, deliusUserService)
 
   @Test
   fun `lock account auth user`() {
