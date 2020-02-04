@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaRequiredException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 
@@ -35,12 +36,12 @@ class ExistingPasswordController(private val authenticationManager: Authenticati
     val username = getUserName(authentication)
     return try {
       authenticate(username, password)
+      continueToNewPassword(username)
 
-      // successfully logged in with credentials, so generate change password token
-      val token = tokenService.createToken(TokenType.CHANGE, username)
+    } catch (e: MfaRequiredException) {
+      // they'll have already provided their MFA credentials to login, so just allow password here
+      continueToNewPassword(username)
 
-      // and take them to existing change passsword pages to continue flow
-      ModelAndView("redirect:/new-password", "token", token)
     } catch (e: AuthenticationException) {
       val reason = e.javaClass.simpleName
       log.info("Caught {} during change password", reason, e)
@@ -52,6 +53,14 @@ class ExistingPasswordController(private val authenticationManager: Authenticati
         else -> ModelAndView("redirect:/logout", "error", "invalid")
       }
     }
+  }
+
+  private fun continueToNewPassword(username: String): ModelAndView {
+    // successfully logged in with credentials, so generate change password token
+    val token = tokenService.createToken(TokenType.CHANGE, username)
+
+    // and take them to existing change passsword pages to continue flow
+    return ModelAndView("redirect:/new-password", "token", token)
   }
 
   private fun createModelAndViewWithUsername(authentication: Authentication) =

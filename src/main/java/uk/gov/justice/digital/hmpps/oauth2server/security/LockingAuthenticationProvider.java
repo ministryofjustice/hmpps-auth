@@ -103,7 +103,7 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
     }
 
     public static class MfaRequiredException extends AccountStatusException {
-        MfaRequiredException(final String msg) {
+        public MfaRequiredException(final String msg) {
             super(msg);
         }
     }
