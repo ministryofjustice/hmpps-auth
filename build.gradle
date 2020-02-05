@@ -159,12 +159,12 @@ dependencies {
   testImplementation 'org.seleniumhq.selenium:selenium-firefox-driver:3.141.59'
   testImplementation 'io.github.http-builder-ng:http-builder-ng-apache:1.0.4'
 
-  testImplementation 'com.github.tomakehurst:wiremock-standalone:2.25.1'
+  testImplementation 'com.github.tomakehurst:wiremock-standalone:2.26.0'
   testImplementation 'com.github.tomjankes:wiremock-groovy:0.2.0'
   testImplementation 'org.slf4j:slf4j-api:1.7.30'
   testImplementation 'com.auth0:java-jwt:3.9.0'
 
-  testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.12.0'
+  testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.13.0'
   testImplementation 'com.nhaarman:mockito-kotlin-kt1.1:1.6.0'
 }
 

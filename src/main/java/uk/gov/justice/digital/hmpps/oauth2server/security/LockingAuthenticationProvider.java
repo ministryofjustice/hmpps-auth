@@ -52,7 +52,22 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
         }
 
         try {
-            return super.authenticate(authentication);
+            final var fullAuthentication = super.authenticate(authentication);
+            final var userDetails = (UserPersonDetails) fullAuthentication.getPrincipal();
+
+            // now check if mfa is enabled for the user
+            if (mfaService.needsMfa(fullAuthentication.getAuthorities())) {
+                if (userService.hasVerifiedEmail(userDetails)) {
+                    throw new MfaRequiredException("MFA required");
+                }
+                throw new MfaUnavailableException("MFA required, but no email set");
+            }
+
+            final var username = userDetails.getUsername();
+            log.info("Successful login for user {}", username);
+            telemetryClient.trackEvent("AuthenticateSuccess", Map.of("username", username), null);
+
+            return fullAuthentication;
         } catch (final AuthenticationException e) {
             final var reason = e.getClass().getSimpleName();
             final var username = authentication.getName();
@@ -63,13 +78,9 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
 
     @Override
     protected void additionalAuthenticationChecks(final UserDetails userDetails, final UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-        final var username = userDetails.getUsername();
         final var password = authentication.getCredentials().toString();
 
         checkPasswordWithAccountLock((UserPersonDetails) userDetails, password);
-
-        log.info("Successful login for user {}", username);
-        telemetryClient.trackEvent("AuthenticateSuccess", Map.of("username", username), null);
     }
 
     private void checkPasswordWithAccountLock(final UserPersonDetails userDetails, final String password) {
@@ -77,14 +88,6 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
         if (checkPassword(userDetails, password)) {
             log.info("Resetting retries for user {}", username);
             userRetriesService.resetRetriesAndRecordLogin(userDetails);
-
-            // now check if mfa is enabled for the user
-            if (mfaService.needsMfa(userDetails.getAuthorities())) {
-                if (userService.hasVerifiedEmail(userDetails)) {
-                    throw new MfaRequiredException("MFA required");
-                }
-                throw new MfaUnavailableException("MFA required, but no email set");
-            }
         } else {
             final var locked = userRetriesService.incrementRetriesAndLockAccountIfNecessary(userDetails);
 

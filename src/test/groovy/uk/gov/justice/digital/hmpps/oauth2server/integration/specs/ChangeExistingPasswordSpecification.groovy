@@ -124,5 +124,31 @@ class ChangeExistingPasswordSpecification extends DeliusIntegrationSpec {
 
     then: 'My credentials are accepted and I am taken to the enter new password page'
     at ChangeExistingPasswordPage
+
+    when: "I change password using valid credentials"
+    changePasswordAs AUTH_MFA_EXPIRED, 'helloworld2', 'helloworld2'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials"
+    submitCode mfaCode
+
+    then: 'I am now at the home page'
+    at HomePage
+
+    when: 'I can login with my new credentials'
+    logout()
+    at LoginPage
+    loginAs AUTH_MFA_EXPIRED, 'helloworld2'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials"
+    submitCode mfaCode
+
+    then: 'I am logged in'
+    at HomePage
   }
 }

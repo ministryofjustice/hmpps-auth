@@ -2,10 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
 import geb.spock.GebReportingSpec
 import org.apache.commons.lang3.RandomStringUtils
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangeExpiredPasswordErrorPage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangeExpiredPasswordPage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
@@ -88,7 +85,45 @@ class ChangeExpiredPasswordSpecification extends GebReportingSpec {
         at LoginPage
         loginAs EXPIRED_TEST2_USER, 'helloworld2'
 
-        then: 'I am logged in'
+      then: 'I am logged in'
+      at HomePage
+    }
+
+  // this test changes AUTH_MFA_EXPIRED password
+  def "Change password for auth user with MFA enabled"() {
+    given: 'I try to login with an expired user'
+    to LoginPage
+
+    when: 'I login'
+    loginAs AUTH_MFA_EXPIRED, 'password123456'
+
+    then: 'I am redirected to the change password page'
+    at ChangeExpiredPasswordPage
+
+    when: "I change password using valid credentials"
+    changePasswordAs AUTH_MFA_EXPIRED, 'helloworld2', 'helloworld2'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials"
+    submitCode mfaCode
+
+    then: 'I am now at the home page'
+    at HomePage
+
+    when: 'I can login with my new credentials'
+    logout()
+    at LoginPage
+    loginAs AUTH_MFA_EXPIRED, 'helloworld2'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials"
+    submitCode mfaCode
+
+    then: 'I am logged in'
         at HomePage
     }
 

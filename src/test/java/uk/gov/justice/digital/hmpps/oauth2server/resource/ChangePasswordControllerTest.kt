@@ -17,10 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
-import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService
-import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
-import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.security.*
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import java.util.*
 import java.util.Map.entry
@@ -29,6 +26,7 @@ import javax.servlet.http.HttpServletResponse
 
 class ChangePasswordControllerTest {
   private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler = mock()
+  private val userStateAuthenticationFailureHandler: UserStateAuthenticationFailureHandler = mock()
   private val authenticationManager: AuthenticationManager = mock()
   private val changePasswordService: ChangePasswordService = mock()
   private val userService: UserService = mock()
@@ -36,7 +34,7 @@ class ChangePasswordControllerTest {
   private val telemetryClient: TelemetryClient = mock()
   private val request: HttpServletRequest = mock()
   private val response: HttpServletResponse = mock()
-  private val controller = ChangePasswordController(jwtAuthenticationSuccessHandler,
+  private val controller = ChangePasswordController(jwtAuthenticationSuccessHandler, userStateAuthenticationFailureHandler,
       authenticationManager, changePasswordService, tokenService, userService, telemetryClient, setOf("password1"))
 
   @Nested
@@ -194,26 +192,16 @@ class ChangePasswordControllerTest {
     fun changePassword_SuccessAccountExpired() {
       setupCheckAndGetTokenValid()
       setupGetUserCallForProfile()
-      whenever(authenticationManager.authenticate(any())).thenThrow(AccountExpiredException("msg"))
+      val e = AccountExpiredException("msg")
+      whenever(authenticationManager.authenticate(any())).thenThrow(e)
       val redirect = controller.changePassword("user", "password2", "password2", request, response, true)
-      assertThat(redirect!!.viewName).isEqualTo("redirect:/login?error=changepassword")
-      val authCapture = ArgumentCaptor.forClass(Authentication::class.java)
-      verify(authenticationManager).authenticate(authCapture.capture())
-      val value = authCapture.value
-      assertThat(value.principal).isEqualTo("SOMEUSER")
-      assertThat(value.credentials).isEqualTo("password2")
+      assertThat(redirect).isNull()
+      verify(userStateAuthenticationFailureHandler).onAuthenticationFailureForUsername(request, response, e, "someuser")
+      verify(authenticationManager).authenticate(check {
+        assertThat(it.principal).isEqualTo("SOMEUSER")
+        assertThat(it.credentials).isEqualTo("password2")
+      })
       verify(changePasswordService).setPassword("user", "password2")
-    }
-
-    @Test
-    fun changePassword_SuccessAccountExpired_TelemetryFailure() {
-      setupCheckAndGetTokenValid()
-      setupGetUserCallForProfile()
-      whenever(authenticationManager.authenticate(any())).thenThrow(AccountExpiredException("msg"))
-      controller.changePassword("user", "password2", "password2", request, response, true)
-      verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateFailure"), check {
-        assertThat(it).containsOnly(entry("username", "someuser"), entry("reason", "AccountExpiredException"))
-      }, isNull())
     }
 
     @Test
@@ -243,6 +231,4 @@ class ChangePasswordControllerTest {
   private fun setupGetToken() {
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(User.of("someuser").createToken(UserToken.TokenType.RESET)))
   }
-
-  private fun errorNewListEntry(vararg values: String) = entry("errornew", values.asList())
 }

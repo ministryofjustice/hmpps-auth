@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
-import lombok.extern.slf4j.Slf4j
 import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
@@ -20,7 +19,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationP
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 
-@Slf4j
 @Controller
 class ExistingPasswordController(private val authenticationManager: AuthenticationManager,
                                  private val tokenService: TokenService,
