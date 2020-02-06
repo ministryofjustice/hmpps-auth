@@ -1,14 +1,12 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
@@ -20,7 +18,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
 @DataJpaTest
 @ActiveProfiles("dev")
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
@@ -33,7 +30,7 @@ public class GroupRepositoryTest {
     private RoleRepository roleRepository;
 
     @Test
-    public void givenATransientEntityItCanBePersisted() {
+    void givenATransientEntityItCanBePersisted() {
 
         final var transientEntity = transientEntity();
 
@@ -58,7 +55,7 @@ public class GroupRepositoryTest {
     }
 
     @Test
-    public void testRoleMapping() {
+    void testRoleMapping() {
         final var entity = repository.findByGroupCode("SITE_3_GROUP_1").orElseThrow();
         assertThat(entity.getGroupCode()).isEqualTo("SITE_3_GROUP_1");
         assertThat(entity.getAssignableRoles()).isEmpty();
@@ -93,7 +90,7 @@ public class GroupRepositoryTest {
     }
 
     @Test
-    public void givenAnExistingGroupTheyCanBeRetrieved() {
+    void givenAnExistingGroupTheyCanBeRetrieved() {
         final var group = repository.findByGroupCode("SITE_1_GROUP_2").orElseThrow();
         assertThat(group.getGroupCode()).isEqualTo("SITE_1_GROUP_2");
         assertThat(group.getGroupName()).isEqualTo("Site 1 - Group 2");
@@ -101,7 +98,7 @@ public class GroupRepositoryTest {
     }
 
     @Test
-    public void findAllByOrderByGroupName() {
+    void findAllByOrderByGroupName() {
         assertThat(repository.findAllByOrderByGroupName()).extracting(Group::getGroupCode).containsSequence("SITE_1_GROUP_1", "SITE_1_GROUP_2", "SITE_2_GROUP_1", "SITE_3_GROUP_1");
     }
 

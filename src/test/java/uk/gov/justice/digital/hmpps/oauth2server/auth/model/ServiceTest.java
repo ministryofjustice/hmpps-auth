@@ -1,31 +1,31 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ServiceTest {
+class ServiceTest {
 
     @Test
-    public void getRoles() {
+    void getRoles() {
         final var service = new Service("CODE", "NAME", "Description", "SOME_ROLE, SOME_OTHER_ROLE", "http://some.url", true, "a@b.com");
         assertThat(service.getRoles()).containsExactly("SOME_ROLE", "SOME_OTHER_ROLE");
     }
 
     @Test
-    public void getRoles_empty() {
+    void getRoles_empty() {
         final var service = new Service("CODE", "NAME", "Description", null, "http://some.url", true, "a@b.com");
         assertThat(service.getRoles()).isEmpty();
     }
 
     @Test
-    public void isUrlInsteadOfEmail() {
+    void isUrlInsteadOfEmail() {
         final var service = new Service("CODE", "NAME", "Description", null, "http://some.url", true, "a@b.com");
         assertThat(service.isUrlInsteadOfEmail()).isFalse();
     }
 
     @Test
-    public void isUrlInsteadOfEmail_true() {
+    void isUrlInsteadOfEmail_true() {
         final var service = new Service("CODE", "NAME", "Description", null, "http://some.url", true, "http://some.url");
         assertThat(service.isUrlInsteadOfEmail()).isTrue();
     }

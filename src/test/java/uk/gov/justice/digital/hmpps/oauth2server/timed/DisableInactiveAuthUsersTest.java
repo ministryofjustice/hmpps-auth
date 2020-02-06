@@ -1,17 +1,17 @@
 package uk.gov.justice.digital.hmpps.oauth2server.timed;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DisableInactiveAuthUsersTest {
+@ExtendWith(SpringExtension.class)
+class DisableInactiveAuthUsersTest {
     @Mock
     private DisableInactiveAuthUsersService service;
     @Mock
@@ -19,13 +19,13 @@ public class DisableInactiveAuthUsersTest {
 
     private DisableInactiveAuthUsers disableInactiveAuthUsers;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         disableInactiveAuthUsers = new DisableInactiveAuthUsers(service, telemetryClient);
     }
 
     @Test
-    public void findAndDisableInactiveAuthUsers() {
+    void findAndDisableInactiveAuthUsers() {
         when(service.processInBatches()).thenReturn(0);
         disableInactiveAuthUsers.findAndDisableInactiveAuthUsers();
         verify(service).processInBatches();

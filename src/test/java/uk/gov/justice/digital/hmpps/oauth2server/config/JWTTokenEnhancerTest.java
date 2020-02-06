@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl;
@@ -19,13 +19,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class JWTTokenEnhancerTest {
+@ExtendWith(SpringExtension.class)
+class JWTTokenEnhancerTest {
     @Mock
     private OAuth2Authentication authentication;
 
     @Test
-    public void testEnhance_HasUserToken() {
+    void testEnhance_HasUserToken() {
         final OAuth2AccessToken token = new DefaultOAuth2AccessToken("value");
         when(authentication.isClientOnly()).thenReturn(false);
         final var uuid = UUID.randomUUID();
@@ -41,7 +41,7 @@ public class JWTTokenEnhancerTest {
     }
 
     @Test
-    public void testEnhance_MissingAuthSource() {
+    void testEnhance_MissingAuthSource() {
         final OAuth2AccessToken token = new DefaultOAuth2AccessToken("value");
         when(authentication.isClientOnly()).thenReturn(false);
         when(authentication.getUserAuthentication()).thenReturn(new UsernamePasswordAuthenticationToken(new UserDetailsImpl("user", null, Collections.emptyList(), null, "userID"), "pass"));

@@ -1,37 +1,37 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AuthorityTest {
+class AuthorityTest {
     @Test
-    public void testConstructor_addsRole() {
+    void testConstructor_addsRole() {
         assertThat(new Authority("BOB", "bloggs").getAuthority()).isEqualTo("ROLE_BOB");
     }
 
     @Test
-    public void testConstructor_unecessary() {
+    void testConstructor_unecessary() {
         assertThat(new Authority("ROLE_BOB", "bloggs").getAuthority()).isEqualTo("ROLE_BOB");
     }
 
     @Test
-    public void getAuthorityName() {
+    void getAuthorityName() {
         assertThat(new Authority("ROLE_BOB", "bloggs").getRoleCode()).isEqualTo("BOB");
     }
 
     @Test
-    public void removeRolePrefixIfNecessary_necessary() {
+    void removeRolePrefixIfNecessary_necessary() {
         assertThat(Authority.removeRolePrefixIfNecessary("ROLE_BOB")).isEqualTo("BOB");
     }
 
     @Test
-    public void removeRolePrefixIfNecessary_unnecessary() {
+    void removeRolePrefixIfNecessary_unnecessary() {
         assertThat(Authority.removeRolePrefixIfNecessary("BOB")).isEqualTo("BOB");
     }
 
     @Test
-    public void removeRolePrefixIfNecessary_null() {
+    void removeRolePrefixIfNecessary_null() {
         assertThat(Authority.removeRolePrefixIfNecessary(null)).isEqualTo(null);
     }
 }

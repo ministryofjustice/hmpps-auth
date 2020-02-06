@@ -1,14 +1,12 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
@@ -22,7 +20,6 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
 @DataJpaTest
 @ActiveProfiles("dev")
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
@@ -35,7 +32,7 @@ public class UserTokenRepositoryTest {
     private UserRepository userRepository;
 
     @Test
-    public void givenATransientEntityItCanBePersisted() {
+    void givenATransientEntityItCanBePersisted() {
 
         final var user = transientUser();
         final var entity = user.createToken(TokenType.RESET);
@@ -60,7 +57,7 @@ public class UserTokenRepositoryTest {
     }
 
     @Test
-    public void givenAnExistingUserTheyCanBeRetrieved() {
+    void givenAnExistingUserTheyCanBeRetrieved() {
         final var retrievedEntity = repository.findById("reset").orElseThrow();
         assertThat(retrievedEntity.getTokenType()).isEqualTo(TokenType.RESET);
         assertThat(retrievedEntity.getTokenExpiry()).isEqualTo(LocalDateTime.of(2018, 12, 10, 8, 55, 45));

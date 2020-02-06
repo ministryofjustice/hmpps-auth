@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
@@ -22,8 +22,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-@RunWith(MockitoJUnitRunner.class)
-public class AuthUserDetailsServiceTest {
+@ExtendWith(SpringExtension.class)
+class AuthUserDetailsServiceTest {
     @Mock
     private AuthUserService userService;
     @Mock
@@ -31,14 +31,14 @@ public class AuthUserDetailsServiceTest {
 
     private AuthUserDetailsService service;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         service = new AuthUserDetailsService(userService);
         ReflectionTestUtils.setField(service, "authEntityManager", authEntityManager);
     }
 
     @Test
-    public void testAuthEntityDetached() {
+    void testAuthEntityDetached() {
 
         final var user = buildAuthUser();
         when(userService.getAuthUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
@@ -51,7 +51,7 @@ public class AuthUserDetailsServiceTest {
     }
 
     @Test
-    public void testAuthOnlyUser() {
+    void testAuthOnlyUser() {
 
         final var user = buildAuthUser();
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(user));
@@ -66,7 +66,7 @@ public class AuthUserDetailsServiceTest {
     }
 
     @Test
-    public void testUserNotFound() {
+    void testUserNotFound() {
 
         when(userService.getAuthUserByUsername(anyString())).thenReturn(Optional.empty());
 

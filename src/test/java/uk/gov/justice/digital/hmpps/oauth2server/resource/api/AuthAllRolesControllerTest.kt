@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole

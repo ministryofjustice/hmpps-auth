@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.delius.model
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 
 class DeliusUserPersonDetailsTest {
