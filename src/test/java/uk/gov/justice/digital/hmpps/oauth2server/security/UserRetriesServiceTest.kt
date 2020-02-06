@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User

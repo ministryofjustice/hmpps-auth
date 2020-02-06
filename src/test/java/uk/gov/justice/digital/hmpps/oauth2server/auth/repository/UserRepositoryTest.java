@@ -1,9 +1,8 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
 
 import org.flywaydb.core.Flyway;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -11,7 +10,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
@@ -25,7 +23,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
 @DataJpaTest
 @ActiveProfiles("dev")
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
@@ -44,8 +41,8 @@ public class UserRepositoryTest {
 
     private static boolean initialized;
 
-    @Before
-    public void resetFlyway() {
+    @BeforeEach
+    void resetFlyway() {
         if (!initialized) {
             flyway.clean();
             flyway.migrate();
@@ -54,7 +51,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void givenATransientEntityItCanBePersisted() {
+    void givenATransientEntityItCanBePersisted() {
         final var transientEntity = User.builder().username("transiententity").email("transient@b.com").source(AuthSource.delius).build();
 
         final var persistedEntity = repository.save(transientEntity);
@@ -77,7 +74,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void givenATransientAuthEntityItCanBePersisted() {
+    void givenATransientAuthEntityItCanBePersisted() {
 
         final var transientEntity = transientEntity();
         transientEntity.setPerson(new Person("first", "last"));
@@ -106,7 +103,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void persistUserWithoutEmail() {
+    void persistUserWithoutEmail() {
         final var transientEntity = User.builder().username("userb").source(AuthSource.nomis).build();
         final var persistedEntity = repository.save(transientEntity);
 
@@ -127,7 +124,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void givenAnExistingUserTheyCanBeRetrieved() {
+    void givenAnExistingUserTheyCanBeRetrieved() {
         final var retrievedEntity = repository.findByUsername("LOCKED_USER").orElseThrow();
         assertThat(retrievedEntity.getUsername()).isEqualTo("LOCKED_USER");
         assertThat(retrievedEntity.getEmail()).isEqualTo("locked@somewhere.com");
@@ -135,7 +132,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void givenAnExistingAuthUserTheyCanBeRetrieved() {
+    void givenAnExistingAuthUserTheyCanBeRetrieved() {
         final var retrievedEntity = repository.findByUsername("AUTH_ADM").orElseThrow();
         assertThat(retrievedEntity.getUsername()).isEqualTo("AUTH_ADM");
         assertThat(retrievedEntity.getPerson().getFirstName()).isEqualTo("Auth");
@@ -145,7 +142,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testAuthorityMapping() {
+    void testAuthorityMapping() {
         final var entity = repository.findByUsername("AUTH_TEST").orElseThrow();
         assertThat(entity.getUsername()).isEqualTo("AUTH_TEST");
         assertThat(entity.getName()).isEqualTo("Auth Test");
@@ -179,7 +176,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testGroupMapping() {
+    void testGroupMapping() {
         final var entity = repository.findByUsername("AUTH_TEST").orElseThrow();
         assertThat(entity.getUsername()).isEqualTo("AUTH_TEST");
         assertThat(entity.getName()).isEqualTo("Auth Test");
@@ -214,88 +211,88 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void findByUsernameAndMasterIsTrue_AuthUser() {
+    void findByUsernameAndMasterIsTrue_AuthUser() {
         assertThat(repository.findByUsernameAndMasterIsTrue("AUTH_TEST")).isPresent();
     }
 
     @Test
-    public void findByUsernameAndMasterIsTrue_NomisUser() {
+    void findByUsernameAndMasterIsTrue_NomisUser() {
         assertThat(repository.findByUsernameAndMasterIsTrue("ITAG_USER")).isEmpty();
     }
 
     @Test
-    public void findByEmail() {
+    void findByEmail() {
         assertThat(repository.findByEmail("auth_test2@digital.justice.gov.uk")).extracting(User::getUsername).contains("AUTH_ADM", "AUTH_EXPIRED");
     }
 
     @Test
-    public void findByEmail_NoRecords() {
+    void findByEmail_NoRecords() {
         assertThat(repository.findByEmail("noone@digital.justice.gov.uk")).isEmpty();
     }
 
     @Test
-    public void findByEmailAndMasterIsTrue() {
+    void findByEmailAndMasterIsTrue() {
         assertThat(repository.findByEmailAndMasterIsTrueOrderByUsername("auth_test2@digital.justice.gov.uk"))
                 .extracting(User::getUsername)
                 .contains("AUTH_ADM", "AUTH_EXPIRED");
     }
 
     @Test
-    public void findByEmailAndMasterIsTrue_NomisUser() {
+    void findByEmailAndMasterIsTrue_NomisUser() {
         assertThat(repository.findByEmailAndMasterIsTrueOrderByUsername("ca_user@digital.justice.gov.uk")).isEmpty();
     }
 
     @Test
-    public void findAll_UserFilter_ByRole() {
+    void findAll_UserFilter_ByRole() {
         assertThat(repository.findAll(UserFilter.builder().roleCode("LICENCE_VARY").build()))
                 .extracting(User::getUsername)
                 .containsExactly("AUTH_RO_VARY_USER");
     }
 
     @Test
-    public void findAll_UserFilter_ByGroup() {
+    void findAll_UserFilter_ByGroup() {
         assertThat(repository.findAll(UserFilter.builder().groupCode("SITE_1_GROUP_2").build()))
                 .extracting(User::getUsername)
                 .containsExactly("AUTH_RO_VARY_USER", "AUTH_GROUP_MANAGER");
     }
 
     @Test
-    public void findAll_UserFilter_ByUsername() {
+    void findAll_UserFilter_ByUsername() {
         assertThat(repository.findAll(UserFilter.builder().name("_expired").build()))
                 .extracting(User::getUsername)
                 .contains("AUTH_EXPIRED", "AUTH_MFA_EXPIRED_USER");
     }
 
     @Test
-    public void findAll_UserFilter_ByEmail() {
+    void findAll_UserFilter_ByEmail() {
         assertThat(repository.findAll(UserFilter.builder().name("test@digital").build()))
                 .extracting(User::getUsername)
                 .containsOnly("AUTH_TEST", "AUTH_RO_USER_TEST", "AUTH_CHANGE_TEST", "AUTH_CHANGE2_TEST");
     }
 
     @Test
-    public void findAll_UserFilter_ByFirstNameLastName() {
+    void findAll_UserFilter_ByFirstNameLastName() {
         assertThat(repository.findAll(UserFilter.builder().name("a no").build()))
                 .extracting(User::getUsername)
                 .containsExactly("AUTH_NO_EMAIL", "AUTH_MFA_NOEMAIL_USER");
     }
 
     @Test
-    public void findAll_UserFilter_ByLastNameFirstName() {
+    void findAll_UserFilter_ByLastNameFirstName() {
         assertThat(repository.findAll(UserFilter.builder().name("orton, r").build()))
                 .extracting(User::getUsername)
                 .containsOnly("AUTH_RO_USER", "AUTH_RO_VARY_USER", "AUTH_RO_USER_TEST");
     }
 
     @Test
-    public void findAll_UserFilter_all() {
+    void findAll_UserFilter_all() {
         assertThat(repository.findAll(UserFilter.builder().roleCode("LICENCE_VARY").groupCode("SITE_1_GROUP_2").name("vary").build()))
                 .extracting(User::getUsername)
                 .containsExactly("AUTH_RO_VARY_USER");
     }
 
     @Test
-    public void findInactiveUsers_First10() {
+    void findInactiveUsers_First10() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
         assertThat(inactive).extracting(User::getUsername)
                 .contains("AUTH_INACTIVE")
@@ -304,25 +301,25 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void findInactiveUsers_OrderByLastLoggedInOldestFirst() {
+    void findInactiveUsers_OrderByLastLoggedInOldestFirst() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
         assertThat(inactive).extracting(User::getUsername).first().isEqualTo("AUTH_USER_LAST_LOGIN");
     }
 
     @Test
-    public void findInactiveUsers_NoRows() {
+    void findInactiveUsers_NoRows() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.parse("2019-01-01T12:00:00").minusSeconds(1));
         assertThat(inactive).isEmpty();
     }
 
     @Test
-    public void findInactiveUsers_SingleRow() {
+    void findInactiveUsers_SingleRow() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.parse("2019-02-03T13:23:19").plusSeconds(1));
         assertThat(inactive).extracting(User::getUsername).containsExactly("AUTH_USER_LAST_LOGIN", "AUTH_INACTIVE");
     }
 
     @Test
-    public void findDisabledUsers_First10() {
+    void findDisabledUsers_First10() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
         assertThat(inactive).extracting(User::getUsername)
                 .contains("AUTH_DELETE", "AUTH_DELETEALL", "NOMIS_DELETE")
@@ -331,19 +328,19 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void findDisabledUsers_OrderByLastLoggedInOldestFirst() {
+    void findDisabledUsers_OrderByLastLoggedInOldestFirst() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1));
         assertThat(inactive).extracting(User::getUsername).first().isEqualTo("AUTH_DELETE");
     }
 
     @Test
-    public void findDisabledUsers_NoRows() {
+    void findDisabledUsers_NoRows() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2018-01-02T13:23:19").minusSeconds(1));
         assertThat(inactive).isEmpty();
     }
 
     @Test
-    public void findDisabledUsers_SingleRow() {
+    void findDisabledUsers_SingleRow() {
         final var inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2018-01-02T13:23:19").plusSeconds(1));
         assertThat(inactive).extracting(User::getUsername).containsExactly("AUTH_DELETE");
     }

@@ -5,7 +5,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.client.BaseClientDetails

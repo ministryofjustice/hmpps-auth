@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
@@ -27,8 +27,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class AuthUserRolesServiceTest {
+@ExtendWith(SpringExtension.class)
+class AuthUserRolesServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
@@ -43,13 +43,13 @@ public class AuthUserRolesServiceTest {
     private static final Set<GrantedAuthority> SUPER_USER = Set.of(new SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"));
     private static final Set<GrantedAuthority> GROUP_MANAGER = Set.of(new SimpleGrantedAuthority("ROLE_AUTH_GROUP_MANAGER"));
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         service = new AuthUserRoleService(userRepository, roleRepository, telemetryClient, maintainUserCheck);
     }
 
     @Test
-    public void addRole_notfound() {
+    void addRole_notfound() {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")));
 
         assertThatThrownBy(() -> service.addRole("user", "        ", "admin", SUPER_USER)).
@@ -57,7 +57,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void addRole_invalidRole() {
+    void addRole_invalidRole() {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
@@ -68,7 +68,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void addRole_noaccess() throws MaintainUserCheck.AuthUserGroupRelationshipException {
+    void addRole_noaccess() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = User.of("user");
         user.setGroups(Set.of(new Group("group", "desc")));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
@@ -86,7 +86,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void addRole_invalidRoleGroupManager() {
+    void addRole_invalidRoleGroupManager() {
         final var user = User.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1));
@@ -104,7 +104,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void addRole_oauthAdminRestricted() {
+    void addRole_oauthAdminRestricted() {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")));
         final var role = new Authority("ROLE_OAUTH_ADMIN", "Role Licence Vary");
         when(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role));
@@ -115,7 +115,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void addRole_oauthAdminRestricted_success() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
+    void addRole_oauthAdminRestricted_success() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = User.of("user");
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         final var role = new Authority("ROLE_OAUTH_ADMIN", "Role Auth Admin");
@@ -130,7 +130,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void addRole_roleAlreadyOnUser() {
+    void addRole_roleAlreadyOnUser() {
         final var user = User.of("user");
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         user.setAuthorities(new HashSet<>(List.of(role)));
@@ -143,7 +143,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void addRole_success() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
+    void addRole_success() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = User.of("user");
         user.setAuthorities(new HashSet<>(List.of(new Authority("JOE", "bloggs"))));
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
@@ -157,7 +157,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void addRole_successGroupManager() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
+    void addRole_successGroupManager() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = User.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1, new Group("group2", "desc")));
@@ -178,7 +178,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void removeRole_roleNotOnUser() {
+    void removeRole_roleNotOnUser() {
         final var user = User.of("user");
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user));
         final var role2 = new Authority("BOB", "Bloggs");
@@ -189,7 +189,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void removeRole_invalid() {
+    void removeRole_invalid() {
         final var user = User.of("user");
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("BOB", "Bloggs");
@@ -203,7 +203,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void removeRole_noaccess() throws MaintainUserCheck.AuthUserGroupRelationshipException {
+    void removeRole_noaccess() throws MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = User.of("user");
         user.setGroups(Set.of(new Group("group", "desc")));
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
@@ -222,7 +222,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void removeRole_invalidGroupManager() {
+    void removeRole_invalidGroupManager() {
         final var user = User.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1));
@@ -243,7 +243,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void removeRole_notfound() {
+    void removeRole_notfound() {
         final var user = User.of("user");
         final var role = new Authority("ROLE_LICENCE_VARY", "Role Licence Vary");
         final var role2 = new Authority("BOB", "Bloggs");
@@ -255,7 +255,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void removeRole_success() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
+    void removeRole_success() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = User.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1));
@@ -279,7 +279,7 @@ public class AuthUserRolesServiceTest {
     }
 
     @Test
-    public void removeRole_successGroupManager() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
+    void removeRole_successGroupManager() throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
         final var user = User.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1));

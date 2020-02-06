@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class MaintainUserCheckTest {
+@ExtendWith(SpringExtension.class)
+class MaintainUserCheckTest {
 
     @Mock
     private UserRepository userRepository;
@@ -31,19 +31,19 @@ public class MaintainUserCheckTest {
     private static final Set<GrantedAuthority> GROUP_MANAGER = Set.of(new SimpleGrantedAuthority("ROLE_AUTH_GROUP_MANAGER"));
 
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         maintainUserCheck = new MaintainUserCheck(userRepository);
     }
 
     @Test
-    public void superUserDoesNotThrowError()  {
+    void superUserDoesNotThrowError() {
         final var user = User.of("user");
         assertThatCode(() -> maintainUserCheck.ensureUserLoggedInUserRelationship("SuperUser",SUPER_USER,user)).doesNotThrowAnyException();
     }
 
     @Test
-    public void groupManagerGroupInCommonWithUserDoesNotThrowError()  {
+    void groupManagerGroupInCommonWithUserDoesNotThrowError() {
         final var user = User.of("user");
         final var group1 = new Group("group", "desc");
         user.setGroups(Set.of(group1, new Group("group2", "desc")));
@@ -58,7 +58,7 @@ public class MaintainUserCheckTest {
     }
 
     @Test
-    public void groupManagerNoGroupInCommonWithUserThrowsError()  {
+    void groupManagerNoGroupInCommonWithUserThrowsError() {
         final var user = User.of("user");
         final var optionalUserEmail = createUser();
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail);

@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.*;
 
@@ -21,8 +21,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.*;
 
 
-@RunWith(MockitoJUnitRunner.class)
-public class NomisUserDetailsServiceTest {
+@ExtendWith(SpringExtension.class)
+class NomisUserDetailsServiceTest {
     private static final long ROLE_ID = 1L;
 
     @Mock
@@ -32,14 +32,14 @@ public class NomisUserDetailsServiceTest {
 
     private NomisUserDetailsService service;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         service = new NomisUserDetailsService(userService);
         ReflectionTestUtils.setField(service, "nomisEntityManager", nomisEntityManager);
     }
 
     @Test
-    public void testHappyUserPath() {
+    void testHappyUserPath() {
 
         final var user = buildStandardUser("ITAG_USER");
         when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
@@ -56,7 +56,7 @@ public class NomisUserDetailsServiceTest {
     }
 
     @Test
-    public void testEntityDetached() {
+    void testEntityDetached() {
 
         final var user = buildStandardUser("ITAG_USER");
         when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
@@ -69,7 +69,7 @@ public class NomisUserDetailsServiceTest {
     }
 
     @Test
-    public void testLockedUser() {
+    void testLockedUser() {
 
         final var user = buildLockedUser();
         when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
@@ -84,7 +84,7 @@ public class NomisUserDetailsServiceTest {
     }
 
     @Test
-    public void testExpiredUser() {
+    void testExpiredUser() {
 
         final var user = buildExpiredUser();
         when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
@@ -99,7 +99,7 @@ public class NomisUserDetailsServiceTest {
     }
 
     @Test
-    public void testUserNotFound() {
+    void testUserNotFound() {
 
         when(userService.getNomisUserByUsername(anyString())).thenReturn(Optional.empty());
 
@@ -107,7 +107,7 @@ public class NomisUserDetailsServiceTest {
     }
 
     @Test
-    public void testExpiredGraceUser() {
+    void testExpiredGraceUser() {
 
         final var user = buildExpiredGraceUser();
         when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
@@ -122,7 +122,7 @@ public class NomisUserDetailsServiceTest {
     }
 
     @Test
-    public void testExpiredLockedUser() {
+    void testExpiredLockedUser() {
 
         final var user = buildExpiredLockedUser();
         when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));
@@ -136,7 +136,7 @@ public class NomisUserDetailsServiceTest {
     }
 
     @Test
-    public void testLockedTimedUser() {
+    void testLockedTimedUser() {
 
         final var user = buildLockedTimedUser();
         when(userService.getNomisUserByUsername(user.getUsername())).thenReturn(Optional.of(user));

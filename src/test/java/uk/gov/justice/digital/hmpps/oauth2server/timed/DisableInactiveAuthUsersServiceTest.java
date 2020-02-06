@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.timed;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 
@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DisableInactiveAuthUsersServiceTest {
+@ExtendWith(SpringExtension.class)
+class DisableInactiveAuthUsersServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
@@ -31,13 +31,13 @@ public class DisableInactiveAuthUsersServiceTest {
 
     private DisableInactiveAuthUsersService service;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         service = new DisableInactiveAuthUsersService(userRepository, telemetryClient, 10);
     }
 
     @Test
-    public void findAndDisableInactiveAuthUsers_Processed() {
+    void findAndDisableInactiveAuthUsers_Processed() {
         final var users = List.of(User.of("user"), User.of("joe"));
         when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
                 .thenReturn(users);
@@ -45,7 +45,7 @@ public class DisableInactiveAuthUsersServiceTest {
     }
 
     @Test
-    public void findAndDisableInactiveAuthUsers_CheckAge() {
+    void findAndDisableInactiveAuthUsers_CheckAge() {
         final var users = List.of(User.of("user"), User.of("joe"));
         when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
                 .thenReturn(users);
@@ -56,7 +56,7 @@ public class DisableInactiveAuthUsersServiceTest {
     }
 
     @Test
-    public void findAndDisableInactiveAuthUsers_Disabled() {
+    void findAndDisableInactiveAuthUsers_Disabled() {
         final var users = List.of(
                 User.builder().username("user").enabled(true).build(),
                 User.builder().username("joe").enabled(true).build());
@@ -67,7 +67,7 @@ public class DisableInactiveAuthUsersServiceTest {
     }
 
     @Test
-    public void findAndDisableInactiveAuthUsers_Telemetry() {
+    void findAndDisableInactiveAuthUsers_Telemetry() {
         final var users = List.of(
                 User.builder().username("user").enabled(true).build(),
                 User.builder().username("joe").enabled(true).build());

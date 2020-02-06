@@ -1,18 +1,18 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AuthIpSecurityTest {
+class AuthIpSecurityTest {
 
     private AuthIpSecurity testClass;
 
     @Test
-    public void testStandardV4IP() {
+    void testStandardV4IP() {
 
         final var request = new MockHttpServletRequest();
         request.setRemoteAddr("127.0.0.1");
@@ -25,7 +25,7 @@ public class AuthIpSecurityTest {
     }
 
     @Test
-    public void testRemoteAddressWithPort() {
+    void testRemoteAddressWithPort() {
 
         final var request = new MockHttpServletRequest();
         request.setRemoteAddr("82.34.12.11:13321");
@@ -38,7 +38,7 @@ public class AuthIpSecurityTest {
     }
 
     @Test
-    public void testRemoteAddressWithPortNoInWhitelist() {
+    void testRemoteAddressWithPortNoInWhitelist() {
 
         final var request = new MockHttpServletRequest();
         request.setRemoteAddr("82.34.12.11:13321");
@@ -51,7 +51,7 @@ public class AuthIpSecurityTest {
     }
 
     @Test
-    public void testIpV6Address() {
+    void testIpV6Address() {
 
         final var request = new MockHttpServletRequest();
         request.setRemoteAddr("0:0:0:0:0:0:0:1");

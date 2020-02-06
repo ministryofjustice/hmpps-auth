@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.timed;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Map;
 
@@ -15,8 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class BatchUserProcessorTest {
+@ExtendWith(SpringExtension.class)
+class BatchUserProcessorTest {
     @Mock
     private DisableInactiveAuthUsersService service;
     @Mock
@@ -26,20 +26,20 @@ public class BatchUserProcessorTest {
 
     private BatchUserProcessor disableInactiveAuthUsers;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         disableInactiveAuthUsers = new DisableInactiveAuthUsers(service, telemetryClient);
     }
 
     @Test
-    public void findAndProcessInBatches_noData() {
+    void findAndProcessInBatches_noData() {
         when(service.processInBatches()).thenReturn(0);
         disableInactiveAuthUsers.findAndProcessInBatches();
         verify(service).processInBatches();
     }
 
     @Test
-    public void findAndProcessInBatches_processed() {
+    void findAndProcessInBatches_processed() {
         when(service.processInBatches()).thenReturn(10).thenReturn(3);
         disableInactiveAuthUsers.findAndProcessInBatches();
         verify(service, times(2)).processInBatches();
@@ -49,7 +49,7 @@ public class BatchUserProcessorTest {
     }
 
     @Test
-    public void findAndProcessInBatches_manyProcessed() {
+    void findAndProcessInBatches_manyProcessed() {
         when(service.processInBatches())
                 .thenReturn(10)
                 .thenReturn(10)
@@ -64,7 +64,7 @@ public class BatchUserProcessorTest {
     }
 
     @Test
-    public void findAndProcessInBatches_oneFailure() {
+    void findAndProcessInBatches_oneFailure() {
         when(service.processInBatches()).thenThrow(new RuntimeException("bob")).thenReturn(5);
         disableInactiveAuthUsers.findAndProcessInBatches();
         verify(service, times(2)).processInBatches();
@@ -74,7 +74,7 @@ public class BatchUserProcessorTest {
     }
 
     @Test
-    public void findAndProcessInBatches_oneFailureTelemetry() {
+    void findAndProcessInBatches_oneFailureTelemetry() {
         when(service.processInBatches()).thenThrow(new RuntimeException("bob")).thenReturn(0);
         disableInactiveAuthUsers.findAndProcessInBatches();
 
@@ -82,7 +82,7 @@ public class BatchUserProcessorTest {
     }
 
     @Test
-    public void findAndProcessInBatches_manyFailures() {
+    void findAndProcessInBatches_manyFailures() {
         when(service.processInBatches())
                 .thenThrow(new RuntimeException("bob"))
                 .thenThrow(new RuntimeException("bob"))

@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 
 class UserDetailsImplTest {

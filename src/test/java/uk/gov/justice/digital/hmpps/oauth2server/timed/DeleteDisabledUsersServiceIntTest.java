@@ -1,9 +1,8 @@
 package uk.gov.justice.digital.hmpps.oauth2server.timed;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
@@ -26,7 +24,6 @@ import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
 @DataJpaTest
 @ActiveProfiles("dev")
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
@@ -45,13 +42,13 @@ public class DeleteDisabledUsersServiceIntTest {
 
     private DeleteDisabledUsersService service;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         service = new DeleteDisabledUsersService(userRepository, userRetriesRepository, telemetryClient);
     }
 
     @Test
-    public void findAndDeleteDisabledAuthUsers_Processed() {
+    void findAndDeleteDisabledAuthUsers_Processed() {
         final var authDeleteId = userRepository.findByUsername("AUTH_DELETE").orElseThrow().getId();
         final var authDeleteAllId = userRepository.findByUsername("AUTH_DELETEALL").orElseThrow().getId();
         final var nomisDeleteId = userRepository.findByUsername("NOMIS_DELETE").orElseThrow().getId();
