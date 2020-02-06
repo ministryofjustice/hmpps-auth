@@ -225,7 +225,7 @@ public class UserRepositoryTest {
 
     @Test
     public void findByEmail() {
-        assertThat(repository.findByEmail("auth_test2@digital.justice.gov.uk")).extracting(User::getUsername).containsOnly("AUTH_ADM", "AUTH_EXPIRED");
+        assertThat(repository.findByEmail("auth_test2@digital.justice.gov.uk")).extracting(User::getUsername).contains("AUTH_ADM", "AUTH_EXPIRED");
     }
 
     @Test
@@ -237,7 +237,7 @@ public class UserRepositoryTest {
     public void findByEmailAndMasterIsTrue() {
         assertThat(repository.findByEmailAndMasterIsTrueOrderByUsername("auth_test2@digital.justice.gov.uk"))
                 .extracting(User::getUsername)
-                .containsExactly("AUTH_ADM", "AUTH_EXPIRED");
+                .contains("AUTH_ADM", "AUTH_EXPIRED");
     }
 
     @Test
@@ -263,7 +263,7 @@ public class UserRepositoryTest {
     public void findAll_UserFilter_ByUsername() {
         assertThat(repository.findAll(UserFilter.builder().name("_expired").build()))
                 .extracting(User::getUsername)
-                .containsExactly("AUTH_EXPIRED", "AUTH_MFA_EXPIRED_USER");
+                .contains("AUTH_EXPIRED", "AUTH_MFA_EXPIRED_USER");
     }
 
     @Test

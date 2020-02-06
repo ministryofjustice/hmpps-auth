@@ -85,6 +85,7 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('1F650F15-0993-4DB7-9A32-5B930FF86035', 'AUTH_GROUP_MANAGER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_group_manager@digital.justice.gov.uk', 'Group', 'Manager', 1, 1, 0, 'auth'),
         ('FC494152-F9AD-48A0-A87C-9ADC8BD75255', 'AUTH_STATUS', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Status', 1, 0, 0, 'auth'),
         ('9E84F1E4-59C8-4B10-927A-9CF9E9A30791', 'AUTH_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2013-01-28 13:23:19.0000000', 'auth_test2@digital.justice.gov.uk', 'Auth', 'Expired', 1, 1, 0, 'auth'),
+        ('9E84F1E4-59C8-4B10-927A-9CF9E9A30792', 'AUTH_MFA_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2013-01-28 13:23:19.0000000', 'auth_test3@digital.justice.gov.uk', 'Auth', 'Expired', 1, 1, 0, 'auth'),
         ('5105A589-75B3-4CA0-9433-B96228C1C8F3', 'AUTH_ADM', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_test2@digital.justice.gov.uk', 'Auth', 'Adm', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2A3E', 'AUTH_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_test@digital.justice.gov.uk', 'Auth', 'Test', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2B3F', 'AUTH_CHANGE_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_test@digital.justice.gov.uk', 'Auth', 'Test', 1, 1, 0, 'auth'),
@@ -96,6 +97,7 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2A4F', 'AUTH_MFA_EXPIRED_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'mfa_user@digital.justice.gov.uk', 'Mfa', 'User', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2A5F', 'AUTH_MFA_LOCKED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'mfa_user@digital.justice.gov.uk', 'Mfa Locked', 'User', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2A6F', 'AUTH_MFA_LOCKED2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'mfa_user@digital.justice.gov.uk', 'Mfa Locked', 'User', 1, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-E6E8E10A2A6F', 'AUTH_MFA_CHANGE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'mfa_user@digital.justice.gov.uk', 'Mfa Locked', 'User', 1, 1, 0, 'auth'),
         ('6c76f1fa-3393-11ea-978f-2e728ce88125', 'AUTH_VIDEO_LINK_COURT_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'vlb_court_user@digital.justice.gov.uk', 'VLB Court', 'User', 1, 1, 0, 'auth');
 
 INSERT INTO users (user_id, username, password, last_logged_in, first_name, last_name, verified, enabled, locked, source)
@@ -132,6 +134,8 @@ INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, use
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_NOEMAIL_USER' and role_code = 'MFA';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_LOCKED' and role_code = 'MFA';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_LOCKED2' and role_code = 'MFA';
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_EXPIRED' and role_code = 'MFA';
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_CHANGE' and role_code = 'MFA';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_VIDEO_LINK_COURT_USER' and role_code = 'VIDEO_LINK_COURT_USER';
 
 INSERT INTO groups (group_id, group_code, group_name) VALUES (newid(), 'SITE_1_GROUP_1', 'Site 1 - Group 1'),
