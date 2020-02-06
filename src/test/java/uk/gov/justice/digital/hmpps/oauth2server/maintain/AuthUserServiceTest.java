@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,7 +18,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.AmendUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
@@ -173,6 +173,17 @@ public class AuthUserServiceTest {
     }
 
     @Test
+    public void createUser_trimName() throws VerifyEmailException, CreateUserException, NotificationClientException {
+        authUserService.createUser("userMe", "eMail", "first  ", "  last ", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
+
+        final var captor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(captor.capture());
+
+        final var user = captor.getValue();
+        assertThat(user.getName()).isEqualTo("first last");
+    }
+
+    @Test
     public void createUser_formatEmailInput() throws VerifyEmailException, CreateUserException, NotificationClientException {
         authUserService.createUser("userMe", "    SARAH.o’connor@gov.uk", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER);
 
@@ -292,7 +303,7 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_successLinkReturned() throws VerifyEmailException, NotificationClientException, AmendUserException, AuthUserGroupRelationshipException {
+    public void amendUserEmail_successLinkReturned() throws VerifyEmailException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
         final var link = authUserService.amendUserEmail("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
@@ -300,7 +311,7 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_trackSuccess() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
+    public void amendUserEmail_trackSuccess() throws VerifyEmailException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
         authUserService.amendUserEmail("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
@@ -308,7 +319,7 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_saveTokenRepository() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
+    public void amendUserEmail_saveTokenRepository() throws VerifyEmailException, NotificationClientException, AuthUserGroupRelationshipException {
         final var user = createUser();
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(user);
         final var link = authUserService.amendUserEmail("userme", "email", "url?token=", "bob", PRINCIPAL.getAuthorities());
@@ -320,7 +331,7 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_saveEmailRepository() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
+    public void amendUserEmail_saveEmailRepository() throws VerifyEmailException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
         authUserService.amendUserEmail("userMe", "eMail", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
@@ -332,7 +343,7 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_formatEmailInput() throws VerifyEmailException, AmendUserException, NotificationClientException, AuthUserGroupRelationshipException {
+    public void amendUserEmail_formatEmailInput() throws VerifyEmailException, NotificationClientException, AuthUserGroupRelationshipException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createUser());
         authUserService.amendUserEmail("userMe", "    SARAH.o’connor@gov.uk", "url?token=", "bob", PRINCIPAL.getAuthorities());
 
@@ -343,7 +354,7 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_pecsUserGroupSupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+    public void amendUserEmail_pecsUserGroupSupportLink() throws AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("PECS_GROUP")));
         mockServiceOfNameWithSupportLink("BOOK_MOVE", "book_move_support_link");
 
@@ -355,7 +366,7 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_nonPecsUserGroupSupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+    public void amendUserEmail_nonPecsUserGroupSupportLink() throws AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("NON_PECS_GROUP")));
 
         authUserService.amendUserEmail("ANY_USER_NAME", "ANY_USER-EMAIL", "ANY_URL", "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
@@ -366,7 +377,7 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_onePecsGroupOfManySupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+    public void amendUserEmail_onePecsGroupOfManySupportLink() throws AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("NON_PECS_GROUP", "PECS_GROUP")));
         mockServiceOfNameWithSupportLink("BOOK_MOVE", "book_move_support_link");
 
@@ -378,7 +389,7 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_noGroupSupportLink() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+    public void amendUserEmail_noGroupSupportLink() throws AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups()));
 
         authUserService.amendUserEmail("ANY_USER_NAME", "ANY_USER-EMAIL", "ANY_URL", "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER);
@@ -389,7 +400,7 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_unverifiedEmail_sendsInitialEmail() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+    public void amendUserEmail_unverifiedEmail_sendsInitialEmail() throws AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         final var userUnverifiedEmail = User.builder().username("SOME_USER_NAME").verified(false).build();
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userUnverifiedEmail));
 
@@ -404,7 +415,7 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_verifiedEmail_requestsVerification() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+    public void amendUserEmail_verifiedEmail_requestsVerification() throws AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
         final var userVerifiedEmail = User.builder().username("SOME_USER_NAME").verified(true).build();
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail));
         when(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString())).thenReturn("SOME_VERIFY_LINK");
@@ -420,7 +431,8 @@ public class AuthUserServiceTest {
     }
 
     @Test
-    public void amendUserEmail_verifiedEmail_savesUnverifiedUser() throws AmendUserException, AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+    public void amendUserEmail_verifiedEmail_savesUnverifiedUser() throws AuthUserGroupRelationshipException, NotificationClientException, VerifyEmailException {
+        when(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString())).thenReturn("SOME_VERIFY_LINK");
         final var userVerifiedEmail = User.builder().username("SOME_USER_NAME").verified(true).build();
         when(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail));
 
@@ -433,13 +445,13 @@ public class AuthUserServiceTest {
         assertThat(userVerifiedEmail.isVerified()).isFalse();
     }
 
-    private User userOfGroups(String... groupList) {
+    private User userOfGroups(final String... groupList) {
         final var userPerson = new Person("ANY_FIRST_NAME", "ANY_LAST_NAME");
         final var groups = Arrays.stream(groupList).map(groupName -> new Group(groupName, "any desc")).collect(Collectors.toSet());
         return User.builder().groups(groups).email("ANY_EMAIL").person(userPerson).username("ANY ANY").build();
     }
 
-    private void mockServiceOfNameWithSupportLink(String serviceCode, String supportLink) {
+    private void mockServiceOfNameWithSupportLink(final String serviceCode, final String supportLink) {
         final var service = new Service(serviceCode, "service", "service", "ANY_ROLES", "ANY_URL", true, supportLink);
         when(oauthServiceRepository.findById(serviceCode)).thenReturn(Optional.of(service));
     }
@@ -603,6 +615,7 @@ public class AuthUserServiceTest {
 
     @Test
     public void findAuthUsers() {
+        when(userRepository.findAll(any(), any(Pageable.class))).thenReturn(Page.empty());
         final var unpaged = Pageable.unpaged();
         authUserService.findAuthUsers("somename ", "somerole  ", "  somegroup", unpaged);
         final var captor = ArgumentCaptor.forClass(UserFilter.class);
@@ -694,6 +707,54 @@ public class AuthUserServiceTest {
     }
 
     @Test
+    public void amendUser_firstNameBlank() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "  ", "last")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: required");
+    }
+
+    @Test
+    public void amendUser_firstNameNull() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", null, "last")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: required");
+    }
+
+    @Test
+    public void amendUser_firstNameLessThan() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "hello<input", "last")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: invalid");
+    }
+
+    @Test
+    public void amendUser_firstNameGreaterThan() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "helloinput>", "last")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: invalid");
+    }
+
+    @Test
+    public void amendUser_lastNameBlank() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "first", "  ")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: required");
+    }
+
+    @Test
+    public void amendUser_lastNameNull() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "first", null)).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: required");
+    }
+
+    @Test
+    public void amendUser_lastNameLessThan() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "last", "hello<input")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: invalid");
+    }
+
+    @Test
+    public void amendUser_lastNameGreaterThan() {
+        assertThatThrownBy(() -> authUserService.amendUser("userme", "last", "helloinput>")).
+                isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field lastName with reason: invalid");
+    }
+
+    @Test
     public void amendUser_firstNameMaxLength() {
         assertThatThrownBy(() -> authUserService.amendUser("userme", "ThisFirstNameIsMoreThanFiftyCharactersInLengthAndInvalid", "last")).
                 isInstanceOf(CreateUserException.class).hasMessage("Create user failed for field firstName with reason: maxlength");
@@ -717,6 +778,16 @@ public class AuthUserServiceTest {
         when(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user));
 
         authUserService.amendUser("user", "first", "last");
+
+        assertThat(user.getPerson()).isEqualTo(new Person("first", "last"));
+    }
+
+    @Test
+    public void amendUser_trimPerson() throws CreateUserException {
+        final var user = User.builder().username("me").person(new Person("old", "name")).build();
+        when(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user));
+
+        authUserService.amendUser("user", "  first  ", "   last ");
 
         assertThat(user.getPerson()).isEqualTo(new Person("first", "last"));
     }

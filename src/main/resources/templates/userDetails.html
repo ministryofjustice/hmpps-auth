@@ -38,7 +38,7 @@
         </span>
         <input th:class="'govuk-input' + (${error_firstName} ? ' govuk-input--error' : '')" id="firstName"
                name="firstName"
-               type="text" data-element-id="firstName" autofocus autocomplete="firstName" spellcheck="false"
+               type="text" data-element-id="firstName" autofocus autocomplete="given-name" spellcheck="false"
                th:value="${firstName}"
                aria-describedby="firstName-error">
       </div>
@@ -49,7 +49,8 @@
           Last name error
         </span>
         <input th:class="'govuk-input' + (${error_lastName} ? ' govuk-input--error' : '')" id="lastName" name="lastName"
-               type="text" data-element-id="lastName" autocomplete="lastName" spellcheck="false" th:value="${lastName}"
+               type="text" data-element-id="lastName" autocomplete="family-name" spellcheck="false"
+               th:value="${lastName}"
                aria-describedby="lastName-error">
       </div>
 

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.exceptions.RedirectMismatchException;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@SuppressWarnings("deprecation")
 @Component
 @Slf4j
 public class RedirectingLogoutSuccessHandler implements LogoutSuccessHandler {
@@ -38,6 +40,7 @@ public class RedirectingLogoutSuccessHandler implements LogoutSuccessHandler {
     public void onLogoutSuccess(final HttpServletRequest request, final HttpServletResponse response, final Authentication authentication) throws IOException {
         final var client = request.getParameter("client_id");
         final var redirect = request.getParameter("redirect_uri");
+        final var error = request.getParameter("error");
 
         // If we have asked for a redirect, check it is valid for the client
         if (client != null && redirect != null) {
@@ -49,7 +52,7 @@ public class RedirectingLogoutSuccessHandler implements LogoutSuccessHandler {
                 if (responseRedirectedOnValidRedirect(response, redirectSlash, clientDetails)) return;
             }
         }
-        response.sendRedirect(servletContextPath + "/login?logout");
+        response.sendRedirect(servletContextPath + "/login?logout" + (StringUtils.isNotBlank(error) ? "&error=" + error : ""));
     }
 
     private boolean responseRedirectedOnValidRedirect(final HttpServletResponse response, final String redirect, final ClientDetails clientDetails) throws IOException {

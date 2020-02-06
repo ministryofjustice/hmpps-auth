@@ -64,15 +64,9 @@ public class NomisUserPersonDetailsRepositoryTest {
                 .containsExactly("Some Old Role", "Omic Administrator", "KW Migration", "Maintain Access Roles Admin", "Global Search",
                         "Create Category assessments", "Approve Category assessments", "Security Cat tool role");
 
-        assertThat(retrievedEntity.getCaseloads().stream().map(c -> c.getCaseload().getName()))
-                .containsExactly("Magic API Caseload", "Moorlands");
-
         assertThat(retrievedEntity.filterRolesByCaseload("NWEB").stream().map(r -> r.getRole().getName()))
                 .containsExactly("Omic Administrator", "KW Migration", "Maintain Access Roles Admin", "Global Search",
                         "Create Category assessments", "Approve Category assessments", "Security Cat tool role");
-
-        assertThat(retrievedEntity.getStaff().getIdentifiers().stream().map(i -> i.getStaff().getFirstName()))
-                .containsExactly("Itag");
     }
 
     @Test

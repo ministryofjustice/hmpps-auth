@@ -20,10 +20,10 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-class UserStateAuthenticationFailureHandler(private val tokenService: TokenService,
-                                            private val mfaService: MfaService,
-                                            @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
-                                            private val telemetryClient: TelemetryClient) : SimpleUrlAuthenticationFailureHandler(FAILURE_URL) {
+open class UserStateAuthenticationFailureHandler(private val tokenService: TokenService,
+                                                 private val mfaService: MfaService,
+                                                 @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
+                                                 private val telemetryClient: TelemetryClient) : SimpleUrlAuthenticationFailureHandler(FAILURE_URL) {
   companion object {
     private const val FAILURE_URL = "/login"
   }
@@ -35,23 +35,26 @@ class UserStateAuthenticationFailureHandler(private val tokenService: TokenServi
   @Throws(IOException::class)
   override fun onAuthenticationFailure(request: HttpServletRequest, response: HttpServletResponse,
                                        exception: AuthenticationException) {
+    val username = request.getParameter("username")?.trim()?.toUpperCase()
+    return onAuthenticationFailureForUsername(request, response, exception, username)
+  }
 
-    val usernameParam: String? = request.getParameter("username")?.trim()?.toUpperCase()
+  @Throws(IOException::class)
+  open fun onAuthenticationFailureForUsername(request: HttpServletRequest, response: HttpServletResponse,
+                                              exception: AuthenticationException, username: String?) {
 
     val failures = when (exception) {
       is LockedException -> Pair("locked", null)
       is CredentialsExpiredException -> {
         // special handling for expired users and feature switch turned on
-        val username = StringUtils.trim(usernameParam)
-        val token = tokenService.createToken(TokenType.CHANGE, username)
-        trackFailure(usernameParam, "expired")
+        val token = tokenService.createToken(TokenType.CHANGE, username!!)
+        trackFailure(username, "expired")
         redirectStrategy.sendRedirect(request, response, "/change-password?token=$token")
         return
       }
       is MfaRequiredException -> {
         // need to break out to perform mfa for the user
-        val username = StringUtils.trim(usernameParam)
-        val (token, code) = mfaService.createTokenAndSendEmail(username)
+        val (token, code) = mfaService.createTokenAndSendEmail(username!!)
 
         val urlBuilder = UriComponentsBuilder.fromPath("/mfa-challenge").queryParam("token", token)
         if (smokeTestEnabled) urlBuilder.queryParam("smokeCode", code)
@@ -64,7 +67,7 @@ class UserStateAuthenticationFailureHandler(private val tokenService: TokenServi
         Pair("mfaunavailable", null)
       }
       is MissingCredentialsException -> {
-        if (usernameParam.isNullOrBlank()) {
+        if (username.isNullOrBlank()) {
           if (StringUtils.isBlank(request.getParameter("password"))) {
             Pair("missinguser", "missingpass")
           } else {
@@ -82,7 +85,7 @@ class UserStateAuthenticationFailureHandler(private val tokenService: TokenServi
     with(failures) {
       builder.add(first)
       second?.run { builder.add(this) }
-      trackFailure(usernameParam, first)
+      trackFailure(username, first)
     }
 
     val redirectUrl = FAILURE_URL + builder.toString()

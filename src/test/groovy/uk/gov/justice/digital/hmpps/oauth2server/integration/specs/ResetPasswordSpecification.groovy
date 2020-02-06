@@ -37,6 +37,19 @@ class ResetPasswordSpecification extends DeliusIntegrationSpec {
         usernameInput == 'joe@bloggs.com'
     }
 
+    def "A user can enter their gsi email address to reset their password"() {
+        given: 'I would like to reset my password'
+        to LoginPage
+        resetPassword()
+
+        when: 'The Reset Password page is displayed'
+        at ResetPasswordPage
+        resetPasswordAs 'reset_test@hmps.gsi.gov.uk'
+
+        then: 'The Reset Password sent page is displayed'
+        at ResetPasswordSentPage
+    }
+
     def "A user can enter an email address to reset their password"() {
         given: 'I would like to reset my password'
         to LoginPage

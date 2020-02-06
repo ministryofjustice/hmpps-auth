@@ -51,4 +51,32 @@ public class Service {
     public boolean isUrlInsteadOfEmail() {
         return StringUtils.startsWith(email, "http");
     }
+
+    public String getCode() {
+        return this.code;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public String getAuthorisedRoles() {
+        return this.authorisedRoles;
+    }
+
+    public String getUrl() {
+        return this.url;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
 }

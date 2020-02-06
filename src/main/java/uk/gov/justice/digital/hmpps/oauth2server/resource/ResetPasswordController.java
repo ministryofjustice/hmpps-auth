@@ -69,7 +69,7 @@ public class ResetPasswordController extends AbstractPasswordController {
 
         if (StringUtils.contains(usernameOrEmail, "@")) {
             try {
-                verifyEmailService.validateEmailAddress(EmailHelper.format(usernameOrEmail));
+                verifyEmailService.validateEmailAddressExcludingGsi(EmailHelper.format(usernameOrEmail));
             } catch (final VerifyEmailException e) {
                 log.info("Validation failed for reset password email address due to {}", e.getReason());
                 telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("email", usernameOrEmail, "reason", "email." + e.getReason()), null);
@@ -120,7 +120,7 @@ public class ResetPasswordController extends AbstractPasswordController {
                         final var newToken = resetPasswordService.moveTokenToAccount(token, username);
                         log.info("Successful reset password select for {}", username);
                         telemetryClient.trackEvent("ResetPasswordSelectSuccess", Map.of("username", username), null);
-                        return createModelWithTokenAndAddIsAdmin(RESET, newToken, "setPassword");
+                        return createModelWithTokenUsernameAndIsAdmin(RESET, newToken, "setPassword");
                     } catch (final ResetPasswordException e) {
                         log.info("Validation failed due to {} for reset password select for {}", e.getReason(), username);
                         telemetryClient.trackEvent("ResetPasswordSelectFailure", Map.of("username", username, "error", e.getReason()), null);
@@ -134,7 +134,7 @@ public class ResetPasswordController extends AbstractPasswordController {
     public ModelAndView resetPasswordConfirm(@RequestParam final String token) {
         final var userTokenOptional = tokenService.checkToken(RESET, token);
         return userTokenOptional.map(s -> new ModelAndView("resetPassword", "error", s)).
-                orElseGet(() -> createModelWithTokenAndAddIsAdmin(RESET, token, "setPassword"));
+                orElseGet(() -> createModelWithTokenUsernameAndIsAdmin(RESET, token, "setPassword"));
     }
 
     @PostMapping("/set-password")

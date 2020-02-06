@@ -2,14 +2,11 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
 import geb.spock.GebReportingSpec
 import org.apache.commons.lang3.RandomStringUtils
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangePasswordErrorPage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangePasswordPage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
-class ChangePasswordSpecification extends GebReportingSpec {
+class ChangeExpiredPasswordSpecification extends GebReportingSpec {
     public static final String clientBaseUrl = 'http://localhost:8081/login'
 
     def "Attempt change password without credentials"() {
@@ -18,13 +15,13 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs EXPIRED_TEST_USER, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password without credentials"
-        changePasswordAs '', ''
+        changePasswordAs EXPIRED_TEST_USER, '', ''
 
         then: 'My credentials are rejected and I am still on the Change Password page'
-        at ChangePasswordErrorPage
+        at ChangeExpiredPasswordErrorPage
         errorText == 'Enter your new password\nEnter your new password again'
         errorNewText == 'Enter your new password'
         errorConfirmText == 'Enter your new password again'
@@ -36,13 +33,13 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs EXPIRED_TEST_USER, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password without credentials"
-        changePasswordAs 'somepass', 'd'
+        changePasswordAs EXPIRED_TEST_USER, 'somepass', 'd'
 
         then: 'My credentials are rejected and I am still on the Change Password page'
-        at ChangePasswordErrorPage
+        at ChangeExpiredPasswordErrorPage
         errorText == 'Your password must have both letters and numbers\n' +
                 'Your password must have at least 9 characters\n' +
                 'Your passwords do not match. Enter matching passwords.'
@@ -57,13 +54,13 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs EXPIRED_TEST_USER, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password without credentials"
-        changePasswordAs 'iLoveYou2', 'iLoveYou2'
+        changePasswordAs EXPIRED_TEST_USER, 'iLoveYou2', 'iLoveYou2'
 
         then: 'My credentials are rejected and I am still on the Change Password page'
-        at ChangePasswordErrorPage
+        at ChangeExpiredPasswordErrorPage
         errorText == 'Your password is commonly used and may not be secure'
         errorNewText == 'Your password is commonly used and may not be secure'
     }
@@ -75,10 +72,10 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs EXPIRED_TEST2_USER, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password using valid credentials"
-        changePasswordAs 'helloworld2', 'helloworld2'
+        changePasswordAs EXPIRED_TEST2_USER, 'helloworld2', 'helloworld2'
 
         and: 'My credentials are accepted and I am shown the Home page'
         at HomePage
@@ -88,7 +85,45 @@ class ChangePasswordSpecification extends GebReportingSpec {
         at LoginPage
         loginAs EXPIRED_TEST2_USER, 'helloworld2'
 
-        then: 'I am logged in'
+      then: 'I am logged in'
+      at HomePage
+    }
+
+  // this test changes AUTH_MFA_EXPIRED password
+  def "Change password for auth user with MFA enabled"() {
+    given: 'I try to login with an expired user'
+    to LoginPage
+
+    when: 'I login'
+    loginAs AUTH_MFA_EXPIRED, 'password123456'
+
+    then: 'I am redirected to the change password page'
+    at ChangeExpiredPasswordPage
+
+    when: "I change password using valid credentials"
+    changePasswordAs AUTH_MFA_EXPIRED, 'helloworld2', 'helloworld2'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials"
+    submitCode mfaCode
+
+    then: 'I am now at the home page'
+    at HomePage
+
+    when: 'I can login with my new credentials'
+    logout()
+    at LoginPage
+    loginAs AUTH_MFA_EXPIRED, 'helloworld2'
+
+    then: 'I am redirected to the mfa page'
+    at MfaPage
+
+    when: "I enter my MFA credentials"
+    submitCode mfaCode
+
+    then: 'I am logged in'
         at HomePage
     }
 
@@ -99,10 +134,10 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs AUTH_EXPIRED, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password using valid credentials"
-        changePasswordAs 'helloworld2', 'helloworld2'
+        changePasswordAs AUTH_EXPIRED, 'helloworld2', 'helloworld2'
 
         and: 'My credentials are accepted and I am shown the Home page'
         at HomePage
@@ -125,10 +160,10 @@ class ChangePasswordSpecification extends GebReportingSpec {
         loginAs EXPIRED_TEST3_USER, 'password123456'
 
         and: 'I am redirected to the change password page'
-        at ChangePasswordPage
+        at ChangeExpiredPasswordPage
 
         when: "I change password using valid credentials"
-        changePasswordAs 'dodgypass1', 'dodgypass1'
+        changePasswordAs EXPIRED_TEST3_USER, 'dodgypass1', 'dodgypass1'
 
         then: 'I am redirected back'
         browser.getCurrentUrl() startsWith(clientBaseUrl + '?code')

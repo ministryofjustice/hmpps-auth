@@ -48,22 +48,12 @@ public class NomisUserPersonDetails implements UserPersonDetails {
     @JoinColumn(name = "USERNAME")
     private List<UserCaseloadRole> roles;
 
-    @OneToMany
-    @JoinColumn(name = "USERNAME")
-    private List<UserAccessibleCaseload> caseloads;
-
     @OneToOne(cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private AccountDetail accountDetail;
 
     public List<UserCaseloadRole> filterRolesByCaseload(final String caseload) {
         return roles.stream()
-                .filter(r -> r.getId().getCaseload().equals(caseload))
-                .collect(Collectors.toList());
-    }
-
-    public List<UserAccessibleCaseload> filterByCaseload(final String caseload) {
-        return caseloads.stream()
                 .filter(r -> r.getId().getCaseload().equals(caseload))
                 .collect(Collectors.toList());
     }

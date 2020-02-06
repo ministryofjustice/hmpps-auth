@@ -22,6 +22,20 @@ class VerifyEmailSpecification extends GebReportingSpec {
         at HomePage
     }
 
+    def "A user is not allowed to verify a gsi email address"() {
+        given: 'I login with a non verified email user'
+        to LoginPage
+        loginAs AUTH_NO_EMAIL, 'password123456'
+
+        when: 'The Verify Email page is displayed'
+        at VerifyEmailPage
+        verifyEmailAs 'dm_user@hmps.gsi.gov.uk'
+
+        then:
+        at VerifyEmailErrorPage
+        errorDetail.startsWith('All gsi.gov.uk have now been migrated to a justice.gov.uk domain. Enter your justice.gov.uk address instead.')
+    }
+
     def "A user can verify a previously chosen email"() {
         given: 'I login with a non verified email user'
         to LoginPage
@@ -132,7 +146,7 @@ class VerifyEmailSpecification extends GebReportingSpec {
         browser.go verifyLink
 
         then:
-        at VerifyEmailErrorPage
+        at VerifyEmailConfirmErrorPage
         errorDetail.startsWith('This link is invalid')
     }
 }
