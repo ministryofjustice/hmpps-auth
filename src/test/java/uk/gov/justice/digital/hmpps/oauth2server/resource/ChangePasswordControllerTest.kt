@@ -6,13 +6,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doThrow
+import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.security.authentication.AccountExpiredException
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
@@ -155,11 +154,10 @@ class ChangePasswordControllerTest {
       whenever(authenticationManager.authenticate(any())).thenReturn(token)
       val redirect = controller.changePassword("user", "password2", "password2", request, response, true)
       assertThat(redirect).isNull()
-      val authCapture = ArgumentCaptor.forClass(Authentication::class.java)
-      verify(authenticationManager).authenticate(authCapture.capture())
-      val value = authCapture.value
-      assertThat(value.principal).isEqualTo("SOMEUSER")
-      assertThat(value.credentials).isEqualTo("password2")
+      verify(authenticationManager).authenticate(check {
+        assertThat(it.principal).isEqualTo("SOMEUSER")
+        assertThat(it.credentials).isEqualTo("password2")
+      })
       verify(changePasswordService).setPassword("user", "password2")
       verify(jwtAuthenticationSuccessHandler).onAuthenticationSuccess(request, response, token)
     }
@@ -202,6 +200,17 @@ class ChangePasswordControllerTest {
         assertThat(it.credentials).isEqualTo("password2")
       })
       verify(changePasswordService).setPassword("user", "password2")
+    }
+
+
+    @Test
+    fun changePassword_SuccessAccountNotExpired() {
+      setupCheckAndGetTokenValid()
+      setupGetUserCallForProfile()
+      val redirect = controller.changePassword("user", "password2", "password2", request, response, null)
+      assertThat(redirect!!.viewName).isEqualTo("redirect:/")
+      verify(changePasswordService).setPassword("user", "password2")
+      verifyNoInteractions(userStateAuthenticationFailureHandler, authenticationManager)
     }
 
     @Test

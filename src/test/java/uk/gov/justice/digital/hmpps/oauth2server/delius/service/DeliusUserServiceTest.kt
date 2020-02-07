@@ -2,7 +2,8 @@ package uk.gov.justice.digital.hmpps.oauth2server.delius.service
 
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.web.client.ResourceAccessException
@@ -111,11 +112,11 @@ class DeliusUserServiceTest {
             roles = emptySet()))
   }
 
-  @Test(expected = DeliusAuthenticationServiceException::class)
+  @Test
   fun `getDeliusUserByUsername converts ResourceAccessException and rethrows`() {
     whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenThrow(ResourceAccessException::class.java)
 
-    deliusService.getDeliusUserByUsername("any_username")
+    assertThatThrownBy { deliusService.getDeliusUserByUsername("any_username") }.isInstanceOf(DeliusAuthenticationServiceException::class.java)
   }
 
   private fun createUserDetails(): UserDetails =

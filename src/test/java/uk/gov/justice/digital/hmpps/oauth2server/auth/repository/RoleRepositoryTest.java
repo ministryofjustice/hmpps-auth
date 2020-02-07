@@ -1,14 +1,12 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
@@ -18,7 +16,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
 @DataJpaTest
 @ActiveProfiles("dev")
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
@@ -29,7 +26,7 @@ public class RoleRepositoryTest {
     private RoleRepository repository;
 
     @Test
-    public void givenATransientEntityItCanBePersisted() {
+    void givenATransientEntityItCanBePersisted() {
 
         final var transientEntity = transientEntity();
 
@@ -54,19 +51,19 @@ public class RoleRepositoryTest {
     }
 
     @Test
-    public void givenAnExistingRoleTheyCanBeRetrieved() {
+    void givenAnExistingRoleTheyCanBeRetrieved() {
         final var retrievedEntity = repository.findByRoleCode("PECS_POLICE").orElseThrow();
         assertThat(retrievedEntity.getAuthority()).isEqualTo("ROLE_PECS_POLICE");
         assertThat(retrievedEntity.getRoleName()).isEqualTo("PECS Police");
     }
 
     @Test
-    public void findAllByOrderByRoleName() {
+    void findAllByOrderByRoleName() {
         assertThat(repository.findAllByOrderByRoleName()).extracting(Authority::getAuthority).contains("ROLE_GLOBAL_SEARCH", "ROLE_PECS_POLICE");
     }
 
     @Test
-    public void findByGroupAssignableRolesForUsername() {
+    void findByGroupAssignableRolesForUsername() {
         assertThat(repository.findByGroupAssignableRolesForUsername("AUTH_RO_VARY_USER")).extracting(Authority::getRoleCode).containsExactly("GLOBAL_SEARCH", "LICENCE_RO", "LICENCE_VARY");
     }
 

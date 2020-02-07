@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.RedirectStrategy;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 
@@ -18,8 +18,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class JwtAuthenticationSuccessHandlerTest {
+@ExtendWith(SpringExtension.class)
+class JwtAuthenticationSuccessHandlerTest {
     @Mock
     private JwtCookieHelper jwtCookieHelper;
     @Mock
@@ -38,7 +38,7 @@ public class JwtAuthenticationSuccessHandlerTest {
     private JwtAuthenticationSuccessHandler handler;
 
     @Test
-    public void onAuthenticationSuccess_verifyEnabledAlreadyVerified() throws IOException, ServletException {
+    void onAuthenticationSuccess_verifyEnabledAlreadyVerified() throws IOException, ServletException {
         setupHandler();
 
         when(verifyEmailService.isNotVerified(anyString())).thenReturn(Boolean.FALSE);
@@ -48,7 +48,7 @@ public class JwtAuthenticationSuccessHandlerTest {
     }
 
     @Test
-    public void onAuthenticationSuccess_verifyEnabledNotVerified() throws IOException, ServletException {
+    void onAuthenticationSuccess_verifyEnabledNotVerified() throws IOException, ServletException {
         setupHandler();
 
         when(verifyEmailService.isNotVerified(anyString())).thenReturn(Boolean.TRUE);

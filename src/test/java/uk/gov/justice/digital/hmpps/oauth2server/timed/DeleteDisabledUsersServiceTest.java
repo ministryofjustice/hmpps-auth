@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.timed;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
@@ -24,8 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DeleteDisabledUsersServiceTest {
+@ExtendWith(SpringExtension.class)
+class DeleteDisabledUsersServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
@@ -37,13 +37,13 @@ public class DeleteDisabledUsersServiceTest {
 
     private DeleteDisabledUsersService service;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         service = new DeleteDisabledUsersService(userRepository, userRetriesRepository, telemetryClient);
     }
 
     @Test
-    public void findAndDeleteDisabledUsers_Processed() {
+    void findAndDeleteDisabledUsers_Processed() {
         final var users = List.of(User.of("user"), User.of("joe"));
         when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
                 .thenReturn(users);
@@ -51,7 +51,7 @@ public class DeleteDisabledUsersServiceTest {
     }
 
     @Test
-    public void findAndDeleteDisabledUsers_Deleted() {
+    void findAndDeleteDisabledUsers_Deleted() {
         final var user = User.builder().username("user").id(UUID.randomUUID()).build();
         final var joe = User.builder().username("joe").id(UUID.randomUUID()).build();
         final var users = List.of(user, joe);
@@ -64,7 +64,7 @@ public class DeleteDisabledUsersServiceTest {
     }
 
     @Test
-    public void findAndDeleteDisabledUsers_DeleteAll() {
+    void findAndDeleteDisabledUsers_DeleteAll() {
         final var user = User.of("user");
         user.createToken(TokenType.RESET);
         final var retry = new UserRetries("user", 3);
@@ -77,7 +77,7 @@ public class DeleteDisabledUsersServiceTest {
     }
 
     @Test
-    public void findAndDeleteDisabledUsers_Telemetry() {
+    void findAndDeleteDisabledUsers_Telemetry() {
         final var users = List.of(User.of("user"), User.of("joe"));
         when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
                 .thenReturn(users);

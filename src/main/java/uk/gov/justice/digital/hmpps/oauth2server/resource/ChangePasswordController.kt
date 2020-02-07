@@ -48,6 +48,10 @@ class ChangePasswordController(private val jwtAuthenticationSuccessHandler: JwtA
     if (modelAndView.isPresent) {
       return modelAndView.get().addObject("expired", expired)
     }
+    // if we're logged in already ad not in the expired password flow then can just continue to home page
+    if (expired != true) {
+      return ModelAndView("redirect:/")
+    }
     // will be error if unable to get token here as set password process has been successful
     val username = userToken.orElseThrow().user.username
     // authentication with new password

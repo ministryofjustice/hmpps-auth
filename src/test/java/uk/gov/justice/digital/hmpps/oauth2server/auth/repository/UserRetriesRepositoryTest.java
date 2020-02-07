@@ -1,14 +1,12 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
@@ -18,7 +16,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
 @DataJpaTest
 @ActiveProfiles("dev")
 @Import({AuthDbConfig.class, NomisDbConfig.class, FlywayConfig.class})
@@ -29,7 +26,7 @@ public class UserRetriesRepositoryTest {
     private UserRetriesRepository repository;
 
     @Test
-    public void givenATransientEntityItCanBePersisted() {
+    void givenATransientEntityItCanBePersisted() {
 
         final var transientEntity = transientEntity();
 
@@ -54,7 +51,7 @@ public class UserRetriesRepositoryTest {
     }
 
     @Test
-    public void givenAnExistingUserTheyCanBeRetrieved() {
+    void givenAnExistingUserTheyCanBeRetrieved() {
         final var retrievedEntity = repository.findById("LOCKED_USER").orElseThrow();
         assertThat(retrievedEntity.getUsername()).isEqualTo("LOCKED_USER");
         assertThat(retrievedEntity.getRetryCount()).isEqualTo(5);

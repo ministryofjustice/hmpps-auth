@@ -3,9 +3,9 @@ package uk.gov.justice.digital.hmpps.oauth2server.service
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -28,13 +28,13 @@ class MfaServiceTest {
   private val request = MockHttpServletRequest()
   private val service = MfaService(setOf("12.21.23.24"), setOf("MFA"), "template", tokenService, userService, notificationClientApi, userRetriesService)
 
-  @Before
+  @BeforeEach
   fun setUp() {
     request.remoteAddr = "0:0:0:0:0:0:0:1"
     RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request, null))
   }
 
-  @After
+  @AfterEach
   fun tearDown() {
     RequestContextHolder.resetRequestAttributes()
   }

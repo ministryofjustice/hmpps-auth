@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-public class AuthenticationManagerConfigurationTest {
+class AuthenticationManagerConfigurationTest {
 
     @Mock private AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> nomisUserDetailsService;
     @Mock private AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authUserDetailsService;
@@ -37,8 +37,8 @@ public class AuthenticationManagerConfigurationTest {
 
     private AuthenticationManagerConfiguration authenticationManagerConfiguration;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         authenticationManagerConfiguration = new AuthenticationManagerConfiguration(nomisUserDetailsService, authUserDetailsService,
                 deliusUserDetailsService, accessDeniedHandler, logoutSuccessHandler, jwtAuthenticationSuccessHandler, jwtCookieAuthenticationFilter,
                 jwtCookieName, cookieRequestCache, authAuthenticationProvider, nomisAuthenticationProvider, deliusAuthenticationProvider,
@@ -47,7 +47,7 @@ public class AuthenticationManagerConfigurationTest {
 
 
     @Test
-    public void configure_deliusProviderIsLast() {
+    void configure_deliusProviderIsLast() {
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
 
         authenticationManagerConfiguration.configure(authenticationManagerBuilder);

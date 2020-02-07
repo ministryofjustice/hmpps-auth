@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
@@ -24,8 +24,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ChangePasswordServiceTest {
+@ExtendWith(SpringExtension.class)
+class ChangePasswordServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
@@ -37,13 +37,13 @@ public class ChangePasswordServiceTest {
 
     private ChangePasswordService changePasswordService;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         changePasswordService = new ChangePasswordService(userTokenRepository, userRepository, userService, delegatingUserService);
     }
 
     @Test
-    public void setPassword_AlterUser() {
+    void setPassword_AlterUser() {
         final var staffUserAccountForBob = getStaffUserAccountForBob();
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccountForBob));
         final var user = User.of("user");
@@ -56,7 +56,7 @@ public class ChangePasswordServiceTest {
     }
 
     @Test
-    public void setPassword_AuthUser() {
+    void setPassword_AuthUser() {
         final var user = User.builder().username("user").email("email").build();
         user.setEnabled(true);
         user.setSource(AuthSource.auth);
@@ -69,7 +69,7 @@ public class ChangePasswordServiceTest {
     }
 
     @Test
-    public void setPassword_SaveAndDelete() {
+    void setPassword_SaveAndDelete() {
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(getStaffUserAccountForBobOptional());
         final var user = User.of("user");
         user.setLocked(true);
@@ -83,7 +83,7 @@ public class ChangePasswordServiceTest {
     }
 
     @Test
-    public void setPassword_AuthUserPasswordSet() {
+    void setPassword_AuthUserPasswordSet() {
         final var user = User.builder().username("user").build();
         user.setEnabled(true);
         user.setSource(AuthSource.auth);
@@ -95,7 +95,7 @@ public class ChangePasswordServiceTest {
     }
 
     @Test
-    public void setPassword_LockedAccount() {
+    void setPassword_LockedAccount() {
         final var staffUserAccount = getStaffUserAccountForBobOptional();
         staffUserAccount.map(NomisUserPersonDetails.class::cast).get().getAccountDetail().setAccountStatus("LOCKED");
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount);
@@ -108,7 +108,7 @@ public class ChangePasswordServiceTest {
     }
 
     @Test
-    public void setPassword_DisabledAccount() {
+    void setPassword_DisabledAccount() {
         final var optionalUser = buildAuthUser();
         optionalUser.map(User.class::cast).get().setEnabled(false);
         when(userService.findMasterUserPersonDetails(anyString())).thenReturn(optionalUser);
@@ -121,7 +121,7 @@ public class ChangePasswordServiceTest {
     }
 
     @Test
-    public void setPassword_LockedAuthAccount() {
+    void setPassword_LockedAuthAccount() {
         final var user = User.builder().username("user").locked(true).build();
         user.setEnabled(true);
         user.setSource(AuthSource.auth);
