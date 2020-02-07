@@ -13,8 +13,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
@@ -29,7 +27,6 @@ class VerifyEmailServiceTest {
   private val notificationClient: NotificationClientApi = mock()
   private val referenceCodesService: ReferenceCodesService = mock()
   private val verifyEmailService = VerifyEmailService(userRepository, userTokenRepository, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId")
-
 
   @Test
   fun email() {
@@ -70,7 +67,6 @@ class VerifyEmailServiceTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, VerifyEmailException::class)
   fun requestVerification_existingToken() {
     val user = User.of("someuser")
     val existingUserToken = user.createToken(TokenType.VERIFIED)
@@ -81,7 +77,6 @@ class VerifyEmailServiceTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, VerifyEmailException::class)
   fun requestVerification_verifyToken() {
     val user = User.of("someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
@@ -92,7 +87,6 @@ class VerifyEmailServiceTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, VerifyEmailException::class)
   fun requestVerification_saveEmail() {
     val user = User.of("someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
@@ -104,7 +98,6 @@ class VerifyEmailServiceTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class)
   fun requestVerification_sendFailure() {
     val user = User.of("someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
@@ -114,7 +107,6 @@ class VerifyEmailServiceTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, VerifyEmailException::class)
   fun requestVerification_formatEmailInput() {
     val user = Optional.of(User.of("someuser"))
     whenever(userRepository.findByUsername(anyString())).thenReturn(user)
@@ -124,7 +116,6 @@ class VerifyEmailServiceTest {
   }
 
   @Test
-  @Throws(NotificationClientException::class, VerifyEmailException::class)
   fun requestVerification_gsiEmail() {
     val user = Optional.of(User.of("someuser"))
     whenever(userRepository.findByUsername(anyString())).thenReturn(user)
@@ -195,14 +186,6 @@ class VerifyEmailServiceTest {
 
   private fun verifyEmailFailure(email: String, reason: String) {
     assertThatThrownBy { verifyEmailService.validateEmailAddress(email) }.isInstanceOf(VerifyEmailException::class.java).extracting("reason").isEqualTo(reason)
-  }
-
-  private fun staffUserAccountForBob(): NomisUserPersonDetails {
-    val staffUserAccount = NomisUserPersonDetails()
-    val staff = Staff()
-    staff.firstName = "bOb"
-    staffUserAccount.staff = staff
-    return staffUserAccount
   }
 
   @Test
