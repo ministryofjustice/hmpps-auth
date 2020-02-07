@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config
 
-import com.nhaarman.mockito_kotlin.argumentCaptor
 import com.nhaarman.mockito_kotlin.mock
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentCaptor
 import org.mockito.Mockito.atLeastOnce
 import org.mockito.Mockito.verify
 import org.springframework.security.authentication.AuthenticationProvider
@@ -37,11 +37,11 @@ class AuthenticationManagerConfigurationTest {
 
   @Test
   fun configure_deliusProviderIsLast() {
-    argumentCaptor<LockingAuthenticationProvider>().apply {
-      authenticationManagerConfiguration.configure(authenticationManagerBuilder)
-      verify(authenticationManagerBuilder, atLeastOnce()).authenticationProvider(capture())
-      val providers = allValues.filter { p: AuthenticationProvider? -> p !is PreAuthenticatedAuthenticationProvider }
-      assertThat(providers[providers.size - 1]).isEqualTo(deliusAuthenticationProvider)
-    }
+    authenticationManagerConfiguration.configure(authenticationManagerBuilder)
+
+    val captor = ArgumentCaptor.forClass(AuthenticationProvider::class.java)
+    verify(authenticationManagerBuilder, atLeastOnce()).authenticationProvider(captor.capture())
+    val providers = captor.allValues.filter { it !is PreAuthenticatedAuthenticationProvider }
+    assertThat(providers[providers.size - 1]).isEqualTo(deliusAuthenticationProvider)
   }
 }
