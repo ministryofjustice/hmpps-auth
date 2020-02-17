@@ -93,7 +93,7 @@ public class VerifyEmailController {
             return verifyEmailRequest(principal, request, response, "noselection");
         }
 
-        final var chosenEmail = StringUtils.trim(StringUtils.isBlank(candidate) || "other".equals(candidate) ? email : candidate);
+        final var chosenEmail = StringUtils.trim(StringUtils.isBlank(candidate) || "other".equals(candidate) || "change".equals(candidate) ? email : candidate);
 
         try {
             final var verifyLink = requestVerificationForUser(username, chosenEmail, request.getRequestURL().append("-confirm?token=").toString());
@@ -107,10 +107,10 @@ public class VerifyEmailController {
         } catch (final VerifyEmailException e) {
             log.info("Validation failed for email address due to {}", e.getReason());
             telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
-            return createVerifyEmailError(chosenEmail, e.getReason());
+            return createChangeOrVerifyEmailError(chosenEmail, e.getReason(), candidate);
         } catch (final NotificationClientException e) {
             log.error("Failed to send email due to", e);
-            return createVerifyEmailError(chosenEmail, "other");
+            return createChangeOrVerifyEmailError(chosenEmail, "other", candidate);
         }
     }
 
@@ -122,8 +122,9 @@ public class VerifyEmailController {
         return verifyEmailService.requestVerification(username, emailInput, firstName, url);
     }
 
-    private ModelAndView createVerifyEmailError(final String chosenEmail, final String reason) {
-        final var modelAndView = new ModelAndView("verifyEmail", "email", chosenEmail);
+    private ModelAndView createChangeOrVerifyEmailError(final String chosenEmail, final String reason, final String type) {
+        String view = StringUtils.equals(type, "change") ? "changeEmail" : "verifyEmail";
+        final var modelAndView = new ModelAndView(view, "email", chosenEmail);
         modelAndView.addObject("error", reason);
         return modelAndView;
     }

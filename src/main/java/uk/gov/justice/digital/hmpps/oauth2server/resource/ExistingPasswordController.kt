@@ -24,45 +24,51 @@ class ExistingPasswordController(private val authenticationManager: Authenticati
                                  private val tokenService: TokenService,
                                  private val telemetryClient: TelemetryClient) {
 
+  @GetMapping("/existing-email")
+  fun existingPasswordRequestEmail(authentication: Authentication): ModelAndView = createModelAndViewWithUsername(authentication).addObject("type", "email")
+
   @GetMapping("/existing-password")
-  fun existingPasswordRequest(authentication: Authentication) = createModelAndViewWithUsername(authentication)
+  fun existingPasswordRequestPassword(authentication: Authentication): ModelAndView = createModelAndViewWithUsername(authentication).addObject("type", "password")
 
   @PostMapping("/existing-password")
-  fun existingPassword(@RequestParam password: String?, authentication: Authentication): ModelAndView {
-    if (password.isNullOrBlank()) return createModelAndViewWithUsername(authentication).addObject("error", "required")
+  fun existingPassword(@RequestParam password: String?, @RequestParam type: String, authentication: Authentication): ModelAndView {
+    if (password.isNullOrBlank()) return createModelAndViewWithUsername(authentication)
+        .addObject("error", "required")
+        .addObject("type", type)
 
     val username = getUserName(authentication)
     return try {
       authenticate(username, password)
-      continueToNewPassword(username)
+      continueToNewEmailOrPassword(username, type)
 
     } catch (e: MfaRequiredException) {
       // they'll have already provided their MFA credentials to login, so just allow password here
-      continueToNewPassword(username)
+      continueToNewEmailOrPassword(username, type)
 
     } catch (e: AuthenticationException) {
       val reason = e.javaClass.simpleName
       log.info("Caught {} during change password", reason, e)
       telemetryClient.trackEvent("ExistingPasswordAuthenticateFailure", mapOf("username" to username, "reason" to reason), null)
       when (e::class) {
-        DeliusAuthenticationServiceException::class -> createModelAndViewWithUsername(authentication).addObject("error", listOf("invalid", "deliusdown"))
-        BadCredentialsException::class -> createModelAndViewWithUsername(authentication).addObject("error", "invalid")
+        DeliusAuthenticationServiceException::class -> createModelAndViewWithUsername(authentication).addObject("error", listOf("invalid", "deliusdown")).addObject("type", type)
+        BadCredentialsException::class -> createModelAndViewWithUsername(authentication).addObject("error", "invalid").addObject("type", type)
         LockedException::class -> ModelAndView("redirect:/logout", "error", "locked")
         else -> ModelAndView("redirect:/logout", "error", "invalid")
       }
     }
   }
 
-  private fun continueToNewPassword(username: String): ModelAndView {
+  private fun continueToNewEmailOrPassword(username: String, type: String): ModelAndView {
     // successfully logged in with credentials, so generate change password token
     val token = tokenService.createToken(TokenType.CHANGE, username)
 
-    // and take them to existing change passsword pages to continue flow
-    return ModelAndView("redirect:/new-password", "token", token)
+    return ModelAndView("redirect:/new-$type", "token", token)
+
   }
 
   private fun createModelAndViewWithUsername(authentication: Authentication) =
-      ModelAndView("user/existingPassword").addObject("username", getUserName(authentication))
+      ModelAndView("user/existingPassword")
+          .addObject("username", getUserName(authentication))
 
   private fun authenticate(username: String, password: String) =
       authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username.toUpperCase(), password))

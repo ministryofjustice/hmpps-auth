@@ -267,7 +267,7 @@ public class UserRepositoryTest {
     void findAll_UserFilter_ByEmail() {
         assertThat(repository.findAll(UserFilter.builder().name("test@digital").build()))
                 .extracting(User::getUsername)
-                .containsOnly("AUTH_TEST", "AUTH_RO_USER_TEST", "AUTH_CHANGE_TEST", "AUTH_CHANGE2_TEST");
+                .containsOnly("AUTH_TEST", "AUTH_RO_USER_TEST", "AUTH_CHANGE_TEST", "AUTH_CHANGE2_TEST", "AUTH_CHANGE_EMAIL");
     }
 
     @Test
