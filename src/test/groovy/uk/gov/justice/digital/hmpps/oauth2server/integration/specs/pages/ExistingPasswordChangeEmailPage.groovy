@@ -1,0 +1,29 @@
+package uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages
+
+import geb.Page
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount
+
+class ExistingPasswordChangeEmailPage extends Page {
+
+  static url = '/auth/existing-email'
+
+  static at = {
+    title == 'HMPPS Digital Services - Change Email Request'
+    headingText == 'Change your email'
+  }
+
+  static content = {
+    headingText { $('#main-content h1').text() }
+    continueButtion { $("input", type: 'submit') }
+    usernameInput { $("input", name: 'username') }
+  }
+
+  void existingPasswordAs(UserAccount user, String existingPassword) {
+    // ensure we have a non visible field containing username for password managers
+    assert usernameInput.value() == user.username
+    assert !usernameInput.isDisplayed()
+
+    $('form').password = existingPassword
+    continueButtion.click()
+  }
+}

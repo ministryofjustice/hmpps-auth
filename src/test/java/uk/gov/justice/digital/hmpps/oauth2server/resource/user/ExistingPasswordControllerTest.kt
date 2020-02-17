@@ -26,7 +26,7 @@ class ExistingPasswordControllerTest {
   inner class ExistingPasswordRequest {
     @Test
     fun request() {
-      val view = controller.existingPasswordRequest(token)
+      val view = controller.existingPasswordRequestPassword(token)
       assertThat(view.viewName).isEqualTo("user/existingPassword")
     }
   }
@@ -35,24 +35,33 @@ class ExistingPasswordControllerTest {
   inner class ExistingPassword {
     @Test
     fun `password null`() {
-      val mandv = controller.existingPassword(null, token)
+      val mandv = controller.existingPassword(null, "password", token)
       assertThat(mandv.viewName).isEqualTo("user/existingPassword")
-      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "required", "username" to "user"))
+      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "required", "username" to "user", "type" to "password"))
     }
 
     @Test
     fun `password blank`() {
-      val mandv = controller.existingPassword("    ", token)
+      val mandv = controller.existingPassword("    ", "password", token)
       assertThat(mandv.viewName).isEqualTo("user/existingPassword")
-      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "required", "username" to "user"))
+      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "required", "username" to "user", "type" to "password"))
     }
 
     @Test
-    fun `authenticate success`() {
+    fun `authenticate success password`() {
       whenever(authenticationManager.authenticate(any())).thenReturn(token)
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
-      val mandv = controller.existingPassword("somepass", token)
+      val mandv = controller.existingPassword("somepass", "password", token)
       assertThat(mandv.viewName).isEqualTo("redirect:/new-password")
+      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken"))
+    }
+
+    @Test
+    fun `authenticate success email`() {
+      whenever(authenticationManager.authenticate(any())).thenReturn(token)
+      whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
+      val mandv = controller.existingPassword("somepass", "email", token)
+      assertThat(mandv.viewName).isEqualTo("redirect:/new-email")
       assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken"))
     }
 
@@ -60,7 +69,7 @@ class ExistingPasswordControllerTest {
     fun `authenticate mfa required`() {
       whenever(authenticationManager.authenticate(any())).thenThrow(MfaRequiredException("some message"))
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
-      val mandv = controller.existingPassword("somepass", token)
+      val mandv = controller.existingPassword("somepass", "password", token)
       assertThat(mandv.viewName).isEqualTo("redirect:/new-password")
       assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken"))
     }
@@ -69,7 +78,7 @@ class ExistingPasswordControllerTest {
     fun `authenticate success create token`() {
       whenever(authenticationManager.authenticate(any())).thenReturn(token)
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
-      controller.existingPassword("somepass", token)
+      controller.existingPassword("somepass", "password", token)
       verify(tokenService).createToken(UserToken.TokenType.CHANGE, "user")
     }
 
@@ -77,7 +86,7 @@ class ExistingPasswordControllerTest {
     fun `authenticate success call authenticate`() {
       whenever(authenticationManager.authenticate(any())).thenReturn(token)
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
-      controller.existingPassword("somepass", token)
+      controller.existingPassword("somepass", "password", token)
       verify(authenticationManager).authenticate(check {
         assertThat(it.credentials).isEqualTo("somepass")
         assertThat(it.principal).isEqualTo("USER")
@@ -88,25 +97,25 @@ class ExistingPasswordControllerTest {
     fun `authenticate failure delius down`() {
       whenever(authenticationManager.authenticate(any())).thenThrow(DeliusAuthenticationServiceException())
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
-      val mandv = controller.existingPassword("somepass", token)
+      val mandv = controller.existingPassword("somepass", "password", token)
       assertThat(mandv.viewName).isEqualTo("user/existingPassword")
-      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to listOf("invalid", "deliusdown"), "username" to "user"))
+      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to listOf("invalid", "deliusdown"), "username" to "user", "type" to "password"))
     }
 
     @Test
     fun `authenticate failure bad credentials`() {
       whenever(authenticationManager.authenticate(any())).thenThrow(BadCredentialsException("some bad message"))
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
-      val mandv = controller.existingPassword("somepass", token)
+      val mandv = controller.existingPassword("somepass", "password", token)
       assertThat(mandv.viewName).isEqualTo("user/existingPassword")
-      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "invalid", "username" to "user"))
+      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "invalid", "username" to "user", "type" to "password"))
     }
 
     @Test
     fun `authenticate failure locked`() {
       whenever(authenticationManager.authenticate(any())).thenThrow(LockedException("some locked message"))
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
-      val mandv = controller.existingPassword("somepass", token)
+      val mandv = controller.existingPassword("somepass", "password", token)
       assertThat(mandv.viewName).isEqualTo("redirect:/logout")
       assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "locked"))
     }
@@ -115,7 +124,7 @@ class ExistingPasswordControllerTest {
     fun `authenticate failure other`() {
       whenever(authenticationManager.authenticate(any())).thenThrow(CredentialsExpiredException("some expired message"))
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
-      val mandv = controller.existingPassword("somepass", token)
+      val mandv = controller.existingPassword("somepass", "password", token)
       assertThat(mandv.viewName).isEqualTo("redirect:/logout")
       assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "invalid"))
     }

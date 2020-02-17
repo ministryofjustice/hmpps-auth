@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <title>Change Email</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <div th:if="${error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
+       data-module="govuk-error-summary">
+    <h2 class="govuk-error-summary__title" id="error-summary">
+      There is a problem
+    </h2>
+    <div class="govuk-error-summary__body" id="error-detail">
+      <ul class="govuk-list govuk-error-summary__list">
+        <li>
+          <a th:href="${error == 'noselection' ? '#candidate0' : '#email'}" th:text="#{${'verifyemail.' + error}}">Change
+            email message</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <span th:if="${source == 'delius'}">
+    <h1 class="govuk-heading-xl">Delius user - update email address</h1>
+
+    <p class="govuk-body" id="delius-user-text">
+      Please update your email address within Delius as you are unable to do it here
+    </p>
+
+  <a class="govuk-button" th:href="@{/}" id="continue">OK, continue</a>
+    </span>
+  <span th:unless="${source == 'delius'}">
+  <h1 class="govuk-heading-xl">Enter new email address</h1>
+
+  <form class="form" th:action="@{/verify-email}" method="POST" id="changeEmailForm">
+    <div class="govuk-form-group">
+      <p class="govuk-body">
+        Update your email address so you can reset your password and receive emails about your account.
+      </p>
+      <span th:if="${error}" id="selection-error" class="govuk-error-message"
+            th:text="#{${'verifyemail.' + error}}">No error</span>
+      <input type="hidden" id="candidate-other" name="candidate" value="change">
+      <input class="govuk-input" id="email" name="email" type="email">
+    </div>
+    <input class="govuk-button" id="submit" type="submit" role="button"
+           data-element-id="continue-button" value="Save new email">
+  </form>
+</span>
+</div>
+</body>
+</html>
