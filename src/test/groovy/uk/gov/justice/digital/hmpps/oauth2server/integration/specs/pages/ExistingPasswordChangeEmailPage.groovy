@@ -9,7 +9,7 @@ class ExistingPasswordChangeEmailPage extends Page {
 
   static at = {
     title == 'HMPPS Digital Services - Change Email Request'
-    headingText == 'Change your email'
+    headingText == 'What is your current password?'
   }
 
   static content = {

@@ -4,7 +4,7 @@ class ExistingPasswordErrorPage extends ExistingPasswordPage {
 
   static at = {
     title == 'Error: HMPPS Digital Services - Change Password Request'
-    headingText == 'Change your password'
+    headingText == 'What is your current password?'
   }
 
   static content = {

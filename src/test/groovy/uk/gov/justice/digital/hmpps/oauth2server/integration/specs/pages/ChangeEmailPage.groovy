@@ -8,7 +8,7 @@ class ChangeEmailPage extends Page {
 
   static at = {
     title == 'HMPPS Digital Services - Change Email'
-    headingText == 'Enter new email address'
+    headingText == 'What is your new email address?'
   }
 
   static content = {
@@ -20,7 +20,7 @@ class ChangeEmailPage extends Page {
 
   void changeEmailAs(String email) {
     emailInput = email
-    assert changeEmailButton.value() == 'Save new email'
+    assert changeEmailButton.value() == 'Update'
     changeEmailButton.click()
   }
 }
