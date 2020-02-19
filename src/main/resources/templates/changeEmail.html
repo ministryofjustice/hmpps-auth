@@ -31,20 +31,19 @@
   <a class="govuk-button" th:href="@{/}" id="continue">OK, continue</a>
     </span>
   <span th:unless="${source == 'delius'}">
-  <h1 class="govuk-heading-xl">Enter new email address</h1>
-
+        <h1 class="govuk-label-wrapper">
+        <label class="govuk-label govuk-label--xl" for="email">What is your new email address?
+        </label>
+      </h1>
   <form class="form" th:action="@{/verify-email}" method="POST" id="changeEmailForm">
     <div class="govuk-form-group">
-      <p class="govuk-body">
-        Update your email address so you can reset your password and receive emails about your account.
-      </p>
       <span th:if="${error}" id="selection-error" class="govuk-error-message"
             th:text="#{${'verifyemail.' + error}}">No error</span>
       <input type="hidden" id="candidate-other" name="candidate" value="change">
       <input class="govuk-input" id="email" name="email" type="email">
     </div>
     <input class="govuk-button" id="submit" type="submit" role="button"
-           data-element-id="continue-button" value="Save new email">
+           data-element-id="continue-button" value="Update">
   </form>
 </span>
 </div>
