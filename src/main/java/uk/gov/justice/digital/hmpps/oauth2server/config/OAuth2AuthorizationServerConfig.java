@@ -38,8 +38,6 @@ import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFacto
 import javax.sql.DataSource;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 
 
 @SuppressWarnings("deprecation")
@@ -102,8 +100,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
         final var keyStoreKeyFactory = new KeyStoreKeyFactory(privateKeyPair, keystorePassword.toCharArray());
-        Map<String, String> customHeaders = Collections.singletonMap("kid", keyId);
-        return new JwtCustomHeadersAccessTokenConverter(customHeaders, keyStoreKeyFactory.getKeyPair(keystoreAlias));
+        return new JwtKeyIdHeaderAccessTokenConverter(keyId, keyStoreKeyFactory.getKeyPair(keystoreAlias));
 
     }
 
@@ -154,7 +151,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     public JWKSet jwkSet() {
         final var keyStoreKeyFactory = new KeyStoreKeyFactory(privateKeyPair, keystorePassword.toCharArray());
-        RSAKey.Builder builder = new RSAKey.Builder((RSAPublicKey) keyStoreKeyFactory.getKeyPair(keystoreAlias).getPublic())
+        final RSAKey.Builder builder = new RSAKey.Builder((RSAPublicKey) keyStoreKeyFactory.getKeyPair(keystoreAlias).getPublic())
                 .keyUse(KeyUse.SIGNATURE)
                 .algorithm(JWSAlgorithm.RS256)
                 .keyID(keyId);

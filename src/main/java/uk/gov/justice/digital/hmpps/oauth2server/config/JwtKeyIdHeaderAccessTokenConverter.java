@@ -10,30 +10,30 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 
 import java.security.KeyPair;
 import java.security.interfaces.RSAPrivateKey;
-import java.util.Map;
 
-public class JwtCustomHeadersAccessTokenConverter extends JwtAccessTokenConverter {
+import static java.util.Collections.singletonMap;
 
-    private Map<String, String> customHeaders;
-    private JsonParser objectMapper = JsonParserFactory.create();
+public class JwtKeyIdHeaderAccessTokenConverter extends JwtAccessTokenConverter {
+
+    private JsonParser jsonParser = JsonParserFactory.create();
     private final RsaSigner signer;
+    private final String keyId;
 
-    JwtCustomHeadersAccessTokenConverter(final Map<String, String> customHeaders, final KeyPair keyPair) {
-        super();
+    JwtKeyIdHeaderAccessTokenConverter(final String keyId, final KeyPair keyPair) {
         super.setKeyPair(keyPair);
         this.signer = new RsaSigner((RSAPrivateKey) keyPair.getPrivate());
-        this.customHeaders = customHeaders;
+        this.keyId = keyId;
     }
 
     @Override
     protected String encode(final OAuth2AccessToken accessToken, final OAuth2Authentication authentication) {
-        String content;
+        final String content;
         try {
-            content = this.objectMapper.formatMap(getAccessTokenConverter().convertAccessToken(accessToken, authentication));
+            content = this.jsonParser.formatMap(getAccessTokenConverter().convertAccessToken(accessToken, authentication));
         } catch (Exception ex) {
             throw new IllegalStateException("Cannot convert access token to JSON", ex);
         }
-        return JwtHelper.encode(content, this.signer, this.customHeaders).getEncoded();
+        return JwtHelper.encode(content, this.signer, singletonMap("kid", keyId)).getEncoded();
     }
 
 }
