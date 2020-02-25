@@ -2,10 +2,10 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
 import com.nimbusds.jose.jwk.JWKSet
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.oauth2.provider.endpoint.FrameworkEndpoint
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
 
-@FrameworkEndpoint
+@RestController
 class JwkSetRestController(@Autowired private val jwkSet: JWKSet) {
   private val jwkSetJson = jwkSet.toJSONObject()
 
