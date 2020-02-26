@@ -7,11 +7,10 @@ import org.springframework.security.oauth2.common.util.JsonParser;
 import org.springframework.security.oauth2.common.util.JsonParserFactory;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.security.KeyPair;
 import java.security.interfaces.RSAPrivateKey;
-
-import static java.util.Collections.singletonMap;
 
 public class JwtKeyIdHeaderAccessTokenConverter extends JwtAccessTokenConverter {
 
@@ -27,13 +26,18 @@ public class JwtKeyIdHeaderAccessTokenConverter extends JwtAccessTokenConverter 
 
     @Override
     protected String encode(final OAuth2AccessToken accessToken, final OAuth2Authentication authentication) {
+        accessToken.getAdditionalInformation().put("iss", issuer());
         final String content;
         try {
             content = this.jsonParser.formatMap(getAccessTokenConverter().convertAccessToken(accessToken, authentication));
         } catch (Exception ex) {
             throw new IllegalStateException("Cannot convert access token to JSON", ex);
         }
-        return JwtHelper.encode(content, this.signer, singletonMap("kid", keyId)).getEncoded();
+        return JwtHelper.encode(content, this.signer).getEncoded();
+    }
+
+    private String issuer() {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString() + "/issuer";
     }
 
 }

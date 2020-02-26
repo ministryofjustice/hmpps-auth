@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class JwkSetRestController(@Autowired private val jwkSet: JWKSet) {
+class JwkSetController(@Autowired private val jwkSet: JWKSet) {
   private val jwkSetJson = jwkSet.toJSONObject()
 
   @GetMapping("/.well-known/jwks.json")
