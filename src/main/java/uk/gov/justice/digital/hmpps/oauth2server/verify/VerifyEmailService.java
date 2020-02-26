@@ -73,6 +73,7 @@ public class VerifyEmailService {
         final var email = EmailHelper.format(emailInput);
         validateEmailAddress(email);
         user.setEmail(email);
+        user.setVerified(false);
 
         try {
             log.info("Sending email verification to notify for user {}", username);

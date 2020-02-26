@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify
 
+import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockito_kotlin.mock
+import junit.framework.Assert.assertFalse
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -8,6 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.service.notify.NotificationClientApi
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("dev")
@@ -16,9 +21,16 @@ open class VerifyEmailServiceIntTest {
   @Autowired
   private lateinit var jdbcTemplate: JdbcTemplate
   private lateinit var verifyEmailService: VerifyEmailService
+  private val telemetryClient: TelemetryClient = mock()
+  private val notificationClient: NotificationClientApi = mock()
+  @Autowired
+  private lateinit var referenceCodesService: ReferenceCodesService
+  @Autowired
+  private lateinit var userRepository: UserRepository
+
   @BeforeEach
   fun setUp() {
-    verifyEmailService = VerifyEmailService(null, null, jdbcTemplate, null, null, null, "templateId")
+    verifyEmailService = VerifyEmailService(userRepository, null, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId")
   }
 
   @Test
@@ -31,5 +43,12 @@ open class VerifyEmailServiceIntTest {
   fun existingEmailAddresses_NotFound() {
     val emails = verifyEmailService.getExistingEmailAddresses("CA_USER")
     assertThat(emails).isEmpty()
+  }
+
+  @Test
+  fun emailAddressSetToNotVerified() {
+    verifyEmailService.requestVerification("AUTH_CHANGE_EMAIL", "phillips@fredjustice.gov.uk", "AUTH", "url")
+    val user = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
+    assertFalse(user.get().isVerified)
   }
 }
