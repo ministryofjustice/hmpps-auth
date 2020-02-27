@@ -35,7 +35,7 @@ public class UserToken {
     private User user;
 
     UserToken(final TokenType tokenType, final User user) {
-        this.token = tokenType == TokenType.MFA_CODE ? generateIntAsString() : UUID.randomUUID().toString();
+        this.token = tokenType == TokenType.MFA_CODE || tokenType == TokenType.MOBILE ? generateIntAsString() : UUID.randomUUID().toString();
         this.tokenType = tokenType;
         this.user = user;
 
@@ -95,7 +95,8 @@ public class UserToken {
         VERIFIED("VerifiedPassword"),
         CHANGE("ChangePassword"),
         MFA("MFA"),
-        MFA_CODE("MFACode");
+        MFA_CODE("MFACode"),
+        MOBILE("MobileVerifyCode");
 
         private final String description;
 

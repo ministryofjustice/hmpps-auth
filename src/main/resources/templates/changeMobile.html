@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <title>Change Mobile Number</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <div th:if="${error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
+       data-module="govuk-error-summary">
+    <h2 class="govuk-error-summary__title" id="error-summary">
+      There is a problem
+    </h2>
+    <div class="govuk-error-summary__body" id="error-detail">
+      <ul class="govuk-list govuk-error-summary__list">
+        <li>
+          <a th:href="${'#mobile'}" th:text="#{${'verifymobile.' + error}}">Change
+            mobile number message</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <h1 class="govuk-label-wrapper">
+    <label class="govuk-label govuk-label--xl" for="mobile">What is your new mobile phone number?
+    </label>
+  </h1>
+  <form class="form" th:action="@{/verify-mobile}" method="POST" id="changeMobileForm">
+    <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
+      <span th:if="${error}" id="selection-error" class="govuk-error-message"
+            th:text="#{${'verifymobile.' + error}}">No error</span>
+      <span id="mobile-number-hint" class="govuk-hint">
+    Must be a UK mobile number, for example 07987 654321 or +44 987 654321
+      </span>
+      <input th:class="'govuk-input'  + (${error} ? ' govuk-input--error' : '')"
+             id="mobile" name="mobile" type="tel" pattern="[+0-9 ]*" autocomplete="off" autocapitalize="off"
+             spellcheck="false" data-element-id="mobile" aria-describedby="mobile-error" maxlength="14">
+    </div>
+    <input class="govuk-button" id="submit" type="submit" role="button"
+           data-element-id="continue-button" value="Update">
+  </form>
+
+  <p class="govuk-body">
+    We will user number to confirm your identity if necessary when logging in.
+  </p>
+</div>
+</body>
+</html>
