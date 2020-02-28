@@ -53,7 +53,7 @@ public class VerifyMobileController {
     public ModelAndView verifyMobile(@RequestParam final String mobile,
                                      final Principal principal) {
         final var username = principal.getName();
-        final var currentMobile = userService.findUser(username).get().getMobile();
+        final var currentMobile = userService.findUser(username).orElseThrow().getMobile();
         try {
             final var verifyCode = verifyMobileService.requestVerification(username, mobile);
 
@@ -108,22 +108,23 @@ public class VerifyMobileController {
     @PostMapping("/verify-mobile-resend")
     public ModelAndView mobileResend(final Principal principal) {
         final var username = principal.getName();
+        final var currentMobile = userService.findUser(username).orElseThrow().getMobile();
         try {
             final var verifyCode = verifyMobileService.resendVerificationCode(username);
 
             final var modelAndView = new ModelAndView("verifyMobileSent");
             if (smokeTestEnabled) {
-                modelAndView.addObject("verifyCode", verifyCode.get());
+                modelAndView.addObject("verifyCode", verifyCode.orElseThrow());
             }
             return modelAndView;
 
         } catch (final VerifyMobileException e) {
             log.info("Validation failed for mobile phone number due to {}", e.getReason());
             telemetryClient.trackEvent("VerifyMobileRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
-            return createChangeOrVerifyMobileError(e.getReason(), null);
+            return createChangeOrVerifyMobileError(e.getReason(), currentMobile);
         } catch (final NotificationClientException e) {
             log.error("Failed to send sms due to", e);
-            return createChangeOrVerifyMobileError("other", null);
+            return createChangeOrVerifyMobileError("other", currentMobile);
         }
     }
 }

@@ -33,9 +33,9 @@
     Must be a UK mobile number, for example 07700 900321 or +44 7700 900321
       </span>
       <input th:class="'govuk-input govuk-input--width-20'  + (${error} ? ' govuk-input--error' : '')"
-             id="mobile" name="mobile" type="tel" pattern="[+0-9 ]*" autocomplete="tel" autocapitalize="off"
-             spellcheck="false" data-element-id="mobile" aria-describedby="mobile-error" maxlength="20"
-             th:value="${mobile}">
+             id="mobile" name="mobile" type="tel" inputmode=”numeric” pattern="[+0-9 ]*" autocomplete="tel"
+             autocapitalize="off" spellcheck="false" data-element-id="mobile" aria-describedby="mobile-error"
+             maxlength="20" th:value="${mobile}">
     </div>
     <input class="govuk-button" id="submit" type="submit" role="button"
            data-element-id="continue-button" th:value="(${mobile == null} ? 'Add' : 'Update')">
