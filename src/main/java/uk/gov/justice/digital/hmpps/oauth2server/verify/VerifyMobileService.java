@@ -48,17 +48,16 @@ public class VerifyMobileService {
         return !getMobile(name).map(User::isVerified).orElse(Boolean.FALSE);
     }
 
-
     @Transactional(transactionManager = "authTransactionManager")
     public String requestVerification(final String username, final String mobile) throws VerifyMobileException, NotificationClientException {
         final var user = userRepository.findByUsername(username).orElseThrow();
         final var verifyCode = user.createToken(TokenType.MOBILE).getToken();
         final var parameters = Map.of("verifyCode", verifyCode);
-        final var formattedMobile = mobile.replaceAll("\\s+", "");
-        validateMobileNumber(mobile);
-        user.setMobile(formattedMobile);
+        final var canonicalMobile = mobile.replaceAll("\\s+", "");
+        validateMobileNumber(canonicalMobile);
+        user.setMobile(canonicalMobile);
         user.setMobileVerified(false);
-        sendNotification(username, formattedMobile, parameters);
+        sendNotification(username, canonicalMobile, parameters);
 
         userRepository.save(user);
 
@@ -161,7 +160,6 @@ public class VerifyMobileService {
     public boolean mobileVerified(final String username) {
         return userRepository.findByUsername(username).orElseThrow().isMobileVerified();
     }
-
 
     @Getter
     public static class VerifyMobileException extends Exception {

@@ -30,14 +30,15 @@
       <span th:if="${error}" id="selection-error" class="govuk-error-message"
             th:text="#{${'verifymobile.' + error}}">No error</span>
       <span id="mobile-number-hint" class="govuk-hint">
-    Must be a UK mobile number, for example 07987 654321 or +44 987 654321
+    Must be a UK mobile number, for example 07700 900321 or +44 7700 900321
       </span>
-      <input th:class="'govuk-input'  + (${error} ? ' govuk-input--error' : '')"
-             id="mobile" name="mobile" type="tel" pattern="[+0-9 ]*" autocomplete="off" autocapitalize="off"
-             spellcheck="false" data-element-id="mobile" aria-describedby="mobile-error" maxlength="14">
+      <input th:class="'govuk-input govuk-input--width-20'  + (${error} ? ' govuk-input--error' : '')"
+             id="mobile" name="mobile" type="tel" pattern="[+0-9 ]*" autocomplete="tel" autocapitalize="off"
+             spellcheck="false" data-element-id="mobile" aria-describedby="mobile-error" maxlength="20"
+             th:value="${mobile}">
     </div>
     <input class="govuk-button" id="submit" type="submit" role="button"
-           data-element-id="continue-button" value="Update">
+           data-element-id="continue-button" th:value="(${mobile == null} ? 'Add' : 'Update')">
   </form>
 
   <p class="govuk-body">
