@@ -11,7 +11,7 @@ class ChangeMobileController(private val userService: UserService) {
 
   @GetMapping("/new-mobile")
   fun newMobileRequest(authentication: Authentication): ModelAndView {
-    val currentMobile = userService.findUser(authentication.name).get().mobile;
+    val currentMobile = userService.findUser(authentication.name).orElseThrow().mobile;
     return ModelAndView("changeMobile", "mobile", currentMobile)
   }
 }
