@@ -1,6 +1,10 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.RSAKey;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +36,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 
 import javax.sql.DataSource;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 
 
@@ -46,6 +51,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final Resource privateKeyPair;
     private final String keystorePassword;
     private final String keystoreAlias;
+    private final String keyId;
     private final AuthenticationManager authenticationManager;
     private final DataSource dataSource;
     private final PasswordEncoder passwordEncoder;
@@ -57,6 +63,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                                            @Value("${jwt.signing.key.pair}") final String privateKeyPair,
                                            @Value("${jwt.keystore.password}") final String keystorePassword,
                                            @Value("${jwt.keystore.alias:elite2api}") final String keystoreAlias,
+                                           @Value("${jwt.jwk.key.id}") final String keyId,
                                            @Qualifier("authDataSource") final DataSource dataSource,
                                            @Lazy final RedirectResolver redirectResolver,
                                            final PasswordEncoder passwordEncoder, final TelemetryClient telemetryClient) {
@@ -64,6 +71,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.keystorePassword = keystorePassword;
         this.keystoreAlias = keystoreAlias;
+        this.keyId = keyId;
         this.authenticationManager = authenticationManager;
         this.dataSource = dataSource;
         this.passwordEncoder = passwordEncoder;
@@ -91,10 +99,9 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
-        final var converter = new JwtAccessTokenConverter();
         final var keyStoreKeyFactory = new KeyStoreKeyFactory(privateKeyPair, keystorePassword.toCharArray());
-        converter.setKeyPair(keyStoreKeyFactory.getKeyPair(keystoreAlias));
-        return converter;
+        return new JwtKeyIdHeaderAccessTokenConverter(keyId, keyStoreKeyFactory.getKeyPair(keystoreAlias));
+
     }
 
     @Override
@@ -139,5 +146,15 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         tokenServices.setClientDetailsService(jdbcClientDetailsService());
         tokenServices.setAuthenticationManager(authenticationManager);
         return tokenServices;
+    }
+
+    @Bean
+    public JWKSet jwkSet() {
+        final var keyStoreKeyFactory = new KeyStoreKeyFactory(privateKeyPair, keystorePassword.toCharArray());
+        final RSAKey.Builder builder = new RSAKey.Builder((RSAPublicKey) keyStoreKeyFactory.getKeyPair(keystoreAlias).getPublic())
+                .keyUse(KeyUse.SIGNATURE)
+                .algorithm(JWSAlgorithm.RS256)
+                .keyID(keyId);
+        return new JWKSet(builder.build());
     }
 }
