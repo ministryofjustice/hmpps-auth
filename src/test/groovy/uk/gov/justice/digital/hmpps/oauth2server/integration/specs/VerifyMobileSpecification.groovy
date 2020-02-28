@@ -10,13 +10,13 @@ class VerifyMobileSpecification extends GebReportingSpec {
   def "Change mobile flow resend verification code"() {
     given: 'I try to change my Mobile Number'
     to LoginPage
-    loginAs AUTH_CHANGE_MOBILE, 'password123456'
+    loginAs AUTH_CHANGE_MOBILE_ADD, 'password123456'
 
     and: 'My credentials are accepted and I am on the Change Mobile page'
     to ChangeMobilePage
 
     when: "I enter new mobile number"
-    changeMobileAs '07987654321'
+    changeMobileAs '07700900321'
 
     and: 'The Verify Mobile sent page is displayed'
     at VerifyMobileSentPage
@@ -41,13 +41,13 @@ class VerifyMobileSpecification extends GebReportingSpec {
   def "Change mobile flow invalid verification code"() {
     given: 'I try to change my Mobile Number'
     to LoginPage
-    loginAs AUTH_CHANGE_MOBILE, 'password123456'
+    loginAs AUTH_CHANGE_MOBILE_UPDATE, 'password123456'
 
     and: 'My credentials are accepted and I am on the Change Mobile page'
     to ChangeMobilePage
 
     when: "I enter new mobile number"
-    changeMobileAs '07987654321'
+    changeExistingMobileAs '07700900322', '07700900321'
 
     and: 'The Verify Mobile sent page is displayed'
     at VerifyMobileSentPage
@@ -67,7 +67,7 @@ class VerifyMobileSpecification extends GebReportingSpec {
     to MobileVerificationResendPage
     resendCode()
 
-    then: ''
+    then: 'I am redirected to the enter new mobile number page'
     at ChangeMobileErrorPage
     errorText == 'No phone number found'
   }

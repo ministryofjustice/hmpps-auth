@@ -38,7 +38,7 @@ class ChangeMobileSpecification extends DeliusIntegrationSpec {
     to ChangeMobilePage
 
     when: "I enter new mobile number"
-    changeMobileAs '07'
+    changeExistingMobileAs '07', '07700900321'
 
     then: "I am shown an error message"
     at ChangeMobileErrorPage
@@ -54,7 +54,7 @@ class ChangeMobileSpecification extends DeliusIntegrationSpec {
     to ChangeMobilePage
 
     when: "I enter new mobile number"
-    changeMobileAs '07987654321'
+    changeExistingMobileAs '07700900322', '07700900321'
 
     and: 'The Verify Mobile sent page is displayed'
     at VerifyMobileSentPage
@@ -64,5 +64,4 @@ class ChangeMobileSpecification extends DeliusIntegrationSpec {
     at VerifyMobileErrorPage
     errorText == 'Enter the code received in the text message'
   }
-
 }

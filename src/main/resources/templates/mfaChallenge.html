@@ -48,8 +48,8 @@
         </span>
         <input
             th:class="'govuk-input--width-4 govuk-input' + (${missingcode} ? ' govuk-input--error' : '')"
-            id="code" name="code" type="tel" pattern="[0-9]*" autocomplete="off" autocapitalize="off"
-            spellcheck="false" data-element-id="code" aria-describedby="code-error" maxlength="6">
+            id="code" name="code" type="text" inputmode=”numeric” pattern="[0-9]*" autocomplete="off"
+            autocapitalize="off" spellcheck="false" data-element-id="code" aria-describedby="code-error" maxlength="6">
       </div>
     </div>
     <div class="govuk-form-group">
