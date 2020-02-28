@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.AUTH_CHANGE_MOBILE
+import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.AUTH_CHANGE_MOBILE_VERIFIED
 
 class ChangeMobileSpecification extends DeliusIntegrationSpec {
 
@@ -63,5 +64,24 @@ class ChangeMobileSpecification extends DeliusIntegrationSpec {
     then: "I am shown an error message"
     at VerifyMobileErrorPage
     errorText == 'Enter the code received in the text message'
+  }
+
+  def 'current verified mobile number re-entered'() {
+    given: 'I try to change my mobile number'
+    to LoginPage
+    loginAs AUTH_CHANGE_MOBILE_VERIFIED, 'password123456'
+
+    and: 'My credentials are accepted and I go on to the change mobile page'
+    to ChangeMobilePage
+
+    when: "I enter the  mobile number"
+    changeExistingMobileAs '07700900321', '07700900321'
+
+    and: 'I am redirected to the Mobile already Verified page'
+    at VerifyMobileAlreadyPage
+    continueProcess()
+
+    then: 'The Home page is displayed'
+    at HomePage
   }
 }

@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.MapEntry.entry
 import org.junit.jupiter.api.Test
@@ -14,8 +12,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService.VerifyMobileException
 import uk.gov.service.notify.NotificationClientException
 import java.util.*
+import java.util.Map
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -38,6 +38,7 @@ class VerifyMobileControllerTest {
 
   @Test
   fun verifyMobile_Exception() {
+    whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.of("AUTH_MOBILE")))
     whenever(verifyMobileService.requestVerification(anyString(), anyString())).thenThrow(NotificationClientException("something went wrong"))
     val modelAndView = verifyMobileController.verifyMobile(null, principal)
@@ -47,6 +48,7 @@ class VerifyMobileControllerTest {
 
   @Test
   fun verifyMobile_Success() {
+    whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.of("AUTH_MOBILE")))
     whenever(verifyMobileService.requestVerification(anyString(), anyString())).thenReturn("123456")
     val mobile = "07700900321"
@@ -54,6 +56,13 @@ class VerifyMobileControllerTest {
     assertThat(modelAndView.viewName).isEqualTo("verifyMobileSent")
     assertThat(modelAndView.model).containsExactly(entry("verifyCode", "123456"))
     verify(verifyMobileService).requestVerification("user", mobile)
+  }
+
+  @Test
+  fun verifyMobile_Already() {
+    whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(true)
+    val modelAndView = verifyMobileController.verifyMobile("07700900321", principal)
+    assertThat(modelAndView.viewName).isEqualTo("verifyMobileAlready")
   }
 
   @Test
@@ -87,4 +96,58 @@ class VerifyMobileControllerTest {
     assertThat(modelAndView.viewName).isEqualTo("verifyMobileSent")
     assertThat(modelAndView.model).containsExactly(entry("error", "invalid"), entry("verifyCode", null))
   }
+
+  @Test
+  fun mobileResendRequest_notVerified() {
+    whenever(verifyMobileService.mobileVerified(anyString())).thenReturn(false)
+    val modelAndView = verifyMobileController.mobileResendRequest(principal)
+    assertThat(modelAndView.viewName).isEqualTo("verifyMobileResend")
+  }
+
+  @Test
+  fun mobileResendRequest_alreadyVerified() {
+    whenever(verifyMobileService.mobileVerified(anyString())).thenReturn(true)
+    val modelAndView = verifyMobileController.mobileResendRequest(principal)
+    assertThat(modelAndView.viewName).isEqualTo("verifyMobileAlready")
+  }
+
+  @Test
+  fun mobileResend_sendCode() {
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.builder().mobile("077009000000").build()))
+    whenever(verifyMobileService.resendVerificationCode(anyString())).thenReturn(Optional.of("123456"))
+    val modelAndView = verifyMobileController.mobileResend(principal)
+    assertThat(modelAndView.viewName).isEqualTo("verifyMobileSent")
+  }
+
+  @Test
+  fun mobileResend_sendCode_smokeTestEnabled() {
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.builder().mobile("077009000000").build()))
+    whenever(verifyMobileService.resendVerificationCode(anyString())).thenReturn(Optional.of("123456"))
+    val modelAndView = VerifyMobileController(jwtAuthenticationSuccessHandler, verifyMobileService, telemetryClient, userService, true)
+        .mobileResend(principal)
+    assertThat(modelAndView.viewName).isEqualTo("verifyMobileSent")
+    assertThat(modelAndView.model).containsExactly(entry("verifyCode", "123456"))
+  }
+
+  @Test
+  fun mobileResend_verifyMobileException() {
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.builder().mobile("077009000000").build()))
+    whenever(verifyMobileService.resendVerificationCode(anyString())).thenThrow(VerifyMobileException("reason"))
+    val modelAndView = verifyMobileController.mobileResend(principal)
+    assertThat(modelAndView.viewName).isEqualTo("changeMobile")
+    assertThat(modelAndView.model).containsExactly(entry("error", "reason"), entry("mobile", "077009000000"))
+    verify(telemetryClient).trackEvent(eq("VerifyMobileRequestFailure"), check {
+      assertThat(it).containsOnly(Map.entry("username", "user"), Map.entry("reason", "reason"))
+    }, isNull())
+  }
+
+  @Test
+  fun mobileResend_notificationClientException() {
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.builder().mobile("077009000000").build()))
+    whenever(verifyMobileService.resendVerificationCode(anyString())).thenThrow(NotificationClientException("something went wrong"))
+    val modelAndView = verifyMobileController.mobileResend(principal)
+    assertThat(modelAndView.viewName).isEqualTo("changeMobile")
+    assertThat(modelAndView.model).containsExactly(entry("error", "other"), entry("mobile", "077009000000"))
+  }
+
 }

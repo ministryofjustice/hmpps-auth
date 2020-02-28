@@ -53,6 +53,10 @@ public class VerifyMobileController {
     public ModelAndView verifyMobile(@RequestParam final String mobile,
                                      final Principal principal) {
         final var username = principal.getName();
+
+        if (userService.isSameAsCurrentVerifiedMobile(username, mobile)) {
+            return new ModelAndView("verifyMobileAlready");
+        }
         final var currentMobile = userService.findUser(username).orElseThrow().getMobile();
         try {
             final var verifyCode = verifyMobileService.requestVerification(username, mobile);
