@@ -52,7 +52,7 @@ public class UserRepositoryTest {
 
     @Test
     void givenATransientEntityItCanBePersisted() {
-        final var transientEntity = User.builder().username("transiententity").email("transient@b.com").mobile("07987654321").source(AuthSource.delius).build();
+        final var transientEntity = User.builder().username("transiententity").email("transient@b.com").mobile("07700900321").source(AuthSource.delius).build();
 
         final var persistedEntity = repository.save(transientEntity);
 
@@ -268,8 +268,7 @@ public class UserRepositoryTest {
     void findAll_UserFilter_ByEmail() {
         assertThat(repository.findAll(UserFilter.builder().name("test@digital").build()))
                 .extracting(User::getUsername)
-                .containsOnly("AUTH_TEST", "AUTH_RO_USER_TEST", "AUTH_CHANGE_TEST", "AUTH_CHANGE2_TEST", "AUTH_CHANGE_EMAIL", "AUTH_CHANGE_MOBILE",
-                        "AUTH_CHANGE_MOBILE_VERIFIED", "AUTH_CHANGE_MOBILE2");
+                .containsOnly("AUTH_TEST", "AUTH_RO_USER_TEST", "AUTH_CHANGE_TEST", "AUTH_CHANGE2_TEST", "AUTH_CHANGE_EMAIL");
     }
 
     @Test

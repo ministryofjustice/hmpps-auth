@@ -18,9 +18,20 @@ class ChangeMobilePage extends Page {
     errorText { $('#errors').text() }
   }
 
-  void changeMobileAs(String mobile) {
-    mobileInput = mobile
+  void changeExistingMobileAs(String mobile, String existingMobile) {
+    $('form').mobile = existingMobile
+    assert changeMobileButton.value() != 'Add'
     assert changeMobileButton.value() == 'Update'
+
+    mobileInput = mobile
+    changeMobileButton.click()
+  }
+
+  void changeMobileAs(String mobile) {
+    assert changeMobileButton.value() == 'Add'
+    assert changeMobileButton.value() != 'Update'
+
+    mobileInput = mobile
     changeMobileButton.click()
   }
 }

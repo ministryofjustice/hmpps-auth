@@ -10,7 +10,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService
 import uk.gov.service.notify.NotificationClientException
 import java.util.*
@@ -23,7 +25,8 @@ class VerifyMobileControllerTest {
   private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler = mock()
   private val verifyMobileService: VerifyMobileService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val verifyMobileController = VerifyMobileController(jwtAuthenticationSuccessHandler, verifyMobileService, telemetryClient, true)
+  private val userService: UserService = mock()
+  private val verifyMobileController = VerifyMobileController(jwtAuthenticationSuccessHandler, verifyMobileService, telemetryClient, userService, true)
   private val principal = UsernamePasswordAuthenticationToken("user", "pass")
 
   @Test
@@ -35,6 +38,7 @@ class VerifyMobileControllerTest {
 
   @Test
   fun verifyMobile_Exception() {
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.of("AUTH_MOBILE")))
     whenever(verifyMobileService.requestVerification(anyString(), anyString())).thenThrow(NotificationClientException("something went wrong"))
     val modelAndView = verifyMobileController.verifyMobile(null, principal)
     assertThat(modelAndView.viewName).isEqualTo("verifyMobileSent")
@@ -43,8 +47,9 @@ class VerifyMobileControllerTest {
 
   @Test
   fun verifyMobile_Success() {
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.of("AUTH_MOBILE")))
     whenever(verifyMobileService.requestVerification(anyString(), anyString())).thenReturn("123456")
-    val mobile = "07987654321"
+    val mobile = "07700900321"
     val modelAndView = verifyMobileController.verifyMobile(mobile, principal)
     assertThat(modelAndView.viewName).isEqualTo("verifyMobileSent")
     assertThat(modelAndView.model).containsExactly(entry("verifyCode", "123456"))
