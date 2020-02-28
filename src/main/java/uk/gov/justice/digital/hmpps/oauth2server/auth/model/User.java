@@ -66,6 +66,12 @@ public class User implements UserPersonDetails, CredentialsContainer {
     @Column(name = "last_logged_in")
     private LocalDateTime lastLoggedIn = LocalDateTime.now();
 
+    @Column(name = "mobile")
+    private String mobile;
+
+    @Column(name = "mobile_verified", nullable = false)
+    private boolean mobileVerified;
+
     @Embedded
     private Person person;
 
@@ -171,6 +177,8 @@ public class User implements UserPersonDetails, CredentialsContainer {
                 ", source=" + source +
                 ", passwordExpiry=" + passwordExpiry +
                 ", lastLoggedIn=" + lastLoggedIn +
+                ", mobile=" + mobile +
+                ", mobileVerified=" + mobileVerified +
                 ", person=" + person +
                 ", authorities=" + authorities +
                 '}';
@@ -214,6 +222,14 @@ public class User implements UserPersonDetails, CredentialsContainer {
 
     public LocalDateTime getLastLoggedIn() {
         return this.lastLoggedIn;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public boolean isMobileVerified() {
+        return mobileVerified;
     }
 
     public Person getPerson() {
@@ -272,6 +288,14 @@ public class User implements UserPersonDetails, CredentialsContainer {
         this.lastLoggedIn = lastLoggedIn;
     }
 
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public void setMobileVerified(final boolean mobileVerified) {
+        this.mobileVerified = mobileVerified;
+    }
+
     public void setPerson(Person person) {
         this.person = person;
     }
@@ -295,6 +319,8 @@ public class User implements UserPersonDetails, CredentialsContainer {
         private AuthSource source;
         private LocalDateTime passwordExpiry = LocalDateTime.now();
         private LocalDateTime lastLoggedIn = LocalDateTime.now();
+        private String mobile;
+        private boolean mobileVerified;
         private Person person;
         private Set<Authority> authorities = new HashSet<>();
         private Set<Group> groups = new HashSet<>();
@@ -353,6 +379,16 @@ public class User implements UserPersonDetails, CredentialsContainer {
             return this;
         }
 
+        public UserBuilder mobile(final String mobile) {
+            this.mobile = mobile;
+            return this;
+        }
+
+        public UserBuilder mobileVerified(final boolean mobileVerified) {
+            this.mobileVerified = mobileVerified;
+            return this;
+        }
+
         public UserBuilder person(final Person person) {
             this.person = person;
             return this;
@@ -374,11 +410,11 @@ public class User implements UserPersonDetails, CredentialsContainer {
         }
 
         public User build() {
-            return new User(id, username, password, email, verified, locked, enabled, source, passwordExpiry, lastLoggedIn, person, authorities, groups, tokens);
+            return new User(id, username, password, email, verified, locked, enabled, source, passwordExpiry, lastLoggedIn, mobile, mobileVerified, person, authorities, groups, tokens);
         }
 
         public String toString() {
-            return "User.UserBuilder(id=" + this.id + ", username=" + this.username + ", password=" + this.password + ", email=" + this.email + ", verified=" + this.verified + ", locked=" + this.locked + ", enabled=" + this.enabled + ", source=" + this.source + ", passwordExpiry=" + this.passwordExpiry + ", lastLoggedIn=" + this.lastLoggedIn + ", person=" + this.person + ", authorities=" + this.authorities + ", groups=" + this.groups + ", tokens=" + this.tokens + ")";
+            return "User.UserBuilder(id=" + this.id + ", username=" + this.username + ", password=" + this.password + ", email=" + this.email + ", verified=" + this.verified + ", locked=" + this.locked + ", enabled=" + this.enabled + ", source=" + this.source + ", passwordExpiry=" + this.passwordExpiry + ", lastLoggedIn=" + this.lastLoggedIn + ", mobile=" + this.mobile + ",mobileVerified=" + this.mobileVerified + ",person=" + this.person + ", authorities=" + this.authorities + ", groups=" + this.groups + ", tokens=" + this.tokens + ")";
         }
     }
 }
