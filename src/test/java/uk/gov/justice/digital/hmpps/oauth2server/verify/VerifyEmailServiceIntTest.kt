@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.verify
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.mock
 import junit.framework.Assert.assertFalse
+import junit.framework.Assert.assertTrue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -47,8 +48,10 @@ open class VerifyEmailServiceIntTest {
 
   @Test
   fun emailAddressSetToNotVerified() {
+    val userBefore = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
+    assertTrue(userBefore.get().isVerified)
     verifyEmailService.requestVerification("AUTH_CHANGE_EMAIL", "phillips@fredjustice.gov.uk", "AUTH", "url")
-    val user = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
-    assertFalse(user.get().isVerified)
+    val userAfter = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
+    assertFalse(userAfter.get().isVerified)
   }
 }
