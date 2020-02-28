@@ -45,22 +45,6 @@ class ChangeMobileSpecification extends DeliusIntegrationSpec {
     errorText == 'Enter a mobile phone number in the correct format'
   }
 
-  def 'Change mobile random spaces with number entered'() {
-    given: 'I try to change my mobile number'
-    to LoginPage
-    loginAs AUTH_CHANGE_MOBILE, 'password123456'
-
-    and: 'My credentials are accepted and I go on to the change mobile page'
-    to ChangeMobilePage
-
-    when: "I enter new mobile number"
-    changeMobileAs '0798 7 654321'
-
-    then: "I am shown an error message"
-    at ChangeMobileErrorPage
-    errorText == 'Enter a mobile phone number in the correct format'
-  }
-
   def 'Change mobile flow invalid verification code'() {
     given: 'I try to change my mobile number'
     to LoginPage

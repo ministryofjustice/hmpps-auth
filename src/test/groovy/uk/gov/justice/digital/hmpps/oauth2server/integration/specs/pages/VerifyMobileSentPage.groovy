@@ -29,7 +29,7 @@ class VerifyMobileSentPage extends Page {
   }
 
   void resendMobileCode() {
-    assert resendCodeLink.text() == 'Not received an text message?'
+    assert resendCodeLink.text() == 'Not received a text message?'
 
     resendCodeLink.click()
   }

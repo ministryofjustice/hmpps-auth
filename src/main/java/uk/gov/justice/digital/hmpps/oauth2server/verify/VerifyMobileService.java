@@ -54,8 +54,8 @@ public class VerifyMobileService {
         final var user = userRepository.findByUsername(username).orElseThrow();
         final var verifyCode = user.createToken(TokenType.MOBILE).getToken();
         final var parameters = Map.of("verifyCode", verifyCode);
-        validateMobileNumber(mobile);
         final var formattedMobile = mobile.replaceAll("\\s+", "");
+        validateMobileNumber(mobile);
         user.setMobile(formattedMobile);
         user.setMobileVerified(false);
         sendNotification(username, formattedMobile, parameters);
