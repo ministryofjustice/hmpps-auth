@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 @TestPropertySource(properties = ["jwt.jwk.key.id=some-key-id"])
 class PublicKeyIntTest : IntegrationTest() {
   @Test
-  fun `Jwk set page returns JwkSet`() {
+  fun `Public key values are correct`() {
     webTestClient.get().uri("/auth/jwt-public-key")
         .exchange()
         .expectStatus().isOk
