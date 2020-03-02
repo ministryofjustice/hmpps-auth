@@ -21,7 +21,7 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
     at ChangeEmailPage
 
     when: "I enter new email"
-    changeEmailAs 'dm_user@digital.justice.gov.uk'
+    changeEmailAs 'dm_user@digital.justice.gov.uk', 'auth_test@digital.justice.gov.uk'
 
     and: 'The Verify Email sent page is displayed'
     at VerifyEmailSentPage
@@ -47,13 +47,13 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
   def "Change email flow incorrect password"() {
     given: 'I try to change my Email address'
     to LoginPage
-    loginAs AUTH_CHANGE_EMAIL, 'password123456'
+    loginAs AUTH_CHANGE_EMAIL2, 'password123456'
 
     and: 'I am redirected to the existing password page'
     to ExistingPasswordChangeEmailPage
 
     when: "I enter password with incorrect credentials"
-    existingPasswordAs AUTH_CHANGE_EMAIL, 'password1234567'
+    existingPasswordAs AUTH_CHANGE_EMAIL2, 'password1234567'
 
     then: 'My credentials are rejected and I am still on the Change Existing Password page'
     at ExistingPasswordChangeEmailErrorPage
@@ -61,13 +61,13 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
     errorFieldText == 'Your password is incorrect. You will be locked out if you enter the wrong details 3 times.'
 
     when: "I enter password with incorrect credentials"
-    existingPasswordAs AUTH_CHANGE_EMAIL, 'password123456'
+    existingPasswordAs AUTH_CHANGE_EMAIL2, 'password123456'
 
     then: 'My credentials are accepted and I am on the Change Email page'
     at ChangeEmailPage
 
     when: "I enter new email"
-    changeEmailAs 'dm_user@digital.justice.gov.uk'
+    changeEmailAs 'dm_user1@digital.justice.gov.uk', 'auth_email@digital.justice.gov.uk'
 
     and: 'The Verify Email sent page is displayed'
     at VerifyEmailSentPage
@@ -93,19 +93,19 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
   def "A user is not allowed to change email address to a gsi email address"() {
     given: 'I try to change my Email address'
     to LoginPage
-    loginAs AUTH_CHANGE_EMAIL, 'password123456'
+    loginAs AUTH_CHANGE_EMAIL_GSI, 'password123456'
 
     and: 'I am redirected to the existing password page'
     to ExistingPasswordChangeEmailPage
 
     when: "I enter password with correct credentials"
-    existingPasswordAs AUTH_CHANGE_EMAIL, 'password123456'
+    existingPasswordAs AUTH_CHANGE_EMAIL_GSI, 'password123456'
 
     then: 'My credentials are accepted and I am on the Change Email page'
     at ChangeEmailPage
 
     when: "I enter new email"
-    changeEmailAs 'dm_user@hmps.gsi.gov.uk'
+    changeEmailAs 'dm_user@hmps.gsi.gov.uk', 'auth_email@digital.justice.gov.uk'
 
     then:
     at ChangeEmailErrorPage
@@ -115,19 +115,19 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
   def "A user is not allowed to change email address to an invalid email address"() {
     given: 'I try to change my Email address'
     to LoginPage
-    loginAs AUTH_CHANGE_EMAIL, 'password123456'
+    loginAs AUTH_CHANGE_EMAIL_INVALID, 'password123456'
 
     and: 'I am redirected to the existing password page'
     to ExistingPasswordChangeEmailPage
 
     when: "I enter password with correct credentials"
-    existingPasswordAs AUTH_CHANGE_EMAIL, 'password123456'
+    existingPasswordAs AUTH_CHANGE_EMAIL_INVALID, 'password123456'
 
     then: 'My credentials are accepted and I am on the Change Email page'
     at ChangeEmailPage
 
     when: "I enter new email"
-    changeEmailAs 'dm_user@digital.justice'
+    changeEmailAs 'dm_user@digital.justice', 'auth_email@digital.justice.gov.uk'
 
     then:
     at ChangeEmailErrorPage
@@ -137,26 +137,26 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
   def "Change email flow with failing email"() {
     given: 'I try to change my Email address'
     to LoginPage
-    loginAs AUTH_CHANGE_EMAIL, 'password123456'
+    loginAs AUTH_CHANGE_EMAIL_INCOMPLETE, 'password123456'
 
     and: 'I am redirected to the existing password page'
     to ExistingPasswordChangeEmailPage
 
     when: "I enter password with correct credentials"
-    existingPasswordAs AUTH_CHANGE_EMAIL, 'password123456'
+    existingPasswordAs AUTH_CHANGE_EMAIL_INCOMPLETE, 'password123456'
 
     then: 'My credentials are accepted and I am on the Change Email page'
     at ChangeEmailPage
 
     when: "I enter incomplete new email"
-    changeEmailAs 'dm_user@digital.justice'
+    changeEmailAs 'dm_user2@digital.justice', 'auth_email@digital.justice.gov.uk'
 
     then:
     at ChangeEmailErrorPage
     errorText == 'Enter your work email address'
 
-    when: "I enter new email"
-    changeEmailAs 'dm_user@digital.justice.gov.uk'
+    when: "I enter new email and the incomplete email is retained"
+    changeEmailAs 'dm_user2@digital.justice.gov.uk', 'dm_user2@digital.justice'
 
     and: 'The Verify Email sent page is displayed'
     at VerifyEmailSentPage
@@ -224,7 +224,7 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
     at ChangeEmailPage
 
     when: "I enter new email"
-    changeEmailAs 'dm_user@digital.justice.gov.uk'
+    changeEmailAs 'dm_user@digital.justice.gov.uk', 'auth_email@digital.justice.gov.uk'
 
     and: 'The Verify Email sent page is displayed'
     at VerifyEmailSentPage
@@ -245,5 +245,30 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
 
     then: 'I am shown the success page'
     at VerifyEmailConfirmPage
+  }
+
+  def "Change email flow current verified email re-entered"() {
+    given: 'I try to change my Email address'
+    to LoginPage
+    loginAs AUTH_CHANGE_EMAIL_VERIFIED, 'password123456'
+
+    and: 'I am redirected to the existing password page'
+    to ExistingPasswordChangeEmailPage
+
+    when: "I enter password with correct credentials"
+    existingPasswordAs AUTH_CHANGE_EMAIL_VERIFIED, 'password123456'
+
+    then: 'My credentials are accepted and I am on the Change Email page'
+    at ChangeEmailPage
+
+    when: "I enter new email"
+    changeEmailAs 'auth_email@digital.justice.gov.uk', 'auth_email@digital.justice.gov.uk'
+
+    and: 'I am redirected to the Mobile already Verified page'
+    at VerifyEmailAlreadyPage
+    continueProcess()
+
+    then: 'The Home page is displayed'
+    at HomePage
   }
 }

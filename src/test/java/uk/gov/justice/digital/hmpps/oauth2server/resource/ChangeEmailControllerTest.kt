@@ -28,6 +28,8 @@ class ChangeEmailControllerTest {
       setupGetUserCallForProfile()
       val view = controller.newEmailRequest("token")
       assertThat(view.viewName).isEqualTo("changeEmail")
+      val model = controller.newEmailRequest("token")
+      assertThat(model.model["email"]).isEqualTo("someuser@justice.gov.uk")
     }
   }
 
@@ -39,6 +41,7 @@ class ChangeEmailControllerTest {
   }
 
   private fun setupGetToken() {
-    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(User.of("someuser").createToken(UserToken.TokenType.RESET)))
+    whenever(tokenService.getToken(any(), anyString()))
+        .thenReturn(Optional.of(User.builder().username("someuser").email("someuser@justice.gov.uk").build().createToken(UserToken.TokenType.RESET)))
   }
 }

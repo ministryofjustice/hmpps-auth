@@ -24,8 +24,11 @@ class ChangeEmailController(private val tokenService: TokenService, private val 
     modelAndView.addObject("username", username)
     val user = userService.findMasterUserPersonDetails(username).orElseThrow()
     val isAdmin = user.isAdmin
+    val currentEmail = userToken.user.email
     val source = user.authSource
-    modelAndView.addObject("isAdmin", isAdmin).addObject("source", source)
+    modelAndView.addObject("isAdmin", isAdmin)
+        .addObject("source", source)
+        .addObject("email", currentEmail)
   }
 }
 

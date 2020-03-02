@@ -91,7 +91,7 @@ class UserServiceTest {
 
   @Test
   fun `isSameAsCurrentVerifiedMobile not verified`() {
-    val user = User.builder().mobileVerified(false).build()
+    val user = User.builder().mobile("07700900001").mobileVerified(false).build()
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "")
     assertThat(returnValue).isFalse()
@@ -128,6 +128,31 @@ class UserServiceTest {
     val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "0770 090 0000")
     assertThat(returnValue).isTrue()
   }
+
+  @Test
+  fun `isSameAsCurrentVerifiedEmail not verified`() {
+    val user = User.builder().email("someemail").verified(false).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail")
+    assertThat(returnValue).isFalse()
+  }
+
+  @Test
+  fun `isSameAsCurrentVerifiedEmail new different email address`() {
+    val user = User.builder().email("someemail").verified(true).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "somenewemail")
+    assertThat(returnValue).isFalse()
+  }
+
+  @Test
+  fun `isSameAsCurrentVerifiedEmail same address`() {
+    val user = User.builder().email("someemail").verified(true).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail")
+    assertThat(returnValue).isTrue()
+  }
+
 
   private fun createUser() = Optional.of(User.of("someuser"))
 

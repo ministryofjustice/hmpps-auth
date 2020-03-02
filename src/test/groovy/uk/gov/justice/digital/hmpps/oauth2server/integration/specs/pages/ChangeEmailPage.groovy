@@ -18,8 +18,9 @@ class ChangeEmailPage extends Page {
     errorText { $('#errors').text() }
   }
 
-  void changeEmailAs(String email) {
-    emailInput = email
+  void changeEmailAs(String newEmail, String existingEmail) {
+    assert $('form').email == existingEmail
+    emailInput = newEmail
     assert changeEmailButton.value() == 'Update'
     changeEmailButton.click()
   }

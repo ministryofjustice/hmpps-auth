@@ -90,14 +90,14 @@ class VerifyEmailControllerTest {
 
   @Test
   fun verifyEmail_Success() {
-    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString() )).thenReturn("link")
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString())).thenReturn("link")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
     val modelAndView = verifyEmailController.verifyEmail("other", email, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
     assertThat(modelAndView.model).containsExactly(entry("verifyLink", "link"), entry("email", email))
-    verify(verifyEmailService).requestVerification("user", email, "Bob","http://some.url-confirm?token=")
+    verify(verifyEmailService).requestVerification("user", email, "Bob", "http://some.url-confirm?token=")
   }
 
   @Test
@@ -106,6 +106,13 @@ class VerifyEmailControllerTest {
     val modelAndView = verifyEmailController.verifyEmailConfirm("token")
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailSuccess")
     assertThat(modelAndView.model).isEmpty()
+  }
+
+  @Test
+  fun verifyEmail_AlreadyVerified() {
+    whenever(userService.isSameAsCurrentVerifiedEmail(anyString(), anyString())).thenReturn(true)
+    val modelAndView = verifyEmailController.verifyEmail("change", "auth_email@digital.justice.gov.uk", principal, request, response)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailAlready")
   }
 
   @Test
