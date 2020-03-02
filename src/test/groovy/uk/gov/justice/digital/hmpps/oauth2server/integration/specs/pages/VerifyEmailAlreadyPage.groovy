@@ -2,13 +2,13 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages
 
 import geb.Page
 
-class VerifyMobileAlreadyPage extends Page {
+class VerifyEmailAlreadyPage extends Page {
 
-  static url = '/auth/verify-mobile'
+  static url = '/auth/verify-email'
 
   static at = {
-    title == 'HMPPS Digital Services - Verify Mobile Confirmation'
-    headingText == 'Mobile already verified'
+    title == 'HMPPS Digital Services - Verify Email Confirmation'
+    headingText == 'Email already verified'
   }
 
   static content = {

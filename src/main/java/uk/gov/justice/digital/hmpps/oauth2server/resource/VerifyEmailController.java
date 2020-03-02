@@ -95,6 +95,10 @@ public class VerifyEmailController {
 
         final var chosenEmail = StringUtils.trim(StringUtils.isBlank(candidate) || "other".equals(candidate) || "change".equals(candidate) ? email : candidate);
 
+        if (userService.isSameAsCurrentVerifiedEmail(username, chosenEmail)) {
+            return new ModelAndView("verifyEmailAlready");
+        }
+
         try {
             final var verifyLink = requestVerificationForUser(username, chosenEmail, request.getRequestURL().append("-confirm?token=").toString());
 
@@ -124,9 +128,9 @@ public class VerifyEmailController {
 
     private ModelAndView createChangeOrVerifyEmailError(final String chosenEmail, final String reason, final String type) {
         String view = StringUtils.equals(type, "change") ? "changeEmail" : "verifyEmail";
-        final var modelAndView = new ModelAndView(view, "email", chosenEmail);
-        modelAndView.addObject("error", reason);
-        return modelAndView;
+        return new ModelAndView(view)
+                .addObject("email", chosenEmail)
+                .addObject("error", reason);
     }
 
     private void proceedToOriginalUrl(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {

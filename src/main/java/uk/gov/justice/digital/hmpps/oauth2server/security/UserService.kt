@@ -46,4 +46,9 @@ open class UserService(private val nomisUserService: NomisUserService,
     val canonicalMobile = mobile.replace("\\s+".toRegex(), "")
     return user.isMobileVerified && canonicalMobile == user.mobile
   }
+
+  open fun isSameAsCurrentVerifiedEmail(username: String, email: String): Boolean {
+    val user: User = findUser(username).orElseThrow()
+    return user.isVerified && email == user.email
+  }
 }
