@@ -40,7 +40,7 @@
       <span th:if="${error}" id="selection-error" class="govuk-error-message"
             th:text="#{${'verifyemail.' + error}}">No error</span>
       <input type="hidden" id="candidate-other" name="candidate" value="change">
-      <input class="govuk-input" id="email" name="email" type="email">
+      <input class="govuk-input" id="email" name="email" type="email" spellcheck="false" autocomplete="email">
     </div>
     <input class="govuk-button" id="submit" type="submit" role="button"
            data-element-id="continue-button" value="Update">

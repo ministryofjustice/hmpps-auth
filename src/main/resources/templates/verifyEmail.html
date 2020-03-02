@@ -60,7 +60,7 @@
               <label class="govuk-label" for="email">
                 Enter email address
               </label>
-              <input class="govuk-input" id="email" name="email" type="email">
+              <input class="govuk-input" id="email" name="email" type="email" spellcheck="false" autocomplete="email">
             </div>
           </div>
         </div>
@@ -84,9 +84,9 @@
               th:text="#{${'verifyemail.' + error}}">
         Missing user
       </span>
-        <input th:class="'govuk-input' + (${error} ? ' govuk-input--error' : '')" id="email" name="email" type="text"
+        <input th:class="'govuk-input' + (${error} ? ' govuk-input--error' : '')" id="email" name="email" type="email"
                data-element-id="email" autofocus="autofocus" th:value="${suggestion != null ? suggestion : email}"
-               aria-describedby="email-error">
+               aria-describedby="email-error" spellcheck="false" autocomplete="email">
       </div>
 
       <div class="govuk-form-group">
