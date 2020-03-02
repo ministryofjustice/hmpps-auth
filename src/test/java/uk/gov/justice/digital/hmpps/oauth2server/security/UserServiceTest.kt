@@ -89,6 +89,46 @@ class UserServiceTest {
     assertThat(userService.hasVerifiedEmail(user)).isFalse()
   }
 
+  @Test
+  fun `isSameAsCurrentVerifiedMobile not verified`() {
+    val user = User.builder().mobileVerified(false).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "")
+    assertThat(returnValue).isFalse()
+  }
+
+  @Test
+  fun `isSameAsCurrentVerifiedMobile new different mobile number`() {
+    val user = User.builder().mobile("07700900001").mobileVerified(true).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "07700900000")
+    assertThat(returnValue).isFalse()
+  }
+
+  @Test
+  fun `isSameAsCurrentVerifiedMobile new different mobile number with whitespace`() {
+    val user = User.builder().mobile("07700900001").mobileVerified(true).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "0770 090 0000")
+    assertThat(returnValue).isFalse()
+  }
+
+  @Test
+  fun `isSameAsCurrentVerifiedMobile same mobile number`() {
+    val user = User.builder().mobile("07700900000").mobileVerified(true).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "07700900000")
+    assertThat(returnValue).isTrue()
+  }
+
+  @Test
+  fun `isSameAsCurrentVerifiedMobile same mobile number with whitespace`() {
+    val user = User.builder().mobile("07700900000").mobileVerified(true).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "0770 090 0000")
+    assertThat(returnValue).isTrue()
+  }
+
   private fun createUser() = Optional.of(User.of("someuser"))
 
   private val staffUserAccountForBob: Optional<NomisUserPersonDetails>
