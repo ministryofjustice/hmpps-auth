@@ -27,14 +27,15 @@
   </h1>
   <form class="form" th:action="@{/verify-mobile}" method="POST" id="changeMobileForm">
     <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
-      <span th:if="${error}" id="selection-error" class="govuk-error-message"
+      <span th:if="${error}" id="mobile-error" class="govuk-error-message"
             th:text="#{${'verifymobile.' + error}}">No error</span>
       <span id="mobile-number-hint" class="govuk-hint">
     Must be a UK mobile number, for example 07700 900321 or +44 7700 900321
       </span>
       <input th:class="'govuk-input govuk-input--width-20'  + (${error} ? ' govuk-input--error' : '')"
              id="mobile" name="mobile" type="tel" inputmode=”numeric” pattern="[+0-9 ]*" autocomplete="tel"
-             autocapitalize="off" spellcheck="false" data-element-id="mobile" aria-describedby="mobile-error"
+             autocapitalize="off" spellcheck="false" data-element-id="mobile"
+             aria-describedby="mobile-number-hint mobile-error"
              maxlength="20" th:value="${mobile}">
     </div>
     <input class="govuk-button" id="submit" type="submit" role="button"
