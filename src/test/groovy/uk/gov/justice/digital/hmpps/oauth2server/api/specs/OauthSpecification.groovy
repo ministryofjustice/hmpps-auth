@@ -364,6 +364,6 @@ class OauthSpecification extends TestSpecification {
         def accessToken = oauthRestTemplate.getAccessToken()
 
         then:
-        new JWTDecoder(accessToken.value).getHeaderClaim("kid") != null
+        new JWTDecoder(accessToken.value).getHeaderClaim("kid").asString() == "dps-client-key"
     }
 }
