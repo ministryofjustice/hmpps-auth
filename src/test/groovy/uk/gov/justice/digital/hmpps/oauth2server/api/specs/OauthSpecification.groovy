@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.api.specs
 
+import com.auth0.jwt.JWTDecoder
 import groovy.json.JsonSlurper
 import org.junit.Rule
 import org.springframework.beans.factory.annotation.Autowired
@@ -352,5 +353,17 @@ class OauthSpecification extends TestSpecification {
 
         userData.username == "omicadmin"
 
+    }
+
+    def "Kid header is returned"() {
+
+        given:
+        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password", "elite2apiclient", "clientsecret")
+
+        when:
+        def accessToken = oauthRestTemplate.getAccessToken()
+
+        then:
+        new JWTDecoder(accessToken.value).getHeaderClaim("kid").asString() == "dps-client-key"
     }
 }

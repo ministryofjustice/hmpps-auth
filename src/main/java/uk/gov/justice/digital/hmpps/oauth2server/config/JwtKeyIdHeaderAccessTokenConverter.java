@@ -11,6 +11,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.security.KeyPair;
 import java.security.interfaces.RSAPrivateKey;
+import java.util.Map;
 
 public class JwtKeyIdHeaderAccessTokenConverter extends JwtAccessTokenConverter {
 
@@ -27,13 +28,14 @@ public class JwtKeyIdHeaderAccessTokenConverter extends JwtAccessTokenConverter 
     @Override
     protected String encode(final OAuth2AccessToken accessToken, final OAuth2Authentication authentication) {
         accessToken.getAdditionalInformation().put("iss", issuer());
+        final var headers = Map.of("kid", keyId);
         final String content;
         try {
             content = this.jsonParser.formatMap(getAccessTokenConverter().convertAccessToken(accessToken, authentication));
         } catch (Exception ex) {
             throw new IllegalStateException("Cannot convert access token to JSON", ex);
         }
-        return JwtHelper.encode(content, this.signer).getEncoded();
+        return JwtHelper.encode(content, this.signer, headers).getEncoded();
     }
 
     private String issuer() {
