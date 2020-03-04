@@ -3,17 +3,17 @@
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
-  <title>MFA Preference Confirmation</title>
+  <title>Security code Preference Confirmation</title>
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
   <div class="govuk-panel govuk-panel--confirmation">
     <h1 class="govuk-panel__title">
-      MFA preference updated
+      Security code preference updated
     </h1>
   </div>
   <p class="govuk-body">
-    Your MFA preference has been changed
+    Your preference for receiving your login security codes has been changed
   </p>
   <a class="govuk-button" th:href="@{/}" id="continue">OK, continue</a>
 </div>

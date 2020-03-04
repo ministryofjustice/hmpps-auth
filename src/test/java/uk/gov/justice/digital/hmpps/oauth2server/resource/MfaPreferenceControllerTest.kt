@@ -38,6 +38,6 @@ class MfaPreferenceControllerTest {
   @Test
   fun `mfaPreference successfulUpdate`() {
     val modelAndView = controller.mfaPreference(User.MfaPreferenceType.TEXT, authentication)
-    assertThat(modelAndView.viewName).isEqualTo("mfaPreferenceConfirm")
+    assertThat(modelAndView).isEqualTo("mfaPreferenceConfirm")
   }
 }

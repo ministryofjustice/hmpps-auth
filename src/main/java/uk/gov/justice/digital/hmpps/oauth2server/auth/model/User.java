@@ -1,6 +1,10 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.springframework.security.core.CredentialsContainer;
@@ -8,7 +12,18 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -351,87 +366,87 @@ public class User implements UserPersonDetails, CredentialsContainer {
         UserBuilder() {
         }
 
-        public UserBuilder id(UUID id) {
+        public UserBuilder id(final UUID id) {
             this.id = id;
             return this;
         }
 
-        public UserBuilder username(String username) {
+        public UserBuilder username(final String username) {
             this.username = username;
             return this;
         }
 
-        public UserBuilder password(String password) {
+        public UserBuilder password(final String password) {
             this.password = password;
             return this;
         }
 
-        public UserBuilder email(String email) {
+        public UserBuilder email(final String email) {
             this.email = email;
             return this;
         }
 
-        public UserBuilder verified(boolean verified) {
+        public UserBuilder verified(final boolean verified) {
             this.verified = verified;
             return this;
         }
 
-        public UserBuilder locked(boolean locked) {
+        public UserBuilder locked(final boolean locked) {
             this.locked = locked;
             return this;
         }
 
-        public UserBuilder enabled(boolean enabled) {
+        public UserBuilder enabled(final boolean enabled) {
             this.enabled = enabled;
             return this;
         }
 
-        public UserBuilder source(AuthSource source) {
+        public UserBuilder source(final AuthSource source) {
             this.source = source;
             return this;
         }
 
-        public UserBuilder passwordExpiry(LocalDateTime passwordExpiry) {
+        public UserBuilder passwordExpiry(final LocalDateTime passwordExpiry) {
             this.passwordExpiry = passwordExpiry;
             return this;
         }
 
-        public UserBuilder lastLoggedIn(LocalDateTime lastLoggedIn) {
+        public UserBuilder lastLoggedIn(final LocalDateTime lastLoggedIn) {
             this.lastLoggedIn = lastLoggedIn;
             return this;
         }
 
-        public UserBuilder mobile(String mobile) {
+        public UserBuilder mobile(final String mobile) {
             this.mobile = mobile;
             return this;
         }
 
-        public UserBuilder mobileVerified(boolean mobileVerified) {
+        public UserBuilder mobileVerified(final boolean mobileVerified) {
             this.mobileVerified = mobileVerified;
             return this;
         }
 
-        public UserBuilder mfaPreference(MfaPreferenceType mfaPreference) {
+        public UserBuilder mfaPreference(final MfaPreferenceType mfaPreference) {
             this.mfaPreference = mfaPreference;
             return this;
         }
 
-        public UserBuilder person(Person person) {
+        public UserBuilder person(final Person person) {
             this.person = person;
             return this;
         }
 
-        public UserBuilder authorities(Set<Authority> authorities) {
+        public UserBuilder authorities(final Set<Authority> authorities) {
             this.authorities = authorities;
             return this;
         }
 
-        public UserBuilder groups(Set<Group> groups) {
+        public UserBuilder groups(final Set<Group> groups) {
             this.groups = groups;
             return this;
         }
 
-        public UserBuilder tokens(Set<UserToken> tokens) {
+        public UserBuilder tokens(final Set<UserToken> tokens) {
             this.tokens = tokens;
             return this;
         }

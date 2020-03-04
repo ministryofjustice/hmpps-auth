@@ -7,13 +7,12 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
-import java.security.Principal
 
 @Controller
-class MfaPreferenceController(private val userService: UserService, private val mfaService: MfaService) {
+open class MfaPreferenceController(private val userService: UserService, private val mfaService: MfaService) {
 
   @GetMapping("/mfa-preference")
   fun mfaPreferenceRequest(authentication: Authentication): ModelAndView {
@@ -24,9 +23,9 @@ class MfaPreferenceController(private val userService: UserService, private val 
   }
 
   @PostMapping("/mfa-preference")
-  fun mfaPreference(@RequestParam pref: User.MfaPreferenceType, principal: Principal): ModelAndView {
-    mfaService.updateUserMfaPreference(pref, principal.name)
-    return ModelAndView("mfaPreferenceConfirm")
+  fun mfaPreference(@RequestParam pref: MfaPreferenceType, authentication: Authentication): String {
+    mfaService.updateUserMfaPreference(pref, authentication.name)
+    return "mfaPreferenceConfirm"
   }
 }
 

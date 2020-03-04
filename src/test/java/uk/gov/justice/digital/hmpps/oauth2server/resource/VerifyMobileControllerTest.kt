@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService.VerifyMobileException
 import uk.gov.service.notify.NotificationClientException
 import java.util.*
-import java.util.Map
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -137,7 +136,7 @@ class VerifyMobileControllerTest {
     assertThat(modelAndView.viewName).isEqualTo("changeMobile")
     assertThat(modelAndView.model).containsExactly(entry("error", "reason"), entry("mobile", "077009000000"))
     verify(telemetryClient).trackEvent(eq("VerifyMobileRequestFailure"), check {
-      assertThat(it).containsOnly(Map.entry("username", "user"), Map.entry("reason", "reason"))
+      assertThat(it).containsExactlyInAnyOrderEntriesOf(mapOf("username" to "user", "reason" to "reason"))
     }, isNull())
   }
 
