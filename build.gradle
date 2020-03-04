@@ -195,5 +195,5 @@ task testIntegration(type: Test) {
   systemProperty 'fluentlenium.capabilities', '{"chromeOptions": {"args": ["headless","disable-gpu","disable-extensions","no-sandbox","disable-application-cache"]}}'
   useJUnitPlatform()
   include 'uk/gov/justice/digital/hmpps/oauth2server/integration/*', 'uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*'
-  maxHeapSize = "512m"
+  maxHeapSize = "384m"
 }
