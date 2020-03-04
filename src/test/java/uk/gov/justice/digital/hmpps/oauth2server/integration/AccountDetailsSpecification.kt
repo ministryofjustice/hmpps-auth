@@ -9,7 +9,7 @@ class AccountDetailsTest : AbstractAuthTest() {
   @Test
   fun `account details`() {
     val accountDetails = goTo(loginPage)
-        .loginAs("AUTH_ADM", "password123456")
+        .loginAs("AUTH_RO_USER", "password123456")
         .navigateToAccountDetails()
     accountDetails.checkDetails()
   }
@@ -18,11 +18,11 @@ class AccountDetailsTest : AbstractAuthTest() {
 @PageUrl("/account-details")
 class AccountDetailsPage : AuthPage("HMPPS Digital Services - Account Details", "Account details") {
   fun checkDetails(): AccountDetailsPage {
-    assertThat(el("[data-qa='username']").text()).isEqualTo("AUTH_ADM")
-    assertThat(el("[data-qa='name']").text()).isEqualTo("Auth Adm")
+    assertThat(el("[data-qa='username']").text()).isEqualTo("AUTH_RO_USER")
+    assertThat(el("[data-qa='name']").text()).isEqualTo("Ryan-Auth Orton")
     assertThat(el("[data-qa='lastLoggedIn']").text()).isNotBlank()
     assertThat(el("[data-qa='passwordExpiry']").text()).isEqualTo("28 January 3013 13:23")
-    assertThat(el("[data-qa='email']").text()).isEqualTo("auth_test2@digital.justice.gov.uk")
+    assertThat(el("[data-qa='email']").text()).isEqualTo("auth_ro_user@digital.justice.gov.uk")
     assertThat(el("[data-qa='verified']").text()).isEqualTo("yes")
     assertThat(el("[data-qa='mobile']").text()).isBlank()
     assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("no")
