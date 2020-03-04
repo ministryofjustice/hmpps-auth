@@ -5,7 +5,7 @@ import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
 
-class LoginTest : AbstractAuthTest() {
+class LoginSpecification : AbstractAuthSpecification() {
   @Test
   fun `Log in with valid auth credentials`() {
     val homePage = goTo(loginPage).loginAs("AUTH_USER", "password123456")

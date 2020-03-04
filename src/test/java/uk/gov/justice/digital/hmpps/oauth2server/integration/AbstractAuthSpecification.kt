@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.openqa.selenium.logging.LogType
 import org.openqa.selenium.support.FindBy
 
-open class AbstractAuthTest : FluentTest() {
+open class AbstractAuthSpecification : FluentTest() {
   @Page
   internal lateinit var loginPage: LoginPage
 

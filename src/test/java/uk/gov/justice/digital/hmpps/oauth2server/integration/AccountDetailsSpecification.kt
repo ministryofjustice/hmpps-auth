@@ -5,7 +5,7 @@ import org.fluentlenium.core.annotation.PageUrl
 import org.junit.jupiter.api.Test
 
 
-class AccountDetailsTest : AbstractAuthTest() {
+class AccountDetailsSpecification : AbstractAuthSpecification() {
   @Test
   fun `account details`() {
     val accountDetails = goTo(loginPage)
