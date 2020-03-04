@@ -4,10 +4,12 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.util.matcher.IpAddressMatcher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -79,6 +81,12 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     tokenService.removeToken(TokenType.MFA_CODE, code)
 
     userRetriesService.resetRetries(userPersonDetails.username)
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  open fun updateUserMfaPreference(pref: MfaPreferenceType, username: String) {
+    val user = userService.findUser(username).orElseThrow { UsernameNotFoundException(username) }
+    user.mfaPreference = pref
   }
 
   open fun resendMfaCode(token: String): String? {

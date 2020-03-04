@@ -2,8 +2,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.verify
 
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.mock
-import junit.framework.Assert.assertFalse
-import junit.framework.Assert.assertTrue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,11 +17,10 @@ import uk.gov.service.notify.NotificationClientApi
 @Transactional(transactionManager = "authTransactionManager")
 open class VerifyMobileServiceIntTest {
   @Autowired
-  private lateinit var verifyMobileService: VerifyMobileService
-  @Autowired
   private lateinit var userRepository: UserRepository
   private val telemetryClient: TelemetryClient = mock()
   private val notificationClient: NotificationClientApi = mock()
+  private lateinit var verifyMobileService: VerifyMobileService
 
   @BeforeEach
   fun setUp() {
@@ -38,24 +35,24 @@ open class VerifyMobileServiceIntTest {
 
   @Test
   fun mobileNumberSetToNotVerified() {
-    val userBefore = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED")
-    assertTrue(userBefore.get().isMobileVerified)
+    val userBefore = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED").orElseThrow()
+    assertThat(userBefore.isMobileVerified).isTrue()
     verifyMobileService.requestVerification("AUTH_CHANGE_MOBILE_VERIFIED", "07700 900322")
-    val userAfter = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED")
-    assertFalse(userAfter.get().isMobileVerified)
+    val userAfter = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED").orElseThrow()
+    assertThat(userAfter.isMobileVerified).isFalse()
   }
 
   @Test
   fun mobileNumber_WhiteSpaceRemoved() {
     verifyMobileService.requestVerification("AUTH_CHANGE_MOBILE_VERIFIED", "07700 900323")
-    val userAfter = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED")
-    assertThat(userAfter.get().mobile).isEqualTo("07700900323")
+    val userAfter = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED").orElseThrow()
+    assertThat(userAfter.mobile).isEqualTo("07700900323")
   }
 
   @Test
   fun mobileNumber_WhiteSpaceRemovedForInternationalUKNumber() {
     verifyMobileService.requestVerification("AUTH_CHANGE_MOBILE_VERIFIED", "+44 7700 900323")
-    val userAfter = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED")
-    assertThat(userAfter.get().mobile).isEqualTo("+447700900323")
+    val userAfter = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED").orElseThrow()
+    assertThat(userAfter.mobile).isEqualTo("+447700900323")
   }
 }

@@ -13,6 +13,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -201,4 +202,12 @@ class MfaServiceTest {
     verify(notificationClientApi).sendEmail("template", "email", mapOf("firstName" to "user", "code" to userCode.token), null)
   }
 
+  @Test
+  fun `Update User Mfa Preference`() {
+    val user = User.of("user")
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(user))
+    service.updateUserMfaPreference(MfaPreferenceType.TEXT, "user")
+    assertThat(user.mfaPreference).isEqualTo(MfaPreferenceType.TEXT)
+    verify(userService).findUser("user")
+  }
 }
