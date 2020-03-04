@@ -203,7 +203,7 @@ class MfaServiceTest {
   }
 
   @Test
-  fun `UpdateUserMfaPreference`() {
+  fun `Update User Mfa Preference`() {
     val user = User.of("user")
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(user))
     service.updateUserMfaPreference(MfaPreferenceType.TEXT, "user")
