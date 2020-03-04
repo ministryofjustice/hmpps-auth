@@ -201,4 +201,12 @@ class MfaServiceTest {
     verify(notificationClientApi).sendEmail("template", "email", mapOf("firstName" to "user", "code" to userCode.token), null)
   }
 
+  @Test
+  fun `UpdateUserMfaPreference`() {
+    val user = User.of("user")
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(user))
+    service.updateUserMfaPreference(User.MfaPreferenceType.EMAIL, "user")
+
+    verify(userService).findUser("user")
+  }
 }

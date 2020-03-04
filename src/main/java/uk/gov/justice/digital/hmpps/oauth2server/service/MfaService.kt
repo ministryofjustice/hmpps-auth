@@ -81,6 +81,12 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     userRetriesService.resetRetries(userPersonDetails.username)
   }
 
+  @Transactional(transactionManager = "authTransactionManager")
+  open fun updateUserMfaPreference(pref: User.MfaPreferenceType, username: String) {
+    val user = userService.findUser(username).orElseThrow()
+    user.mfaPreference = pref
+  }
+
   open fun resendMfaCode(token: String): String? {
     val userToken = tokenService.getToken(TokenType.MFA, token).orElseThrow()
 
