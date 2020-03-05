@@ -1,0 +1,2 @@
+ALTER TABLE users
+    ADD mfa_preference VARCHAR(10) NOT NULL DEFAULT 'EMAIL';

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -11,7 +12,18 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -71,6 +83,10 @@ public class User implements UserPersonDetails, CredentialsContainer {
 
     @Column(name = "mobile_verified", nullable = false)
     private boolean mobileVerified;
+
+    @Column(name = "mfa_preference")
+    @Enumerated(EnumType.STRING)
+    private MfaPreferenceType mfaPreference = MfaPreferenceType.EMAIL;
 
     @Embedded
     private Person person;
@@ -232,6 +248,10 @@ public class User implements UserPersonDetails, CredentialsContainer {
         return mobileVerified;
     }
 
+    public MfaPreferenceType getMfaPreference() {
+        return mfaPreference;
+    }
+
     public Person getPerson() {
         return this.person;
     }
@@ -296,6 +316,11 @@ public class User implements UserPersonDetails, CredentialsContainer {
         this.mobileVerified = mobileVerified;
     }
 
+
+    public void setMfaPreference(final MfaPreferenceType mfaPreference) {
+        this.mfaPreference = mfaPreference;
+    }
+
     public void setPerson(Person person) {
         this.person = person;
     }
@@ -306,6 +331,17 @@ public class User implements UserPersonDetails, CredentialsContainer {
 
     public void setGroups(Set<Group> groups) {
         this.groups = groups;
+    }
+
+    @AllArgsConstructor
+    @Getter
+    public enum MfaPreferenceType {
+        EMAIL("email"),
+        TEXT("text");
+
+        private final String description;
+
+
     }
 
     public static class UserBuilder {
@@ -321,6 +357,7 @@ public class User implements UserPersonDetails, CredentialsContainer {
         private LocalDateTime lastLoggedIn = LocalDateTime.now();
         private String mobile;
         private boolean mobileVerified;
+        private MfaPreferenceType mfaPreference = MfaPreferenceType.EMAIL;
         private Person person;
         private Set<Authority> authorities = new HashSet<>();
         private Set<Group> groups = new HashSet<>();
@@ -389,6 +426,11 @@ public class User implements UserPersonDetails, CredentialsContainer {
             return this;
         }
 
+        public UserBuilder mfaPreference(final MfaPreferenceType mfaPreference) {
+            this.mfaPreference = mfaPreference;
+            return this;
+        }
+
         public UserBuilder person(final Person person) {
             this.person = person;
             return this;
@@ -410,11 +452,11 @@ public class User implements UserPersonDetails, CredentialsContainer {
         }
 
         public User build() {
-            return new User(id, username, password, email, verified, locked, enabled, source, passwordExpiry, lastLoggedIn, mobile, mobileVerified, person, authorities, groups, tokens);
+            return new User(id, username, password, email, verified, locked, enabled, source, passwordExpiry, lastLoggedIn, mobile, mobileVerified, mfaPreference, person, authorities, groups, tokens);
         }
 
         public String toString() {
-            return "User.UserBuilder(id=" + this.id + ", username=" + this.username + ", password=" + this.password + ", email=" + this.email + ", verified=" + this.verified + ", locked=" + this.locked + ", enabled=" + this.enabled + ", source=" + this.source + ", passwordExpiry=" + this.passwordExpiry + ", lastLoggedIn=" + this.lastLoggedIn + ", mobile=" + this.mobile + ",mobileVerified=" + this.mobileVerified + ",person=" + this.person + ", authorities=" + this.authorities + ", groups=" + this.groups + ", tokens=" + this.tokens + ")";
+            return "User.UserBuilder(id=" + this.id + ", username=" + this.username + ", password=" + this.password + ", email=" + this.email + ", verified=" + this.verified + ", locked=" + this.locked + ", enabled=" + this.enabled + ", source=" + this.source + ", passwordExpiry=" + this.passwordExpiry + ", lastLoggedIn=" + this.lastLoggedIn + ", mobile=" + this.mobile + ", mobileVerified=" + this.mobileVerified + ", mfaPreference=" + this.mfaPreference + ", person=" + this.person + ", authorities=" + this.authorities + ", groups=" + this.groups + ", tokens=" + this.tokens + ")";
         }
     }
 }

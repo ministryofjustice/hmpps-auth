@@ -52,7 +52,7 @@ public class UserRepositoryTest {
 
     @Test
     void givenATransientEntityItCanBePersisted() {
-        final var transientEntity = User.builder().username("transiententity").email("transient@b.com").mobile("07700900321").source(AuthSource.delius).build();
+        final var transientEntity = User.builder().username("transiententity").email("transient@b.com").mobile("07700900321").source(AuthSource.delius).mfaPreference(User.MfaPreferenceType.TEXT).build();
 
         final var persistedEntity = repository.save(transientEntity);
 
@@ -72,6 +72,7 @@ public class UserRepositoryTest {
         assertThat(retrievedEntity.getUsername()).isEqualTo(transientEntity.getUsername());
         assertThat(retrievedEntity.getEmail()).isEqualTo(transientEntity.getEmail());
         assertThat(retrievedEntity.getMobile()).isEqualTo(transientEntity.getMobile());
+        assertThat(retrievedEntity.getMfaPreference()).isEqualTo(User.MfaPreferenceType.TEXT);
     }
 
     @Test
@@ -101,6 +102,7 @@ public class UserRepositoryTest {
         assertThat(retrievedEntity.getEmail()).isEqualTo(transientEntity.getEmail());
         assertThat(retrievedEntity.getName()).isEqualTo("first last");
         assertThat(retrievedEntity.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_LICENCE_VARY", "ROLE_GLOBAL_SEARCH");
+        assertThat(retrievedEntity.getMfaPreference()).isEqualTo(User.MfaPreferenceType.EMAIL);
     }
 
     @Test
@@ -130,6 +132,7 @@ public class UserRepositoryTest {
         assertThat(retrievedEntity.getUsername()).isEqualTo("LOCKED_USER");
         assertThat(retrievedEntity.getEmail()).isEqualTo("locked@somewhere.com");
         assertThat(retrievedEntity.isVerified()).isTrue();
+        assertThat(retrievedEntity.getMfaPreference()).isEqualTo(User.MfaPreferenceType.EMAIL);
     }
 
     @Test
@@ -140,6 +143,7 @@ public class UserRepositoryTest {
         assertThat(retrievedEntity.getAuthorities()).extracting(Authority::getAuthority).containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS");
         assertThat(retrievedEntity.getEmail()).isEqualTo("auth_test2@digital.justice.gov.uk");
         assertThat(retrievedEntity.isVerified()).isTrue();
+        assertThat(retrievedEntity.getMfaPreference()).isEqualTo(User.MfaPreferenceType.EMAIL);
     }
 
     @Test
