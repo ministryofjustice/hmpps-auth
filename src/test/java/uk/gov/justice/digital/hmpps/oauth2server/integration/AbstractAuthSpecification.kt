@@ -57,12 +57,24 @@ open class AuthPage(val title: String, val heading: String) : FluentPage() {
   @FindBy(css = "#main-content h1")
   private lateinit var headingText: FluentWebElement
 
+  @FindBy(css = "#error-detail")
+  private lateinit var errorDetail: FluentWebElement
+
   override fun isAt() {
     super.isAt()
 
     assertThat(window().title()).isEqualTo(title)
     assertThat(headingText.text()).isEqualTo(heading)
   }
+
+  internal fun isAtError() {
+    super.isAt()
+
+    assertThat(window().title()).isEqualTo("Error: $title")
+    assertThat(headingText.text()).isEqualTo(heading)
+  }
+
+  internal fun getErrorDetail() = errorDetail.text()
 }
 
 class CommunityApiMockServer : WireMockServer(8099)
