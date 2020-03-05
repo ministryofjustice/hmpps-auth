@@ -67,6 +67,9 @@ jobs:
       - run:
           name: Run Integration Tests
           command: ./gradlew testIntegration
+      - run:
+          name: Run Fluent Integration Tests
+          command: ./gradlew testFluentIntegration
       - save_cache:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
@@ -78,8 +81,11 @@ jobs:
       - store_artifacts:
           path: build/reports/tests/testIntegration
           destination: integration/spock
+      - store_artifacts:
+          path: build/reports/tests/testFluentIntegration
+          destination: integration/fluent
       - store_test_results:
-          path: build/test-results/testIntegration
+          path: build/test-results
 
   build_docker:
     executor: deployer

@@ -16,8 +16,6 @@ class LoginPage extends Page {
     static content = {
         headingText { $('#main-content h1').text() }
         signInButton { $("input", type: 'submit') }
-        termsLink { $("a", 'data-qa': 'terms') }
-        contactLink { $("a", 'data-qa': 'contact') }
         resetPasswordLink { $("a", id: 'forgotten-password') }
         errorText { $('#error-detail').text() }
         warning { $('#warning').text() }
@@ -35,18 +33,6 @@ class LoginPage extends Page {
         assert signInButton.value() == 'Sign in'
 
         signInButton.click()
-    }
-
-    void viewTerms() {
-        assert termsLink.text() == 'Terms and conditions'
-
-        termsLink.click()
-    }
-
-    void viewContact() {
-        assert contactLink.text() == 'Contact'
-
-        contactLink.click()
     }
 
     void resetPassword() {

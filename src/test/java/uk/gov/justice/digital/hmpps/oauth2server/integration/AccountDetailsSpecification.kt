@@ -1,17 +1,22 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.fluentlenium.core.annotation.Page
 import org.fluentlenium.core.annotation.PageUrl
 import org.junit.jupiter.api.Test
 
 
 class AccountDetailsSpecification : AbstractAuthSpecification() {
+  @Page
+  private lateinit var accountDetailsPage: AccountDetailsPage
+
   @Test
   fun `account details`() {
-    val accountDetails = goTo(loginPage)
-        .loginAs("AUTH_RO_USER", "password123456")
+    goTo(loginPage).loginAs("AUTH_RO_USER", "password123456")
         .navigateToAccountDetails()
-    accountDetails.checkDetails()
+
+    accountDetailsPage.isAt()
+    accountDetailsPage.checkDetails()
   }
 }
 
