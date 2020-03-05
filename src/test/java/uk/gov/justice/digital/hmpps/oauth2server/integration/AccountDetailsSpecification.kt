@@ -21,7 +21,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `nomis account details`() {
-    goTo(loginPage).loginAsUnverifiedEmail("RO_DEMO", "password123456")
+    goTo(loginPage).loginAsUnverifiedEmail("ITAG_USER", "password")
 
     goTo(accountDetailsPage).checkNomisDetails()
   }
@@ -65,15 +65,12 @@ class AccountDetailsPage : AuthPage("HMPPS Digital Services - Account Details", 
   }
 
   fun checkNomisDetails(): AccountDetailsPage {
-    assertThat(el("[data-qa='username']").text()).isEqualTo("RO_DEMO")
-    assertThat(el("[data-qa='name']").text()).isEqualTo("Licence Responsible Officer Demo")
+    assertThat(el("[data-qa='username']").text()).isEqualTo("ITAG_USER")
+    assertThat(el("[data-qa='name']").text()).isEqualTo("Itag User")
     // change name only available for auth users
     assertThat(find("[data-qa='changeName']")).isEmpty()
-    assertThat(el("[data-qa='email']").text()).isBlank()
-    assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Add email")
-    assertThat(el("[data-qa='verified']").text()).isEqualTo("no")
-    assertThat(find("[data-qa='verifyEmail']")).isEmpty()
-    assertThat(el("[data-qa='mobile']").text()).isBlank()
+    assertThat(el("[data-qa='email']").text()).isEqualTo("itag_user@digital.justice.gov.uk")
+    assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
     return this
   }
 
