@@ -29,6 +29,12 @@ class LoginPage : AuthPage("HMPPS Digital Services - Sign in", "Sign in") {
   @FindBy(css = "input[name='password']")
   private lateinit var password: FluentWebElement
 
+  fun loginAsUnverifiedEmail(username: String, password: String) {
+    this.username.fill().withText(username)
+    this.password.fill().withText(password)
+    signInButton.submit()
+  }
+
   fun loginAs(username: String, password: String): HomePage {
     this.username.fill().withText(username)
     this.password.fill().withText(password)
