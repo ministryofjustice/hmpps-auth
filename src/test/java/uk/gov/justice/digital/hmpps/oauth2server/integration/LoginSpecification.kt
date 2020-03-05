@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration
 
+import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.core.annotation.PageUrl
 import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
@@ -28,6 +29,12 @@ class LoginPage : AuthPage("HMPPS Digital Services - Sign in", "Sign in") {
   @FindBy(css = "input[name='password']")
   private lateinit var password: FluentWebElement
 
+  fun loginAsUnverifiedEmail(username: String, password: String) {
+    this.username.fill().withText(username)
+    this.password.fill().withText(password)
+    signInButton.submit()
+  }
+
   fun loginAs(username: String, password: String): HomePage {
     this.username.fill().withText(username)
     this.password.fill().withText(password)
@@ -36,5 +43,17 @@ class LoginPage : AuthPage("HMPPS Digital Services - Sign in", "Sign in") {
     val homePage = newInstance(HomePage::class.java)
     homePage.isAt()
     return homePage
+  }
+
+  fun viewContact() {
+    val contactLink = el("a[data-qa='contact']")
+    assertThat(contactLink.text()).isEqualTo("Contact")
+    contactLink.click()
+  }
+
+  fun viewTerms() {
+    val termsLink = el("a[data-qa='terms']")
+    assertThat(termsLink.text()).isEqualTo("Terms and conditions")
+    termsLink.click()
   }
 }

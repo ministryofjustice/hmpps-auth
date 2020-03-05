@@ -191,9 +191,14 @@ test {
   useJUnitPlatform()
 }
 
-task testIntegration(type: Test) {
+task testFluentIntegration(type: Test) {
   systemProperty 'fluentlenium.capabilities', '{"chromeOptions": {"args": ["headless","disable-gpu","disable-extensions","no-sandbox","disable-application-cache"]}}'
   useJUnitPlatform()
-  include 'uk/gov/justice/digital/hmpps/oauth2server/integration/*', 'uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*'
+  include 'uk/gov/justice/digital/hmpps/oauth2server/integration/*'
+  maxHeapSize = "256m"
+}
+
+task testIntegration(type: Test) {
+  include 'uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*'
   maxHeapSize = "256m"
 }

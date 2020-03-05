@@ -31,7 +31,7 @@
         Sarah Philips
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/change-name}" th:if="${authUser.authSource == 'auth'}">
+        <a th:href="@{/change-name}" th:if="${authUser.authSource == 'auth'}" data-qa="changeName">
           Change<span class="govuk-visually-hidden"> name</span>
         </a>
       </dd>
@@ -73,7 +73,7 @@
         sarah.philips@digital.justice.gov.uk
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/existing-email}" th:if="${authUser.authSource != 'delius'}">
+        <a th:href="@{/existing-email}" th:if="${authUser.authSource != 'delius'}" data-qa="changeEmail">
           <th:block th:text="${#strings.isEmpty(authUser.email)} ? 'Add' : 'Change'">
             Change
           </th:block>
@@ -89,8 +89,9 @@
         Yes
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/verify-email}" th:if="${!authUser.verified}">
-          Resend code
+        <a th:href="@{/verify-email}" th:unless="${#strings.isEmpty(authUser.email) || authUser.verified}"
+           data-qa="verifyEmail">
+          Resend <span class="govuk-visually-hidden"> email</span> code
         </a>
       </dd>
     </div>
@@ -102,7 +103,7 @@
         01234 567890
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/new-mobile}">
+        <a th:href="@{/new-mobile}" data-qa="changeMobile">
           <th:block th:text="${#strings.isEmpty(authUser.mobile)} ? 'Add' : 'Change'">
             Change
           </th:block>
@@ -119,15 +120,16 @@
         No
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/verify-mobile}" th:if="${!authUser.mobileVerified}">
-          Resend code
+        <a th:href="@{/verify-mobile}" th:unless="${#strings.isEmpty(authUser.mobile) || authUser.mobileVerified}"
+           data-qa="verifyMobile">
+          Resend <span class="govuk-visually-hidden"> mobile</span> code
         </a>
       </dd>
     </div>
   </dl>
 
   <div class="govuk-form-group">
-    <a class="govuk-button" role="button" id="cancel" th:href="@{/account-details-cancel}">Cancel</a>
+    <a class="govuk-button" role="button" data-qa="cancel" th:href="@{/account-details-cancel}">Cancel</a>
   </div>
 </div>
 </body>

@@ -1,7 +1,7 @@
 defaults: &defaults
   working_directory: ~/app
   environment:
-    JAVA_TOOL_OPTIONS: -Xmx256m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-XX:+UseContainerSupport
+    _JAVA_OPTIONS: -Xmx256m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-XX:+UseContainerSupport
 
 version: 2.1
 
@@ -67,6 +67,9 @@ jobs:
       - run:
           name: Run Integration Tests
           command: ./gradlew testIntegration
+      - run:
+          name: Run Fluent Integration Tests
+          command: ./gradlew testFluentIntegration
       - save_cache:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
@@ -78,8 +81,11 @@ jobs:
       - store_artifacts:
           path: build/reports/tests/testIntegration
           destination: integration/spock
+      - store_artifacts:
+          path: build/reports/tests/testFluentIntegration
+          destination: integration/fluent
       - store_test_results:
-          path: build/test-results/testIntegration
+          path: build/test-results
 
   build_docker:
     executor: deployer

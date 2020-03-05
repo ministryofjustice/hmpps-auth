@@ -119,7 +119,8 @@ INSERT INTO users (user_id, username, password, last_logged_in, first_name, last
 
 INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, source, mobile, mobile_verified)
  VALUES ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D50', 'AUTH_CHANGE_MOBILE_VERIFIED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_mnbile@digital.justice.gov.uk', 'Auth', 'Mobile', 1, 1, 0, 'auth', '07700900321',1),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D51', 'AUTH_CHANGE_MOBILE_UPDATE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_mobile@digital.justice.gov.uk', 'Auth', 'Mobile', 1, 1, 0, 'auth', '07700900321',0);
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D51', 'AUTH_CHANGE_MOBILE_UPDATE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_mobile@digital.justice.gov.uk', 'Auth', 'Mobile', 1, 1, 0, 'auth', '07700900321',0),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D52', 'AUTH_UNVERIFIED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Unverified', 0, 1, 0, 'auth', '07700900321',0);
 
 INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, source, mobile, mobile_verified, mfa_preference)
  VALUES ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D60', 'AUTH_MFA_PREF_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'simon.mitchell@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'EMAIL'),
