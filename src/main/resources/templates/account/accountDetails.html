@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <title>Account Details</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+
+  <div role="alert">
+    <h1 class="govuk-heading-xl">Account details</h1>
+  </div>
+  <dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Username
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="username" th:text="${authUser.username}">
+        ABC12D
+      </dd>
+      <dd class="govuk-summary-list__actions">
+        &nbsp;
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Name
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="name" th:text="${user.name}">
+        Sarah Philips
+      </dd>
+      <dd class="govuk-summary-list__actions">
+        <a th:href="@{/change-name}" th:if="${authUser.authSource == 'auth'}">
+          Change<span class="govuk-visually-hidden"> name</span>
+        </a>
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Last logged in
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="lastLoggedIn"
+          th:text="${#temporals.format(authUser.lastLoggedIn, 'd MMMM yyyy HH:mm')}">
+        24 January 2020 - 10:00:13
+      </dd>
+      <dd class="govuk-summary-list__actions">
+        &nbsp;
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Password expiry
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="passwordExpiry"
+          th:text="${#temporals.format(authUser.passwordExpiry, 'd MMMM yyyy HH:mm')}">
+        5 August 2039 - 20:52:13
+      </dd>
+      <dd class="govuk-summary-list__actions">
+        <a th:href="@{/existing-password}">
+          Change password
+        </a>
+      </dd>
+    </div>
+  </dl>
+  <h2 class="govuk-heading-m" id="authentication">Authentication</h2>
+  <dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Email
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="email" th:text="${authUser.email}">
+        sarah.philips@digital.justice.gov.uk
+      </dd>
+      <dd class="govuk-summary-list__actions">
+        <a th:href="@{/existing-email}" th:if="${authUser.authSource != 'delius'}">
+          <th:block th:text="${#strings.isEmpty(authUser.email)} ? 'Add' : 'Change'">
+            Change
+          </th:block>
+          <span class="govuk-visually-hidden"> email</span>
+        </a>
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Email verified
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="verified" th:text="${authUser.verified} ? 'yes' : 'no'">
+        Yes
+      </dd>
+      <dd class="govuk-summary-list__actions">
+        <a th:href="@{/verify-email}" th:if="${!authUser.verified}">
+          Resend code
+        </a>
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Mobile
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="mobile" th:text="${authUser.mobile}">
+        01234 567890
+      </dd>
+      <dd class="govuk-summary-list__actions">
+        <a th:href="@{/new-mobile}">
+          <th:block th:text="${#strings.isEmpty(authUser.mobile)} ? 'Add' : 'Change'">
+            Change
+          </th:block>
+          <span class="govuk-visually-hidden"> mobile</span>
+        </a>
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Mobile verified
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="mobileVerified"
+          th:text="${authUser.mobileVerified} ? 'yes' : 'no'">
+        No
+      </dd>
+      <dd class="govuk-summary-list__actions">
+        <a th:href="@{/verify-mobile}" th:if="${!authUser.mobileVerified}">
+          Resend code
+        </a>
+      </dd>
+    </div>
+  </dl>
+
+  <div class="govuk-form-group">
+    <a class="govuk-button" role="button" id="cancel" th:href="@{/account-details-cancel}">Cancel</a>
+  </div>
+</div>
+</body>
+</html>

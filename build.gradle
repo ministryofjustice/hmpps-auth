@@ -134,6 +134,7 @@ dependencies {
   implementation configurations.agentDeps
 
   runtimeOnly 'com.h2database:h2:1.4.200'
+  runtimeOnly 'org.springframework.boot:spring-boot-devtools'
 
   compileOnly 'org.projectlombok:lombok:1.18.12'
 
@@ -163,6 +164,8 @@ dependencies {
 
   testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.13.0'
   testImplementation 'com.nhaarman:mockito-kotlin-kt1.1:1.6.0'
+  testImplementation 'org.fluentlenium:fluentlenium-junit-jupiter:4.3.1'
+  testImplementation 'org.fluentlenium:fluentlenium-assertj:4.3.1'
 }
 
 task copyAgent(type: Copy) {
@@ -189,7 +192,8 @@ test {
 }
 
 task testIntegration(type: Test) {
-  include 'uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*'
-
-  maxHeapSize = "512m"
+  systemProperty 'fluentlenium.capabilities', '{"chromeOptions": {"args": ["headless","disable-gpu","disable-extensions","no-sandbox","disable-application-cache"]}}'
+  useJUnitPlatform()
+  include 'uk/gov/justice/digital/hmpps/oauth2server/integration/*', 'uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*'
+  maxHeapSize = "256m"
 }

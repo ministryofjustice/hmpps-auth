@@ -15,7 +15,9 @@
       <div class="govuk-card">
         <div class="govuk-card__content">
           <h3 class="govuk-heading-m">
-            <a th:id="${service.code}" th:href="${service.url}" th:text="${service.name}">New NOMIS</a>
+            <a class="govuk-link" th:id="${service.code}" th:href="${service.url}" th:text="${service.name}">
+              New NOMIS
+            </a>
           </h3>
           <p class="govuk-body" th:text="${service.description}">
             Some descriptive text
