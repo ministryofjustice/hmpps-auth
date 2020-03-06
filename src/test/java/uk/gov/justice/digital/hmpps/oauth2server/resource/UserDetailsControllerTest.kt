@@ -53,7 +53,7 @@ class UserDetailsControllerTest {
 
     val modelAndView = controller.changeDetails("joe", "bloggs", token, request, response)
     assertThat(modelAndView.modelMap).isEmpty()
-    assertThat(modelAndView.viewName).isEqualTo("redirect:/")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/account-details")
   }
 
   @Test
