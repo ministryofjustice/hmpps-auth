@@ -33,11 +33,13 @@ class ContactSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/contact")
-class ContactPage : AuthPage("HMPPS Digital Services - Contact us", "Contact us") {
+class ContactPage : AuthPage<ContactPage>("HMPPS Digital Services - Contact us", "Contact us") {
   @FindBy(css = "#HDC")
   private lateinit var hdcSection: FluentWebElement
+
   @FindBy(css = "#NOMIS")
   private lateinit var nomisSection: FluentWebElement
+
   @FindBy(css = "#POM")
   private lateinit var moicSection: FluentWebElement
 
@@ -52,7 +54,7 @@ class ContactPage : AuthPage("HMPPS Digital Services - Contact us", "Contact us"
     assertThat(nomisSection.el("h3").text()).isEqualTo("Digital Prison Service")
     assertThat(nomisSection.el("a").text()).isEqualTo("feedback@digital.justice.gov.uk")
     assertThat(nomisSection.el("a").attribute("href")).isEqualTo("mailto:feedback@digital.justice.gov.uk")
-    return this;
+    return this
   }
 
   fun checkMoicDetails(): ContactPage {
@@ -60,7 +62,7 @@ class ContactPage : AuthPage("HMPPS Digital Services - Contact us", "Contact us"
     assertThat(moicSection.el("p").text()).isEqualTo("Contact us using the online form")
     assertThat(moicSection.el("a").text()).isEqualTo("online form")
     assertThat(moicSection.el("a").attribute("href")).isEqualTo("https://moic.service.justice.gov.uk/help")
-    return this;
+    return this
   }
 
   fun back() {

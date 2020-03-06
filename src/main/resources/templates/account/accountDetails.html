@@ -31,7 +31,7 @@
         Sarah Philips
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/change-name}" th:if="${authUser.authSource == 'auth'}" data-qa="changeName">
+        <a th:href="@{/user-details}" th:if="${authUser.authSource == 'auth'}" data-qa="changeName">
           Change<span class="govuk-visually-hidden"> name</span>
         </a>
       </dd>
@@ -50,15 +50,14 @@
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
-        Password expiry
+        Password
       </dt>
-      <dd class="govuk-summary-list__value" data-qa="passwordExpiry"
-          th:text="${#temporals.format(authUser.passwordExpiry, 'd MMMM yyyy HH:mm')}">
-        5 August 2039 - 20:52:13
+      <dd class="govuk-summary-list__value" data-qa="passwordExpiry">
+        ************
       </dd>
       <dd class="govuk-summary-list__actions">
         <a th:href="@{/existing-password}">
-          Change password
+          Change <span class="govuk-visually-hidden"> password</span>
         </a>
       </dd>
     </div>
@@ -120,7 +119,7 @@
         No
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/verify-mobile}" th:unless="${#strings.isEmpty(authUser.mobile) || authUser.mobileVerified}"
+        <a th:href="@{/mobile-resend}" th:unless="${#strings.isEmpty(authUser.mobile) || authUser.mobileVerified}"
            data-qa="verifyMobile">
           Resend <span class="govuk-visually-hidden"> mobile</span> code
         </a>
@@ -129,7 +128,7 @@
   </dl>
 
   <div class="govuk-form-group">
-    <a class="govuk-button" role="button" data-qa="cancel" th:href="@{/account-details-cancel}">Cancel</a>
+    <a class="govuk-button" role="button" id="cancel" data-qa="cancel" th:href="@{/account-details-cancel}">Cancel</a>
   </div>
 </div>
 </body>

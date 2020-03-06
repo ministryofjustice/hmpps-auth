@@ -21,18 +21,24 @@ class LoginSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/login")
-class LoginPage : AuthPage("HMPPS Digital Services - Sign in", "Sign in") {
+class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign in") {
   @FindBy(css = "input[type='submit']")
   private lateinit var signInButton: FluentWebElement
+
   @FindBy(css = "input[name='username']")
   private lateinit var username: FluentWebElement
+
   @FindBy(css = "input[name='password']")
   private lateinit var password: FluentWebElement
 
-  fun loginAsUnverifiedEmail(username: String, password: String) {
+  fun loginAsWithUnverifiedEmail(username: String, password: String): VerifyEmailPage {
     this.username.fill().withText(username)
     this.password.fill().withText(password)
     signInButton.submit()
+
+    val verifyEmailPage = newInstance(VerifyEmailPage::class.java)
+    verifyEmailPage.isAt()
+    return verifyEmailPage
   }
 
   fun loginAs(username: String, password: String): HomePage {

@@ -21,14 +21,14 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `nomis account details`() {
-    goTo(loginPage).loginAsUnverifiedEmail("ITAG_USER", "password")
+    goTo(loginPage).loginAs("ITAG_USER", "password")
 
     goTo(accountDetailsPage).checkNomisDetails()
   }
 
   @Test
   fun `unverified account details`() {
-    goTo(loginPage).loginAsUnverifiedEmail("AUTH_UNVERIFIED", "password123456")
+    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_UNVERIFIED", "password123456")
 
     goTo(accountDetailsPage).checkUnverified()
   }
@@ -43,16 +43,28 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
 
     homePage.isAt()
   }
+
+  @Test
+  fun `navigation - change name`() {
+    goTo(loginPage).loginAs("AUTH_RO_USER", "password123456")
+        .navigateToAccountDetails()
+
+    accountDetailsPage.navigateToChangeName()
+        .cancel()
+
+    accountDetailsPage.isAt()
+  }
 }
 
 @PageUrl("/account-details")
-class AccountDetailsPage : AuthPage("HMPPS Digital Services - Account Details", "Account details") {
+class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services - Account Details", "Account details") {
+  @Suppress("UsePropertyAccessSyntax")
   fun checkAuthDetails(): AccountDetailsPage {
     assertThat(el("[data-qa='username']").text()).isEqualTo("AUTH_RO_USER")
     assertThat(el("[data-qa='name']").text()).isEqualTo("Ryan-Auth Orton")
     assertThat(el("[data-qa='lastLoggedIn']").text()).isNotBlank()
     assertThat(el("[data-qa='changeName']").text()).isEqualToNormalizingWhitespace("Change name")
-    assertThat(el("[data-qa='passwordExpiry']").text()).isEqualTo("28 January 3013 13:23")
+    assertThat(el("[data-qa='passwordExpiry']").text()).isEqualTo("************")
     assertThat(el("[data-qa='email']").text()).isEqualTo("auth_ro_user@digital.justice.gov.uk")
     assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
     assertThat(el("[data-qa='verified']").text()).isEqualTo("yes")
@@ -85,6 +97,13 @@ class AccountDetailsPage : AuthPage("HMPPS Digital Services - Account Details", 
     assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("no")
     assertThat(el("[data-qa='verifyMobile']").text()).isEqualToNormalizingWhitespace("Resend mobile code")
     return this
+  }
+
+  fun navigateToChangeName(): UserDetailsPage {
+    el("[data-qa='changeName']").click()
+    val userDetailsPage = newInstance(UserDetailsPage::class.java)
+    userDetailsPage.isAt()
+    return userDetailsPage
   }
 
   fun cancel() {
