@@ -15,12 +15,7 @@ environments {
     chromeHeadless {
         driver = {
             ChromeOptions options = new ChromeOptions()
-            options.addArguments('headless')
-            options.add_argument('disable-extensions')
-            options.add_argument('headless')
-            options.add_argument('disable-gpu')
-            options.add_argument('no-sandbox')
-            options.add_argument('disable-application-cache')
+            options.addArguments('headless', 'disable-extensions', 'disable-gpu', 'no-sandbox', 'disable-application-cache')
             new ChromeDriver(options)
         }
     }
