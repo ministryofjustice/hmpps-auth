@@ -53,7 +53,7 @@ open class AbstractAuthSpecification : FluentTest() {
   }
 }
 
-open class AuthPage(val title: String, val heading: String) : FluentPage() {
+open class AuthPage<T>(val title: String, val heading: String) : FluentPage() {
   @FindBy(css = "#main-content h1")
   private lateinit var headingText: FluentWebElement
 
@@ -67,14 +67,24 @@ open class AuthPage(val title: String, val heading: String) : FluentPage() {
     assertThat(headingText.text()).isEqualTo(heading)
   }
 
-  internal fun isAtError() {
+  private fun isAtError() {
     super.isAt()
 
     assertThat(window().title()).isEqualTo("Error: $title")
     assertThat(headingText.text()).isEqualTo(heading)
   }
 
-  internal fun getErrorDetail() = errorDetail.text()
+  internal fun checkError(error: String): T {
+    isAtError()
+    assertThat(errorDetail.text()).isEqualTo(error)
+    return this as T
+  }
+
+  internal fun checkErrorContains(error: String): T {
+    isAtError()
+    assertThat(errorDetail.text()).contains(error)
+    return this as T
+  }
 }
 
 class CommunityApiMockServer : WireMockServer(8099)

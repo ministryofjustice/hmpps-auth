@@ -32,7 +32,7 @@ open class UserDetailsController(private val authUserService: AuthUserService,
   }
 
   @GetMapping("cancel")
-  open fun cancel() = ModelAndView("redirect:/")
+  open fun cancel() = "redirect:/account-details"
 
   @PostMapping
   open fun changeDetails(@RequestParam firstName: String?,
@@ -50,7 +50,7 @@ open class UserDetailsController(private val authUserService: AuthUserService,
       val successToken = UsernamePasswordAuthenticationToken(userPersonDetails, null, userPersonDetails.authorities)
       jwtAuthenticationSuccessHandler.addAuthenticationToRequest(request, response, successToken)
 
-      return ModelAndView("redirect:/")
+      ModelAndView("redirect:/account-details")
     } catch (e: CreateUserException) {
       ModelAndView("userDetails")
           .addObject("error_${e.field}", e.errorCode)

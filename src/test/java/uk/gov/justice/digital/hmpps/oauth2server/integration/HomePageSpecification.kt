@@ -32,15 +32,18 @@ class HomePageSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/")
-class HomePage : AuthPage("HMPPS Digital Services - Home", "Select service") {
+class HomePage : AuthPage<HomePage>("HMPPS Digital Services - Home", "Select service") {
   @FindBy(css = "#principal-name")
   private lateinit var principalName: FluentWebElement
+
   @FindBy(css = "#DETAILS")
   private lateinit var accountDetails: FluentWebElement
 
   fun assertNameDisplayedCorrectly(name: String) {
     assertThat(principalName.text()).isEqualTo(name)
   }
+
+  fun getCurrentName(): String = principalName.text()
 
   fun navigateToAccountDetails() {
     assertThat(accountDetails.text()).isEqualTo("View account details")

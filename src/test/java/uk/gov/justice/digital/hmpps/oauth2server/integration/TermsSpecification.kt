@@ -22,7 +22,7 @@ class TermsSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/terms")
-class TermsPage : AuthPage("HMPPS Digital Services - Terms and conditions", "Terms and conditions") {
+class TermsPage : AuthPage<TermsPage>("HMPPS Digital Services - Terms and conditions", "Terms and conditions") {
   fun accept() {
     el("a[data-qa='back-link']").click()
   }

@@ -19,31 +19,24 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `A user can cancel email verification`() {
-    goTo(loginPage).loginAsUnverifiedEmail("DM_USER", "password123456")
-    verifyEmailPage.isAt()
+    goTo(loginPage).loginAsWithUnverifiedEmail("DM_USER", "password123456")
+        .cancel()
 
-    verifyEmailPage.cancel()
     newInstance(HomePage::class.java).isAt()
   }
 
   @Test
   fun `A user is not allowed to verify a gsi email address`() {
-    goTo(loginPage).loginAsUnverifiedEmail("AUTH_NO_EMAIL", "password123456")
-    verifyEmailPage.isAt()
+    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_NO_EMAIL", "password123456")
+        .verifyEmailAs("dm_user@hmps.gsi.gov.uk")
 
-    verifyEmailPage.verifyEmailAs("dm_user@hmps.gsi.gov.uk")
-
-    verifyEmailPage.isAtError()
-    assertThat(verifyEmailPage.getErrorDetail()).startsWith("All gsi.gov.uk have now been migrated to a justice.gov.uk domain. Enter your justice.gov.uk address instead.")
+    verifyEmailPage.checkError("All gsi.gov.uk have now been migrated to a justice.gov.uk domain. Enter your justice.gov.uk address instead.")
   }
 
   @Test
   fun `A user can verify a previously chosen email`() {
-    goTo(loginPage).loginAsUnverifiedEmail("DM_USER", "password123456")
-
-    verifyEmailPage.isAt()
-
-    verifyEmailPage.verifyExistingEmailAs("dm_user@digital.justice.gov.uk")
+    goTo(loginPage).loginAsWithUnverifiedEmail("DM_USER", "password123456")
+        .verifyExistingEmailAs("dm_user@digital.justice.gov.uk")
 
     verifyEmailSentPage.isAt()
     val verifyLink = verifyEmailSentPage.getVerifyLink()
@@ -60,11 +53,8 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `A user can verify an email that exists in pnomis`() {
-    goTo(loginPage).loginAsUnverifiedEmail("RO_USER", "password123456")
-
-    verifyEmailPage.isAt()
-
-    verifyEmailPage.selectExistingEmailAs("phillips@bobjustice.gov.uk")
+    goTo(loginPage).loginAsWithUnverifiedEmail("RO_USER", "password123456")
+        .selectExistingEmailAs("phillips@bobjustice.gov.uk")
 
     verifyEmailSentPage.isAt()
     val verifyLink = verifyEmailSentPage.getVerifyLink()
@@ -78,11 +68,8 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `A user can verify an email that exists in pnomis where the user has changed password in auth`() {
-    goTo(loginPage).loginAsUnverifiedEmail("RO_DEMO", "password123456")
-
-    verifyEmailPage.isAt()
-
-    verifyEmailPage.selectExistingEmailAs("ro_user@some.justice.gov.uk")
+    goTo(loginPage).loginAsWithUnverifiedEmail("RO_DEMO", "password123456")
+        .selectExistingEmailAs("ro_user@some.justice.gov.uk")
 
     verifyEmailSentPage.isAt()
     val verifyLink = verifyEmailSentPage.getVerifyLink()
@@ -96,11 +83,8 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `An auth only user can verify their email address`() {
-    goTo(loginPage).loginAsUnverifiedEmail("AUTH_NO_EMAIL", "password123456")
-
-    verifyEmailPage.isAt()
-
-    verifyEmailPage.verifyEmailAs("auth_no_email@digital.justice.gov.uk")
+    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_NO_EMAIL", "password123456")
+        .verifyEmailAs("auth_no_email@digital.justice.gov.uk")
 
     verifyEmailSentPage.isAt()
     val verifyLink = verifyEmailSentPage.getVerifyLink()
@@ -115,14 +99,14 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
   @Test
   fun `A user is asked to sign in again if the verification link is invalid`() {
     goTo("/verify-email-confirm?token=someinvalidtoken")
+
     val verifyEmailConfirmErrorPage = newInstance(VerifyEmailConfirmErrorPage::class.java)
-    verifyEmailConfirmErrorPage.isAtError()
-    assertThat(verifyEmailConfirmErrorPage.getErrorDetail()).startsWith("This link is invalid")
+    verifyEmailConfirmErrorPage.checkErrorContains("This link is invalid")
   }
 }
 
 @PageUrl("/verify-email")
-open class VerifyEmailPage : AuthPage("HMPPS Digital Services - Verify Email", "Verify your email address") {
+open class VerifyEmailPage : AuthPage<VerifyEmailPage>("HMPPS Digital Services - Verify Email", "Verify your email address") {
   @FindBy(css = "input[type='submit']")
   private lateinit var verifyEmailButton: FluentWebElement
 
@@ -155,7 +139,7 @@ open class VerifyEmailPage : AuthPage("HMPPS Digital Services - Verify Email", "
 }
 
 @PageUrl("/verify-email")
-open class VerifyEmailSentPage : AuthPage("HMPPS Digital Services - Verify Email Sent", "Verification email sent") {
+open class VerifyEmailSentPage : AuthPage<VerifyEmailSentPage>("HMPPS Digital Services - Verify Email Sent", "Verification email sent") {
   @FindBy(css = "a[role='button']")
   private lateinit var continueButton: FluentWebElement
 
@@ -164,11 +148,11 @@ open class VerifyEmailSentPage : AuthPage("HMPPS Digital Services - Verify Email
     continueButton.click()
   }
 
-  fun getVerifyLink() = el("#verifyLink").attribute("href")
+  fun getVerifyLink(): String = el("#verifyLink").attribute("href")
 }
 
 @PageUrl("/verify-email-confirm")
-open class VerifyEmailConfirmPage : AuthPage("HMPPS Digital Services - Verify Email Confirmation", "Email address verified")
+open class VerifyEmailConfirmPage : AuthPage<VerifyEmailConfirmPage>("HMPPS Digital Services - Verify Email Confirmation", "Email address verified")
 
 @PageUrl("/verify-email-confirm")
-open class VerifyEmailConfirmErrorPage : AuthPage("HMPPS Digital Services - Verify Email Confirmation", "Unable to confirm email")
+open class VerifyEmailConfirmErrorPage : AuthPage<VerifyEmailConfirmErrorPage>("HMPPS Digital Services - Verify Email Confirmation", "Unable to confirm email")
