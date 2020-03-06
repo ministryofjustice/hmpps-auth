@@ -16,7 +16,7 @@ class UserDetailsSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `A user can change their user details`() {
-    val homePage = goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+    val homePage = goTo(loginPage).loginAs("AUTH_ADM")
     val currentName = homePage.getCurrentName()
 
     goTo(userDetailsPage)
@@ -32,7 +32,7 @@ class UserDetailsSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `A user can cancel changing their user details`() {
-    val homePage = goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+    val homePage = goTo(loginPage).loginAs("AUTH_ADM")
 
     val currentName = homePage.getCurrentName()
 
@@ -46,7 +46,7 @@ class UserDetailsSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `Errors are displayed to the user`() {
-    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+    goTo(loginPage).loginAs("AUTH_ADM")
 
     goTo(userDetailsPage).submitUserDetails("Jo", "     ")
         .checkError("Enter your last name")

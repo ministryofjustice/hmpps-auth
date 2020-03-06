@@ -32,9 +32,4 @@ class AccountControllerTest {
     verify(userService).findMasterUserPersonDetails("user")
     verify(userService).findUser("user")
   }
-
-  @Test
-  fun cancel() {
-    assertThat(accountController.cancel()).isEqualTo("redirect:/")
-  }
 }

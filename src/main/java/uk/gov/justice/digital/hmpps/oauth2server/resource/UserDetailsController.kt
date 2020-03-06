@@ -12,7 +12,6 @@ import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -25,7 +24,7 @@ open class UserDetailsController(private val authUserService: AuthUserService,
                                  private val userService: UserService) {
   @GetMapping
   open fun userDetails(authentication: Authentication): ModelAndView {
-    val user = authUserService.getAuthUserByUsername(getUserName(authentication)).orElseThrow()
+    val user = authUserService.getAuthUserByUsername(authentication.name).orElseThrow()
     with(user.person) {
       return ModelAndView("userDetails").addFirstAndLastName(firstName, lastName)
     }
@@ -41,7 +40,7 @@ open class UserDetailsController(private val authUserService: AuthUserService,
                          request: HttpServletRequest, response: HttpServletResponse): ModelAndView {
 
     return try {
-      val username = getUserName(authentication)
+      val username = authentication.name
       authUserService.amendUser(username, firstName, lastName)
       telemetryClient.trackEvent("UpdateName", mapOf("username" to username), null)
 
@@ -58,8 +57,6 @@ open class UserDetailsController(private val authUserService: AuthUserService,
           .addFirstAndLastName(firstName, lastName)
     }
   }
-
-  private fun getUserName(authentication: Authentication) = (authentication.principal as UserDetailsImpl).username
 
   private fun ModelAndView.addFirstAndLastName(firstName: String?, lastName: String?): ModelAndView =
       addObject("firstName", firstName).addObject("lastName", lastName)

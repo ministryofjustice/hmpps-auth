@@ -19,7 +19,7 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `A user can cancel email verification`() {
-    goTo(loginPage).loginAsWithUnverifiedEmail("DM_USER", "password123456")
+    goTo(loginPage).loginAsWithUnverifiedEmail("DM_USER")
         .cancel()
 
     newInstance(HomePage::class.java).isAt()
@@ -27,7 +27,7 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `A user is not allowed to verify a gsi email address`() {
-    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_NO_EMAIL", "password123456")
+    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_NO_EMAIL")
         .verifyEmailAs("dm_user@hmps.gsi.gov.uk")
 
     verifyEmailPage.checkError("All gsi.gov.uk have now been migrated to a justice.gov.uk domain. Enter your justice.gov.uk address instead.")
@@ -35,7 +35,7 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `A user can verify a previously chosen email`() {
-    goTo(loginPage).loginAsWithUnverifiedEmail("DM_USER", "password123456")
+    goTo(loginPage).loginAsWithUnverifiedEmail("DM_USER")
         .verifyExistingEmailAs("dm_user@digital.justice.gov.uk")
 
     verifyEmailSentPage.isAt()
@@ -53,7 +53,7 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `A user can verify an email that exists in pnomis`() {
-    goTo(loginPage).loginAsWithUnverifiedEmail("RO_USER", "password123456")
+    goTo(loginPage).loginAsWithUnverifiedEmail("RO_USER")
         .selectExistingEmailAs("phillips@bobjustice.gov.uk")
 
     verifyEmailSentPage.isAt()
@@ -68,7 +68,7 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `A user can verify an email that exists in pnomis where the user has changed password in auth`() {
-    goTo(loginPage).loginAsWithUnverifiedEmail("RO_DEMO", "password123456")
+    goTo(loginPage).loginAsWithUnverifiedEmail("RO_DEMO")
         .selectExistingEmailAs("ro_user@some.justice.gov.uk")
 
     verifyEmailSentPage.isAt()
@@ -83,7 +83,7 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `An auth only user can verify their email address`() {
-    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_NO_EMAIL", "password123456")
+    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_NO_EMAIL")
         .verifyEmailAs("auth_no_email@digital.justice.gov.uk")
 
     verifyEmailSentPage.isAt()

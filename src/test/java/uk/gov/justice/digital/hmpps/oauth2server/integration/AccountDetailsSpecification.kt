@@ -12,7 +12,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `auth account details`() {
-    goTo(loginPage).loginAs("AUTH_RO_USER", "password123456")
+    goTo(loginPage).loginAs("AUTH_RO_USER")
         .navigateToAccountDetails()
 
     accountDetailsPage.isAt()
@@ -28,14 +28,14 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `unverified account details`() {
-    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_UNVERIFIED", "password123456")
+    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_UNVERIFIED")
 
     goTo(accountDetailsPage).checkUnverified()
   }
 
   @Test
   fun `cancel account details`() {
-    val homePage = goTo(loginPage).loginAs("AUTH_RO_USER", "password123456")
+    val homePage = goTo(loginPage).loginAs("AUTH_RO_USER")
     homePage.navigateToAccountDetails()
     accountDetailsPage.isAt()
 
@@ -46,7 +46,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `navigation - change name`() {
-    goTo(loginPage).loginAs("AUTH_RO_USER", "password123456")
+    goTo(loginPage).loginAs("AUTH_RO_USER")
         .navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeName()
@@ -107,6 +107,6 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
   }
 
   fun cancel() {
-    el("[data-qa='cancel']").click()
+    el("[data-qa='back-link']").click()
   }
 }

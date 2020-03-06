@@ -16,7 +16,6 @@ import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
 import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaRequiredException
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 
 @Controller
@@ -36,7 +35,7 @@ class ExistingPasswordController(private val authenticationManager: Authenticati
         .addObject("error", "required")
         .addObject("type", type)
 
-    val username = getUserName(authentication)
+    val username = authentication.name
     return try {
       authenticate(username, password)
       continueToNewEmailOrPassword(username, type)
@@ -62,18 +61,16 @@ class ExistingPasswordController(private val authenticationManager: Authenticati
     // successfully logged in with credentials, so generate change password token
     val token = tokenService.createToken(TokenType.CHANGE, username)
 
+    @Suppress("SpringMVCViewInspection")
     return ModelAndView("redirect:/new-$type", "token", token)
 
   }
 
   private fun createModelAndViewWithUsername(authentication: Authentication) =
-      ModelAndView("user/existingPassword")
-          .addObject("username", getUserName(authentication))
+      ModelAndView("user/existingPassword", "username", authentication.name)
 
   private fun authenticate(username: String, password: String) =
       authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username.toUpperCase(), password))
-
-  private fun getUserName(authentication: Authentication) = (authentication.principal as UserDetailsImpl).username
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

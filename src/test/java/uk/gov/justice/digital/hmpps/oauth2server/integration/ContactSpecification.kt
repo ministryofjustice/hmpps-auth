@@ -30,6 +30,13 @@ class ContactSpecification : AbstractAuthSpecification() {
     goTo(contactPage).back()
     loginPage.isAt()
   }
+
+  @Test
+  fun `Return to home page if logged in`() {
+    val homePage = goTo(loginPage).loginAs("ITAG_USER", "password")
+    goTo(contactPage).back()
+    homePage.isAt()
+  }
 }
 
 @PageUrl("/contact")

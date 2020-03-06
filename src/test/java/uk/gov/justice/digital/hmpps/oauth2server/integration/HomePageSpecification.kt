@@ -14,7 +14,7 @@ class HomePageSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `Log in with licences user`() {
-    goTo(loginPage).loginAs("CA_USER", "password123456")
+    goTo(loginPage).loginAs("CA_USER")
     homePage.isAt()
 
     homePage.checkNomisLink()

@@ -77,12 +77,14 @@ open class AuthPage<T>(val title: String, val heading: String) : FluentPage() {
   internal fun checkError(error: String): T {
     isAtError()
     assertThat(errorDetail.text()).isEqualTo(error)
+    @Suppress("UNCHECKED_CAST")
     return this as T
   }
 
   internal fun checkErrorContains(error: String): T {
     isAtError()
     assertThat(errorDetail.text()).contains(error)
+    @Suppress("UNCHECKED_CAST")
     return this as T
   }
 }
