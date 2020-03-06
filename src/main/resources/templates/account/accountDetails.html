@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/layout}">
+      layout:decorate="~{fragments/layout}" th:with="showBack=true">
 <head>
   <title>Account Details</title>
 </head>
@@ -126,10 +126,6 @@
       </dd>
     </div>
   </dl>
-
-  <div class="govuk-form-group">
-    <a class="govuk-button" role="button" id="cancel" data-qa="cancel" th:href="@{/account-details-cancel}">Cancel</a>
-  </div>
 </div>
 </body>
 </html>

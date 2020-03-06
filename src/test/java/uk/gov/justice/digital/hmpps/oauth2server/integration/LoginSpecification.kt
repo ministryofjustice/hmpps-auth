@@ -9,7 +9,7 @@ import org.openqa.selenium.support.FindBy
 class LoginSpecification : AbstractAuthSpecification() {
   @Test
   fun `Log in with valid auth credentials`() {
-    val homePage = goTo(loginPage).loginAs("AUTH_USER", "password123456")
+    val homePage = goTo(loginPage).loginAs("AUTH_USER")
     homePage.assertNameDisplayedCorrectly("Auth Only")
   }
 
@@ -31,7 +31,7 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
   @FindBy(css = "input[name='password']")
   private lateinit var password: FluentWebElement
 
-  fun loginAsWithUnverifiedEmail(username: String, password: String): VerifyEmailPage {
+  fun loginAsWithUnverifiedEmail(username: String, password: String = "password123456"): VerifyEmailPage {
     this.username.fill().withText(username)
     this.password.fill().withText(password)
     signInButton.submit()
@@ -41,7 +41,7 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
     return verifyEmailPage
   }
 
-  fun loginAs(username: String, password: String): HomePage {
+  fun loginAs(username: String, password: String = "password123456"): HomePage {
     this.username.fill().withText(username)
     this.password.fill().withText(password)
     signInButton.submit()
