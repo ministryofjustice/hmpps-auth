@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.resource
+package uk.gov.justice.digital.hmpps.oauth2server.resource.account
 
 import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -17,27 +17,24 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Controller
-@RequestMapping("/user-details")
-open class UserDetailsController(private val authUserService: AuthUserService,
-                                 private val telemetryClient: TelemetryClient,
-                                 private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler,
-                                 private val userService: UserService) {
+@RequestMapping("/change-name")
+class ChangeNameController(private val authUserService: AuthUserService,
+                           private val telemetryClient: TelemetryClient,
+                           private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler,
+                           private val userService: UserService) {
   @GetMapping
-  open fun userDetails(authentication: Authentication): ModelAndView {
+  fun changeNameRequest(authentication: Authentication): ModelAndView {
     val user = authUserService.getAuthUserByUsername(authentication.name).orElseThrow()
     with(user.person) {
-      return ModelAndView("userDetails").addFirstAndLastName(firstName, lastName)
+      return ModelAndView("account/changeName").addFirstAndLastName(firstName, lastName)
     }
   }
 
-  @GetMapping("cancel")
-  open fun cancel() = "redirect:/account-details"
-
   @PostMapping
-  open fun changeDetails(@RequestParam firstName: String?,
-                         @RequestParam lastName: String?,
-                         authentication: Authentication,
-                         request: HttpServletRequest, response: HttpServletResponse): ModelAndView {
+  fun changeName(@RequestParam firstName: String?,
+                 @RequestParam lastName: String?,
+                 authentication: Authentication,
+                 request: HttpServletRequest, response: HttpServletResponse): ModelAndView {
 
     return try {
       val username = authentication.name
@@ -51,7 +48,7 @@ open class UserDetailsController(private val authUserService: AuthUserService,
 
       ModelAndView("redirect:/account-details")
     } catch (e: CreateUserException) {
-      ModelAndView("userDetails")
+      ModelAndView("account/changeName")
           .addObject("error_${e.field}", e.errorCode)
           .addObject("error", true)
           .addFirstAndLastName(firstName, lastName)

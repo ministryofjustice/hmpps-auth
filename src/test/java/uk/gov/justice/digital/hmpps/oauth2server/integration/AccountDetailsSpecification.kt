@@ -50,9 +50,8 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
         .navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeName()
-        .cancel()
 
-    accountDetailsPage.isAt()
+    newInstance(ChangeNamePage::class.java).isAt()
   }
 }
 
@@ -99,11 +98,8 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     return this
   }
 
-  fun navigateToChangeName(): UserDetailsPage {
+  fun navigateToChangeName() {
     el("[data-qa='changeName']").click()
-    val userDetailsPage = newInstance(UserDetailsPage::class.java)
-    userDetailsPage.isAt()
-    return userDetailsPage
   }
 
   fun cancel() {

@@ -28,7 +28,7 @@
     <h1 class="govuk-heading-xl">Update personal details</h1>
   </div>
 
-  <form class="form" th:action="@{/user-details}" method="POST" id="userDetailsForm">
+  <form class="form" th:action="@{/change-name}" method="POST" id="userDetailsForm">
     <fieldset class="govuk-fieldset">
       <div th:class="'govuk-form-group' + (${error_firstName} ? ' govuk-form-group--error' : '')">
         <label class="govuk-label" for="firstName">First name</label>
@@ -57,7 +57,6 @@
       <div class="govuk-form-group">
         <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="continue-button"
                value="Save">
-        <a class="govuk-button" role="button" id="cancel" th:href="@{/user-details/cancel}">Cancel</a>
       </div>
     </fieldset>
   </form>
