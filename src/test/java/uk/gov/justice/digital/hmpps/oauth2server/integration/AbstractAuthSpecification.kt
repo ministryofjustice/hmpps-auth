@@ -53,6 +53,7 @@ open class AbstractAuthSpecification : FluentTest() {
   }
 }
 
+@Suppress("UNCHECKED_CAST")
 open class AuthPage<T>(val title: String, val heading: String) : FluentPage() {
   @FindBy(css = "#main-content h1")
   private lateinit var headingText: FluentWebElement
@@ -60,11 +61,12 @@ open class AuthPage<T>(val title: String, val heading: String) : FluentPage() {
   @FindBy(css = "#error-detail")
   private lateinit var errorDetail: FluentWebElement
 
-  override fun isAt() {
+  internal fun isAtPage(): T {
     super.isAt()
 
     assertThat(window().title()).isEqualTo(title)
     assertThat(headingText.text()).isEqualTo(heading)
+    return this as T
   }
 
   private fun isAtError() {
@@ -77,14 +79,12 @@ open class AuthPage<T>(val title: String, val heading: String) : FluentPage() {
   internal fun checkError(error: String): T {
     isAtError()
     assertThat(errorDetail.text()).isEqualTo(error)
-    @Suppress("UNCHECKED_CAST")
     return this as T
   }
 
   internal fun checkErrorContains(error: String): T {
     isAtError()
     assertThat(errorDetail.text()).contains(error)
-    @Suppress("UNCHECKED_CAST")
     return this as T
   }
 }

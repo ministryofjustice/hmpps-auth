@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.resource
+package uk.gov.justice.digital.hmpps.oauth2server.resource.account
 
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
@@ -19,7 +19,7 @@ import java.util.*
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-class UserDetailsControllerTest {
+class ChangeNameControllerTest {
   private val authUserService: AuthUserService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val userService: UserService = mock()
@@ -28,49 +28,49 @@ class UserDetailsControllerTest {
   private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler = mock()
   private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, null), "pass")
 
-  private val controller: UserDetailsController = UserDetailsController(authUserService, telemetryClient, jwtAuthenticationSuccessHandler, userService)
+  private val controller: ChangeNameController = ChangeNameController(authUserService, telemetryClient, jwtAuthenticationSuccessHandler, userService)
 
   @Test
-  fun `user details`() {
+  fun changeNameRequest() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(User.builder().person(Person("first", "last")).build()))
-    val modelAndView = controller.userDetails(token)
+    val modelAndView = controller.changeNameRequest(token)
     assertThat(modelAndView.modelMap).containsExactlyInAnyOrderEntriesOf(mapOf("firstName" to "first", "lastName" to "last"))
-    assertThat(modelAndView.viewName).isEqualTo("userDetails")
+    assertThat(modelAndView.viewName).isEqualTo("account/changeName")
   }
 
   @Test
-  fun `changeDetails exception`() {
+  fun `changeName exception`() {
     whenever(authUserService.amendUser(anyString(), anyString(), anyString())).thenThrow(CreateUserException("lastName", "someerror"))
-    val modelAndView = controller.changeDetails("joe", "bloggs", token, request, response)
+    val modelAndView = controller.changeName("joe", "bloggs", token, request, response)
     assertThat(modelAndView.modelMap).containsExactlyInAnyOrderEntriesOf(
         mapOf("error_lastName" to "someerror", "error" to true, "firstName" to "joe", "lastName" to "bloggs"))
-    assertThat(modelAndView.viewName).isEqualTo("userDetails")
+    assertThat(modelAndView.viewName).isEqualTo("account/changeName")
   }
 
   @Test
-  fun `changeDetails success`() {
+  fun `changeName success`() {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("joe")))
 
-    val modelAndView = controller.changeDetails("joe", "bloggs", token, request, response)
+    val modelAndView = controller.changeName("joe", "bloggs", token, request, response)
     assertThat(modelAndView.modelMap).isEmpty()
     assertThat(modelAndView.viewName).isEqualTo("redirect:/account-details")
   }
 
   @Test
-  fun `changeDetails pass username from token`() {
+  fun `changeName pass username from token`() {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("joe")))
 
-    controller.changeDetails("joe", "bloggs", token, request, response)
+    controller.changeName("joe", "bloggs", token, request, response)
     verify(authUserService).amendUser("user", "joe", "bloggs")
   }
 
   @Test
-  fun `changeDetails call add authentication to request`() {
+  fun `changeName call add authentication to request`() {
     val authorities = setOf(Authority("role", "name"))
     val user = User.builder().username("joe").authorities(authorities).build()
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
 
-    controller.changeDetails("joe", "bloggs", token, request, response)
+    controller.changeName("joe", "bloggs", token, request, response)
     verify(jwtAuthenticationSuccessHandler).addAuthenticationToRequest(eq(request), eq(response), check {
       assertThat(it.authorities).containsExactlyInAnyOrderElementsOf(authorities)
       assertThat(it.principal).isEqualTo(user)
