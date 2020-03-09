@@ -2,14 +2,18 @@ package uk.gov.justice.digital.hmpps.oauth2server.verify
 
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.anyMap
+import org.mockito.ArgumentMatchers.anyString
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService.VerifyMobileException
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
 import java.util.*
@@ -25,7 +29,7 @@ class VerifyMobileServiceTest {
   @Test
   fun mobile() {
     val user = User.builder().username("bob").mobile("07700900321").build()
-    whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(Optional.of(user))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val userOptional = verifyMobileService.getMobile("user")
     assertThat(userOptional).get().isEqualTo(user)
   }
@@ -33,14 +37,14 @@ class VerifyMobileServiceTest {
   @Test
   fun mobile_NoMobileSet() {
     val user = User.of("bob")
-    whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(Optional.of(user))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val userOptionalOptional = verifyMobileService.getMobile("user")
     assertThat(userOptionalOptional).isEmpty
   }
 
   @Test
   fun isNotVerified_userMissing() {
-    whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(Optional.empty())
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
     assertThat(verifyMobileService.isNotVerified("user")).isTrue()
     verify(userRepository).findByUsername("user")
   }
@@ -48,7 +52,7 @@ class VerifyMobileServiceTest {
   @Test
   fun isNotVerified_userFoundNotVerified() {
     val user = User.of("bob")
-    whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(Optional.of(user))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     assertThat(verifyMobileService.isNotVerified("user")).isTrue()
   }
 
@@ -56,15 +60,15 @@ class VerifyMobileServiceTest {
   fun isNotVerified_userFoundVerified() {
     val user = User.builder().username("bob").mobile("07700900321").build()
     user.isVerified = true
-    whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(Optional.of(user))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     assertThat(verifyMobileService.isNotVerified("user")).isFalse()
   }
 
   @Test
   fun requestVerification_existingToken() {
     val user = User.of("someuser")
-    val existingUserToken = user.createToken(UserToken.TokenType.MOBILE)
-    whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(Optional.of(user))
+    val existingUserToken = user.createToken(TokenType.MOBILE)
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     verifyMobileService.requestVerification("user", "07700900321")
     assertThat(user.tokens).hasSize(1).extracting<String, RuntimeException> { it.token }.doesNotContain(existingUserToken.token)
   }
@@ -72,7 +76,7 @@ class VerifyMobileServiceTest {
   @Test
   fun requestVerification_verifyToken() {
     val user = User.of("someuser")
-    whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(Optional.of(user))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val verification = verifyMobileService.requestVerification("user", "07700900321")
     val value = user.tokens.stream().findFirst().orElseThrow()
     assertThat(verification).isEqualTo(value.token)
@@ -81,7 +85,7 @@ class VerifyMobileServiceTest {
   @Test
   fun requestVerification_saveMobile() {
     val user = User.of("someuser")
-    whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(Optional.of(user))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     verifyMobileService.requestVerification("user", "07700900321")
     verify(userRepository).save(user)
     assertThat(user.mobile).isEqualTo("07700900321")
@@ -91,17 +95,17 @@ class VerifyMobileServiceTest {
   @Test
   fun requestVerification_sendFailure() {
     val user = User.of("someuser")
-    whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(Optional.of(user))
-    whenever(notificationClient.sendSms(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyMap<String, Any?>(), isNull())).thenThrow(NotificationClientException("message"))
-    Assertions.assertThatThrownBy { verifyMobileService.requestVerification("user", "07700900321") }.hasMessage("message")
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    whenever(notificationClient.sendSms(anyString(), anyString(), anyMap<String, Any?>(), isNull())).thenThrow(NotificationClientException("message"))
+    assertThatThrownBy { verifyMobileService.requestVerification("user", "07700900321") }.hasMessage("message")
   }
 
   @Test
   fun requestVerification_formatMobileInput() {
     val user = Optional.of(User.of("someuser"))
-    whenever(userRepository.findByUsername(ArgumentMatchers.anyString())).thenReturn(user)
+    whenever(userRepository.findByUsername(anyString())).thenReturn(user)
     verifyMobileService.requestVerification("user", "07700900321")
-    verify(notificationClient).sendSms(eq("templateId"), eq("07700900321"), ArgumentMatchers.anyMap<String, Any?>(), isNull())
+    verify(notificationClient).sendSms(eq("templateId"), eq("07700900321"), anyMap<String, Any?>(), isNull())
   }
 
   @Test
@@ -114,8 +118,37 @@ class VerifyMobileServiceTest {
     verifyMobileFailure("0", "format")
   }
 
+  @Nested
+  inner class FindMobileVerificationCode {
+    @Test
+    fun findMobileVerificationCode() {
+      val user = User.builder().username("someuser").tokens(
+              setOf(UserToken("other", TokenType.CHANGE, null, null),
+                  UserToken("mobileToken", TokenType.MOBILE, null, null)))
+          .build()
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+      assertThat(verifyMobileService.findMobileVerificationCode("user")).get().isEqualTo("mobileToken")
+    }
+
+    @Test
+    fun `findMobileVerificationCode not found`() {
+      val user = User.builder().username("someuser").tokens(
+              setOf(UserToken("other", TokenType.CHANGE, null, null)))
+          .build()
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+      assertThat(verifyMobileService.findMobileVerificationCode("user")).isEmpty()
+    }
+
+    @Test
+    fun `findMobileVerificationCode no tokens`() {
+      val user = User.of("someuser")
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+      assertThat(verifyMobileService.findMobileVerificationCode("user")).isEmpty()
+    }
+  }
+
   private fun verifyMobileFailure(mobile: String, reason: String) {
-    Assertions.assertThatThrownBy { verifyMobileService.validateMobileNumber(mobile) }.isInstanceOf(VerifyMobileService.VerifyMobileException::class.java).extracting("reason").isEqualTo(reason)
+    assertThatThrownBy { verifyMobileService.validateMobileNumber(mobile) }.isInstanceOf(VerifyMobileException::class.java).extracting("reason").isEqualTo(reason)
   }
 
 }

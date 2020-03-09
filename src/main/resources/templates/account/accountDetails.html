@@ -102,7 +102,7 @@
         01234 567890
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/new-mobile}" data-qa="changeMobile">
+        <a th:href="@{/change-mobile}" data-qa="changeMobile">
           <th:block th:text="${#strings.isEmpty(authUser.mobile)} ? 'Add' : 'Change'">
             Change
           </th:block>

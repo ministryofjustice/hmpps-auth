@@ -4,7 +4,7 @@ import geb.Page
 
 class ChangeMobilePage extends Page {
 
-  static url = '/auth/new-mobile'
+  static url = '/auth/change-mobile'
 
   static at = {
     title == 'HMPPS Digital Services - Change Mobile Number'
