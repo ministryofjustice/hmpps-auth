@@ -29,7 +29,7 @@
     <strong class="govuk-warning-text__text">
       <span class="govuk-warning-text__assistive">Warning</span>
       This is a test service only - it does not contain any real details. Use the live
-      <a th:href="${@environment.getProperty('application.non-prod-warning.prod-url')}">
+      <a class="govuk-link" th:href="${@environment.getProperty('application.non-prod-warning.prod-url')}">
         HMPPS Digital Service</a> to view real details.
     </strong>
   </div>
@@ -100,7 +100,8 @@
     <div class="govuk-form-group">
       <h2 class="govuk-heading-m">Problems signing in</h2>
       <ul class="govuk-list">
-        <li><a th:href="@{/reset-password}" id="forgotten-password">I have forgotten my password</a></li>
+        <li><a class="govuk-link" th:href="@{/reset-password}" id="forgotten-password">I have forgotten my password</a>
+        </li>
       </ul>
     </div>
   </form>
