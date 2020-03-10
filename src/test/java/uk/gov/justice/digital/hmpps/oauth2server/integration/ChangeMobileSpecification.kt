@@ -118,7 +118,7 @@ open class VerifyMobileSentPage : AuthPage<VerifyMobileSentPage>("HMPPS Digital 
   }
 }
 
-@PageUrl("/verify-mobile-confirm")
+@PageUrl("/verify-mobile")
 open class VerifyMobileConfirmPage : AuthPage<VerifyMobileConfirmPage>("HMPPS Digital Services - Verify Mobile Confirmation", "Mobile number verified") {
   @FindBy(css = "#continue")
   private lateinit var continueButton: FluentWebElement
