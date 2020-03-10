@@ -68,7 +68,6 @@ public class VerifyMobileController {
     @PostMapping("/verify-mobile-resend")
     public ModelAndView mobileResend(final Principal principal) {
         final var username = principal.getName();
-        final var currentMobile = userService.getUser(username).getMobile();
         try {
             final var verifyCode = verifyMobileService.resendVerificationCode(username);
 
@@ -77,17 +76,16 @@ public class VerifyMobileController {
         } catch (final VerifyMobileException e) {
             log.info("Validation failed for mobile phone number due to {}", e.getReason());
             telemetryClient.trackEvent("VerifyMobileRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
-            return createChangeOrVerifyMobileError(e.getReason(), currentMobile);
+            return createChangeOrVerifyMobileError(e.getReason());
         } catch (final NotificationClientException e) {
             log.error("Failed to send sms due to", e);
-            return createChangeOrVerifyMobileError("other", currentMobile);
+            return createChangeOrVerifyMobileError("other");
         }
     }
 
-    private ModelAndView createChangeOrVerifyMobileError(final String reason, final String currentMobile) {
-        return new ModelAndView("account/changeMobile")
-                .addObject("error", reason)
-                .addObject("mobile", currentMobile);
+    private ModelAndView createChangeOrVerifyMobileError(final String reason) {
+        return new ModelAndView("redirect:/change-mobile")
+                .addObject("error", reason);
     }
 
     private ModelAndView redirectToVerifyMobileWithVerifyCode(final String verifyCode) {
