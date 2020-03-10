@@ -94,7 +94,7 @@ class ChangeMobileControllerTest {
     fun `changeMobile already verified`() {
       whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(true)
       val modelAndView = controller.changeMobile("07700900321", token)
-      assertThat(modelAndView.viewName).isEqualTo("verifyMobileAlready")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile-already")
     }
   }
 }

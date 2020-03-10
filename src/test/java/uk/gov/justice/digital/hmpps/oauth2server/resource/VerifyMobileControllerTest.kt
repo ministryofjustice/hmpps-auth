@@ -33,6 +33,15 @@ class VerifyMobileControllerTest {
   }
 
   @Nested
+  inner class VerifyMobileAlready {
+    @Test
+    fun `verifyMobileAlready success`() {
+      val view = controller.verifyMobileAlready()
+      assertThat(view).isEqualTo("verifyMobileAlready")
+    }
+  }
+
+  @Nested
   inner class VerifyMobileConfirm {
     @Test
     fun verifyMobileConfirm() {
@@ -88,15 +97,15 @@ class VerifyMobileControllerTest {
     @Test
     fun mobileResendRequest_notVerified() {
       whenever(verifyMobileService.mobileVerified(anyString())).thenReturn(false)
-      val modelAndView = controller.mobileResendRequest(principal)
-      assertThat(modelAndView.viewName).isEqualTo("verifyMobileResend")
+      val view = controller.mobileResendRequest(principal)
+      assertThat(view).isEqualTo("verifyMobileResend")
     }
 
     @Test
     fun mobileResendRequest_alreadyVerified() {
       whenever(verifyMobileService.mobileVerified(anyString())).thenReturn(true)
-      val modelAndView = controller.mobileResendRequest(principal)
-      assertThat(modelAndView.viewName).isEqualTo("verifyMobileAlready")
+      val view = controller.mobileResendRequest(principal)
+      assertThat(view).isEqualTo("redirect:/verify-mobile-already")
     }
   }
 
@@ -125,8 +134,8 @@ class VerifyMobileControllerTest {
       whenever(userService.getUser(anyString())).thenReturn(User.builder().mobile("077009000000").build())
       whenever(verifyMobileService.resendVerificationCode(anyString())).thenThrow(VerifyMobileException("reason"))
       val modelAndView = controller.mobileResend(principal)
-      assertThat(modelAndView.viewName).isEqualTo("account/changeMobile")
-      assertThat(modelAndView.model).containsExactly(entry("error", "reason"), entry("mobile", "077009000000"))
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/change-mobile")
+      assertThat(modelAndView.model).containsExactly(entry("error", "reason"))
       verify(telemetryClient).trackEvent(eq("VerifyMobileRequestFailure"), check {
         assertThat(it).containsExactlyInAnyOrderEntriesOf(mapOf("username" to "user", "reason" to "reason"))
       }, isNull())
@@ -137,8 +146,8 @@ class VerifyMobileControllerTest {
       whenever(userService.getUser(anyString())).thenReturn(User.builder().mobile("077009000000").build())
       whenever(verifyMobileService.resendVerificationCode(anyString())).thenThrow(NotificationClientException("something went wrong"))
       val modelAndView = controller.mobileResend(principal)
-      assertThat(modelAndView.viewName).isEqualTo("account/changeMobile")
-      assertThat(modelAndView.model).containsExactly(entry("error", "other"), entry("mobile", "077009000000"))
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/change-mobile")
+      assertThat(modelAndView.model).containsExactly(entry("error", "other"))
     }
   }
 }
