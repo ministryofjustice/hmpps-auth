@@ -2,19 +2,17 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages
 
 import geb.Page
 
-class ChangeDeliusEmailPage extends Page {
+class VerifyMobileConfirmPage extends Page {
 
-  static url = '/auth/change-email'
+  static url = '/auth/verify-mobile-confirm'
 
   static at = {
-    title == 'HMPPS Digital Services - Change Email'
-    headingText == 'Delius user - update email address'
-    deliusUserText == 'Please update your email address within Delius as you are unable to do it here'
+    title == 'HMPPS Digital Services - Verify Mobile Confirmation'
+    headingText == 'Mobile number verified'
   }
 
   static content = {
     headingText { $('#main-content h1').text() }
-    deliusUserText { $('#delius-user-text').text() }
     continueButton { $('#continue') }
   }
 

@@ -193,10 +193,10 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
     and: 'My credentials are accepted and I am on the Delius Change Email page'
     at ChangeDeliusEmailPage
     deliusUserText == 'Please update your email address within Delius as you are unable to do it here'
-    continueToHomePage()
+    continueToAccountDetailsPage()
 
-    then: 'The Home page is displayed'
-    at HomePage
+    then: 'The Account Details page is displayed'
+    at AccountDetailsPage
     principalName == 'Delius Smith'
   }
 
