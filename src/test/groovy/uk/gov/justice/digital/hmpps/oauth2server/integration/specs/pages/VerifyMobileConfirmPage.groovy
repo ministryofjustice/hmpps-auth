@@ -4,7 +4,7 @@ import geb.Page
 
 class VerifyMobileConfirmPage extends Page {
 
-  static url = '/auth/verify-mobile-confirm'
+  static url = '/auth/verify-mobile'
 
   static at = {
     title == 'HMPPS Digital Services - Verify Mobile Confirmation'
@@ -16,7 +16,7 @@ class VerifyMobileConfirmPage extends Page {
     continueButton { $('#continue') }
   }
 
-  void continueToHomePage() {
+  void continueToAccountDetailsPage() {
     assert continueButton.text() == 'OK, continue'
     continueButton.click()
   }

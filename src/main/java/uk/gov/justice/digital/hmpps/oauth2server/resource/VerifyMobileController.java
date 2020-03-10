@@ -28,32 +28,12 @@ public class VerifyMobileController {
 
     public VerifyMobileController(final VerifyMobileService verifyMobileService,
                                   final TelemetryClient telemetryClient,
-                                  final UserService userService, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
+                                  final UserService userService,
+                                  @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
         this.verifyMobileService = verifyMobileService;
         this.telemetryClient = telemetryClient;
         this.userService = userService;
         this.smokeTestEnabled = smokeTestEnabled;
-    }
-
-    @PostMapping("/change-mobile")
-    public ModelAndView changeMobile(@RequestParam final String mobile, final Principal principal) {
-        final var username = principal.getName();
-
-        if (userService.isSameAsCurrentVerifiedMobile(username, mobile)) {
-            return new ModelAndView("verifyMobileAlready");
-        }
-        try {
-            final var verifyCode = verifyMobileService.requestVerification(username, mobile);
-            return redirectToVerifyMobileWithVerifyCode(verifyCode);
-        } catch (final VerifyMobileException e) {
-            log.info("Validation failed for mobile phone number due to {}", e.getReason());
-            telemetryClient.trackEvent("VerifyMobileRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
-            return createChangeOrVerifyMobileError(e.getReason(), mobile);
-        } catch (final NotificationClientException e) {
-            log.error("Failed to send sms due to", e);
-            telemetryClient.trackEvent("VerifyMobileRequestFailure", Map.of("username", username, "reason", "notify"), null);
-            return createChangeOrVerifyMobileError("other", mobile);
-        }
     }
 
     @GetMapping("/verify-mobile")
@@ -61,13 +41,7 @@ public class VerifyMobileController {
         return "verifyMobileSent";
     }
 
-    private ModelAndView createChangeOrVerifyMobileError(final String reason, final String currentMobile) {
-        return new ModelAndView("account/changeMobile")
-                .addObject("error", reason)
-                .addObject("mobile", currentMobile);
-    }
-
-    @PostMapping("/verify-mobile-confirm")
+    @PostMapping("/verify-mobile")
     public ModelAndView verifyMobileConfirm(@RequestParam final String code) throws NotificationClientException {
         final var errorOptional = verifyMobileService.confirmMobile(code);
         return errorOptional.map(error -> {
@@ -106,6 +80,12 @@ public class VerifyMobileController {
             log.error("Failed to send sms due to", e);
             return createChangeOrVerifyMobileError("other", currentMobile);
         }
+    }
+
+    private ModelAndView createChangeOrVerifyMobileError(final String reason, final String currentMobile) {
+        return new ModelAndView("account/changeMobile")
+                .addObject("error", reason)
+                .addObject("mobile", currentMobile);
     }
 
     private ModelAndView redirectToVerifyMobileWithVerifyCode(final String verifyCode) {

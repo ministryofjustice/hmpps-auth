@@ -32,10 +32,10 @@ class VerifyMobileSpecification extends GebReportingSpec {
 
     and: 'I am shown the success page'
     at VerifyMobileConfirmPage
-    continueToHomePage()
+    continueToAccountDetailsPage()
 
-    then: 'The Home page is displayed'
-    at HomePage
+    then: 'The Account details page is displayed'
+    at AccountDetailsPage
   }
 
   def "Change mobile flow invalid verification code"() {
@@ -84,7 +84,7 @@ class VerifyMobileSpecification extends GebReportingSpec {
     at VerifyMobileAlreadyPage
     continueProcess()
 
-    then: 'The Home page is displayed'
-    at HomePage
+    then: 'The Account details page is displayed'
+    at AccountDetailsPage
   }
 }

@@ -18,7 +18,7 @@ class ChangeDeliusEmailPage extends Page {
     continueButton { $('#continue') }
   }
 
-  void continueToHomePage() {
+  void continueToAccountDetailsPage() {
     assert continueButton.text() == 'OK, continue'
     continueButton.click()
   }

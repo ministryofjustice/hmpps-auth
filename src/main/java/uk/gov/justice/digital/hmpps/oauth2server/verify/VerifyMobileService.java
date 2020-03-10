@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,14 +48,15 @@ public class VerifyMobileService {
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public String requestVerification(final String username, final String mobile) throws VerifyMobileException, NotificationClientException {
+    public String changeMobileAndRequestVerification(final String username, final String mobile) throws VerifyMobileException, NotificationClientException {
         final var user = userRepository.findByUsername(username).orElseThrow();
-        final var verifyCode = user.createToken(TokenType.MOBILE).getToken();
-        final var parameters = Map.of("verifyCode", verifyCode);
         final var canonicalMobile = mobile.replaceAll("\\s+", "");
         validateMobileNumber(canonicalMobile);
         user.setMobile(canonicalMobile);
         user.setMobileVerified(false);
+
+        final var verifyCode = user.createToken(TokenType.MOBILE).getToken();
+        final var parameters = Map.of("verifyCode", verifyCode);
         sendNotification(username, canonicalMobile, parameters);
 
         userRepository.save(user);
@@ -161,13 +161,16 @@ public class VerifyMobileService {
         return userRepository.findByUsername(username).orElseThrow().isMobileVerified();
     }
 
-    @Getter
     public static class VerifyMobileException extends Exception {
         private final String reason;
 
         public VerifyMobileException(final String reason) {
             super(String.format("Verify mobile failed with reason: %s", reason));
             this.reason = reason;
+        }
+
+        public String getReason() {
+            return this.reason;
         }
     }
 

@@ -29,7 +29,7 @@
 
   <p class="govuk-body">We've sent you a text message with a security code.</p>
 
-  <form th:action="@{/verify-mobile-confirm}" method="POST" id="verifyMobileForm" autocomplete="off" novalidate>
+  <form th:action="@{/verify-mobile}" method="POST" id="verifyMobileForm" autocomplete="off" novalidate>
     <div>
       <div th:with="missingcode=${error != null and #arrays.contains(error, 'missingcode')}"
            th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
