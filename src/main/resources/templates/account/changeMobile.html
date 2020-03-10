@@ -25,7 +25,7 @@
     <label class="govuk-label govuk-label--xl" for="mobile">What is your new mobile phone number?
     </label>
   </h1>
-  <form class="form" th:action="@{/verify-mobile}" method="POST" id="changeMobileForm">
+  <form class="form" th:action="@{/change-mobile}" method="POST" id="changeMobileForm">
     <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
       <span th:if="${error}" id="mobile-error" class="govuk-error-message"
             th:text="#{${'verifymobile.' + error}}">No error</span>

@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.oauth2server.resource
+package uk.gov.justice.digital.hmpps.oauth2server.resource.account
 
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
@@ -9,10 +9,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 @Controller
 class ChangeMobileController(private val userService: UserService) {
 
-  @GetMapping("/new-mobile")
-  fun newMobileRequest(authentication: Authentication): ModelAndView {
-    val currentMobile = userService.findUser(authentication.name).orElseThrow().mobile;
-    return ModelAndView("changeMobile", "mobile", currentMobile)
+  @GetMapping("/change-mobile")
+  fun changeMobileRequest(authentication: Authentication): ModelAndView {
+    val currentMobile = userService.findUser(authentication.name).orElseThrow().mobile
+    return ModelAndView("account/changeMobile", "mobile", currentMobile)
   }
 }
 
