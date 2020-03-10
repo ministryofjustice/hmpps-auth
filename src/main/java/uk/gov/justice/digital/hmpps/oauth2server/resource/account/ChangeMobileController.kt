@@ -30,7 +30,7 @@ class ChangeMobileController(private val userService: UserService,
   fun changeMobile(@RequestParam mobile: String?, authentication: Authentication): ModelAndView {
     val username = authentication.name
     if (userService.isSameAsCurrentVerifiedMobile(username, mobile)) {
-      return ModelAndView("verifyMobileAlready")
+      return ModelAndView("redirect:/verify-mobile-already")
     }
     return try {
       val verifyCode = verifyMobileService.changeMobileAndRequestVerification(username, mobile)
