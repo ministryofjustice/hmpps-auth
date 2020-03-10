@@ -37,21 +37,21 @@ open class VerifyMobileServiceIntTest {
   fun mobileNumberSetToNotVerified() {
     val userBefore = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED").orElseThrow()
     assertThat(userBefore.isMobileVerified).isTrue()
-    verifyMobileService.requestVerification("AUTH_CHANGE_MOBILE_VERIFIED", "07700 900322")
+    verifyMobileService.changeMobileAndRequestVerification("AUTH_CHANGE_MOBILE_VERIFIED", "07700 900322")
     val userAfter = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED").orElseThrow()
     assertThat(userAfter.isMobileVerified).isFalse()
   }
 
   @Test
   fun mobileNumber_WhiteSpaceRemoved() {
-    verifyMobileService.requestVerification("AUTH_CHANGE_MOBILE_VERIFIED", "07700 900323")
+    verifyMobileService.changeMobileAndRequestVerification("AUTH_CHANGE_MOBILE_VERIFIED", "07700 900323")
     val userAfter = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED").orElseThrow()
     assertThat(userAfter.mobile).isEqualTo("07700900323")
   }
 
   @Test
   fun mobileNumber_WhiteSpaceRemovedForInternationalUKNumber() {
-    verifyMobileService.requestVerification("AUTH_CHANGE_MOBILE_VERIFIED", "+44 7700 900323")
+    verifyMobileService.changeMobileAndRequestVerification("AUTH_CHANGE_MOBILE_VERIFIED", "+44 7700 900323")
     val userAfter = userRepository.findByUsername("AUTH_CHANGE_MOBILE_VERIFIED").orElseThrow()
     assertThat(userAfter.mobile).isEqualTo("+447700900323")
   }

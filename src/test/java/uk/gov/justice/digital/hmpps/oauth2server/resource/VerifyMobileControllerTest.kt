@@ -24,59 +24,6 @@ class VerifyMobileControllerTest {
   private val principal = UsernamePasswordAuthenticationToken("user", "pass")
 
   @Nested
-  inner class ChangeMobile {
-    @Test
-    fun `changeMobile notification exception`() {
-      whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.of("AUTH_MOBILE")))
-      whenever(verifyMobileService.requestVerification(anyString(), anyString())).thenThrow(NotificationClientException("something went wrong"))
-      val modelAndView = controller.changeMobile("12345", principal)
-      assertThat(modelAndView.viewName).isEqualTo("account/changeMobile")
-      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "other", "mobile" to "12345"))
-    }
-
-    @Test
-    fun `changeMobile verification exception`() {
-      whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.of("AUTH_MOBILE")))
-      whenever(verifyMobileService.requestVerification(anyString(), anyString())).thenThrow(VerifyMobileException("something went wrong"))
-      val modelAndView = controller.changeMobile("12345", principal)
-      assertThat(modelAndView.viewName).isEqualTo("account/changeMobile")
-      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "something went wrong", "mobile" to "12345"))
-    }
-
-    @Test
-    fun `changeMobile success`() {
-      whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.of("AUTH_MOBILE")))
-      whenever(verifyMobileService.requestVerification(anyString(), anyString())).thenReturn("123456")
-      val mobile = "07700900321"
-      val modelAndView = controller.changeMobile(mobile, principal)
-      assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile")
-      assertThat(modelAndView.model).isEmpty()
-      verify(verifyMobileService).requestVerification("user", mobile)
-    }
-
-    @Test
-    fun `changeMobile success smoke test`() {
-      whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.of("AUTH_MOBILE")))
-      whenever(verifyMobileService.requestVerification(anyString(), anyString())).thenReturn("123456")
-      val mobile = "07700900321"
-      val modelAndView = controllerSmokeEnabled.changeMobile(mobile, principal)
-      assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile")
-      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("verifyCode" to "123456"))
-    }
-
-    @Test
-    fun `changeMobile already verified`() {
-      whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(true)
-      val modelAndView = controller.changeMobile("07700900321", principal)
-      assertThat(modelAndView.viewName).isEqualTo("verifyMobileAlready")
-    }
-  }
-
-  @Nested
   inner class VerifyMobile {
     @Test
     fun `verifyMobile success`() {
