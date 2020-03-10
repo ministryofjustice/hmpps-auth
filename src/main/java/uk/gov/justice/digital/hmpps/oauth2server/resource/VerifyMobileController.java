@@ -41,6 +41,11 @@ public class VerifyMobileController {
         return "verifyMobileSent";
     }
 
+    @GetMapping("/verify-mobile-already")
+    public String verifyMobileAlready() {
+        return "verifyMobileAlready";
+    }
+
     @PostMapping("/verify-mobile")
     public ModelAndView verifyMobileConfirm(@RequestParam final String code) throws NotificationClientException {
         final var errorOptional = verifyMobileService.confirmMobile(code);
@@ -55,12 +60,9 @@ public class VerifyMobileController {
     }
 
     @GetMapping("/mobile-resend")
-    public ModelAndView mobileResendRequest(final Principal principal) {
+    public String mobileResendRequest(final Principal principal) {
         final var mobileVerified = verifyMobileService.mobileVerified(principal.getName());
-        if (mobileVerified) {
-            return new ModelAndView("verifyMobileAlready");
-        }
-        return new ModelAndView("verifyMobileResend");
+        return mobileVerified ? "redirect:/verify-mobile-already" : "verifyMobileResend";
     }
 
     @PostMapping("/verify-mobile-resend")

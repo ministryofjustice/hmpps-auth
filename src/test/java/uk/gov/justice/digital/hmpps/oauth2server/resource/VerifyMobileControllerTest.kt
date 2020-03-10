@@ -33,6 +33,15 @@ class VerifyMobileControllerTest {
   }
 
   @Nested
+  inner class VerifyMobileAlready {
+    @Test
+    fun `verifyMobileAlready success`() {
+      val view = controller.verifyMobileAlready()
+      assertThat(view).isEqualTo("verifyMobileAlready")
+    }
+  }
+
+  @Nested
   inner class VerifyMobileConfirm {
     @Test
     fun verifyMobileConfirm() {
@@ -88,15 +97,15 @@ class VerifyMobileControllerTest {
     @Test
     fun mobileResendRequest_notVerified() {
       whenever(verifyMobileService.mobileVerified(anyString())).thenReturn(false)
-      val modelAndView = controller.mobileResendRequest(principal)
-      assertThat(modelAndView.viewName).isEqualTo("verifyMobileResend")
+      val view = controller.mobileResendRequest(principal)
+      assertThat(view).isEqualTo("verifyMobileResend")
     }
 
     @Test
     fun mobileResendRequest_alreadyVerified() {
       whenever(verifyMobileService.mobileVerified(anyString())).thenReturn(true)
-      val modelAndView = controller.mobileResendRequest(principal)
-      assertThat(modelAndView.viewName).isEqualTo("verifyMobileAlready")
+      val view = controller.mobileResendRequest(principal)
+      assertThat(view).isEqualTo("redirect:/verify-mobile-already")
     }
   }
 

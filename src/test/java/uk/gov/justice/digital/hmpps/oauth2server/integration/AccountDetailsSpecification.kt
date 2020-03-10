@@ -53,6 +53,36 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
 
     newInstance(ChangeNamePage::class.java).isAt()
   }
+
+  @Test
+  fun `navigation - change mobile`() {
+    goTo(loginPage).loginAs("AUTH_RO_USER")
+        .navigateToAccountDetails()
+
+    accountDetailsPage.navigateToChangeMobile()
+
+    newInstance(ChangeMobilePage::class.java).isAt()
+  }
+
+  @Test
+  fun `navigation - change email`() {
+    goTo(loginPage).loginAs("AUTH_RO_USER")
+        .navigateToAccountDetails()
+
+    accountDetailsPage.navigateToChangeEmail()
+
+    newInstance(PasswordPromptForEmailPage::class.java).isAt()
+  }
+
+  @Test
+  fun `navigation - change password`() {
+    goTo(loginPage).loginAs("AUTH_RO_USER")
+        .navigateToAccountDetails()
+
+    accountDetailsPage.navigateToChangePassword()
+
+    newInstance(PasswordPromptPage::class.java).isAt()
+  }
 }
 
 @PageUrl("/account-details")
@@ -64,6 +94,7 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(el("[data-qa='lastLoggedIn']").text()).isNotBlank()
     assertThat(el("[data-qa='changeName']").text()).isEqualToNormalizingWhitespace("Change name")
     assertThat(el("[data-qa='passwordExpiry']").text()).isEqualTo("************")
+    assertThat(el("[data-qa='changePassword']").text()).isEqualToNormalizingWhitespace("Change password")
     assertThat(el("[data-qa='email']").text()).isEqualTo("auth_ro_user@digital.justice.gov.uk")
     assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
     assertThat(el("[data-qa='verified']").text()).isEqualTo("yes")
@@ -100,6 +131,18 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
 
   fun navigateToChangeName() {
     el("[data-qa='changeName']").click()
+  }
+
+  fun navigateToChangeMobile() {
+    el("[data-qa='changeMobile']").click()
+  }
+
+  fun navigateToChangeEmail() {
+    el("[data-qa='changeEmail']").click()
+  }
+
+  fun navigateToChangePassword() {
+    el("[data-qa='changePassword']").click()
   }
 
   fun cancel() {
