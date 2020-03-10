@@ -1,6 +1,8 @@
 #!/bin/bash
 #
 # Script to load a batch of new users into OAuth for new service access.
+# You may need to create a new client in OAuth specifically for this work.
+# The client should have the ROLE_SYSTEM_USER and ROLE_MAINTAIN_OAUTH_USERS roles.
 #
 # Parameters:
 #       1. ENV - [t3|t2|preprod|prod]
@@ -13,7 +15,7 @@
 #
 # Example:
 #
-# $ ./user_load.sh t3 <client>:<secret> THARRISON_ADM 20 users-data.txt false false | tee output.txt
+# $ ./user-load.sh t3 <client>:<secret> THARRISON_ADM 20 users-data.txt false false | tee output.txt
 #
 # File format for users:
 #
@@ -23,6 +25,8 @@
 #        3) First name
 #        4) Last name
 #        5) group code
+#
+# Make sure there is a new line at the end of the file, otherwise it will not load.
 #
 
 ENV=${1?No environment specified}
