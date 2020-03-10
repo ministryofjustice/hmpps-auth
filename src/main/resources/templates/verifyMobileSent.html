@@ -58,10 +58,10 @@
     </ul>
   </div>
 
-  <p th:if="${verifyCode}" class="govuk-body">
+  <p th:if="${param.verifyCode}" class="govuk-body">
     <br>
     <code>application.smoketest.enabled</code> environment variable is set.
-    Code that was sent in the email is <span data-qa="verifyCode" th:text="${verifyCode}">123456</span>.
+    Code that was sent in the email is <span data-qa="verifyCode" th:text="${param.verifyCode}">123456</span>.
   </p>
 </div>
 </body>

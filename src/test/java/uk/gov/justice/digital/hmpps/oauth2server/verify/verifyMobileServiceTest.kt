@@ -4,12 +4,10 @@ import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
@@ -24,7 +22,6 @@ class VerifyMobileServiceTest {
   private val telemetryClient: TelemetryClient = mock()
   private val notificationClient: NotificationClientApi = mock()
   private val verifyMobileService = VerifyMobileService(userRepository, userTokenRepository, telemetryClient, notificationClient, "templateId")
-
 
   @Test
   fun mobile() {
@@ -118,37 +115,7 @@ class VerifyMobileServiceTest {
     verifyMobileFailure("0", "format")
   }
 
-  @Nested
-  inner class FindMobileVerificationCode {
-    @Test
-    fun findMobileVerificationCode() {
-      val user = User.builder().username("someuser").tokens(
-              setOf(UserToken("other", TokenType.CHANGE, null, null),
-                  UserToken("mobileToken", TokenType.MOBILE, null, null)))
-          .build()
-      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-      assertThat(verifyMobileService.findMobileVerificationCode("user")).get().isEqualTo("mobileToken")
-    }
-
-    @Test
-    fun `findMobileVerificationCode not found`() {
-      val user = User.builder().username("someuser").tokens(
-              setOf(UserToken("other", TokenType.CHANGE, null, null)))
-          .build()
-      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-      assertThat(verifyMobileService.findMobileVerificationCode("user")).isEmpty()
-    }
-
-    @Test
-    fun `findMobileVerificationCode no tokens`() {
-      val user = User.of("someuser")
-      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-      assertThat(verifyMobileService.findMobileVerificationCode("user")).isEmpty()
-    }
-  }
-
   private fun verifyMobileFailure(mobile: String, reason: String) {
     assertThatThrownBy { verifyMobileService.validateMobileNumber(mobile) }.isInstanceOf(VerifyMobileException::class.java).extracting("reason").isEqualTo(reason)
   }
-
 }

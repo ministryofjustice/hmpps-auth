@@ -43,8 +43,8 @@ public class VerifyMobileController {
             return new ModelAndView("verifyMobileAlready");
         }
         try {
-            verifyMobileService.requestVerification(username, mobile);
-            return new ModelAndView("redirect:/verify-mobile");
+            final var verifyCode = verifyMobileService.requestVerification(username, mobile);
+            return redirectToVerifyMobileWithVerifyCode(verifyCode);
         } catch (final VerifyMobileException e) {
             log.info("Validation failed for mobile phone number due to {}", e.getReason());
             telemetryClient.trackEvent("VerifyMobileRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
@@ -57,13 +57,8 @@ public class VerifyMobileController {
     }
 
     @GetMapping("/verify-mobile")
-    public ModelAndView verifyMobile(final Principal principal) {
-        final var modelAndView = new ModelAndView("verifyMobileSent");
-        if (smokeTestEnabled) {
-            verifyMobileService.findMobileVerificationCode(principal.getName())
-                    .ifPresent(c -> modelAndView.addObject("verifyCode", c));
-        }
-        return modelAndView;
+    public String verifyMobile() {
+        return "verifyMobileSent";
     }
 
     private ModelAndView createChangeOrVerifyMobileError(final String reason, final String currentMobile) {
@@ -99,8 +94,9 @@ public class VerifyMobileController {
         final var username = principal.getName();
         final var currentMobile = userService.getUser(username).getMobile();
         try {
-            verifyMobileService.resendVerificationCode(username);
-            return new ModelAndView("redirect:/verify-mobile");
+            final var verifyCode = verifyMobileService.resendVerificationCode(username);
+
+            return redirectToVerifyMobileWithVerifyCode(verifyCode.orElseThrow());
 
         } catch (final VerifyMobileException e) {
             log.info("Validation failed for mobile phone number due to {}", e.getReason());
@@ -110,5 +106,13 @@ public class VerifyMobileController {
             log.error("Failed to send sms due to", e);
             return createChangeOrVerifyMobileError("other", currentMobile);
         }
+    }
+
+    private ModelAndView redirectToVerifyMobileWithVerifyCode(final String verifyCode) {
+        final var modelAndView = new ModelAndView("redirect:/verify-mobile");
+        if (smokeTestEnabled) {
+            modelAndView.addObject("verifyCode", verifyCode);
+        }
+        return modelAndView;
     }
 }

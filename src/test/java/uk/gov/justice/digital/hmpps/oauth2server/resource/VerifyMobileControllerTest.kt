@@ -53,7 +53,19 @@ class VerifyMobileControllerTest {
       val mobile = "07700900321"
       val modelAndView = controller.changeMobile(mobile, principal)
       assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile")
+      assertThat(modelAndView.model).isEmpty()
       verify(verifyMobileService).requestVerification("user", mobile)
+    }
+
+    @Test
+    fun `changeMobile success smoke test`() {
+      whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
+      whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.of("AUTH_MOBILE")))
+      whenever(verifyMobileService.requestVerification(anyString(), anyString())).thenReturn("123456")
+      val mobile = "07700900321"
+      val modelAndView = controllerSmokeEnabled.changeMobile(mobile, principal)
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile")
+      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("verifyCode" to "123456"))
     }
 
     @Test
@@ -68,28 +80,8 @@ class VerifyMobileControllerTest {
   inner class VerifyMobile {
     @Test
     fun `verifyMobile success`() {
-      val modelAndView = controller.verifyMobile(principal)
-      assertThat(modelAndView.viewName).isEqualTo("verifyMobileSent")
-      assertThat(modelAndView.model).isEmpty()
-      verifyZeroInteractions(verifyMobileService)
-    }
-
-    @Test
-    fun `verifyMobile success smoke test`() {
-      whenever(verifyMobileService.findMobileVerificationCode(anyString())).thenReturn(Optional.of("12345"))
-      val modelAndView = controllerSmokeEnabled.verifyMobile(principal)
-      assertThat(modelAndView.viewName).isEqualTo("verifyMobileSent")
-      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("verifyCode" to "12345"))
-      verify(verifyMobileService).findMobileVerificationCode("user")
-    }
-
-    @Test
-    fun `verifyMobile smoke test no code`() {
-      whenever(verifyMobileService.findMobileVerificationCode(anyString())).thenReturn(Optional.empty())
-      val modelAndView = controllerSmokeEnabled.verifyMobile(principal)
-      assertThat(modelAndView.viewName).isEqualTo("verifyMobileSent")
-      assertThat(modelAndView.model).isEmpty()
-      verify(verifyMobileService).findMobileVerificationCode("user")
+      val view = controller.verifyMobile()
+      assertThat(view).isEqualTo("verifyMobileSent")
     }
   }
 
@@ -169,6 +161,16 @@ class VerifyMobileControllerTest {
       whenever(verifyMobileService.resendVerificationCode(anyString())).thenReturn(Optional.of("123456"))
       val modelAndView = controller.mobileResend(principal)
       assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile")
+      assertThat(modelAndView.model).isEmpty()
+    }
+
+    @Test
+    fun `mobileResend send code smoke enabled`() {
+      whenever(userService.getUser(anyString())).thenReturn(User.builder().mobile("077009000000").build())
+      whenever(verifyMobileService.resendVerificationCode(anyString())).thenReturn(Optional.of("123456"))
+      val modelAndView = controllerSmokeEnabled.mobileResend(principal)
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile")
+      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("verifyCode" to "123456"))
     }
 
     @Test

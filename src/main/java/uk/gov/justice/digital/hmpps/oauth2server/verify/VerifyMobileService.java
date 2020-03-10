@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
@@ -43,10 +42,6 @@ public class VerifyMobileService {
 
     public Optional<User> getMobile(final String username) {
         return userRepository.findByUsername(username).filter(um -> StringUtils.isNotBlank(um.getMobile()));
-    }
-
-    public Optional<String> findMobileVerificationCode(final String username) {
-        return userRepository.findByUsername(username).flatMap(u -> u.getTokens().stream().filter(t -> t.getTokenType() == TokenType.MOBILE).findFirst()).map(UserToken::getToken);
     }
 
     public boolean isNotVerified(final String name) {
