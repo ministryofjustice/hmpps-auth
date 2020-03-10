@@ -41,6 +41,11 @@ public class VerifyMobileController {
         return "verifyMobileSent";
     }
 
+    @GetMapping("/verify-mobile-already")
+    public String verifyMobileAlready() {
+        return "verifyMobileAlready";
+    }
+
     @PostMapping("/verify-mobile")
     public ModelAndView verifyMobileConfirm(@RequestParam final String code) throws NotificationClientException {
         final var errorOptional = verifyMobileService.confirmMobile(code);
@@ -55,18 +60,14 @@ public class VerifyMobileController {
     }
 
     @GetMapping("/mobile-resend")
-    public ModelAndView mobileResendRequest(final Principal principal) {
+    public String mobileResendRequest(final Principal principal) {
         final var mobileVerified = verifyMobileService.mobileVerified(principal.getName());
-        if (mobileVerified) {
-            return new ModelAndView("verifyMobileAlready");
-        }
-        return new ModelAndView("verifyMobileResend");
+        return mobileVerified ? "redirect:/verify-mobile-already" : "verifyMobileResend";
     }
 
     @PostMapping("/verify-mobile-resend")
     public ModelAndView mobileResend(final Principal principal) {
         final var username = principal.getName();
-        final var currentMobile = userService.getUser(username).getMobile();
         try {
             final var verifyCode = verifyMobileService.resendVerificationCode(username);
 
@@ -75,17 +76,16 @@ public class VerifyMobileController {
         } catch (final VerifyMobileException e) {
             log.info("Validation failed for mobile phone number due to {}", e.getReason());
             telemetryClient.trackEvent("VerifyMobileRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
-            return createChangeOrVerifyMobileError(e.getReason(), currentMobile);
+            return createChangeOrVerifyMobileError(e.getReason());
         } catch (final NotificationClientException e) {
             log.error("Failed to send sms due to", e);
-            return createChangeOrVerifyMobileError("other", currentMobile);
+            return createChangeOrVerifyMobileError("other");
         }
     }
 
-    private ModelAndView createChangeOrVerifyMobileError(final String reason, final String currentMobile) {
-        return new ModelAndView("account/changeMobile")
-                .addObject("error", reason)
-                .addObject("mobile", currentMobile);
+    private ModelAndView createChangeOrVerifyMobileError(final String reason) {
+        return new ModelAndView("redirect:/change-mobile")
+                .addObject("error", reason);
     }
 
     private ModelAndView redirectToVerifyMobileWithVerifyCode(final String verifyCode) {

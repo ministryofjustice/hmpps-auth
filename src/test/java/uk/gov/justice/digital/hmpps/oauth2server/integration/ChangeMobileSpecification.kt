@@ -116,6 +116,12 @@ open class VerifyMobileSentPage : AuthPage<VerifyMobileSentPage>("HMPPS Digital 
     continueButton.click()
     return this
   }
+
+  fun resendMobileCode() {
+    val resendLink = el("a[id='resend-mobile-code']")
+    assertThat(resendLink.text()).isEqualTo("Not received a text message?")
+    resendLink.click()
+  }
 }
 
 @PageUrl("/verify-mobile")
@@ -129,7 +135,7 @@ open class VerifyMobileConfirmPage : AuthPage<VerifyMobileConfirmPage>("HMPPS Di
   }
 }
 
-@PageUrl("/change-mobile")
+@PageUrl("/verify-mobile-already")
 open class VerifyMobileAlreadyPage : AuthPage<VerifyMobileAlreadyPage>("HMPPS Digital Services - Verify Mobile Confirmation", "Mobile already verified") {
   @FindBy(css = "#continue")
   private lateinit var continueButton: FluentWebElement
