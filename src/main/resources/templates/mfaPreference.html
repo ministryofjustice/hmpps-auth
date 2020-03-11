@@ -3,7 +3,7 @@
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
-  <title>Security code Preference</title>
+  <title>Security code preference</title>
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
@@ -34,9 +34,9 @@
     </span>
         <div class="govuk-radios">
           <div class="govuk-radios__item">
-            <input class="govuk-radios__input" id="mfa-pref-email" name="pref" type="radio" value="EMAIL"
+            <input class="govuk-radios__input" id="mfa-pref-email" name="mfaPreference" type="radio" value="EMAIL"
                    aria-describedby="mfa-pref-email-item-hint"
-                   th:checked="(${#strings.equalsIgnoreCase(current, 'EMAIL')})">
+                   th:checked="(${#strings.equals(current, 'EMAIL')})">
             <label class="govuk-label govuk-radios__label govuk-label--s" for="mfa-pref-email">
               By email
             </label>
@@ -45,9 +45,9 @@
         </span>
           </div>
           <div class="govuk-radios__item">
-            <input class="govuk-radios__input" id="mfa-pref-text" name="pref" type="radio" value="TEXT"
+            <input class="govuk-radios__input" id="mfa-pref-text" name="mfaPreference" type="radio" value="TEXT"
                    aria-describedby="mfa-pref-text-item-hint"
-                   th:checked="(${#strings.equalsIgnoreCase(current, 'TEXT')})">
+                   th:checked="(${#strings.equals(current, 'TEXT')})">
             <label class="govuk-label govuk-radios__label govuk-label--s" for="mfa-pref-text">
               By text message
             </label>

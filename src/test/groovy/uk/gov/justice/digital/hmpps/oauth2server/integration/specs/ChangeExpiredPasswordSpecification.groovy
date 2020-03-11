@@ -104,7 +104,7 @@ class ChangeExpiredPasswordSpecification extends GebReportingSpec {
     changePasswordAs AUTH_MFA_EXPIRED, 'helloworld2', 'helloworld2'
 
     then: 'I am redirected to the mfa page'
-    at MfaPage
+    at MfaEmailPage
 
     when: "I enter my MFA credentials"
     submitCode mfaCode
@@ -118,7 +118,7 @@ class ChangeExpiredPasswordSpecification extends GebReportingSpec {
     loginAs AUTH_MFA_EXPIRED, 'helloworld2'
 
     then: 'I am redirected to the mfa page'
-    at MfaPage
+    at MfaEmailPage
 
     when: "I enter my MFA credentials"
     submitCode mfaCode

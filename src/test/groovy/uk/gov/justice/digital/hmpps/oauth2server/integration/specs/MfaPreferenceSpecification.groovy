@@ -15,8 +15,8 @@ class MfaPreferenceSpecification extends GebReportingSpec {
     when: 'I login'
     loginAs AUTH_MFA_PREF_EMAIL, 'password123456'
 
-    then: 'I am redirected to the mfa page'
-    at MfaPage
+    then: 'I am redirected to the mfa by email page'
+    at MfaEmailPage
 
     when: "I enter my MFA credentials"
     submitCode mfaCode
@@ -42,8 +42,8 @@ class MfaPreferenceSpecification extends GebReportingSpec {
     when: 'I login'
     loginAs AUTH_MFA_PREF_TEXT, 'password123456'
 
-    then: 'I am redirected to the mfa page'
-    at MfaPage
+    then: 'I am redirected to the mfa by Text page'
+    at MfaTextPage
 
     when: "I enter my MFA credentials"
     submitCode mfaCode

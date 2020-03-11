@@ -125,21 +125,21 @@ class UserStateAuthenticationFailureHandlerTest {
     @Test
     void onAuthenticationFailure_mfa() throws IOException {
         when(request.getParameter("username")).thenReturn("bob");
-        when(mfaService.createTokenAndSendEmail(anyString())).thenReturn(new Pair<>("sometoken", "somecode"));
+        when(mfaService.createTokenAndSendMfaCode(anyString())).thenReturn(new Pair<>("sometoken", "somecode"));
         handler.onAuthenticationFailure(request, response, new MfaRequiredException("msg"));
 
         verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken");
-        verify(mfaService).createTokenAndSendEmail("BOB");
+        verify(mfaService).createTokenAndSendMfaCode("BOB");
     }
 
     @Test
     void onAuthenticationFailure_mfa_smokeTestEnabled() throws IOException {
         when(request.getParameter("username")).thenReturn("bob");
-        when(mfaService.createTokenAndSendEmail(anyString())).thenReturn(new Pair<>("sometoken", "somecode"));
+        when(mfaService.createTokenAndSendMfaCode(anyString())).thenReturn(new Pair<>("sometoken", "somecode"));
         setupHandler(true).onAuthenticationFailure(request, response, new MfaRequiredException("msg"));
 
         verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken&smokeCode=somecode");
-        verify(mfaService).createTokenAndSendEmail("BOB");
+        verify(mfaService).createTokenAndSendMfaCode("BOB");
     }
 
     @Test

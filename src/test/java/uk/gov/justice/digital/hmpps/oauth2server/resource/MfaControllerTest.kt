@@ -10,6 +10,7 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
@@ -34,21 +35,36 @@ class MfaControllerTest {
 
   @Test
   fun `mfaChallengeRequest check view`() {
+    val user = User.of("someuser")
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("token", TokenType.MFA, null, user)))
     val modelAndView = controller.mfaChallengeRequest("some token")
     assertThat(modelAndView.viewName).isEqualTo("mfaChallenge")
   }
 
   @Test
-  fun `mfaChallengeRequest check model`() {
+  fun `mfaChallengeRequest check model email`() {
+    val user = User.builder().mfaPreference(MfaPreferenceType.EMAIL).build()
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("token", TokenType.MFA, null, user)))
     val modelAndView = controller.mfaChallengeRequest("some token")
-    assertThat(modelAndView.model).containsExactly(entry("token", "some token"))
+    assertThat(modelAndView.model).containsOnly(entry("mfaPreference", MfaPreferenceType.EMAIL), entry("token", "some token"))
+  }
+
+  @Test
+  fun `mfaChallengeRequest check model text`() {
+    val user = User.builder().mfaPreference(MfaPreferenceType.TEXT).build()
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("token", TokenType.MFA, null, user)))
+    val modelAndView = controller.mfaChallengeRequest("some token")
+    assertThat(modelAndView.model).containsOnly(entry("mfaPreference", MfaPreferenceType.TEXT), entry("token", "some token"))
   }
 
   @Test
   fun `mfaChallengeRequest check service call`() {
+    val user = User.of("someuser")
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("token", TokenType.MFA, null, user)))
     controller.mfaChallengeRequest("some token")
     verify(tokenService).checkToken(TokenType.MFA, "some token")
   }
@@ -61,7 +77,9 @@ class MfaControllerTest {
 
   @Test
   fun `mfaChallengeRequest error`() {
+    val user = User.of("someuser")
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("token", TokenType.MFA, null, user)))
     val modelAndView = controller.mfaChallengeRequest("some token")
     assertThat(modelAndView.viewName).isEqualTo("redirect:/login?error=mfainvalid")
   }
@@ -69,7 +87,7 @@ class MfaControllerTest {
   @Test
   fun `mfaChallenge token invalid`() {
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
-    val modelAndView = controller.mfaChallenge("some token", "some code", request, response)
+    val modelAndView = controller.mfaChallenge("some token", MfaPreferenceType.EMAIL, "some code", request, response)
     assertThat(modelAndView!!.viewName).isEqualTo("redirect:/login?error=mfainvalid")
   }
 
@@ -79,9 +97,9 @@ class MfaControllerTest {
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))
     whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(MfaFlowException("invalid"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
-    val modelAndView = controller.mfaChallenge("some token", "some code", request, response)
+    val modelAndView = controller.mfaChallenge("some token", MfaPreferenceType.EMAIL, "some code", request, response)
     assertThat(modelAndView!!.viewName).isEqualTo("mfaChallenge")
-    assertThat(modelAndView.model).containsOnly(entry("token", "some token"), entry("error", "invalid"))
+    assertThat(modelAndView.model).containsOnly(entry("token", "some token"), entry("error", "invalid"), entry("mfaPreference", MfaPreferenceType.EMAIL))
   }
 
   @Test
@@ -90,7 +108,7 @@ class MfaControllerTest {
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))
     whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(LoginFlowException("locked"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
-    val modelAndView = controller.mfaChallenge("some token", "some code", request, response)
+    val modelAndView = controller.mfaChallenge("some token", MfaPreferenceType.EMAIL, "some code", request, response)
     assertThat(modelAndView!!.viewName).isEqualTo("redirect:/login?error=locked")
   }
 
@@ -99,7 +117,7 @@ class MfaControllerTest {
     val user = User.of("someuser")
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
-    val modelAndView = controller.mfaChallenge("some token", "some code", request, response)
+    val modelAndView = controller.mfaChallenge("some token", MfaPreferenceType.EMAIL, "some code", request, response)
     assertThat(modelAndView).isNull()
   }
 
@@ -108,7 +126,7 @@ class MfaControllerTest {
     val user = User.of("someuser")
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
-    controller.mfaChallenge("some token", "some code", request, response)
+    controller.mfaChallenge("some token", MfaPreferenceType.EMAIL, "some code", request, response)
     verify(telemetryClient).trackEvent("MFAAuthenticateSuccess", mapOf("username" to "someuser"), null)
   }
 
@@ -117,7 +135,7 @@ class MfaControllerTest {
     val user = User.builder().authorities(setOf("ROLE_BOB", "ROLE_JOE").map { Authority(it, "role name") }.toSet()).username("someuser").build()
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("otken", TokenType.MFA, null, user)))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
-    controller.mfaChallenge("some token", "some code", request, response)
+    controller.mfaChallenge("some token", MfaPreferenceType.EMAIL, "some code", request, response)
     verify(jwtAuthenticationSuccessHandler).onAuthenticationSuccess(eq(request), eq(response), check {
       assertThat(it.principal).isEqualTo(user)
       assertThat(it.authorities.map { a -> a.authority }).containsOnly("ROLE_BOB", "ROLE_JOE")

@@ -31,24 +31,38 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
   @FindBy(css = "input[name='password']")
   private lateinit var password: FluentWebElement
 
-  fun loginAsWithUnverifiedEmail(username: String, password: String = "password123456"): VerifyEmailPage {
+  fun loginAsWithUnverifiedEmail(username: String, password: String = "password123456"): VerifyEmailPage =
+      loginWith(username, password, VerifyEmailPage::class.java)
+
+  fun loginAs(username: String, password: String = "password123456"): HomePage =
+      loginWith(username, password, HomePage::class.java)
+
+  fun loginWithMfaEmail(username: String, password: String = "password123456"): MfaEmailPage =
+      loginWith(username, password, MfaEmailPage::class.java)
+
+  fun loginWithMfaText(username: String, password: String = "password123456"): MfaTextPage =
+      loginWith(username, password, MfaTextPage::class.java)
+
+  fun loginWithMfaError(username: String, password: String = "password123456"): LoginPage =
+      errorLoginWith(username, password, LoginPage::class.java)
+
+  private fun <T : AuthPage<T>> loginWith(username: String, password: String = "password123456", t: Class<T>): T {
     this.username.fill().withText(username)
     this.password.fill().withText(password)
     signInButton.submit()
 
-    val verifyEmailPage = newInstance(VerifyEmailPage::class.java)
-    verifyEmailPage.isAt()
-    return verifyEmailPage
+    val authPage = newInstance(t)
+    authPage.isAt()
+    return authPage
   }
 
-  fun loginAs(username: String, password: String = "password123456"): HomePage {
+  private fun <T : AuthPage<T>> errorLoginWith(username: String, password: String = "password123456", t: Class<T>): T {
     this.username.fill().withText(username)
     this.password.fill().withText(password)
     signInButton.submit()
 
-    val homePage = newInstance(HomePage::class.java)
-    homePage.isAt()
-    return homePage
+    val authPage = newInstance(t)
+    return authPage
   }
 
   fun viewContact() {
@@ -62,4 +76,25 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
     assertThat(termsLink.text()).isEqualTo("Terms and conditions")
     termsLink.click()
   }
+
+  fun checkLoginAuthenticationFailedError(): LoginPage {
+    checkError("Your authentication request failed. You will be locked out if you enter the wrong details 3 times.")
+    return this
+  }
+
+  fun checkLoginAuthenticationTimeoutError(): LoginPage {
+    checkError("Your authentication request has timed out. Enter your username and password to start again.")
+    return this
+  }
+
+  fun checkLoginUsernamePasswordError(): LoginPage {
+    checkError("Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.")
+    return this
+  }
+
+  fun checkLoginAccountLockedError(): LoginPage {
+    checkError("Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below.")
+    return this
+  }
+
 }

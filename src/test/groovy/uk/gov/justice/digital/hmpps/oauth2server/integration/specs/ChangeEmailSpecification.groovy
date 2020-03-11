@@ -209,7 +209,7 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
     loginAs AUTH_MFA_CHANGE_EMAIL, 'password123456'
 
     then: 'I am redirected to the mfa page'
-    at MfaPage
+    at MfaEmailPage
 
     when: "I enter my MFA credentials"
     submitCode mfaCode

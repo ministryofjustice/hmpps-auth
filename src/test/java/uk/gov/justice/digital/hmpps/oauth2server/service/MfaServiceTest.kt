@@ -27,7 +27,7 @@ class MfaServiceTest {
   private val userRetriesService: UserRetriesService = mock()
   private val notificationClientApi: NotificationClientApi = mock()
   private val request = MockHttpServletRequest()
-  private val service = MfaService(setOf("12.21.23.24"), setOf("MFA"), "template", tokenService, userService, notificationClientApi, userRetriesService)
+  private val service = MfaService(setOf("12.21.23.24"), setOf("MFA"), "emailTemplate", "textTemplate", tokenService, userService, notificationClientApi, userRetriesService)
 
   @BeforeEach
   fun setUp() {
@@ -152,7 +152,7 @@ class MfaServiceTest {
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
 
-    assertThat(service.createTokenAndSendEmail("user")).isEqualTo(Pair("sometoken", "somecode"))
+    assertThat(service.createTokenAndSendMfaCode("user")).isEqualTo(Pair("sometoken", "somecode"))
   }
 
   @Test
@@ -163,9 +163,9 @@ class MfaServiceTest {
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
 
-    service.createTokenAndSendEmail("user")
+    service.createTokenAndSendMfaCode("user")
 
-    verify(notificationClientApi).sendEmail("template", "email", mapOf("firstName" to "first", "code" to "somecode"), null)
+    verify(notificationClientApi).sendEmail("emailTemplate", "email", mapOf("firstName" to "first", "code" to "somecode"), null)
   }
 
   @Test
@@ -199,7 +199,7 @@ class MfaServiceTest {
 
     service.resendMfaCode("sometoken")
 
-    verify(notificationClientApi).sendEmail("template", "email", mapOf("firstName" to "user", "code" to userCode.token), null)
+    verify(notificationClientApi).sendEmail("emailTemplate", "email", mapOf("firstName" to "user", "code" to userCode.token), null)
   }
 
   @Test

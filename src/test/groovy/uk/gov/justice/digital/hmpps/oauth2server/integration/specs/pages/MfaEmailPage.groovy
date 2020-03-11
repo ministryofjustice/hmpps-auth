@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages
 
 import geb.Page
 
-class MfaPage extends Page {
+class MfaEmailPage extends Page {
 
   static url = '/auth/mfa-challenge'
 
