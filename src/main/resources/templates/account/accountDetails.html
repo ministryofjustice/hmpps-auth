@@ -31,7 +31,7 @@
         Sarah Philips
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/change-name}" th:if="${authUser.authSource == 'auth'}" data-qa="changeName">
+        <a class="govuk-link" th:href="@{/change-name}" th:if="${authUser.authSource == 'auth'}" data-qa="changeName">
           Change<span class="govuk-visually-hidden"> name</span>
         </a>
       </dd>
@@ -56,7 +56,7 @@
         ************
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/existing-password}" data-qa="changePassword">
+        <a class="govuk-link" th:href="@{/existing-password}" data-qa="changePassword">
           Change <span class="govuk-visually-hidden"> password</span>
         </a>
       </dd>
@@ -72,7 +72,8 @@
         sarah.philips@digital.justice.gov.uk
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/existing-email}" th:if="${authUser.authSource != 'delius'}" data-qa="changeEmail">
+        <a class="govuk-link" th:href="@{/existing-email}" th:if="${authUser.authSource != 'delius'}"
+           data-qa="changeEmail">
           <th:block th:text="${#strings.isEmpty(authUser.email)} ? 'Add' : 'Change'">
             Change
           </th:block>
@@ -88,7 +89,8 @@
         Yes
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/verify-email}" th:unless="${#strings.isEmpty(authUser.email) || authUser.verified}"
+        <a class="govuk-link" th:href="@{/verify-email}"
+           th:unless="${#strings.isEmpty(authUser.email) || authUser.verified}"
            data-qa="verifyEmail">
           Resend <span class="govuk-visually-hidden"> email</span> code
         </a>
@@ -102,7 +104,7 @@
         01234 567890
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/change-mobile}" data-qa="changeMobile">
+        <a class="govuk-link" th:href="@{/change-mobile}" data-qa="changeMobile">
           <th:block th:text="${#strings.isEmpty(authUser.mobile)} ? 'Add' : 'Change'">
             Change
           </th:block>
@@ -119,7 +121,8 @@
         No
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a th:href="@{/mobile-resend}" th:unless="${#strings.isEmpty(authUser.mobile) || authUser.mobileVerified}"
+        <a class="govuk-link" th:href="@{/mobile-resend}"
+           th:unless="${#strings.isEmpty(authUser.mobile) || authUser.mobileVerified}"
            data-qa="verifyMobile">
           Resend <span class="govuk-visually-hidden"> mobile</span> code
         </a>
