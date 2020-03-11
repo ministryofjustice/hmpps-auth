@@ -111,7 +111,7 @@ class ChangeExistingPasswordSpecification extends DeliusIntegrationSpec {
     loginAs AUTH_MFA_CHANGE, 'password123456'
 
     then: 'I am redirected to the mfa page'
-    at MfaPage
+    at MfaEmailPage
 
     when: "I enter my MFA credentials"
     submitCode mfaCode
@@ -137,7 +137,7 @@ class ChangeExistingPasswordSpecification extends DeliusIntegrationSpec {
     loginAs AUTH_MFA_CHANGE, 'helloworld2'
 
     then: 'I am redirected to the mfa page'
-    at MfaPage
+    at MfaEmailPage
 
     when: "I enter my MFA credentials"
     submitCode mfaCode

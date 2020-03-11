@@ -54,7 +54,7 @@ open class UserStateAuthenticationFailureHandler(private val tokenService: Token
       }
       is MfaRequiredException -> {
         // need to break out to perform mfa for the user
-        val (token, code) = mfaService.createTokenAndSendEmail(username!!)
+        val (token, code) = mfaService.createTokenAndSendMfaCode(username!!)
 
         val urlBuilder = UriComponentsBuilder.fromPath("/mfa-challenge").queryParam("token", token)
         if (smokeTestEnabled) urlBuilder.queryParam("smokeCode", code)

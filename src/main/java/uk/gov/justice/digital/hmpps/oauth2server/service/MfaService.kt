@@ -21,7 +21,8 @@ import uk.gov.service.notify.NotificationClientApi
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
 open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelist: Set<String>,
                       @Value("\${application.authentication.mfa.roles}") private val mfaRoles: Set<String>,
-                      @Value("\${application.notify.mfa.template}") private val mfaTemplateId: String,
+                      @Value("\${application.notify.mfa.template}") private val mfaEmailTemplateId: String,
+                      @Value("\${application.notify.verify-mobile.template}") private val mfaTextTemplateId: String,
                       private val tokenService: TokenService,
                       private val userService: UserService,
                       private val notificationClient: NotificationClientApi,
@@ -37,7 +38,7 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  open fun needsMfa(authorities: Collection<GrantedAuthority>): Boolean {
+  fun needsMfa(authorities: Collection<GrantedAuthority>): Boolean {
     // if they're whitelisted then no mfa
     val ip = IpAddressHelper.retrieveIpFromRequest()
     return if (ipMatchers.any { it.matches(ip) }) {
@@ -47,20 +48,24 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  open fun createTokenAndSendEmail(username: String): Pair<String, String> {
+  fun createTokenAndSendMfaCode(username: String): Pair<String, String> {
     log.info("Creating token and sending email for {}", username)
     val user = userService.getOrCreateUser(username)
 
     val token = tokenService.createToken(TokenType.MFA, username)
     val code = tokenService.createToken(TokenType.MFA_CODE, username)
 
-    emailCode(user, code)
+    if (user.mfaPreference == MfaPreferenceType.EMAIL) {
+      emailCode(user, code)
+    } else {
+      textCode(user, code)
+    }
 
     return Pair(token, code)
   }
 
   @Transactional(transactionManager = "authTransactionManager", noRollbackFor = [LoginFlowException::class, MfaFlowException::class])
-  open fun validateAndRemoveMfaCode(token: String, code: String?) {
+  fun validateAndRemoveMfaCode(token: String, code: String?) {
     if (code.isNullOrBlank()) throw MfaFlowException("missingcode")
 
     val userToken = tokenService.getToken(TokenType.MFA, token).orElseThrow()
@@ -84,12 +89,12 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  open fun updateUserMfaPreference(pref: MfaPreferenceType, username: String) {
+  fun updateUserMfaPreference(pref: MfaPreferenceType, username: String) {
     val user = userService.findUser(username).orElseThrow { UsernameNotFoundException(username) }
     user.mfaPreference = pref
   }
 
-  open fun resendMfaCode(token: String): String? {
+  fun resendMfaCode(token: String): String? {
     val userToken = tokenService.getToken(TokenType.MFA, token).orElseThrow()
 
     val code = userToken.user.tokens.filter { it.tokenType == TokenType.MFA_CODE }.map { it.token }.firstOrNull()
@@ -102,7 +107,11 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
   private fun emailCode(user: User, code: String) {
     val firstName = userService.findMasterUserPersonDetails(user.username).map { it.firstName }.orElseThrow()
 
-    notificationClient.sendEmail(mfaTemplateId, user.email, mapOf("firstName" to firstName, "code" to code), null)
+    notificationClient.sendEmail(mfaEmailTemplateId, user.email, mapOf("firstName" to firstName, "code" to code), null)
+  }
+
+  private fun textCode(user: User, code: String) {
+    notificationClient.sendSms(mfaTextTemplateId, user.mobile, mapOf("verifyCode" to code), null, null)
   }
 }
 

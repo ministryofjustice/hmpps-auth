@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.util.UriComponentsBuilder
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -31,26 +32,30 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
                          private val mfaService: MfaService,
                          @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) {
   @GetMapping("/mfa-challenge")
-  open fun mfaChallengeRequest(@RequestParam token: String?): ModelAndView {
+  open fun mfaChallengeRequest(@RequestParam(required = false) token: String?): ModelAndView {
 
     if (token.isNullOrBlank()) return ModelAndView("redirect:/login?error=mfainvalid")
 
     val optionalError = tokenService.checkToken(TokenType.MFA, token)
 
     return optionalError.map { ModelAndView("redirect:/login?error=mfa${it}") }
-        .orElse(ModelAndView("mfaChallenge", "token", token))
+        .orElseGet {
+          val preference = tokenService.getToken(TokenType.MFA, token).map { it.user.mfaPreference }.orElseThrow()
+          ModelAndView("mfaChallenge", "token", token)
+              .addObject("mfaPreference", preference)
+        }
   }
 
   @PostMapping("/mfa-challenge")
   @Throws(IOException::class, ServletException::class)
   open fun mfaChallenge(@RequestParam token: String,
+                        @RequestParam mfaPreference: MfaPreferenceType,
                         @RequestParam code: String,
                         request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
     val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
     if (optionalErrorForToken.isPresent) {
       return ModelAndView("redirect:/login?error=mfa${optionalErrorForToken.get()}")
     }
-
     // can just grab token here as validated above
     val username = tokenService.getToken(TokenType.MFA, token).map { it.user.username }.orElseThrow()
 
@@ -60,7 +65,7 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
     try {
       mfaService.validateAndRemoveMfaCode(token, code)
     } catch (e: MfaFlowException) {
-      return ModelAndView("mfaChallenge", mapOf("token" to token, "error" to e.error))
+      return ModelAndView("mfaChallenge", mapOf("token" to token, "error" to e.error, "mfaPreference" to mfaPreference))
     } catch (e: LoginFlowException) {
       return ModelAndView("redirect:/login?error=${e.error}")
     }
