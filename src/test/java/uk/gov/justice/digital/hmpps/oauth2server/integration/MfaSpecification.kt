@@ -23,7 +23,10 @@ class MfaSpecification : AbstractAuthSpecification() {
   private lateinit var mfaTextPage: MfaTextPage
 
   @Page
-  private lateinit var mfaResendCodePage: MfaResendCodePage
+  private lateinit var mfaEmailResendCodePage: MfaEmailResendCodePage
+
+  @Page
+  private lateinit var mfaTextResendCodePage: MfaTextResendCodePage
 
   @Page
   private lateinit var homePage: HomePage
@@ -208,15 +211,44 @@ class MfaSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `I would like the MFA code to be resent email preference`() {
+  fun `Mfa preference email - I would like the MFA code to be resent`() {
     goTo(loginPage)
         .loginWithMfaEmail("AUTH_MFA_USER")
 
     mfaEmailPage.resendCodeLink()
 
-    mfaResendCodePage.resendCode()
+    mfaEmailResendCodePage.resendCode()
 
     mfaEmailPage.submitCode()
+
+    homePage.isAt()
+  }
+
+
+  @Test
+  fun `MFA preference text - I would like the MFA code to be resent by email`() {
+    goTo(loginPage)
+        .loginWithMfaEmail("AUTH_MFA_PREF_TEXT2")
+
+    mfaTextPage.resendCodeLink()
+
+    mfaTextResendCodePage.resendCodeByEmail()
+
+    mfaTextPage.submitCode()
+
+    homePage.isAt()
+  }
+
+  @Test
+  fun `MFA preference text - I would like the MFA code to be resent by text`() {
+    goTo(loginPage)
+        .loginWithMfaEmail("AUTH_MFA_PREF_TEXT2")
+
+    mfaTextPage.resendCodeLink()
+
+    mfaTextResendCodePage.resendCodeByText()
+
+    mfaTextPage.submitCode()
 
     homePage.isAt()
   }
@@ -328,6 +360,9 @@ class MfaTextPage : AuthPage<MfaTextPage>("HMPPS Digital Services - Text message
   @FindBy(css = "input[name='code']")
   private lateinit var code: FluentWebElement
 
+  @FindBy(linkText = "Not received a text message?")
+  private lateinit var resend: FluentWebElement
+
   fun getCode(): String {
     return el("[data-qa='mfa-code']").text()
   }
@@ -348,17 +383,42 @@ class MfaTextPage : AuthPage<MfaTextPage>("HMPPS Digital Services - Text message
     checkError("Security code is incorrect. Please check your phone and try again. You will be locked out if you enter the wrong code 3 times.")
     return this
   }
+
+  fun resendCodeLink() {
+    resend.click()
+  }
 }
 
 @PageUrl("/mfa-challenge")
-class MfaResendCodePage : AuthPage<MfaResendCodePage>("HMPPS Digital Services - Resend security code", "Resend security code") {
+class MfaEmailResendCodePage : AuthPage<MfaEmailResendCodePage>("HMPPS Digital Services - Resend security code", "Resend security code") {
   @FindBy(css = "input[type='submit']")
   private lateinit var resendSecurityCode: FluentWebElement
 
   fun resendCode() {
     resendSecurityCode.submit()
   }
+}
 
+@PageUrl("/mfa-resend-text")
+class MfaTextResendCodePage : AuthPage<MfaTextResendCodePage>("HMPPS Digital Services - Resend security code", "Resend security code") {
+  @FindBy(css = "input[type='submit']")
+  private lateinit var resendSecurityCode: FluentWebElement
+
+  @FindBy(css = "input[id='mfa-pref-email']")
+  private lateinit var selectMfaPreferenceEmail: FluentWebElement
+
+  @FindBy(css = "input[id='mfa-pref-text']")
+  private lateinit var selectMfaPreferenceText: FluentWebElement
+
+  fun resendCodeByEmail() {
+    selectMfaPreferenceEmail.click()
+    resendSecurityCode.submit()
+  }
+
+  fun resendCodeByText() {
+    selectMfaPreferenceText.click()
+    resendSecurityCode.submit()
+  }
 }
 
 

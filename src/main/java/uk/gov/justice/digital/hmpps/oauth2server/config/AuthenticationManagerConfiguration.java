@@ -24,7 +24,12 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
-import uk.gov.justice.digital.hmpps.oauth2server.security.*;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthAuthenticationProvider;
+import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationProvider;
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtCookieAuthenticationFilter;
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisAuthenticationProvider;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler;
 
 @Configuration
 @Order(4)
@@ -126,8 +131,8 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                         "/health", "/health/ping", "/info", "/ping", "/error", "/terms", "/contact", "/change-password",
                         "/verify-email-confirm", "/forgot-password", "/reset-password", "/set-password",
                         "/reset-password-confirm", "/reset-password-success", "/reset-password-select",
-                        "/initial-password", "/initial-password-success", "/mfa-challenge", "/mfa-resend",
-                        "/h2-console/**", "/v2/api-docs", "/jwt-public-key",
+                        "/initial-password", "/initial-password-success", "/mfa-challenge", "/mfa-resend-email",
+                        "/mfa-resend-text", "/h2-console/**", "/v2/api-docs", "/jwt-public-key",
                         "/swagger-ui.html", "/swagger-resources", "/swagger-resources/configuration/ui",
                         "/swagger-resources/configuration/security", "/.well-known/jwks.json", "/issuer/.well-known/**");
     }

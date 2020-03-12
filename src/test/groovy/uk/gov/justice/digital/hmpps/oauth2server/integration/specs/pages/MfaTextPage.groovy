@@ -7,7 +7,7 @@ class MfaTextPage extends Page {
   static url = '/auth/mfa-challenge'
 
   static at = {
-    title == 'HMPPS Digital Services - Text message verification'
+    title == 'HMPPS Digital Services - Text Message Verification'
     headingText == 'Check your phone'
   }
 

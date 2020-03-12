@@ -3,13 +3,14 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource
 import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
-import org.springframework.web.util.UriComponentsBuilder
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
@@ -32,7 +33,7 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
                          private val mfaService: MfaService,
                          @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) {
   @GetMapping("/mfa-challenge")
-  open fun mfaChallengeRequest(@RequestParam(required = false) token: String?): ModelAndView {
+  fun mfaChallengeRequest(@RequestParam(required = false) token: String?): ModelAndView {
 
     if (token.isNullOrBlank()) return ModelAndView("redirect:/login?error=mfainvalid")
 
@@ -48,10 +49,10 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
 
   @PostMapping("/mfa-challenge")
   @Throws(IOException::class, ServletException::class)
-  open fun mfaChallenge(@RequestParam token: String,
-                        @RequestParam mfaPreference: MfaPreferenceType,
-                        @RequestParam code: String,
-                        request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
+  fun mfaChallenge(@RequestParam token: String,
+                   @RequestParam mfaPreference: MfaPreferenceType,
+                   @RequestParam code: String,
+                   request: HttpServletRequest, response: HttpServletResponse): ModelAndView? {
     val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
     if (optionalErrorForToken.isPresent) {
       return ModelAndView("redirect:/login?error=mfa${optionalErrorForToken.get()}")
@@ -79,33 +80,69 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
     return null
   }
 
-  @GetMapping("/mfa-resend")
-  open fun mfaResendRequest(@RequestParam token: String): ModelAndView {
+  @GetMapping("/mfa-resend-email")
+  fun mfaResendEmailRequest(@RequestParam token: String, @RequestParam mfaPreference: MfaPreferenceType): ModelAndView {
 
     val optionalError = tokenService.checkToken(TokenType.MFA, token)
 
     return optionalError.map { ModelAndView("redirect:/login?error=mfa${it}") }
-        .orElse(ModelAndView("mfaResend", "token", token))
+        .orElse(ModelAndView("mfaResendEmail", "token", token)
+            .addObject("mfaPreference", mfaPreference))
   }
 
-  @PostMapping("/mfa-resend")
+  @PostMapping("/mfa-resend-email")
   @Throws(IOException::class, ServletException::class)
-  open fun mfaResend(@RequestParam token: String, request: HttpServletRequest, response: HttpServletResponse): ModelAndView {
+  fun mfaResendEmail(@RequestParam token: String,
+                     @RequestParam mfaResendPreference: MfaPreferenceType,
+                     request: HttpServletRequest,
+                     response: HttpServletResponse): ModelAndView {
     val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
     if (optionalErrorForToken.isPresent) {
       return ModelAndView("redirect:/login?error=mfa${optionalErrorForToken.get()}")
     }
 
-    val code = mfaService.resendMfaCode(token)
+    val code = mfaService.resendMfaCode(token, mfaResendPreference)
     // shouldn't really get a code without a valid token, but cope with the scenario anyway
     if (code.isNullOrEmpty()) {
       return ModelAndView("redirect:/login?error=mfainvalid")
     }
 
-    val urlBuilder = UriComponentsBuilder.fromPath("/mfa-challenge").queryParam("token", token)
-    if (smokeTestEnabled) urlBuilder.queryParam("smokeCode", code)
-    val url = urlBuilder.build().toString()
+    val modelAndView = ModelAndView("redirect:/mfa-challenge", "token", token)
+        .addObject("mfaPreference", mfaResendPreference)
+    if (smokeTestEnabled) modelAndView.addObject("smokeCode", code)
+    return modelAndView
+  }
 
-    return ModelAndView("redirect:${url}")
+  @GetMapping("/mfa-resend-text")
+  fun mfaResendTextRequest(@RequestParam token: String, @RequestParam mfaPreference: MfaPreferenceType, authentication: Authentication): ModelAndView {
+
+    val optionalError = tokenService.checkToken(TokenType.MFA, token)
+    val user = userService.findUser(authentication.name).orElseThrow { UsernameNotFoundException(authentication.name) }
+    return optionalError.map { ModelAndView("redirect:/login?error=mfa${it}") }
+        .orElse(ModelAndView("mfaResendText", "token", token)
+            .addObject("mfaPreference", mfaPreference))
+  }
+
+  @PostMapping("/mfa-resend-text")
+  @Throws(IOException::class, ServletException::class)
+  fun mfaResendText(@RequestParam token: String,
+                    @RequestParam mfaResendPreference: MfaPreferenceType,
+                    request: HttpServletRequest,
+                    response: HttpServletResponse): ModelAndView {
+    val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
+    if (optionalErrorForToken.isPresent) {
+      return ModelAndView("redirect:/login?error=mfa${optionalErrorForToken.get()}")
+    }
+
+    val code = mfaService.resendMfaCode(token, mfaResendPreference)
+    // shouldn't really get a code without a valid token, but cope with the scenario anyway
+    if (code.isNullOrEmpty()) {
+      return ModelAndView("redirect:/login?error=mfainvalid")
+    }
+
+    val modelAndView = ModelAndView("redirect:/mfa-challenge", "token", token)
+        .addObject("mfaPreference", mfaResendPreference)
+    if (smokeTestEnabled) modelAndView.addObject("smokeCode", code)
+    return modelAndView
   }
 }

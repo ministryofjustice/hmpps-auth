@@ -7,7 +7,7 @@ class MfaEmailPage extends Page {
   static url = '/auth/mfa-challenge'
 
   static at = {
-    title == 'HMPPS Digital Services - Email verification'
+    title == 'HMPPS Digital Services - Email Verification'
     headingText == 'Check your email'
   }
 

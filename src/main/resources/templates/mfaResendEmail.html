@@ -3,7 +3,7 @@
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
-  <title>Resend verification code</title>
+  <title>Resend Verification Code By Email</title>
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds"
@@ -17,9 +17,11 @@
   <p class="govuk-body">The email will have been sent to your work email address. If it has changed recently or if no
     longer have access to it, please <a class="govuk-link" th:href="@{/contact}">contact</a> us.</p>
 
-  <form th:action="@{/mfa-resend}" method="POST" id="mfaForm" autocomplete="off" novalidate>
+  <form th:action="@{/mfa-resend-email}" method="POST" id="mfaForm" autocomplete="off" novalidate>
     <div class="govuk-form-group">
       <input id="token" name="token" type="hidden" data-element-id="token" th:value="${token}">
+      <input id="mfaPreference" name="mfaResendPreference" type="hidden" data-element-id="mfaPreference"
+             th:value="${mfaPreference}">
     </div>
     <div class="govuk-form-group">
       <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="resend-button"
