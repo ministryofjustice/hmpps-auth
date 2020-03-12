@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -176,13 +175,16 @@ public class VerifyEmailService {
         return Optional.of("expired");
     }
 
-    @Getter
     public static class VerifyEmailException extends Exception {
         private final String reason;
 
         public VerifyEmailException(final String reason) {
             super(String.format("Verify email failed with reason: %s", reason));
             this.reason = reason;
+        }
+
+        public String getReason() {
+            return this.reason;
         }
     }
 

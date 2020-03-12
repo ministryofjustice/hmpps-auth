@@ -255,13 +255,16 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
         }
     }
 
-    @Getter
     public static class ResetPasswordException extends RuntimeException {
         private final String reason;
 
         public ResetPasswordException(final String reason) {
             super(String.format("Reset Password failed with reason: %s", reason));
             this.reason = reason;
+        }
+
+        public String getReason() {
+            return this.reason;
         }
     }
 }
