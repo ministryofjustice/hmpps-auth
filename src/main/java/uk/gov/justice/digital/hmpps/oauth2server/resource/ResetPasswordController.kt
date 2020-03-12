@@ -1,150 +1,126 @@
-package uk.gov.justice.digital.hmpps.oauth2server.resource;
+package uk.gov.justice.digital.hmpps.oauth2server.resource
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
-import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
-import java.util.Set;
-
-import static uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET;
+import com.microsoft.applicationinsights.TelemetryClient
+import lombok.extern.slf4j.Slf4j
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Controller
+import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.servlet.ModelAndView
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
+import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import javax.servlet.http.HttpServletRequest
 
 @Slf4j
 @Controller
 @Validated
-public class ResetPasswordController extends AbstractPasswordController {
-    private final ResetPasswordService resetPasswordService;
-    private final TokenService tokenService;
-    private final VerifyEmailService verifyEmailService;
-    private final TelemetryClient telemetryClient;
-    private final boolean smokeTestEnabled;
+class ResetPasswordController(private val resetPasswordService: ResetPasswordService,
+                              private val tokenService: TokenService, userService: UserService,
+                              private val verifyEmailService: VerifyEmailService,
+                              private val telemetryClient: TelemetryClient,
+                              @param:Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
+                              @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?) :
+    AbstractPasswordController(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "setPassword", passwordBlacklist) {
 
-    public ResetPasswordController(final ResetPasswordService resetPasswordService,
-                                   final TokenService tokenService, final UserService userService,
-                                   final VerifyEmailService verifyEmailService, final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled,
-                                   final @Value("${application.authentication.blacklist}") Set<String> passwordBlacklist) {
+  @GetMapping("/reset-password")
+  fun resetPasswordRequest(): String = "resetPassword"
 
-        super(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "setPassword", passwordBlacklist);
-        this.resetPasswordService = resetPasswordService;
-        this.tokenService = tokenService;
-        this.verifyEmailService = verifyEmailService;
-        this.telemetryClient = telemetryClient;
-        this.smokeTestEnabled = smokeTestEnabled;
+  @GetMapping("/reset-password-success")
+  fun resetPasswordSuccess(): String = "resetPasswordSuccess"
+
+  @PostMapping("/reset-password")
+  fun resetPasswordRequest(@RequestParam(required = false) usernameOrEmail: String?,
+                           request: HttpServletRequest): ModelAndView {
+    if (usernameOrEmail.isNullOrBlank()) {
+      telemetryClient.trackEvent("ResetPasswordRequestFailure", mapOf("error" to "missing"), null)
+      return ModelAndView("resetPassword", "error", "missing")
+    }
+    if (usernameOrEmail.contains("@")) {
+      try {
+        verifyEmailService.validateEmailAddressExcludingGsi(EmailHelper.format(usernameOrEmail))
+      } catch (e: VerifyEmailException) {
+        log.info("Validation failed for reset password email address due to {}", e.reason)
+        telemetryClient.trackEvent("VerifyEmailRequestFailure", mapOf("email" to usernameOrEmail, "reason" to "email." + e.reason), null)
+        return ModelAndView("resetPassword", mapOf("error" to "email." + e.reason, "usernameOrEmail" to usernameOrEmail))
+      }
     }
 
-    @GetMapping("/reset-password")
-    public String resetPasswordRequest() {
-        return "resetPassword";
-    }
-
-    @GetMapping("/reset-password-success")
-    public String resetPasswordSuccess() {
-        return "resetPasswordSuccess";
-    }
-
-    @PostMapping("/reset-password")
-    public ModelAndView resetPasswordRequest(@RequestParam(required = false) final String usernameOrEmail,
-                                             final HttpServletRequest request) {
-        if (StringUtils.isBlank(usernameOrEmail)) {
-            telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("error", "missing"), null);
-            return new ModelAndView("resetPassword", "error", "missing");
+    return try {
+      val resetLink = resetPasswordService.requestResetPassword(usernameOrEmail, request.requestURL.toString())
+      val modelAndView = ModelAndView("resetPasswordSent")
+      if (resetLink.isPresent) {
+        log.info("Reset password request success for {}", usernameOrEmail)
+        telemetryClient.trackEvent("ResetPasswordRequestSuccess", mapOf("username" to usernameOrEmail), null)
+        if (smokeTestEnabled) {
+          modelAndView.addObject("resetLink", resetLink.get())
         }
-
-        if (StringUtils.contains(usernameOrEmail, "@")) {
-            try {
-                verifyEmailService.validateEmailAddressExcludingGsi(EmailHelper.format(usernameOrEmail));
-            } catch (final VerifyEmailException e) {
-                log.info("Validation failed for reset password email address due to {}", e.getReason());
-                telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("email", usernameOrEmail, "reason", "email." + e.getReason()), null);
-                return new ModelAndView("resetPassword", Map.of("error", "email." + e.getReason(), "usernameOrEmail", usernameOrEmail));
-            }
+      } else {
+        log.info("Reset password request failed, no link provided for {}", usernameOrEmail)
+        telemetryClient.trackEvent("ResetPasswordRequestFailure", mapOf("username" to usernameOrEmail, "error" to "nolink"), null)
+        if (smokeTestEnabled) {
+          modelAndView.addObject("resetLinkMissing", true)
         }
-
-        try {
-            final var resetLink = resetPasswordService.requestResetPassword(usernameOrEmail, request.getRequestURL().toString());
-            final var modelAndView = new ModelAndView("resetPasswordSent");
-            if (resetLink.isPresent()) {
-                log.info("Reset password request success for {}", usernameOrEmail);
-                telemetryClient.trackEvent("ResetPasswordRequestSuccess", Map.of("username", usernameOrEmail), null);
-                if (smokeTestEnabled) {
-                    modelAndView.addObject("resetLink", resetLink.get());
-                }
-            } else {
-                log.info("Reset password request failed, no link provided for {}", usernameOrEmail);
-                telemetryClient.trackEvent("ResetPasswordRequestFailure", Map.of("username", usernameOrEmail, "error", "nolink"), null);
-                if (smokeTestEnabled) {
-                    modelAndView.addObject("resetLinkMissing", true);
-                }
-            }
-            return modelAndView;
-
-        } catch (final NotificationClientRuntimeException e) {
-            log.error("Failed to send reset password due to", e);
-            telemetryClient.trackEvent("ResetPasswordRequestFailure",
-                    Map.of("username", usernameOrEmail, "error", e.getClass().getSimpleName()), null);
-            return new ModelAndView("resetPassword", "error", "other");
-        }
+      }
+      modelAndView
+    } catch (e: NotificationClientRuntimeException) {
+      log.error("Failed to send reset password due to", e)
+      telemetryClient.trackEvent("ResetPasswordRequestFailure",
+          mapOf("username" to usernameOrEmail, "error" to e.javaClass.simpleName), null)
+      ModelAndView("resetPassword", "error", "other")
     }
+  }
 
-    @GetMapping("/reset-password-select")
-    public ModelAndView resetPasswordSelect(@RequestParam final String token) {
-        final var userTokenOptional = tokenService.checkToken(RESET, token);
+  @GetMapping("/reset-password-select")
+  fun resetPasswordSelect(@RequestParam token: String): ModelAndView {
+    val userTokenOptional = tokenService.checkToken(TokenType.RESET, token)
+    return userTokenOptional.map { ModelAndView("resetPassword", "error", it) }.orElseGet { ModelAndView("setPasswordSelect", "token", token) }
+  }
 
-        return userTokenOptional.map(s -> new ModelAndView("resetPassword", "error", s)).
-                orElseGet(() -> new ModelAndView("setPasswordSelect", "token", token));
+  @PostMapping("/reset-password-select")
+  fun resetPasswordChosen(@RequestParam token: String, @RequestParam username: String): ModelAndView {
+    val userTokenOptional = tokenService.checkToken(TokenType.RESET, token)
+    return userTokenOptional.map { ModelAndView("resetPassword", "error", it) }.orElseGet {
+      try {
+        val newToken = resetPasswordService.moveTokenToAccount(token, username)
+        log.info("Successful reset password select for {}", username)
+        telemetryClient.trackEvent("ResetPasswordSelectSuccess", mapOf("username" to username), null)
+        createModelWithTokenUsernameAndIsAdmin(TokenType.RESET, newToken, "setPassword")
+      } catch (e: ResetPasswordException) {
+        log.info("Validation failed due to {} for reset password select for {}", e.reason, username)
+        telemetryClient.trackEvent("ResetPasswordSelectFailure", mapOf("username" to username, "error" to e.reason), null)
+        ModelAndView("setPasswordSelect", mapOf("error" to e.reason, "username" to username, "token" to token))
+      }
     }
+  }
 
-    @PostMapping("/reset-password-select")
-    public ModelAndView resetPasswordChosen(@RequestParam final String token, @RequestParam final String username) {
-        final var userTokenOptional = tokenService.checkToken(RESET, token);
-        return userTokenOptional.map(ut -> new ModelAndView("resetPassword", "error", ut)).
-                orElseGet(() -> {
-                    try {
-                        final var newToken = resetPasswordService.moveTokenToAccount(token, username);
-                        log.info("Successful reset password select for {}", username);
-                        telemetryClient.trackEvent("ResetPasswordSelectSuccess", Map.of("username", username), null);
-                        return createModelWithTokenUsernameAndIsAdmin(RESET, newToken, "setPassword");
-                    } catch (final ResetPasswordException e) {
-                        log.info("Validation failed due to {} for reset password select for {}", e.getReason(), username);
-                        telemetryClient.trackEvent("ResetPasswordSelectFailure", Map.of("username", username, "error", e.getReason()), null);
-                        return new ModelAndView("setPasswordSelect",
-                                Map.of("error", e.getReason(), "username", username, "token", token));
-                    }
-                });
+  @GetMapping("/reset-password-confirm")
+  fun resetPasswordConfirm(@RequestParam token: String): ModelAndView {
+    val userTokenOptional = tokenService.checkToken(TokenType.RESET, token)
+    return userTokenOptional.map { ModelAndView("resetPassword", "error", it) }.orElseGet { createModelWithTokenUsernameAndIsAdmin(TokenType.RESET, token, "setPassword") }
+  }
+
+  @PostMapping("/set-password")
+  fun setPassword(@RequestParam token: String,
+                  @RequestParam newPassword: String?, @RequestParam confirmPassword: String?,
+                  @RequestParam(required = false) initial: Boolean?): ModelAndView {
+    val modelAndView = processSetPassword(TokenType.RESET, if (initial == true) "Initial" else "Reset", token, newPassword, confirmPassword)
+    return modelAndView.map { if (initial == true) it.addObject("initial", initial) else it }.orElseGet {
+      ModelAndView(if (initial == true) "redirect:/initial-password-success" else "redirect:/reset-password-success")
     }
+  }
 
-    @GetMapping("/reset-password-confirm")
-    public ModelAndView resetPasswordConfirm(@RequestParam final String token) {
-        final var userTokenOptional = tokenService.checkToken(RESET, token);
-        return userTokenOptional.map(s -> new ModelAndView("resetPassword", "error", s)).
-                orElseGet(() -> createModelWithTokenUsernameAndIsAdmin(RESET, token, "setPassword"));
-    }
-
-    @PostMapping("/set-password")
-    public ModelAndView setPassword(@RequestParam final String token,
-                                    @RequestParam final String newPassword, @RequestParam final String confirmPassword,
-                                    @RequestParam(required = false) final Boolean initial) {
-        final var initialAsPrimitive = BooleanUtils.toBoolean(initial);
-        final var modelAndView = processSetPassword(RESET, initialAsPrimitive ? "Initial" : "Reset", token, newPassword, confirmPassword);
-
-        return modelAndView.map(mv -> initialAsPrimitive ? mv.addObject("initial", Boolean.TRUE) : mv).orElse(
-                new ModelAndView(initialAsPrimitive ? "redirect:/initial-password-success" : "redirect:/reset-password-success"));
-    }
+  companion object {
+    private val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 }
