@@ -9,7 +9,7 @@ class ResetPasswordPage extends Page {
 
     static at = {
         title == 'HMPPS Digital Services - Reset Password'
-        headingText == 'Reset your password'
+        headingText == 'Create a new password'
     }
 
     static content = {
