@@ -3,8 +3,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource
 import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -114,13 +112,21 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
   }
 
   @GetMapping("/mfa-resend-text")
-  fun mfaResendTextRequest(@RequestParam token: String, @RequestParam mfaPreference: MfaPreferenceType, authentication: Authentication): ModelAndView {
+  fun mfaResendTextRequest(@RequestParam token: String, @RequestParam mfaPreference: MfaPreferenceType): ModelAndView {
 
     val optionalError = tokenService.checkToken(TokenType.MFA, token)
-    val user = userService.findUser(authentication.name).orElseThrow { UsernameNotFoundException(authentication.name) }
+
+    val user = tokenService.getUserFromToken(TokenType.MFA, token)
+    val partialMobile = user.mobile.replaceRange(0, 7, "*******")
+    val partialEmail = user.email.take(6) + "******@******" + user.email.takeLast(7)
+
+
     return optionalError.map { ModelAndView("redirect:/login?error=mfa${it}") }
         .orElse(ModelAndView("mfaResendText", "token", token)
-            .addObject("mfaPreference", mfaPreference))
+            .addObject("mfaPreference", mfaPreference)
+            .addObject("mobile", partialMobile)
+            .addObject("email", partialEmail)
+        )
   }
 
   @PostMapping("/mfa-resend-text")

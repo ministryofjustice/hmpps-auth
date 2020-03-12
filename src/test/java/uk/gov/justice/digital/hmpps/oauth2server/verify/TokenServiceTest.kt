@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.verify
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.data.MapEntry.entry
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenReposi
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import java.time.LocalDateTime
 import java.util.*
+import javax.persistence.EntityNotFoundException
 
 class TokenServiceTest {
   private val userTokenRepository: UserTokenRepository = mock()
@@ -40,6 +42,27 @@ class TokenServiceTest {
     val userToken = User.of("user").createToken(RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThat(tokenService.getToken(RESET, "token")).get().isSameAs(userToken)
+  }
+
+  @Test
+  fun `get user from token notfound`() {
+    whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.empty())
+    assertThatThrownBy { tokenService.getUserFromToken(RESET, "token") }.isInstanceOf(EntityNotFoundException::class.java)
+  }
+
+  @Test
+  fun `get user from token WrongType`() {
+    val userToken = User.of("user").createToken(VERIFIED)
+    whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
+    assertThatThrownBy { tokenService.getUserFromToken(RESET, "token") }.isInstanceOf(EntityNotFoundException::class.java)
+  }
+
+  @Test
+  fun `get user from token token`() {
+    val user = User.of("user")
+    val userToken = user.createToken(RESET)
+    whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
+    assertThat(tokenService.getUserFromToken(RESET, "token")).isSameAs(user)
   }
 
   @Test

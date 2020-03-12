@@ -30,7 +30,7 @@
           By text message
         </label>
         <span id="mfa-pref-text-item-hint" class="govuk-hint govuk-radios__hint">
-         You’ll receive a 6 digit number to your mobile by text message
+         You’ll receive a 6 digit number to your mobile <span data-qa="text" th:text="${mobile}">your mobile</span> by text message
         </span>
       </div>
       <div class="govuk-radios__item">
@@ -41,7 +41,7 @@
           By email
         </label>
         <span id="mfa-pref-email-item-hint" class="govuk-hint govuk-radios__hint">
-          You’ll receive a 6 digit number to your email
+          You’ll receive a 6 digit number to your email <span data-qa="text" th:text="${email}">address</span>
         </span>
       </div>
     </div>

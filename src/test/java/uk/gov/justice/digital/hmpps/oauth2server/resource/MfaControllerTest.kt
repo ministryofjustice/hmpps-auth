@@ -181,7 +181,9 @@ class MfaControllerTest {
 
   @Test
   fun `mfaTextResendRequest check view`() {
+    val user = User.builder().email("auth.user@digital.justice.gov.uk").mobile("07700900321").mfaPreference(MfaPreferenceType.TEXT).build()
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+    whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
     val modelAndView = controller.mfaResendTextRequest("some token", MfaPreferenceType.TEXT)
     assertThat(modelAndView.viewName).isEqualTo("mfaResendText")
   }
@@ -209,7 +211,9 @@ class MfaControllerTest {
 
   @Test
   fun `mfaTextResendRequest check service call`() {
+    val user = User.builder().email("auth.user@digital.justice.gov.uk").mobile("07700900321").mfaPreference(MfaPreferenceType.TEXT).build()
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+    whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
     controller.mfaResendTextRequest("some token", MfaPreferenceType.TEXT)
     verify(tokenService).checkToken(TokenType.MFA, "some token")
   }
@@ -223,7 +227,9 @@ class MfaControllerTest {
 
   @Test
   fun `mfaResendTextRequest error`() {
+    val user = User.builder().email("auth.user@digital.justice.gov.uk").mobile("07700900321").mfaPreference(MfaPreferenceType.TEXT).build()
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
+    whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
     val modelAndView = controller.mfaResendTextRequest("some token", MfaPreferenceType.TEXT)
     assertThat(modelAndView.viewName).isEqualTo("redirect:/login?error=mfainvalid")
   }
