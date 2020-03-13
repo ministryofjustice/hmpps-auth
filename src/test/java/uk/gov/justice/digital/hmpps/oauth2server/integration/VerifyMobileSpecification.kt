@@ -86,7 +86,7 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/mobile-resend")
-class MobileVerificationResendPage : AuthPage<MobileVerificationResendPage>("HMPPS Digital Services - Resend verification code", "Resend security code") {
+class MobileVerificationResendPage : AuthPage<MobileVerificationResendPage>("HMPPS Digital Services - Resend Verification Code", "Resend security code") {
   @FindBy(css = "input[type='submit']")
   private lateinit var continueButton: FluentWebElement
 

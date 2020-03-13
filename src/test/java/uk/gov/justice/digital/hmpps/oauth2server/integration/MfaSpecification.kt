@@ -316,7 +316,7 @@ class MfaSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/mfa-challenge")
-class MfaEmailPage : AuthPage<MfaEmailPage>("HMPPS Digital Services - Email verification", "Check your email") {
+class MfaEmailPage : AuthPage<MfaEmailPage>("HMPPS Digital Services - Email Verification", "Check your email") {
   @FindBy(css = "input[type='submit']")
   private lateinit var continueButton: FluentWebElement
 
@@ -353,7 +353,7 @@ class MfaEmailPage : AuthPage<MfaEmailPage>("HMPPS Digital Services - Email veri
 }
 
 @PageUrl("/mfa-challenge")
-class MfaTextPage : AuthPage<MfaTextPage>("HMPPS Digital Services - Text message verification", "Check your phone") {
+class MfaTextPage : AuthPage<MfaTextPage>("HMPPS Digital Services - Text Message Verification", "Check your phone") {
   @FindBy(css = "input[type='submit']")
   private lateinit var continueButton: FluentWebElement
 
@@ -390,7 +390,7 @@ class MfaTextPage : AuthPage<MfaTextPage>("HMPPS Digital Services - Text message
 }
 
 @PageUrl("/mfa-challenge")
-class MfaEmailResendCodePage : AuthPage<MfaEmailResendCodePage>("HMPPS Digital Services - Resend security code", "Resend security code") {
+class MfaEmailResendCodePage : AuthPage<MfaEmailResendCodePage>("HMPPS Digital Services - Resend Security Code", "Resend security code") {
   @FindBy(css = "input[type='submit']")
   private lateinit var resendSecurityCode: FluentWebElement
 
@@ -400,7 +400,7 @@ class MfaEmailResendCodePage : AuthPage<MfaEmailResendCodePage>("HMPPS Digital S
 }
 
 @PageUrl("/mfa-resend-text")
-class MfaTextResendCodePage : AuthPage<MfaTextResendCodePage>("HMPPS Digital Services - Resend security code", "Resend security code") {
+class MfaTextResendCodePage : AuthPage<MfaTextResendCodePage>("HMPPS Digital Services - Resend Security Code", "Resend security code") {
   @FindBy(css = "input[type='submit']")
   private lateinit var resendSecurityCode: FluentWebElement
 
