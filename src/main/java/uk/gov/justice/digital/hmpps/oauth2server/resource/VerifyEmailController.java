@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.Map;
 
 @Slf4j
@@ -82,6 +83,12 @@ public class VerifyEmailController {
         proceedToOriginalUrl(request, response);
     }
 
+    @GetMapping("/verify-email-skip")
+    public void verifyEmailSkip(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+        telemetryClient.trackEvent("VerifyEmailRequestSkip", Collections.emptyMap(), null);
+        proceedToOriginalUrl(request, response);
+    }
+
     @PostMapping("/verify-email")
     public ModelAndView verifyEmail(@RequestParam(required = false) final String candidate, @RequestParam final String email,
                                     final Principal principal, final HttpServletRequest request, final HttpServletResponse response)
@@ -127,7 +134,7 @@ public class VerifyEmailController {
     }
 
     private ModelAndView createChangeOrVerifyEmailError(final String chosenEmail, final String reason, final String type) {
-        String view = StringUtils.equals(type, "change") ? "changeEmail" : "verifyEmail";
+        final var view = StringUtils.equals(type, "change") ? "changeEmail" : "verifyEmail";
         return new ModelAndView(view)
                 .addObject("email", chosenEmail)
                 .addObject("error", reason);

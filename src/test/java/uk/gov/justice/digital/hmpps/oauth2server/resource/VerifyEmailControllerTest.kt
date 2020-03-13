@@ -69,6 +69,14 @@ class VerifyEmailControllerTest {
   }
 
   @Test
+  fun verifyEmailSkip() {
+    SecurityContextHolder.getContext().authentication = principal
+    verifyEmailController.verifyEmailSkip(request, response)
+    verify(jwtAuthenticationSuccessHandler).proceed(request, response, principal)
+    verify(telemetryClient).trackEvent("VerifyEmailRequestSkip", mapOf(), null)
+  }
+
+  @Test
   fun verifyEmail_noselection() {
     val candidates = listOf("joe", "bob")
     whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(candidates)
