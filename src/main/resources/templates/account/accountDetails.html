@@ -38,7 +38,7 @@
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
-        Last logged in
+        Last signed in
       </dt>
       <dd class="govuk-summary-list__value" data-qa="lastLoggedIn"
           th:text="${#temporals.format(authUser.lastLoggedIn, 'd MMMM yyyy HH:mm')}">
@@ -85,7 +85,7 @@
       <dt class="govuk-summary-list__key">
         Email verified
       </dt>
-      <dd class="govuk-summary-list__value" data-qa="verified" th:text="${authUser.verified} ? 'yes' : 'no'">
+      <dd class="govuk-summary-list__value" data-qa="verified" th:text="${authUser.verified} ? 'Yes' : 'No'">
         Yes
       </dd>
       <dd class="govuk-summary-list__actions">
@@ -117,7 +117,7 @@
         Mobile verified
       </dt>
       <dd class="govuk-summary-list__value" data-qa="mobileVerified"
-          th:text="${authUser.mobileVerified} ? 'yes' : 'no'">
+          th:text="${authUser.mobileVerified} ? 'Yes' : 'No'">
         No
       </dd>
       <dd class="govuk-summary-list__actions">
