@@ -93,7 +93,7 @@
         <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="continue-button"
                th:value="${suggestion != null ? 'Resend email' : 'Save'}">
         <a class="govuk-button" role="button" id="cancel"
-           th:href="@{/verify-email-continue}"
+           th:href="@{/verify-email-skip}"
            th:text="${#lists.isEmpty(candidates) ? 'Skip for now' : 'Update later'}">Cancel</a>
       </div>
     </fieldset>
