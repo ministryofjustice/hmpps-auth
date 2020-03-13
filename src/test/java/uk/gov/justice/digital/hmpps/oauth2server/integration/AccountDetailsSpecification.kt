@@ -97,11 +97,11 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(el("[data-qa='changePassword']").text()).isEqualToNormalizingWhitespace("Change password")
     assertThat(el("[data-qa='email']").text()).isEqualTo("auth_ro_user@digital.justice.gov.uk")
     assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
-    assertThat(el("[data-qa='verified']").text()).isEqualTo("yes")
+    assertThat(el("[data-qa='verified']").text()).isEqualTo("Yes")
     assertThat(find("[data-qa='verifyEmail']")).isEmpty()
     assertThat(el("[data-qa='mobile']").text()).isBlank()
     assertThat(el("[data-qa='changeMobile']").text()).isEqualToNormalizingWhitespace("Add mobile")
-    assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("no")
+    assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("No")
     assertThat(find("[data-qa='verifyMobile']")).isEmpty()
     return this
   }
@@ -120,11 +120,11 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(el("[data-qa='username']").text()).isEqualTo("AUTH_UNVERIFIED")
     assertThat(el("[data-qa='email']").text()).isEqualTo("auth_unverified@digital.justice.gov.uk")
     assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
-    assertThat(el("[data-qa='verified']").text()).isEqualTo("no")
+    assertThat(el("[data-qa='verified']").text()).isEqualTo("No")
     assertThat(el("[data-qa='verifyEmail']").text()).isEqualToNormalizingWhitespace("Resend email code")
     assertThat(el("[data-qa='mobile']").text()).isEqualTo("07700900321")
     assertThat(el("[data-qa='changeMobile']").text()).isEqualToNormalizingWhitespace("Change mobile")
-    assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("no")
+    assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("No")
     assertThat(el("[data-qa='verifyMobile']").text()).isEqualToNormalizingWhitespace("Resend mobile code")
     return this
   }
