@@ -5,28 +5,36 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import java.util.*
+import javax.persistence.EntityNotFoundException
 
 @Service
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
-open class TokenService(private val userTokenRepository: UserTokenRepository,
-                        private val userService: UserService,
-                        private val telemetryClient: TelemetryClient) {
+class TokenService(private val userTokenRepository: UserTokenRepository,
+                   private val userService: UserService,
+                   private val telemetryClient: TelemetryClient) {
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  open fun getToken(tokenType: TokenType, token: String): Optional<UserToken> {
+  fun getToken(tokenType: TokenType, token: String): Optional<UserToken> {
     val userTokenOptional = userTokenRepository.findById(token)
     return userTokenOptional.filter { t -> t.tokenType == tokenType }
   }
 
-  open fun checkToken(tokenType: TokenType, token: String): Optional<String> {
+  fun getUserFromToken(tokenType: TokenType, token: String): User {
+    val userTokenOptional = userTokenRepository.findById(token)
+    val userToken = userTokenOptional.filter { t -> t.tokenType == tokenType }.orElseThrow { EntityNotFoundException("Token not found $token") }
+    return userToken.user
+  }
+
+  fun checkToken(tokenType: TokenType, token: String): Optional<String> {
     val userTokenOptional = getToken(tokenType, token)
     if (userTokenOptional.isEmpty) {
       log.info("Failed to {} due to invalid token", tokenType.description)
@@ -46,7 +54,7 @@ open class TokenService(private val userTokenRepository: UserTokenRepository,
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  open fun createToken(tokenType: TokenType, username: String): String {
+  fun createToken(tokenType: TokenType, username: String): String {
     log.info("Requesting {} for {}", tokenType.description, username)
     val user = userService.getOrCreateUser(username)
     val userToken = user.createToken(tokenType)
@@ -56,6 +64,6 @@ open class TokenService(private val userTokenRepository: UserTokenRepository,
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  open fun removeToken(tokenType: TokenType, token: String) =
+  fun removeToken(tokenType: TokenType, token: String) =
       getToken(tokenType, token).ifPresent { userTokenRepository.delete(it) }
 }

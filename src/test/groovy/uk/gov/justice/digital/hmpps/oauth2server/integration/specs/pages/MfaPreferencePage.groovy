@@ -7,7 +7,7 @@ class MfaPreferencePage extends Page {
   static url = '/auth/mfa-preference'
 
   static at = {
-    title == 'HMPPS Digital Services - Security code preference'
+    title == 'HMPPS Digital Services - Security Code Preference'
     headingText == 'How would you prefer to receive your security code?'
   }
 

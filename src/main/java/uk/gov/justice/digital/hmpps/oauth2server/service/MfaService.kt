@@ -22,7 +22,7 @@ import uk.gov.service.notify.NotificationClientApi
 open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelist: Set<String>,
                       @Value("\${application.authentication.mfa.roles}") private val mfaRoles: Set<String>,
                       @Value("\${application.notify.mfa.template}") private val mfaEmailTemplateId: String,
-                      @Value("\${application.notify.verify-mobile.template}") private val mfaTextTemplateId: String,
+                      @Value("\${application.notify.mfa-text.template}") private val mfaTextTemplateId: String,
                       private val tokenService: TokenService,
                       private val userService: UserService,
                       private val notificationClient: NotificationClientApi,
@@ -94,12 +94,18 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
     user.mfaPreference = pref
   }
 
-  fun resendMfaCode(token: String): String? {
+  fun resendMfaCode(token: String, mfaPreference: MfaPreferenceType): String? {
     val userToken = tokenService.getToken(TokenType.MFA, token).orElseThrow()
 
     val code = userToken.user.tokens.filter { it.tokenType == TokenType.MFA_CODE }.map { it.token }.firstOrNull()
 
-    code?.run { emailCode(userToken.user, code) }
+    code?.run {
+      if (mfaPreference == MfaPreferenceType.EMAIL) {
+        emailCode(userToken.user, code)
+      } else {
+        textCode(userToken.user, code)
+      }
+    }
 
     return code
   }
@@ -111,7 +117,7 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
   }
 
   private fun textCode(user: User, code: String) {
-    notificationClient.sendSms(mfaTextTemplateId, user.mobile, mapOf("verifyCode" to code), null, null)
+    notificationClient.sendSms(mfaTextTemplateId, user.mobile, mapOf("mfaCode" to code), null, null)
   }
 }
 

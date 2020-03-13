@@ -74,6 +74,7 @@ application:
     create-initial-password.template: 43398947-e0f6-4722-9e33-62d09834e6c7
     reset-password.template: 73d9e0da-d6db-4d25-afbd-82e9c27649fa
     mfa.template: a68a3c95-276a-4ca9-bac4-d6e34fd7bd6e
+    mfa-text.template: 6a006b6d-25c0-4cca-936f-8e7f5b778a53
     verify-mobile.template: b50619eb-6e1f-4348-b231-d38c01c82c85
 
   smoketest.enabled: false

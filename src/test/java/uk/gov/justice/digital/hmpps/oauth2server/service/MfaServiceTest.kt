@@ -145,7 +145,7 @@ class MfaServiceTest {
   }
 
   @Test
-  fun `createTokenAndSendEmail success`() {
+  fun `createTokenAndSendMfaCode success`() {
     val user = User.of("bob")
     whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
@@ -156,7 +156,7 @@ class MfaServiceTest {
   }
 
   @Test
-  fun `createTokenAndSendEmail check email params`() {
+  fun `createTokenAndSendMfaCode by Email check email params`() {
     val user = User.builder().username("bob").person(Person("first", "last")).email("email").build()
     whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
@@ -169,11 +169,24 @@ class MfaServiceTest {
   }
 
   @Test
+  fun `createTokenAndSendMfaCode by text check text params`() {
+    val user = User.builder().username("bob").mobile("07700900321").mobileVerified(true).mfaPreference(MfaPreferenceType.TEXT).build()
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
+    whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+
+    service.createTokenAndSendMfaCode("user")
+
+    verify(notificationClientApi).sendSms("textTemplate", "07700900321", mapOf("mfaCode" to "somecode"), null, null)
+  }
+
+  @Test
   fun `resendMfaCode no code`() {
     val userToken = User.of("user").createToken(TokenType.MFA)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
 
-    val code = service.resendMfaCode("sometoken")
+    val code = service.resendMfaCode("sometoken", MfaPreferenceType.EMAIL)
     assertThat(code).isEqualTo(null)
     verify(userService, never()).findMasterUserPersonDetails(anyString())
   }
@@ -186,7 +199,7 @@ class MfaServiceTest {
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
 
-    assertThat(service.resendMfaCode("sometoken")).isEqualTo(userCode.token)
+    assertThat(service.resendMfaCode("sometoken", MfaPreferenceType.EMAIL)).isEqualTo(userCode.token)
   }
 
   @Test
@@ -197,17 +210,39 @@ class MfaServiceTest {
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
 
-    service.resendMfaCode("sometoken")
+    service.resendMfaCode("sometoken", MfaPreferenceType.EMAIL)
 
     verify(notificationClientApi).sendEmail("emailTemplate", "email", mapOf("firstName" to "user", "code" to userCode.token), null)
   }
 
   @Test
-  fun `Update User Mfa Preference`() {
+  fun `resendMfaCode check Text`() {
+    val user = User.builder().mobile("07700900321").mobileVerified(true).mfaPreference(MfaPreferenceType.TEXT).build()
+    val userToken = user.createToken(TokenType.MFA)
+    val userCode = user.createToken(TokenType.MFA_CODE)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+
+    service.resendMfaCode("sometoken", MfaPreferenceType.TEXT)
+
+    verify(notificationClientApi).sendSms("textTemplate", "07700900321", mapOf("mfaCode" to userCode.token), null, null)
+  }
+
+  @Test
+  fun `Update User Mfa Preference to text`() {
     val user = User.of("user")
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(user))
     service.updateUserMfaPreference(MfaPreferenceType.TEXT, "user")
     assertThat(user.mfaPreference).isEqualTo(MfaPreferenceType.TEXT)
+    verify(userService).findUser("user")
+  }
+
+  @Test
+  fun `Update User Mfa Preference to email`() {
+    val user = User.builder().username("user").mfaPreference(MfaPreferenceType.TEXT).build()
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(user))
+    service.updateUserMfaPreference(MfaPreferenceType.EMAIL, "user")
+    assertThat(user.mfaPreference).isEqualTo(MfaPreferenceType.EMAIL)
     verify(userService).findUser("user")
   }
 }
