@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDeta
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import java.util.*
 
+@Suppress("UsePropertyAccessSyntax")
 class UserServiceTest {
   private val nomisUserService: NomisUserService = mock()
   private val authUserService: AuthUserService = mock()
@@ -105,23 +106,23 @@ class UserServiceTest {
   }
 
   @Nested
-  inner class HasVerifiedEmail {
+  inner class HasVerifiedMfaMethod {
     @Test
-    fun `hasVerifiedEmail success`() {
+    fun `hasVerifiedMfaMethod success`() {
       val user = User.builder().username("joe").email("someemail").verified(true).build()
-      assertThat(userService.hasVerifiedEmail(user)).isTrue()
+      assertThat(userService.hasVerifiedMfaMethod(user)).isTrue()
     }
 
     @Test
-    fun `hasVerifiedEmail no email`() {
+    fun `hasVerifiedMfaMethod no email`() {
       val user = User.builder().username("joe").verified(true).build()
-      assertThat(userService.hasVerifiedEmail(user)).isFalse()
+      assertThat(userService.hasVerifiedMfaMethod(user)).isFalse()
     }
 
     @Test
-    fun `hasVerifiedEmail not verified`() {
+    fun `hasVerifiedMfaMethod not verified`() {
       val user = User.builder().username("joe").email("someemail").build()
-      assertThat(userService.hasVerifiedEmail(user)).isFalse()
+      assertThat(userService.hasVerifiedMfaMethod(user)).isFalse()
     }
   }
 

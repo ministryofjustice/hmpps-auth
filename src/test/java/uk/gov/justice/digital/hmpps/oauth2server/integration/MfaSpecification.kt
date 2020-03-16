@@ -35,13 +35,13 @@ class MfaSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `Attempt MFA challenge with invalid token`() {
-    goTo("/mfa-challenge?token=invalidtoken")
+    goTo("/mfa-challenge?token=invalidtoken&mfaPreference=TEXT")
     loginPage.checkLoginAuthenticationFailedError()
   }
 
   @Test
   fun `Attempt MFA challenge with expired token`() {
-    goTo("/mfa-challenge?token=mfa_expired")
+    goTo("/mfa-challenge?token=mfa_expired&mfaPreference=EMAIL")
     loginPage.checkLoginAuthenticationTimeoutError()
 
   }

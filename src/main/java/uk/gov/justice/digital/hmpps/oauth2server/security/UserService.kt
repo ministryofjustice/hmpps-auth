@@ -39,19 +39,19 @@ class UserService(private val nomisUserService: NomisUserService,
         userRepository.save(userPersonDetails.toUser())
       }
 
-  fun hasVerifiedEmail(userDetails: UserPersonDetails): Boolean {
-    val user: User = findUser(userDetails.username).orElseGet { userDetails.toUser() }
-    return StringUtils.isNotEmpty(user.email) && user.isVerified
+  fun hasVerifiedMfaMethod(userDetails: UserPersonDetails): Boolean {
+    val user = findUser(userDetails.username).orElseGet { userDetails.toUser() }
+    return user.hasVerifiedMfaMethod()
   }
 
   fun isSameAsCurrentVerifiedMobile(username: String, mobile: String?): Boolean {
-    val user: User = findUser(username).orElseThrow()
+    val user = getUser(username)
     val canonicalMobile = mobile?.replace("\\s+".toRegex(), "")
     return user.isMobileVerified && canonicalMobile == user.mobile
   }
 
   fun isSameAsCurrentVerifiedEmail(username: String, email: String): Boolean {
-    val user: User = findUser(username).orElseThrow()
+    val user = getUser(username)
     return user.isVerified && email == user.email
   }
 }

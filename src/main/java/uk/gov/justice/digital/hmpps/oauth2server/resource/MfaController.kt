@@ -24,14 +24,15 @@ import javax.servlet.http.HttpServletResponse
 
 @Controller
 @Validated
-open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler,
-                         private val tokenService: TokenService,
-                         private val userService: UserService,
-                         private val telemetryClient: TelemetryClient,
-                         private val mfaService: MfaService,
-                         @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) {
+class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler,
+                    private val tokenService: TokenService,
+                    private val userService: UserService,
+                    private val telemetryClient: TelemetryClient,
+                    private val mfaService: MfaService,
+                    @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) {
   @GetMapping("/mfa-challenge")
-  fun mfaChallengeRequest(@RequestParam(required = false) token: String?): ModelAndView {
+  fun mfaChallengeRequest(@RequestParam(required = false) token: String?,
+                          @RequestParam mfaPreference: MfaPreferenceType): ModelAndView {
 
     if (token.isNullOrBlank()) return ModelAndView("redirect:/login?error=mfainvalid")
 
@@ -39,9 +40,8 @@ open class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthent
 
     return optionalError.map { ModelAndView("redirect:/login?error=mfa${it}") }
         .orElseGet {
-          val preference = tokenService.getToken(TokenType.MFA, token).map { it.user.mfaPreference }.orElseThrow()
           ModelAndView("mfaChallenge", "token", token)
-              .addObject("mfaPreference", preference)
+              .addObject("mfaPreference", mfaPreference)
         }
   }
 

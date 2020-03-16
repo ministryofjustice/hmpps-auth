@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.CredentialsContainer;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
@@ -25,7 +27,10 @@ import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -268,47 +273,47 @@ public class User implements UserPersonDetails, CredentialsContainer {
         return this.tokens;
     }
 
-    public void setId(UUID id) {
+    public void setId(final UUID id) {
         this.id = id;
     }
 
-    public void setUsername(String username) {
+    public void setUsername(final String username) {
         this.username = username;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(final String password) {
         this.password = password;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(final String email) {
         this.email = email;
     }
 
-    public void setVerified(boolean verified) {
+    public void setVerified(final boolean verified) {
         this.verified = verified;
     }
 
-    public void setLocked(boolean locked) {
+    public void setLocked(final boolean locked) {
         this.locked = locked;
     }
 
-    public void setEnabled(boolean enabled) {
+    public void setEnabled(final boolean enabled) {
         this.enabled = enabled;
     }
 
-    public void setSource(AuthSource source) {
+    public void setSource(final AuthSource source) {
         this.source = source;
     }
 
-    public void setPasswordExpiry(LocalDateTime passwordExpiry) {
+    public void setPasswordExpiry(final LocalDateTime passwordExpiry) {
         this.passwordExpiry = passwordExpiry;
     }
 
-    public void setLastLoggedIn(LocalDateTime lastLoggedIn) {
+    public void setLastLoggedIn(final LocalDateTime lastLoggedIn) {
         this.lastLoggedIn = lastLoggedIn;
     }
 
-    public void setMobile(String mobile) {
+    public void setMobile(final String mobile) {
         this.mobile = mobile;
     }
 
@@ -321,16 +326,33 @@ public class User implements UserPersonDetails, CredentialsContainer {
         this.mfaPreference = mfaPreference;
     }
 
-    public void setPerson(Person person) {
+    public void setPerson(final Person person) {
         this.person = person;
     }
 
-    public void setAuthorities(Set<Authority> authorities) {
+    public void setAuthorities(final Set<Authority> authorities) {
         this.authorities = authorities;
     }
 
-    public void setGroups(Set<Group> groups) {
+    public void setGroups(final Set<Group> groups) {
         this.groups = groups;
+    }
+
+    public boolean hasVerifiedMfaMethod() {
+        return !getAllowedMfaPreferences().isEmpty();
+    }
+
+    public Optional<MfaPreferenceType> calculateMfaFromPreference() {
+        final var preferences = getAllowedMfaPreferences();
+        return preferences.contains(mfaPreference) ? Optional.of(mfaPreference) : preferences.stream().findFirst();
+    }
+
+    @NotNull
+    private List<MfaPreferenceType> getAllowedMfaPreferences() {
+        final var preferences = new ArrayList<MfaPreferenceType>();
+        if (StringUtils.isNotEmpty(email) && verified) preferences.add(MfaPreferenceType.EMAIL);
+        if (StringUtils.isNotEmpty(mobile) && mobileVerified) preferences.add(MfaPreferenceType.TEXT);
+        return preferences;
     }
 
     @AllArgsConstructor
