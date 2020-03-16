@@ -51,9 +51,7 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
     this.password.fill().withText(password)
     signInButton.submit()
 
-    val authPage = newInstance(t)
-    authPage.isAt()
-    return authPage
+    return newInstance(t).isAtPage()
   }
 
   private fun <T : AuthPage<T>> errorLoginWith(username: String, password: String = "password123456", t: Class<T>): T {
@@ -61,8 +59,7 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
     this.password.fill().withText(password)
     signInButton.submit()
 
-    val authPage = newInstance(t)
-    return authPage
+    return newInstance(t)
   }
 
   fun viewContact() {
