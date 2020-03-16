@@ -61,11 +61,15 @@ open class AuthPage<T>(val title: String, val heading: String) : FluentPage() {
   @FindBy(css = "#error-detail")
   private lateinit var errorDetail: FluentWebElement
 
-  internal fun isAtPage(): T {
+  override fun isAt() {
     super.isAt()
 
     assertThat(window().title()).isEqualTo(title)
     assertThat(headingText.text()).isEqualTo(heading)
+  }
+
+  internal fun isAtPage(): T {
+    isAt()
     return this as T
   }
 

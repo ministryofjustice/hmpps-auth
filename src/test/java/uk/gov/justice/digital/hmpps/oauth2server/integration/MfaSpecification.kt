@@ -57,7 +57,15 @@ class MfaSpecification : AbstractAuthSpecification() {
   @Test
   fun `Login as user with text MFA enabled`() {
     goTo(loginPage)
-        .loginWithMfaEmail("AUTH_MFA_PREF_TEXT2")
+        .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
+        .submitCode()
+    homePage.isAt()
+  }
+
+  @Test
+  fun `Login as user with text MFA enabled but email verified`() {
+    goTo(loginPage)
+        .loginWithMfaEmail("AUTH_MFA_PREF_TEXT_EMAIL")
         .submitCode()
     homePage.isAt()
   }
@@ -67,7 +75,17 @@ class MfaSpecification : AbstractAuthSpecification() {
     goTo(loginPage)
         .loginWithMfaError("AUTH_MFA_NOEMAIL_USER")
 
-    loginPage.checkError("We need to send you a security code to login, but we can't find a verified email address. Please login on an approved network and verify your email address.")
+    loginPage.checkError("We need to send you a security code to login, but we can't find a verified email " +
+        "address or phone number. Please login on an approved network and verify your email address and phone number.")
+  }
+
+  @Test
+  fun `Login as user with MFA enabled but no phone or email address (preference text)`() {
+    goTo(loginPage)
+        .loginWithMfaError("AUTH_MFA_NOTEXT_USER")
+
+    loginPage.checkError("We need to send you a security code to login, but we can't find a verified email " +
+        "address or phone number. Please login on an approved network and verify your email address and phone number.")
   }
 
   @Test
@@ -99,7 +117,7 @@ class MfaSpecification : AbstractAuthSpecification() {
   @Test
   fun `MFA code is incorrect text`() {
     goTo(loginPage)
-        .loginWithMfaEmail("AUTH_MFA_PREF_TEXT2")
+        .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
         .submitCode("123")
     mfaTextPage.checkTextCodeIsIncorrectError()
   }
@@ -228,7 +246,7 @@ class MfaSpecification : AbstractAuthSpecification() {
   @Test
   fun `MFA preference text - I would like the MFA code to be resent by email`() {
     goTo(loginPage)
-        .loginWithMfaEmail("AUTH_MFA_PREF_TEXT2")
+        .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
 
     mfaTextPage.resendCodeLink()
 
@@ -242,7 +260,7 @@ class MfaSpecification : AbstractAuthSpecification() {
   @Test
   fun `MFA preference text - I would like the MFA code to be resent by text`() {
     goTo(loginPage)
-        .loginWithMfaEmail("AUTH_MFA_PREF_TEXT2")
+        .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
 
     mfaTextPage.resendCodeLink()
 
