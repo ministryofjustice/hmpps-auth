@@ -283,7 +283,7 @@ public class UserRepositoryTest {
     void findAll_UserFilter_ByFirstNameLastName() {
         assertThat(repository.findAll(UserFilter.builder().name("a no").build()))
                 .extracting(User::getUsername)
-                .containsExactly("AUTH_NO_EMAIL", "AUTH_MFA_NOEMAIL_USER", "AUTH_MFA_NOTEXT_USER");
+                .containsExactly("AUTH_NO_EMAIL", "AUTH_MFA_NOEMAIL_USER", "AUTH_MFA_NOTEXT_USER", "AUTH_MFA_PREF_TEXT_EMAIL");
     }
 
     @Test
