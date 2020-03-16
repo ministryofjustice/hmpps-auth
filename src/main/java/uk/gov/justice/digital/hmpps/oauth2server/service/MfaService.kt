@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.util.matcher.IpAddressMatcher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
@@ -113,6 +114,30 @@ class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelis
     }
 
     return code
+  }
+
+  fun buildModelAndViewWithMfaResendOptions(token: String, mfaPreference: MfaPreferenceType): ModelAndView {
+    val user = tokenService.getUserFromToken(TokenType.MFA, token)
+    val modelAndView = ModelAndView("mfaResend", "token", token)
+        .addObject("mfaPreference", mfaPreference)
+
+    if (user.isVerified) {
+      modelAndView.addObject("email", getMaskedEmail(user))
+    }
+    if (user.isMobileVerified) {
+      modelAndView.addObject("mobile", getMaskedMobile(user))
+    }
+    return modelAndView
+  }
+
+  fun getMaskedMobile(user: User): String {
+    return user.mobile.replaceRange(0, 7, "*******")
+  }
+
+  fun getMaskedEmail(user: User): String {
+    val emailCharacters = user.email.substringBefore("@").count()
+    val emailCharactersReduced = Math.min(emailCharacters / 2, 6)
+    return "${user.email.take(emailCharactersReduced)}******@******${user.email.takeLast(7)}"
   }
 
   private fun emailCode(user: User, code: String) {

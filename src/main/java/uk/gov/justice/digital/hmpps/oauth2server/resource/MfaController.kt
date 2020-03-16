@@ -78,63 +78,21 @@ class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthenticati
     return null
   }
 
-  @GetMapping("/mfa-resend-email")
-  fun mfaResendEmailRequest(@RequestParam token: String, @RequestParam mfaPreference: MfaPreferenceType): ModelAndView {
+  @GetMapping("/mfa-resend")
+  fun mfaResendRequest(@RequestParam token: String, @RequestParam mfaPreference: MfaPreferenceType): ModelAndView {
 
     val optionalError = tokenService.checkToken(TokenType.MFA, token)
 
     return optionalError.map { ModelAndView("redirect:/login?error=mfa${it}") }
-        .orElse(ModelAndView("mfaResendEmail", "token", token)
-            .addObject("mfaPreference", mfaPreference))
+        .orElseGet { mfaService.buildModelAndViewWithMfaResendOptions(token, mfaPreference) }
   }
 
-  @PostMapping("/mfa-resend-email")
+  @PostMapping("/mfa-resend")
   @Throws(IOException::class, ServletException::class)
-  fun mfaResendEmail(@RequestParam token: String,
-                     @RequestParam mfaResendPreference: MfaPreferenceType,
-                     request: HttpServletRequest,
-                     response: HttpServletResponse): ModelAndView {
-    val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
-    if (optionalErrorForToken.isPresent) {
-      return ModelAndView("redirect:/login?error=mfa${optionalErrorForToken.get()}")
-    }
-
-    val code = mfaService.resendMfaCode(token, mfaResendPreference)
-    // shouldn't really get a code without a valid token, but cope with the scenario anyway
-    if (code.isNullOrEmpty()) {
-      return ModelAndView("redirect:/login?error=mfainvalid")
-    }
-
-    val modelAndView = ModelAndView("redirect:/mfa-challenge", "token", token)
-        .addObject("mfaPreference", mfaResendPreference)
-    if (smokeTestEnabled) modelAndView.addObject("smokeCode", code)
-    return modelAndView
-  }
-
-  @GetMapping("/mfa-resend-text")
-  fun mfaResendTextRequest(@RequestParam token: String, @RequestParam mfaPreference: MfaPreferenceType): ModelAndView {
-
-    val optionalError = tokenService.checkToken(TokenType.MFA, token)
-
-    val user = tokenService.getUserFromToken(TokenType.MFA, token)
-    val partialMobile = user.mobile.replaceRange(0, 7, "*******")
-    val partialEmail = user.email.take(6) + "******@******" + user.email.takeLast(7)
-
-
-    return optionalError.map { ModelAndView("redirect:/login?error=mfa${it}") }
-        .orElse(ModelAndView("mfaResendText", "token", token)
-            .addObject("mfaPreference", mfaPreference)
-            .addObject("mobile", partialMobile)
-            .addObject("email", partialEmail)
-        )
-  }
-
-  @PostMapping("/mfa-resend-text")
-  @Throws(IOException::class, ServletException::class)
-  fun mfaResendText(@RequestParam token: String,
-                    @RequestParam mfaResendPreference: MfaPreferenceType,
-                    request: HttpServletRequest,
-                    response: HttpServletResponse): ModelAndView {
+  fun mfaResend(@RequestParam token: String,
+                @RequestParam mfaResendPreference: MfaPreferenceType,
+                request: HttpServletRequest,
+                response: HttpServletResponse): ModelAndView {
     val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
     if (optionalErrorForToken.isPresent) {
       return ModelAndView("redirect:/login?error=mfa${optionalErrorForToken.get()}")

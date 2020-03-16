@@ -1,8 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
 import com.nhaarman.mockito_kotlin.*
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -257,4 +256,75 @@ class MfaServiceTest {
     assertThat(user.mfaPreference).isEqualTo(MfaPreferenceType.EMAIL)
     verify(userService).findUser("user")
   }
+
+  @Test
+  fun `getMaskedMobile check mask`() {
+    val user = User.builder().mobile("07700900321").build()
+    val maskedMobile = service.getMaskedMobile(user)
+    assertThat(maskedMobile).isEqualTo("*******0321")
+  }
+
+  @Test
+  fun `getMaskedEmail check mask`() {
+    val user = User.builder().email("john.smithson34@digital.justice.gov.uk").build()
+    val maskedMobile = service.getMaskedEmail(user)
+    assertThat(maskedMobile).isEqualTo("john.s******@******.gov.uk")
+  }
+
+  @Test
+  fun `getMaskedEmail check mask short username`() {
+    val user = User.builder().email("bob@digital.justice.gov.uk").build()
+    val maskedMobile = service.getMaskedEmail(user)
+    assertThat(maskedMobile).isEqualTo("b******@******.gov.uk")
+  }
+
+  @Test
+  fun `buildModelAndViewWithMfaResendOptions check view`() {
+    whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(User())
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("token", MfaPreferenceType.EMAIL)
+    assertThat(modelAndView.viewName).isEqualTo("mfaResend")
+  }
+
+  @Test
+  fun `buildModelAndViewWithMfaResendOptions check model`() {
+    whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(User())
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("token", MfaPreferenceType.EMAIL)
+    assertThat(modelAndView.model).containsExactly(entry("token", "token"), entry("mfaPreference", MfaPreferenceType.EMAIL))
+  }
+
+  @Test
+  fun `buildModelAndViewWithMfaResendOptions verified mobile and email check model`() {
+    val user = User.builder().mobile("07700900321").mobileVerified(true).email("bob@digital.justice.gov.uk").verified(true).build()
+    whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("token", MfaPreferenceType.EMAIL)
+    assertThat(modelAndView.model).containsExactly(
+        entry("token", "token"),
+        entry("mfaPreference", MfaPreferenceType.EMAIL),
+        entry("email", "b******@******.gov.uk"),
+        entry("mobile", "*******0321"))
+  }
+
+  @Test
+  fun `buildModelAndViewWithMfaResendOptions verified mobile and not verfied email check model`() {
+    val user = User.builder().mobile("07700900321").mobileVerified(true).email("bob@digital.justice.gov.uk").verified(false).build()
+    whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("token", MfaPreferenceType.EMAIL)
+    assertThat(modelAndView.model).containsExactly(
+        entry("token", "token"),
+        entry("mfaPreference", MfaPreferenceType.EMAIL),
+        entry("mobile", "*******0321"))
+  }
+
+  @Test
+  fun `buildModelAndViewWithMfaResendOptions not verified mobile and verfied email check model`() {
+    val user = User.builder().mobile("07700900321").mobileVerified(false).email("bob@digital.justice.gov.uk").verified(true).build()
+    whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("token", MfaPreferenceType.EMAIL)
+    assertThat(modelAndView.model).containsExactly(
+        entry("token", "token"),
+        entry("mfaPreference", MfaPreferenceType.EMAIL),
+        entry("email", "b******@******.gov.uk"))
+  }
+
+
 }

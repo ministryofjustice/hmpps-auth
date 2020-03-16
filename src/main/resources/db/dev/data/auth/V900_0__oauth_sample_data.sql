@@ -133,9 +133,10 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D67', 'AUTH_MFA_PREF_TEXT4', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'simon.mitchell@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'TEXT'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D68', 'AUTH_MFA_LOCKED_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'simon.mitchell@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'TEXT'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D69', 'AUTH_MFA_LOCKED2_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'simon.mitchell@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'TEXT'),
-        ('2E285CCF-DCFD-4498-9E22-D6E8E10A2A3F', 'AUTH_MFA_NOTEXT_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'simon.mitchell@digital.justice.gov.uk', 'Mfa No Text', 'User', 0, 1, 0, 'auth', null, 0, 'TEXT'),
-        ('2E285CCF-DCFD-4499-9E22-D6E8E10A2A3F', 'AUTH_MFA_PREF_TEXT_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'simon.mitchell@digital.justice.gov.uk', 'Mfa No Text', 'User', 1, 1, 0, 'auth', null, 0, 'TEXT');
-
+        ('2E285CCF-DCFD-4498-9E22-D6E8E10A2D6A', 'AUTH_MFA_NOTEXT_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'simon.mitchell@digital.justice.gov.uk', 'Mfa No Text', 'User', 0, 1, 0, 'auth', null, 0, 'TEXT'),
+        ('2E285CCF-DCFD-4499-9E22-D6E8E10A2D6B', 'AUTH_MFA_PREF_TEXT_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'simon.mitchell@digital.justice.gov.uk', 'Mfa No Text', 'User', 1, 1, 0, 'auth', null, 0, 'TEXT'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D6C', 'AUTH_MFA_SHORT_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'bob@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',0,'EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D6D', 'AUTH_MFA_NON_VERIFIED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'bob@digital.justice.gov.uk', 'Auth', 'Mfa', 0, 1, 0, 'auth', '07700900321',0,'EMAIL');
 
 
 -- delius users
@@ -185,6 +186,8 @@ INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, use
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_PREF_TEXT2' and role_code = 'MFA';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_PREF_TEXT3' and role_code = 'MFA';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_PREF_TEXT4' and role_code = 'MFA';
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_SHORT_EMAIL' and role_code = 'MFA';
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_NON_VERIFIED' and role_code = 'MFA';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_VIDEO_LINK_COURT_USER' and role_code = 'VIDEO_LINK_COURT_USER';
 
 INSERT INTO groups (group_id, group_code, group_name) VALUES (newid(), 'SITE_1_GROUP_1', 'Site 1 - Group 1'),

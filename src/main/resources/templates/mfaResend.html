@@ -3,26 +3,29 @@
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
-  <title>Resend Verification Code By Text</title>
+  <title>Resend Verification Code</title>
 </head>
 <body>
-<div layout:fragment="content" class="govuk-grid-column-two-thirds"
+<div layout:fragment="content" class="govuk-grid-column-full"
      th:with="token=${#strings.isEmpty(token) ? param.token : token}">
 
   <h1 class="govuk-heading-xl">Resend security code</h1>
 
-  <p class="govuk-body">Text messages sometimes take a few minutes to arrive. If you do not receive the text message,
-    you can resend
+  <p class="govuk-body" th:if="${#strings.equals(mfaPreference, 'TEXT')}">Text messages sometimes take a few minutes to
+    arrive. If you do not receive the text message,
+    you can resend it.</p>
+  <p class="govuk-body" th:unless="${#strings.equals(mfaPreference, 'TEXT')}">Emails sometimes take a few minutes to
+    arrive. If you do not receive the email, you can resend
     it.</p>
 
-  <form th:action="@{/mfa-resend-text}" method="POST" id="mfaForm" autocomplete="off" novalidate>
+  <form th:action="@{/mfa-resend}" method="POST" id="mfaForm" autocomplete="off" novalidate>
     <div class="govuk-form-group">
       <input id="token" name="token" type="hidden" data-element-id="token" th:value="${token}">
       <input id="mfaPreference" name="mfaPreference" type="hidden" data-element-id="mfaPreference"
              th:value="${mfaPreference}">
     </div>
     <div class="govuk-radios">
-      <div class="govuk-radios__item">
+      <div th:if="${mobile} != null" class="govuk-radios__item">
         <input class="govuk-radios__input" id="mfa-pref-text" name="mfaResendPreference" type="radio" value="TEXT"
                aria-describedby="mfa-pref-text-item-hint"
                th:checked="(${#strings.equals(mfaPreference, 'TEXT')})">
@@ -33,7 +36,7 @@
          You’ll receive a 6 digit number to your mobile <span data-qa="text" th:text="${mobile}">your mobile</span> by text message
         </span>
       </div>
-      <div class="govuk-radios__item">
+      <div th:if="${email} != null" class="govuk-radios__item">
         <input class="govuk-radios__input" id="mfa-pref-email" name="mfaResendPreference" type="radio" value="EMAIL"
                aria-describedby="mfa-pref-email-item-hint"
                th:checked="(${#strings.equals(mfaPreference, 'EMAIL')})">

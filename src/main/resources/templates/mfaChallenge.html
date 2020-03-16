@@ -70,10 +70,10 @@
   <div class="govuk-form-group">
     <ul class="govuk-list">
       <li><a class="govuk-link" th:if="${#strings.equals(mfaPreference, 'TEXT')}"
-             th:href="@{/mfa-resend-text(token=${token},mfaPreference=${mfaPreference})}"
+             th:href="@{/mfa-resend(token=${token},mfaPreference=${mfaPreference})}"
              id="resend-mfa-text">Not received a text message?</a></li>
       <li><a class="govuk-link" th:unless="${#strings.equals(mfaPreference, 'TEXT')}"
-             th:href="@{/mfa-resend-email(token=${token},mfaPreference=${mfaPreference})}"
+             th:href="@{/mfa-resend(token=${token},mfaPreference=${mfaPreference})}"
              id="resend-mfa-email">Not received an email?</a></li>
     </ul>
   </div>
