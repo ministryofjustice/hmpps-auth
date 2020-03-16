@@ -105,7 +105,6 @@ class UserServiceTest {
     }
   }
 
-  @Suppress("UsePropertyAccessSyntax")
   @Nested
   inner class HasVerifiedMfaMethod {
     @Test

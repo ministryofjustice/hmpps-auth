@@ -45,13 +45,13 @@ class UserService(private val nomisUserService: NomisUserService,
   }
 
   fun isSameAsCurrentVerifiedMobile(username: String, mobile: String?): Boolean {
-    val user = findUser(username).orElseThrow()
+    val user = getUser(username)
     val canonicalMobile = mobile?.replace("\\s+".toRegex(), "")
     return user.isMobileVerified && canonicalMobile == user.mobile
   }
 
   fun isSameAsCurrentVerifiedEmail(username: String, email: String): Boolean {
-    val user = findUser(username).orElseThrow()
+    val user = getUser(username)
     return user.isVerified && email == user.email
   }
 }
