@@ -1,81 +1,72 @@
-package uk.gov.justice.digital.hmpps.oauth2server.timed;
+package uk.gov.justice.digital.hmpps.oauth2server.timed
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
+import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.check
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.times
+import com.nhaarman.mockito_kotlin.whenever
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.isNull
+import org.mockito.Captor
+import org.mockito.Mockito.verify
+import org.mockito.junit.jupiter.MockitoExtension
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension::class)
 class DisableInactiveAuthUsersServiceTest {
-    @Mock
-    private UserRepository userRepository;
-    @Mock
-    private TelemetryClient telemetryClient;
-    @Captor
-    private ArgumentCaptor<Map<String, String>> mapCaptor;
+  private val userRepository: UserRepository = mock()
+  private val telemetryClient: TelemetryClient = mock()
+  private val service: DisableInactiveAuthUsersService = DisableInactiveAuthUsersService(userRepository, telemetryClient, 10)
 
-    private DisableInactiveAuthUsersService service;
+  @Captor
+  private lateinit var mapCaptor: ArgumentCaptor<Map<String, String>>
 
-    @BeforeEach
-    void setUp() {
-        service = new DisableInactiveAuthUsersService(userRepository, telemetryClient, 10);
-    }
+  @Test
+  fun findAndDisableInactiveAuthUsers_Processed() {
+    val users = listOf(User.of("user"), User.of("joe"))
+    whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
+        .thenReturn(users)
+    assertThat(service.processInBatches()).isEqualTo(2)
+  }
 
-    @Test
-    void findAndDisableInactiveAuthUsers_Processed() {
-        final var users = List.of(User.of("user"), User.of("joe"));
-        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
-                .thenReturn(users);
-        assertThat(service.processInBatches()).isEqualTo(2);
-    }
+  @Test
+  fun findAndDisableInactiveAuthUsers_CheckAge() {
+    val users = listOf(User.of("user"), User.of("joe"))
+    whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
+        .thenReturn(users)
+    assertThat(service.processInBatches()).isEqualTo(2)
+    verify(userRepository).findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(check {
+      assertThat(it).isBetween(LocalDateTime.now().minusDays(11), LocalDateTime.now().minusDays(9))
+    })
+  }
 
-    @Test
-    void findAndDisableInactiveAuthUsers_CheckAge() {
-        final var users = List.of(User.of("user"), User.of("joe"));
-        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
-                .thenReturn(users);
-        assertThat(service.processInBatches()).isEqualTo(2);
-        final var captor = ArgumentCaptor.forClass(LocalDateTime.class);
-        verify(userRepository).findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(captor.capture());
-        assertThat(captor.getValue()).isBetween(LocalDateTime.now().minusDays(11), LocalDateTime.now().minusDays(9));
-    }
+  @Test
+  fun findAndDisableInactiveAuthUsers_Disabled() {
+    val users = listOf(
+        User.builder().username("user").enabled(true).build(),
+        User.builder().username("joe").enabled(true).build())
+    whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
+        .thenReturn(users)
+    service.processInBatches()
+    assertThat(users).extracting<Boolean, RuntimeException> { it.isEnabled }.containsExactly(false, false)
+  }
 
-    @Test
-    void findAndDisableInactiveAuthUsers_Disabled() {
-        final var users = List.of(
-                User.builder().username("user").enabled(true).build(),
-                User.builder().username("joe").enabled(true).build());
-        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
-                .thenReturn(users);
-        service.processInBatches();
-        assertThat(users).extracting(User::isEnabled).containsExactly(false, false);
-    }
-
-    @Test
-    void findAndDisableInactiveAuthUsers_Telemetry() {
-        final var users = List.of(
-                User.builder().username("user").enabled(true).build(),
-                User.builder().username("joe").enabled(true).build());
-        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
-                .thenReturn(users);
-        service.processInBatches();
-
-        verify(telemetryClient, times(2)).trackEvent(eq("DisableInactiveAuthUsersProcessed"), mapCaptor.capture(), isNull());
-        assertThat(mapCaptor.getAllValues().stream().map(m -> m.get("username")).collect(Collectors.toList())).containsExactly("user", "joe");
-    }
+  @Test
+  fun findAndDisableInactiveAuthUsers_Telemetry() {
+    val users = listOf(
+        User.builder().username("user").enabled(true).build(),
+        User.builder().username("joe").enabled(true).build())
+    whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
+        .thenReturn(users)
+    service.processInBatches()
+    verify(telemetryClient, times(2)).trackEvent(ArgumentMatchers.eq("DisableInactiveAuthUsersProcessed"), mapCaptor.capture(), isNull())
+    assertThat(mapCaptor.allValues.map { it["username"] }).containsExactly("user", "joe")
+  }
 }

@@ -1,89 +1,75 @@
-package uk.gov.justice.digital.hmpps.oauth2server.timed;
+package uk.gov.justice.digital.hmpps.oauth2server.timed
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository;
+import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.times
+import com.nhaarman.mockito_kotlin.whenever
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Captor
+import org.mockito.Mockito.verify
+import org.mockito.junit.jupiter.MockitoExtension
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository
+import java.util.*
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension::class)
 class DeleteDisabledUsersServiceTest {
-    @Mock
-    private UserRepository userRepository;
-    @Mock
-    private UserRetriesRepository userRetriesRepository;
-    @Mock
-    private TelemetryClient telemetryClient;
-    @Captor
-    private ArgumentCaptor<Map<String, String>> mapCaptor;
+  private val userRepository: UserRepository = mock()
+  private val userRetriesRepository: UserRetriesRepository = mock()
+  private val telemetryClient: TelemetryClient = mock()
 
-    private DeleteDisabledUsersService service;
+  @Captor
+  private lateinit var mapCaptor: ArgumentCaptor<Map<String, String>>
+  private val service: DeleteDisabledUsersService = DeleteDisabledUsersService(userRepository, userRetriesRepository, telemetryClient)
 
-    @BeforeEach
-    void setUp() {
-        service = new DeleteDisabledUsersService(userRepository, userRetriesRepository, telemetryClient);
-    }
+  @Test
+  fun findAndDeleteDisabledUsers_Processed() {
+    val users = listOf(User.of("user"), User.of("joe"))
+    whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
+        .thenReturn(users)
+    assertThat(service.processInBatches()).isEqualTo(2)
+  }
 
-    @Test
-    void findAndDeleteDisabledUsers_Processed() {
-        final var users = List.of(User.of("user"), User.of("joe"));
-        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
-                .thenReturn(users);
-        assertThat(service.processInBatches()).isEqualTo(2);
-    }
+  @Test
+  fun findAndDeleteDisabledUsers_Deleted() {
+    val user = User.builder().username("user").id(UUID.randomUUID()).build()
+    val joe = User.builder().username("joe").id(UUID.randomUUID()).build()
+    val users = listOf(user, joe)
+    whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
+        .thenReturn(users)
+    service.processInBatches()
+    verify(userRepository).delete(user)
+    verify(userRepository).delete(joe)
+  }
 
-    @Test
-    void findAndDeleteDisabledUsers_Deleted() {
-        final var user = User.builder().username("user").id(UUID.randomUUID()).build();
-        final var joe = User.builder().username("joe").id(UUID.randomUUID()).build();
-        final var users = List.of(user, joe);
+  @Test
+  fun findAndDeleteDisabledUsers_DeleteAll() {
+    val user = User.of("user")
+    user.createToken(UserToken.TokenType.RESET)
+    val retry = UserRetries("user", 3)
+    whenever(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(retry))
+    whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
+        .thenReturn(listOf(user))
+    service.processInBatches()
+    verify(userRetriesRepository).delete(retry)
+  }
 
-        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
-                .thenReturn(users);
-        service.processInBatches();
-        verify(userRepository).delete(user);
-        verify(userRepository).delete(joe);
-    }
-
-    @Test
-    void findAndDeleteDisabledUsers_DeleteAll() {
-        final var user = User.of("user");
-        user.createToken(TokenType.RESET);
-        final var retry = new UserRetries("user", 3);
-        when(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(retry));
-
-        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
-                .thenReturn(List.of(user));
-        service.processInBatches();
-        verify(userRetriesRepository).delete(retry);
-    }
-
-    @Test
-    void findAndDeleteDisabledUsers_Telemetry() {
-        final var users = List.of(User.of("user"), User.of("joe"));
-        when(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
-                .thenReturn(users);
-        service.processInBatches();
-
-        verify(telemetryClient, times(2)).trackEvent(eq("DeleteDisabledUsersProcessed"), mapCaptor.capture(), isNull());
-        assertThat(mapCaptor.getAllValues().stream().map(m -> m.get("username")).collect(Collectors.toList())).containsExactly("user", "joe");
-    }
+  @Test
+  fun findAndDeleteDisabledUsers_Telemetry() {
+    val users = listOf(User.of("user"), User.of("joe"))
+    whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
+        .thenReturn(users)
+    service.processInBatches()
+    verify(telemetryClient, times(2)).trackEvent(ArgumentMatchers.eq("DeleteDisabledUsersProcessed"), mapCaptor.capture(), ArgumentMatchers.isNull())
+    assertThat(mapCaptor.allValues.map { it["username"] }).containsExactly("user", "joe")
+  }
 }

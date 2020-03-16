@@ -1,37 +1,37 @@
-package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
+package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
-import org.junit.jupiter.api.Test;
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority.removeRolePrefixIfNecessary
 
-import static org.assertj.core.api.Assertions.assertThat;
+internal class AuthorityTest {
+  @Test
+  fun testConstructor_addsRole() {
+    assertThat(Authority("BOB", "bloggs").authority).isEqualTo("ROLE_BOB")
+  }
 
-class AuthorityTest {
-    @Test
-    void testConstructor_addsRole() {
-        assertThat(new Authority("BOB", "bloggs").getAuthority()).isEqualTo("ROLE_BOB");
-    }
+  @Test
+  fun testConstructor_unecessary() {
+    assertThat(Authority("ROLE_BOB", "bloggs").authority).isEqualTo("ROLE_BOB")
+  }
 
-    @Test
-    void testConstructor_unecessary() {
-        assertThat(new Authority("ROLE_BOB", "bloggs").getAuthority()).isEqualTo("ROLE_BOB");
-    }
+  @Test
+  fun authorityName() {
+    assertThat(Authority("ROLE_BOB", "bloggs").roleCode).isEqualTo("BOB")
+  }
 
-    @Test
-    void getAuthorityName() {
-        assertThat(new Authority("ROLE_BOB", "bloggs").getRoleCode()).isEqualTo("BOB");
-    }
+  @Test
+  fun removeRolePrefixIfNecessary_necessary() {
+    assertThat(removeRolePrefixIfNecessary("ROLE_BOB")).isEqualTo("BOB")
+  }
 
-    @Test
-    void removeRolePrefixIfNecessary_necessary() {
-        assertThat(Authority.removeRolePrefixIfNecessary("ROLE_BOB")).isEqualTo("BOB");
-    }
+  @Test
+  fun removeRolePrefixIfNecessary_unnecessary() {
+    assertThat(removeRolePrefixIfNecessary("BOB")).isEqualTo("BOB")
+  }
 
-    @Test
-    void removeRolePrefixIfNecessary_unnecessary() {
-        assertThat(Authority.removeRolePrefixIfNecessary("BOB")).isEqualTo("BOB");
-    }
-
-    @Test
-    void removeRolePrefixIfNecessary_null() {
-        assertThat(Authority.removeRolePrefixIfNecessary(null)).isEqualTo(null);
-    }
+  @Test
+  fun removeRolePrefixIfNecessary_null() {
+    assertThat(removeRolePrefixIfNecessary(null)).isEqualTo(null)
+  }
 }
