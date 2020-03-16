@@ -122,22 +122,12 @@ class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelis
         .addObject("mfaPreference", mfaPreference)
 
     if (user.isVerified) {
-      modelAndView.addObject("email", getMaskedEmail(user))
+      modelAndView.addObject("email", user.maskedEmail)
     }
     if (user.isMobileVerified) {
-      modelAndView.addObject("mobile", getMaskedMobile(user))
+      modelAndView.addObject("mobile", user.maskedMobile)
     }
     return modelAndView
-  }
-
-  fun getMaskedMobile(user: User): String {
-    return user.mobile.replaceRange(0, 7, "*******")
-  }
-
-  fun getMaskedEmail(user: User): String {
-    val emailCharacters = user.email.substringBefore("@").count()
-    val emailCharactersReduced = Math.min(emailCharacters / 2, 6)
-    return "${user.email.take(emailCharactersReduced)}******@******${user.email.takeLast(7)}"
   }
 
   private fun emailCode(user: User, code: String) {

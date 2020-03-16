@@ -257,26 +257,6 @@ class MfaServiceTest {
     verify(userService).findUser("user")
   }
 
-  @Test
-  fun `getMaskedMobile check mask`() {
-    val user = User.builder().mobile("07700900321").build()
-    val maskedMobile = service.getMaskedMobile(user)
-    assertThat(maskedMobile).isEqualTo("*******0321")
-  }
-
-  @Test
-  fun `getMaskedEmail check mask`() {
-    val user = User.builder().email("john.smithson34@digital.justice.gov.uk").build()
-    val maskedMobile = service.getMaskedEmail(user)
-    assertThat(maskedMobile).isEqualTo("john.s******@******.gov.uk")
-  }
-
-  @Test
-  fun `getMaskedEmail check mask short username`() {
-    val user = User.builder().email("bob@digital.justice.gov.uk").build()
-    val maskedMobile = service.getMaskedEmail(user)
-    assertThat(maskedMobile).isEqualTo("b******@******.gov.uk")
-  }
 
   @Test
   fun `buildModelAndViewWithMfaResendOptions check view`() {
