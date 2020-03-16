@@ -12,7 +12,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter;
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig;
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig;
@@ -279,7 +283,7 @@ public class UserRepositoryTest {
     void findAll_UserFilter_ByFirstNameLastName() {
         assertThat(repository.findAll(UserFilter.builder().name("a no").build()))
                 .extracting(User::getUsername)
-                .containsExactly("AUTH_NO_EMAIL", "AUTH_MFA_NOEMAIL_USER");
+                .containsExactly("AUTH_NO_EMAIL", "AUTH_MFA_NOEMAIL_USER", "AUTH_MFA_NOTEXT_USER");
     }
 
     @Test
