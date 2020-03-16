@@ -185,6 +185,16 @@ public class User implements UserPersonDetails, CredentialsContainer {
         return source == AuthSource.auth;
     }
 
+    public String getMaskedMobile() {
+        return "*******" + mobile.substring(7);
+    }
+
+    public String getMaskedEmail() {
+        final var emailCharacters = StringUtils.substringBefore(email, "@").length();
+        final var emailCharactersReduced = Math.min(emailCharacters / 2, 6);
+        return email.substring(0, emailCharactersReduced) + "******@******" + email.substring(email.length() - 7);
+    }
+
     @Override
     public String toString() {
         return "User{" +

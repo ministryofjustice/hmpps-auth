@@ -151,5 +151,26 @@ class UserTest {
     }
   }
 
+  @Nested
+  inner class ApplyMask {
+    @Test
+    fun `getMaskedMobile check mask`() {
+      val user = User.builder().mobile("07700900321").build()
+      assertThat(user.getMaskedMobile()).isEqualTo("*******0321")
+    }
+
+    @Test
+    fun `getMaskedEmail check mask`() {
+      val user = User.builder().email("john.smithson34@digital.justice.gov.uk").build()
+      assertThat(user.getMaskedEmail()).isEqualTo("john.s******@******.gov.uk")
+    }
+
+    @Test
+    fun `getMaskedEmail check mask short username`() {
+      val user = User.builder().email("bob@digital.justice.gov.uk").build()
+      assertThat(user.getMaskedEmail()).isEqualTo("b******@******.gov.uk")
+    }
+  }
+
   private fun userBuilder() = User.builder().username("user")
 }
