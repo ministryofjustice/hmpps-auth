@@ -57,7 +57,7 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
 
             // now check if mfa is enabled for the user
             if (mfaService.needsMfa(fullAuthentication.getAuthorities())) {
-                if (userService.hasVerifiedEmail(userDetails)) {
+                if (userService.hasVerifiedMfaMethod(userDetails)) {
                     throw new MfaRequiredException("MFA required");
                 }
                 throw new MfaUnavailableException("MFA required, but no email set");
@@ -112,7 +112,7 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
     }
 
     public static class MfaUnavailableException extends AccountStatusException {
-        MfaUnavailableException(final String msg) {
+        public MfaUnavailableException(final String msg) {
             super(msg);
         }
     }

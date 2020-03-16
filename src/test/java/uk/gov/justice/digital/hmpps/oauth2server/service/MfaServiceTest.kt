@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaUnavailableException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
@@ -146,18 +147,18 @@ class MfaServiceTest {
 
   @Test
   fun `createTokenAndSendMfaCode success`() {
-    val user = User.of("bob")
+    val user = User.builder().username("bob").person(Person("first", "last")).email("email").verified(true).build()
     whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
 
-    assertThat(service.createTokenAndSendMfaCode("user")).isEqualTo(Pair("sometoken", "somecode"))
+    assertThat(service.createTokenAndSendMfaCode("user")).isEqualTo(MfaData("sometoken", "somecode", MfaPreferenceType.EMAIL))
   }
 
   @Test
   fun `createTokenAndSendMfaCode by Email check email params`() {
-    val user = User.builder().username("bob").person(Person("first", "last")).email("email").build()
+    val user = User.builder().username("bob").person(Person("first", "last")).email("email").verified(true).build()
     whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
@@ -179,6 +180,17 @@ class MfaServiceTest {
     service.createTokenAndSendMfaCode("user")
 
     verify(notificationClientApi).sendSms("textTemplate", "07700900321", mapOf("mfaCode" to "somecode"), null, null)
+  }
+
+  @Test
+  fun `createTokenAndSendMfaCode no valid preference`() {
+    val user = User.builder().username("bob").build()
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
+    whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+
+    assertThatThrownBy { service.createTokenAndSendMfaCode("user") }.isInstanceOf(MfaUnavailableException::class.java)
   }
 
   @Test

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaUnavailableException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper
@@ -19,14 +20,14 @@ import uk.gov.service.notify.NotificationClientApi
 
 @Service
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
-open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelist: Set<String>,
-                      @Value("\${application.authentication.mfa.roles}") private val mfaRoles: Set<String>,
-                      @Value("\${application.notify.mfa.template}") private val mfaEmailTemplateId: String,
-                      @Value("\${application.notify.mfa-text.template}") private val mfaTextTemplateId: String,
-                      private val tokenService: TokenService,
-                      private val userService: UserService,
-                      private val notificationClient: NotificationClientApi,
-                      private val userRetriesService: UserRetriesService) {
+class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelist: Set<String>,
+                 @Value("\${application.authentication.mfa.roles}") private val mfaRoles: Set<String>,
+                 @Value("\${application.notify.mfa.template}") private val mfaEmailTemplateId: String,
+                 @Value("\${application.notify.mfa-text.template}") private val mfaTextTemplateId: String,
+                 private val tokenService: TokenService,
+                 private val userService: UserService,
+                 private val notificationClient: NotificationClientApi,
+                 private val userRetriesService: UserRetriesService) {
 
   private val ipMatchers: List<IpAddressMatcher>
 
@@ -48,20 +49,24 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  fun createTokenAndSendMfaCode(username: String): Pair<String, String> {
+  @Throws(MfaUnavailableException::class)
+  fun createTokenAndSendMfaCode(username: String): MfaData {
     log.info("Creating token and sending email for {}", username)
     val user = userService.getOrCreateUser(username)
 
     val token = tokenService.createToken(TokenType.MFA, username)
     val code = tokenService.createToken(TokenType.MFA_CODE, username)
 
-    if (user.mfaPreference == MfaPreferenceType.EMAIL) {
-      emailCode(user, code)
-    } else {
-      textCode(user, code)
-    }
+    val mfaType = user.calculateMfaFromPreference().map {
+      @Suppress("WHEN_ENUM_CAN_BE_NULL_IN_JAVA")
+      when (it) {
+        MfaPreferenceType.EMAIL -> emailCode(user, code)
+        MfaPreferenceType.TEXT -> textCode(user, code)
+      }
+      it
+    }.orElseThrow { MfaUnavailableException("Unable to find a valid mfa preference type") }
 
-    return Pair(token, code)
+    return MfaData(token, code, mfaType)
   }
 
   @Transactional(transactionManager = "authTransactionManager", noRollbackFor = [LoginFlowException::class, MfaFlowException::class])
@@ -123,3 +128,5 @@ open class MfaService(@Value("\${application.authentication.mfa.whitelist}") whi
 
 class MfaFlowException(val error: String) : RuntimeException(error)
 class LoginFlowException(val error: String) : RuntimeException(error)
+
+data class MfaData(val token: String, val code: String, val mfaType: MfaPreferenceType)

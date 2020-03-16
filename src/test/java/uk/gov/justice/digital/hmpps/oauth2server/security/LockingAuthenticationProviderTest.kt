@@ -42,7 +42,7 @@ class LockingAuthenticationProviderTest {
   @Test
   fun `authenticate authUser needs MFA`() {
     whenever(mfaService.needsMfa(any())).thenReturn(true)
-    whenever(userService.hasVerifiedEmail(any())).thenReturn(true)
+    whenever(userService.hasVerifiedMfaMethod(any())).thenReturn(true)
 
     val password = "{bcrypt}" + BCryptPasswordEncoder().encode("some_pass")
     val userDetails = UserDetailsImpl("user", "name", password,

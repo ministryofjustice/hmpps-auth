@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import com.microsoft.applicationinsights.TelemetryClient;
-import kotlin.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,9 +10,11 @@ import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaRequiredException;
 import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaUnavailableException;
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaData;
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 
@@ -125,20 +126,30 @@ class UserStateAuthenticationFailureHandlerTest {
     @Test
     void onAuthenticationFailure_mfa() throws IOException {
         when(request.getParameter("username")).thenReturn("bob");
-        when(mfaService.createTokenAndSendMfaCode(anyString())).thenReturn(new Pair<>("sometoken", "somecode"));
+        when(mfaService.createTokenAndSendMfaCode(anyString())).thenReturn(new MfaData("sometoken", "somecode", MfaPreferenceType.TEXT));
         handler.onAuthenticationFailure(request, response, new MfaRequiredException("msg"));
 
-        verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken");
+        verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken&mfaPreference=TEXT");
         verify(mfaService).createTokenAndSendMfaCode("BOB");
+    }
+
+    @Test
+    void onAuthenticationFailure_mfaRequiredButUnavailable() throws IOException {
+        when(request.getParameter("username")).thenReturn("bob");
+        when(mfaService.createTokenAndSendMfaCode(anyString())).thenThrow(new MfaUnavailableException("msg"));
+        handler.onAuthenticationFailure(request, response, new MfaRequiredException("msg"));
+
+        verify(redirectStrategy).sendRedirect(request, response, "/login?error=mfaunavailable");
+        verify(telemetryClient).trackEvent("AuthenticateFailure", Map.of("username", "BOB", "type", "mfaunavailable"), null);
     }
 
     @Test
     void onAuthenticationFailure_mfa_smokeTestEnabled() throws IOException {
         when(request.getParameter("username")).thenReturn("bob");
-        when(mfaService.createTokenAndSendMfaCode(anyString())).thenReturn(new Pair<>("sometoken", "somecode"));
+        when(mfaService.createTokenAndSendMfaCode(anyString())).thenReturn(new MfaData("sometoken", "somecode", MfaPreferenceType.TEXT));
         setupHandler(true).onAuthenticationFailure(request, response, new MfaRequiredException("msg"));
 
-        verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken&smokeCode=somecode");
+        verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken&mfaPreference=TEXT&smokeCode=somecode");
         verify(mfaService).createTokenAndSendMfaCode("BOB");
     }
 

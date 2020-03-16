@@ -20,10 +20,10 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-open class UserStateAuthenticationFailureHandler(private val tokenService: TokenService,
-                                                 private val mfaService: MfaService,
-                                                 @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
-                                                 private val telemetryClient: TelemetryClient) : SimpleUrlAuthenticationFailureHandler(FAILURE_URL) {
+class UserStateAuthenticationFailureHandler(private val tokenService: TokenService,
+                                            private val mfaService: MfaService,
+                                            @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
+                                            private val telemetryClient: TelemetryClient) : SimpleUrlAuthenticationFailureHandler(FAILURE_URL) {
   companion object {
     private const val FAILURE_URL = "/login"
   }
@@ -40,8 +40,8 @@ open class UserStateAuthenticationFailureHandler(private val tokenService: Token
   }
 
   @Throws(IOException::class)
-  open fun onAuthenticationFailureForUsername(request: HttpServletRequest, response: HttpServletResponse,
-                                              exception: AuthenticationException, username: String?) {
+  fun onAuthenticationFailureForUsername(request: HttpServletRequest, response: HttpServletResponse,
+                                         exception: AuthenticationException, username: String?) {
 
     val failures = when (exception) {
       is LockedException -> Pair("locked", null)
@@ -54,14 +54,19 @@ open class UserStateAuthenticationFailureHandler(private val tokenService: Token
       }
       is MfaRequiredException -> {
         // need to break out to perform mfa for the user
-        val (token, code) = mfaService.createTokenAndSendMfaCode(username!!)
+        try {
+          val (token, code, mfaType) = mfaService.createTokenAndSendMfaCode(username!!)
+          val urlBuilder = UriComponentsBuilder.fromPath("/mfa-challenge")
+              .queryParam("token", token)
+              .queryParam("mfaPreference", mfaType)
+          if (smokeTestEnabled) urlBuilder.queryParam("smokeCode", code)
+          val url = urlBuilder.build().toString()
 
-        val urlBuilder = UriComponentsBuilder.fromPath("/mfa-challenge").queryParam("token", token)
-        if (smokeTestEnabled) urlBuilder.queryParam("smokeCode", code)
-        val url = urlBuilder.build().toString()
-
-        redirectStrategy.sendRedirect(request, response, url)
-        return
+          redirectStrategy.sendRedirect(request, response, url)
+          return
+        } catch (e: MfaUnavailableException) {
+          Pair("mfaunavailable", null)
+        }
       }
       is MfaUnavailableException -> {
         Pair("mfaunavailable", null)
