@@ -1,6 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify
 
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.check
+import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.isNull
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -269,7 +274,7 @@ class ResetPasswordServiceTest {
     assertThat(user.tokens).isEmpty()
     verify(userRepository).save(user)
     verify(delegatingUserService).changePasswordWithUnlock(staffUserAccountForBob, "pass")
-    verify(notificationClient).sendEmail("reset-confirm", null, java.util.Map.of("firstName", "user", "username", "user"), null)
+    verify(notificationClient).sendEmail("reset-confirm", null, mapOf("firstName" to "user", "username" to "user"), null)
   }
 
   @Test
@@ -283,7 +288,7 @@ class ResetPasswordServiceTest {
     assertThat(user.tokens).isEmpty()
     verify(userRepository).save(user)
     verify(delegatingUserService).changePasswordWithUnlock(any(), anyString())
-    verify(notificationClient).sendEmail("reset-confirm", null, java.util.Map.of("firstName", "user", "username", "user"), null)
+    verify(notificationClient).sendEmail("reset-confirm", null, mapOf("firstName" to "user", "username" to "user"), null)
   }
 
   @Test
@@ -297,7 +302,7 @@ class ResetPasswordServiceTest {
     assertThat(user.tokens).isEmpty()
     verify(userRepository).save(user)
     verify(delegatingUserService).changePasswordWithUnlock(any(), anyString())
-    verify(notificationClient).sendEmail("reset-confirm", null, java.util.Map.of("firstName", "user", "username", "user"), null)
+    verify(notificationClient).sendEmail("reset-confirm", null, mapOf("firstName" to "user", "username" to "user"), null)
   }
 
   @Test
