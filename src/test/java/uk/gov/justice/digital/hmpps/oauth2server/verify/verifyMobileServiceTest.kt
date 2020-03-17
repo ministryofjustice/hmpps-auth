@@ -1,7 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.isNull
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -67,7 +71,7 @@ class VerifyMobileServiceTest {
     val existingUserToken = user.createToken(TokenType.MOBILE)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     verifyMobileService.changeMobileAndRequestVerification("user", "07700900321")
-    assertThat(user.tokens).hasSize(1).extracting<String, RuntimeException> { it.token }.doesNotContain(existingUserToken.token)
+    assertThat(user.tokens).hasSize(1).extracting<String> { it.token }.doesNotContain(existingUserToken.token)
   }
 
   @Test

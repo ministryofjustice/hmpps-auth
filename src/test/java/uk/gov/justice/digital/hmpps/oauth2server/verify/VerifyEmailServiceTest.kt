@@ -1,13 +1,16 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.isNull
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito
+import org.mockito.Mockito.verify
 import org.springframework.jdbc.core.JdbcTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
@@ -73,7 +76,7 @@ class VerifyEmailServiceTest {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
     verifyEmailService.requestVerification("user", "email@john.com", "firstname", "url")
-    assertThat(user.tokens).hasSize(1).extracting<String, RuntimeException> { it.token }.doesNotContain(existingUserToken.token)
+    assertThat(user.tokens).hasSize(1).extracting<String> { it.token }.doesNotContain(existingUserToken.token)
   }
 
   @Test
@@ -176,7 +179,7 @@ class VerifyEmailServiceTest {
   @Test
   fun verifyEmail_InvalidDomain() {
     verifyEmailFailure("a@b.com", "domain")
-    Mockito.verify(referenceCodesService)!!.isValidEmailDomain("b.com")
+    verify(referenceCodesService).isValidEmailDomain("b.com")
   }
 
   @Test

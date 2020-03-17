@@ -42,7 +42,7 @@ class DeliusAuthenticationProviderTest {
     whenever(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(true)
     val auth = provider.authenticate(UsernamePasswordAuthenticationToken("ITAG_USER_ADM", "password123456"))
     assertThat(auth).isNotNull()
-    assertThat(auth.authorities).extracting<String, RuntimeException> { obj: GrantedAuthority -> obj.authority }.containsOnly("ROLE_PROBATION", "ROLE_BOB")
+    assertThat(auth.authorities).extracting<String> { obj: GrantedAuthority -> obj.authority }.containsOnly("ROLE_PROBATION", "ROLE_BOB")
   }
 
   @Test
