@@ -55,7 +55,7 @@ class DisableInactiveAuthUsersServiceTest {
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
         .thenReturn(users)
     service.processInBatches()
-    assertThat(users).extracting<Boolean, RuntimeException> { it.isEnabled }.containsExactly(false, false)
+    assertThat(users).extracting<Boolean> { it.isEnabled }.containsExactly(false, false)
   }
 
   @Test

@@ -5,22 +5,19 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentMatchers.same
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.util.Base64Utils
 import java.util.*
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-@ExtendWith(SpringExtension::class)
-internal class CookieRequestCacheTest {
+class CookieRequestCacheTest {
   private val helper: SavedRequestCookieHelper = mock()
   private val request: HttpServletRequest = mock()
   private val response: HttpServletResponse = mock()
-  private var cache = CookieRequestCache(helper)
+  private val cache = CookieRequestCache(helper)
 
   @Test
   fun saveRequest_secureRequest() {

@@ -17,7 +17,7 @@ class UserTest {
       val changeToken = user.createToken(UserToken.TokenType.CHANGE)
       val resetToken = user.createToken(UserToken.TokenType.RESET)
       assertThat(user.tokens).containsOnly(changeToken, resetToken)
-      assertThat(user.tokens).extracting<String, RuntimeException> { obj: UserToken -> obj.token }.containsOnly(changeToken.token, resetToken.token)
+      assertThat(user.tokens).extracting<String> { obj: UserToken -> obj.token }.containsOnly(changeToken.token, resetToken.token)
     }
   }
 

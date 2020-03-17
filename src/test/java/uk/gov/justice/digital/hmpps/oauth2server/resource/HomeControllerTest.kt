@@ -27,7 +27,7 @@ class HomeControllerTest {
     val homeController = HomeController(landingService)
     val modelAndView = homeController.home(authenticationWithRole("ROLE_LICENCE_DM"))
     val allocatedServices = modelAndView.model["services"] as List<Service>?
-    assertThat(allocatedServices).extracting<String, RuntimeException> { it.code }.containsExactly("DM", "LIC", "NOMIS")
+    assertThat(allocatedServices).extracting<String> { it.code }.containsExactly("DM", "LIC", "NOMIS")
   }
 
   @Test
@@ -44,7 +44,7 @@ class HomeControllerTest {
     val homeController = HomeController(landingService)
     val modelAndView = homeController.contact()
     val allocatedServices = modelAndView.model["services"] as List<Service>?
-    assertThat(allocatedServices).extracting<String, RuntimeException> { it.code }.containsExactly("DM", "NOMIS")
+    assertThat(allocatedServices).extracting<String> { it.code }.containsExactly("DM", "NOMIS")
   }
 
   @Test

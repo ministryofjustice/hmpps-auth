@@ -6,8 +6,8 @@ import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.isNull
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
@@ -130,7 +130,7 @@ class ResetPasswordServiceTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val existingUserToken = user.createToken(UserToken.TokenType.RESET)
     resetPasswordService.requestResetPassword("user", "url")
-    assertThat(user.tokens).hasSize(1).extracting<String, RuntimeException> { obj: UserToken -> obj.token }.doesNotContain(existingUserToken.token)
+    assertThat(user.tokens).hasSize(1).extracting<String> { obj: UserToken -> obj.token }.doesNotContain(existingUserToken.token)
   }
 
   @Test
@@ -173,7 +173,7 @@ class ResetPasswordServiceTest {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     whenever(notificationClient.sendEmail(anyString(), anyString(), anyMap<String, Any?>(), isNull())).thenThrow(NotificationClientException("message"))
-    Assertions.assertThatThrownBy { resetPasswordService.requestResetPassword("user", "url") }.hasMessageContaining("NotificationClientException: message")
+    assertThatThrownBy { resetPasswordService.requestResetPassword("user", "url") }.hasMessageContaining("NotificationClientException: message")
   }
 
   @Test
@@ -313,7 +313,7 @@ class ResetPasswordServiceTest {
     val user = User.builder().username("user").source(AuthSource.nomis).build()
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
-    Assertions.assertThatThrownBy { resetPasswordService.setPassword("bob", "pass") }.isInstanceOf(LockedException::class.java)
+    assertThatThrownBy { resetPasswordService.setPassword("bob", "pass") }.isInstanceOf(LockedException::class.java)
   }
 
   @Test
@@ -322,17 +322,17 @@ class ResetPasswordServiceTest {
     user.source = AuthSource.auth
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
-    Assertions.assertThatThrownBy { resetPasswordService.setPassword("bob", "pass") }.isInstanceOf(LockedException::class.java)
+    assertThatThrownBy { resetPasswordService.setPassword("bob", "pass") }.isInstanceOf(LockedException::class.java)
   }
 
   @Test
   fun moveTokenToAccount_missingUsername() {
-    Assertions.assertThatThrownBy { resetPasswordService.moveTokenToAccount("token", "  ") }.hasMessageContaining("failed with reason: missing")
+    assertThatThrownBy { resetPasswordService.moveTokenToAccount("token", "  ") }.hasMessageContaining("failed with reason: missing")
   }
 
   @Test
   fun moveTokenToAccount_usernameNotFound() {
-    Assertions.assertThatThrownBy { resetPasswordService.moveTokenToAccount("token", "noone") }.hasMessageContaining("failed with reason: notfound")
+    assertThatThrownBy { resetPasswordService.moveTokenToAccount("token", "noone") }.hasMessageContaining("failed with reason: notfound")
   }
 
   @Test
@@ -340,7 +340,7 @@ class ResetPasswordServiceTest {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User.builder().username("user").email("email").verified(true).build()))
     val builtUser = User.builder().username("other").email("emailother").verified(true).build()
     whenever(userTokenRepository.findById("token")).thenReturn(Optional.of(builtUser.createToken(UserToken.TokenType.RESET)))
-    Assertions.assertThatThrownBy { resetPasswordService.moveTokenToAccount("token", "noone") }.hasMessageContaining("failed with reason: email")
+    assertThatThrownBy { resetPasswordService.moveTokenToAccount("token", "noone") }.hasMessageContaining("failed with reason: email")
   }
 
   @Test
@@ -348,7 +348,7 @@ class ResetPasswordServiceTest {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User.builder().username("user").email("email").verified(true).build()))
     val builtUser = User.builder().username("other").email("email").verified(true).build()
     whenever(userTokenRepository.findById("token")).thenReturn(Optional.of(builtUser.createToken(UserToken.TokenType.RESET)))
-    Assertions.assertThatThrownBy { resetPasswordService.moveTokenToAccount("token", "noone") }.extracting("reason").isEqualTo("locked")
+    assertThatThrownBy { resetPasswordService.moveTokenToAccount("token", "noone") }.extracting("reason").isEqualTo("locked")
   }
 
   @Test
@@ -374,6 +374,6 @@ class ResetPasswordServiceTest {
     val newToken = resetPasswordService.moveTokenToAccount("token", "USER")
     assertThat(newToken).hasSize(36)
     verify(userTokenRepository).delete(userToken)
-    assertThat(user.tokens).extracting<String, RuntimeException> { obj: UserToken -> obj.token }.containsExactly(newToken)
+    assertThat(user.tokens).extracting<String> { obj: UserToken -> obj.token }.containsExactly(newToken)
   }
 }

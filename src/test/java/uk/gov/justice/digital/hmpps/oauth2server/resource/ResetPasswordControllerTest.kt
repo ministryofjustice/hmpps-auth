@@ -1,7 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.check
+import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.isNull
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -55,7 +61,6 @@ class ResetPasswordControllerTest {
     }
 
     @Test
-    @Throws(NotificationClientRuntimeException::class)
     fun resetPasswordRequest_successSmokeWithLink() {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("url"))
@@ -65,7 +70,6 @@ class ResetPasswordControllerTest {
     }
 
     @Test
-    @Throws(NotificationClientRuntimeException::class)
     fun resetPasswordRequest_successSmokeNoLink() {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty())
@@ -75,7 +79,6 @@ class ResetPasswordControllerTest {
     }
 
     @Test
-    @Throws(NotificationClientRuntimeException::class)
     fun resetPasswordRequest_successNoLinkTelemetry() {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty())
@@ -86,7 +89,6 @@ class ResetPasswordControllerTest {
     }
 
     @Test
-    @Throws(NotificationClientRuntimeException::class)
     fun resetPasswordRequest_successVerifyServiceCall() {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty())
@@ -95,7 +97,6 @@ class ResetPasswordControllerTest {
     }
 
     @Test
-    @Throws(NotificationClientRuntimeException::class)
     fun resetPasswordRequest_successLinkTelemetry() {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("somelink"))
@@ -106,7 +107,6 @@ class ResetPasswordControllerTest {
     }
 
     @Test
-    @Throws(NotificationClientRuntimeException::class)
     fun resetPasswordRequest_success() {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty())
@@ -116,7 +116,6 @@ class ResetPasswordControllerTest {
     }
 
     @Test
-    @Throws(NotificationClientRuntimeException::class)
     fun resetPasswordRequest_failed() {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(NotificationClientRuntimeException(NotificationClientException("failure message")))
@@ -126,7 +125,6 @@ class ResetPasswordControllerTest {
     }
 
     @Test
-    @Throws(NotificationClientRuntimeException::class, VerifyEmailException::class)
     fun resetPasswordRequest_emailfailed() {
       doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddressExcludingGsi(anyString())
       val modelAndView = controller.resetPasswordRequest("user@somewhere", request)
@@ -135,7 +133,6 @@ class ResetPasswordControllerTest {
     }
 
     @Test
-    @Throws(NotificationClientRuntimeException::class, VerifyEmailException::class)
     fun resetPasswordRequest_emailhelperapostrophe() {
       doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddressExcludingGsi(anyString())
       val modelAndView = controller.resetPasswordRequest("us.o’er@someWHERE.com   ", request)
