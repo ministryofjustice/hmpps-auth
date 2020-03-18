@@ -135,13 +135,13 @@
         Security code preference
       </dt>
       <dd class="govuk-summary-list__value" data-qa="mfaPreference">
+        <span th:text="${#strings.equals(authUser.mfaPreference, 'EMAIL')} ? 'Email' : 'Text message'">
+           None
+        </span>
         <span th:if="${textMfaVerified} or ${emailMfaVerified}"
               id="mfa-preference-not-verified-error" class="govuk-error-message"
               th:text="'Selection has not been verified'">
           preference
-        </span>
-        <span th:text="${#strings.equals(authUser.mfaPreference, 'EMAIL')} ? 'Email' : 'Text message'">
-           No
         </span>
       </dd>
       <dd class="govuk-summary-list__actions">
