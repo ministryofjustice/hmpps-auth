@@ -31,6 +31,10 @@ class MfaPreferenceSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.checkMfaPreferenceIsText()
 
+    accountDetailsPage.navigateToChangeMfaPreference()
+
+    mfaPreferencePage.selectEmail()
+
   }
 
   @Test
@@ -46,6 +50,10 @@ class MfaPreferenceSpecification : AbstractAuthSpecification() {
     mfaPreferencePage.selectEmail()
 
     accountDetailsPage.checkMfaPreferenceIsEmail()
+
+    accountDetailsPage.navigateToChangeMfaPreference()
+
+    mfaPreferencePage.selectText()
 
   }
 }

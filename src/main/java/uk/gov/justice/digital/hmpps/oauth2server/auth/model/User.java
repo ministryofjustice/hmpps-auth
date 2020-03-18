@@ -195,6 +195,18 @@ public class User implements UserPersonDetails, CredentialsContainer {
         return email.substring(0, emailCharactersReduced) + "******@******" + email.substring(email.length() - 7);
     }
 
+    public boolean mfaPreferenceVerified() {
+        return mfaPreferenceTextVerified() || mfaPreferenceEmailVerified();
+    }
+
+    public boolean mfaPreferenceTextVerified() {
+        return mfaPreference == MfaPreferenceType.TEXT && mobileVerified;
+    }
+
+    public boolean mfaPreferenceEmailVerified() {
+        return mfaPreference == MfaPreferenceType.EMAIL && verified;
+    }
+
     @Override
     public String toString() {
         return "User{" +

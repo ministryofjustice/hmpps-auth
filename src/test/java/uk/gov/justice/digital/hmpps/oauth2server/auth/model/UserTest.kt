@@ -172,5 +172,56 @@ class UserTest {
     }
   }
 
+  @Nested
+  inner class MfaPreferenceVerified {
+    @Test
+    fun `mfaPreferenceVerified preference email verified`() {
+      val user = User.builder().verified(true).mfaPreference(MfaPreferenceType.EMAIL).build()
+      assertThat(user.mfaPreferenceVerified()).isTrue()
+    }
+
+    @Test
+    fun `mfaPreferenceVerified preference email not verified`() {
+      val user = User.builder().verified(false).mfaPreference(MfaPreferenceType.EMAIL).build()
+      assertThat(user.mfaPreferenceVerified()).isFalse()
+    }
+
+    @Test
+    fun `mfaPreferenceVerified preference text verified`() {
+      val user = User.builder().mobileVerified(true).mfaPreference(MfaPreferenceType.TEXT).build()
+      assertThat(user.mfaPreferenceVerified()).isTrue()
+    }
+
+    @Test
+    fun `mfaPreferenceVerified preference text not verified`() {
+      val user = User.builder().mobileVerified(false).mfaPreference(MfaPreferenceType.TEXT).build()
+      assertThat(user.mfaPreferenceVerified()).isFalse()
+    }
+
+    @Test
+    fun `mfaPreferenceEmailVerified verified`() {
+      val user = User.builder().verified(true).mfaPreference(MfaPreferenceType.EMAIL).build()
+      assertThat(user.mfaPreferenceEmailVerified()).isTrue()
+    }
+
+    @Test
+    fun `mfaPreferenceEmailVerified not verified`() {
+      val user = User.builder().verified(false).mfaPreference(MfaPreferenceType.EMAIL).build()
+      assertThat(user.mfaPreferenceEmailVerified()).isFalse()
+    }
+
+    @Test
+    fun `mfaPreferenceTextVerified verified`() {
+      val user = User.builder().mobileVerified(true).mfaPreference(MfaPreferenceType.TEXT).build()
+      assertThat(user.mfaPreferenceTextVerified()).isTrue()
+    }
+
+    @Test
+    fun `mfaPreferenceTextVerified not verified`() {
+      val user = User.builder().mobileVerified(false).mfaPreference(MfaPreferenceType.TEXT).build()
+      assertThat(user.mfaPreferenceTextVerified()).isFalse()
+    }
+  }
+
   private fun userBuilder() = User.builder().username("user")
 }

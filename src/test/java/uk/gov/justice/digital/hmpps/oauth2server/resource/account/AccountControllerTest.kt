@@ -28,7 +28,7 @@ class AccountControllerTest {
     val modelAndView = accountController.accountDetails(token)
 
     assertThat(modelAndView.viewName).isEqualTo("account/accountDetails")
-    assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("user" to user, "authUser" to authUser))
+    assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("user" to user, "authUser" to authUser, "mfaPreferenceVerified" to false))
     verify(userService).findMasterUserPersonDetails("user")
     verify(userService).findUser("user")
   }

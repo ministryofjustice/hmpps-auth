@@ -128,17 +128,15 @@
         </a>
       </dd>
     </div>
-    <div th:class="govuk-summary-list__row"
-         th:with="textMfaVerified=(${!authUser.mobileVerified} and ${#strings.equals(authUser.mfaPreference, 'TEXT')}),
-                 emailMfaVerified=(${!authUser.verified} and ${#strings.equals(authUser.mfaPreference, 'EMAIL')})">
-      <dt th:class="'govuk-summary-list__key' + (${textMfaVerified} or ${emailMfaVerified} ? ' govuk-form-group--error' : '')">
+    <div th:class="govuk-summary-list__row">
+      <dt th:class="'govuk-summary-list__key' + (${!mfaPreferenceVerified} ? ' govuk-form-group--error' : '')">
         Security code preference
       </dt>
       <dd class="govuk-summary-list__value" data-qa="mfaPreference">
-        <span th:text="${#strings.equals(authUser.mfaPreference, 'EMAIL')} ? 'Email' : 'Text message'">
+        <span th:text="#{${'mfa.preference.' + authUser.mfaPreference}}">
            None
         </span>
-        <span th:if="${textMfaVerified} or ${emailMfaVerified}"
+        <span th:if="${!mfaPreferenceVerified}"
               id="mfa-preference-not-verified-error" class="govuk-error-message"
               th:text="'Selection has not been verified'">
           preference

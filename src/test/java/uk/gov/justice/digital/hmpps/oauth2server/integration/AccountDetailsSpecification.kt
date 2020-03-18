@@ -155,7 +155,7 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("No")
     assertThat(el("[data-qa='verifyMobile']").text()).isEqualToNormalizingWhitespace("Resend mobile code")
     assertThat(el("[id='mfa-preference-not-verified-error']").text()).isEqualTo("Selection has not been verified")
-    assertThat(el("[data-qa='mfaPreference']").text()).isEqualToNormalizingWhitespace("Selection has not been verified Email")
+    assertThat(el("[data-qa='mfaPreference']").text()).isEqualToNormalizingWhitespace("Email Selection has not been verified")
     assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change mfa preference")
     return this
   }
@@ -171,7 +171,7 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("No")
     assertThat(el("[data-qa='verifyMobile']").text()).isEqualToNormalizingWhitespace("Resend mobile code")
     assertThat(el("[id='mfa-preference-not-verified-error']").text()).isEqualTo("Selection has not been verified")
-    assertThat(el("[data-qa='mfaPreference']").text()).isEqualToNormalizingWhitespace("Selection has not been verified Text message")
+    assertThat(el("[data-qa='mfaPreference']").text()).isEqualToNormalizingWhitespace("Text message Selection has not been verified")
     assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change mfa preference")
     return this
   }
