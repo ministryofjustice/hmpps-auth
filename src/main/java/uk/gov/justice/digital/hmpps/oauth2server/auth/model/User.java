@@ -100,7 +100,7 @@ public class User implements UserPersonDetails, CredentialsContainer {
 
     @ElementCollection
     @CollectionTable(name = "USER_CONTACT", joinColumns = @JoinColumn(name = "user_id"))
-    private List<Contact> contacts;
+    private Set<Contact> contacts;
 
     @OneToMany(fetch = EAGER)
     @JoinTable(name = "user_role",
@@ -382,11 +382,11 @@ public class User implements UserPersonDetails, CredentialsContainer {
         return preferences;
     }
 
-    public List<Contact> getContacts() {
+    public Set<Contact> getContacts() {
         return contacts;
     }
 
-    public void setContacts(final List<Contact> contacts) {
+    public void setContacts(final Set<Contact> contacts) {
         this.contacts = contacts;
     }
 
@@ -414,7 +414,7 @@ public class User implements UserPersonDetails, CredentialsContainer {
         private boolean mobileVerified;
         private MfaPreferenceType mfaPreference = MfaPreferenceType.EMAIL;
         private Person person;
-        private List<Contact> contacts = new ArrayList<>();
+        private Set<Contact> contacts = new HashSet<>();
         private Set<Authority> authorities = new HashSet<>();
         private Set<Group> groups = new HashSet<>();
         private Set<UserToken> tokens = new HashSet<>();
@@ -492,7 +492,7 @@ public class User implements UserPersonDetails, CredentialsContainer {
             return this;
         }
 
-        public UserBuilder contacts(final List<Contact> contacts) {
+        public UserBuilder contacts(final Set<Contact> contacts) {
             this.contacts = contacts;
             return this;
         }

@@ -197,13 +197,14 @@ class UserRepositoryTest {
   fun `test persist contact mapping`() {
     val transientEntity = User.builder().username("contact").source(nomis).build()
     transientEntity.contacts.add(Contact(ContactType.EMAIL, "some value"))
+    transientEntity.contacts.add(Contact(ContactType.EMAIL, "some replacement value"))
     repository.save(transientEntity)
     TestTransaction.flagForCommit()
     TestTransaction.end()
     TestTransaction.start()
     val retrievedEntity = repository.findByUsername(transientEntity.username).orElseThrow()
 
-    assertThat(retrievedEntity.contacts).containsExactly(Contact(ContactType.EMAIL, "some value"))
+    assertThat(retrievedEntity.contacts).containsExactly(Contact(ContactType.EMAIL, "some replacement value"))
   }
 
   @Test
