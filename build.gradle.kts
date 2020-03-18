@@ -12,6 +12,7 @@ plugins {
   id("groovy")
   kotlin("jvm") version "1.3.70"
   kotlin("plugin.spring") version "1.3.70"
+  kotlin("plugin.jpa") version "1.3.70"
   id("org.springframework.boot") version "2.2.5.RELEASE"
   id("io.spring.dependency-management") version "1.0.9.RELEASE"
   id("org.owasp.dependencycheck") version "5.3.0"

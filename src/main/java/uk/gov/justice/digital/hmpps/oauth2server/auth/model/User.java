@@ -15,7 +15,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -95,6 +97,10 @@ public class User implements UserPersonDetails, CredentialsContainer {
 
     @Embedded
     private Person person;
+
+    @ElementCollection
+    @CollectionTable(name = "USER_CONTACT", joinColumns = @JoinColumn(name = "user_id"))
+    private List<Contact> contacts;
 
     @OneToMany(fetch = EAGER)
     @JoinTable(name = "user_role",
@@ -343,7 +349,6 @@ public class User implements UserPersonDetails, CredentialsContainer {
         this.mobileVerified = mobileVerified;
     }
 
-
     public void setMfaPreference(final MfaPreferenceType mfaPreference) {
         this.mfaPreference = mfaPreference;
     }
@@ -377,6 +382,14 @@ public class User implements UserPersonDetails, CredentialsContainer {
         return preferences;
     }
 
+    public List<Contact> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(final List<Contact> contacts) {
+        this.contacts = contacts;
+    }
+
     @AllArgsConstructor
     @Getter
     public enum MfaPreferenceType {
@@ -384,8 +397,6 @@ public class User implements UserPersonDetails, CredentialsContainer {
         TEXT("text");
 
         private final String description;
-
-
     }
 
     public static class UserBuilder {
@@ -403,6 +414,7 @@ public class User implements UserPersonDetails, CredentialsContainer {
         private boolean mobileVerified;
         private MfaPreferenceType mfaPreference = MfaPreferenceType.EMAIL;
         private Person person;
+        private List<Contact> contacts = new ArrayList<>();
         private Set<Authority> authorities = new HashSet<>();
         private Set<Group> groups = new HashSet<>();
         private Set<UserToken> tokens = new HashSet<>();
@@ -480,6 +492,11 @@ public class User implements UserPersonDetails, CredentialsContainer {
             return this;
         }
 
+        public UserBuilder contacts(final List<Contact> contacts) {
+            this.contacts = contacts;
+            return this;
+        }
+
         public UserBuilder authorities(final Set<Authority> authorities) {
             this.authorities = authorities;
             return this;
@@ -496,11 +513,11 @@ public class User implements UserPersonDetails, CredentialsContainer {
         }
 
         public User build() {
-            return new User(id, username, password, email, verified, locked, enabled, source, passwordExpiry, lastLoggedIn, mobile, mobileVerified, mfaPreference, person, authorities, groups, tokens);
+            return new User(id, username, password, email, verified, locked, enabled, source, passwordExpiry, lastLoggedIn, mobile, mobileVerified, mfaPreference, person, contacts, authorities, groups, tokens);
         }
 
         public String toString() {
-            return "User.UserBuilder(id=" + this.id + ", username=" + this.username + ", password=" + this.password + ", email=" + this.email + ", verified=" + this.verified + ", locked=" + this.locked + ", enabled=" + this.enabled + ", source=" + this.source + ", passwordExpiry=" + this.passwordExpiry + ", lastLoggedIn=" + this.lastLoggedIn + ", mobile=" + this.mobile + ", mobileVerified=" + this.mobileVerified + ", mfaPreference=" + this.mfaPreference + ", person=" + this.person + ", authorities=" + this.authorities + ", groups=" + this.groups + ", tokens=" + this.tokens + ")";
+            return "User.UserBuilder(id=" + this.id + ", username=" + this.username + ", password=" + this.password + ", email=" + this.email + ", verified=" + this.verified + ", locked=" + this.locked + ", enabled=" + this.enabled + ", source=" + this.source + ", passwordExpiry=" + this.passwordExpiry + ", lastLoggedIn=" + this.lastLoggedIn + ", mobile=" + this.mobile + ", mobileVerified=" + this.mobileVerified + ", mfaPreference=" + this.mfaPreference + ", person=" + this.person + ", contacts=" + this.contacts + ", authorities=" + this.authorities + ", groups=" + this.groups + ", tokens=" + this.tokens + ")";
         }
     }
 }
