@@ -12,9 +12,10 @@ plugins {
   id("groovy")
   kotlin("jvm") version "1.3.70"
   kotlin("plugin.spring") version "1.3.70"
+  kotlin("plugin.jpa") version "1.3.70"
   id("org.springframework.boot") version "2.2.5.RELEASE"
   id("io.spring.dependency-management") version "1.0.9.RELEASE"
-  id("org.owasp.dependencycheck") version "5.3.0"
+  id("org.owasp.dependencycheck") version "5.3.1"
   id("com.github.ben-manes.versions") version "0.28.0"
   id("se.patrikerdes.use-latest-versions") version "0.2.13"
   id("com.gorylenko.gradle-git-properties") version "2.2.2"
@@ -94,19 +95,20 @@ dependencies {
   implementation("org.springframework.security.oauth:spring-security-oauth2:2.4.0.RELEASE")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
-  implementation("com.nimbusds:nimbus-jose-jwt:8.9")
+  implementation("com.nimbusds:nimbus-jose-jwt:8.10")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.hibernate:hibernate-core")
 
   implementation("net.logstash.logback:logstash-logback-encoder:6.3")
-  implementation("com.microsoft.azure:applicationinsights-spring-boot-starter:2.6.0-BETA")
-  implementation("com.microsoft.azure:applicationinsights-logging-logback:2.6.0-BETA")
+  implementation("com.microsoft.azure:applicationinsights-spring-boot-starter:2.6.0-BETA.3")
+  implementation("com.microsoft.azure:applicationinsights-logging-logback:2.6.0-BETA.3")
   implementation("javax.annotation:javax.annotation-api:1.3.2")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
   implementation("com.sun.xml.bind:jaxb-impl:2.3.2")
   implementation("com.sun.xml.bind:jaxb-core:2.3.0.1")
   implementation("javax.activation:activation:1.1.1")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
   implementation("javax.transaction:javax.transaction-api:1.3")
 
@@ -118,7 +120,7 @@ dependencies {
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1")
   implementation("uk.gov.service.notify:notifications-java-client:3.15.1-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:6.3.0")
+  implementation("org.flywaydb:flyway-core:6.3.1")
   implementation("com.zaxxer:HikariCP:3.4.2")
   implementation("org.apache.commons:commons-lang3:3.9")
   implementation("org.apache.commons:commons-text:1.8")
@@ -137,7 +139,7 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 
-  testImplementation("org.codehaus.groovy:groovy-all:3.0.1")
+  testImplementation("org.codehaus.groovy:groovy-all:3.0.2")
   testImplementation("org.spockframework:spock-spring:1.3-groovy-2.5")
   testImplementation("org.spockframework:spock-core:1.3-groovy-2.5") {
     exclude(mapOf("group" to "org.codehaus.groovy"))
@@ -150,10 +152,10 @@ dependencies {
   testImplementation("org.seleniumhq.selenium:selenium-firefox-driver:3.141.59")
   testImplementation("io.github.http-builder-ng:http-builder-ng-apache:1.0.4")
 
-  testImplementation("com.github.tomakehurst:wiremock-standalone:2.26.2")
+  testImplementation("com.github.tomakehurst:wiremock-standalone:2.26.3")
   testImplementation("com.github.tomjankes:wiremock-groovy:0.2.0")
   testImplementation("org.slf4j:slf4j-api:1.7.30")
-  testImplementation("com.auth0:java-jwt:3.10.0")
+  testImplementation("com.auth0:java-jwt:3.10.1")
 
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.14.0")
   testImplementation("com.nhaarman:mockito-kotlin-kt1.1:1.6.0")
@@ -182,7 +184,7 @@ tasks {
 
   val agentDeps by configurations.register("agentDeps") {
     dependencies {
-      "agentDeps"("com.microsoft.azure:applicationinsights-agent:2.6.0-BETA") {
+      "agentDeps"("com.microsoft.azure:applicationinsights-agent:2.6.0-BETA.3") {
         isTransitive = false
       }
     }

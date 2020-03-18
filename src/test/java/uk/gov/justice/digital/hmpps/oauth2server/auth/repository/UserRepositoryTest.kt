@@ -16,6 +16,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.transaction.TestTransaction
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
@@ -29,6 +31,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import java.time.LocalDateTime
 
+@Suppress("UsePropertyAccessSyntax")
 @DataJpaTest
 @ActiveProfiles("dev")
 @Import(AuthDbConfig::class, NomisDbConfig::class, FlywayConfig::class)
@@ -191,6 +194,27 @@ class UserRepositoryTest {
   }
 
   @Test
+  fun `test persist contact mapping`() {
+    val transientEntity = User.builder().username("contact").source(nomis).build()
+    transientEntity.contacts.add(Contact(ContactType.EMAIL, "some value"))
+    transientEntity.contacts.add(Contact(ContactType.EMAIL, "some replacement value"))
+    repository.save(transientEntity)
+    TestTransaction.flagForCommit()
+    TestTransaction.end()
+    TestTransaction.start()
+    val retrievedEntity = repository.findByUsername(transientEntity.username).orElseThrow()
+
+    assertThat(retrievedEntity.contacts).containsExactly(Contact(ContactType.EMAIL, "some replacement value"))
+  }
+
+  @Test
+  fun `test retrieve contact mapping`() {
+    val retrievedEntity = repository.findByUsername("AUTH_ADM").orElseThrow()
+
+    assertThat(retrievedEntity.contacts).containsExactly(Contact(ContactType.EMAIL, "john@smith.com"))
+  }
+
+  @Test
   fun findByUsernameAndMasterIsTrue_AuthUser() {
     assertThat(repository.findByUsernameAndMasterIsTrue("AUTH_TEST")).isPresent
   }
@@ -325,9 +349,7 @@ class UserRepositoryTest {
     assertThat(inactive).extracting<String> { it.username }.containsExactly("AUTH_DELETE")
   }
 
-  private fun transientEntity(): User {
-    return User.builder().username("user").source(nomis).email("a@b.com").build()
-  }
+  private fun transientEntity() = User.builder().username("user").source(nomis).email("a@b.com").build()
 
   companion object {
     private var initialized = false
