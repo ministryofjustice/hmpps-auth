@@ -16,5 +16,6 @@ class AccountController(private val userService: UserService) {
     return ModelAndView("account/accountDetails")
         .addObject("user", user)
         .addObject("authUser", authUser)
+        .addObject("mfaPreferenceVerified", authUser.mfaPreferenceVerified())
   }
 }

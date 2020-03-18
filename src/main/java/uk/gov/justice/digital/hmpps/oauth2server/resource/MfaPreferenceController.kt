@@ -25,7 +25,7 @@ open class MfaPreferenceController(private val userService: UserService, private
   @PostMapping("/mfa-preference")
   fun mfaPreference(@RequestParam mfaPreference: MfaPreferenceType, authentication: Authentication): String {
     mfaService.updateUserMfaPreference(mfaPreference, authentication.name)
-    return "mfaPreferenceConfirm"
+    return "redirect:/account-details"
   }
 }
 

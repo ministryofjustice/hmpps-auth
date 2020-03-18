@@ -83,6 +83,30 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
 
     newInstance(PasswordPromptPage::class.java).isAt()
   }
+
+  @Test
+  fun `navigation - Change mfa preference`() {
+    goTo(loginPage).loginAs("AUTH_RO_USER")
+        .navigateToAccountDetails()
+
+    accountDetailsPage.navigateToChangeMfaPreference()
+
+    newInstance(MfaPreferencePage::class.java).isAt()
+  }
+
+  @Test
+  fun `navigation - mfa preference email - not verified warning`() {
+    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_UNVERIFIED")
+
+    goTo(accountDetailsPage).checkUnverified()
+  }
+
+  @Test
+  fun `navigation - mfa preference text - not verified warning`() {
+    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_UNVERIFIED_TEXT")
+
+    goTo(accountDetailsPage).checkMfaPreferenceTextWarning()
+  }
 }
 
 @PageUrl("/account-details")
@@ -103,6 +127,8 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(el("[data-qa='changeMobile']").text()).isEqualToNormalizingWhitespace("Add mobile")
     assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("No")
     assertThat(find("[data-qa='verifyMobile']")).isEmpty()
+    assertThat(el("[data-qa='mfaPreference']").text()).isEqualTo("Email")
+    assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change mfa preference")
     return this
   }
 
@@ -113,6 +139,8 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(find("[data-qa='changeName']")).isEmpty()
     assertThat(el("[data-qa='email']").text()).isEqualTo("itag_user@digital.justice.gov.uk")
     assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
+    assertThat(el("[data-qa='mfaPreference']").text()).isEqualTo("Email")
+    assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change mfa preference")
     return this
   }
 
@@ -126,6 +154,39 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(el("[data-qa='changeMobile']").text()).isEqualToNormalizingWhitespace("Change mobile")
     assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("No")
     assertThat(el("[data-qa='verifyMobile']").text()).isEqualToNormalizingWhitespace("Resend mobile code")
+    assertThat(el("[id='mfa-preference-not-verified-error']").text()).isEqualTo("Selection has not been verified")
+    assertThat(el("[data-qa='mfaPreference']").text()).isEqualToNormalizingWhitespace("Email Selection has not been verified")
+    assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change mfa preference")
+    return this
+  }
+
+  fun checkMfaPreferenceTextWarning(): AccountDetailsPage {
+    assertThat(el("[data-qa='username']").text()).isEqualTo("AUTH_UNVERIFIED_TEXT")
+    assertThat(el("[data-qa='email']").text()).isEqualTo("auth_unverified@digital.justice.gov.uk")
+    assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
+    assertThat(el("[data-qa='verified']").text()).isEqualTo("No")
+    assertThat(el("[data-qa='verifyEmail']").text()).isEqualToNormalizingWhitespace("Resend email code")
+    assertThat(el("[data-qa='mobile']").text()).isEqualTo("07700900321")
+    assertThat(el("[data-qa='changeMobile']").text()).isEqualToNormalizingWhitespace("Change mobile")
+    assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("No")
+    assertThat(el("[data-qa='verifyMobile']").text()).isEqualToNormalizingWhitespace("Resend mobile code")
+    assertThat(el("[id='mfa-preference-not-verified-error']").text()).isEqualTo("Selection has not been verified")
+    assertThat(el("[data-qa='mfaPreference']").text()).isEqualToNormalizingWhitespace("Text message Selection has not been verified")
+    assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change mfa preference")
+    return this
+  }
+
+  fun checkMfaPreferenceIsText(): AccountDetailsPage {
+    isAt()
+    assertThat(el("[data-qa='mfaPreference']").text()).isEqualToNormalizingWhitespace("Text message")
+    assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change mfa preference")
+    return this
+  }
+
+  fun checkMfaPreferenceIsEmail(): AccountDetailsPage {
+    isAt()
+    assertThat(el("[data-qa='mfaPreference']").text()).isEqualToNormalizingWhitespace("Email")
+    assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change mfa preference")
     return this
   }
 
@@ -143,6 +204,10 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
 
   fun navigateToChangePassword() {
     el("[data-qa='changePassword']").click()
+  }
+
+  fun navigateToChangeMfaPreference() {
+    el("[data-qa='changeMfaPreference']").click()
   }
 
   fun cancel() {
