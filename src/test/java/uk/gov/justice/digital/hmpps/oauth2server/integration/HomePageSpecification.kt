@@ -46,7 +46,7 @@ class HomePage : AuthPage<HomePage>("HMPPS Digital Services - Home", "Select ser
   fun getCurrentName(): String = principalName.text()
 
   fun navigateToAccountDetails() {
-    assertThat(accountDetails.text()).isEqualTo("View account details")
+    assertThat(accountDetails.text()).isEqualTo("Manage account details")
     accountDetails.click()
   }
 

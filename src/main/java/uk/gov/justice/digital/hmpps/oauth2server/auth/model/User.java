@@ -85,12 +85,6 @@ public class User implements UserPersonDetails, CredentialsContainer {
     @Column(name = "last_logged_in")
     private LocalDateTime lastLoggedIn = LocalDateTime.now();
 
-    @Column(name = "mobile")
-    private String mobile;
-
-    @Column(name = "mobile_verified", nullable = false)
-    private boolean mobileVerified;
-
     @Column(name = "mfa_preference")
     @Enumerated(EnumType.STRING)
     private MfaPreferenceType mfaPreference = MfaPreferenceType.EMAIL;
@@ -100,7 +94,7 @@ public class User implements UserPersonDetails, CredentialsContainer {
 
     @ElementCollection
     @CollectionTable(name = "USER_CONTACT", joinColumns = @JoinColumn(name = "user_id"))
-    private Set<Contact> contacts;
+    private Set<Contact> contacts = new HashSet<>();
 
     @OneToMany(fetch = EAGER)
     @JoinTable(name = "user_role",
@@ -192,7 +186,7 @@ public class User implements UserPersonDetails, CredentialsContainer {
     }
 
     public String getMaskedMobile() {
-        return "*******" + mobile.substring(7);
+        return "*******" + getMobile().substring(7);
     }
 
     public String getMaskedEmail() {
@@ -206,7 +200,7 @@ public class User implements UserPersonDetails, CredentialsContainer {
     }
 
     public boolean mfaPreferenceTextVerified() {
-        return mfaPreference == MfaPreferenceType.TEXT && mobileVerified;
+        return mfaPreference == MfaPreferenceType.TEXT && isMobileVerified();
     }
 
     public boolean mfaPreferenceEmailVerified() {
@@ -226,8 +220,6 @@ public class User implements UserPersonDetails, CredentialsContainer {
                 ", source=" + source +
                 ", passwordExpiry=" + passwordExpiry +
                 ", lastLoggedIn=" + lastLoggedIn +
-                ", mobile=" + mobile +
-                ", mobileVerified=" + mobileVerified +
                 ", person=" + person +
                 ", authorities=" + authorities +
                 '}';
@@ -274,11 +266,41 @@ public class User implements UserPersonDetails, CredentialsContainer {
     }
 
     public String getMobile() {
-        return mobile;
+        return getContactValue(ContactType.MOBILE_PHONE);
     }
 
     public boolean isMobileVerified() {
-        return mobileVerified;
+        return isContactVerified(ContactType.MOBILE_PHONE);
+    }
+
+    public Contact addContact(final ContactType type, final String value) {
+        final var contact = new Contact(type, value, false);
+        // equals and hashcode by contact type so remove will remove any contact of same type
+        contacts.remove(contact);
+        contacts.add(contact);
+        return contact;
+    }
+
+    private boolean isContactVerified(final ContactType mobilePhone) {
+        return findContact(mobilePhone).map(Contact::getVerified).orElse(false);
+    }
+
+    private String getContactValue(final ContactType mobilePhone) {
+        return findContact(mobilePhone).map(Contact::getValue).orElse(null);
+    }
+
+    public String getSecondaryEmail() {
+        return getContactValue(ContactType.SECONDARY_EMAIL);
+    }
+
+    public boolean isSecondaryEmailVerified() {
+        return isContactVerified(ContactType.SECONDARY_EMAIL);
+    }
+
+    public Optional<Contact> findContact(final ContactType type) {
+        return contacts.stream()
+                .filter(c -> c.getType() == type)
+                .findFirst();
     }
 
     public MfaPreferenceType getMfaPreference() {
@@ -341,14 +363,6 @@ public class User implements UserPersonDetails, CredentialsContainer {
         this.lastLoggedIn = lastLoggedIn;
     }
 
-    public void setMobile(final String mobile) {
-        this.mobile = mobile;
-    }
-
-    public void setMobileVerified(final boolean mobileVerified) {
-        this.mobileVerified = mobileVerified;
-    }
-
     public void setMfaPreference(final MfaPreferenceType mfaPreference) {
         this.mfaPreference = mfaPreference;
     }
@@ -378,16 +392,14 @@ public class User implements UserPersonDetails, CredentialsContainer {
     private List<MfaPreferenceType> getAllowedMfaPreferences() {
         final var preferences = new ArrayList<MfaPreferenceType>();
         if (StringUtils.isNotEmpty(email) && verified) preferences.add(MfaPreferenceType.EMAIL);
-        if (StringUtils.isNotEmpty(mobile) && mobileVerified) preferences.add(MfaPreferenceType.TEXT);
+        findContact(ContactType.MOBILE_PHONE)
+                .filter(c -> StringUtils.isNotBlank(c.getValue()) && c.getVerified())
+                .ifPresent(c -> preferences.add(MfaPreferenceType.TEXT));
         return preferences;
     }
 
     public Set<Contact> getContacts() {
         return contacts;
-    }
-
-    public void setContacts(final Set<Contact> contacts) {
-        this.contacts = contacts;
     }
 
     @AllArgsConstructor
@@ -513,11 +525,16 @@ public class User implements UserPersonDetails, CredentialsContainer {
         }
 
         public User build() {
-            return new User(id, username, password, email, verified, locked, enabled, source, passwordExpiry, lastLoggedIn, mobile, mobileVerified, mfaPreference, person, contacts, authorities, groups, tokens);
+            final var user = new User(id, username, password, email, verified, locked, enabled, source, passwordExpiry, lastLoggedIn, mfaPreference, person, contacts, authorities, groups, tokens);
+            if (mobile != null || mobileVerified) {
+                final var contact = user.addContact(ContactType.MOBILE_PHONE, mobile);
+                contact.setVerified(mobileVerified);
+            }
+            return user;
         }
 
         public String toString() {
-            return "User.UserBuilder(id=" + this.id + ", username=" + this.username + ", password=" + this.password + ", email=" + this.email + ", verified=" + this.verified + ", locked=" + this.locked + ", enabled=" + this.enabled + ", source=" + this.source + ", passwordExpiry=" + this.passwordExpiry + ", lastLoggedIn=" + this.lastLoggedIn + ", mobile=" + this.mobile + ", mobileVerified=" + this.mobileVerified + ", mfaPreference=" + this.mfaPreference + ", person=" + this.person + ", contacts=" + this.contacts + ", authorities=" + this.authorities + ", groups=" + this.groups + ", tokens=" + this.tokens + ")";
+            return "User.UserBuilder(id=" + this.id + ", username=" + this.username + ", password=" + this.password + ", email=" + this.email + ", verified=" + this.verified + ", locked=" + this.locked + ", enabled=" + this.enabled + ", source=" + this.source + ", passwordExpiry=" + this.passwordExpiry + ", lastLoggedIn=" + this.lastLoggedIn + ", mfaPreference=" + this.mfaPreference + ", person=" + this.person + ", contacts=" + this.contacts + ", authorities=" + this.authorities + ", groups=" + this.groups + ", tokens=" + this.tokens + ")";
         }
     }
 }

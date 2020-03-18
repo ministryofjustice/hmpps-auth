@@ -6,8 +6,9 @@ import javax.persistence.Enumerated
 
 @Embeddable
 data class Contact(@Enumerated(EnumType.STRING) var type: ContactType) {
-  constructor(type: ContactType, value: String) : this(type) {
+  constructor(type: ContactType, value: String, verified: Boolean = false) : this(type) {
     this.value = value
+    this.verified = verified
   }
 
   var value: String? = null
@@ -15,5 +16,5 @@ data class Contact(@Enumerated(EnumType.STRING) var type: ContactType) {
 }
 
 enum class ContactType {
-  EMAIL
+  SECONDARY_EMAIL, MOBILE_PHONE
 }

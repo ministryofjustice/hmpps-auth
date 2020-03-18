@@ -22,7 +22,7 @@ class ChangeMobileController(private val userService: UserService,
 
   @GetMapping("/change-mobile")
   fun changeMobileRequest(authentication: Authentication): ModelAndView {
-    val currentMobile = userService.getUser(authentication.name).mobile
+    val currentMobile = userService.getUserWithContacts(authentication.name).mobile
     return ModelAndView("account/changeMobile", "mobile", currentMobile)
   }
 

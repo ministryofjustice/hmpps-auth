@@ -32,6 +32,14 @@ class UserService(private val nomisUserService: NomisUserService,
 
   fun getUser(username: String): User = findUser(username).orElseThrow { UsernameNotFoundException("User with username $username not found") }
 
+  fun getUserWithContacts(username: String): User = findUser(username)
+      .map {
+        // initialise contacts by calling size
+        it.contacts.size
+        it
+      }
+      .orElseThrow { UsernameNotFoundException("User with username $username not found") }
+
   @Transactional(transactionManager = "authTransactionManager")
   fun getOrCreateUser(username: String): User =
       findUser(username).orElseGet {

@@ -23,13 +23,13 @@ class AccountControllerTest {
     val user = User.of("master")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     val authUser = User.of("build")
-    whenever(userService.findUser(anyString())).thenReturn(Optional.of(authUser))
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
 
     val modelAndView = accountController.accountDetails(token)
 
     assertThat(modelAndView.viewName).isEqualTo("account/accountDetails")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("user" to user, "authUser" to authUser, "mfaPreferenceVerified" to false))
     verify(userService).findMasterUserPersonDetails("user")
-    verify(userService).findUser("user")
+    verify(userService).getUserWithContacts("user")
   }
 }

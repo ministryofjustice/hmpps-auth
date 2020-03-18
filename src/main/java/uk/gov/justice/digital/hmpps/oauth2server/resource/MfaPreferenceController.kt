@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -12,11 +11,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 
 @Controller
-open class MfaPreferenceController(private val userService: UserService, private val mfaService: MfaService) {
+class MfaPreferenceController(private val userService: UserService, private val mfaService: MfaService) {
 
   @GetMapping("/mfa-preference")
   fun mfaPreferenceRequest(authentication: Authentication): ModelAndView {
-    val user = userService.findUser(authentication.name).orElseThrow { UsernameNotFoundException(authentication.name) }
+    val user = userService.getUserWithContacts(authentication.name)
     return ModelAndView("mfaPreference", "text", user.mobile)
         .addObject("email", user.email)
         .addObject("current", user.mfaPreference)

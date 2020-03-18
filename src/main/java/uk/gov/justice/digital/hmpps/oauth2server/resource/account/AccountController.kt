@@ -12,7 +12,7 @@ class AccountController(private val userService: UserService) {
   fun accountDetails(authentication: Authentication): ModelAndView {
     val username = authentication.name
     val user = userService.findMasterUserPersonDetails(username).orElseThrow()
-    val authUser = userService.findUser(username).orElseThrow()
+    val authUser = userService.getUserWithContacts(username)
     return ModelAndView("account/accountDetails")
         .addObject("user", user)
         .addObject("authUser", authUser)
