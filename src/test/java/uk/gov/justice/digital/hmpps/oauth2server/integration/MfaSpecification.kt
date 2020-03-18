@@ -229,13 +229,27 @@ class MfaSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `Mfa preference email - I would like the MFA code to be resent`() {
+  fun `Mfa preference email - I would like the MFA code to be resent by email`() {
     goTo(loginPage)
         .loginWithMfaEmail("AUTH_MFA_USER")
 
     mfaEmailPage.resendCodeLink()
 
-    mfaEmailResendCodePage.resendCode()
+    mfaEmailResendCodePage.resendCodeByEmail()
+
+    mfaEmailPage.submitCode()
+
+    homePage.isAt()
+  }
+
+  @Test
+  fun `Mfa preference email - I would like the MFA code to be resent by text`() {
+    goTo(loginPage)
+        .loginWithMfaEmail("AUTH_MFA_PREF_EMAIL4")
+
+    mfaEmailPage.resendCodeLink()
+
+    mfaEmailResendCodePage.resendCodeByText()
 
     mfaEmailPage.submitCode()
 
@@ -412,7 +426,19 @@ class MfaEmailResendCodePage : AuthPage<MfaEmailResendCodePage>("HMPPS Digital S
   @FindBy(css = "input[type='submit']")
   private lateinit var resendSecurityCode: FluentWebElement
 
-  fun resendCode() {
+  @FindBy(css = "input[id='mfa-pref-email']")
+  private lateinit var selectMfaPreferenceEmail: FluentWebElement
+
+  @FindBy(css = "input[id='mfa-pref-text']")
+  private lateinit var selectMfaPreferenceText: FluentWebElement
+
+  fun resendCodeByEmail() {
+    selectMfaPreferenceEmail.click()
+    resendSecurityCode.submit()
+  }
+
+  fun resendCodeByText() {
+    selectMfaPreferenceText.click()
     resendSecurityCode.submit()
   }
 }
