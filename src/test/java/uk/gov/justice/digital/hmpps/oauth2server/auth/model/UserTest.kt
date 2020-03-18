@@ -4,7 +4,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.MOBILE_PHONE
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.SECONDARY_EMAIL
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.CHANGE
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 
 @Suppress("UsePropertyAccessSyntax")
@@ -14,11 +17,40 @@ class UserTest {
     @Test
     fun `test create token overwrites previous`() {
       val user = User.of("user")
-      user.createToken(UserToken.TokenType.RESET)
-      val changeToken = user.createToken(UserToken.TokenType.CHANGE)
-      val resetToken = user.createToken(UserToken.TokenType.RESET)
+      user.createToken(RESET)
+      val changeToken = user.createToken(CHANGE)
+      val resetToken = user.createToken(RESET)
       assertThat(user.tokens).containsOnly(changeToken, resetToken)
-      assertThat(user.tokens).extracting<String> { obj: UserToken -> obj.token }.containsOnly(changeToken.token, resetToken.token)
+      assertThat(user.tokens).extracting<String> { it.token }.containsOnly(changeToken.token, resetToken.token)
+    }
+  }
+
+  @Nested
+  inner class AddContact {
+    @Test
+    fun `test add contact overwrites previous`() {
+      val user = User.of("user")
+      user.addContact(MOBILE_PHONE, "previous")
+      val mobileContact = user.addContact(MOBILE_PHONE, "currentPhone")
+      val emailContact = user.addContact(SECONDARY_EMAIL, "currentEmail")
+      assertThat(user.contacts).containsOnly(mobileContact, emailContact)
+      assertThat(user.contacts).extracting<String> { it.value }.containsOnly(mobileContact.value, emailContact.value)
+    }
+
+    @Test
+    fun `test correct contact details retrieved not verified`() {
+      val user = User.of("user")
+      user.addContact(MOBILE_PHONE, "mobileValue")
+      assertThat(user.mobile).isEqualTo("mobileValue")
+      assertThat(user.isMobileVerified).isEqualTo(false)
+    }
+
+    @Test
+    fun `test correct contact details retrieved verified`() {
+      val user = User.of("user")
+      user.addContact(MOBILE_PHONE, "mobileValue").verified = true
+      assertThat(user.mobile).isEqualTo("mobileValue")
+      assertThat(user.isMobileVerified).isEqualTo(true)
     }
   }
 
