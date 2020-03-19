@@ -60,10 +60,9 @@ public class JWTTokenEnhancer implements TokenEnhancer {
         final var request = authentication.getOAuth2Request();
 
         final var requestParams = request.getRequestParameters();
-        final var skipUserCheck = request.getScope().contains("proxy-user");
 
         // Non-blank user_id_type and user_id to check - delegate to external identifier auth component
-        final var userDetails = externalIdAuthenticationHelper.getUserDetails(requestParams, skipUserCheck);
+        final var userDetails = externalIdAuthenticationHelper.getUserDetails(requestParams);
 
         if (userDetails != null) {
             additionalInfo.put(ADD_INFO_AUTH_SOURCE, userDetails.getAuthSource());
