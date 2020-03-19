@@ -34,7 +34,7 @@ auth:
   datasource:
     url: 'jdbc:h2:mem:authdb;MODE=MSSQLServer'
   flyway:
-    locations: db/auth
+    locations: db/auth,db/auth_{vendor}
   jpa:
     hibernate:
       hbm2ddl:
