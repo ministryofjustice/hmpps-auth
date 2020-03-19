@@ -1,6 +1,6 @@
 auth:
   flyway:
-    locations: db/auth,db/dev/data/auth
+    locations: db/auth,db/auth_{vendor},db/dev/data/auth
   jpa:
     hibernate:
       dialect: org.hibernate.dialect.H2Dialect
