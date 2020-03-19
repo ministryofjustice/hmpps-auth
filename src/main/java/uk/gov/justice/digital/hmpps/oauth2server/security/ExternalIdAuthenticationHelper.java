@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.oauth2.client.resource.OAuth2AccessDeniedException;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,12 +20,9 @@ public class ExternalIdAuthenticationHelper {
 
     private final UserService userService;
 
-    public UserPersonDetails getUserDetails(final Map<String, String> requestParameters, final boolean skipUserCheck) {
+    public UserPersonDetails getUserDetails(final Map<String, String> requestParameters) {
         if (requestParameters.containsKey(REQUEST_PARAM_USER_NAME)) {
             final var username = requestParameters.get(REQUEST_PARAM_USER_NAME);
-            if (skipUserCheck) {
-                return new UserDetailsImpl(username, null, List.of(), "none", null);
-            }
             return loadByUsername(username);
         }
         return null;
