@@ -1,13 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.check
-import com.nhaarman.mockito_kotlin.eq
-import com.nhaarman.mockito_kotlin.isNull
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -126,7 +120,7 @@ class ResetPasswordControllerTest {
 
     @Test
     fun resetPasswordRequest_emailfailed() {
-      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddressExcludingGsi(anyString())
+      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddressExcludingGsi(anyString(), eq(User.EmailType.PRIMARY))
       val modelAndView = controller.resetPasswordRequest("user@somewhere", request)
       assertThat(modelAndView.viewName).isEqualTo("resetPassword")
       assertThat(modelAndView.model).containsOnly(entry("error", "email.reason"), entry("usernameOrEmail", "user@somewhere"))
@@ -134,10 +128,10 @@ class ResetPasswordControllerTest {
 
     @Test
     fun resetPasswordRequest_emailhelperapostrophe() {
-      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddressExcludingGsi(anyString())
+      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddressExcludingGsi(anyString(), eq(User.EmailType.PRIMARY))
       val modelAndView = controller.resetPasswordRequest("us.o’er@someWHERE.com   ", request)
       assertThat(modelAndView.viewName).isEqualTo("resetPassword")
-      verify(verifyEmailService).validateEmailAddressExcludingGsi("us.o'er@somewhere.com")
+      verify(verifyEmailService).validateEmailAddressExcludingGsi("us.o'er@somewhere.com", User.EmailType.PRIMARY)
     }
   }
 

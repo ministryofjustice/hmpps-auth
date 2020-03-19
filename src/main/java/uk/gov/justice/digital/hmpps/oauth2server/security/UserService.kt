@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
@@ -58,8 +59,11 @@ class UserService(private val nomisUserService: NomisUserService,
     return user.isMobileVerified && canonicalMobile == user.mobile
   }
 
-  fun isSameAsCurrentVerifiedEmail(username: String, email: String): Boolean {
+  fun isSameAsCurrentVerifiedEmail(username: String, email: String, emailType: EmailType): Boolean {
     val user = getUser(username)
+    if (emailType == EmailType.SECONDARY) {
+      return user.isSecondaryEmailVerified && email == user.secondaryEmail
+    }
     return user.isVerified && email == user.email
   }
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
@@ -48,7 +49,7 @@ class ResetPasswordController(private val resetPasswordService: ResetPasswordSer
     }
     if (usernameOrEmail.contains("@")) {
       try {
-        verifyEmailService.validateEmailAddressExcludingGsi(EmailHelper.format(usernameOrEmail))
+        verifyEmailService.validateEmailAddressExcludingGsi(EmailHelper.format(usernameOrEmail), User.EmailType.PRIMARY)
       } catch (e: VerifyEmailException) {
         log.info("Validation failed for reset password email address due to {}", e.reason)
         telemetryClient.trackEvent("VerifyEmailRequestFailure", mapOf("email" to usernameOrEmail, "reason" to "email." + e.reason), null)

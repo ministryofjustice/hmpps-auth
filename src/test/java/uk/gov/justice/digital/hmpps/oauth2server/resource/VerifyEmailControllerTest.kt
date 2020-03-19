@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
@@ -11,6 +12,7 @@ import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
@@ -80,7 +82,7 @@ class VerifyEmailControllerTest {
   fun verifyEmail_noselection() {
     val candidates = listOf("joe", "bob")
     whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(candidates)
-    val modelAndView = verifyEmailController.verifyEmail("", "", principal, request, response)
+    val modelAndView = verifyEmailController.verifyEmail("", "", EmailType.PRIMARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView.model).containsExactly(entry("error", "noselection"), entry("candidates", candidates))
   }
@@ -90,22 +92,22 @@ class VerifyEmailControllerTest {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(User()))
-    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString())).thenThrow(NotificationClientException("something went wrong"))
-    val modelAndView = verifyEmailController.verifyEmail("a@b.com", null, principal, request, response)
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))).thenThrow(NotificationClientException("something went wrong"))
+    val modelAndView = verifyEmailController.verifyEmail("a@b.com", null, EmailType.PRIMARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView.model).containsExactly(entry("email", "a@b.com"), entry("error", "other"))
   }
 
   @Test
   fun verifyEmail_Success() {
-    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString())).thenReturn("link")
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))).thenReturn("link")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
-    val modelAndView = verifyEmailController.verifyEmail("other", email, principal, request, response)
+    val modelAndView = verifyEmailController.verifyEmail("other", email, EmailType.PRIMARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
     assertThat(modelAndView.model).containsExactly(entry("verifyLink", "link"), entry("email", email))
-    verify(verifyEmailService).requestVerification("user", email, "Bob", "http://some.url-confirm?token=")
+    verify(verifyEmailService).requestVerification("user", email, "Bob", "http://some.url-confirm?token=", EmailType.PRIMARY)
   }
 
   @Test
@@ -118,8 +120,8 @@ class VerifyEmailControllerTest {
 
   @Test
   fun verifyEmail_AlreadyVerified() {
-    whenever(userService.isSameAsCurrentVerifiedEmail(anyString(), anyString())).thenReturn(true)
-    val modelAndView = verifyEmailController.verifyEmail("change", "auth_email@digital.justice.gov.uk", principal, request, response)
+    whenever(userService.isSameAsCurrentVerifiedEmail(anyString(), anyString(), eq(EmailType.PRIMARY))).thenReturn(true)
+    val modelAndView = verifyEmailController.verifyEmail("change", "auth_email@digital.justice.gov.uk", EmailType.PRIMARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailAlready")
   }
 
