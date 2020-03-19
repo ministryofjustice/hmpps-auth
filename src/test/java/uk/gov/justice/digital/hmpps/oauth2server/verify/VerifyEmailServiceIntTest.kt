@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.service.notify.NotificationClientApi
 
@@ -48,7 +49,7 @@ open class VerifyEmailServiceIntTest {
   fun emailAddressSetToNotVerified() {
     val userBefore = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
     assertThat(userBefore.get().isVerified).isTrue()
-    verifyEmailService.requestVerification("AUTH_CHANGE_EMAIL", "phillips@fredjustice.gov.uk", "AUTH", "url")
+    verifyEmailService.requestVerification("AUTH_CHANGE_EMAIL", "phillips@fredjustice.gov.uk", "AUTH", "url", User.EmailType.PRIMARY)
     val userAfter = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
     assertThat(userAfter.get().isVerified).isFalse()
   }

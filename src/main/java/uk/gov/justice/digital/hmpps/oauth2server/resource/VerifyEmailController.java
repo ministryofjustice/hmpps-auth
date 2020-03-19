@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
@@ -90,7 +91,7 @@ public class VerifyEmailController {
     }
 
     @PostMapping("/verify-email")
-    public ModelAndView verifyEmail(@RequestParam(required = false) final String candidate, @RequestParam final String email,
+    public ModelAndView verifyEmail(@RequestParam(required = false) final String candidate, @RequestParam final String email, @RequestParam final EmailType emailType,
                                     final Principal principal, final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
         final var username = principal.getName();
@@ -102,12 +103,13 @@ public class VerifyEmailController {
 
         final var chosenEmail = StringUtils.trim(StringUtils.isBlank(candidate) || "other".equals(candidate) || "change".equals(candidate) ? email : candidate);
 
-        if (userService.isSameAsCurrentVerifiedEmail(username, chosenEmail)) {
-            return new ModelAndView("verifyEmailAlready");
+        if (userService.isSameAsCurrentVerifiedEmail(username, chosenEmail, emailType)) {
+            return new ModelAndView("verifyEmailAlready", "emailType", emailType);
         }
 
         try {
-            final var verifyLink = requestVerificationForUser(username, chosenEmail, request.getRequestURL().append("-confirm?token=").toString());
+            final var confirmUrl = emailType == EmailType.PRIMARY ? "-confirm?token=" : "-secondary-confirm?token=";
+            final var verifyLink = requestVerificationForUser(username, chosenEmail, request.getRequestURL().append(confirmUrl).toString(), emailType);
 
             final var modelAndView = new ModelAndView("verifyEmailSent");
             if (smokeTestEnabled) {
@@ -125,12 +127,12 @@ public class VerifyEmailController {
         }
     }
 
-    private String requestVerificationForUser(final String username, final String emailInput, final String url) throws NotificationClientException, VerifyEmailException {
+    private String requestVerificationForUser(final String username, final String emailInput, final String url, final EmailType emailType) throws NotificationClientException, VerifyEmailException {
 
         final var userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow();
         final var firstName = userPersonDetails.getFirstName();
 
-        return verifyEmailService.requestVerification(username, emailInput, firstName, url);
+        return verifyEmailService.requestVerification(username, emailInput, firstName, url, emailType);
     }
 
     private ModelAndView createChangeOrVerifyEmailError(final String chosenEmail, final String reason, final String type) {
@@ -150,6 +152,17 @@ public class VerifyEmailController {
         if (errorOptional.isPresent()) {
             final var error = errorOptional.get();
             log.info("Failed to verify email due to: {}", error);
+            return new ModelAndView("verifyEmailFailure", "error", error);
+        }
+        return new ModelAndView("verifyEmailSuccess");
+    }
+
+    @GetMapping("/verify-email-secondary-confirm")
+    public ModelAndView verifySecondaryEmailConfirm(@RequestParam final String token) {
+        final var errorOptional = verifyEmailService.confirmSecondaryEmail(token);
+        if (errorOptional.isPresent()) {
+            final var error = errorOptional.get();
+            log.info("Failed to verify secondary email due to: {}", error);
             return new ModelAndView("verifyEmailFailure", "error", error);
         }
         return new ModelAndView("verifyEmailSuccess");

@@ -1,9 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
@@ -16,6 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.builder
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
@@ -144,7 +143,7 @@ class AuthUserControllerTest {
 
   @Test
   fun enableUser() {
-    val user = User.builder().username("USER").email("email").verified(true).build()
+    val user = builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     val responseEntity = authUserController.enableUser("user", authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
@@ -153,7 +152,7 @@ class AuthUserControllerTest {
 
   @Test
   fun enableUser_notFound() {
-    val user = User.builder().username("USER").email("email").verified(true).build()
+    val user = builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     doThrow(EntityNotFoundException("message")).whenever(authUserService).enableUser(anyString(), anyString(), any())
     val responseEntity = authUserController.enableUser("user", authentication)
@@ -162,7 +161,7 @@ class AuthUserControllerTest {
 
   @Test
   fun disableUser() {
-    val user = User.builder().username("USER").email("email").verified(true).build()
+    val user = builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     val responseEntity = authUserController.disableUser("user", authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
@@ -171,7 +170,7 @@ class AuthUserControllerTest {
 
   @Test
   fun disableUser_notFound() {
-    val user = User.builder().username("USER").email("email").verified(true).build()
+    val user = builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     doThrow(EntityNotFoundException("message")).whenever(authUserService).disableUser(anyString(), anyString(), any())
     val responseEntity = authUserController.disableUser("user", authentication)
@@ -182,7 +181,7 @@ class AuthUserControllerTest {
   fun amendUser_checkService() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
-    verify(authUserService).amendUserEmail("user", "a@b.com", "http://some.url/auth/initial-password?token=", "bob", authentication.authorities)
+    verify(authUserService).amendUserEmail("user", "a@b.com", "http://some.url/auth/initial-password?token=", "bob", authentication.authorities, EmailType.PRIMARY)
   }
 
   @Test
@@ -196,7 +195,7 @@ class AuthUserControllerTest {
   @Test
   fun amendUser_notFound() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
-    whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(EntityNotFoundException("not found"))
+    whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any(), eq(EmailType.PRIMARY))).thenThrow(EntityNotFoundException("not found"))
     val responseEntity = authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(404)
   }
@@ -204,7 +203,7 @@ class AuthUserControllerTest {
   @Test
   fun amendUser_verifyException() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
-    whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(VerifyEmailException("reason"))
+    whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any(), eq(EmailType.PRIMARY))).thenThrow(VerifyEmailException("reason"))
     val responseEntity = authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(400)
     assertThat(responseEntity.body).isEqualTo(ErrorDetail("email.reason", "Email address failed validation", "email"))
@@ -213,7 +212,7 @@ class AuthUserControllerTest {
   @Test
   fun amendUser_groupException() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
-    whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any())).thenThrow(AuthUserGroupRelationshipException("user", "reason"))
+    whenever(authUserService.amendUserEmail(anyString(), anyString(), anyString(), anyString(), any(), eq(EmailType.PRIMARY))).thenThrow(AuthUserGroupRelationshipException("user", "reason"))
     val responseEntity = authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(403)
     assertThat(responseEntity.body).isEqualTo(ErrorDetail("unable to maintain user", "Unable to amend user, the user is not within one of your groups", "groups"))
@@ -230,7 +229,7 @@ class AuthUserControllerTest {
 
   private val authUser: User
     get() {
-      val user = User.builder().id(UUID.fromString(USER_ID)).username("authentication").email("email").verified(true).enabled(true).lastLoggedIn(LocalDateTime.of(2019, 1, 1, 12, 0)).build()
+      val user = builder().id(UUID.fromString(USER_ID)).username("authentication").email("email").verified(true).enabled(true).lastLoggedIn(LocalDateTime.of(2019, 1, 1, 12, 0)).build()
       user.person = Person()
       user.person.firstName = "Joe"
       user.person.lastName = "Bloggs"

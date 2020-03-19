@@ -98,6 +98,39 @@
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
+        Secondary Email
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="email" th:text="${authUser.secondaryEmail}">
+        sarah.philips@digital.justice.gov.uk
+      </dd>
+      <dd class="govuk-summary-list__actions">
+        <a class="govuk-link" th:href="@{/new-secondary-email}" th:if="${authUser.authSource != 'delius'}"
+           data-qa="changeSecondaryEmail">
+          <th:block th:text="${#strings.isEmpty(authUser.secondaryEmail)} ? 'Add' : 'Change'">
+            Change
+          </th:block>
+          <span class="govuk-visually-hidden"> secondary email</span>
+        </a>
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Secondary Email verified
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="verified"
+          th:text="${authUser.secondaryEmailVerified} ? 'Yes' : 'No'">
+        Yes
+      </dd>
+      <dd class="govuk-summary-list__actions">
+        <a class="govuk-link" th:href="@{/verify-secondary-email}"
+           th:unless="${#strings.isEmpty(authUser.secondaryEmail) || authUser.secondaryEmailVerified}"
+           data-qa="verifyEmail">
+          Resend <span class="govuk-visually-hidden"> email</span> code
+        </a>
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
         Mobile
       </dt>
       <dd class="govuk-summary-list__value" data-qa="mobile" th:text="${authUser.mobile}">
