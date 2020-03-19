@@ -15,7 +15,7 @@ import uk.gov.service.notify.NotificationClientApi
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("dev")
 @Transactional(transactionManager = "authTransactionManager")
-open class VerifyMobileServiceIntTest {
+class VerifyMobileServiceIntTest {
   @Autowired
   private lateinit var userRepository: UserRepository
   private val telemetryClient: TelemetryClient = mock()

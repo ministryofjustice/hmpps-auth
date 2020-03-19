@@ -117,29 +117,28 @@ INSERT INTO users (user_id, username, password, last_logged_in, first_name, last
         ('DA28D339-85FA-42C1-9CFA-AC67055A51A5', 'AUTH_INACTIVE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2019-02-03 13:23:19.0000000', 'Auth', 'Inactive', 1, 1, 0, 'auth'),
         ('7112EC3B-88C1-48C3-BCC3-F82874E3F2C3', 'AUTH_DELETEALL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2018-02-03 13:23:19.0000000', 'Auth', 'DeleteAll', 1, 0, 0, 'auth');
 
-INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, source, mobile, mobile_verified)
- VALUES ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D50', 'AUTH_CHANGE_MOBILE_VERIFIED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_mnbile@digital.justice.gov.uk', 'Auth', 'Mobile', 1, 1, 0, 'auth', '07700900321',1),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D51', 'AUTH_CHANGE_MOBILE_UPDATE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_mobile@digital.justice.gov.uk', 'Auth', 'Mobile', 1, 1, 0, 'auth', '07700900321',0),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D52', 'AUTH_UNVERIFIED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Unverified', 0, 1, 0, 'auth', '07700900321',0);
+INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, source)
+ VALUES ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D50', 'AUTH_CHANGE_MOBILE_VERIFIED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_mnbile@digital.justice.gov.uk', 'Auth', 'Mobile', 1, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D51', 'AUTH_CHANGE_MOBILE_UPDATE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_mobile@digital.justice.gov.uk', 'Auth', 'Mobile', 1, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D52', 'AUTH_UNVERIFIED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Unverified', 0, 1, 0, 'auth');
 
-INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, source, mobile, mobile_verified, mfa_preference)
- VALUES ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D60', 'AUTH_MFA_PREF_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.email@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'EMAIL'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D61', 'AUTH_MFA_PREF_EMAIL2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.email@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'EMAIL'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D62', 'AUTH_MFA_PREF_EMAIL3', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.email@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'EMAIL'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D63', 'AUTH_MFA_PREF_EMAIL4', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.email@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'EMAIL'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D64', 'AUTH_MFA_PREF_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'TEXT'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D65', 'AUTH_MFA_PREF_TEXT2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'TEXT'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D66', 'AUTH_MFA_PREF_TEXT3', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'TEXT'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D67', 'AUTH_MFA_PREF_TEXT4', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'TEXT'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D68', 'AUTH_MFA_LOCKED_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'TEXT'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D69', 'AUTH_MFA_LOCKED2_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'TEXT'),
-        ('2E285CCF-DCFD-4498-9E22-D6E8E10A2D6A', 'AUTH_MFA_NOTEXT_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Mfa No Text', 'User', 0, 1, 0, 'auth', null, 0, 'TEXT'),
-        ('2E285CCF-DCFD-4499-9E22-D6E8E10A2D6B', 'AUTH_MFA_PREF_TEXT_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Mfa No Text', 'User', 1, 1, 0, 'auth', null, 0, 'TEXT'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D6C', 'AUTH_MFA_SHORT_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'bob@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',0,'EMAIL'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D6D', 'AUTH_MFA_NON_VERIFIED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'bob@digital.justice.gov.uk', 'Auth', 'Mfa', 0, 1, 0, 'auth', '07700900321',0,'EMAIL'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D6E', 'AUTH_MFA_PREF_EMAIL5', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.email@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', '07700900321',1,'TEXT'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D70', 'AUTH_UNVERIFIED_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 0, 1, 0, 'auth', '07700900321',0,'TEXT');
-
+INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, source, mfa_preference)
+ VALUES ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D60', 'AUTH_MFA_PREF_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.email@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D61', 'AUTH_MFA_PREF_EMAIL2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.email@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D62', 'AUTH_MFA_PREF_EMAIL3', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.email@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D63', 'AUTH_MFA_PREF_EMAIL4', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.email@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D64', 'AUTH_MFA_PREF_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D65', 'AUTH_MFA_PREF_TEXT2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D66', 'AUTH_MFA_PREF_TEXT3', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D67', 'AUTH_MFA_PREF_TEXT4', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D68', 'AUTH_MFA_LOCKED_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D69', 'AUTH_MFA_LOCKED2_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
+        ('2E285CCF-DCFD-4498-9E22-D6E8E10A2D6A', 'AUTH_MFA_NOTEXT_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Mfa No Text', 'User', 0, 1, 0, 'auth','TEXT'),
+        ('2E285CCF-DCFD-4499-9E22-D6E8E10A2D6B', 'AUTH_MFA_PREF_TEXT_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Mfa No Text', 'User', 1, 1, 0, 'auth', 'TEXT'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D6C', 'AUTH_MFA_SHORT_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'bob@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D6D', 'AUTH_MFA_NON_VERIFIED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'bob@digital.justice.gov.uk', 'Auth', 'Mfa', 0, 1, 0, 'auth', 'EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D6E', 'AUTH_MFA_PREF_EMAIL5', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.email@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D70', 'AUTH_UNVERIFIED_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 0, 1, 0, 'auth', 'TEXT');
 
 -- delius users
 INSERT INTO users (user_id, username, email, last_logged_in, first_name, last_name, verified, enabled, locked, source)
@@ -213,3 +212,21 @@ INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id,
 INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'true' FROM groups g, roles r WHERE r.role_code = 'LICENCE_RO' AND g.group_code = 'SITE_1_GROUP_2';
 
 INSERT INTO user_contact (user_id, type, value) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com' FROM users where username = 'AUTH_ADM';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_CHANGE_MOBILE_VERIFIED';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 0 FROM users where username = 'AUTH_CHANGE_MOBILE_UPDATE';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 0 FROM users where username = 'AUTH_UNVERIFIED';
+
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_EMAIL';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_EMAIL2';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_EMAIL3';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_EMAIL4';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_TEXT';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_TEXT2';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_TEXT3';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_TEXT4';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_LOCKED_TEXT';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_LOCKED2_TEXT';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 0 FROM users where username = 'AUTH_MFA_SHORT_EMAIL';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 0 FROM users where username = 'AUTH_MFA_NON_VERIFIED';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_EMAIL5';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 0 FROM users where username = 'AUTH_UNVERIFIED_TEXT';
