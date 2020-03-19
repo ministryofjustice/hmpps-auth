@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
@@ -52,8 +53,7 @@ public class VerifyMobileService {
         final var user = userRepository.findByUsername(username).orElseThrow();
         final var canonicalMobile = mobile.replaceAll("\\s+", "");
         validateMobileNumber(canonicalMobile);
-        user.setMobile(canonicalMobile);
-        user.setMobileVerified(false);
+        user.addContact(ContactType.MOBILE_PHONE, canonicalMobile);
 
         final var verifyCode = user.createToken(TokenType.MOBILE).getToken();
         final var parameters = Map.of("verifyCode", verifyCode);
@@ -115,7 +115,7 @@ public class VerifyMobileService {
 
     private void markMobileAsVerified(final User user) {
         // verification token match
-        user.setMobileVerified(true);
+        user.findContact(ContactType.MOBILE_PHONE).ifPresent(c -> c.setVerified(true));
         userRepository.save(user);
 
         log.info("Verify mobile succeeded for {}", user.getUsername());

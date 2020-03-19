@@ -30,16 +30,16 @@ class ChangeMobileControllerTest {
   inner class ChangeMobileRequest {
     @Test
     fun addMobileRequest() {
-      whenever(userService.getUser(anyString())).thenReturn(User())
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(User())
       val view = controller.changeMobileRequest(token)
       assertThat(view.viewName).isEqualTo("account/changeMobile", "mobile", null)
-      verify(userService).getUser("user")
+      verify(userService).getUserWithContacts("user")
     }
 
     @Test
     fun updateMobileRequest() {
       val user = User.builder().mobile("07700900321").build()
-      whenever(userService.getUser(anyString())).thenReturn(user)
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(user)
       val view = controller.changeMobileRequest(token)
       assertThat(view.viewName).isEqualTo("account/changeMobile", "mobile", "07700900321")
     }
@@ -50,7 +50,7 @@ class ChangeMobileControllerTest {
     @Test
     fun `changeMobile notification exception`() {
       whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.getUser(anyString())).thenReturn(User.of("AUTH_MOBILE"))
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(User.of("AUTH_MOBILE"))
       whenever(verifyMobileService.changeMobileAndRequestVerification(anyString(), anyString())).thenThrow(NotificationClientException("something went wrong"))
       val modelAndView = controller.changeMobile("12345", token)
       assertThat(modelAndView.viewName).isEqualTo("account/changeMobile")
@@ -60,7 +60,7 @@ class ChangeMobileControllerTest {
     @Test
     fun `changeMobile verification exception`() {
       whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.getUser(anyString())).thenReturn(User.of("AUTH_MOBILE"))
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(User.of("AUTH_MOBILE"))
       whenever(verifyMobileService.changeMobileAndRequestVerification(anyString(), anyString())).thenThrow(VerifyMobileException("something went wrong"))
       val modelAndView = controller.changeMobile("12345", token)
       assertThat(modelAndView.viewName).isEqualTo("account/changeMobile")
@@ -70,7 +70,7 @@ class ChangeMobileControllerTest {
     @Test
     fun `changeMobile success`() {
       whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.getUser(anyString())).thenReturn(User.of("AUTH_MOBILE"))
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(User.of("AUTH_MOBILE"))
       whenever(verifyMobileService.changeMobileAndRequestVerification(anyString(), anyString())).thenReturn("123456")
       val mobile = "07700900321"
       val modelAndView = controller.changeMobile(mobile, token)
@@ -82,7 +82,7 @@ class ChangeMobileControllerTest {
     @Test
     fun `changeMobile success smoke test`() {
       whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.getUser(anyString())).thenReturn(User.of("AUTH_MOBILE"))
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(User.of("AUTH_MOBILE"))
       whenever(verifyMobileService.changeMobileAndRequestVerification(anyString(), anyString())).thenReturn("123456")
       val mobile = "07700900321"
       val modelAndView = controllerSmokeEnabled.changeMobile(mobile, token)

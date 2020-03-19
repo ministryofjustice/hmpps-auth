@@ -3,7 +3,11 @@ package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.MOBILE_PHONE
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.SECONDARY_EMAIL
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.CHANGE
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 
 @Suppress("UsePropertyAccessSyntax")
@@ -13,11 +17,40 @@ class UserTest {
     @Test
     fun `test create token overwrites previous`() {
       val user = User.of("user")
-      user.createToken(UserToken.TokenType.RESET)
-      val changeToken = user.createToken(UserToken.TokenType.CHANGE)
-      val resetToken = user.createToken(UserToken.TokenType.RESET)
+      user.createToken(RESET)
+      val changeToken = user.createToken(CHANGE)
+      val resetToken = user.createToken(RESET)
       assertThat(user.tokens).containsOnly(changeToken, resetToken)
-      assertThat(user.tokens).extracting<String> { obj: UserToken -> obj.token }.containsOnly(changeToken.token, resetToken.token)
+      assertThat(user.tokens).extracting<String> { it.token }.containsOnly(changeToken.token, resetToken.token)
+    }
+  }
+
+  @Nested
+  inner class AddContact {
+    @Test
+    fun `test add contact overwrites previous`() {
+      val user = User.of("user")
+      user.addContact(MOBILE_PHONE, "previous")
+      val mobileContact = user.addContact(MOBILE_PHONE, "currentPhone")
+      val emailContact = user.addContact(SECONDARY_EMAIL, "currentEmail")
+      assertThat(user.contacts).containsOnly(mobileContact, emailContact)
+      assertThat(user.contacts).extracting<String> { it.value }.containsOnly(mobileContact.value, emailContact.value)
+    }
+
+    @Test
+    fun `test correct contact details retrieved not verified`() {
+      val user = User.of("user")
+      user.addContact(MOBILE_PHONE, "mobileValue")
+      assertThat(user.mobile).isEqualTo("mobileValue")
+      assertThat(user.isMobileVerified).isEqualTo(false)
+    }
+
+    @Test
+    fun `test correct contact details retrieved verified`() {
+      val user = User.of("user")
+      user.addContact(MOBILE_PHONE, "mobileValue").verified = true
+      assertThat(user.mobile).isEqualTo("mobileValue")
+      assertThat(user.isMobileVerified).isEqualTo(true)
     }
   }
 
@@ -64,25 +97,25 @@ class UserTest {
 
     @Test
     fun `mobile set but not verified, no email`() {
-      val user = userBuilder().mobile("someemail").build()
+      val user = userBuilder().contacts(setOf(Contact(MOBILE_PHONE, "someemail"))).build()
       assertThat(user.hasVerifiedMfaMethod()).isFalse()
     }
 
     @Test
     fun `mobile set and verified, no email`() {
-      val user = userBuilder().mobile("someemail").mobileVerified(true).build()
+      val user = userBuilder().contacts(setOf(Contact(MOBILE_PHONE, "someemail", true))).build()
       assertThat(user.hasVerifiedMfaMethod()).isTrue()
     }
 
     @Test
     fun `mobile not set but verified, no email`() {
-      val user = userBuilder().mobileVerified(true).build()
+      val user = userBuilder().contacts(setOf(Contact(MOBILE_PHONE, "", true))).build()
       assertThat(user.hasVerifiedMfaMethod()).isFalse()
     }
 
     @Test
     fun `mobile set and verified, email set and verified`() {
-      val user = userBuilder().email("someemail").verified(true).mobile("someemail").mobileVerified(true).build()
+      val user = userBuilder().email("someemail").verified(true).contacts(setOf(Contact(MOBILE_PHONE, "someemail", true))).build()
       assertThat(user.hasVerifiedMfaMethod()).isTrue()
     }
   }
@@ -122,31 +155,31 @@ class UserTest {
 
     @Test
     fun `mobile set but not verified, no email`() {
-      val user = userBuilder().mobile("someemail").build()
+      val user = userBuilder().contacts(setOf(Contact(MOBILE_PHONE, "someemail"))).build()
       assertThat(user.calculateMfaFromPreference()).isEmpty()
     }
 
     @Test
     fun `mobile set and verified, no email`() {
-      val user = userBuilder().mobile("someemail").mobileVerified(true).build()
+      val user = userBuilder().contacts(setOf(Contact(MOBILE_PHONE, "someemail", true))).build()
       assertThat(user.calculateMfaFromPreference()).get().isEqualTo(MfaPreferenceType.TEXT)
     }
 
     @Test
     fun `mobile not set but verified, no email`() {
-      val user = userBuilder().mobileVerified(true).build()
+      val user = userBuilder().contacts(setOf(Contact(MOBILE_PHONE, "", true))).build()
       assertThat(user.calculateMfaFromPreference()).isEmpty()
     }
 
     @Test
     fun `mobile set and verified, email set and verified`() {
-      val user = userBuilder().email("someemail").verified(true).mobile("someemail").mobileVerified(true).build()
+      val user = userBuilder().email("someemail").verified(true).contacts(setOf(Contact(MOBILE_PHONE, "someemail", true))).build()
       assertThat(user.calculateMfaFromPreference()).get().isEqualTo(MfaPreferenceType.EMAIL)
     }
 
     @Test
     fun `mobile set and verified, email set and verified, preference text`() {
-      val user = userBuilder().email("someemail").verified(true).mobile("someemail").mobileVerified(true).mfaPreference(MfaPreferenceType.TEXT).build()
+      val user = userBuilder().email("someemail").verified(true).contacts(setOf(Contact(MOBILE_PHONE, "someemail", true))).mfaPreference(MfaPreferenceType.TEXT).build()
       assertThat(user.calculateMfaFromPreference()).get().isEqualTo(MfaPreferenceType.TEXT)
     }
   }
@@ -155,7 +188,7 @@ class UserTest {
   inner class ApplyMask {
     @Test
     fun `getMaskedMobile check mask`() {
-      val user = User.builder().mobile("07700900321").build()
+      val user = User.builder().contacts(setOf(Contact(MOBILE_PHONE, "07700900321"))).build()
       assertThat(user.getMaskedMobile()).isEqualTo("*******0321")
     }
 
@@ -188,13 +221,13 @@ class UserTest {
 
     @Test
     fun `mfaPreferenceVerified preference text verified`() {
-      val user = User.builder().mobileVerified(true).mfaPreference(MfaPreferenceType.TEXT).build()
+      val user = User.builder().contacts(setOf(Contact(MOBILE_PHONE, "", true))).mfaPreference(MfaPreferenceType.TEXT).build()
       assertThat(user.mfaPreferenceVerified()).isTrue()
     }
 
     @Test
     fun `mfaPreferenceVerified preference text not verified`() {
-      val user = User.builder().mobileVerified(false).mfaPreference(MfaPreferenceType.TEXT).build()
+      val user = User.builder().contacts(setOf(Contact(MOBILE_PHONE, ""))).mfaPreference(MfaPreferenceType.TEXT).build()
       assertThat(user.mfaPreferenceVerified()).isFalse()
     }
 
@@ -212,13 +245,13 @@ class UserTest {
 
     @Test
     fun `mfaPreferenceTextVerified verified`() {
-      val user = User.builder().mobileVerified(true).mfaPreference(MfaPreferenceType.TEXT).build()
+      val user = User.builder().contacts(setOf(Contact(MOBILE_PHONE, "", true))).mfaPreference(MfaPreferenceType.TEXT).build()
       assertThat(user.mfaPreferenceTextVerified()).isTrue()
     }
 
     @Test
     fun `mfaPreferenceTextVerified not verified`() {
-      val user = User.builder().mobileVerified(false).mfaPreference(MfaPreferenceType.TEXT).build()
+      val user = User.builder().contacts(setOf(Contact(MOBILE_PHONE, ""))).mfaPreference(MfaPreferenceType.TEXT).build()
       assertThat(user.mfaPreferenceTextVerified()).isFalse()
     }
   }

@@ -10,10 +10,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
-import java.util.*
 
 class MfaPreferenceControllerTest {
-
   private val userService: UserService = mock()
   private val mfaService: MfaService = mock()
   private val controller = MfaPreferenceController(userService, mfaService)
@@ -22,7 +20,7 @@ class MfaPreferenceControllerTest {
   @Test
   fun `mfaPreferenceRequest check view`() {
     val user = User.builder().mobile("07700900321").email("someuser").mfaPreference(User.MfaPreferenceType.EMAIL).build()
-    whenever(userService.findUser(anyString())).thenReturn(Optional.of(user))
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(user)
     val modelAndView = controller.mfaPreferenceRequest(authentication)
     assertThat(modelAndView.viewName).isEqualTo("mfaPreference")
   }
@@ -30,7 +28,7 @@ class MfaPreferenceControllerTest {
   @Test
   fun `mfaPreferenceRequest check model`() {
     val user = User.builder().mobile("07700900321").email("someuser").mfaPreference(User.MfaPreferenceType.EMAIL).build()
-    whenever(userService.findUser(anyString())).thenReturn(Optional.of(user))
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(user)
     val modelAndView = controller.mfaPreferenceRequest(authentication)
     assertThat(modelAndView.model).containsOnly(entry("current", User.MfaPreferenceType.EMAIL), entry("email", "someuser"), entry("text", "07700900321"))
   }
