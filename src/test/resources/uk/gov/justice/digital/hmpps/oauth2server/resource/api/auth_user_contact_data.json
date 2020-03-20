@@ -1,0 +1,10 @@
+{
+  "userId": "2e285ccd-dcfd-4497-9e22-d6e8e10a2d60",
+  "username": "AUTH_MFA_PREF_EMAIL",
+  "email": "auth.email@digital.justice.gov.uk",
+  "firstName": "Auth",
+  "lastName": "Mfa",
+  "locked": false,
+  "enabled": true,
+  "verified": true
+}
