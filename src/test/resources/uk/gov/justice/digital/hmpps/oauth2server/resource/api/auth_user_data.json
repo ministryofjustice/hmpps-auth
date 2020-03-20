@@ -1,0 +1,11 @@
+{
+  "userId": "f3daec63-ee2f-467c-a6ee-92c3008193bd",
+  "username": "AUTH_USER_LAST_LOGIN",
+  "email": "auth_user_last_login@digital.justice.gov.uk",
+  "firstName": "Auth_Last",
+  "lastName": "Login",
+  "locked": false,
+  "enabled": true,
+  "verified": true,
+  "lastLoggedIn": "2019-01-01T12:05:10"
+}

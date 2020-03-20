@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
+import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
 import java.time.Duration
 
 
@@ -25,11 +26,15 @@ abstract class IntegrationTest {
     System.setProperty("http.keepAlive", "false")
   }
 
-  internal fun setAuthorisation(user: String): (org.springframework.http.HttpHeaders) -> Unit {
-    val token = createJwt(user)
+  internal fun setAuthorisation(user: String, roles: List<String> = listOf()): (org.springframework.http.HttpHeaders) -> Unit {
+    val token = createJwt(user, roles)
     return { it.set(org.springframework.http.HttpHeaders.AUTHORIZATION, "Bearer $token") }
   }
 
-  private fun createJwt(user: String) =
-      jwtAuthHelper.createJwt(JwtAuthHelper.JwtParameters(username = user, scope = listOf("read", "write"), expiryTime = Duration.ofHours(1L)))
+  private fun createJwt(user: String, roles: List<String> = listOf()) =
+      jwtAuthHelper.createJwt(
+          JwtParameters(username = user,
+              scope = listOf("read", "write"),
+              expiryTime = Duration.ofHours(1L),
+              roles = roles))
 }
