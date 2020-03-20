@@ -196,4 +196,10 @@ tasks {
   }
 
   assemble { dependsOn(copyAgent) }
+
+  bootJar {
+    manifest {
+      attributes("Implementation-Version" to rootProject.version, "Implementation-Title" to rootProject.name)
+    }
+  }
 }
