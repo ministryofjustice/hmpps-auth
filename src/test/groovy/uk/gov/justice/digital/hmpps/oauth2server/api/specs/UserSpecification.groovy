@@ -23,21 +23,6 @@ class UserSpecification extends TestSpecification {
         deliusApiRestTemplate.getResource().accessTokenUri = "http://localhost:${randomServerPort}/auth/oauth/token"
     }
 
-    def "User Me endpoint returns principal user data"() {
-
-        given:
-        def oauthRestTemplate = getOauthPasswordGrant("ITAG_USER", "password", "elite2apiclient", "clientsecret")
-
-        when:
-        def response = oauthRestTemplate.exchange(getBaseUrl() + "/api/user/me", HttpMethod.GET, null, String.class)
-
-        then:
-        response.statusCode == HttpStatus.OK
-        def userData = jsonSlurper.parseText(response.body)
-
-        userData == ["username": "ITAG_USER", "active": true, "name": "Itag User", "staffId": 1, "activeCaseLoadId": "MDI", "authSource": "nomis", "userId": "1"]
-    }
-
     def "User Me endpoint returns principal user data for client credentials grant"() {
 
         given:

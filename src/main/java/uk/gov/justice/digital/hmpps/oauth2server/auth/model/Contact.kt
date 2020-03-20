@@ -15,6 +15,6 @@ data class Contact(@Enumerated(EnumType.STRING) var type: ContactType) {
   var verified: Boolean = false
 }
 
-enum class ContactType {
-  SECONDARY_EMAIL, MOBILE_PHONE
+enum class ContactType(val description: String) {
+  SECONDARY_EMAIL("Secondary email"), MOBILE_PHONE("Mobile phone")
 }

@@ -1,0 +1,9 @@
+{
+  "username": "ITAG_USER",
+  "active": true,
+  "name": "Itag User",
+  "staffId": 1,
+  "activeCaseLoadId": "MDI",
+  "authSource": "nomis",
+  "userId": "1"
+}

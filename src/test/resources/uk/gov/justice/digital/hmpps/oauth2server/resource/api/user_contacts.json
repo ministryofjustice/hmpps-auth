@@ -1,0 +1,12 @@
+[
+  {
+    "value": "john@smith.com",
+    "type": "SECONDARY_EMAIL",
+    "typeDescription": "Secondary email"
+  },
+  {
+    "value": "07700900321",
+    "type": "MOBILE_PHONE",
+    "typeDescription": "Mobile phone"
+  }
+]
