@@ -102,10 +102,22 @@ class OauthSpecification extends TestSpecification {
         token.additionalInformation.auth_source == 'auth'
     }
 
-    def "Client Credentials Login access token for non auth or nomis user"() {
+    def "Client Credentials Login failure token for unknown user"() {
 
         given:
         def oauthRestTemplate = getOauthClientGrant("community-api-client", "clientsecret", "username=NPSUser")
+
+        when:
+        oauthRestTemplate.getAccessToken()
+
+        then:
+        OAuth2AccessDeniedException ex = thrown()
+    }
+
+    def "Client Credentials Login access token for proxy user with no username"() {
+
+        given:
+        def oauthRestTemplate = getOauthClientGrant("community-api-client", "clientsecret")
 
         when:
         def token = oauthRestTemplate.getAccessToken()
