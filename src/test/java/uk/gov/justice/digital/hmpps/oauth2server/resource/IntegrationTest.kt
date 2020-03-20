@@ -1,10 +1,16 @@
+@file:Suppress("DEPRECATION")
+
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
+import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
+import org.springframework.security.oauth2.client.OAuth2RestTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.oauth2server.config.DeliusClientCredentials
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
 import java.time.Duration
@@ -21,10 +27,23 @@ abstract class IntegrationTest {
   @Autowired
   private lateinit var jwtAuthHelper: JwtAuthHelper
 
+  @Autowired
+  private lateinit var deliusApiRestTemplate: OAuth2RestTemplate
+
+  @LocalServerPort
+  private var localServerPort: Int = 0
+
   init {
     // Resolves an issue where Wiremock keeps previous sockets open from other tests causing connection resets
     System.setProperty("http.keepAlive", "false")
   }
+
+  @BeforeEach
+  internal fun setupPort() {
+    // need to override port as random port only assigned on server startup
+    (deliusApiRestTemplate.resource as DeliusClientCredentials).accessTokenUri = "http://localhost:${localServerPort}/auth/oauth/token"
+  }
+
 
   internal fun setAuthorisation(user: String, roles: List<String> = listOf()): (org.springframework.http.HttpHeaders) -> Unit {
     val token = createJwt(user, roles)
@@ -37,4 +56,6 @@ abstract class IntegrationTest {
               scope = listOf("read", "write"),
               expiryTime = Duration.ofHours(1L),
               roles = roles))
+
+  internal fun String.readFile(): String = this@IntegrationTest::class.java.getResource(this).readText()
 }

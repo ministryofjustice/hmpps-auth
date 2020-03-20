@@ -3,12 +3,11 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 import org.apache.commons.lang3.RandomStringUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
+import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationWithDeliusTest
 
 
-class AuthUserIntTest : IntegrationTest() {
+class AuthUserIntTest : IntegrationWithDeliusTest() {
   data class NewUser(val email: String, val firstName: String, val lastName: String, val groupCode: String? = null)
 
   @Test
@@ -28,10 +27,10 @@ class AuthUserIntTest : IntegrationTest() {
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBody(object : ParameterizedTypeReference<Map<String, String>>() {})
-        .consumeWith<Nothing?> {
-          assertThat(it!!.responseBody!!.filter { it.key != "userId" }).containsExactlyEntriesOf(
-              mapOf("username" to username.toUpperCase(), "active" to "true", "name" to "Bob Smith", "authSource" to "auth"))
+        .expectBody()
+        .jsonPath("$").value<Map<String, Any>> {
+          assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
+              mapOf("username" to username.toUpperCase(), "active" to true, "name" to "Bob Smith", "authSource" to "auth"))
         }
   }
 
@@ -81,9 +80,9 @@ class AuthUserIntTest : IntegrationTest() {
         .exchange()
         .expectStatus().isForbidden
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBody(object : ParameterizedTypeReference<Map<String, String>>() {})
-        .consumeWith<Nothing?> {
-          assertThat(it!!.responseBody!!).containsExactlyEntriesOf(
+        .expectBody()
+        .jsonPath("$").value<Map<String, Any>> {
+          assertThat(it).containsExactlyInAnyOrderEntriesOf(
               mapOf("error" to "access_denied", "error_description" to "Access is denied"))
         }
   }
@@ -144,7 +143,5 @@ class AuthUserIntTest : IntegrationTest() {
         .expectBody()
         .json("auth_user_search.json".readFile())
   }
-
-  private fun String.readFile(): String = this@AuthUserIntTest::class.java.getResource(this).readText()
 }
 
