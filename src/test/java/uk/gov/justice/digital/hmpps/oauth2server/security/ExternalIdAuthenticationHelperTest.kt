@@ -17,13 +17,13 @@ class ExternalIdAuthenticationHelperTest {
   @Test
   fun userDetails_notFound() {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
-    assertThatThrownBy { helper.getUserDetails(mapOf("username" to "bobuser"), false) }
+    assertThatThrownBy { helper.getUserDetails(mapOf("username" to "bobuser")) }
         .isInstanceOf(OAuth2AccessDeniedException::class.java).hasMessage("No user found matching username.")
   }
 
   @Test
   fun userDetails_found() {
-    val details = helper.getUserDetails(mapOf("username" to "bobuser"), true)
+    val details = helper.getUserDetails(mapOf("username" to "bobuser"))
     assertThat(details).isNotNull()
   }
 }

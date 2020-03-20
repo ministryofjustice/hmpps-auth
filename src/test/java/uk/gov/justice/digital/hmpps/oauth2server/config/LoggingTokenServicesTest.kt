@@ -45,14 +45,14 @@ internal class LoggingTokenServicesTest {
 
   @Test
   fun createAccessToken_ClientOnly() {
-    whenever(externalIdAuthenticationHelper.getUserDetails(anyMap(), eq(false))).thenReturn(USER_DETAILS)
+    whenever(externalIdAuthenticationHelper.getUserDetails(anyMap())).thenReturn(USER_DETAILS)
     loggingTokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_REQUEST, null))
     verify(telemetryClient, never()).trackEvent(any(), anyMap(), isNull())
   }
 
   @Test
   fun createAccessToken_ClientOnlyProxyUser() {
-    whenever(externalIdAuthenticationHelper.getUserDetails(anyMap(), eq(true))).thenReturn(UNCHECKED_USER_DETAILS)
+    whenever(externalIdAuthenticationHelper.getUserDetails(anyMap())).thenReturn(UNCHECKED_USER_DETAILS)
     loggingTokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_SCOPE_REQUEST, null))
     verify(telemetryClient, never()).trackEvent(any(), anyMap(), isNull())
   }
