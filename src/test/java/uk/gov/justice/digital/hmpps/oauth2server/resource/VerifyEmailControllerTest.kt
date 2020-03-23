@@ -133,6 +133,53 @@ class VerifyEmailControllerTest {
     assertThat(modelAndView.model).containsExactly(entry("error", "failed"))
   }
 
+  @Test
+  fun verifySecondaryEmail_noselection() {
+    val candidates = listOf("joe", "bob")
+    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(candidates)
+    val modelAndView = verifyEmailController.verifyEmail("", "", EmailType.SECONDARY, principal, request, response)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
+    assertThat(modelAndView.model).containsExactly(entry("error", "noselection"), entry("candidates", candidates))
+  }
+
+  @Test
+  fun verifySecondaryEmail_Exception() {
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(User()))
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.SECONDARY))).thenThrow(NotificationClientException("something went wrong"))
+    val modelAndView = verifyEmailController.verifyEmail("a@b.com", null, EmailType.SECONDARY, principal, request, response)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
+    assertThat(modelAndView.model).containsExactly(entry("email", "a@b.com"), entry("error", "other"))
+  }
+
+  @Test
+  fun verifySecondaryEmail_Success() {
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.SECONDARY))).thenReturn("link")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
+    val email = "o'there+bob@b-c.d"
+    val modelAndView = verifyEmailController.verifyEmail("other", email, EmailType.SECONDARY, principal, request, response)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
+    assertThat(modelAndView.model).containsExactly(entry("verifyLink", "link"), entry("email", email))
+    verify(verifyEmailService).requestVerification("user", email, "Bob", "http://some.url-secondary-confirm?token=", EmailType.SECONDARY)
+  }
+
+  @Test
+  fun verifySecondaryEmailConfirm() {
+    whenever(verifyEmailService.confirmSecondaryEmail(anyString())).thenReturn(Optional.empty())
+    val modelAndView = verifyEmailController.verifySecondaryEmailConfirm("token")
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailSuccess")
+    assertThat(modelAndView.model).isEmpty()
+  }
+
+  @Test
+  fun verifySecondaryEmail_AlreadyVerified() {
+    whenever(userService.isSameAsCurrentVerifiedEmail(anyString(), anyString(), eq(EmailType.SECONDARY))).thenReturn(true)
+    val modelAndView = verifyEmailController.verifyEmail("change", "auth_email@digital.justice.gov.uk", EmailType.SECONDARY, principal, request, response)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailAlready")
+  }
+
   private fun getUserPersonalDetails(): NomisUserPersonDetails {
     val account = NomisUserPersonDetails()
     val staff = Staff()

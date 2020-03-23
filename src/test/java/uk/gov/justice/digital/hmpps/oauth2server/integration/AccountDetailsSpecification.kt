@@ -75,6 +75,16 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `navigation - change Secondary email`() {
+    goTo(loginPage).loginAs("AUTH_RO_USER")
+        .navigateToAccountDetails()
+
+    accountDetailsPage.navigateToChangeSecondaryEmail()
+
+    newInstance(ChangeSecondaryEmailPage::class.java).isAt()
+  }
+
+  @Test
   fun `navigation - change password`() {
     goTo(loginPage).loginAs("AUTH_RO_USER")
         .navigateToAccountDetails()
@@ -190,6 +200,20 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     return this
   }
 
+  fun checkSecondaryEmailAndIsNotVerified(): AccountDetailsPage {
+    isAt()
+    assertThat(el("[data-qa='secondaryEmail']").text()).isEqualToNormalizingWhitespace("bob@gmail.com")
+    assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualToNormalizingWhitespace("No")
+    return this
+  }
+
+  fun checkSecondaryEmailAndIsVerified(): AccountDetailsPage {
+    isAt()
+    assertThat(el("[data-qa='secondaryEmail']").text()).isEqualToNormalizingWhitespace("bob@gmail.com")
+    assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualToNormalizingWhitespace("Yes")
+    return this
+  }
+
   fun navigateToChangeName() {
     el("[data-qa='changeName']").click()
   }
@@ -208,6 +232,10 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
 
   fun navigateToChangeMfaPreference() {
     el("[data-qa='changeMfaPreference']").click()
+  }
+
+  fun navigateToChangeSecondaryEmail() {
+    el("[data-qa='changeSecondaryEmail']").click()
   }
 
   fun cancel() {

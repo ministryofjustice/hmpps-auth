@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.userdetails.UsernameNotFoundException
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
@@ -173,7 +175,7 @@ class UserServiceTest {
   @Nested
   inner class isSameAsCurrentVerifiedEmail {
     @Test
-    fun `isSameAsCurrentVerifiedEmail not verified`() {
+    fun `isSameAsCurrentVerifiedEmail not verified primary email`() {
       val user = User.builder().email("someemail").verified(false).build()
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.PRIMARY)
@@ -181,7 +183,7 @@ class UserServiceTest {
     }
 
     @Test
-    fun `isSameAsCurrentVerifiedEmail new different email address`() {
+    fun `isSameAsCurrentVerifiedEmail new different email address primary email`() {
       val user = User.builder().email("someemail").verified(true).build()
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "somenewemail", User.EmailType.PRIMARY)
@@ -189,10 +191,34 @@ class UserServiceTest {
     }
 
     @Test
-    fun `isSameAsCurrentVerifiedEmail same address`() {
+    fun `isSameAsCurrentVerifiedEmail same address primary email`() {
       val user = User.builder().email("someemail").verified(true).build()
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.PRIMARY)
+      assertThat(returnValue).isTrue()
+    }
+
+    @Test
+    fun `isSameAsCurrentVerifiedEmail not verified secondary email`() {
+      val user = User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", false))).build()
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+      val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.SECONDARY)
+      assertThat(returnValue).isFalse()
+    }
+
+    @Test
+    fun `isSameAsCurrentVerifiedEmail new different email address secondary email`() {
+      val user = User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", true))).build()
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+      val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "somenewemail", User.EmailType.SECONDARY)
+      assertThat(returnValue).isFalse()
+    }
+
+    @Test
+    fun `isSameAsCurrentVerifiedEmail same address secondary email`() {
+      val user = User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", true))).build()
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+      val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.SECONDARY)
       assertThat(returnValue).isTrue()
     }
   }

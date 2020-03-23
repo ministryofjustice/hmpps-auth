@@ -90,6 +90,16 @@ class VerifyEmailServiceTest {
   }
 
   @Test
+  fun requestVerification_verifyToken_second() {
+    val user = User.of("someuser")
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
+    val verification = verifyEmailService.requestVerification("user", "email@john.com", "firstname", "url", User.EmailType.SECONDARY)
+    val value = user.tokens.stream().findFirst().orElseThrow()
+    assertThat(verification).isEqualTo("url" + value.token)
+  }
+
+  @Test
   fun requestVerification_saveEmail() {
     val user = User.of("someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))

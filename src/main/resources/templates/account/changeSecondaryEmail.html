@@ -21,8 +21,9 @@
       </ul>
     </div>
   </div>
-  <label class="govuk-label govuk-label--xl" for="email">What is your new secondary email address?
-  </label>
+  <h1 class="govuk-label-wrapper">
+    <label class="govuk-label govuk-label--xl" for="email">What is your new secondary email address?
+    </label>
   </h1>
   <form class="form" th:action="@{/verify-email}" method="POST" id="changeEmailForm">
     <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
@@ -35,7 +36,7 @@
              spellcheck="false" th:value="${secondaryEmail}">
     </div>
     <input class="govuk-button" id="submit" type="submit" role="button"
-           data-element-id="continue-button" value="Update">
+           data-element-id="continue-button" th:value="(${secondaryEmail == null} ? 'Add' : 'Update')">
   </form>
 </div>
 </body>
