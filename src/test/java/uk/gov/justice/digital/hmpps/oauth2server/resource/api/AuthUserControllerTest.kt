@@ -1,6 +1,10 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
@@ -14,13 +18,14 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.builder
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
-import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.*
+import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AmendUser
+import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AuthUser
+import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.CreateUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -143,7 +148,7 @@ class AuthUserControllerTest {
 
   @Test
   fun enableUser() {
-    val user = builder().username("USER").email("email").verified(true).build()
+    val user = User.builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     val responseEntity = authUserController.enableUser("user", authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
@@ -152,7 +157,7 @@ class AuthUserControllerTest {
 
   @Test
   fun enableUser_notFound() {
-    val user = builder().username("USER").email("email").verified(true).build()
+    val user = User.builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     doThrow(EntityNotFoundException("message")).whenever(authUserService).enableUser(anyString(), anyString(), any())
     val responseEntity = authUserController.enableUser("user", authentication)
@@ -161,7 +166,7 @@ class AuthUserControllerTest {
 
   @Test
   fun disableUser() {
-    val user = builder().username("USER").email("email").verified(true).build()
+    val user = User.builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     val responseEntity = authUserController.disableUser("user", authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
@@ -170,7 +175,7 @@ class AuthUserControllerTest {
 
   @Test
   fun disableUser_notFound() {
-    val user = builder().username("USER").email("email").verified(true).build()
+    val user = User.builder().username("USER").email("email").verified(true).build()
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     doThrow(EntityNotFoundException("message")).whenever(authUserService).disableUser(anyString(), anyString(), any())
     val responseEntity = authUserController.disableUser("user", authentication)
@@ -229,7 +234,7 @@ class AuthUserControllerTest {
 
   private val authUser: User
     get() {
-      val user = builder().id(UUID.fromString(USER_ID)).username("authentication").email("email").verified(true).enabled(true).lastLoggedIn(LocalDateTime.of(2019, 1, 1, 12, 0)).build()
+      val user = User.builder().id(UUID.fromString(USER_ID)).username("authentication").email("email").verified(true).enabled(true).lastLoggedIn(LocalDateTime.of(2019, 1, 1, 12, 0)).build()
       user.person = Person()
       user.person.firstName = "Joe"
       user.person.lastName = "Bloggs"

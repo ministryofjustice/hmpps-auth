@@ -23,7 +23,12 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.crypto.password.PasswordEncoder
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.GroupAssignableRole
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository

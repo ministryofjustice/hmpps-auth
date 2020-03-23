@@ -201,14 +201,14 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
   }
 
   fun checkSecondaryEmailAndIsNotVerified(): AccountDetailsPage {
-    isAt()
+    isAtPage()
     assertThat(el("[data-qa='secondaryEmail']").text()).isEqualToNormalizingWhitespace("bob@gmail.com")
     assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualToNormalizingWhitespace("No")
     return this
   }
 
   fun checkSecondaryEmailAndIsVerified(): AccountDetailsPage {
-    isAt()
+    isAtPage()
     assertThat(el("[data-qa='secondaryEmail']").text()).isEqualToNormalizingWhitespace("bob@gmail.com")
     assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualToNormalizingWhitespace("Yes")
     return this

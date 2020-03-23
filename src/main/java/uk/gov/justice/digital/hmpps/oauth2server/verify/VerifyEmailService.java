@@ -73,13 +73,20 @@ public class VerifyEmailService {
 
         final var email = EmailHelper.format(emailInput);
         validateEmailAddress(email, emailType);
-        if (emailType == EmailType.PRIMARY) {
-            user.setEmail(email);
-            user.setVerified(false);
+
+        switch (emailType) {
+            case PRIMARY:
+                user.setEmail(email);
+                user.setVerified(false);
+                break;
+            case SECONDARY:
+                user.addContact(ContactType.SECONDARY_EMAIL, email);
+                break;
+            default:
+                log.warn("Failed to send email verification to notify for user {} invalid emailType Enum", username);
+                telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", "invalid emailType Enum"), null);
         }
-        if (emailType == EmailType.SECONDARY) {
-            user.addContact(ContactType.SECONDARY_EMAIL, email);
-        }
+
         try {
             log.info("Sending email verification to notify for user {}", username);
             notificationClient.sendEmail(notifyTemplateId, email, parameters, null);
@@ -132,10 +139,8 @@ public class VerifyEmailService {
         if (!email.matches("[0-9A-Za-z@.'_\\-+]*")) {
             throw new VerifyEmailException("characters");
         }
-        if (emailType == EmailType.PRIMARY) {
-            if (!referenceCodesService.isValidEmailDomain(email.substring(atIndex + 1))) {
-                throw new VerifyEmailException("domain");
-            }
+        if (emailType == EmailType.PRIMARY && !referenceCodesService.isValidEmailDomain(email.substring(atIndex + 1))) {
+            throw new VerifyEmailException("domain");
         }
     }
 
