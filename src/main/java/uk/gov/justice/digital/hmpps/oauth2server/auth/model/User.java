@@ -411,6 +411,15 @@ public class User implements UserPersonDetails, CredentialsContainer {
         private final String description;
     }
 
+    @AllArgsConstructor
+    @Getter
+    public enum EmailType {
+        PRIMARY("primary"),
+        SECONDARY("secondary");
+
+        private final String description;
+    }
+
     public static class UserBuilder {
         private UUID id;
         private String username;

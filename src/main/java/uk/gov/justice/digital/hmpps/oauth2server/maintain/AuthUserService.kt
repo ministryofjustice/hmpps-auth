@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.builder
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
@@ -32,28 +34,28 @@ import javax.persistence.EntityNotFoundException
 @Service
 @Slf4j
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
-open class AuthUserService(private val userRepository: UserRepository,
-                           private val notificationClient: NotificationClientApi,
-                           private val telemetryClient: TelemetryClient,
-                           private val verifyEmailService: VerifyEmailService,
-                           private val authUserGroupService: AuthUserGroupService,
-                           private val maintainUserCheck: MaintainUserCheck,
-                           private val passwordEncoder: PasswordEncoder,
-                           private val oauthServiceRepository: OauthServiceRepository,
-                           @Value("\${application.notify.create-initial-password.template}") private val initialPasswordTemplateId: String,
-                           @Value("\${application.authentication.disable.login-days}") private val loginDaysTrigger: Int,
-                           @Value("\${application.authentication.password-age}") private val passwordAge: Long) {
+class AuthUserService(private val userRepository: UserRepository,
+                      private val notificationClient: NotificationClientApi,
+                      private val telemetryClient: TelemetryClient,
+                      private val verifyEmailService: VerifyEmailService,
+                      private val authUserGroupService: AuthUserGroupService,
+                      private val maintainUserCheck: MaintainUserCheck,
+                      private val passwordEncoder: PasswordEncoder,
+                      private val oauthServiceRepository: OauthServiceRepository,
+                      @Value("\${application.notify.create-initial-password.template}") private val initialPasswordTemplateId: String,
+                      @Value("\${application.authentication.disable.login-days}") private val loginDaysTrigger: Int,
+                      @Value("\${application.authentication.password-age}") private val passwordAge: Long) {
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(CreateUserException::class, NotificationClientException::class, VerifyEmailException::class)
-  open fun createUser(usernameInput: String?, emailInput: String?, firstName: String?, lastName: String?,
-                      groupCode: String?, url: String, creator: String, authorities: Collection<GrantedAuthority>): String {
+  fun createUser(usernameInput: String?, emailInput: String?, firstName: String?, lastName: String?,
+                 groupCode: String?, url: String, creator: String, authorities: Collection<GrantedAuthority>): String {
     // ensure username always uppercase
     val username = StringUtils.upperCase(usernameInput)
     // and use email helper to format input email
     val email = EmailHelper.format(emailInput)
     // validate
-    validate(username, email, firstName, lastName)
+    validate(username, email, firstName, lastName, EmailType.PRIMARY)
     // get the initial group to assign to - only allowed to be empty if super user
     val group = getInitialGroup(groupCode, creator, authorities)
     // create the user
@@ -61,7 +63,7 @@ open class AuthUserService(private val userRepository: UserRepository,
     // obtain list of authorities that should be assigned for group
     val roles = group?.assignableRoles?.filter { it.isAutomatic }?.map { it.role }?.toSet() ?: emptySet()
     val groups: Set<Group> = group?.let { setOf(it) } ?: emptySet()
-    val user = User.builder()
+    val user = builder()
         .username(username)
         .email(email)
         .enabled(true)
@@ -77,7 +79,7 @@ open class AuthUserService(private val userRepository: UserRepository,
     return oauthServiceRepository.findById(serviceCode).map { it.email }.orElseThrow()
   }
 
-  open fun findAuthUsers(name: String?, roleCode: String?, groupCode: String?, pageable: Pageable): Page<User> {
+  fun findAuthUsers(name: String?, roleCode: String?, groupCode: String?, pageable: Pageable): Page<User> {
     val userFilter = UserFilter.builder().name(name).roleCode(roleCode).groupCode(groupCode).build()
     return userRepository.findAll(userFilter, pageable)
   }
@@ -127,7 +129,7 @@ open class AuthUserService(private val userRepository: UserRepository,
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(VerifyEmailException::class, NotificationClientException::class, AuthUserGroupRelationshipException::class)
-  open fun amendUserEmail(usernameInput: String?, emailAddressInput: String?, url: String, admin: String, authorities: Collection<GrantedAuthority?>?): String {
+  fun amendUserEmail(usernameInput: String?, emailAddressInput: String?, url: String, admin: String, authorities: Collection<GrantedAuthority?>?, emailType: EmailType): String {
     val username = StringUtils.upperCase(usernameInput)
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
         .orElseThrow { EntityNotFoundException("User not found with username $username") }
@@ -139,28 +141,29 @@ open class AuthUserService(private val userRepository: UserRepository,
           usernameInput,
           emailAddressInput,
           user.firstName,
-          url.replace("initial-password", "verify-email-confirm"))
+          url.replace("initial-password", "verify-email-confirm"),
+          emailType)
     }
     val email = EmailHelper.format(emailAddressInput)
-    verifyEmailService.validateEmailAddress(email)
+    verifyEmailService.validateEmailAddress(email, emailType)
     user.email = email
     return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.groups)
   }
 
-  open fun findAuthUsersByEmail(email: String?): List<User> =
+  fun findAuthUsersByEmail(email: String?): List<User> =
       userRepository.findByEmailAndMasterIsTrueOrderByUsername(EmailHelper.format(email))
 
-  open fun getAuthUserByUsername(username: String?): Optional<User> =
+  fun getAuthUserByUsername(username: String?): Optional<User> =
       userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)))
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(AuthUserGroupRelationshipException::class)
-  open fun enableUser(usernameInDb: String, admin: String, authorities: Collection<GrantedAuthority>) =
+  fun enableUser(usernameInDb: String, admin: String, authorities: Collection<GrantedAuthority>) =
       changeUserEnabled(usernameInDb, true, admin, authorities)
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(AuthUserGroupRelationshipException::class)
-  open fun disableUser(usernameInDb: String, admin: String, authorities: Collection<GrantedAuthority>) =
+  fun disableUser(usernameInDb: String, admin: String, authorities: Collection<GrantedAuthority>) =
       changeUserEnabled(usernameInDb, false, admin, authorities)
 
   @Throws(AuthUserGroupRelationshipException::class)
@@ -179,13 +182,13 @@ open class AuthUserService(private val userRepository: UserRepository,
   }
 
   @Throws(CreateUserException::class, VerifyEmailException::class)
-  private fun validate(username: String?, email: String?, firstName: String?, lastName: String?) {
+  private fun validate(username: String?, email: String?, firstName: String?, lastName: String?, emailType: EmailType) {
     if (username.isNullOrBlank() || username.length < MIN_LENGTH_USERNAME) throw CreateUserException("username", "length")
 
     if (username.length > MAX_LENGTH_USERNAME) throw CreateUserException("username", "maxlength")
     if (!username.matches("^[A-Z0-9_]*\$".toRegex())) throw CreateUserException("username", "format")
     validate(firstName, lastName)
-    verifyEmailService.validateEmailAddress(email)
+    verifyEmailService.validateEmailAddress(email, emailType)
   }
 
   @Throws(CreateUserException::class)
@@ -206,7 +209,7 @@ open class AuthUserService(private val userRepository: UserRepository,
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  open fun lockUser(userPersonDetails: UserPersonDetails) {
+  fun lockUser(userPersonDetails: UserPersonDetails) {
     val username = userPersonDetails.username
     val userOptional = userRepository.findByUsername(username)
     val user = userOptional.orElseGet { userPersonDetails.toUser() }
@@ -215,7 +218,7 @@ open class AuthUserService(private val userRepository: UserRepository,
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  open fun unlockUser(userPersonDetails: UserPersonDetails) {
+  fun unlockUser(userPersonDetails: UserPersonDetails) {
     val username = userPersonDetails.username
     val userOptional = userRepository.findByUsername(username)
     val user = userOptional.orElseGet { userPersonDetails.toUser() }
@@ -226,7 +229,7 @@ open class AuthUserService(private val userRepository: UserRepository,
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  open fun changePassword(user: User, password: String) {
+  fun changePassword(user: User, password: String) {
     // check user not setting password to existing password
     if (passwordEncoder.matches(password, user.password)) {
       throw ReusedPasswordException()
@@ -237,7 +240,7 @@ open class AuthUserService(private val userRepository: UserRepository,
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(CreateUserException::class)
-  open fun amendUser(username: String, firstName: String?, lastName: String?) {
+  fun amendUser(username: String, firstName: String?, lastName: String?) {
     validate(firstName, lastName)
     // will always be a user at this stage since we're retrieved it from the authentication
     val user = userRepository.findByUsernameAndSource(username, AuthSource.auth).orElseThrow()

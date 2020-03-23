@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
+import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -29,6 +30,12 @@ class ChangeEmailController(private val tokenService: TokenService, private val 
     modelAndView.addObject("isAdmin", isAdmin)
         .addObject("source", source)
         .addObject("email", currentEmail)
+  }
+
+  @GetMapping("/new-secondary-email")
+  fun newSecondaryEmailRequest(authentication: Authentication): ModelAndView {
+    val currentSecondaryEmail = userService.getUserWithContacts(authentication.name).secondaryEmail
+    return ModelAndView("account/changeSecondaryEmail", "secondaryEmail", currentSecondaryEmail)
   }
 }
 

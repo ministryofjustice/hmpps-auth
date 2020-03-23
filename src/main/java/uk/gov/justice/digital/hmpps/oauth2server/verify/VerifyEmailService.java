@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
@@ -64,15 +66,26 @@ public class VerifyEmailService {
     }
 
     @Transactional(transactionManager = "authTransactionManager")
-    public String requestVerification(final String username, final String emailInput, final String firstName, final String url) throws NotificationClientException, VerifyEmailException {
+    public String requestVerification(final String username, final String emailInput, final String firstName, final String url, final EmailType emailType) throws NotificationClientException, VerifyEmailException {
         final var user = userRepository.findByUsername(username).orElseThrow();
         final var verifyLink = url + user.createToken(TokenType.VERIFIED).getToken();
         final var parameters = Map.of("firstName", firstName, "verifyLink", verifyLink);
 
         final var email = EmailHelper.format(emailInput);
-        validateEmailAddress(email);
-        user.setEmail(email);
-        user.setVerified(false);
+        validateEmailAddress(email, emailType);
+
+        switch (emailType) {
+            case PRIMARY:
+                user.setEmail(email);
+                user.setVerified(false);
+                break;
+            case SECONDARY:
+                user.addContact(ContactType.SECONDARY_EMAIL, email);
+                break;
+            default:
+                log.warn("Failed to send email verification to notify for user {} invalid emailType Enum", username);
+                telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", "invalid emailType Enum"), null);
+        }
 
         try {
             log.info("Sending email verification to notify for user {}", username);
@@ -94,12 +107,12 @@ public class VerifyEmailService {
         return verifyLink;
     }
 
-    public void validateEmailAddress(final String email) throws VerifyEmailException {
-        validateEmailAddressExcludingGsi(email);
+    public void validateEmailAddress(final String email, final EmailType emailType) throws VerifyEmailException {
+        validateEmailAddressExcludingGsi(email, emailType);
         if (email.matches(".*@.*\\.gsi\\.gov\\.uk")) throw new VerifyEmailException("gsi");
     }
 
-    public void validateEmailAddressExcludingGsi(final String email) throws VerifyEmailException {
+    public void validateEmailAddressExcludingGsi(final String email, final EmailType emailType) throws VerifyEmailException {
         if (StringUtils.isBlank(email)) {
             throw new VerifyEmailException("blank");
         }
@@ -126,7 +139,7 @@ public class VerifyEmailService {
         if (!email.matches("[0-9A-Za-z@.'_\\-+]*")) {
             throw new VerifyEmailException("characters");
         }
-        if (!referenceCodesService.isValidEmailDomain(email.substring(atIndex + 1))) {
+        if (emailType == EmailType.PRIMARY && !referenceCodesService.isValidEmailDomain(email.substring(atIndex + 1))) {
             throw new VerifyEmailException("domain");
         }
     }
@@ -154,6 +167,29 @@ public class VerifyEmailService {
         return Optional.empty();
     }
 
+    @Transactional(transactionManager = "authTransactionManager")
+    public Optional<String> confirmSecondaryEmail(final String token) {
+        final var userTokenOptional = userTokenRepository.findById(token);
+        if (userTokenOptional.isEmpty()) {
+            return trackAndReturnFailureForInvalidToken();
+        }
+        final var userToken = userTokenOptional.get();
+        final var user = userToken.getUser();
+        final var username = user.getUsername();
+
+        if (user.isSecondaryEmailVerified()) {
+            log.info("Verify secondary email succeeded due to already verified");
+            telemetryClient.trackEvent("VerifySecondayEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
+            return Optional.empty();
+        }
+        if (userToken.hasTokenExpired()) {
+            return trackAndReturnFailureForExpiredToken(username);
+        }
+
+        markSecondaryEmailAsVerified(user);
+        return Optional.empty();
+    }
+
     private void markEmailAsVerified(final User user) {
         // verification token match
         user.setVerified(true);
@@ -161,6 +197,15 @@ public class VerifyEmailService {
 
         log.info("Verify email succeeded for {}", user.getUsername());
         telemetryClient.trackEvent("VerifyEmailConfirmSuccess", Map.of("username", user.getUsername()), null);
+    }
+
+    private void markSecondaryEmailAsVerified(final User user) {
+        // verification token match
+        user.findContact(ContactType.SECONDARY_EMAIL).ifPresent(c -> c.setVerified(true));
+        userRepository.save(user);
+
+        log.info("Verify secondary email succeeded for {}", user.getUsername());
+        telemetryClient.trackEvent("VerifySecondaryEmailConfirmSuccess", Map.of("username", user.getUsername()), null);
     }
 
     private Optional<String> trackAndReturnFailureForInvalidToken() {

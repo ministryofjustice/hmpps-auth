@@ -154,5 +154,11 @@ open class VerifyEmailSentPage : AuthPage<VerifyEmailSentPage>("HMPPS Digital Se
 @PageUrl("/verify-email-confirm")
 open class VerifyEmailConfirmPage : AuthPage<VerifyEmailConfirmPage>("HMPPS Digital Services - Verify Email Confirmation", "Email address verified")
 
+@PageUrl("/verify-email-secondary-confirm")
+open class VerifySecondaryEmailConfirmPage : AuthPage<VerifySecondaryEmailConfirmPage>("HMPPS Digital Services - Verify Email Confirmation", "Email address verified")
+
+@PageUrl("/verify-email")
+open class SecondaryEmailAlreadyVerifiedPage : AuthPage<SecondaryEmailAlreadyVerifiedPage>("HMPPS Digital Services - Verify Secondary Email Confirmation", "Secondary email already verified")
+
 @PageUrl("/verify-email-confirm")
 open class VerifyEmailConfirmErrorPage : AuthPage<VerifyEmailConfirmErrorPage>("HMPPS Digital Services - Verify Email Confirmation", "Unable to confirm email")
