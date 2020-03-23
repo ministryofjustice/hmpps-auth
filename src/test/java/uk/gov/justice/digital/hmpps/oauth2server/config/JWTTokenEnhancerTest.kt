@@ -28,6 +28,7 @@ internal class JWTTokenEnhancerTest {
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
     JWTTokenEnhancer().enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
+        entry("sub", "user"),
         entry("user_name", "user"),
         entry("auth_source", "auth"),
         entry("user_id", uuid.toString()))
@@ -40,6 +41,7 @@ internal class JWTTokenEnhancerTest {
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(UserDetailsImpl("user", null, emptyList(), null, "userID"), "pass"))
     JWTTokenEnhancer().enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
+        entry("sub", "user"),
         entry("user_name", "user"),
         entry("auth_source", "none"),
         entry("user_id", "userID"))

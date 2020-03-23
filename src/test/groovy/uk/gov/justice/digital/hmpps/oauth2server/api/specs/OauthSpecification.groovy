@@ -43,6 +43,18 @@ class OauthSpecification extends TestSpecification {
         token.refreshToken == null
     }
 
+    def "Client Credentials Login hold subject"() {
+
+        given:
+        def oauthRestTemplate = getOauthClientGrant("deliusnewtech", "clientsecret")
+
+        when:
+        def token = oauthRestTemplate.getAccessToken()
+
+        then:
+        token.additionalInformation.sub == 'deliusnewtech'
+    }
+
     def "Client Credentials Login With username identifier"() {
 
         given:
@@ -184,6 +196,9 @@ class OauthSpecification extends TestSpecification {
         and: 'authentication source is nomis'
         token.additionalInformation.auth_source == 'nomis'
 
+        and: 'sub is username'
+        token.additionalInformation.sub == 'ITAG_USER'
+
     }
 
     def "Password Credentials Login for auth user"() {
@@ -205,6 +220,9 @@ class OauthSpecification extends TestSpecification {
 
         and: 'authentication source is auth'
         token.additionalInformation.auth_source == 'auth'
+
+        and: 'subject is auth user'
+        token.additionalInformation.sub == 'AUTH_USER'
     }
 
     def "Password Credentials Login for delius user"() {
@@ -226,6 +244,9 @@ class OauthSpecification extends TestSpecification {
 
         and: 'authentication source is auth'
         token.additionalInformation.auth_source == 'delius'
+
+        and: 'subject is delius user'
+        token.additionalInformation.sub == 'DELIUS'
     }
 
 
