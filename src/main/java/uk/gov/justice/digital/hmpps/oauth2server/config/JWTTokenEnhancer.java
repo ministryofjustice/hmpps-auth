@@ -21,6 +21,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     private static final String ADD_INFO_AUTH_SOURCE = "auth_source";
     static final String ADD_INFO_USER_NAME = "user_name";
     static final String ADD_INFO_USER_ID = "user_id";
+    static final String SUBJECT = "sub";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
 
     @Autowired
@@ -37,13 +38,13 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             final var userDetails = (UserPersonDetails) userAuthentication.getPrincipal();
             final var userId = StringUtils.defaultString(userDetails.getUserId(), userAuthentication.getName());
             additionalInfo = Map.of(
+                    SUBJECT, userAuthentication.getName(),
                     ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
                     ADD_INFO_USER_NAME, userAuthentication.getName(),
                     ADD_INFO_USER_ID, userId);
         }
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
-
         return accessToken;
     }
 
@@ -68,6 +69,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             additionalInfo.put(ADD_INFO_AUTH_SOURCE, userDetails.getAuthSource());
             additionalInfo.put(ADD_INFO_USER_NAME, userDetails.getUsername());
             additionalInfo.put(ADD_INFO_USER_ID, userDetails.getUserId());
+            additionalInfo.put(SUBJECT, userDetails.getUsername());
 
             // TODO: remove once write credential has been added to clients
             // Add "write" scope with those for client credentials
@@ -80,6 +82,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
                     request.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()));
         } else {
             additionalInfo.put(ADD_INFO_AUTH_SOURCE, "none");
+            additionalInfo.put(SUBJECT, authentication.getName());
         }
 
         return additionalInfo;
