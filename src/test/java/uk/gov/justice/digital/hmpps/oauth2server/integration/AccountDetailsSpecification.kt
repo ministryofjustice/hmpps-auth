@@ -133,6 +133,10 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
     assertThat(el("[data-qa='verified']").text()).isEqualTo("Yes")
     assertThat(find("[data-qa='verifyEmail']")).isEmpty()
+    assertThat(el("[data-qa='secondaryEmail']").text()).isBlank()
+    assertThat(el("[data-qa='changeSecondaryEmail']").text()).isEqualToNormalizingWhitespace("Add secondary email")
+    assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualTo("No")
+    assertThat(find("[data-qa='verifySecondaryEmail']")).isEmpty()
     assertThat(el("[data-qa='mobile']").text()).isBlank()
     assertThat(el("[data-qa='changeMobile']").text()).isEqualToNormalizingWhitespace("Add mobile")
     assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("No")
@@ -149,6 +153,10 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(find("[data-qa='changeName']")).isEmpty()
     assertThat(el("[data-qa='email']").text()).isEqualTo("itag_user@digital.justice.gov.uk")
     assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
+    assertThat(el("[data-qa='secondaryEmail']").text()).isBlank()
+    assertThat(el("[data-qa='changeSecondaryEmail']").text()).isEqualToNormalizingWhitespace("Add secondary email")
+    assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualTo("No")
+    assertThat(find("[data-qa='verifySecondaryEmail']")).isEmpty()
     assertThat(el("[data-qa='mfaPreference']").text()).isEqualTo("Email")
     assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change mfa preference")
     return this
@@ -161,6 +169,10 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(el("[data-qa='verified']").text()).isEqualTo("No")
     assertThat(el("[data-qa='verifyEmail']").text()).isEqualToNormalizingWhitespace("Resend email code")
     assertThat(el("[data-qa='mobile']").text()).isEqualTo("07700900321")
+    assertThat(el("[data-qa='secondaryEmail']").text()).isBlank()
+    assertThat(el("[data-qa='changeSecondaryEmail']").text()).isEqualToNormalizingWhitespace("Add secondary email")
+    assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualTo("No")
+    assertThat(find("[data-qa='verifySecondaryEmail']")).isEmpty()
     assertThat(el("[data-qa='changeMobile']").text()).isEqualToNormalizingWhitespace("Change mobile")
     assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("No")
     assertThat(el("[data-qa='verifyMobile']").text()).isEqualToNormalizingWhitespace("Resend mobile code")
@@ -176,6 +188,10 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
     assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
     assertThat(el("[data-qa='verified']").text()).isEqualTo("No")
     assertThat(el("[data-qa='verifyEmail']").text()).isEqualToNormalizingWhitespace("Resend email code")
+    assertThat(el("[data-qa='secondaryEmail']").text()).isBlank()
+    assertThat(el("[data-qa='changeSecondaryEmail']").text()).isEqualToNormalizingWhitespace("Add secondary email")
+    assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualTo("No")
+    assertThat(find("[data-qa='verifySecondaryEmail']")).isEmpty()
     assertThat(el("[data-qa='mobile']").text()).isEqualTo("07700900321")
     assertThat(el("[data-qa='changeMobile']").text()).isEqualToNormalizingWhitespace("Change mobile")
     assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("No")
@@ -187,28 +203,24 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
   }
 
   fun checkMfaPreferenceIsText(): AccountDetailsPage {
-    isAt()
     assertThat(el("[data-qa='mfaPreference']").text()).isEqualToNormalizingWhitespace("Text message")
     assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change mfa preference")
     return this
   }
 
   fun checkMfaPreferenceIsEmail(): AccountDetailsPage {
-    isAt()
     assertThat(el("[data-qa='mfaPreference']").text()).isEqualToNormalizingWhitespace("Email")
     assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change mfa preference")
     return this
   }
 
   fun checkSecondaryEmailAndIsNotVerified(): AccountDetailsPage {
-    isAtPage()
     assertThat(el("[data-qa='secondaryEmail']").text()).isEqualToNormalizingWhitespace("bob@gmail.com")
     assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualToNormalizingWhitespace("No")
     return this
   }
 
   fun checkSecondaryEmailAndIsVerified(): AccountDetailsPage {
-    isAtPage()
     assertThat(el("[data-qa='secondaryEmail']").text()).isEqualToNormalizingWhitespace("bob@gmail.com")
     assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualToNormalizingWhitespace("Yes")
     return this
@@ -236,6 +248,10 @@ class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services 
 
   fun navigateToChangeSecondaryEmail() {
     el("[data-qa='changeSecondaryEmail']").click()
+  }
+
+  fun navigateToResendVerifySecondaryEmail() {
+    el("[data-qa='verifySecondaryEmail']").click()
   }
 
   fun cancel() {

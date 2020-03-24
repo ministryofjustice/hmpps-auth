@@ -42,6 +42,7 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
     changeSecondaryEmailPage.addSecondaryEmailAs("bob@gmail.com")
 
     goTo(accountDetailsPage)
+        .isAtPage()
         .checkSecondaryEmailAndIsNotVerified()
 
   }
@@ -63,13 +64,16 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
 
     homePage.navigateToAccountDetails()
 
-    accountDetailsPage.checkSecondaryEmailAndIsNotVerified()
+    accountDetailsPage
+        .isAtPage()
+        .checkSecondaryEmailAndIsNotVerified()
 
     goTo(verifyLink)
 
     verifySecondaryEmailConfirmPage.isAt()
 
     goTo(accountDetailsPage)
+        .isAtPage()
         .checkSecondaryEmailAndIsVerified()
   }
 

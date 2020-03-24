@@ -122,6 +122,11 @@
         Yes
       </dd>
       <dd class="govuk-summary-list__actions">
+        <a class="govuk-link" th:href="@{/secondary-email-resend}"
+           th:unless="${#strings.isEmpty(authUser.secondaryEmail) || authUser.secondaryEmailVerified}"
+           data-qa="verifySecondaryEmail">
+          Resend <span class="govuk-visually-hidden"> email</span> code
+        </a>
       </dd>
     </div>
     <div class="govuk-summary-list__row">

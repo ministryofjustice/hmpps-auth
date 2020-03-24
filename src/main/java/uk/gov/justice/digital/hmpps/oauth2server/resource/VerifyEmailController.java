@@ -127,6 +127,43 @@ public class VerifyEmailController {
         }
     }
 
+    @GetMapping("/secondary-email-resend")
+    public String secondaryEmailResendRequest(final Principal principal) {
+        final var secondaryEmailVerified = verifyEmailService.secondaryEmailVerified(principal.getName());
+        return secondaryEmailVerified ? "redirect:/verify-email-already" : "verifySecondaryEmailResend";
+    }
+
+    @PostMapping("/verify-secondary-email-resend")
+    public ModelAndView secondaryEmailResend(final Principal principal, final HttpServletRequest request) {
+        final var username = principal.getName();
+        final var originalUrl = request.getRequestURL().toString();
+        final var url = originalUrl.replace("verify-secondary-email-resend", "verify-email-secondary-confirm?token=");
+        try {
+
+            final var verifyCode = verifyEmailService.resendVerificationCodeSecondaryEmail(username, url);
+
+            return redirectToVerifyEmailWithVerifyCode(verifyCode.orElseThrow());
+
+        } catch (final VerifyEmailException e) {
+            log.info("Validation failed for email address due to {}", e.getReason());
+            telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
+            return createChangeOrVerifyEmailError(null, e.getReason(), "change");
+        } catch (final NotificationClientException e) {
+            log.error("Failed to send email due to", e);
+            return createChangeOrVerifyEmailError(null, "other", "change");
+        }
+    }
+
+    private ModelAndView redirectToVerifyEmailWithVerifyCode(final String verifyLink) {
+//        final var modelAndView = new ModelAndView("redirect:/verify-email-sent");
+        final var modelAndView = new ModelAndView("verifyEmailSent");
+        if (smokeTestEnabled) {
+            modelAndView.addObject("verifyLink", verifyLink);
+        }
+        return modelAndView;
+    }
+
+
     private String requestVerificationForUser(final String username, final String emailInput, final String url, final EmailType emailType) throws NotificationClientException, VerifyEmailException {
 
         final var userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow();

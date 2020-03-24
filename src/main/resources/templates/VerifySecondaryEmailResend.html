@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <title>Resend Verification Code</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <h1 class="govuk-heading-l">
+    Resend security code
+  </h1>
+  <p class="govuk-body">
+    Emails sometimes take a few minutes to
+    arrive. If you do not receive the email, you can resend it.
+  </p>
+  <form th:action="@{/verify-secondary-email-resend}" method="POST" id="secondaryEmailForm" autocomplete="off"
+        novalidate>
+    <div class="govuk-form-group">
+      <input id="token" name="token" type="hidden" data-element-id="token" th:value="${token}">
+    </div>
+    <div class="govuk-form-group">
+      <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="resend-button"
+             value="Resend security code">
+    </div>
+  </form>
+</div>
+</body>
+</html>

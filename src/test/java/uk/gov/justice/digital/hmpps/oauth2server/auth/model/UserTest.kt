@@ -115,7 +115,7 @@ class UserTest {
 
     @Test
     fun `mobile set and verified, email set and verified`() {
-      val user = userBuilder().email("someemail").verified(true).contacts(setOf(Contact(MOBILE_PHONE, "someemail", true))).build()
+      val user = userBuilder().email("someemail").verified(true).contacts(setOf(Contact(MOBILE_PHONE, "077009000000", true))).build()
       assertThat(user.hasVerifiedMfaMethod()).isTrue()
     }
   }

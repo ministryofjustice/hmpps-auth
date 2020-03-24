@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockito_kotlin.check
 import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.isNull
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
@@ -11,6 +13,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
@@ -18,6 +22,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.util.*
 import javax.servlet.http.HttpServletRequest
@@ -30,7 +35,8 @@ class VerifyEmailControllerTest {
   private val verifyEmailService: VerifyEmailService = mock()
   private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val verifyEmailController = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, userService, telemetryClient, true)
+  private val verifyEmailController = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, userService, telemetryClient, false)
+  private val verifyEmailControllerSmokeTestEnabled = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, userService, telemetryClient, true)
   private val principal = UsernamePasswordAuthenticationToken("user", "pass")
 
   @Test
@@ -104,7 +110,7 @@ class VerifyEmailControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
-    val modelAndView = verifyEmailController.verifyEmail("other", email, EmailType.PRIMARY, principal, request, response)
+    val modelAndView = verifyEmailControllerSmokeTestEnabled.verifyEmail("other", email, EmailType.PRIMARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
     assertThat(modelAndView.model).containsExactly(entry("verifyLink", "link"), entry("email", email))
     verify(verifyEmailService).requestVerification("user", email, "Bob", "http://some.url-confirm?token=", EmailType.PRIMARY)
@@ -159,7 +165,7 @@ class VerifyEmailControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
-    val modelAndView = verifyEmailController.verifyEmail("other", email, EmailType.SECONDARY, principal, request, response)
+    val modelAndView = verifyEmailControllerSmokeTestEnabled.verifyEmail("other", email, EmailType.SECONDARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
     assertThat(modelAndView.model).containsExactly(entry("verifyLink", "link"), entry("email", email))
     verify(verifyEmailService).requestVerification("user", email, "Bob", "http://some.url-secondary-confirm?token=", EmailType.SECONDARY)
@@ -187,5 +193,66 @@ class VerifyEmailControllerTest {
     account.username = "user"
     staff.firstName = "bob"
     return account
+  }
+
+  @Test
+  fun secondaryEmailResendRequest_notVerified() {
+    whenever(verifyEmailService.secondaryEmailVerified(anyString())).thenReturn(false)
+    val view = verifyEmailController.secondaryEmailResendRequest(principal)
+    assertThat(view).isEqualTo("verifySecondaryEmailResend")
+  }
+
+  @Test
+  fun secondaryEmailResendRequest_alreadyVerified() {
+    whenever(verifyEmailService.secondaryEmailVerified(anyString())).thenReturn(true)
+    val view = verifyEmailController.secondaryEmailResendRequest(principal)
+    assertThat(view).isEqualTo("redirect:/verify-email-already")
+  }
+
+  @Test
+  fun `secondaryEmailResend send Code`() {
+    whenever(userService.getUser(anyString())).thenReturn(User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", false))).build())
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
+    whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString()))
+        .thenReturn(Optional.of("http://some.url/auth/verify-email-secondary-confirm?token=71396b28-0c57-4efd-bc70-cc5992965aed"))
+    val modelAndView = verifyEmailController.secondaryEmailResend(principal, request)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
+    assertThat(modelAndView.model).isEmpty()
+  }
+
+  @Test
+  fun `secondaryEmailResend send code smoke enabled`() {
+
+    whenever(userService.getUser(anyString())).thenReturn(User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", false))).build())
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
+    whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString()))
+        .thenReturn(Optional.of("http://some.url/auth/verify-email-secondary-confirm?token=71396b28-0c57-4efd-bc70-cc5992965aed"))
+    val modelAndView = verifyEmailControllerSmokeTestEnabled.secondaryEmailResend(principal, request)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
+    assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("verifyLink" to "http://some.url/auth/verify-email-secondary-confirm?token=71396b28-0c57-4efd-bc70-cc5992965aed"))
+  }
+
+  @Test
+  fun secondaryEmailResend_verifyMobileException() {
+    whenever(userService.getUser(anyString())).thenReturn(User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", false))).build())
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
+    whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString())).thenThrow(VerifyEmailException("reason"))
+    val modelAndView = verifyEmailController.secondaryEmailResend(principal, request)
+    assertThat(modelAndView.viewName).isEqualTo("changeEmail")
+    assertThat(modelAndView.model).containsExactly(entry("email", null), entry("error", "reason"))
+    verify(telemetryClient).trackEvent(eq("VerifyEmailRequestFailure"), check {
+      assertThat(it).containsExactlyInAnyOrderEntriesOf(mapOf("username" to "user", "reason" to "reason"))
+    }, isNull())
+  }
+
+
+  @Test
+  fun mobileResend_notificationClientException() {
+    whenever(userService.getUser(anyString())).thenReturn(User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", false))).build())
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
+    whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString())).thenThrow(NotificationClientException("something went wrong"))
+    val modelAndView = verifyEmailController.secondaryEmailResend(principal, request)
+    assertThat(modelAndView.viewName).isEqualTo("changeEmail")
+    assertThat(modelAndView.model).containsExactly(entry("email", null), entry("error", "other"))
   }
 }

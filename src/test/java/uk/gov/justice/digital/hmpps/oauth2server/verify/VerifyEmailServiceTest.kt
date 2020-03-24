@@ -12,6 +12,9 @@ import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
 import org.springframework.jdbc.core.JdbcTemplate
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.SECONDARY_EMAIL
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
@@ -21,6 +24,7 @@ import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
 import java.util.*
+import javax.persistence.EntityNotFoundException
 
 class VerifyEmailServiceTest {
   private val userRepository: UserRepository = mock()
@@ -133,72 +137,136 @@ class VerifyEmailServiceTest {
     val user = Optional.of(User.of("someuser"))
     whenever(userRepository.findByUsername(anyString())).thenReturn(user)
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
-    verifyEmailFailure("some.u'ser@SOMEwhe.gsi.gov.uk", "gsi")
+    verifyPrimaryEmailFailure("some.u'ser@SOMEwhe.gsi.gov.uk", "gsi")
   }
 
   @Test
   fun verifyEmail_NoAtSign() {
-    verifyEmailFailure("a", "format")
+    verifyPrimaryEmailFailure("a", "format")
+    verifySecondaryEmailFailure("a", "format")
   }
 
   @Test
   fun verifyEmail_MultipleAtSigns() {
-    verifyEmailFailure("a@b.fred@joe.com", "at")
+    verifyPrimaryEmailFailure("a@b.fred@joe.com", "at")
+    verifySecondaryEmailFailure("a@b.fred@joe.com", "at")
   }
 
   @Test
   fun verifyEmail_NoExtension() {
-    verifyEmailFailure("a@bee", "format")
+    verifyPrimaryEmailFailure("a@bee", "format")
+    verifySecondaryEmailFailure("a@bee", "format")
   }
 
   @Test
   fun verifyEmail_FirstLastStopFirst() {
-    verifyEmailFailure(".a@bee.com", "firstlast")
+    verifyPrimaryEmailFailure(".a@bee.com", "firstlast")
+    verifySecondaryEmailFailure(".a@bee.com", "firstlast")
   }
 
   @Test
   fun verifyEmail_FirstLastStopLast() {
-    verifyEmailFailure("a@bee.com.", "firstlast")
+    verifyPrimaryEmailFailure("a@bee.com.", "firstlast")
+    verifySecondaryEmailFailure("a@bee.com.", "firstlast")
   }
 
   @Test
   fun verifyEmail_FirstLastAtFirst() {
-    verifyEmailFailure("@a@bee.com", "firstlast")
+    verifyPrimaryEmailFailure("@a@bee.com", "firstlast")
+    verifySecondaryEmailFailure("@a@bee.com", "firstlast")
   }
 
   @Test
   fun verifyEmail_FirstLastAtLast() {
-    verifyEmailFailure("a@bee.com@", "firstlast")
+    verifyPrimaryEmailFailure("a@bee.com@", "firstlast")
+    verifySecondaryEmailFailure("a@bee.com@", "firstlast")
   }
 
   @Test
   fun verifyEmail_TogetherAtBefore() {
-    verifyEmailFailure("a@.com", "together")
+    verifyPrimaryEmailFailure("a@.com", "together")
+    verifySecondaryEmailFailure("a@.com", "together")
   }
 
   @Test
   fun verifyEmail_TogetherAtAfter() {
-    verifyEmailFailure("a.@joe.com", "together")
+    verifyPrimaryEmailFailure("a.@joe.com", "together")
+    verifySecondaryEmailFailure("a.@joe.com", "together")
   }
 
   @Test
   fun verifyEmail_White() {
-    verifyEmailFailure("a@be\te.com", "white")
-  }
-
-  @Test
-  fun verifyEmail_InvalidDomain() {
-    verifyEmailFailure("a@b.com", "domain")
-    verify(referenceCodesService).isValidEmailDomain("b.com")
+    verifyPrimaryEmailFailure("a@be\te.com", "white")
+    verifySecondaryEmailFailure("a@be\te.com", "white")
   }
 
   @Test
   fun verifyEmail_InvalidCharacters() {
-    verifyEmailFailure("a@b.&com", "characters")
+    verifyPrimaryEmailFailure("a@b.&com", "characters")
+    verifySecondaryEmailFailure("a@b.&com", "characters")
   }
 
-  private fun verifyEmailFailure(email: String, reason: String) {
+  @Test
+  fun verifyEmail_InvalidDomain() {
+    verifyPrimaryEmailFailure("a@b.com", "domain")
+    verify(referenceCodesService).isValidEmailDomain("b.com")
+  }
+
+  private fun verifyPrimaryEmailFailure(email: String, reason: String) {
     assertThatThrownBy { verifyEmailService.validateEmailAddress(email, User.EmailType.PRIMARY) }.isInstanceOf(VerifyEmailException::class.java).extracting("reason").isEqualTo(reason)
+  }
+
+  private fun verifySecondaryEmailFailure(email: String, reason: String) {
+    assertThatThrownBy { verifyEmailService.validateEmailAddress(email, User.EmailType.SECONDARY) }.isInstanceOf(VerifyEmailException::class.java).extracting("reason").isEqualTo(reason)
+  }
+
+  @Test
+  fun `resendVerificationCodeSecondaryEmail send code`() {
+    val user = User.builder().person(Person("bob", "last")).contacts(setOf(Contact(SECONDARY_EMAIL, "someemail", false))).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+
+//    whenever(user.createToken(any())).thenReturn(UserToken("random_uuid", TokenType.VERIFIED, LocalDateTime.now(), user))
+
+    val verifyLink = verifyEmailService.resendVerificationCodeSecondaryEmail("bob", "http://some.url?token=")
+
+//    assertThat(verifyLink).isEqualTo("http://some.url?token=random_uuid")
+
+    verify(notificationClient).sendEmail(eq("templateId"), eq("someemail"), anyMap<String, Any?>(), isNull())
+
+  }
+
+  @Test
+  fun `resendVerificationCodeSecondaryEmail no second email`() {
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User()))
+    assertThatThrownBy { verifyEmailService.resendVerificationCodeSecondaryEmail("bob", "http://some.url") }
+        .isInstanceOf(VerifyEmailException::class.java).extracting("reason").isEqualTo("noSecondEmail")
+  }
+
+  @Test
+  fun `resendVerificationCodeSecondaryEmail already verified`() {
+    val user = User.builder().contacts(setOf(Contact(SECONDARY_EMAIL, "someemail", true))).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    assertThat(verifyEmailService.resendVerificationCodeSecondaryEmail("bob", "http://some.url")).isEqualTo(Optional.empty<String>())
+  }
+
+  @Test
+  fun `secondaryEmailVerified returns true`() {
+    val user = User.builder().contacts(setOf(Contact(SECONDARY_EMAIL, "someemail", true))).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    assertThat(verifyEmailService.secondaryEmailVerified("bob")).isTrue()
+  }
+
+  @Test
+  fun `secondaryEmailVerified returns false`() {
+    val user = User.builder().contacts(setOf(Contact(SECONDARY_EMAIL, "someemail", false))).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    assertThat(verifyEmailService.secondaryEmailVerified("bob")).isFalse()
+  }
+
+  @Test
+  fun `secondaryEmailVerified throws EntityNotFoundException`() {
+    assertThatThrownBy { verifyEmailService.secondaryEmailVerified("bob") }
+        .isInstanceOf(EntityNotFoundException::class.java).hasMessageContaining("User not found with username bob")
   }
 
   @Test

@@ -25,13 +25,17 @@ class MfaPreferenceSpecification : AbstractAuthSpecification() {
 
     homePage.navigateToAccountDetails()
 
-    accountDetailsPage.navigateToChangeMfaPreference()
+    accountDetailsPage
+        .isAtPage()
+        .navigateToChangeMfaPreference()
 
     mfaPreferencePage.selectText()
 
     accountDetailsPage.checkMfaPreferenceIsText()
 
-    accountDetailsPage.navigateToChangeMfaPreference()
+    accountDetailsPage
+        .isAtPage()
+        .navigateToChangeMfaPreference()
 
     mfaPreferencePage.selectEmail()
 
@@ -45,11 +49,15 @@ class MfaPreferenceSpecification : AbstractAuthSpecification() {
 
     homePage.navigateToAccountDetails()
 
-    accountDetailsPage.navigateToChangeMfaPreference()
+    accountDetailsPage
+        .isAtPage()
+        .navigateToChangeMfaPreference()
 
     mfaPreferencePage.selectEmail()
 
-    accountDetailsPage.checkMfaPreferenceIsEmail()
+    accountDetailsPage
+        .isAtPage()
+        .checkMfaPreferenceIsEmail()
 
     accountDetailsPage.navigateToChangeMfaPreference()
 
