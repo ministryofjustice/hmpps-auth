@@ -12,7 +12,7 @@
       Verification email sent
     </h1>
   </div>
-  <div>
+  <div th:with="verifyLink=${#strings.isEmpty(verifyLink) ? param.verifyLink : verifyLink}">
     <h2 class="govuk-heading-m">What happens next</h2>
     <ol class="govuk-list govuk-list--number">
       <li>We've sent an email to <strong id="email" th:text="${email}">email address</strong>.</li>
@@ -22,21 +22,11 @@
     <p class="govuk-body">
       <a class="govuk-button" role="button" th:href="@{/verify-email-continue}">Continue</a>
     </p>
-    <!--    <p th:with="verifyLink=${#strings.isEmpty(verifyLink) ? param.verifyLink : verifyLink}"-->
-    <!--        th:if="${verifyLink}" class="govuk-body">-->
-    <!--      <br>-->
-    <!--      <code>application.smoketest.enabled</code> environment variable is set.-->
-    <!--      Link that was sent in the email is <a class="govuk-link" id="verifyLink" th:href="${verifyLink}">here</a>.-->
-    <!--    </p>-->
-    <p th:if="${verifyLink}" class="govuk-body">
+    <p
+        th:if="${verifyLink}" class="govuk-body">
       <br>
       <code>application.smoketest.enabled</code> environment variable is set.
       Link that was sent in the email is <a class="govuk-link" id="verifyLink" th:href="${verifyLink}">here</a>.
-    </p>
-    <p th:if="${param.verifyLink}" class="govuk-body">
-      <br>
-      <code>application.smoketest.enabled</code> environment variable is set.
-      Link that was sent in the email is <a class="govuk-link" id="verifyLink" th:href="${param.verifyLink}">here</a>.
     </p>
   </div>
 </div>

@@ -6,7 +6,7 @@
   <title>Change Secondary Email</title>
 </head>
 <body>
-<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+<div layout:fragment="content" class="govuk-grid-column-two-thirds" th:with="error=${param.error ?: error}">
   <div th:if="${error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
        data-module="govuk-error-summary">
     <h2 class="govuk-error-summary__title" id="error-summary">

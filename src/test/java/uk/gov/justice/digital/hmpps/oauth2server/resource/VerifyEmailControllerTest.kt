@@ -155,7 +155,7 @@ class VerifyEmailControllerTest {
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(User()))
     whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.SECONDARY))).thenThrow(NotificationClientException("something went wrong"))
     val modelAndView = verifyEmailController.verifyEmail("a@b.com", null, EmailType.SECONDARY, principal, request, response)
-    assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/new-secondary-email")
     assertThat(modelAndView.model).containsExactly(entry("email", "a@b.com"), entry("error", "other"))
   }
 
@@ -238,7 +238,7 @@ class VerifyEmailControllerTest {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString())).thenThrow(VerifyEmailException("reason"))
     val modelAndView = verifyEmailController.secondaryEmailResend(principal, request)
-    assertThat(modelAndView.viewName).isEqualTo("changeEmail")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/new-secondary-email")
     assertThat(modelAndView.model).containsExactly(entry("email", null), entry("error", "reason"))
     verify(telemetryClient).trackEvent(eq("VerifyEmailRequestFailure"), check {
       assertThat(it).containsExactlyInAnyOrderEntriesOf(mapOf("username" to "user", "reason" to "reason"))
@@ -247,12 +247,12 @@ class VerifyEmailControllerTest {
 
 
   @Test
-  fun mobileResend_notificationClientException() {
+  fun secondaryEmailResend_notificationClientException() {
     whenever(userService.getUser(anyString())).thenReturn(User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", false))).build())
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString())).thenThrow(NotificationClientException("something went wrong"))
     val modelAndView = verifyEmailController.secondaryEmailResend(principal, request)
-    assertThat(modelAndView.viewName).isEqualTo("changeEmail")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/new-secondary-email")
     assertThat(modelAndView.model).containsExactly(entry("email", null), entry("error", "other"))
   }
 }

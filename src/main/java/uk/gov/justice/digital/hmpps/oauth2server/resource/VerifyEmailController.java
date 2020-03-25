@@ -120,10 +120,10 @@ public class VerifyEmailController {
         } catch (final VerifyEmailException e) {
             log.info("Validation failed for email address due to {}", e.getReason());
             telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
-            return createChangeOrVerifyEmailError(chosenEmail, e.getReason(), candidate);
+            return createChangeOrVerifyEmailError(chosenEmail, e.getReason(), candidate, emailType);
         } catch (final NotificationClientException e) {
             log.error("Failed to send email due to", e);
-            return createChangeOrVerifyEmailError(chosenEmail, "other", candidate);
+            return createChangeOrVerifyEmailError(chosenEmail, "other", candidate, emailType);
         }
     }
 
@@ -157,10 +157,10 @@ public class VerifyEmailController {
         } catch (final VerifyEmailException e) {
             log.info("Validation failed for email address due to {}", e.getReason());
             telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
-            return createChangeOrVerifyEmailError(null, e.getReason(), "change");
+            return createChangeOrVerifyEmailError(null, e.getReason(), "change", EmailType.SECONDARY);
         } catch (final NotificationClientException e) {
             log.error("Failed to send email due to", e);
-            return createChangeOrVerifyEmailError(null, "other", "change");
+            return createChangeOrVerifyEmailError(null, "other", "change", EmailType.SECONDARY);
         }
     }
 
@@ -186,8 +186,18 @@ public class VerifyEmailController {
         return verifyEmailService.requestVerification(username, emailInput, firstName, url, emailType);
     }
 
-    private ModelAndView createChangeOrVerifyEmailError(final String chosenEmail, final String reason, final String type) {
-        final var view = StringUtils.equals(type, "change") ? "changeEmail" : "verifyEmail";
+    private ModelAndView createChangeOrVerifyEmailError(final String chosenEmail, final String reason, final String type, final EmailType emailType) {
+        var view = "";
+        switch (emailType) {
+            case PRIMARY:
+                view = StringUtils.equals(type, "change") ? "changeEmail" : "verifyEmail";
+                break;
+            case SECONDARY:
+                view = "redirect:/new-secondary-email";
+                break;
+            default:
+                throw new RuntimeException("invalid emailType Enum");
+        }
         return new ModelAndView(view)
                 .addObject("email", chosenEmail)
                 .addObject("error", reason);

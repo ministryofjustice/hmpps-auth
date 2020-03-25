@@ -6,7 +6,6 @@ import org.fluentlenium.core.annotation.PageUrl
 import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
-import uk.gov.justice.digital.hmpps.oauth2server.integration.VerifySecondaryEmailSpecification.VerifySecondaryEmailConfirmPage
 
 class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
 
@@ -86,7 +85,7 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
     goTo(changeSecondaryEmailPage)
         .updateSecondaryEmailAs("bob@justice.gsi.gov.uk")
 
-    changeEmailPage.checkError("All gsi.gov.uk have now been migrated to a justice.gov.uk domain. Enter your justice.gov.uk address instead.")
+    changeSecondaryEmailPage.checkError("All gsi.gov.uk have now been migrated to a justice.gov.uk domain. Enter your justice.gov.uk address instead.")
   }
 
   @Test
@@ -97,7 +96,7 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
     goTo(changeSecondaryEmailPage)
         .updateSecondaryEmailAs("bob@justice")
 
-    changeEmailPage.checkError("Enter an email address in the correct format")
+    changeSecondaryEmailPage.checkError("Enter an email address in the correct format")
   }
 
   @Test

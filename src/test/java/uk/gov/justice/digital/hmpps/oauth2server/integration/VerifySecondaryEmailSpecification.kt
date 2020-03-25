@@ -65,11 +65,7 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
 
     homePage.isAt()
   }
-
-//  @Test
-//  fun `A user can verify a previously chosen secondary email`() {
-//}
-
+}
 
   @PageUrl("/verify-email-sent")
   open class VerifySecondaryEmailSentPage : AuthPage<VerifySecondaryEmailSentPage>("HMPPS Digital Services - Verify Email Sent", "Verification email sent") {
@@ -97,4 +93,4 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
 
   @PageUrl("/verify-email-secondary-confirm")
   open class VerifySecondaryEmailConfirmPage : AuthPage<VerifySecondaryEmailConfirmPage>("HMPPS Digital Services - Verify Email Confirmation", "Email address verified")
-}
+
