@@ -225,11 +225,9 @@ class VerifyEmailServiceTest {
     val user = User.builder().person(Person("bob", "last")).contacts(setOf(Contact(SECONDARY_EMAIL, "someemail", false))).build()
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
 
-//    whenever(user.createToken(any())).thenReturn(UserToken("random_uuid", TokenType.VERIFIED, LocalDateTime.now(), user))
-
     val verifyLink = verifyEmailService.resendVerificationCodeSecondaryEmail("bob", "http://some.url?token=")
-
-//    assertThat(verifyLink).isEqualTo("http://some.url?token=random_uuid")
+    val token = user.tokens.first().token
+    assertThat(verifyLink).get().isEqualTo("http://some.url?token=$token")
 
     verify(notificationClient).sendEmail(eq("templateId"), eq("someemail"), anyMap<String, Any?>(), isNull())
 
@@ -239,7 +237,7 @@ class VerifyEmailServiceTest {
   fun `resendVerificationCodeSecondaryEmail no second email`() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User()))
     assertThatThrownBy { verifyEmailService.resendVerificationCodeSecondaryEmail("bob", "http://some.url") }
-        .isInstanceOf(VerifyEmailException::class.java).extracting("reason").isEqualTo("noSecondEmail")
+        .isInstanceOf(VerifyEmailException::class.java).extracting("reason").isEqualTo("nosecondaryemail")
   }
 
   @Test

@@ -16,7 +16,13 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
   private lateinit var homePage: HomePage
 
   @Page
+  private lateinit var verifySecondaryEmailSentPage: VerifySecondaryEmailSentPage
+
+  @Page
   private lateinit var secondaryEmailVerificationResendPage: SecondaryEmailVerificationResendPage
+
+  @Page
+  private lateinit var secondaryEmailAlreadyVerifiedPage: SecondaryEmailAlreadyVerifiedPage
 
   @Page
   private lateinit var verifySecondaryEmailConfirmPage: VerifySecondaryEmailConfirmPage
@@ -32,26 +38,63 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
 
     secondaryEmailVerificationResendPage.resendCode()
 
-//    verifySecondaryEmailConfirmPage.isAt()
-//
-//    goTo(accountDetailsPage)
-//        .isAtPage()
-//        .checkSecondaryEmailAndIsVerified()
+    val verifyLink = verifySecondaryEmailSentPage.getVerifyLink()
+
+    verifySecondaryEmailSentPage
+        .isAtPage()
+        .continueProcess()
+
+    goTo(verifyLink)
+
+    verifySecondaryEmailConfirmPage.isAt()
+
+    goTo(accountDetailsPage)
+        .isAtPage()
+        .checkSecondaryEmailAndIsVerified()
   }
 
+  @Test
+  fun `Resend code page with verified secondary email is redirected to secondary email already verified`() {
+    goTo(loginPage)
+        .loginAs("AUTH_SECOND_EMAIL_ALREADY")
 
-}
+    goTo(secondaryEmailVerificationResendPage)
 
-@PageUrl("/secondary-Email-resend")
-class SecondaryEmailVerificationResendPage : AuthPage<SecondaryEmailVerificationResendPage>("HMPPS Digital Services - Resend Verification Code", "Resend security code") {
-  @FindBy(css = "input[type='submit']")
-  private lateinit var continueButton: FluentWebElement
+    secondaryEmailAlreadyVerifiedPage.isAtPage()
+        .continueToAccountDetailsPage()
 
-  fun resendCode() {
-    assertThat(continueButton.value()).isEqualTo("Resend security code")
-    continueButton.click()
+    homePage.isAt()
   }
-}
 
-@PageUrl("/verify-email-secondary-confirm")
-open class VerifySecondaryEmailConfirmPage : AuthPage<VerifySecondaryEmailConfirmPage>("HMPPS Digital Services - Verify Email Confirmation", "Email address verified")
+//  @Test
+//  fun `A user can verify a previously chosen secondary email`() {
+//}
+
+
+  @PageUrl("/verify-email-sent")
+  open class VerifySecondaryEmailSentPage : AuthPage<VerifySecondaryEmailSentPage>("HMPPS Digital Services - Verify Email Sent", "Verification email sent") {
+    @FindBy(css = "a[role='button']")
+    private lateinit var continueButton: FluentWebElement
+
+    fun continueProcess() {
+      assertThat(continueButton.text()).isEqualTo("Continue")
+      continueButton.click()
+    }
+
+    fun getVerifyLink(): String = el("#verifyLink").attribute("href")
+  }
+
+  @PageUrl("/secondary-email-resend")
+  class SecondaryEmailVerificationResendPage : AuthPage<SecondaryEmailVerificationResendPage>("HMPPS Digital Services - Resend Verification Code", "Resend security code") {
+    @FindBy(css = "input[type='submit']")
+    private lateinit var continueButton: FluentWebElement
+
+    fun resendCode() {
+      assertThat(continueButton.value()).isEqualTo("Resend security code")
+      continueButton.click()
+    }
+  }
+
+  @PageUrl("/verify-email-secondary-confirm")
+  open class VerifySecondaryEmailConfirmPage : AuthPage<VerifySecondaryEmailConfirmPage>("HMPPS Digital Services - Verify Email Confirmation", "Email address verified")
+}

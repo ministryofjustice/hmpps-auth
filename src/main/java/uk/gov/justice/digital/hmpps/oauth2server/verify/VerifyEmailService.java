@@ -113,7 +113,7 @@ public class VerifyEmailService {
     public Optional<String> resendVerificationCodeSecondaryEmail(final String username, final String url) throws NotificationClientException, VerifyEmailException {
         final var user = userRepository.findByUsername(username).orElseThrow();
         if (user.getSecondaryEmail() == null) {
-            throw new VerifyEmailException("noSecondEmail");
+            throw new VerifyEmailException("nosecondaryemail");
         }
         if (user.isSecondaryEmailVerified()) {
             log.info("Verify secondary email succeeded due to already verified");

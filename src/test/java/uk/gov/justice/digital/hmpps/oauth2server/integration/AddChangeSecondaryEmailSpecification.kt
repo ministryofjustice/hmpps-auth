@@ -6,6 +6,7 @@ import org.fluentlenium.core.annotation.PageUrl
 import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
+import uk.gov.justice.digital.hmpps.oauth2server.integration.VerifySecondaryEmailSpecification.VerifySecondaryEmailConfirmPage
 
 class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
 

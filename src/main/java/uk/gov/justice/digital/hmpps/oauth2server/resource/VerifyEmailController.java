@@ -104,7 +104,7 @@ public class VerifyEmailController {
         final var chosenEmail = StringUtils.trim(StringUtils.isBlank(candidate) || "other".equals(candidate) || "change".equals(candidate) ? email : candidate);
 
         if (userService.isSameAsCurrentVerifiedEmail(username, chosenEmail, emailType)) {
-            return new ModelAndView("verifyEmailAlready", "emailType", emailType);
+            return new ModelAndView("redirect:/verify-email-already", "emailType", emailType);
         }
 
         try {
@@ -127,10 +127,20 @@ public class VerifyEmailController {
         }
     }
 
+    @GetMapping("/verify-email-already")
+    public String EmailAlreadyVerified() {
+        return "verifyEmailAlready";
+    }
+
     @GetMapping("/secondary-email-resend")
     public String secondaryEmailResendRequest(final Principal principal) {
         final var secondaryEmailVerified = verifyEmailService.secondaryEmailVerified(principal.getName());
-        return secondaryEmailVerified ? "redirect:/verify-email-already" : "verifySecondaryEmailResend";
+        return secondaryEmailVerified ? "redirect:/verify-email-already" : "redirect:/verify-secondary-email-resend";
+    }
+
+    @GetMapping("/verify-secondary-email-resend")
+    public String verifySecondaryEmailResend() {
+        return "verifySecondaryEmailResend";
     }
 
     @PostMapping("/verify-secondary-email-resend")
@@ -154,9 +164,13 @@ public class VerifyEmailController {
         }
     }
 
+    @GetMapping("/verify-email-sent")
+    public String verifyEmailSent() {
+        return "verifyEmailSent";
+    }
+
     private ModelAndView redirectToVerifyEmailWithVerifyCode(final String verifyLink) {
-//        final var modelAndView = new ModelAndView("redirect:/verify-email-sent");
-        final var modelAndView = new ModelAndView("verifyEmailSent");
+        final var modelAndView = new ModelAndView("redirect:/verify-email-sent");
         if (smokeTestEnabled) {
             modelAndView.addObject("verifyLink", verifyLink);
         }

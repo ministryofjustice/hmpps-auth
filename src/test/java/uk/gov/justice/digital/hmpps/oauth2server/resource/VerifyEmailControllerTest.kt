@@ -128,7 +128,7 @@ class VerifyEmailControllerTest {
   fun verifyEmail_AlreadyVerified() {
     whenever(userService.isSameAsCurrentVerifiedEmail(anyString(), anyString(), eq(EmailType.PRIMARY))).thenReturn(true)
     val modelAndView = verifyEmailController.verifyEmail("change", "auth_email@digital.justice.gov.uk", EmailType.PRIMARY, principal, request, response)
-    assertThat(modelAndView.viewName).isEqualTo("verifyEmailAlready")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-email-already")
   }
 
   @Test
@@ -183,7 +183,7 @@ class VerifyEmailControllerTest {
   fun verifySecondaryEmail_AlreadyVerified() {
     whenever(userService.isSameAsCurrentVerifiedEmail(anyString(), anyString(), eq(EmailType.SECONDARY))).thenReturn(true)
     val modelAndView = verifyEmailController.verifyEmail("change", "auth_email@digital.justice.gov.uk", EmailType.SECONDARY, principal, request, response)
-    assertThat(modelAndView.viewName).isEqualTo("verifyEmailAlready")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-email-already")
   }
 
   private fun getUserPersonalDetails(): NomisUserPersonDetails {
@@ -199,7 +199,7 @@ class VerifyEmailControllerTest {
   fun secondaryEmailResendRequest_notVerified() {
     whenever(verifyEmailService.secondaryEmailVerified(anyString())).thenReturn(false)
     val view = verifyEmailController.secondaryEmailResendRequest(principal)
-    assertThat(view).isEqualTo("verifySecondaryEmailResend")
+    assertThat(view).isEqualTo("redirect:/verify-secondary-email-resend")
   }
 
   @Test
@@ -216,7 +216,7 @@ class VerifyEmailControllerTest {
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString()))
         .thenReturn(Optional.of("http://some.url/auth/verify-email-secondary-confirm?token=71396b28-0c57-4efd-bc70-cc5992965aed"))
     val modelAndView = verifyEmailController.secondaryEmailResend(principal, request)
-    assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-email-sent")
     assertThat(modelAndView.model).isEmpty()
   }
 
@@ -228,7 +228,7 @@ class VerifyEmailControllerTest {
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString()))
         .thenReturn(Optional.of("http://some.url/auth/verify-email-secondary-confirm?token=71396b28-0c57-4efd-bc70-cc5992965aed"))
     val modelAndView = verifyEmailControllerSmokeTestEnabled.secondaryEmailResend(principal, request)
-    assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-email-sent")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("verifyLink" to "http://some.url/auth/verify-email-secondary-confirm?token=71396b28-0c57-4efd-bc70-cc5992965aed"))
   }
 
