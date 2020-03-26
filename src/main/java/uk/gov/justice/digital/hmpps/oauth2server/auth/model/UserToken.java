@@ -5,7 +5,14 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -96,6 +103,7 @@ public class UserToken {
         CHANGE("ChangePassword"),
         MFA("MFA"),
         MFA_CODE("MFACode"),
+        SECONDARY("SecondEmailVerifyCode"),
         MOBILE("MobileVerifyCode");
 
         private final String description;

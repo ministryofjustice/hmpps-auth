@@ -84,6 +84,16 @@ class VerifyEmailServiceTest {
   }
 
   @Test
+  fun requestVerificationSecondaryEmail_existingToken() {
+    val user = User.of("someuser")
+    val existingUserToken = user.createToken(TokenType.SECONDARY)
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
+    verifyEmailService.requestVerification("user", "email@john.com", "firstname", "url", User.EmailType.SECONDARY)
+    assertThat(user.tokens).hasSize(1).extracting<String> { it.token }.doesNotContain(existingUserToken.token)
+  }
+
+  @Test
   fun requestVerification_verifyToken() {
     val user = User.of("someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
@@ -279,6 +289,17 @@ class VerifyEmailServiceTest {
   }
 
   @Test
+  fun confirmSecondaryEmail_happyPath() {
+    val user = User.of("bob")
+    val userToken = user.createToken(TokenType.SECONDARY)
+    whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
+    val result = verifyEmailService.confirmEmail("token")
+    assertThat(result).isEmpty
+    verify(userRepository).save(user)
+    assertThat(user.isVerified).isTrue()
+  }
+
+  @Test
   fun confirmEmail_invalid() {
     val result = verifyEmailService.confirmEmail("bob")
     assertThat(result).get().isEqualTo("invalid")
@@ -288,6 +309,16 @@ class VerifyEmailServiceTest {
   fun confirmEmail_expired() {
     val user = User.of("bob")
     val userToken = user.createToken(TokenType.VERIFIED)
+    userToken.tokenExpiry = LocalDateTime.now().minusSeconds(1)
+    whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
+    val result = verifyEmailService.confirmEmail("token")
+    assertThat(result).get().isEqualTo("expired")
+  }
+
+  @Test
+  fun confirmSecondaryEmail_expired() {
+    val user = User.of("bob")
+    val userToken = user.createToken(TokenType.SECONDARY)
     userToken.tokenExpiry = LocalDateTime.now().minusSeconds(1)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     val result = verifyEmailService.confirmEmail("token")
