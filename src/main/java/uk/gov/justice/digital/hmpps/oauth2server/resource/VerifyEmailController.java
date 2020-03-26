@@ -187,20 +187,19 @@ public class VerifyEmailController {
     }
 
     private ModelAndView createChangeOrVerifyEmailError(final String chosenEmail, final String reason, final String type, final EmailType emailType) {
-        var view = "";
         switch (emailType) {
             case PRIMARY:
-                view = StringUtils.equals(type, "change") ? "changeEmail" : "verifyEmail";
-                break;
+                final var view = StringUtils.equals(type, "change") ? "changeEmail" : "verifyEmail";
+                return new ModelAndView(view)
+                        .addObject("email", chosenEmail)
+                        .addObject("error", reason);
             case SECONDARY:
-                view = "redirect:/new-secondary-email";
-                break;
+                return new ModelAndView("redirect:/new-secondary-email")
+                        .addObject("email", chosenEmail)
+                        .addObject("error", reason);
             default:
-                throw new RuntimeException("invalid emailType Enum");
+                throw new RuntimeException("invalid emailType Enum - " + emailType);
         }
-        return new ModelAndView(view)
-                .addObject("email", chosenEmail)
-                .addObject("error", reason);
     }
 
     private void proceedToOriginalUrl(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
