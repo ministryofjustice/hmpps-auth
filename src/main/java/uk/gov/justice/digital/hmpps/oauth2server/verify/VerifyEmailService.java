@@ -84,8 +84,8 @@ public class VerifyEmailService {
                 user.addContact(ContactType.SECONDARY_EMAIL, email);
                 break;
             default:
-                log.warn("Failed to send email verification to notify for user {} invalid emailType Enum", username);
-                telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", "invalid emailType Enum"), null);
+                log.warn("Failed to send email verification to notify for user {} invalid emailType Enum - {}", username, emailType);
+                telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", "invalid emailType Enum - "), null);
                 throw new RuntimeException("invalid emailType Enum - " + emailType);
         }
 
