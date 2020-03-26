@@ -69,7 +69,7 @@ public class VerifyEmailService {
     @Transactional(transactionManager = "authTransactionManager")
     public String requestVerification(final String username, final String emailInput, final String firstName, final String url, final EmailType emailType) throws NotificationClientException, VerifyEmailException {
         final var user = userRepository.findByUsername(username).orElseThrow();
-        final var verifyLink = url + user.createToken(TokenType.VERIFIED).getToken();
+        final var verifyLink = url + user.createToken(emailType == EmailType.PRIMARY ? TokenType.VERIFIED : TokenType.SECONDARY).getToken();
         final var parameters = Map.of("firstName", firstName, "verifyLink", verifyLink);
 
         final var email = EmailHelper.format(emailInput);
@@ -121,7 +121,7 @@ public class VerifyEmailService {
             return Optional.empty();
         }
 
-        final var verifyLink = url + user.createToken(TokenType.VERIFIED).getToken();
+        final var verifyLink = url + user.createToken(TokenType.SECONDARY).getToken();
         final var parameters = Map.of("firstName", user.getFirstName(), "verifyLink", verifyLink);
         notificationClient.sendEmail(notifyTemplateId, user.getSecondaryEmail(), parameters, null);
 
