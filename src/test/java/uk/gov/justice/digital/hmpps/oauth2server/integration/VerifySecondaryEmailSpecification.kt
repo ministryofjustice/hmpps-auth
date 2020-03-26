@@ -65,6 +65,37 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
 
     homePage.isAt()
   }
+
+  @Test
+  fun `Secondary email can be verified form email link when user is not logged in`() {
+    goTo(loginPage)
+        .loginAs("AUTH_SECOND_EMAIL_VERIFY2")
+
+    homePage.navigateToAccountDetails()
+
+    accountDetailsPage
+        .checkSecondaryEmailAndIsNotVerified()
+        .navigateToResendVerifySecondaryEmail()
+
+    secondaryEmailVerificationResendPage.resendCode()
+
+    val verifyLink = verifySecondaryEmailSentPage.getVerifyLink()
+
+    verifySecondaryEmailSentPage.logOut()
+
+    goTo(verifyLink)
+
+    verifySecondaryEmailConfirmPage.isAt()
+
+    goTo(loginPage)
+        .loginAs("AUTH_SECOND_EMAIL_VERIFY2")
+
+    homePage.navigateToAccountDetails()
+
+    accountDetailsPage
+        .isAtPage()
+        .checkSecondaryEmailAndIsVerified()
+  }
 }
 
   @PageUrl("/verify-email-sent")
@@ -72,9 +103,16 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
     @FindBy(css = "a[role='button']")
     private lateinit var continueButton: FluentWebElement
 
+    @FindBy(css = "#logout")
+    private lateinit var logOut: FluentWebElement
+
     fun continueProcess() {
       assertThat(continueButton.text()).isEqualTo("Continue")
       continueButton.click()
+    }
+
+    fun logOut() {
+      logOut.click()
     }
 
     fun getVerifyLink(): String = el("#verifyLink").attribute("href")

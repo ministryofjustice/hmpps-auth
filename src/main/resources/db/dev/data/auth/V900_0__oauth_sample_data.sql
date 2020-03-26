@@ -114,8 +114,9 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A60', 'AUTH_SECOND_EMAIL_ADD', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A61', 'AUTH_SECOND_EMAIL_UPDATE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A62', 'AUTH_SECOND_EMAIL_VERIFY', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 1, 1, 0, 'auth'),
-        ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A63', 'AUTH_SECOND_EMAIL_ALREADY', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 1, 1, 0, 'auth'),
-        ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A64', 'AUTH_SECOND_EMAIL_CHANGE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 1, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A63', 'AUTH_SECOND_EMAIL_VERIFY2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 1, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A64', 'AUTH_SECOND_EMAIL_ALREADY', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 1, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A65', 'AUTH_SECOND_EMAIL_CHANGE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 1, 1, 0, 'auth'),
         ('6c76f1fa-3393-11ea-978f-2e728ce88125', 'AUTH_VIDEO_LINK_COURT_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'vlb_court_user@digital.justice.gov.uk', 'VLB Court', 'User', 1, 1, 0, 'auth');
 
 INSERT INTO users (user_id, username, password, last_logged_in, first_name, last_name, verified, enabled, locked, source)
@@ -221,6 +222,7 @@ INSERT INTO user_contact (user_id, type, value) SELECT user_id, 'SECONDARY_EMAIL
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_PREF_EMAIL';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_SECOND_EMAIL_UPDATE';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'bob@gmail.com', 0 FROM users where username = 'AUTH_SECOND_EMAIL_VERIFY';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'bob@gmail.com', 0 FROM users where username = 'AUTH_SECOND_EMAIL_VERIFY2';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_SECOND_EMAIL_ALREADY';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_SECOND_EMAIL_CHANGE';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_CHANGE_MOBILE_VERIFIED';
