@@ -11,6 +11,10 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
@@ -107,6 +111,32 @@ class VerifyMobileServiceTest {
     whenever(userRepository.findByUsername(anyString())).thenReturn(user)
     verifyMobileService.changeMobileAndRequestVerification("user", "07700900321")
     verify(notificationClient).sendSms(eq("templateId"), eq("07700900321"), anyMap<String, Any?>(), isNull())
+  }
+
+  @Test
+  fun `resendVerificationCode send code`() {
+    val user = User.builder().person(Person("bob", "last")).contacts(setOf(Contact(ContactType.MOBILE_PHONE, "07700900321", false))).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+
+    val verifyCode = verifyMobileService.resendVerificationCode("bob")
+    val code = user.tokens.first().token
+    assertThat(verifyCode).get().isEqualTo(code)
+
+    Mockito.verify(notificationClient).sendSms(eq("templateId"), eq("07700900321"), anyMap<String, Any?>(), isNull())
+  }
+
+  @Test
+  fun `resendVerificationCodeSecondaryEmail no second email`() {
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User()))
+    assertThatThrownBy { verifyMobileService.resendVerificationCode("bob") }
+        .isInstanceOf(VerifyMobileException::class.java).extracting("reason").isEqualTo("nomobile")
+  }
+
+  @Test
+  fun `resendVerificationCodeSecondaryEmail already verified`() {
+    val user = User.builder().contacts(setOf(Contact(ContactType.MOBILE_PHONE, "07700900321", true))).build()
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    assertThat(verifyMobileService.resendVerificationCode("bob")).isEqualTo(Optional.empty<String>())
   }
 
   @Test

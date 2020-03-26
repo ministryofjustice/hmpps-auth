@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -83,8 +84,9 @@ public class VerifyEmailService {
                 user.addContact(ContactType.SECONDARY_EMAIL, email);
                 break;
             default:
-                log.warn("Failed to send email verification to notify for user {} invalid emailType Enum", username);
-                telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", "invalid emailType Enum"), null);
+                log.warn("Failed to send email verification to notify for user {} invalid emailType Enum - {}", username, emailType);
+                telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", "invalid emailType Enum - "), null);
+                throw new RuntimeException("invalid emailType Enum - " + emailType);
         }
 
         try {
@@ -105,6 +107,31 @@ public class VerifyEmailService {
         userRepository.save(user);
 
         return verifyLink;
+    }
+
+    @Transactional(transactionManager = "authTransactionManager")
+    public Optional<String> resendVerificationCodeSecondaryEmail(final String username, final String url) throws NotificationClientException, VerifyEmailException {
+        final var user = userRepository.findByUsername(username).orElseThrow();
+        if (user.getSecondaryEmail() == null) {
+            throw new VerifyEmailException("nosecondaryemail");
+        }
+        if (user.isSecondaryEmailVerified()) {
+            log.info("Verify secondary email succeeded due to already verified");
+            telemetryClient.trackEvent("VerifySecondaryEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
+            return Optional.empty();
+        }
+
+        final var verifyLink = url + user.createToken(TokenType.VERIFIED).getToken();
+        final var parameters = Map.of("firstName", user.getFirstName(), "verifyLink", verifyLink);
+        notificationClient.sendEmail(notifyTemplateId, user.getSecondaryEmail(), parameters, null);
+
+        return Optional.of(verifyLink);
+    }
+
+    public boolean secondaryEmailVerified(final String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)))
+                .isSecondaryEmailVerified();
     }
 
     public void validateEmailAddress(final String email, final EmailType emailType) throws VerifyEmailException {

@@ -104,7 +104,7 @@ public class VerifyEmailController {
         final var chosenEmail = StringUtils.trim(StringUtils.isBlank(candidate) || "other".equals(candidate) || "change".equals(candidate) ? email : candidate);
 
         if (userService.isSameAsCurrentVerifiedEmail(username, chosenEmail, emailType)) {
-            return new ModelAndView("verifyEmailAlready", "emailType", emailType);
+            return new ModelAndView("redirect:/verify-email-already", "emailType", emailType);
         }
 
         try {
@@ -120,12 +120,63 @@ public class VerifyEmailController {
         } catch (final VerifyEmailException e) {
             log.info("Validation failed for email address due to {}", e.getReason());
             telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
-            return createChangeOrVerifyEmailError(chosenEmail, e.getReason(), candidate);
+            return createChangeOrVerifyEmailError(chosenEmail, e.getReason(), candidate, emailType);
         } catch (final NotificationClientException e) {
             log.error("Failed to send email due to", e);
-            return createChangeOrVerifyEmailError(chosenEmail, "other", candidate);
+            return createChangeOrVerifyEmailError(chosenEmail, "other", candidate, emailType);
         }
     }
+
+    @GetMapping("/verify-email-already")
+    public String EmailAlreadyVerified() {
+        return "verifyEmailAlready";
+    }
+
+    @GetMapping("/secondary-email-resend")
+    public String secondaryEmailResendRequest(final Principal principal) {
+        final var secondaryEmailVerified = verifyEmailService.secondaryEmailVerified(principal.getName());
+        return secondaryEmailVerified ? "redirect:/verify-email-already" : "redirect:/verify-secondary-email-resend";
+    }
+
+    @GetMapping("/verify-secondary-email-resend")
+    public String verifySecondaryEmailResend() {
+        return "verifySecondaryEmailResend";
+    }
+
+    @PostMapping("/verify-secondary-email-resend")
+    public ModelAndView secondaryEmailResend(final Principal principal, final HttpServletRequest request) {
+        final var username = principal.getName();
+        final var originalUrl = request.getRequestURL().toString();
+        final var url = originalUrl.replace("verify-secondary-email-resend", "verify-email-secondary-confirm?token=");
+        try {
+
+            final var verifyCode = verifyEmailService.resendVerificationCodeSecondaryEmail(username, url);
+
+            return redirectToVerifyEmailWithVerifyCode(verifyCode.orElseThrow());
+
+        } catch (final VerifyEmailException e) {
+            log.info("Validation failed for email address due to {}", e.getReason());
+            telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
+            return createChangeOrVerifyEmailError(null, e.getReason(), "change", EmailType.SECONDARY);
+        } catch (final NotificationClientException e) {
+            log.error("Failed to send email due to", e);
+            return createChangeOrVerifyEmailError(null, "other", "change", EmailType.SECONDARY);
+        }
+    }
+
+    @GetMapping("/verify-email-sent")
+    public String verifyEmailSent() {
+        return "verifyEmailSent";
+    }
+
+    private ModelAndView redirectToVerifyEmailWithVerifyCode(final String verifyLink) {
+        final var modelAndView = new ModelAndView("redirect:/verify-email-sent");
+        if (smokeTestEnabled) {
+            modelAndView.addObject("verifyLink", verifyLink);
+        }
+        return modelAndView;
+    }
+
 
     private String requestVerificationForUser(final String username, final String emailInput, final String url, final EmailType emailType) throws NotificationClientException, VerifyEmailException {
 
@@ -135,11 +186,20 @@ public class VerifyEmailController {
         return verifyEmailService.requestVerification(username, emailInput, firstName, url, emailType);
     }
 
-    private ModelAndView createChangeOrVerifyEmailError(final String chosenEmail, final String reason, final String type) {
-        final var view = StringUtils.equals(type, "change") ? "changeEmail" : "verifyEmail";
-        return new ModelAndView(view)
-                .addObject("email", chosenEmail)
-                .addObject("error", reason);
+    private ModelAndView createChangeOrVerifyEmailError(final String chosenEmail, final String reason, final String type, final EmailType emailType) {
+        switch (emailType) {
+            case PRIMARY:
+                final var view = StringUtils.equals(type, "change") ? "changeEmail" : "verifyEmail";
+                return new ModelAndView(view)
+                        .addObject("email", chosenEmail)
+                        .addObject("error", reason);
+            case SECONDARY:
+                return new ModelAndView("redirect:/new-secondary-email")
+                        .addObject("email", chosenEmail)
+                        .addObject("error", reason);
+            default:
+                throw new RuntimeException("invalid emailType Enum - " + emailType);
+        }
     }
 
     private void proceedToOriginalUrl(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
