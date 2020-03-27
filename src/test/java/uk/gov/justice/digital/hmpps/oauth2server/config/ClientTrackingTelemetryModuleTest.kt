@@ -55,12 +55,12 @@ class ClientTrackingTelemetryModuleTest {
   }
 
   @Test
-  fun shouldNotAddClientIdAndUserNameToInsightTelemetryAsTokenExpired() {
+  fun shouldAddClientIdAndUserNameToInsightTelemetryEvenIfTokenExpired() {
     val token = createJwt("Fred", -1L)
     req.addHeader(HttpHeaders.AUTHORIZATION, "Bearer $token")
     clientTrackingTelemetryModule.onBeginRequest(req, res)
     val insightTelemetry = ThreadContext.getRequestTelemetryContext().httpRequestTelemetry.properties
-    assertThat(insightTelemetry).doesNotContain(entry("username", "Fred"), entry("clientId", "elite2apiclient"))
+    assertThat(insightTelemetry).contains(entry("username", "Fred"), entry("clientId", "elite2apiclient"))
   }
 
   private fun createJwt(user: String, duration: Long) =
