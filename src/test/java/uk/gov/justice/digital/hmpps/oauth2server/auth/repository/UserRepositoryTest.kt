@@ -17,7 +17,8 @@ import org.springframework.test.context.transaction.TestTransaction
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.MOBILE_PHONE
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.SECONDARY_EMAIL
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
@@ -196,22 +197,46 @@ class UserRepositoryTest {
   @Test
   fun `test persist contact mapping`() {
     val transientEntity = User.builder().username("contact").source(nomis).build()
-    transientEntity.addContact(ContactType.SECONDARY_EMAIL, "some value")
-    transientEntity.addContact(ContactType.SECONDARY_EMAIL, "some replacement value")
+    transientEntity.addContact(SECONDARY_EMAIL, "some value")
+    transientEntity.addContact(SECONDARY_EMAIL, "some replacement value")
     repository.save(transientEntity)
     TestTransaction.flagForCommit()
     TestTransaction.end()
     TestTransaction.start()
     val retrievedEntity = repository.findByUsername(transientEntity.username).orElseThrow()
 
-    assertThat(retrievedEntity.contacts).containsExactly(Contact(ContactType.SECONDARY_EMAIL, "some replacement value"))
+    assertThat(retrievedEntity.contacts).containsExactly(Contact(SECONDARY_EMAIL, "some replacement value"))
+  }
+
+  @Test
+  fun `test persist contact mapping 2`() {
+    val transientEntity = User.builder().username("contact2").source(nomis).build()
+    transientEntity.addContact(SECONDARY_EMAIL, "some value")
+    transientEntity.addContact(MOBILE_PHONE, "some mobile")
+    repository.save(transientEntity)
+    TestTransaction.flagForCommit()
+    TestTransaction.end()
+    TestTransaction.start()
+    val retrievedEntity = repository.findByUsername(transientEntity.username).orElseThrow()
+    retrievedEntity.findContact(SECONDARY_EMAIL).ifPresent { it.verified = true }
+    assertThat(retrievedEntity.contacts).containsExactlyInAnyOrder(
+        Contact(SECONDARY_EMAIL, "some value", true),
+        Contact(MOBILE_PHONE, "some mobile", false))
+    repository.save(retrievedEntity)
+    TestTransaction.flagForCommit()
+    TestTransaction.end()
+    TestTransaction.start()
+    val retrievedEntity2 = repository.findByUsername(transientEntity.username).orElseThrow()
+    assertThat(retrievedEntity2.contacts).containsExactlyInAnyOrder(
+        Contact(SECONDARY_EMAIL, "some value", true),
+        Contact(MOBILE_PHONE, "some mobile", false))
   }
 
   @Test
   fun `test retrieve contact mapping`() {
     val retrievedEntity = repository.findByUsername("AUTH_ADM").orElseThrow()
 
-    assertThat(retrievedEntity.contacts).containsExactly(Contact(ContactType.SECONDARY_EMAIL, "john@smith.com"))
+    assertThat(retrievedEntity.contacts).containsExactly(Contact(SECONDARY_EMAIL, "john@smith.com"))
   }
 
   @Test
@@ -348,6 +373,7 @@ class UserRepositoryTest {
     val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2018-01-02T13:23:19").plusSeconds(1))
     assertThat(inactive).extracting<String> { it.username }.containsExactly("AUTH_DELETE")
   }
+
 
   private fun transientEntity() = User.builder().username("user").source(nomis).email("a@b.com").build()
 
