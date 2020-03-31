@@ -61,6 +61,13 @@ open class AuthPage<T>(val title: String, val heading: String) : FluentPage() {
   @FindBy(css = "#error-detail")
   private lateinit var errorDetail: FluentWebElement
 
+  @FindBy(css = "#logout")
+  private lateinit var logOut: FluentWebElement
+
+  fun logOut() {
+    logOut.click()
+  }
+
   override fun isAt() {
     super.isAt()
 

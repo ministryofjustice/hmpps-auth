@@ -195,8 +195,14 @@ public class User implements UserPersonDetails, CredentialsContainer {
         return email.substring(0, emailCharactersReduced) + "******@******" + email.substring(email.length() - 7);
     }
 
+    public String getMaskedSecondaryEmail() {
+        final var emailCharacters = StringUtils.substringBefore(getSecondaryEmail(), "@").length();
+        final var emailCharactersReduced = Math.min(emailCharacters / 2, 6);
+        return getSecondaryEmail().substring(0, emailCharactersReduced) + "******@******" + getSecondaryEmail().substring(getSecondaryEmail().length() - 7);
+    }
+
     public boolean mfaPreferenceVerified() {
-        return mfaPreferenceTextVerified() || mfaPreferenceEmailVerified();
+        return mfaPreferenceTextVerified() || mfaPreferenceEmailVerified() || mfaPreferenceSecondaryEmailVerified();
     }
 
     public boolean mfaPreferenceTextVerified() {
@@ -205,6 +211,10 @@ public class User implements UserPersonDetails, CredentialsContainer {
 
     public boolean mfaPreferenceEmailVerified() {
         return mfaPreference == MfaPreferenceType.EMAIL && verified;
+    }
+
+    public boolean mfaPreferenceSecondaryEmailVerified() {
+        return mfaPreference == MfaPreferenceType.SECONDARY_EMAIL && isSecondaryEmailVerified();
     }
 
     @Override
@@ -395,6 +405,9 @@ public class User implements UserPersonDetails, CredentialsContainer {
         findContact(ContactType.MOBILE_PHONE)
                 .filter(c -> StringUtils.isNotBlank(c.getValue()) && c.getVerified())
                 .ifPresent(c -> preferences.add(MfaPreferenceType.TEXT));
+        findContact(ContactType.SECONDARY_EMAIL)
+                .filter(c -> StringUtils.isNotBlank(c.getValue()) && c.getVerified())
+                .ifPresent(c -> preferences.add(MfaPreferenceType.SECONDARY_EMAIL));
         return preferences;
     }
 
@@ -406,7 +419,8 @@ public class User implements UserPersonDetails, CredentialsContainer {
     @Getter
     public enum MfaPreferenceType {
         EMAIL("email"),
-        TEXT("text");
+        TEXT("text"),
+        SECONDARY_EMAIL("secondary email");
 
         private final String description;
     }

@@ -63,7 +63,15 @@ class MfaSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `Login as user with text MFA enabled but email verified`() {
+  fun `Login as user with second email MFA enabled`() {
+    goTo(loginPage)
+        .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL")
+        .submitCode()
+    homePage.isAt()
+  }
+
+  @Test
+  fun `Login as user with inverified text MFA enabled but email verified`() {
     goTo(loginPage)
         .loginWithMfaEmail("AUTH_MFA_PREF_TEXT_EMAIL")
         .submitCode()
@@ -71,7 +79,15 @@ class MfaSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `Login as user with MFA enabled but no email address`() {
+  fun `Login as user with unverified secondary email MFA enabled but email verified`() {
+    goTo(loginPage)
+        .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL_EMAIL")
+        .submitCode()
+    homePage.isAt()
+  }
+
+  @Test
+  fun `Login as user with MFA enabled but no email addresses or mobile number`() {
     goTo(loginPage)
         .loginWithMfaError("AUTH_MFA_NOEMAIL_USER")
 
@@ -153,6 +169,21 @@ class MfaSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `MFA user secondary email preference gets locked after 3 invalid MFA attempts`() {
+    goTo(loginPage)
+        .loginWithMfaEmail("AUTH_MFA_LOCKED_2ND_EMAIL")
+        .submitCode("123")
+        .checkEmailCodeIsIncorrectError()
+        .submitCode("123")
+        .checkEmailCodeIsIncorrectError()
+        .submitCode("123")
+
+    loginPage.checkLoginAccountLockedError()
+        .loginWithMfaError("AUTH_MFA_LOCKED_2ND_EMAIL")
+        .checkLoginAccountLockedError()
+  }
+
+  @Test
   fun `MFA user email preference gets locked after mix of MFA and login attempts`() {
 
     goTo(loginPage)
@@ -183,6 +214,23 @@ class MfaSpecification : AbstractAuthSpecification() {
 
     goTo(loginPage)
         .loginWithMfaError("AUTH_MFA_LOCKED2_TEXT", "wrongpass")
+        .checkLoginAccountLockedError()
+  }
+
+  @Test
+  fun `MFA user secondary email preference gets locked after mix of MFA and login attempts`() {
+
+    goTo(loginPage)
+        .loginWithMfaError("AUTH_MFA_LOCKED2_2ND_EMAIL", "wrongpass")
+        .checkLoginUsernamePasswordError()
+        .loginWithMfaEmail("AUTH_MFA_LOCKED2_2ND_EMAIL")
+        .submitCode("123")
+        .checkEmailCodeIsIncorrectError()
+        .submitCode("123456")
+        .checkEmailCodeIsIncorrectError()
+
+    goTo(loginPage)
+        .loginWithMfaError("AUTH_MFA_LOCKED2_2ND_EMAIL", "wrongpass")
         .checkLoginAccountLockedError()
   }
 
@@ -229,6 +277,27 @@ class MfaSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `Locked count gets reset after successful MFA login secondary email preference`() {
+    goTo(loginPage)
+        .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL3")
+
+    val validMfaCode = mfaEmailPage.getCode()
+    mfaEmailPage.submitCode("123")
+        .checkEmailCodeIsIncorrectError()
+        .submitCode("123")
+        .checkEmailCodeIsIncorrectError()
+        .submitCode(validMfaCode)
+
+    homePage.isAt()
+
+    goTo(loginPage)
+        .loginWithMfaError("AUTH_MFA_PREF_2ND_EMAIL3", "wrongpass")
+        .checkLoginUsernamePasswordError()
+        .loginWithMfaError("AUTH_MFA_PREF_2ND_EMAIL3", "wrongpass")
+        .checkLoginUsernamePasswordError()
+  }
+
+  @Test
   fun `Mfa preference email - I would like the MFA code to be resent by email`() {
     goTo(loginPage)
         .loginWithMfaEmail("AUTH_MFA_USER")
@@ -256,6 +325,19 @@ class MfaSpecification : AbstractAuthSpecification() {
     homePage.isAt()
   }
 
+  @Test
+  fun `Mfa preference email - I would like the MFA code to be resent by secondary email`() {
+    goTo(loginPage)
+        .loginWithMfaEmail("AUTH_MFA_PREF_EMAIL5")
+
+    mfaEmailPage.resendCodeLink()
+
+    mfaEmailResendCodePage.resendCodeBySecondaryEmail()
+
+    mfaEmailPage.submitCode()
+
+    homePage.isAt()
+  }
 
   @Test
   fun `MFA preference text - I would like the MFA code to be resent by email`() {
@@ -281,6 +363,34 @@ class MfaSpecification : AbstractAuthSpecification() {
     mfaTextResendCodePage.resendCodeByText()
 
     mfaTextPage.submitCode()
+
+    homePage.isAt()
+  }
+
+  @Test
+  fun `Mfa preference secondary email - I would like the MFA code to be resent by email`() {
+    goTo(loginPage)
+        .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL2")
+
+    mfaEmailPage.resendCodeLink()
+
+    mfaEmailResendCodePage.resendCodeByText()
+
+    mfaTextPage.submitCode()
+
+    homePage.isAt()
+  }
+
+  @Test
+  fun `Mfa preference secondary email - I would like the MFA code to be resent by Email`() {
+    goTo(loginPage)
+        .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL2")
+
+    mfaEmailPage.resendCodeLink()
+
+    mfaEmailResendCodePage.resendCodeByEmail()
+
+    mfaEmailPage.submitCode()
 
     homePage.isAt()
   }
@@ -329,6 +439,28 @@ class MfaSpecification : AbstractAuthSpecification() {
 
   private fun splitQuery(url: String): MultiValueMap<String, String> {
     return UriComponentsBuilder.fromUriString(url).build().queryParams
+  }
+
+
+  @Test
+  fun `I can sign in from another client with MFA enabled secondary email preference`() {
+    val state = RandomStringUtils.random(6, true, true)
+    goTo("/oauth/authorize?client_id=elite2apiclient&redirect_uri=$clientBaseUrl&response_type=code&state=$state")
+
+    loginPage
+        .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL4")
+        .submitCode()
+
+    val url = driver.currentUrl
+    assertThat(url).startsWith("${clientBaseUrl}?code")
+    assertThat(url).contains("state=$state")
+
+    val authCode = splitQuery(url)["code"]?.first()
+    assertThat(authCode).isNotNull()
+
+    val response = getAccessToken(authCode!!)
+    assertThat(response["user_name"]).isEqualTo("AUTH_MFA_PREF_2ND_EMAIL4")
+    assertThat(response["auth_source"]).isEqualTo("auth")
   }
 
 
@@ -432,6 +564,9 @@ class MfaEmailResendCodePage : AuthPage<MfaEmailResendCodePage>("HMPPS Digital S
   @FindBy(css = "input[id='mfa-pref-text']")
   private lateinit var selectMfaPreferenceText: FluentWebElement
 
+  @FindBy(css = "input[id='mfa-pref-secondary-email']")
+  private lateinit var selectMfaPreferenceSecondaryEmail: FluentWebElement
+
   fun resendCodeByEmail() {
     selectMfaPreferenceEmail.click()
     resendSecurityCode.submit()
@@ -439,6 +574,11 @@ class MfaEmailResendCodePage : AuthPage<MfaEmailResendCodePage>("HMPPS Digital S
 
   fun resendCodeByText() {
     selectMfaPreferenceText.click()
+    resendSecurityCode.submit()
+  }
+
+  fun resendCodeBySecondaryEmail() {
+    selectMfaPreferenceSecondaryEmail.click()
     resendSecurityCode.submit()
   }
 }

@@ -18,6 +18,7 @@ class MfaPreferenceController(private val userService: UserService, private val 
     val user = userService.getUserWithContacts(authentication.name)
     return ModelAndView("mfaPreference", "text", user.mobile)
         .addObject("email", user.email)
+        .addObject("secondaryemail", user.secondaryEmail)
         .addObject("current", user.mfaPreference)
   }
 

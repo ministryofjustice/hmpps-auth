@@ -61,7 +61,8 @@ class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelis
     val mfaType = user.calculateMfaFromPreference().map {
       @Suppress("WHEN_ENUM_CAN_BE_NULL_IN_JAVA")
       when (it) {
-        MfaPreferenceType.EMAIL -> emailCode(user, code)
+        MfaPreferenceType.EMAIL -> emailCode(user, code, user.email)
+        MfaPreferenceType.SECONDARY_EMAIL -> emailCode(user, code, user.secondaryEmail)
         MfaPreferenceType.TEXT -> textCode(user, code)
       }
       it
@@ -107,7 +108,9 @@ class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelis
 
     code?.run {
       if (mfaPreference == MfaPreferenceType.EMAIL) {
-        emailCode(userToken.user, code)
+        emailCode(userToken.user, code, userToken.user.email)
+      } else if (mfaPreference == MfaPreferenceType.SECONDARY_EMAIL) {
+        emailCode(userToken.user, code, userToken.user.secondaryEmail)
       } else {
         textCode(userToken.user, code)
       }
@@ -127,13 +130,16 @@ class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelis
     if (user.isMobileVerified) {
       modelAndView.addObject("mobile", user.maskedMobile)
     }
+    if (user.isSecondaryEmailVerified) {
+      modelAndView.addObject("secondaryemail", user.maskedSecondaryEmail)
+    }
     return modelAndView
   }
 
-  private fun emailCode(user: User, code: String) {
+  private fun emailCode(user: User, code: String, email: String) {
     val firstName = userService.findMasterUserPersonDetails(user.username).map { it.firstName }.orElseThrow()
 
-    notificationClient.sendEmail(mfaEmailTemplateId, user.email, mapOf("firstName" to firstName, "code" to code), null)
+    notificationClient.sendEmail(mfaEmailTemplateId, email, mapOf("firstName" to firstName, "code" to code), null)
   }
 
   private fun textCode(user: User, code: String) {

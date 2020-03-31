@@ -55,6 +55,18 @@
          You’ll receive a 6 digit number to <span data-qa="text" th:text="${text}">your mobile</span> by text message
         </span>
           </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="mfa-pref-secondary-email" name="mfaPreference" type="radio"
+                   value="SECONDARY_EMAIL"
+                   aria-describedby="mfa-pref-secondary-email-item-hint"
+                   th:checked="(${#strings.equals(current, 'SECONDARY_EMAIL')})">
+            <label class="govuk-label govuk-radios__label govuk-label--s" for="mfa-pref-secondary-email">
+              By secondary email
+            </label>
+            <span id="mfa-pref-secondary-email-item-hint" class="govuk-hint govuk-radios__hint">
+         You’ll receive a 6 digit number to <span data-qa="text" th:text="${secondaryemail}">your secondary email</span>
+        </span>
+          </div>
         </div>
         <div class="govuk-form-group">
           <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="continue-button"
