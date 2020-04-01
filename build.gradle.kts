@@ -10,12 +10,12 @@ import java.time.format.DateTimeFormatter.ISO_DATE
 plugins {
   id("java")
   id("groovy")
-  kotlin("jvm") version "1.3.70"
-  kotlin("plugin.spring") version "1.3.70"
-  kotlin("plugin.jpa") version "1.3.70"
+  kotlin("jvm") version "1.3.71"
+  kotlin("plugin.spring") version "1.3.71"
+  kotlin("plugin.jpa") version "1.3.71"
   id("org.springframework.boot") version "2.2.6.RELEASE"
   id("io.spring.dependency-management") version "1.0.9.RELEASE"
-  id("org.owasp.dependencycheck") version "5.3.2"
+  id("org.owasp.dependencycheck") version "5.3.2.1"
   id("com.github.ben-manes.versions") version "0.28.0"
   id("se.patrikerdes.use-latest-versions") version "0.2.13"
   id("com.gorylenko.gradle-git-properties") version "2.2.2"
@@ -122,7 +122,7 @@ dependencies {
 
   implementation("org.flywaydb:flyway-core:6.3.2")
   implementation("com.zaxxer:HikariCP:3.4.2")
-  implementation("org.apache.commons:commons-lang3:3.9")
+  implementation("org.apache.commons:commons-lang3:3.10")
   implementation("org.apache.commons:commons-text:1.8")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.1.jre11")
   implementation("com.github.timpeeters:spring-boot-graceful-shutdown:2.2.1")
@@ -145,8 +145,8 @@ dependencies {
     exclude(mapOf("group" to "org.codehaus.groovy"))
   }
 
-  testImplementation("org.gebish:geb-core:3.3")
-  testImplementation("org.gebish:geb-spock:3.3")
+  testImplementation("org.gebish:geb-core:3.4")
+  testImplementation("org.gebish:geb-spock:3.4")
   testImplementation("org.seleniumhq.selenium:selenium-support:3.141.59")
   testImplementation("org.seleniumhq.selenium:selenium-chrome-driver:3.141.59")
   testImplementation("org.seleniumhq.selenium:selenium-firefox-driver:3.141.59")
@@ -155,7 +155,7 @@ dependencies {
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.26.3")
   testImplementation("com.github.tomjankes:wiremock-groovy:0.2.0")
   testImplementation("org.slf4j:slf4j-api:1.7.30")
-  testImplementation("com.auth0:java-jwt:3.10.1")
+  testImplementation("com.auth0:java-jwt:3.10.2")
 
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.16.2")
   testImplementation("com.nhaarman:mockito-kotlin-kt1.1:1.6.0")

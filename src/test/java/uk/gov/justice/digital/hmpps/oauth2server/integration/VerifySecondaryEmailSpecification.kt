@@ -103,16 +103,9 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
     @FindBy(css = "a[role='button']")
     private lateinit var continueButton: FluentWebElement
 
-    @FindBy(css = "#logout")
-    private lateinit var logOut: FluentWebElement
-
     fun continueProcess() {
       assertThat(continueButton.text()).isEqualTo("Continue")
       continueButton.click()
-    }
-
-    fun logOut() {
-      logOut.click()
     }
 
     fun getVerifyLink(): String = el("#verifyLink").attribute("href")

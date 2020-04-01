@@ -1,7 +1,14 @@
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
-import com.nhaarman.mockito_kotlin.*
-import org.assertj.core.api.Assertions.*
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.never
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.entry
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -10,6 +17,9 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.MOBILE_PHONE
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.SECONDARY_EMAIL
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
@@ -182,6 +192,82 @@ class MfaServiceTest {
   }
 
   @Test
+  fun `createTokenAndSendMfaCode by secondary Email check secondary email params`() {
+    val user = User.builder()
+        .username("first")
+        .email("bob@digital.justice.gov.uk")
+        .verified(false)
+        .contacts(setOf(Contact(MOBILE_PHONE, "07700900321", false), (Contact(SECONDARY_EMAIL, "secondaryEmail", true))))
+        .mfaPreference(MfaPreferenceType.SECONDARY_EMAIL)
+        .build()
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
+    whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+
+    service.createTokenAndSendMfaCode("user")
+
+    verify(notificationClientApi).sendEmail("emailTemplate", "secondaryEmail", mapOf("firstName" to "first", "code" to "somecode"), null)
+  }
+
+  @Test
+  fun `createTokenAndSendMfaCode MfaPreference email unverified code sent to text`() {
+    val user = User.builder()
+        .username("first")
+        .email("bob@digital.justice.gov.uk")
+        .verified(false)
+        .contacts(setOf(Contact(MOBILE_PHONE, "07700900321", true), (Contact(SECONDARY_EMAIL, "secondaryEmail", true))))
+        .mfaPreference(MfaPreferenceType.EMAIL)
+        .build()
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
+    whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+
+    service.createTokenAndSendMfaCode("user")
+    verify(notificationClientApi).sendSms("textTemplate", "07700900321", mapOf("mfaCode" to "somecode"), null, null)
+//    verify(notificationClientApi).sendEmail("emailTemplate", "secondaryEmail", mapOf("firstName" to "first", "code" to "somecode"), null)
+  }
+
+  @Test
+  fun `createTokenAndSendMfaCode MfaPreference text unverified code sent to email`() {
+    val user = User.builder()
+        .username("first")
+        .email("bob@digital.justice.gov.uk")
+        .verified(true)
+        .contacts(setOf(Contact(MOBILE_PHONE, "07700900321", false), (Contact(SECONDARY_EMAIL, "secondaryEmail", true))))
+        .mfaPreference(MfaPreferenceType.TEXT)
+        .build()
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
+    whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+
+    service.createTokenAndSendMfaCode("user")
+
+    verify(notificationClientApi).sendEmail("emailTemplate", "bob@digital.justice.gov.uk", mapOf("firstName" to "first", "code" to "somecode"), null)
+  }
+
+  @Test
+  fun `createTokenAndSendMfaCode MfaPreference secondary email unverified code sent to email`() {
+    val user = User.builder()
+        .username("first")
+        .email("bob@digital.justice.gov.uk")
+        .verified(true)
+        .contacts(setOf(Contact(MOBILE_PHONE, "07700900321", true), (Contact(SECONDARY_EMAIL, "secondaryEmail", false))))
+        .mfaPreference(MfaPreferenceType.SECONDARY_EMAIL)
+        .build()
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
+    whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+
+    service.createTokenAndSendMfaCode("user")
+
+    verify(notificationClientApi).sendEmail("emailTemplate", "bob@digital.justice.gov.uk", mapOf("firstName" to "first", "code" to "somecode"), null)
+  }
+
+  @Test
   fun `createTokenAndSendMfaCode no valid preference`() {
     val user = User.builder().username("bob").build()
     whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
@@ -204,7 +290,7 @@ class MfaServiceTest {
 
   @Test
   fun `resendMfaCode check code`() {
-    val user = User.of("user")
+    val user = User.builder().username("user").email("email").build()
     val userToken = user.createToken(TokenType.MFA)
     val userCode = user.createToken(TokenType.MFA_CODE)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
@@ -222,6 +308,19 @@ class MfaServiceTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
 
     service.resendMfaCode("sometoken", MfaPreferenceType.EMAIL)
+
+    verify(notificationClientApi).sendEmail("emailTemplate", "email", mapOf("firstName" to "user", "code" to userCode.token), null)
+  }
+
+  @Test
+  fun `resendMfaCode check secondary email`() {
+    val user = User.builder().username("user").contacts(setOf(Contact(SECONDARY_EMAIL, "email", true))).build()
+    val userToken = user.createToken(TokenType.MFA)
+    val userCode = user.createToken(TokenType.MFA_CODE)
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+
+    service.resendMfaCode("sometoken", MfaPreferenceType.SECONDARY_EMAIL)
 
     verify(notificationClientApi).sendEmail("emailTemplate", "email", mapOf("firstName" to "user", "code" to userCode.token), null)
   }
@@ -257,6 +356,15 @@ class MfaServiceTest {
     verify(userService).findUser("user")
   }
 
+  @Test
+  fun `Update User Mfa Preference to secondary email`() {
+    val user = User.builder().username("user").mfaPreference(MfaPreferenceType.TEXT).build()
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(user))
+    service.updateUserMfaPreference(MfaPreferenceType.SECONDARY_EMAIL, "user")
+    assertThat(user.mfaPreference).isEqualTo(MfaPreferenceType.SECONDARY_EMAIL)
+    verify(userService).findUser("user")
+  }
+
 
   @Test
   fun `buildModelAndViewWithMfaResendOptions check view`() {
@@ -273,7 +381,24 @@ class MfaServiceTest {
   }
 
   @Test
-  fun `buildModelAndViewWithMfaResendOptions verified mobile and email check model`() {
+  fun `buildModelAndViewWithMfaResendOptions verified mobile, verified email verified secondary email - check model`() {
+    val user = User.builder()
+        .email("bob@digital.justice.gov.uk")
+        .contacts(setOf(Contact(MOBILE_PHONE, "07700900321", true), (Contact(SECONDARY_EMAIL, "john@smith.com", true))))
+        .verified(true)
+        .build()
+    whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("token", MfaPreferenceType.EMAIL)
+    assertThat(modelAndView.model).containsExactly(
+        entry("token", "token"),
+        entry("mfaPreference", MfaPreferenceType.EMAIL),
+        entry("email", "b******@******.gov.uk"),
+        entry("mobile", "*******0321"),
+        entry("secondaryemail", "jo******@******ith.com"))
+  }
+
+  @Test
+  fun `buildModelAndViewWithMfaResendOptions verified mobile, verified email no verified secondary email - check model`() {
     val user = User.builder().mobile("07700900321").mobileVerified(true).email("bob@digital.justice.gov.uk").verified(true).build()
     whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
     val modelAndView = service.buildModelAndViewWithMfaResendOptions("token", MfaPreferenceType.EMAIL)
@@ -285,7 +410,7 @@ class MfaServiceTest {
   }
 
   @Test
-  fun `buildModelAndViewWithMfaResendOptions verified mobile and not verfied email check model`() {
+  fun `buildModelAndViewWithMfaResendOptions verified mobile, no verified email no verified secondary email - check model`() {
     val user = User.builder().mobile("07700900321").mobileVerified(true).email("bob@digital.justice.gov.uk").verified(false).build()
     whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
     val modelAndView = service.buildModelAndViewWithMfaResendOptions("token", MfaPreferenceType.EMAIL)
@@ -296,7 +421,7 @@ class MfaServiceTest {
   }
 
   @Test
-  fun `buildModelAndViewWithMfaResendOptions not verified mobile and verfied email check model`() {
+  fun `buildModelAndViewWithMfaResendOptions no verified mobile, verified email no verified secondary email - check model`() {
     val user = User.builder().mobile("07700900321").mobileVerified(false).email("bob@digital.justice.gov.uk").verified(true).build()
     whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
     val modelAndView = service.buildModelAndViewWithMfaResendOptions("token", MfaPreferenceType.EMAIL)
@@ -304,6 +429,21 @@ class MfaServiceTest {
         entry("token", "token"),
         entry("mfaPreference", MfaPreferenceType.EMAIL),
         entry("email", "b******@******.gov.uk"))
+  }
+
+  @Test
+  fun `buildModelAndViewWithMfaResendOptions no verified mobile, no verified email verified secondary email - check model`() {
+    val user = User.builder()
+        .email("bob@digital.justice.gov.uk")
+        .verified(false)
+        .contacts(setOf(Contact(MOBILE_PHONE, "07700900321", false), (Contact(SECONDARY_EMAIL, "john@smith.com", true))))
+        .build()
+    whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("token", MfaPreferenceType.EMAIL)
+    assertThat(modelAndView.model).containsExactly(
+        entry("token", "token"),
+        entry("mfaPreference", MfaPreferenceType.EMAIL),
+        entry("secondaryemail", "jo******@******ith.com"))
   }
 
 
