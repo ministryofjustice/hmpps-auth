@@ -15,8 +15,8 @@ import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 
 @Service("nomisUserDetailsService")
-@Transactional(readOnly = true)
-open class NomisUserDetailsService(private val nomisUserService: NomisUserService) :
+@Transactional(readOnly = true, noRollbackFor = [UsernameNotFoundException::class])
+class NomisUserDetailsService(private val nomisUserService: NomisUserService) :
     UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
 
   @PersistenceContext(unitName = "nomis")
@@ -34,9 +34,9 @@ open class NomisUserDetailsService(private val nomisUserService: NomisUserServic
 
 @Component
 @Transactional(readOnly = true, noRollbackFor = [BadCredentialsException::class])
-open class NomisAuthenticationProvider(nomisUserDetailsService: NomisUserDetailsService,
-                                       userRetriesService: UserRetriesService,
-                                       mfaService: MfaService,
-                                       userService: UserService,
-                                       telemetryClient: TelemetryClient) :
+class NomisAuthenticationProvider(nomisUserDetailsService: NomisUserDetailsService,
+                                  userRetriesService: UserRetriesService,
+                                  mfaService: MfaService,
+                                  userService: UserService,
+                                  telemetryClient: TelemetryClient) :
     LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, mfaService, userService, telemetryClient)
