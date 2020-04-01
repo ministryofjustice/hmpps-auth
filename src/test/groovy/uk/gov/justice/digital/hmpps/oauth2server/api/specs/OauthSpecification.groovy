@@ -284,6 +284,23 @@ class OauthSpecification extends TestSpecification {
         accessToken.value != newAccessToken.value
     }
 
+    def "Refresh token can be obtained for delius user"() {
+
+        given: 'I create an access token'
+        def oauthRestTemplate = getOauthPasswordGrant("delius", "password", "elite2apiclient", "clientsecret")
+        def accessToken = oauthRestTemplate.getAccessToken()
+
+        when: 'I request a refresh token'
+        def newAccessToken = refresh(oauthRestTemplate)
+
+        then: 'refresh token is returned'
+        newAccessToken.refreshToken.value != null
+
+        and: 'access tokens are different'
+        accessToken.getRefreshToken().value != newAccessToken.getRefreshToken().value
+        accessToken.value != newAccessToken.value
+    }
+
     def "Password Credentials Login with Bad password credentials"() {
 
         given:
