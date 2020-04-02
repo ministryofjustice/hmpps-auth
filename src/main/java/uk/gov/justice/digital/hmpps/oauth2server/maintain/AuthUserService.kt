@@ -12,9 +12,13 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.*
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.builder
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
@@ -107,7 +111,7 @@ class AuthUserService(private val userRepository: UserRepository,
     val setPasswordLink = url + userToken.token
     val username = user.username
     val email = user.email
-    val parameters = mapOf("firstName" to user.firstName, "resetLink" to setPasswordLink, "supportLink" to supportLink)
+    val parameters = mapOf("firstName" to user.firstName, "fullName" to user.name, "resetLink" to setPasswordLink, "supportLink" to supportLink)
     // send the email
     try {
       log.info("Sending initial set password to notify for user {}", username)

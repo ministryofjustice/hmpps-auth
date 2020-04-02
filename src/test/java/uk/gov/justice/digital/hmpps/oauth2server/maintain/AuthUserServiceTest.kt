@@ -213,7 +213,7 @@ class AuthUserServiceTest {
   @Test
   fun createUser_callNotify() {
     val link = authUserService.createUser("userme", "email", "first", "last", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER)
-    verify(notificationClient).sendEmail("licences", "email", mapOf("resetLink" to link, "firstName" to "first", "supportLink" to "nomis_support_link"), null)
+    verify(notificationClient).sendEmail("licences", "email", mapOf("resetLink" to link, "firstName" to "first", "fullName" to "first last", "supportLink" to "nomis_support_link"), null)
   }
 
   @Test

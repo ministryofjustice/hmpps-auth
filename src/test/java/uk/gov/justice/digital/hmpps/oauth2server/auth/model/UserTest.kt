@@ -70,6 +70,15 @@ class UserTest {
   }
 
   @Nested
+  inner class fullName {
+    @Test
+    fun getName() {
+      val user = User.builder().person(Person("First", "Last")).build()
+      assertThat(user.name).isEqualTo("First Last")
+    }
+  }
+
+  @Nested
   inner class HasVerifiedMfaMethod {
     @Test
     fun `email and mobile null`() {
@@ -119,7 +128,6 @@ class UserTest {
       assertThat(user.hasVerifiedMfaMethod()).isTrue()
     }
   }
-
 
   @Nested
   inner class CalculateMfaFromPreference {
