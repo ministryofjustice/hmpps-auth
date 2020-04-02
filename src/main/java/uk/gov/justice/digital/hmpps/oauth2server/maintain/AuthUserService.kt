@@ -111,7 +111,7 @@ class AuthUserService(private val userRepository: UserRepository,
     val setPasswordLink = url + userToken.token
     val username = user.username
     val email = user.email
-    val parameters = mapOf("firstName" to user.firstName, "fullName" to user.name, "resetLink" to setPasswordLink, "supportLink" to supportLink)
+    val parameters = mapOf("firstName" to user.name, "fullName" to user.name, "resetLink" to setPasswordLink, "supportLink" to supportLink)
     // send the email
     try {
       log.info("Sending initial set password to notify for user {}", username)
