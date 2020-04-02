@@ -41,7 +41,7 @@
               By email
             </label>
             <span id="mfa-pref-email-item-hint" class="govuk-hint govuk-radios__hint">
-          You’ll receive a 6 digit number to <span data-qa="email" th:text="${email}">your email</span>
+          You will receive a 6 digit number to <span data-qa="email" th:text="${email}">your email</span>
         </span>
           </div>
           <div class="govuk-radios__item">
@@ -52,8 +52,13 @@
               By text message
             </label>
             <span id="mfa-pref-text-item-hint" class="govuk-hint govuk-radios__hint">
-         You’ll receive a 6 digit number to <span data-qa="text" th:text="${text}">your mobile</span> by text message
-        </span>
+              <span th:if="${text}">
+                You will receive a 6 digit number to <span data-qa="text" th:text="${text}">your mobile</span> by text message
+              </span>
+              <span th:unless="${text}">
+                You will need to add and verify a mobile number
+              </span>
+            </span>
           </div>
           <div class="govuk-radios__item">
             <input class="govuk-radios__input" id="mfa-pref-secondary-email" name="mfaPreference" type="radio"
@@ -64,8 +69,13 @@
               By secondary email
             </label>
             <span id="mfa-pref-secondary-email-item-hint" class="govuk-hint govuk-radios__hint">
-         You’ll receive a 6 digit number to <span data-qa="text" th:text="${secondaryemail}">your secondary email</span>
-        </span>
+              <span th:if="${secondaryemail}">
+                You will receive a 6 digit number to <span data-qa="text" th:text="${secondaryemail}">your secondary email</span>
+              </span>
+              <span th:unless="${secondaryemail}">
+                You will need to add and verify a secondary email
+              </span>
+            </span>
           </div>
         </div>
         <div class="govuk-form-group">
