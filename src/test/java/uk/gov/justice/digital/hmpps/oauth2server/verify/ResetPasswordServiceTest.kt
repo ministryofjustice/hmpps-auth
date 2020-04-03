@@ -62,7 +62,7 @@ class ResetPasswordServiceTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
     val optional = resetPasswordService.requestResetPassword("user", "url")
     verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), check {
-      assertThat(it).containsExactly(entry("firstName", "USER"))
+      assertThat(it).containsOnly(entry("firstName", "USER"), entry("fullName", "USER"))
     }, isNull())
     assertThat(optional).isEmpty
   }
@@ -76,7 +76,7 @@ class ResetPasswordServiceTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount)
     val optional = resetPasswordService.requestResetPassword("user", "url")
     verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), check {
-      assertThat(it).containsExactly(entry("firstName", "Bob"))
+      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"))
     }, isNull())
     assertThat(optional).isEmpty
   }
@@ -90,7 +90,7 @@ class ResetPasswordServiceTest {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val optionalLink = resetPasswordService.requestResetPassword("user", "url")
     verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), check {
-      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("resetLink", optionalLink.get()))
+      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("resetLink", optionalLink.get()))
     }, isNull())
     assertThat(optionalLink).isPresent
   }
@@ -104,7 +104,7 @@ class ResetPasswordServiceTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(accountOptional)
     val optional = resetPasswordService.requestResetPassword("user", "url")
     verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), check {
-      assertThat(it).containsExactly(entry("firstName", "Bob"))
+      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"))
     }, isNull())
     assertThat(optional).isEmpty
   }
@@ -118,7 +118,7 @@ class ResetPasswordServiceTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(accountOptional)
     val optionalLink = resetPasswordService.requestResetPassword("user", "url")
     verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), check {
-      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("resetLink", optionalLink.get()))
+      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("resetLink", optionalLink.get()))
     }, isNull())
     assertThat(optionalLink).isPresent
   }
@@ -135,12 +135,12 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_verifyToken() {
-    val user = User.builder().username("someuser").email("email").locked(true).build()
+    val user = User.builder().username("someuser").person(Person("Bob", "Smith")).email("email").locked(true).build()
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val optionalLink = resetPasswordService.requestResetPassword("user", "url")
     verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), check {
-      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("resetLink", optionalLink.get()))
+      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("resetLink", optionalLink.get()))
     }, isNull())
     assertThat(optionalLink).isPresent
   }
@@ -206,7 +206,7 @@ class ResetPasswordServiceTest {
     whenever(userRepository.findByEmail(any())).thenReturn(listOf(user, user))
     val optional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url")
     verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), check {
-      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("resetLink", optional.get()))
+      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("resetLink", optional.get()))
     }, isNull())
     assertThat(optional).isPresent
   }
@@ -232,7 +232,7 @@ class ResetPasswordServiceTest {
     whenever(userRepository.findByEmail(any())).thenReturn(listOf(user, user))
     val optional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url")
     verify(notificationClient).sendEmail(eq("resetUnavailableTemplate"), eq("email"), check {
-      assertThat(it).containsOnly(entry("firstName", "Bob"))
+      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"))
     }, isNull())
     assertThat(optional).isEmpty
   }
@@ -244,7 +244,7 @@ class ResetPasswordServiceTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val optionalLink = resetPasswordService.requestResetPassword("user@where", "url")
     verify(notificationClient).sendEmail(eq("resetTemplate"), eq("email"), check {
-      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("resetLink", optionalLink.get()))
+      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("resetLink", optionalLink.get()))
     }, isNull())
     assertThat(optionalLink).isPresent
   }
@@ -254,6 +254,7 @@ class ResetPasswordServiceTest {
       val staffUserAccount = NomisUserPersonDetails()
       val staff = Staff()
       staff.firstName = "bOb"
+      staff.lastName = "Smith"
       staff.status = "ACTIVE"
       staffUserAccount.staff = staff
       val detail = AccountDetail("user", "OPEN", "profile", null)
@@ -268,32 +269,31 @@ class ResetPasswordServiceTest {
     val staffUserAccountForBob = staffUserAccountForBob
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccountForBob))
     val user = User.of("user")
+    user.person = Person("First", "Last")
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     resetPasswordService.setPassword("bob", "pass")
     assertThat(user.tokens).isEmpty()
     verify(userRepository).save(user)
     verify(delegatingUserService).changePasswordWithUnlock(staffUserAccountForBob, "pass")
-    verify(notificationClient).sendEmail("reset-confirm", null, mapOf("firstName" to "user", "username" to "user"), null)
+    verify(notificationClient).sendEmail("reset-confirm", null, mapOf("firstName" to "First", "fullName" to "First Last", "username" to "user"), null)
   }
 
   @Test
   fun resetPassword_authUser() {
-    val user = User.of("user")
-    user.isEnabled = true
-    user.source = AuthSource.auth
+    val user = User.builder().username("user").person(Person("First", "Last")).enabled(true).source(AuthSource.auth).build()
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     resetPasswordService.setPassword("bob", "pass")
     assertThat(user.tokens).isEmpty()
     verify(userRepository).save(user)
     verify(delegatingUserService).changePasswordWithUnlock(any(), anyString())
-    verify(notificationClient).sendEmail("reset-confirm", null, mapOf("firstName" to "user", "username" to "user"), null)
+    verify(notificationClient).sendEmail("reset-confirm", null, mapOf("firstName" to "First", "fullName" to "First Last", "username" to "user"), null)
   }
 
   @Test
   fun resetPassword_deliusUser() {
-    val user = User.builder().username("user").enabled(true).source(AuthSource.delius).build()
+    val user = User.builder().username("user").person(Person("First", "Last")).enabled(true).source(AuthSource.delius).build()
     val userToken = user.createToken(UserToken.TokenType.RESET)
     val deliusUserPersonDetails = DeliusUserPersonDetails("user", "12345", "Delius", "Smith", "a@b.com", true, false, setOf())
     whenever(userService.findMasterUserPersonDetails("user")).thenReturn(Optional.of(deliusUserPersonDetails))
@@ -302,7 +302,7 @@ class ResetPasswordServiceTest {
     assertThat(user.tokens).isEmpty()
     verify(userRepository).save(user)
     verify(delegatingUserService).changePasswordWithUnlock(any(), anyString())
-    verify(notificationClient).sendEmail("reset-confirm", null, mapOf("firstName" to "user", "username" to "user"), null)
+    verify(notificationClient).sendEmail("reset-confirm", null, mapOf("firstName" to "First", "fullName" to "First Last", "username" to "user"), null)
   }
 
   @Test

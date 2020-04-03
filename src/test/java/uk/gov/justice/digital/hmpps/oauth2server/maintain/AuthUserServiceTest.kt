@@ -349,28 +349,28 @@ class AuthUserServiceTest {
         "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER,
         EmailType.PRIMARY)
     verify(notificationClient).sendEmail(anyString(), anyString(), any(), isNull())
-    verify(verifyEmailService, never()).requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))
+    verify(verifyEmailService, never()).requestVerification(anyString(), anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))
   }
 
   @Test
   fun amendUserEmail_verifiedEmail_requestsVerification() {
-    val userVerifiedEmail = User.builder().username("SOME_USER_NAME").verified(true).build()
+    val userVerifiedEmail = User.builder().username("SOME_USER_NAME").person(Person("first", "last")).verified(true).build()
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail))
-    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))).thenReturn("SOME_VERIFY_LINK")
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))).thenReturn("SOME_VERIFY_LINK")
     authUserService.amendUserEmail(
         "SOME_USER_NAME",
         "some_user_email@gov.uk",
         "SOME_HOST/initial-password?token=SOME_TOKEN",
         "ANY_ADMIN", GRANTED_AUTHORITY_SUPER_USER,
         EmailType.PRIMARY)
-    verify(verifyEmailService).requestVerification("SOME_USER_NAME", "some_user_email@gov.uk", "SOME_USER_NAME", "SOME_HOST/verify-email-confirm?token=SOME_TOKEN", EmailType.PRIMARY)
+    verify(verifyEmailService).requestVerification("SOME_USER_NAME", "some_user_email@gov.uk", "first", "first last", "SOME_HOST/verify-email-confirm?token=SOME_TOKEN", EmailType.PRIMARY)
     verify(notificationClient, never()).sendEmail(anyString(), anyString(), any(), anyString())
   }
 
 
   @Test
   fun amendUserEmail_verifiedEmail_savesUnverifiedUser() {
-    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))).thenReturn("SOME_VERIFY_LINK")
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))).thenReturn("SOME_VERIFY_LINK")
     val userVerifiedEmail = User.builder().username("SOME_USER_NAME").verified(true).build()
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail))
     authUserService.amendUserEmail(

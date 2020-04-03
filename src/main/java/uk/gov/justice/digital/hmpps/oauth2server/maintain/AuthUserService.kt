@@ -145,6 +145,7 @@ class AuthUserService(private val userRepository: UserRepository,
           usernameInput,
           emailAddressInput,
           user.firstName,
+          user.name,
           url.replace("initial-password", "verify-email-confirm"),
           emailType)
     }
