@@ -182,8 +182,9 @@ public class VerifyEmailController {
 
         final var userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow();
         final var firstName = userPersonDetails.getFirstName();
+        final var fullName = userPersonDetails.getName();
 
-        return verifyEmailService.requestVerification(username, emailInput, firstName, url, emailType);
+        return verifyEmailService.requestVerification(username, emailInput, firstName, fullName, url, emailType);
     }
 
     private ModelAndView createChangeOrVerifyEmailError(final String chosenEmail, final String reason, final String type, final EmailType emailType) {

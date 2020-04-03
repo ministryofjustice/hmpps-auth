@@ -98,7 +98,7 @@ class VerifyEmailControllerTest {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(User()))
-    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))).thenThrow(NotificationClientException("something went wrong"))
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))).thenThrow(NotificationClientException("something went wrong"))
     val modelAndView = verifyEmailController.verifyEmail("a@b.com", null, EmailType.PRIMARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView.model).containsExactly(entry("email", "a@b.com"), entry("error", "other"))
@@ -106,14 +106,14 @@ class VerifyEmailControllerTest {
 
   @Test
   fun verifyEmail_Success() {
-    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))).thenReturn("link")
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), anyString(), eq(EmailType.PRIMARY))).thenReturn("link")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
     val modelAndView = verifyEmailControllerSmokeTestEnabled.verifyEmail("other", email, EmailType.PRIMARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
     assertThat(modelAndView.model).containsExactly(entry("verifyLink", "link"), entry("email", email))
-    verify(verifyEmailService).requestVerification("user", email, "Bob", "http://some.url-confirm?token=", EmailType.PRIMARY)
+    verify(verifyEmailService).requestVerification("user", email, "Bob", "Bob Last", "http://some.url-confirm?token=", EmailType.PRIMARY)
   }
 
   @Test
@@ -153,7 +153,7 @@ class VerifyEmailControllerTest {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(User()))
-    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.SECONDARY))).thenThrow(NotificationClientException("something went wrong"))
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), anyString(), eq(EmailType.SECONDARY))).thenThrow(NotificationClientException("something went wrong"))
     val modelAndView = verifyEmailController.verifyEmail("a@b.com", null, EmailType.SECONDARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("redirect:/new-secondary-email")
     assertThat(modelAndView.model).containsExactly(entry("email", "a@b.com"), entry("error", "other"))
@@ -161,14 +161,14 @@ class VerifyEmailControllerTest {
 
   @Test
   fun verifySecondaryEmail_Success() {
-    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), eq(EmailType.SECONDARY))).thenReturn("link")
+    whenever(verifyEmailService.requestVerification(anyString(), anyString(), anyString(), anyString(), anyString(), eq(EmailType.SECONDARY))).thenReturn("link")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
     val modelAndView = verifyEmailControllerSmokeTestEnabled.verifyEmail("other", email, EmailType.SECONDARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailSent")
     assertThat(modelAndView.model).containsExactly(entry("verifyLink", "link"), entry("email", email))
-    verify(verifyEmailService).requestVerification("user", email, "Bob", "http://some.url-secondary-confirm?token=", EmailType.SECONDARY)
+    verify(verifyEmailService).requestVerification("user", email, "Bob", "Bob Last", "http://some.url-secondary-confirm?token=", EmailType.SECONDARY)
   }
 
   @Test
@@ -192,6 +192,7 @@ class VerifyEmailControllerTest {
     account.staff = staff
     account.username = "user"
     staff.firstName = "bob"
+    staff.lastName = "last"
     return account
   }
 

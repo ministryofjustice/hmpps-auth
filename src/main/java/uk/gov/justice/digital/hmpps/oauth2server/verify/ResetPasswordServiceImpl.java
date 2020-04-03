@@ -102,21 +102,22 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
             final var userOptional = userService.findMasterUserPersonDetails(user.getUsername());
             if (userOptional.isEmpty()) {
                 // shouldn't really happen, means that a nomis user exists in auth but not in nomis
-                return new TemplateAndParameters(resetUnavailableTemplateId, user.getUsername());
+                return new TemplateAndParameters(resetUnavailableTemplateId, user.getUsername(), user.getName());
             }
             userDetails = userOptional.get();
         }
         // only allow reset for active accounts that aren't locked
         // or are locked by getting password incorrect (in either c-nomis or auth)
         final var firstName = userDetails.getFirstName();
+        final var fullName = userDetails.getName();
         if (multipleMatchesAndCanBeReset || passwordAllowedToBeReset(user, userDetails)) {
             final var userToken = user.createToken(TokenType.RESET);
 
             final var selectOrConfirm = multipleMatchesAndCanBeReset ? "select" : "confirm";
             final var resetLink = String.format("%s-%s?token=%s", url, selectOrConfirm, userToken.getToken());
-            return new TemplateAndParameters(resetTemplateId, Map.of("firstName", firstName, "resetLink", resetLink));
+            return new TemplateAndParameters(resetTemplateId, Map.of("firstName", firstName, "fullName", fullName, "resetLink", resetLink));
         }
-        return new TemplateAndParameters(resetUnavailableTemplateId, firstName);
+        return new TemplateAndParameters(resetUnavailableTemplateId, firstName, fullName);
     }
 
     private void sendEmail(final String username, final TemplateAndParameters templateAndParameters, final String email) throws NotificationClientRuntimeException {
@@ -175,7 +176,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
         // then the reset token
         final var username = user.getUsername();
         final var email = user.getEmail();
-        final var parameters = Map.of("firstName", user.getFirstName(), "username", username);
+        final var parameters = Map.of("firstName", user.getFirstName(), "fullName", user.getName(), "username", username);
 
         // send the email
         try {
@@ -237,10 +238,11 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
         private final String template;
         private final Map<String, String> parameters;
 
-        TemplateAndParameters(final String template, final String firstName) {
+        TemplateAndParameters(final String template, final String firstName, final String fullName) {
             this.template = template;
-            this.parameters = Map.of("firstName", firstName);
+            this.parameters = Map.of("firstName", firstName, "fullName", fullName);
         }
+
 
         private String getResetLink() {
             return parameters.get("resetLink");

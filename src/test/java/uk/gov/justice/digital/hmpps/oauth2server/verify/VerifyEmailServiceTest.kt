@@ -79,7 +79,7 @@ class VerifyEmailServiceTest {
     val existingUserToken = user.createToken(TokenType.VERIFIED)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
-    verifyEmailService.requestVerification("user", "email@john.com", "firstname", "url", User.EmailType.PRIMARY)
+    verifyEmailService.requestVerification("user", "email@john.com", "firstname", "full name", "url", User.EmailType.PRIMARY)
     assertThat(user.tokens).hasSize(1).extracting<String> { it.token }.doesNotContain(existingUserToken.token)
   }
 
@@ -89,7 +89,7 @@ class VerifyEmailServiceTest {
     val existingUserToken = user.createToken(TokenType.SECONDARY)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
-    verifyEmailService.requestVerification("user", "email@john.com", "firstname", "url", User.EmailType.SECONDARY)
+    verifyEmailService.requestVerification("user", "email@john.com", "firstname", "full name", "url", User.EmailType.SECONDARY)
     assertThat(user.tokens).hasSize(1).extracting<String> { it.token }.doesNotContain(existingUserToken.token)
   }
 
@@ -98,7 +98,7 @@ class VerifyEmailServiceTest {
     val user = User.of("someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
-    val verification = verifyEmailService.requestVerification("user", "email@john.com", "firstname", "url", User.EmailType.PRIMARY)
+    val verification = verifyEmailService.requestVerification("user", "email@john.com", "full name", "firstname", "url", User.EmailType.PRIMARY)
     val value = user.tokens.stream().findFirst().orElseThrow()
     assertThat(verification).isEqualTo("url" + value.token)
   }
@@ -108,7 +108,7 @@ class VerifyEmailServiceTest {
     val user = User.of("someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
-    val verification = verifyEmailService.requestVerification("user", "email@john.com", "firstname", "url", User.EmailType.SECONDARY)
+    val verification = verifyEmailService.requestVerification("user", "email@john.com", "firstname", "full name", "url", User.EmailType.SECONDARY)
     val value = user.tokens.stream().findFirst().orElseThrow()
     assertThat(verification).isEqualTo("url" + value.token)
   }
@@ -118,7 +118,7 @@ class VerifyEmailServiceTest {
     val user = User.of("someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
-    verifyEmailService.requestVerification("user", "eMail@john.COM", "firstname", "url", User.EmailType.PRIMARY)
+    verifyEmailService.requestVerification("user", "eMail@john.COM", "firstname", "full name", "url", User.EmailType.PRIMARY)
     verify(userRepository).save(user)
     assertThat(user.email).isEqualTo("email@john.com")
     assertThat(user.isVerified).isFalse()
@@ -130,7 +130,7 @@ class VerifyEmailServiceTest {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
     whenever(notificationClient.sendEmail(anyString(), anyString(), anyMap<String, Any?>(), isNull())).thenThrow(NotificationClientException("message"))
-    assertThatThrownBy { verifyEmailService.requestVerification("user", "email@john.com", "firstname", "url", User.EmailType.PRIMARY) }.hasMessage("message")
+    assertThatThrownBy { verifyEmailService.requestVerification("user", "email@john.com", "firstname", "full name", "url", User.EmailType.PRIMARY) }.hasMessage("message")
   }
 
   @Test
@@ -138,7 +138,7 @@ class VerifyEmailServiceTest {
     val user = Optional.of(User.of("someuser"))
     whenever(userRepository.findByUsername(anyString())).thenReturn(user)
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
-    verifyEmailService.requestVerification("user", "some.u’ser@SOMEwhere.COM", "firstname", "url", User.EmailType.PRIMARY)
+    verifyEmailService.requestVerification("user", "some.u’ser@SOMEwhere.COM", "firstname", "full name", "url", User.EmailType.PRIMARY)
     verify(notificationClient).sendEmail(eq("templateId"), eq("some.u'ser@somewhere.com"), anyMap<String, Any?>(), isNull())
   }
 
