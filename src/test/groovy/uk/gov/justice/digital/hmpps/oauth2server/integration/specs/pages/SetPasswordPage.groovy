@@ -7,8 +7,8 @@ class SetPasswordPage extends Page {
     static url = '/auth/set-password'
 
     static at = {
-        title == 'HMPPS Digital Services - Set Password'
-        headingText == 'Enter a new password'
+        title == 'HMPPS Digital Services - Create a password'
+        headingText == 'Create a password'
     }
 
     static content = {
@@ -24,7 +24,7 @@ class SetPasswordPage extends Page {
         $('form').newPassword = newPassword
         $('form').confirmPassword = confirmNewPassword
 
-        assert setPasswordButton.value() == 'Save new password'
+        assert setPasswordButton.value() == 'Save password'
 
         setPasswordButton.click()
     }

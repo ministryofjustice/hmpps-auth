@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
-import geb.spock.GebReportingSpec
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import org.apache.commons.lang3.RandomStringUtils
