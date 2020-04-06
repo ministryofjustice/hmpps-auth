@@ -41,8 +41,13 @@
               By email
             </label>
             <span id="mfa-pref-email-item-hint" class="govuk-hint govuk-radios__hint">
-          You will receive a 6 digit number to <span data-qa="email" th:text="${email}">your email</span>
-        </span>
+              <span th:if="${email}">
+                You will receive a 6 digit number to <span data-qa="email" th:text="${email}">your email</span>
+              </span>
+              <span th:unless="${email}">
+                You will need to add and verify your work email
+              </span>
+            </span>
           </div>
           <div class="govuk-radios__item">
             <input class="govuk-radios__input" id="mfa-pref-text" name="mfaPreference" type="radio" value="TEXT"
