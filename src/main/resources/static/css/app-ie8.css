@@ -67,9 +67,13 @@
 }
 
 .auth-card__content p {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .auth-card__content p + p {
-  margin-top: 15px;
+    margin-top: 15px;
+}
+
+.incomplete {
+    background-color: #005EA5;
 }

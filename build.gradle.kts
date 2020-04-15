@@ -120,7 +120,7 @@ dependencies {
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1")
   implementation("uk.gov.service.notify:notifications-java-client:3.15.1-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:6.3.2")
+  implementation("org.flywaydb:flyway-core:6.3.3")
   implementation("com.zaxxer:HikariCP:3.4.2")
   implementation("org.apache.commons:commons-lang3:3.10")
   implementation("org.apache.commons:commons-text:1.8")
