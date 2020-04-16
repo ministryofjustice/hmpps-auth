@@ -1,91 +1,95 @@
 #header-container {
-  border-bottom-color: white;
+    border-bottom-color: white;
 }
 
 @media (min-width: 48.0625em) {
-  #header-logo {
-    width: 50%;
-  }
+    #header-logo {
+        width: 50%;
+    }
 
-  #header-content {
-    width: 50%;
-  }
+    #header-content {
+        width: 50%;
+    }
 
-  #navigation {
-    float: right;
-  }
+    #navigation {
+        float: right;
+    }
 }
 
 #cancel {
-  background-color: #f3f2f1;
-  color: #0b0c0c;
+    background-color: #f3f2f1;
+    color: #0b0c0c;
 }
 
 @media (min-width: 40.0625em) {
-  #cancel {
-    margin-left: 15px;
-  }
+    #cancel {
+        margin-left: 15px;
+    }
 }
 
 .show-password {
-  display: flex;
-  position: relative;
+    display: flex;
+    position: relative;
 }
 
 .show-password input {
-  padding-right: 50px;
+    padding-right: 50px;
 }
 
 .show-password button {
-  font-size: 16px;
-  background-color: #f3f2f1;
-  color: #0b0c0c;
-  padding: 3px;
-  margin-top: 7px;
-  margin-left: 10px;
-  width: auto;
-  position: absolute;
-  right: 5px;
-  box-shadow: none;
+    font-size: 16px;
+    background-color: #f3f2f1;
+    color: #0b0c0c;
+    padding: 3px;
+    margin-top: 7px;
+    margin-left: 10px;
+    width: auto;
+    position: absolute;
+    right: 5px;
+    box-shadow: none;
 }
 
 .show-password button:focus, .show-password button:hover {
-  background-color: #f3f2f1;
-  color: #0b0c0c;
+    background-color: #f3f2f1;
+    color: #0b0c0c;
 }
 
 /** copied from https://govuk-card-test--region.herokuapp.com/ **/
 .auth-card {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 @media (min-width: 40.0625em) {
-  .auth-card {
-    margin-bottom: 20px;
-  }
+    .auth-card {
+        margin-bottom: 20px;
+    }
 }
 
 .auth-card__content {
-  padding-top: 15px;
-  padding-bottom: 0;
+    padding-top: 15px;
+    padding-bottom: 0;
 }
 
 @media (min-width: 40.0625em) {
-  .auth-card__content {
-    padding-top: 20px;
-  }
+    .auth-card__content {
+        padding-top: 20px;
+    }
 }
 
 .auth-card__content p {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .auth-card__content p + p {
-  margin-top: 15px;
+    margin-top: 15px;
 }
 
 @media (min-width: 40.0625em) {
-  .auth-card__content p + p {
-    margin-top: 20px;
-  }
+    .auth-card__content p + p {
+        margin-top: 20px;
+    }
+}
+
+.incomplete {
+    background-color: #005EA5;
 }

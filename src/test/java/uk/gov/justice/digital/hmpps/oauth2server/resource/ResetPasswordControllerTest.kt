@@ -1,7 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.check
+import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.isNull
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -142,7 +148,7 @@ class ResetPasswordControllerTest {
       setupGetUserCallForProfile()
       setupCheckAndGetTokenValid()
       val modelAndView = controller.resetPasswordConfirm("token")
-      assertThat(modelAndView.viewName).isEqualTo("setPassword")
+      assertThat(modelAndView.viewName).isEqualTo("initialPassword")
     }
 
     @Test
@@ -265,7 +271,7 @@ class ResetPasswordControllerTest {
       setupGetToken()
       whenever(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenReturn("token")
       val modelAndView = controller.resetPasswordChosen("sometoken", "user")
-      assertThat(modelAndView.viewName).isEqualTo("setPassword")
+      assertThat(modelAndView.viewName).isEqualTo("initialPassword")
     }
 
     @Test

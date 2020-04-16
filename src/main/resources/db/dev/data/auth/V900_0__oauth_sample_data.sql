@@ -119,6 +119,10 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A65', 'AUTH_SECOND_EMAIL_CHANGE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A66', 'AUTH_MFA_PREF_NO_EMAIL_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'email', 'User', 0, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A67', 'AUTH_MFA_PREF_EMAIL_AND_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 1, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A68', 'AUTH_CREATE_USER_VALID', null, '2020-01-28 13:23:19.0000000', 'create_user@digital.justice.gov.uk', 'email', 'User', 0, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A69', 'AUTH_CREATE_USER_VALID2', null, '2020-01-28 13:23:19.0000000', 'create_user@digital.justice.gov.uk', 'email', 'User', 0, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A6A', 'AUTH_CREATE_USER_EXPIRED', null, '2020-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 0, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A6B', 'AUTH_CREATE_USER_INVALID', null, '2020-01-28 13:23:19.0000000', 'auth_invalid_token@digital.justice.gov.uk', 'email', 'User', 0, 1, 0, 'auth'),
         ('6c76f1fa-3393-11ea-978f-2e728ce88125', 'AUTH_VIDEO_LINK_COURT_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'vlb_court_user@digital.justice.gov.uk', 'VLB Court', 'User', 1, 1, 0, 'auth');
 
 INSERT INTO users (user_id, username, password, last_logged_in, first_name, last_name, verified, enabled, locked, source)
@@ -166,6 +170,9 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
 
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'LOCKED_USER';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset2', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_DELETEALL';
+INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset3', 'RESET', '3031-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_CREATE_USER_VALID';
+INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset4', 'RESET', '3031-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_CREATE_USER_VALID2';
+INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset5', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_CREATE_USER_EXPIRED';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'verified', 'VERIFIED', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_DELETEALL';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'mfa_expired', 'MFA', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_MFA_EXPIRED_USER';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'mfa_token', 'MFA', '3031-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_MFA_TOKEN_USER';

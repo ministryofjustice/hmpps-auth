@@ -17,13 +17,15 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import java.util.*
+import javax.servlet.http.HttpServletRequest
 
 class InitialPasswordControllerTest {
   private val resetPasswordService: ResetPasswordService = mock()
   private val tokenService: TokenService = mock()
   private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val controller = InitialPasswordController(resetPasswordService, tokenService, userService, telemetryClient, setOf("password1"))
+  private val request: HttpServletRequest = mock()
+  private val controller = InitialPasswordController(resetPasswordService, tokenService, userService, telemetryClient, setOf("password1"), true)
 
   @Nested
   inner class InitialPasswordSuccess {
@@ -40,15 +42,15 @@ class InitialPasswordControllerTest {
     fun initialPassword_checkView() {
       setupGetUserCallForProfile()
       setupCheckAndGetTokenValid()
-      val modelAndView = controller.initialPassword("token")
-      assertThat(modelAndView.viewName).isEqualTo("setPassword")
+      val modelAndView = controller.initialPassword("token", request)
+      assertThat(modelAndView.viewName).isEqualTo("initialPassword")
     }
 
     @Test
     fun initialPassword_checkModel() {
       setupCheckAndGetTokenValid()
       setupGetUserCallForProfile()
-      val modelAndView = controller.initialPassword("sometoken")
+      val modelAndView = controller.initialPassword("sometoken", request)
       assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken", "isAdmin" to false, "initial" to true, "username" to "someuser"))
     }
 
@@ -57,22 +59,55 @@ class InitialPasswordControllerTest {
       val user = setupGetUserCallForProfile()
       user.accountDetail.profile = "TAG_ADMIN"
       setupCheckAndGetTokenValid()
-      val modelAndView = controller.initialPassword("sometoken")
+      val modelAndView = controller.initialPassword("sometoken", request)
       assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken", "isAdmin" to true, "initial" to true, "username" to "someuser"))
     }
 
     @Test
-    fun initialPassword_FailureCheckView() {
+    fun initialPassword_FailureExpiredCheckView() {
+      whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
+      whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
+      val modelAndView = controller.initialPassword("token", request)
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/initial-password-expired")
+    }
+
+    @Test
+    fun initialPassword_FailureInvalidCheckView() {
+      whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
-      val modelAndView = controller.initialPassword("token")
-      assertThat(modelAndView.viewName).isEqualTo("resetPassword")
+      val modelAndView = controller.initialPassword("token", request)
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/reset-password")
     }
 
     @Test
     fun initialPassword_FailureCheckModel() {
+      whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
-      val modelAndView = controller.initialPassword("sometoken")
-      assertThat(modelAndView.model).containsOnly(entry("error", "expired"))
+      val modelAndView = controller.initialPassword("sometoken", request)
+      assertThat(modelAndView.model).containsOnly(entry("token", "sometoken"))
+    }
+  }
+
+  @Nested
+  inner class InitialPasswordLinkExpired {
+    @Test
+    fun initialPasswordLinkExpired_checkView() {
+      whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
+      whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
+      whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(User.builder().username("bob").build())
+      whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("newToken"))
+      val modelAndView = controller.initialPasswordLinkExpired("sometoken", request)
+      assertThat(modelAndView.viewName).isEqualTo("createPasswordExpired")
+    }
+
+    @Test
+    fun initialPasswordLinkExpired_checkModel() {
+      whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
+      whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
+      whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(User.builder().username("bob").build())
+      whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("newToken"))
+      val modelAndView = controller.initialPasswordLinkExpired("sometoken", request)
+      assertThat(modelAndView.model).containsOnly(entry("link", "newToken"))
     }
   }
 
