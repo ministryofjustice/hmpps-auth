@@ -4,7 +4,7 @@ import geb.Page
 
 class SetPasswordPage extends Page {
 
-    static url = '/auth/initial-password'
+    static url = '/auth/set-password'
 
     static at = {
         title == 'HMPPS Digital Services - Create a password'

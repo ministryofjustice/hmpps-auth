@@ -76,7 +76,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("d", "@fewfewfew1", "@fewfewfew1", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "d", "isAdmin" to false, "error" to true, "errornew" to listOf("alphanumeric"), "username" to "someuser"))
   }
 
@@ -95,7 +95,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("d", "", "", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "d", "isAdmin" to false, "error" to true, "errornew" to listOf("newmissing"), "errorconfirm" to listOf("confirmmissing"), "username" to "someuser"))
   }
 
@@ -104,7 +104,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("d", "a", "", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "d", "isAdmin" to false, "error" to true, "errorconfirm" to listOf("confirmmissing"), "username" to "someuser"))
   }
 
@@ -113,7 +113,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("d", "qwerqw12", "qwerqw12", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "d", "isAdmin" to false, "error" to true, "errornew" to listOf("length9"), "username" to "someuser"))
   }
 
@@ -122,7 +122,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile("TAG_ADMIN")
     val modelAndView = controller.setPassword("d", "qwerqwerqwe12", "qwerqwerqwe12", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "d", "isAdmin" to true, "error" to true, "errornew" to listOf("length14"), "username" to "someuser"))
   }
 
@@ -131,7 +131,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("d", "abcdefghij123456789012345678901", "abcdefghij123456789012345678901", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "d", "isAdmin" to false, "error" to true, "errornew" to listOf("long"), "username" to "someuser"))
   }
 
@@ -140,7 +140,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("token", "passWORD1", "passWORD1", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "token", "isAdmin" to false, "error" to true, "errornew" to listOf("blacklist"), "username" to "someuser"))
   }
 
@@ -149,7 +149,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("token", "someuser12", "someuser12", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "token", "isAdmin" to false, "error" to true, "errornew" to listOf("username"), "username" to "someuser"))
   }
 
@@ -158,7 +158,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("d", "as1as1as1", "as1as1as1", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "d", "isAdmin" to false, "error" to true, "errornew" to listOf("four"), "username" to "someuser"))
   }
 
@@ -167,7 +167,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("daaa", "asdasdasdb", "asdasdasdb", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "daaa", "isAdmin" to false, "error" to true, "errornew" to listOf("nodigits"), "username" to "someuser"))
   }
 
@@ -176,7 +176,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("d", "1231231234", "1231231234", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "d", "isAdmin" to false, "error" to true, "errornew" to listOf("alldigits"), "username" to "someuser"))
   }
 
@@ -185,7 +185,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("user", "password", "new", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "user", "isAdmin" to false, "error" to true, "errorconfirm" to listOf("mismatch"), "errornew" to listOf("nodigits", "length9"), "username" to "someuser"))
   }
 
@@ -194,7 +194,7 @@ class AbstractPasswordControllerTest {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("user", "password2", "new", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "user", "isAdmin" to false, "error" to true, "errorconfirm" to listOf("mismatch"), "username" to "someuser"))
   }
 
@@ -204,7 +204,7 @@ class AbstractPasswordControllerTest {
     setupGetUserCallForProfile(null)
     doThrow(PasswordValidationFailureException()).whenever(resetPasswordService).setPassword(anyString(), anyString())
     val modelAndView = controller.setPassword("user", "password2", "password2", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "user", "isAdmin" to false, "error" to true, "errornew" to "validation", "username" to "someuser"))
   }
 
@@ -223,7 +223,7 @@ class AbstractPasswordControllerTest {
     setupGetUserCallForProfile(null)
     doThrow(ReusedPasswordException()).whenever(resetPasswordService).setPassword(anyString(), anyString())
     val modelAndView = controller.setPassword("user", "password2", "password2", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "user", "isAdmin" to false, "error" to true, "errornew" to "reused", "username" to "someuser"))
   }
 
@@ -233,7 +233,7 @@ class AbstractPasswordControllerTest {
     setupGetUserCallForProfile(null)
     doThrow(LockedException("wrong")).whenever(resetPasswordService).setPassword(anyString(), anyString())
     val modelAndView = controller.setPassword("user", "password2", "password2", null)
-    assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+    assertThat(modelAndView.viewName).isEqualTo("setPassword")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "user", "isAdmin" to false, "error" to true, "errornew" to "state", "username" to "someuser"))
   }
 

@@ -148,7 +148,7 @@ class ResetPasswordControllerTest {
       setupGetUserCallForProfile()
       setupCheckAndGetTokenValid()
       val modelAndView = controller.resetPasswordConfirm("token")
-      assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+      assertThat(modelAndView.viewName).isEqualTo("setPassword")
     }
 
     @Test
@@ -271,7 +271,7 @@ class ResetPasswordControllerTest {
       setupGetToken()
       whenever(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenReturn("token")
       val modelAndView = controller.resetPasswordChosen("sometoken", "user")
-      assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+      assertThat(modelAndView.viewName).isEqualTo("setPassword")
     }
 
     @Test

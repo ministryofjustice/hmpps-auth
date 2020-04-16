@@ -43,7 +43,7 @@ class InitialPasswordControllerTest {
       setupGetUserCallForProfile()
       setupCheckAndGetTokenValid()
       val modelAndView = controller.initialPassword("token", request)
-      assertThat(modelAndView.viewName).isEqualTo("initialPassword")
+      assertThat(modelAndView.viewName).isEqualTo("setPassword")
     }
 
     @Test
