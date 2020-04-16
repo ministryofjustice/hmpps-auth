@@ -20,7 +20,8 @@ import javax.servlet.http.HttpServletRequest
 class InitialPasswordController(private val resetPasswordService: ResetPasswordService,
                                 private val tokenService: TokenService, userService: UserService,
                                 private val telemetryClient: TelemetryClient,
-                                @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?) :
+                                @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?,
+                                @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) :
     AbstractPasswordController(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "initialPassword", passwordBlacklist) {
 
 
@@ -49,7 +50,9 @@ class InitialPasswordController(private val resetPasswordService: ResetPasswordS
   fun initialPasswordLinkExpired(@RequestParam token: String, request: HttpServletRequest): ModelAndView {
     val user = tokenService.getUserFromToken(UserToken.TokenType.RESET, token)
     val newToken = resetPasswordService.requestResetPassword(user.username, request.requestURL.toString())
-    return ModelAndView("createPasswordExpired", "link", newToken.get())
+    val modelAndView = ModelAndView("createPasswordExpired")
+    if (smokeTestEnabled) modelAndView.addObject("link", newToken.get())
+    return modelAndView
   }
 }
 

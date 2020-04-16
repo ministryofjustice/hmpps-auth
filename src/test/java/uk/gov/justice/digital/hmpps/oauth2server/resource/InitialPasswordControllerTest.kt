@@ -25,7 +25,7 @@ class InitialPasswordControllerTest {
   private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val request: HttpServletRequest = mock()
-  private val controller = InitialPasswordController(resetPasswordService, tokenService, userService, telemetryClient, setOf("password1"))
+  private val controller = InitialPasswordController(resetPasswordService, tokenService, userService, telemetryClient, setOf("password1"), true)
 
   @Nested
   inner class InitialPasswordSuccess {
