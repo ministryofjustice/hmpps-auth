@@ -22,7 +22,7 @@ class InitialPasswordController(private val resetPasswordService: ResetPasswordS
                                 private val telemetryClient: TelemetryClient,
                                 @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?,
                                 @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) :
-    AbstractPasswordController(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "initialPassword", passwordBlacklist) {
+    AbstractPasswordController(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "setPassword", passwordBlacklist) {
 
 
   @GetMapping("/initial-password-success")
@@ -41,7 +41,7 @@ class InitialPasswordController(private val resetPasswordService: ResetPasswordS
       }
     }
         .orElseGet {
-          createModelWithTokenUsernameAndIsAdmin(UserToken.TokenType.RESET, token, "initialPassword")
+          createModelWithTokenUsernameAndIsAdmin(UserToken.TokenType.RESET, token, "setPassword")
               .addObject("initial", true)
         }
   }
