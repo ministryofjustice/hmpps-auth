@@ -1,7 +1,12 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.check
+import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
 import org.junit.jupiter.api.Nested
@@ -51,8 +56,9 @@ class MfaControllerTest {
       val user = User.builder().mfaPreference(MfaPreferenceType.EMAIL).build()
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
       whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("token", TokenType.MFA, null, user)))
+      whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.EMAIL))).thenReturn("auth******@******.gov.uk")
       val modelAndView = controller.mfaChallengeRequest("some token", MfaPreferenceType.EMAIL)
-      assertThat(modelAndView.model).containsOnly(entry("mfaPreference", MfaPreferenceType.EMAIL), entry("token", "some token"))
+      assertThat(modelAndView.model).containsOnly(entry("mfaPreference", MfaPreferenceType.EMAIL), entry("codeDestination", "auth******@******.gov.uk"), entry("token", "some token"))
     }
 
     @Test
@@ -60,8 +66,9 @@ class MfaControllerTest {
       val user = User.builder().mfaPreference(MfaPreferenceType.TEXT).build()
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
       whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(UserToken("token", TokenType.MFA, null, user)))
+      whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.TEXT))).thenReturn("*******0321")
       val modelAndView = controller.mfaChallengeRequest("some token", MfaPreferenceType.TEXT)
-      assertThat(modelAndView.model).containsOnly(entry("mfaPreference", MfaPreferenceType.TEXT), entry("token", "some token"))
+      assertThat(modelAndView.model).containsOnly(entry("mfaPreference", MfaPreferenceType.TEXT), entry("codeDestination", "*******0321"), entry("token", "some token"))
     }
 
     @Test

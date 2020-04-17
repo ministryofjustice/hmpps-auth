@@ -40,8 +40,10 @@ class MfaController(private val jwtAuthenticationSuccessHandler: JwtAuthenticati
 
     return optionalError.map { ModelAndView("redirect:/login?error=mfa${it}") }
         .orElseGet {
+          val codeDestination = mfaService.getCodeDestination(token, mfaPreference)
           ModelAndView("mfaChallenge", "token", token)
               .addObject("mfaPreference", mfaPreference)
+              .addObject("codeDestination", codeDestination)
         }
   }
 

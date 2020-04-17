@@ -145,6 +145,22 @@ class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelis
   private fun textCode(user: User, code: String) {
     notificationClient.sendSms(mfaTextTemplateId, user.mobile, mapOf("mfaCode" to code), null, null)
   }
+
+  fun getCodeDestination(token: String, mfaPreference: MfaPreferenceType): String {
+    val userToken = tokenService.getToken(TokenType.MFA, token).orElseThrow()
+
+    return when (mfaPreference) {
+      MfaPreferenceType.EMAIL -> {
+        userToken.user.maskedEmail
+      }
+      MfaPreferenceType.TEXT -> {
+        userToken.user.maskedMobile
+      }
+      MfaPreferenceType.SECONDARY_EMAIL -> {
+        userToken.user.maskedSecondaryEmail
+      }
+    }
+  }
 }
 
 class MfaFlowException(val error: String) : RuntimeException(error)
