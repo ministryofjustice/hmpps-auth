@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpHeaders
 import org.springframework.security.oauth2.client.OAuth2RestTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -44,11 +45,13 @@ abstract class IntegrationTest {
     (deliusApiRestTemplate.resource as DeliusClientCredentials).accessTokenUri = "http://localhost:${localServerPort}/auth/oauth/token"
   }
 
-
   internal fun setAuthorisation(user: String, roles: List<String> = listOf()): (org.springframework.http.HttpHeaders) -> Unit {
     val token = createJwt(user, roles)
-    return { it.set(org.springframework.http.HttpHeaders.AUTHORIZATION, "Bearer $token") }
+    return { it.set(HttpHeaders.AUTHORIZATION, "Bearer $token") }
   }
+
+  internal fun setBasicAuthorisation(token: String): (HttpHeaders) -> Unit =
+      { it.set(HttpHeaders.AUTHORIZATION, "Basic $token") }
 
   private fun createJwt(user: String, roles: List<String> = listOf()) =
       jwtAuthHelper.createJwt(

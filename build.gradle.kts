@@ -10,9 +10,9 @@ import java.time.format.DateTimeFormatter.ISO_DATE
 plugins {
   id("java")
   id("groovy")
-  kotlin("jvm") version "1.3.71"
-  kotlin("plugin.spring") version "1.3.71"
-  kotlin("plugin.jpa") version "1.3.71"
+  kotlin("jvm") version "1.3.72"
+  kotlin("plugin.spring") version "1.3.72"
+  kotlin("plugin.jpa") version "1.3.72"
   id("org.springframework.boot") version "2.2.6.RELEASE"
   id("io.spring.dependency-management") version "1.0.9.RELEASE"
   id("org.owasp.dependencycheck") version "5.3.2.1"
@@ -95,7 +95,7 @@ dependencies {
   implementation("org.springframework.security.oauth:spring-security-oauth2:2.4.0.RELEASE")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
-  implementation("com.nimbusds:nimbus-jose-jwt:8.11")
+  implementation("com.nimbusds:nimbus-jose-jwt:8.14.1")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.hibernate:hibernate-core")
@@ -126,7 +126,7 @@ dependencies {
   implementation("org.apache.commons:commons-text:1.8")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.1.jre11")
   implementation("com.github.timpeeters:spring-boot-graceful-shutdown:2.2.1")
-  implementation("com.google.guava:guava:28.2-jre")
+  implementation("com.google.guava:guava:29.0-jre")
 
   runtimeOnly("com.h2database:h2:1.4.200")
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
@@ -139,7 +139,7 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 
-  testImplementation("org.codehaus.groovy:groovy-all:3.0.2")
+  testImplementation("org.codehaus.groovy:groovy-all:3.0.3")
   testImplementation("org.spockframework:spock-spring:1.3-groovy-2.5")
   testImplementation("org.spockframework:spock-core:1.3-groovy-2.5") {
     exclude(mapOf("group" to "org.codehaus.groovy"))
@@ -157,7 +157,7 @@ dependencies {
   testImplementation("org.slf4j:slf4j-api:1.7.30")
   testImplementation("com.auth0:java-jwt:3.10.2")
 
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.16.2")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.17.0")
   testImplementation("com.nhaarman:mockito-kotlin-kt1.1:1.6.0")
   testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.3.1")
   testImplementation("org.fluentlenium:fluentlenium-assertj:4.3.1")

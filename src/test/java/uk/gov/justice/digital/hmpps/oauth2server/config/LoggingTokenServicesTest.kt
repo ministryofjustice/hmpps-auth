@@ -3,7 +3,12 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.isNull
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.never
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -67,8 +72,8 @@ internal class LoggingTokenServicesTest {
 
   companion object {
     private val OAUTH_2_REQUEST = OAuth2Request(emptyMap(), "client", emptySet(), true, emptySet(), emptySet(), "redirect", null, null)
-    private val USER_DETAILS = UserDetailsImpl("authenticateduser", "name", emptySet(), null, null)
+    private val USER_DETAILS = UserDetailsImpl("authenticateduser", "name", emptySet(), "none", "userid")
     private val OAUTH_2_SCOPE_REQUEST = OAuth2Request(emptyMap(), "community-api-client", listOf(GrantedAuthority { "ROLE_COMMUNITY" }), true, setOf("proxy-user"), emptySet(), "redirect", null, null)
-    private val UNCHECKED_USER_DETAILS = UserDetailsImpl("notcheckeduser", null, emptySet(), "none", null)
+    private val UNCHECKED_USER_DETAILS = UserDetailsImpl("notcheckeduser", "name", emptySet(), "none", "userid")
   }
 }

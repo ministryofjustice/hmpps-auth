@@ -1,50 +1,25 @@
-package uk.gov.justice.digital.hmpps.oauth2server.security;
+package uk.gov.justice.digital.hmpps.oauth2server.security
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.userdetails.User
 
-import java.util.Collection;
+class UserDetailsImpl(username: String, private val name: String, authorities: Collection<GrantedAuthority>,
+                      private val authSource: String, private val userId: String) :
+    User(username, "", authorities), UserPersonDetails {
+  override fun getName(): String = name
+  override fun getFirstName(): String = name
+  override fun getAuthSource(): String = authSource
+  override fun getUserId(): String = userId
 
-@SuppressWarnings("serial")
-@EqualsAndHashCode(callSuper = true)
-@Data
-public class UserDetailsImpl extends User implements UserPersonDetails {
+  override fun isAdmin(): Boolean = false
+
+  override fun toUser(): uk.gov.justice.digital.hmpps.oauth2server.auth.model.User {
+    throw IllegalStateException("Can't be converted into user")
+  }
+
+  companion object {
     // This class is serialized to the database (oauth_code table) during /auth/oauth/authorize and then read back
     // during /auth/oauth/token.  Therefore implemented serial version UID, although breaking changes should increment.
-    private static final long serialVersionUID = 1L;
-
-    private final String name;
-    private final String firstName;
-    private final String authSource;
-    private final String userId;
-
-    UserDetailsImpl(final String username, final String name, final String password,
-                    final boolean enabled, final boolean accountNonExpired, final boolean credentialsNonExpired,
-                    final boolean accountNonLocked, final Collection<? extends GrantedAuthority> authorities, final String authSource, final String userId) {
-        super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
-        this.name = name;
-        this.firstName = name;
-        this.authSource = authSource;
-        this.userId = userId;
-    }
-
-    public UserDetailsImpl(final String username, final String name, final Collection<GrantedAuthority> authorities, final String authSource, final String userId) {
-        super(username, "", authorities);
-        this.name = name;
-        this.firstName = name;
-        this.authSource = authSource;
-        this.userId = userId;
-    }
-
-    @Override
-    public boolean isAdmin() {
-        return false;
-    }
-
-    @Override
-    public uk.gov.justice.digital.hmpps.oauth2server.auth.model.User toUser() {
-        throw new IllegalStateException("Can't be converted into user");
-    }
+    private const val serialVersionUID = 1L
+  }
 }
