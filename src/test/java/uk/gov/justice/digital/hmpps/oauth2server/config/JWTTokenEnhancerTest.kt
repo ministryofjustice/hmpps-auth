@@ -38,7 +38,7 @@ internal class JWTTokenEnhancerTest {
   fun testEnhance_MissingAuthSource() {
     val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
     whenever(authentication.isClientOnly).thenReturn(false)
-    whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(UserDetailsImpl("user", null, emptyList(), null, "userID"), "pass"))
+    whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(UserDetailsImpl("user", "name", emptyList(), "none", "userID"), "pass"))
     JWTTokenEnhancer().enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
         entry("sub", "user"),

@@ -8,6 +8,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaRequiredException
 import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaUnavailableException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
@@ -23,19 +24,13 @@ class LockingAuthenticationProviderTest {
 
   @Test
   fun `authenticate nomisUser`() { // test that oracle passwords are authenticated okay
-    val password = "S:39BA463D55E5C8936A6798CC37B1347BA8BEC37B6407397EB769BC356F0C"
-    val userDetails = UserDetailsImpl("user", "name", password,
-        true, true, true, true, emptyList(), "none", null)
-    whenever(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails)
+    setupLoadUser("S:39BA463D55E5C8936A6798CC37B1347BA8BEC37B6407397EB769BC356F0C")
     lockingAuthenticationProvider.authenticate(UsernamePasswordAuthenticationToken("user", "somepass1"))
   }
 
   @Test
   fun `authenticate authUser`() {
-    val password = "{bcrypt}" + BCryptPasswordEncoder().encode("some_pass")
-    val userDetails = UserDetailsImpl("user", "name", password,
-        true, true, true, true, emptyList(), "none", null)
-    whenever(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails)
+    setupLoadUser("{bcrypt}${BCryptPasswordEncoder().encode("some_pass")}")
     lockingAuthenticationProvider.authenticate(UsernamePasswordAuthenticationToken("user", "some_pass"))
   }
 
@@ -44,10 +39,7 @@ class LockingAuthenticationProviderTest {
     whenever(mfaService.needsMfa(any())).thenReturn(true)
     whenever(userService.hasVerifiedMfaMethod(any())).thenReturn(true)
 
-    val password = "{bcrypt}" + BCryptPasswordEncoder().encode("some_pass")
-    val userDetails = UserDetailsImpl("user", "name", password,
-        true, true, true, true, emptyList(), "none", null)
-    whenever(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails)
+    setupLoadUser("{bcrypt}${BCryptPasswordEncoder().encode("some_pass")}")
 
     assertThatThrownBy {
       lockingAuthenticationProvider.authenticate(UsernamePasswordAuthenticationToken("user", "some_pass"))
@@ -58,13 +50,16 @@ class LockingAuthenticationProviderTest {
   fun `authenticate authUser MFA unavailable`() {
     whenever(mfaService.needsMfa(any())).thenReturn(true)
 
-    val password = "{bcrypt}" + BCryptPasswordEncoder().encode("some_pass")
-    val userDetails = UserDetailsImpl("user", "name", password,
-        true, true, true, true, emptyList(), "none", null)
-    whenever(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails)
+    setupLoadUser("{bcrypt}${BCryptPasswordEncoder().encode("some_pass")}")
 
     assertThatThrownBy {
       lockingAuthenticationProvider.authenticate(UsernamePasswordAuthenticationToken("user", "some_pass"))
     }.isInstanceOf(MfaUnavailableException::class.java)
+  }
+
+  private fun setupLoadUser(password: String) {
+    val userDetails = UserDetailsImpl("user", "name", emptyList(), "none", "user")
+    ReflectionTestUtils.setField(userDetails, "password", password)
+    whenever(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails)
   }
 }

@@ -1,12 +1,20 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.user
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.check
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
-import org.springframework.security.authentication.*
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.CredentialsExpiredException
+import org.springframework.security.authentication.LockedException
+import org.springframework.security.authentication.TestingAuthenticationToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ExistingPasswordController
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
@@ -20,7 +28,7 @@ class ExistingPasswordControllerTest {
   private val tokenService: TokenService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val controller = ExistingPasswordController(authenticationManager, tokenService, telemetryClient)
-  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, null), "pass")
+  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid"), "pass")
 
   @Nested
   inner class ExistingPasswordRequest {

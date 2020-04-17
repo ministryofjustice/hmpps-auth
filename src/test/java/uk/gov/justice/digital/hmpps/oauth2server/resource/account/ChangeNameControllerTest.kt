@@ -1,7 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.account
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.check
+import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
@@ -26,7 +30,7 @@ class ChangeNameControllerTest {
   private val request: HttpServletRequest = mock()
   private val response: HttpServletResponse = mock()
   private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler = mock()
-  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, null), "pass")
+  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid"), "pass")
 
   private val controller: ChangeNameController = ChangeNameController(authUserService, telemetryClient, jwtAuthenticationSuccessHandler, userService)
 
