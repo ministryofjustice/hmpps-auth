@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns="http://www.w3.org/1999/html" lang="en"
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
@@ -28,15 +28,19 @@
     </div>
   </div>
 
+  <h1 class="govuk-heading-l" th:if="${#strings.equals(mfaPreference, 'TEXT')}">Check your phone</h1>
 
-  <h1 class="govuk-heading-xl" th:if="${#strings.equals(mfaPreference, 'TEXT')}">Check your phone</h1>
-  <p class="govuk-body" th:if="${#strings.equals(mfaPreference, 'TEXT')}">We’ve sent you a text message with a security
-    code.</p>
+  <p class="govuk-body" th:if="${#strings.equals(mfaPreference, 'TEXT')}">We’ve sent you a text message to
+    <span id="mfa-pref-text-code-destination" th:text="${codeDestination}">.</span>
+    with a security code
+  </p>
 
-  <h1 class="govuk-heading-xl" th:unless="${#strings.equals(mfaPreference, 'TEXT')}">Check your email</h1>
+  <h1 class="govuk-heading-l" th:unless="${#strings.equals(mfaPreference, 'TEXT')}">Check your email</h1>
 
-  <p class="govuk-body" th:unless="${#strings.equals(mfaPreference, 'TEXT')}">We've sent you an email with a security
-    code.</p>
+  <p class="govuk-body" th:unless="${#strings.equals(mfaPreference, 'TEXT')}">We've sent you an email to
+    <span id="mfa-pref-email-code-destination" th:text="${codeDestination}">.</span>
+    with a security code
+  </p>
 
   <form th:action="@{/mfa-challenge}" method="POST" id="mfaForm" autocomplete="off" novalidate>
     <div class="govuk-form-group">

@@ -50,6 +50,7 @@ class MfaSpecification : AbstractAuthSpecification() {
   fun `Login as user with email MFA enabled`() {
     goTo(loginPage)
         .loginWithMfaEmail("AUTH_MFA_USER")
+        .assertEmailCodeDestination("mfa_******@******.gov.uk")
         .submitCode()
     homePage.isAt()
   }
@@ -58,6 +59,7 @@ class MfaSpecification : AbstractAuthSpecification() {
   fun `Login as user with text MFA enabled`() {
     goTo(loginPage)
         .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
+        .assertMobileCodeDestination("*******0321")
         .submitCode()
     homePage.isAt()
   }
@@ -66,14 +68,16 @@ class MfaSpecification : AbstractAuthSpecification() {
   fun `Login as user with second email MFA enabled`() {
     goTo(loginPage)
         .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL")
+        .assertEmailCodeDestination("jo******@******ith.com")
         .submitCode()
     homePage.isAt()
   }
 
   @Test
-  fun `Login as user with inverified text MFA enabled but email verified`() {
+  fun `Login as user with unverified text MFA enabled but email verified`() {
     goTo(loginPage)
         .loginWithMfaEmail("AUTH_MFA_PREF_TEXT_EMAIL")
+        .assertEmailCodeDestination("auth******@******.gov.uk")
         .submitCode()
     homePage.isAt()
   }
@@ -82,6 +86,7 @@ class MfaSpecification : AbstractAuthSpecification() {
   fun `Login as user with unverified secondary email MFA enabled but email verified`() {
     goTo(loginPage)
         .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL_EMAIL")
+        .assertEmailCodeDestination("auth_u******@******.gov.uk")
         .submitCode()
     homePage.isAt()
   }
@@ -490,6 +495,9 @@ class MfaEmailPage : AuthPage<MfaEmailPage>("HMPPS Digital Services - Email Veri
   @FindBy(linkText = "Not received an email?")
   private lateinit var resend: FluentWebElement
 
+  @FindBy(css = "#mfa-pref-email-code-destination")
+  private lateinit var emailCodeDestination: FluentWebElement
+
   fun getCode(): String {
     return el("[data-qa='mfa-code']").text()
   }
@@ -514,6 +522,11 @@ class MfaEmailPage : AuthPage<MfaEmailPage>("HMPPS Digital Services - Email Veri
     checkError("Security code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.")
     return this
   }
+
+  fun assertEmailCodeDestination(text: String): MfaEmailPage {
+    assertThat(emailCodeDestination.text()).isEqualTo(text)
+    return this
+  }
 }
 
 @PageUrl("/mfa-challenge")
@@ -526,6 +539,9 @@ class MfaTextPage : AuthPage<MfaTextPage>("HMPPS Digital Services - Text Message
 
   @FindBy(linkText = "Not received a text message?")
   private lateinit var resend: FluentWebElement
+
+  @FindBy(css = "#mfa-pref-text-code-destination")
+  private lateinit var mobileCodeDestination: FluentWebElement
 
   fun getCode(): String {
     return el("[data-qa='mfa-code']").text()
@@ -550,6 +566,11 @@ class MfaTextPage : AuthPage<MfaTextPage>("HMPPS Digital Services - Text Message
 
   fun resendCodeLink() {
     resend.click()
+  }
+
+  fun assertMobileCodeDestination(text: String): MfaTextPage {
+    assertThat(mobileCodeDestination.text()).isEqualTo(text)
+    return this
   }
 }
 
