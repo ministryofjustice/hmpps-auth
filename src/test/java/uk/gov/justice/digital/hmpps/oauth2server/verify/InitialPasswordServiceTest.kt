@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify
 
 import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockito_kotlin.check
 import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.isNull
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
@@ -41,11 +43,11 @@ class InitialPasswordServiceTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val service = Service("serviceCode", "service", "service", "ANY_ROLES", "ANY_URL", true, "supportLink")
     whenever(oauthServiceRepository.findById(anyString())).thenReturn(Optional.of(service))
-    val optionalLink = initialPasswordService.resendInitialPasswordLink("user", "url-expired")
-    verify(notificationClient).sendEmail(eq("resendTemplate"), eq("email"), com.nhaarman.mockito_kotlin.check {
-      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("resetLink", optionalLink.get()), entry("supportLink", "supportLink"))
+    val link = initialPasswordService.resendInitialPasswordLink("user", "url-expired")
+    verify(notificationClient).sendEmail(eq("resendTemplate"), eq("email"), check {
+      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("resetLink", link), entry("supportLink", "supportLink"))
     }, isNull())
-    assertThat(optionalLink).isPresent
+    assertThat(link).isNotEmpty()
   }
 
   @Test
@@ -55,14 +57,14 @@ class InitialPasswordServiceTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val service = Service("serviceCode", "service", "service", "ANY_ROLES", "ANY_URL", true, "supportLink")
     whenever(oauthServiceRepository.findById(anyString())).thenReturn(Optional.of(service))
-    val optionalLink = initialPasswordService.resendInitialPasswordLink("user", "url-expired")
+    initialPasswordService.resendInitialPasswordLink("user", "url-expired")
     verify(telemetryClient).trackEvent("reissueInitialPasswordLink", mapOf("username" to "someuser"), null)
   }
 
   @Test
   fun `resend Initial Password Link User not found`() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
-    org.assertj.core.api.Assertions.assertThatThrownBy { initialPasswordService.resendInitialPasswordLink("user", "url-expired") }.isInstanceOf(EntityNotFoundException::class.java)
+    assertThatThrownBy { initialPasswordService.resendInitialPasswordLink("user", "url-expired") }.isInstanceOf(EntityNotFoundException::class.java)
   }
 
   @Test
@@ -70,7 +72,7 @@ class InitialPasswordServiceTest {
     val user = User.builder().username("someuser").person(Person("Bob", "Smith")).email("email").source(AuthSource.nomis).build()
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
-    org.assertj.core.api.Assertions.assertThatThrownBy { initialPasswordService.resendInitialPasswordLink("user", "url-expired") }.isInstanceOf(EntityNotFoundException::class.java)
+    assertThatThrownBy { initialPasswordService.resendInitialPasswordLink("user", "url-expired") }.isInstanceOf(EntityNotFoundException::class.java)
   }
 
   private val staffUserAccountForBob: UserPersonDetails

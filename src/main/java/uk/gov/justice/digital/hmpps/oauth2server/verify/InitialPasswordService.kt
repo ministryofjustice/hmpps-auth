@@ -16,8 +16,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
-import java.util.*
-import java.util.function.Supplier
 import javax.persistence.EntityNotFoundException
 
 @Service
@@ -35,10 +33,10 @@ class InitialPasswordService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(NotificationClientRuntimeException::class)
-  fun resendInitialPasswordLink(username: String, url: String): Optional<String> {
+  @Throws(NotificationClientRuntimeException::class, EntityNotFoundException::class)
+  fun resendInitialPasswordLink(username: String, url: String): String {
     val user: User = userRepository.findByUsername(username.toUpperCase())
-        .orElseThrow(Supplier { EntityNotFoundException(String.format("User not found with username %s", username)) })
+        .orElseThrow { EntityNotFoundException(String.format("User not found with username %s", username)) }
     val userDetails: UserPersonDetails
     userDetails = if (user.isMaster) {
       user
@@ -56,7 +54,7 @@ class InitialPasswordService(
             "supportLink" to supportLink,
             "resetLink" to resetLink)
     sendEmail(user.username, initialPasswordResendTemplateId, parameters, user.email)
-    return Optional.ofNullable(resetLink)
+    return resetLink
   }
 
   private fun getInitialEmailSupportLink(groups: Collection<Group>): String {

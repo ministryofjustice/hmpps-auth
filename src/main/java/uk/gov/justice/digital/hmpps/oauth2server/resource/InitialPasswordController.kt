@@ -53,7 +53,7 @@ class InitialPasswordController(private val resetPasswordService: ResetPasswordS
     val user = tokenService.getUserFromToken(UserToken.TokenType.RESET, token)
     val newToken = initialPasswordService.resendInitialPasswordLink(user.username, request.requestURL.toString())
     val modelAndView = ModelAndView("createPasswordExpired")
-    if (smokeTestEnabled) modelAndView.addObject("link", newToken.get())
+    if (smokeTestEnabled) modelAndView.addObject("link", newToken)
     return modelAndView
   }
 }

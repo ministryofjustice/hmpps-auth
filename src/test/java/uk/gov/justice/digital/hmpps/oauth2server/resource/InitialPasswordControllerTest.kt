@@ -97,7 +97,7 @@ class InitialPasswordControllerTest {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
       whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(User.builder().username("bob").build())
-      whenever(initialPasswordService.resendInitialPasswordLink(anyString(), anyString())).thenReturn(Optional.of("newToken"))
+      whenever(initialPasswordService.resendInitialPasswordLink(anyString(), anyString())).thenReturn("newToken")
       val modelAndView = controller.initialPasswordLinkExpired("sometoken", request)
       assertThat(modelAndView.viewName).isEqualTo("createPasswordExpired")
     }
@@ -107,7 +107,7 @@ class InitialPasswordControllerTest {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
       whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(User.builder().username("bob").build())
-      whenever(initialPasswordService.resendInitialPasswordLink(anyString(), anyString())).thenReturn(Optional.of("newToken"))
+      whenever(initialPasswordService.resendInitialPasswordLink(anyString(), anyString())).thenReturn("newToken")
       val modelAndView = controller.initialPasswordLinkExpired("sometoken", request)
       assertThat(modelAndView.model).containsOnly(entry("link", "newToken"))
     }
