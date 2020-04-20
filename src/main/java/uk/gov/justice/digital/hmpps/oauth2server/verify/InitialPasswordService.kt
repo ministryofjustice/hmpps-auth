@@ -33,7 +33,6 @@ class InitialPasswordService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(NotificationClientRuntimeException::class, EntityNotFoundException::class)
   fun resendInitialPasswordLink(username: String, url: String): String {
     val user: User = userRepository.findByUsername(username.toUpperCase())
         .orElseThrow { EntityNotFoundException(String.format("User not found with username %s", username)) }
@@ -62,7 +61,6 @@ class InitialPasswordService(
     return oauthServiceRepository.findById(serviceCode).map { it.email }.orElseThrow()
   }
 
-  @Throws(NotificationClientRuntimeException::class)
   private fun sendEmail(username: String, template: String, parameters: Map<String, String>, email: String) {
     try {
       log.info("Sending reset password to notify for user {}", username)
