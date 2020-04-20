@@ -3,11 +3,13 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 import org.apache.commons.lang3.RandomStringUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationWithDeliusTest
+import uk.gov.justice.digital.hmpps.oauth2server.resource.DeliusExtension
+import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 
-
-class AuthUserIntTest : IntegrationWithDeliusTest() {
+@ExtendWith(DeliusExtension::class)
+class AuthUserIntTest : IntegrationTest() {
   data class NewUser(val email: String, val firstName: String, val lastName: String, val groupCode: String? = null)
 
   @Test

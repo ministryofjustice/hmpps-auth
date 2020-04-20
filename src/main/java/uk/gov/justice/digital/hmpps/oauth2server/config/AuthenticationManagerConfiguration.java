@@ -128,7 +128,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         web
                 .ignoring()
                 .antMatchers("/css/**", "/js/**", "/images/**", "/fonts/**", "/webjars/**", "/favicon.ico",
-                        "/health", "/health/ping", "/info", "/ping", "/error", "/terms", "/contact", "/change-password",
+                        "/health/**", "/info", "/ping", "/error", "/terms", "/contact", "/change-password",
                         "/verify-email-confirm", "/verify-email-secondary-confirm", "/forgot-password", "/reset-password",
                         "/set-password", "/reset-password-confirm", "/reset-password-success", "/reset-password-select",
                         "/initial-password", "/initial-password-success", "/initial-password-expired", "/mfa-challenge",
