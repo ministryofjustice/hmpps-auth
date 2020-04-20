@@ -12,9 +12,6 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
   private lateinit var initialPasswordPage: InitialPasswordPage
 
   @Page
-  private lateinit var resentLinkinitialPasswordPage: ResentLinkInitialPasswordPage
-
-  @Page
   private lateinit var newPasswordSavedPage: NewPasswordSavedPage
 
   @Page
@@ -69,7 +66,7 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
 
     goTo(newInitialPasswordLink)
 
-    resentLinkinitialPasswordPage
+    initialPasswordPage
         .isAtPage()
         .inputAndConfirmNewPassword("helloWorld2")
 
@@ -84,13 +81,6 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
   @Test
   fun `A user tries to use an invalid token to set their password is redirected to reset password page`() {
     goTo("/initial-password?token=invalid")
-
-    resetPasswordPage.isAtPage()
-  }
-
-  @Test
-  fun `A user tries to use a resent invalid token to set their password is redirected to reset password page`() {
-    goTo("/initial-password-expired-confirm?token=invalid")
 
     resetPasswordPage.isAtPage()
   }
@@ -109,26 +99,6 @@ class InitialPasswordPage : AuthPage<InitialPasswordPage>("HMPPS Digital Service
   private lateinit var savePassword: FluentWebElement
 
   fun inputAndConfirmNewPassword(password: String): InitialPasswordPage {
-    this.newPassword.fill().withText(password)
-    this.confirmPassword.fill().withText(password)
-    savePassword.submit()
-    return this
-  }
-}
-
-@PageUrl("/initial-password-expired-confirm")
-class ResentLinkInitialPasswordPage : AuthPage<ResentLinkInitialPasswordPage>("HMPPS Digital Services - Create a password", "Create a password") {
-
-  @FindBy(css = "input[id='new-password']")
-  private lateinit var newPassword: FluentWebElement
-
-  @FindBy(css = "input[id='confirm-password']")
-  private lateinit var confirmPassword: FluentWebElement
-
-  @FindBy(css = "input[type='submit']")
-  private lateinit var savePassword: FluentWebElement
-
-  fun inputAndConfirmNewPassword(password: String): ResentLinkInitialPasswordPage {
     this.newPassword.fill().withText(password)
     this.confirmPassword.fill().withText(password)
     savePassword.submit()

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.InitialPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import javax.servlet.http.HttpServletRequest
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServletRequest
 @Controller
 @Validated
 class InitialPasswordController(private val resetPasswordService: ResetPasswordService,
+                                private val initialPasswordService: InitialPasswordService,
                                 private val tokenService: TokenService, userService: UserService,
                                 private val telemetryClient: TelemetryClient,
                                 @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?,
@@ -28,7 +30,7 @@ class InitialPasswordController(private val resetPasswordService: ResetPasswordS
   @GetMapping("/initial-password-success")
   fun initialPasswordSuccess(): String = "initialPasswordSuccess"
 
-  @GetMapping("/initial-password", "/initial-password-expired-confirm")
+  @GetMapping("/initial-password")
   fun initialPassword(@RequestParam token: String?, request: HttpServletRequest): ModelAndView {
     val optionalErrorCode = tokenService.checkToken(UserToken.TokenType.RESET, token!!)
 
@@ -49,7 +51,7 @@ class InitialPasswordController(private val resetPasswordService: ResetPasswordS
   @GetMapping("/initial-password-expired")
   fun initialPasswordLinkExpired(@RequestParam token: String, request: HttpServletRequest): ModelAndView {
     val user = tokenService.getUserFromToken(UserToken.TokenType.RESET, token)
-    val newToken = resetPasswordService.requestResetPassword(user.username, request.requestURL.toString())
+    val newToken = initialPasswordService.resendInitialPasswordLink(user.username, request.requestURL.toString())
     val modelAndView = ModelAndView("createPasswordExpired")
     if (smokeTestEnabled) modelAndView.addObject("link", newToken.get())
     return modelAndView
