@@ -29,6 +29,16 @@ delius:
         - 'ROLE_LICENCE_RO'
         - 'ROLE_GLOBAL_SEARCH'
 
+tokenverification:
+  enabled: true
+  endpoint:
+    url: http://localhost:8100
+    timeout: 1s
+
+  client:
+    client-id: token-verification-auth-api-client
+    client-secret: token-verification-auth-api-client
+
 graceful:
   shutdown:
     enabled: false

@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
-@ExtendWith(DeliusExtension::class)
+@ExtendWith(DeliusExtension::class, TokenVerificationExtension::class)
 class HealthIntTest : IntegrationTest() {
   @Test
   fun `Health page reports ok`() {
@@ -16,6 +16,14 @@ class HealthIntTest : IntegrationTest() {
   @Test
   fun `Health reports delius info`() {
     webTestClient.get().uri("/auth/health/deliusApiHealth")
+        .exchange()
+        .expectBody().jsonPath("status").isEqualTo("UP")
+        .jsonPath("details.HttpStatus").isEqualTo("OK")
+  }
+
+  @Test
+  fun `Health reports token verification info`() {
+    webTestClient.get().uri("/auth/health/tokenVerificationApiHealth")
         .exchange()
         .expectBody().jsonPath("status").isEqualTo("UP")
         .jsonPath("details.HttpStatus").isEqualTo("OK")
