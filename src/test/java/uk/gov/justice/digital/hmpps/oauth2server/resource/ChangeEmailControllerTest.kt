@@ -24,7 +24,7 @@ class ChangeEmailControllerTest {
   private val userService: UserService = mock()
   private val tokenService: TokenService = mock()
   private val controller = ChangeEmailController(tokenService, userService)
-  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid"), "pass")
+  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"), "pass")
 
 
   @Nested

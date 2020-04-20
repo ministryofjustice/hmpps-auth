@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 class UserDetailsImplTest {
   @Test
   fun toUser() {
-    assertThatThrownBy { UserDetailsImpl("user", "name", listOf(), "none", "userId").toUser() }
+    assertThatThrownBy { UserDetailsImpl("user", "name", listOf(), "none", "userId", "jwtId").toUser() }
         .isInstanceOf(IllegalStateException::class.java)
   }
 }

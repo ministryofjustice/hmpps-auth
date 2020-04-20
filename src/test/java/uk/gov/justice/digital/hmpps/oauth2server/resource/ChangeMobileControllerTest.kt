@@ -24,7 +24,7 @@ class ChangeMobileControllerTest {
   private val telemetryClient: TelemetryClient = mock()
   private val controller = ChangeMobileController(userService, verifyMobileService, telemetryClient, false)
   private val controllerSmokeEnabled = ChangeMobileController(userService, verifyMobileService, telemetryClient, true)
-  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid"), "pass")
+  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"), "pass")
 
   @Nested
   inner class ChangeMobileRequest {

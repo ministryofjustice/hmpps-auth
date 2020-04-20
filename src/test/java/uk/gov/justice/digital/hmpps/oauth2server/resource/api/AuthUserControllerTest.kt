@@ -76,7 +76,7 @@ class AuthUserControllerTest {
 
   @Test
   fun createUser_AlreadyExists() {
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(UserDetailsImpl("name", "bob", setOf(), "none", "userid")))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(UserDetailsImpl("name", "bob", setOf(), "none", "userid", "jwtId")))
     val responseEntity = authUserController.createUser("user", CreateUser("email", "first", "last", null), request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(409)
     assertThat(responseEntity.body).isEqualTo(ErrorDetail("username.exists", "Username user already exists", "username"))

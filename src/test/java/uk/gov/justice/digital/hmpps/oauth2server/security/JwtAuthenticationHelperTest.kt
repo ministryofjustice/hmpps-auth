@@ -15,7 +15,7 @@ class JwtAuthenticationHelperTest {
 
   @Test
   fun testReadAndWriteWithoutAuthorities() {
-    val user = UserDetailsImpl("user", "name", emptyList(), "none", "user id")
+    val user = UserDetailsImpl("user", "name", emptyList(), "none", "user id", "jwtId")
     val token = UsernamePasswordAuthenticationToken(user, "pass")
     val jwt = helper.createJwt(token)
     val auth = helper.readAuthenticationFromJwt(jwt)
@@ -90,8 +90,9 @@ class JwtAuthenticationHelperTest {
     val helper = JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties)
     val expiryTime = ReflectionTestUtils.getField(helper, "expiryTime") as Duration
     val keyPair = ReflectionTestUtils.getField(helper, "keyPair") as KeyPair
+    val jwtId = UUID.randomUUID().toString()
     val cookie = Jwts.builder()
-        .setId(UUID.randomUUID().toString())
+        .setId(jwtId)
         .setSubject("BOB")
         .addClaims(mapOf("authorities" to "", "user_id" to "some user"))
         .setExpiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
@@ -99,6 +100,7 @@ class JwtAuthenticationHelperTest {
         .compact()
     val token = helper.readAuthenticationFromJwt(cookie)
     assertThat(token).get().extracting("principal.userId").isEqualTo("some user")
+    assertThat(token).get().extracting("principal.jwtId").isEqualTo(jwtId)
   }
 
   companion object {

@@ -18,7 +18,12 @@ import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
 import java.time.Duration;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -78,8 +83,8 @@ public class JwtAuthenticationHelper {
                     .collect(Collectors.toList());
             final var authSource = Optional.ofNullable(body.get("auth_source", String.class)).orElse("none");
 
-            log.debug("Set authentication for {}", username);
-            return Optional.of(new UsernamePasswordAuthenticationToken(new UserDetailsImpl(username, name, authorities, authSource, userId), null, authorities));
+            log.debug("Set authentication for {} with jwt id of {}", username, body.getId());
+            return Optional.of(new UsernamePasswordAuthenticationToken(new UserDetailsImpl(username, name, authorities, authSource, userId, body.getId()), null, authorities));
         } catch (final ExpiredJwtException eje) {
             // cookie set to expire at same time as JWT so unlikely really get an expired one
             log.info("Expired JWT found for user {}", eje.getClaims().getSubject());
