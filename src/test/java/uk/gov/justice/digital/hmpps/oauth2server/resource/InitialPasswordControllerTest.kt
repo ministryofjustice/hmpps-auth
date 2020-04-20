@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.InitialPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import java.util.*
@@ -21,11 +22,12 @@ import javax.servlet.http.HttpServletRequest
 
 class InitialPasswordControllerTest {
   private val resetPasswordService: ResetPasswordService = mock()
+  private val initialPasswordService: InitialPasswordService = mock()
   private val tokenService: TokenService = mock()
   private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val request: HttpServletRequest = mock()
-  private val controller = InitialPasswordController(resetPasswordService, tokenService, userService, telemetryClient, setOf("password1"), true)
+  private val controller = InitialPasswordController(resetPasswordService, initialPasswordService, tokenService, userService, telemetryClient, setOf("password1"), true)
 
   @Nested
   inner class InitialPasswordSuccess {
@@ -95,7 +97,7 @@ class InitialPasswordControllerTest {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
       whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(User.builder().username("bob").build())
-      whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("newToken"))
+      whenever(initialPasswordService.resendInitialPasswordLink(anyString(), anyString())).thenReturn("newToken")
       val modelAndView = controller.initialPasswordLinkExpired("sometoken", request)
       assertThat(modelAndView.viewName).isEqualTo("createPasswordExpired")
     }
@@ -105,7 +107,7 @@ class InitialPasswordControllerTest {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
       whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(User.builder().username("bob").build())
-      whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("newToken"))
+      whenever(initialPasswordService.resendInitialPasswordLink(anyString(), anyString())).thenReturn("newToken")
       val modelAndView = controller.initialPasswordLinkExpired("sometoken", request)
       assertThat(modelAndView.model).containsOnly(entry("link", "newToken"))
     }
