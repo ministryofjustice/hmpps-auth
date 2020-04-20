@@ -30,7 +30,7 @@ class ChangeNameControllerTest {
   private val request: HttpServletRequest = mock()
   private val response: HttpServletResponse = mock()
   private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler = mock()
-  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid"), "pass")
+  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"), "pass")
 
   private val controller: ChangeNameController = ChangeNameController(authUserService, telemetryClient, jwtAuthenticationSuccessHandler, userService)
 

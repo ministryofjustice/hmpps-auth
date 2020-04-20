@@ -72,8 +72,8 @@ internal class LoggingTokenServicesTest {
 
   companion object {
     private val OAUTH_2_REQUEST = OAuth2Request(emptyMap(), "client", emptySet(), true, emptySet(), emptySet(), "redirect", null, null)
-    private val USER_DETAILS = UserDetailsImpl("authenticateduser", "name", emptySet(), "none", "userid")
+    private val USER_DETAILS = UserDetailsImpl("authenticateduser", "name", emptySet(), "none", "userid", "jwtId")
     private val OAUTH_2_SCOPE_REQUEST = OAuth2Request(emptyMap(), "community-api-client", listOf(GrantedAuthority { "ROLE_COMMUNITY" }), true, setOf("proxy-user"), emptySet(), "redirect", null, null)
-    private val UNCHECKED_USER_DETAILS = UserDetailsImpl("notcheckeduser", "name", emptySet(), "none", "userid")
+    private val UNCHECKED_USER_DETAILS = UserDetailsImpl("notcheckeduser", "name", emptySet(), "none", "userid", "jwtId")
   }
 }

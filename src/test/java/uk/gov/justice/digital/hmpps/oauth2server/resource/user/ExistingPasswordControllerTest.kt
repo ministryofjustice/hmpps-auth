@@ -28,7 +28,7 @@ class ExistingPasswordControllerTest {
   private val tokenService: TokenService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val controller = ExistingPasswordController(authenticationManager, tokenService, telemetryClient)
-  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid"), "pass")
+  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"), "pass")
 
   @Nested
   inner class ExistingPasswordRequest {

@@ -58,7 +58,7 @@ class LockingAuthenticationProviderTest {
   }
 
   private fun setupLoadUser(password: String) {
-    val userDetails = UserDetailsImpl("user", "name", emptyList(), "none", "user")
+    val userDetails = UserDetailsImpl("user", "name", emptyList(), "none", "user", "jwtId")
     ReflectionTestUtils.setField(userDetails, "password", password)
     whenever(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails)
   }

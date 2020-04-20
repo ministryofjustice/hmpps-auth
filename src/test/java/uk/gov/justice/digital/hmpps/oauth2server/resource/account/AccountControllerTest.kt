@@ -16,7 +16,7 @@ import java.util.*
 class AccountControllerTest {
   private val userService: UserService = mock()
   private val accountController = AccountController(userService)
-  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid"), "pass")
+  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"), "pass")
 
   @Test
   fun `account details`() {
