@@ -34,6 +34,7 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
+import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
 import java.security.interfaces.RSAPublicKey;
@@ -57,6 +58,8 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final PasswordEncoder passwordEncoder;
     private final TelemetryClient telemetryClient;
     private final RedirectResolver redirectResolver;
+    private final RestTemplate restTemplate;
+    private final boolean tokenVerificationEnabled;
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy final AuthenticationManager authenticationManager,
@@ -66,7 +69,9 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                                            @Value("${jwt.jwk.key.id}") final String keyId,
                                            @Qualifier("authDataSource") final DataSource dataSource,
                                            @Lazy final RedirectResolver redirectResolver,
-                                           final PasswordEncoder passwordEncoder, final TelemetryClient telemetryClient) {
+                                           final PasswordEncoder passwordEncoder, final TelemetryClient telemetryClient,
+                                           @Qualifier("tokenVerificationApiRestTemplate") final RestTemplate restTemplate,
+                                           @Value("${tokenverification.enabled:false}") final boolean tokenVerificationEnabled) {
 
         this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.keystorePassword = keystorePassword;
@@ -77,6 +82,8 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.passwordEncoder = passwordEncoder;
         this.telemetryClient = telemetryClient;
         this.redirectResolver = redirectResolver;
+        this.restTemplate = restTemplate;
+        this.tokenVerificationEnabled = tokenVerificationEnabled;
     }
 
     @Bean
@@ -136,7 +143,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     @Primary
     public DefaultTokenServices tokenServices() {
-        final var tokenServices = new LoggingTokenServices(telemetryClient);
+        final var tokenServices = new TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationEnabled);
         tokenServices.setTokenEnhancer(tokenEnhancerChain());
         tokenServices.setTokenStore(tokenStore());
         tokenServices.setReuseRefreshToken(true);
@@ -151,7 +158,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     public JWKSet jwkSet() {
         final var keyStoreKeyFactory = new KeyStoreKeyFactory(privateKeyPair, keystorePassword.toCharArray());
-        final RSAKey.Builder builder = new RSAKey.Builder((RSAPublicKey) keyStoreKeyFactory.getKeyPair(keystoreAlias).getPublic())
+        final var builder = new RSAKey.Builder((RSAPublicKey) keyStoreKeyFactory.getKeyPair(keystoreAlias).getPublic())
                 .keyUse(KeyUse.SIGNATURE)
                 .algorithm(JWSAlgorithm.RS256)
                 .keyID(keyId);

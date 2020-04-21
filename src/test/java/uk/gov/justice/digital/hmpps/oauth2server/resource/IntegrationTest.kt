@@ -3,6 +3,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.web.server.LocalServerPort
@@ -12,6 +13,7 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.oauth2server.config.DeliusClientCredentials
+import uk.gov.justice.digital.hmpps.oauth2server.config.TokenVerificationClientCredentials
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
 import java.time.Duration
@@ -21,6 +23,7 @@ import java.time.Duration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("dev")
 @Import(JwtAuthHelper::class)
+@ExtendWith(TokenVerificationExtension::class)
 abstract class IntegrationTest {
   @Autowired
   lateinit var webTestClient: WebTestClient
@@ -30,6 +33,9 @@ abstract class IntegrationTest {
 
   @Autowired
   private lateinit var deliusApiRestTemplate: OAuth2RestTemplate
+
+  @Autowired
+  private lateinit var tokenVerificationApiRestTemplate: OAuth2RestTemplate
 
   @LocalServerPort
   private var localServerPort: Int = 0
@@ -43,6 +49,7 @@ abstract class IntegrationTest {
   internal fun setupPort() {
     // need to override port as random port only assigned on server startup
     (deliusApiRestTemplate.resource as DeliusClientCredentials).accessTokenUri = "http://localhost:${localServerPort}/auth/oauth/token"
+    (tokenVerificationApiRestTemplate.resource as TokenVerificationClientCredentials).accessTokenUri = "http://localhost:${localServerPort}/auth/oauth/token"
   }
 
   internal fun setAuthorisation(user: String, roles: List<String> = listOf()): (org.springframework.http.HttpHeaders) -> Unit {

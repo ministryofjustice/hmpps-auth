@@ -9,6 +9,7 @@ class HealthTokenVerificationDisabledIntTest : IntegrationTest() {
   fun `Health reports delius info`() {
     webTestClient.get().uri("/auth/health/tokenVerificationApiHealth")
         .exchange()
+        .expectStatus().isOk
         .expectBody().jsonPath("status").isEqualTo("UP")
         .jsonPath("details.VerificationDisabled").isEqualTo("token verification is disabled")
   }

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.api.specs
 import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.util.logging.Slf4j
 import org.apache.commons.lang3.StringUtils
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -24,47 +25,64 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.TokenVerificationMockServer
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
+@SuppressWarnings("GrDeprecatedAPIUsage")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("dev")
 @ContextConfiguration
 @Slf4j
 abstract class TestSpecification extends Specification {
+  @Rule
+  TokenVerificationMockServer tokenVerificationServer = new TokenVerificationMockServer()
 
-    @LocalServerPort
-    int randomServerPort;
+  @Autowired
+  OAuth2RestTemplate tokenVerificationApiRestTemplate
 
-    @Rule
-    TestWatcher t = new TestWatcher() {
-        @Override
-        protected void starting(Description description) {
-            log.info("Starting test '{}'", description.getDisplayName())
-        }
+  @LocalServerPort
+  int randomServerPort;
+
+  @Rule
+  TestWatcher t = new TestWatcher() {
+    @Override
+    protected void starting(Description description) {
+      log.info("Starting test '{}'", description.getDisplayName())
+    }
 
         @Override
         protected void finished(Description description) {
-            log.info("Finished test '{}'", description.getDisplayName())
+          log.info("Finished test '{}'", description.getDisplayName())
         }
-    }
+  }
 
-    @Autowired
-    TestRestTemplate restTemplate
+  @Autowired
+  TestRestTemplate restTemplate
 
-    @Autowired
-    ObjectMapper objectMapper
+  @Autowired
+  ObjectMapper objectMapper
 
+  @BeforeClass
+  static void setupClass() {
+    // Resolves an issue where Wiremock keeps previous sockets open from other tests causing connection resets
+    System.setProperty("http.keepAlive", "false")
+  }
 
-    HttpEntity createHeaderEntity(Object entity) {
-        HttpHeaders headers = new HttpHeaders()
-        headers.add("Authorization", "bearer " + token)
-        headers.setContentType(MediaType.APPLICATION_JSON)
-        new HttpEntity<>(entity, headers)
-    }
+  void setup() {
+    // need to override port as random port only assigned on server startup
+    tokenVerificationApiRestTemplate.getResource().accessTokenUri = "http://localhost:${randomServerPort}/auth/oauth/token"
+  }
 
-    OAuth2RestTemplate getOauthPasswordGrant(String username, String password, String clientId, String clientSecret) {
-        authenticate(ownerPasswordResource(username, password, clientId, clientSecret), null)
+  HttpEntity createHeaderEntity(Object entity) {
+    HttpHeaders headers = new HttpHeaders()
+    headers.add("Authorization", "bearer " + token)
+    headers.setContentType(MediaType.APPLICATION_JSON)
+    new HttpEntity<>(entity, headers)
+  }
+
+  OAuth2RestTemplate getOauthPasswordGrant(String username, String password, String clientId, String clientSecret) {
+    authenticate(ownerPasswordResource(username, password, clientId, clientSecret), null)
     }
 
     OAuth2RestTemplate getOauthClientGrant(String clientId, String clientSecret) {
