@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.boot.actuate.health.Status
@@ -15,6 +16,17 @@ abstract class HealthCheck(private val restTemplate: RestTemplate) : HealthIndic
       Health.up().withDetail("HttpStatus", responseEntity.statusCode).build()
     } catch (e: RestClientException) {
       Health.down(e).build()
+    }
+  }
+}
+
+@Component
+class TokenVerificationApiHealth(@Qualifier("tokenVerificationApiHealthRestTemplate") restTemplate: RestTemplate,
+                                 @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean) :
+    HealthCheck(restTemplate) {
+  override fun health(): Health {
+    return if (tokenVerificationEnabled) super.health() else {
+      Health.up().withDetail("VerificationDisabled", "token verification is disabled").build()
     }
   }
 }

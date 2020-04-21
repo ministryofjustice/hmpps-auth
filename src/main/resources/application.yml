@@ -125,6 +125,12 @@ delius:
     authentication-scheme: header
     client-authentication-scheme: header
 
+tokenverification:
+  client:
+    access-token-uri: ${auth.token.url}
+    authentication-scheme: header
+    client-authentication-scheme: header
+
 logging.uris.exclude.regex: /auth/health|/auth/info|/auth/ping|/auth/swagger.*|/auth/webjars/.*|/auth/v2/api-docs
 
 graceful.shutdown.enabled: true

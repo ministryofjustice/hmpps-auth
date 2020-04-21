@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package uk.gov.justice.digital.hmpps.oauth2server.config
 
 import org.hibernate.validator.constraints.URL
@@ -12,15 +14,15 @@ import org.springframework.security.oauth2.client.token.grant.client.ClientCrede
 import org.springframework.web.client.RestTemplate
 import java.time.Duration
 
-@Suppress("DEPRECATION", "SpringJavaInjectionPointsAutowiringInspection")
+@Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Configuration
-open class RestTemplateConfiguration(private val apiDetails: DeliusClientCredentials,
-                                     @Value("\${delius.endpoint.url}") private val deliusEndpointUrl: @URL String,
-                                     @Value("\${delius.health.timeout:1s}") private val healthTimeout: Duration,
-                                     @Value("\${delius.endpoint.timeout:5s}") private val apiTimeout: Duration) {
+class DeliusRestTemplateConfiguration(private val apiDetails: DeliusClientCredentials,
+                                      @Value("\${delius.endpoint.url}") private val deliusEndpointUrl: @URL String,
+                                      @Value("\${delius.health.timeout:1s}") private val healthTimeout: Duration,
+                                      @Value("\${delius.endpoint.timeout:5s}") private val apiTimeout: Duration) {
 
   @Bean(name = ["deliusApiRestTemplate"])
-  open fun deliusRestTemplate(restTemplateBuilder: RestTemplateBuilder): OAuth2RestTemplate =
+  fun deliusRestTemplate(restTemplateBuilder: RestTemplateBuilder): OAuth2RestTemplate =
       restTemplateBuilder
           .rootUri("${deliusEndpointUrl}/secure")
           .setConnectTimeout(apiTimeout)
@@ -28,7 +30,7 @@ open class RestTemplateConfiguration(private val apiDetails: DeliusClientCredent
           .configure(OAuth2RestTemplate(apiDetails))
 
   @Bean(name = ["deliusApiHealthRestTemplate"])
-  open fun deliusHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate =
+  fun deliusHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate =
       getHealthRestTemplate(restTemplateBuilder, deliusEndpointUrl)
 
   private fun getHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder, uri: String): RestTemplate =
@@ -40,7 +42,7 @@ open class RestTemplateConfiguration(private val apiDetails: DeliusClientCredent
 
 }
 
-@Suppress("DEPRECATION", "ConfigurationProperties")
+@Suppress("ConfigurationProperties")
 @ConfigurationProperties("delius.client")
 open class DeliusClientCredentials : ClientCredentialsResourceDetails()
 

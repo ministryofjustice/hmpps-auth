@@ -8,13 +8,7 @@ import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.
 class ResetPasswordSpecification extends DeliusIntegrationSpec {
 
     def "A user can cancel reset password"() {
-        given: 'log in and out a user to ensure that no user is logged in for test'
-        to LoginPage
-        loginAs ITAG_USER, 'password'
-        at HomePage
-        logout()
-
-        and: 'I would like to reset my password'
+        given: 'I would like to reset my password'
         to LoginPage
         resetPassword()
 
