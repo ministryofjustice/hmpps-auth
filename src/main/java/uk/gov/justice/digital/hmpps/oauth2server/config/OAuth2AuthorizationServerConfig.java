@@ -143,7 +143,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     @Primary
     public DefaultTokenServices tokenServices() {
-        final var tokenServices = new LoggingTokenServices(telemetryClient, restTemplate, tokenVerificationEnabled);
+        final var tokenServices = new TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationEnabled);
         tokenServices.setTokenEnhancer(tokenEnhancerChain());
         tokenServices.setTokenStore(tokenStore());
         tokenServices.setReuseRefreshToken(true);
