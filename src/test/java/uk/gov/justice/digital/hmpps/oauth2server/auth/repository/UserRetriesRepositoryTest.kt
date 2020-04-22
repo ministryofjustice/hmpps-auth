@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig
 
 @DataJpaTest
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 @Import(AuthDbConfig::class, NomisDbConfig::class, FlywayConfig::class)
 @AutoConfigureTestDatabase(replace = NONE)
 @Transactional(transactionManager = "authTransactionManager")

@@ -34,7 +34,7 @@ import java.time.LocalDateTime
 
 @Suppress("UsePropertyAccessSyntax")
 @DataJpaTest
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 @Import(AuthDbConfig::class, NomisDbConfig::class, FlywayConfig::class)
 @AutoConfigureTestDatabase(replace = NONE)
 @Transactional(transactionManager = "authTransactionManager")

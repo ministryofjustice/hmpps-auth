@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.ReferenceDomain.EMA
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.ReferenceCodeRepository
 
 @DataJpaTest
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 @Import(AuthDbConfig::class, NomisDbConfig::class, FlywayConfig::class)
 @AutoConfigureTestDatabase(replace = NONE)
 class ReferenceCodeRepositoryTest {

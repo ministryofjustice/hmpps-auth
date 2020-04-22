@@ -12,7 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(webEnvironment = MOCK)
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 class AuthAuthenticationProviderIntTest {
   @Autowired
   private lateinit var provider: AuthAuthenticationProvider

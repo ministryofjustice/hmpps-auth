@@ -30,7 +30,7 @@ delius:
         - 'ROLE_GLOBAL_SEARCH'
 
 tokenverification:
-  enabled: true
+  enabled: false
   endpoint:
     url: http://localhost:8100
     timeout: 1s

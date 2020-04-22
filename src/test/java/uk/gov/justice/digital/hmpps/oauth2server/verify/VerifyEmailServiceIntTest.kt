@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.service.notify.NotificationClientApi
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 @Transactional(transactionManager = "authTransactionManager")
 open class VerifyEmailServiceIntTest {
   @Autowired

@@ -21,7 +21,7 @@ import java.time.Duration
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 @Import(JwtAuthHelper::class)
 @ExtendWith(TokenVerificationExtension::class)
 abstract class IntegrationTest {
