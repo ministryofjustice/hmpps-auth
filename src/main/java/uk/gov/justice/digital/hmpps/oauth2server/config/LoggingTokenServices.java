@@ -18,7 +18,7 @@ import java.util.Optional;
 @SuppressWarnings("deprecation")
 @Slf4j
 @AllArgsConstructor
-public class TrackingTokenServices extends DefaultTokenServices {
+public class LoggingTokenServices extends DefaultTokenServices {
     private final TelemetryClient telemetryClient;
     private final RestTemplate restTemplate;
     private final boolean tokenVerificationEnabled;
