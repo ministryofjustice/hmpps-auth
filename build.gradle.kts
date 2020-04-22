@@ -92,7 +92,7 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.security:spring-security-jwt:1.1.0.RELEASE")
-  implementation("org.springframework.security.oauth:spring-security-oauth2:2.4.0.RELEASE")
+  implementation("org.springframework.security.oauth:spring-security-oauth2:2.4.1.RELEASE")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
   implementation("com.nimbusds:nimbus-jose-jwt:8.15")
@@ -120,13 +120,14 @@ dependencies {
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1")
   implementation("uk.gov.service.notify:notifications-java-client:3.15.1-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:6.3.3")
+  implementation("org.flywaydb:flyway-core:6.4.0")
   implementation("com.zaxxer:HikariCP:3.4.2")
   implementation("org.apache.commons:commons-lang3:3.10")
   implementation("org.apache.commons:commons-text:1.8")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.1.jre11")
   implementation("com.github.timpeeters:spring-boot-graceful-shutdown:2.2.1")
   implementation("com.google.guava:guava:29.0-jre")
+  implementation("io.swagger:swagger-core:1.6.1")
 
   runtimeOnly("com.h2database:h2:1.4.200")
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
@@ -161,6 +162,7 @@ dependencies {
   testImplementation("com.nhaarman:mockito-kotlin-kt1.1:1.6.0")
   testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.3.1")
   testImplementation("org.fluentlenium:fluentlenium-assertj:4.3.1")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.19")
 }
 
 tasks {
