@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffRepository
 
 @DataJpaTest
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 @Import(AuthDbConfig::class, NomisDbConfig::class, FlywayConfig::class)
 @AutoConfigureTestDatabase(replace = NONE)
 class StaffRepositoryTest {

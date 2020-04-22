@@ -31,7 +31,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SuppressWarnings("GrDeprecatedAPIUsage")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 @ContextConfiguration
 @Slf4j
 abstract class TestSpecification extends Specification {

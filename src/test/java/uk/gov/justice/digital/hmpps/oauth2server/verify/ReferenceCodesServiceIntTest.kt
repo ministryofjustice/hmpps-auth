@@ -8,7 +8,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 @Transactional
 open class ReferenceCodesServiceIntTest {
   @Autowired
