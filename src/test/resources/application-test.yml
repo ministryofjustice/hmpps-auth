@@ -5,4 +5,13 @@ jwt:
     password: s3cre3tK3y
     alias: elite2api
 
+tokenverification:
+  enabled: true
+  endpoint:
+    url: http://localhost:8100
+    timeout: 1s
+
+  client:
+    client-id: token-verification-auth-api-client
+    client-secret: token-verification-auth-api-client
 

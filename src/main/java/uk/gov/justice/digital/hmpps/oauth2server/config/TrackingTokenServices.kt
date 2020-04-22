@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 
 open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
                                  private val restTemplate: RestTemplate,
+                                 private val tokenVerificationClientCredentials: TokenVerificationClientCredentials,
                                  private val tokenVerificationEnabled: Boolean) : DefaultTokenServices() {
 
   companion object {
@@ -29,7 +30,7 @@ open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
     if (!authentication.isClientOnly) {
       telemetryClient.trackEvent("CreateAccessToken", mapOf("username" to username, "clientId" to clientId), null)
     }
-    if ("token-verification-auth-api-client" != clientId) {
+    if (tokenVerificationClientCredentials.clientId != clientId) {
       val jwtId = sendAuthJwtIdToTokenVerification(authentication, token)
       log.info("Created access token for {} and client {} with jwt id of {}", username, clientId, jwtId)
     }
@@ -40,7 +41,7 @@ open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
     val token = super.refreshAccessToken(refreshTokenValue, tokenRequest)
     val username = retrieveUsernameFromToken(token)
     val clientId = tokenRequest.clientId
-    if ("token-verification-auth-api-client" != clientId) {
+    if (tokenVerificationClientCredentials.clientId != clientId) {
       val jwtId = sendRefreshToTokenVerification(refreshTokenValue, token)
       log.info("Created refresh token for {} and client {} with jwt id of {}", username, clientId, jwtId)
     }

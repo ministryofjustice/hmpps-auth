@@ -40,11 +40,13 @@ internal class TrackingTokenServicesTest {
   private val tokenStore: TokenStore = mock()
   private val externalIdAuthenticationHelper: ExternalIdAuthenticationHelper = mock()
   private val restTemplate: RestTemplate = mock()
-  private var tokenServices = TrackingTokenServices(telemetryClient, restTemplate, true)
-  private var tokenServicesVerificationDisabled = TrackingTokenServices(telemetryClient, restTemplate, false)
+  private val tokenVerificationClientCredentials = TokenVerificationClientCredentials()
+  private val tokenServices = TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, true)
+  private val tokenServicesVerificationDisabled = TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, false)
 
   @BeforeEach
   fun setUp() {
+    tokenVerificationClientCredentials.clientId = "token-verification-client-id"
     tokenServices.setSupportRefreshToken(true)
     tokenServices.setTokenStore(tokenStore)
     tokenServicesVerificationDisabled.setSupportRefreshToken(true)
@@ -122,6 +124,16 @@ internal class TrackingTokenServicesTest {
       whenever(tokenStore.readRefreshToken(anyString())).thenReturn(DefaultOAuth2RefreshToken("newValue"))
       whenever(tokenStore.readAuthenticationForRefreshToken(any())).thenReturn(OAuth2Authentication(OAUTH_2_REQUEST, UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")))
       tokenServicesVerificationDisabled.refreshAccessToken(refreshToken, TokenRequest(emptyMap(), "client", emptySet(), "refresh"))
+      verifyZeroInteractions(restTemplate)
+    }
+
+    @Test
+    fun `refresh access token ignores token verification service if client is token verification`() {
+      val tokenVerificationAuthRequest = OAuth2Request(emptyMap(), "token-verification-client-id", emptySet(), true, emptySet(), emptySet(), "redirect", null, null)
+
+      whenever(tokenStore.readRefreshToken(anyString())).thenReturn(DefaultOAuth2RefreshToken("newValue"))
+      whenever(tokenStore.readAuthenticationForRefreshToken(any())).thenReturn(OAuth2Authentication(tokenVerificationAuthRequest, UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")))
+      tokenServicesVerificationDisabled.refreshAccessToken(refreshToken, TokenRequest(emptyMap(), "token-verification-client-id", emptySet(), "refresh"))
       verifyZeroInteractions(restTemplate)
     }
   }

@@ -60,6 +60,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final RedirectResolver redirectResolver;
     private final RestTemplate restTemplate;
     private final boolean tokenVerificationEnabled;
+    private final TokenVerificationClientCredentials tokenVerificationClientCredentials;
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy final AuthenticationManager authenticationManager,
@@ -71,7 +72,8 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                                            @Lazy final RedirectResolver redirectResolver,
                                            final PasswordEncoder passwordEncoder, final TelemetryClient telemetryClient,
                                            @Qualifier("tokenVerificationApiRestTemplate") final RestTemplate restTemplate,
-                                           @Value("${tokenverification.enabled:false}") final boolean tokenVerificationEnabled) {
+                                           @Value("${tokenverification.enabled:false}") final boolean tokenVerificationEnabled,
+                                           final TokenVerificationClientCredentials tokenVerificationClientCredentials) {
 
         this.privateKeyPair = new ByteArrayResource(Base64.decodeBase64(privateKeyPair));
         this.keystorePassword = keystorePassword;
@@ -84,6 +86,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         this.redirectResolver = redirectResolver;
         this.restTemplate = restTemplate;
         this.tokenVerificationEnabled = tokenVerificationEnabled;
+        this.tokenVerificationClientCredentials = tokenVerificationClientCredentials;
     }
 
     @Bean
@@ -143,7 +146,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     @Primary
     public DefaultTokenServices tokenServices() {
-        final var tokenServices = new TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationEnabled);
+        final var tokenServices = new TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, tokenVerificationEnabled);
         tokenServices.setTokenEnhancer(tokenEnhancerChain());
         tokenServices.setTokenStore(tokenStore());
         tokenServices.setReuseRefreshToken(true);
