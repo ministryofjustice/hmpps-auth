@@ -82,7 +82,7 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
   fun loginWithMfaText(username: String, password: String = "password123456"): MfaTextPage =
       loginWith(username, password, MfaTextPage::class.java)
 
-  fun loginWithMfaError(username: String, password: String = "password123456"): LoginPage =
+  fun loginError(username: String, password: String = "password123456"): LoginPage =
       errorLoginWith(username, password, LoginPage::class.java)
 
   private fun <T : AuthPage<T>> loginWith(username: String, password: String = "password123456", t: Class<T>): T {
