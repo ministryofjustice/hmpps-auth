@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig
 import javax.sql.DataSource
 
 @DataJpaTest
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 @Import(AuthDbConfig::class, NomisDbConfig::class, FlywayConfig::class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Transactional(transactionManager = "authTransactionManager")
