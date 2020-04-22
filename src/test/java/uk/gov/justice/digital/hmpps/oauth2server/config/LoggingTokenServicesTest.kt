@@ -33,13 +33,13 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticati
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 
 @ExtendWith(MockitoExtension::class)
-internal class TrackingTokenServicesTest {
+internal class LoggingTokenServicesTest {
   private val telemetryClient: TelemetryClient = mock()
   private val tokenStore: TokenStore = mock()
   private val externalIdAuthenticationHelper: ExternalIdAuthenticationHelper = mock()
   private val restTemplate: RestTemplate = mock()
-  private var tokenServices = TrackingTokenServices(telemetryClient, restTemplate, true)
-  private var tokenServicesVerificationDisabled = TrackingTokenServices(telemetryClient, restTemplate, false)
+  private var tokenServices = LoggingTokenServices(telemetryClient, restTemplate, true)
+  private var tokenServicesVerificationDisabled = LoggingTokenServices(telemetryClient, restTemplate, false)
 
   @BeforeEach
   fun setUp() {
