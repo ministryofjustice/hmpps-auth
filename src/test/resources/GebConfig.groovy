@@ -31,4 +31,4 @@ baseUrl = "http://localhost:8080"
 reportsDir = "build/geb-reports"
 
 // uncomment to keep the browser open at the end of the test
-// quitCachedDriverOnShutdown = false
+ quitCachedDriverOnShutdown = false

@@ -94,7 +94,7 @@ class MfaSpecification : AbstractAuthSpecification() {
   @Test
   fun `Login as user with MFA enabled but no email addresses or mobile number`() {
     goTo(loginPage)
-        .loginWithMfaError("AUTH_MFA_NOEMAIL_USER")
+        .loginError("AUTH_MFA_NOEMAIL_USER")
 
     loginPage.checkError("We need to send you a security code to login, but we can't find a verified email " +
         "address or phone number. Please login on an approved network and verify your email address and phone number.")
@@ -103,7 +103,7 @@ class MfaSpecification : AbstractAuthSpecification() {
   @Test
   fun `Login as user with MFA enabled but no phone or email address (preference text)`() {
     goTo(loginPage)
-        .loginWithMfaError("AUTH_MFA_NOTEXT_USER")
+        .loginError("AUTH_MFA_NOTEXT_USER")
 
     loginPage.checkError("We need to send you a security code to login, but we can't find a verified email " +
         "address or phone number. Please login on an approved network and verify your email address and phone number.")
@@ -154,7 +154,7 @@ class MfaSpecification : AbstractAuthSpecification() {
         .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
-        .loginWithMfaError("AUTH_MFA_LOCKED_EMAIL")
+        .loginError("AUTH_MFA_LOCKED_EMAIL")
         .checkLoginAccountLockedError()
   }
 
@@ -169,7 +169,7 @@ class MfaSpecification : AbstractAuthSpecification() {
         .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
-        .loginWithMfaError("AUTH_MFA_LOCKED_TEXT")
+        .loginError("AUTH_MFA_LOCKED_TEXT")
         .checkLoginAccountLockedError()
   }
 
@@ -184,7 +184,7 @@ class MfaSpecification : AbstractAuthSpecification() {
         .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
-        .loginWithMfaError("AUTH_MFA_LOCKED_2ND_EMAIL")
+        .loginError("AUTH_MFA_LOCKED_2ND_EMAIL")
         .checkLoginAccountLockedError()
   }
 
@@ -192,7 +192,7 @@ class MfaSpecification : AbstractAuthSpecification() {
   fun `MFA user email preference gets locked after mix of MFA and login attempts`() {
 
     goTo(loginPage)
-        .loginWithMfaError("AUTH_MFA_LOCKED2_EMAIL", "wrongpass")
+        .loginError("AUTH_MFA_LOCKED2_EMAIL", "wrongpass")
         .checkLoginUsernamePasswordError()
         .loginWithMfaEmail("AUTH_MFA_LOCKED2_EMAIL")
         .submitCode("123")
@@ -201,7 +201,7 @@ class MfaSpecification : AbstractAuthSpecification() {
         .checkEmailCodeIsIncorrectError()
 
     goTo(loginPage)
-        .loginWithMfaError("AUTH_MFA_LOCKED2_EMAIL", "wrongpass")
+        .loginError("AUTH_MFA_LOCKED2_EMAIL", "wrongpass")
         .checkLoginAccountLockedError()
   }
 
@@ -209,7 +209,7 @@ class MfaSpecification : AbstractAuthSpecification() {
   fun `MFA user text preference gets locked after mix of MFA and login attempts`() {
 
     goTo(loginPage)
-        .loginWithMfaError("AUTH_MFA_LOCKED2_TEXT", "wrongpass")
+        .loginError("AUTH_MFA_LOCKED2_TEXT", "wrongpass")
         .checkLoginUsernamePasswordError()
         .loginWithMfaText("AUTH_MFA_LOCKED2_TEXT")
         .submitCode("123")
@@ -218,7 +218,7 @@ class MfaSpecification : AbstractAuthSpecification() {
         .checkTextCodeIsIncorrectError()
 
     goTo(loginPage)
-        .loginWithMfaError("AUTH_MFA_LOCKED2_TEXT", "wrongpass")
+        .loginError("AUTH_MFA_LOCKED2_TEXT", "wrongpass")
         .checkLoginAccountLockedError()
   }
 
@@ -226,7 +226,7 @@ class MfaSpecification : AbstractAuthSpecification() {
   fun `MFA user secondary email preference gets locked after mix of MFA and login attempts`() {
 
     goTo(loginPage)
-        .loginWithMfaError("AUTH_MFA_LOCKED2_2ND_EMAIL", "wrongpass")
+        .loginError("AUTH_MFA_LOCKED2_2ND_EMAIL", "wrongpass")
         .checkLoginUsernamePasswordError()
         .loginWithMfaEmail("AUTH_MFA_LOCKED2_2ND_EMAIL")
         .submitCode("123")
@@ -235,7 +235,7 @@ class MfaSpecification : AbstractAuthSpecification() {
         .checkEmailCodeIsIncorrectError()
 
     goTo(loginPage)
-        .loginWithMfaError("AUTH_MFA_LOCKED2_2ND_EMAIL", "wrongpass")
+        .loginError("AUTH_MFA_LOCKED2_2ND_EMAIL", "wrongpass")
         .checkLoginAccountLockedError()
   }
 
@@ -254,9 +254,9 @@ class MfaSpecification : AbstractAuthSpecification() {
     homePage.isAt()
 
     goTo(loginPage)
-        .loginWithMfaError("AUTH_MFA_PREF_EMAIL3", "wrongpass")
+        .loginError("AUTH_MFA_PREF_EMAIL3", "wrongpass")
         .checkLoginUsernamePasswordError()
-        .loginWithMfaError("AUTH_MFA_PREF_EMAIL3", "wrongpass")
+        .loginError("AUTH_MFA_PREF_EMAIL3", "wrongpass")
         .checkLoginUsernamePasswordError()
   }
 
@@ -275,9 +275,9 @@ class MfaSpecification : AbstractAuthSpecification() {
     homePage.isAt()
 
     goTo(loginPage)
-        .loginWithMfaError("AUTH_MFA_PREF_TEXT3", "wrongpass")
+        .loginError("AUTH_MFA_PREF_TEXT3", "wrongpass")
         .checkLoginUsernamePasswordError()
-        .loginWithMfaError("AUTH_MFA_PREF_TEXT3", "wrongpass")
+        .loginError("AUTH_MFA_PREF_TEXT3", "wrongpass")
         .checkLoginUsernamePasswordError()
   }
 
@@ -296,9 +296,9 @@ class MfaSpecification : AbstractAuthSpecification() {
     homePage.isAt()
 
     goTo(loginPage)
-        .loginWithMfaError("AUTH_MFA_PREF_2ND_EMAIL3", "wrongpass")
+        .loginError("AUTH_MFA_PREF_2ND_EMAIL3", "wrongpass")
         .checkLoginUsernamePasswordError()
-        .loginWithMfaError("AUTH_MFA_PREF_2ND_EMAIL3", "wrongpass")
+        .loginError("AUTH_MFA_PREF_2ND_EMAIL3", "wrongpass")
         .checkLoginUsernamePasswordError()
   }
 

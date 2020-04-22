@@ -1,7 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.check
+import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.isNull
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
@@ -16,7 +22,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
-import uk.gov.justice.digital.hmpps.oauth2server.security.*
+import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
+import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import java.util.*
 import java.util.Map.entry
@@ -208,7 +218,7 @@ class ChangePasswordControllerTest {
       setupCheckAndGetTokenValid()
       setupGetUserCallForProfile()
       val redirect = controller.changePassword("user", "password2", "password2", request, response, null)
-      assertThat(redirect!!.viewName).isEqualTo("redirect:/")
+      assertThat(redirect!!.viewName).isEqualTo("redirect:/change-password-success")
       verify(changePasswordService).setPassword("user", "password2")
       verifyNoInteractions(userStateAuthenticationFailureHandler, authenticationManager)
     }
@@ -222,6 +232,16 @@ class ChangePasswordControllerTest {
       verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), check {
         assertThat(it).containsExactly(entry("username", "someuser"))
       }, isNull())
+    }
+
+    @Nested
+    inner class ChangePasswordSuccess {
+
+      @Test
+      fun ChangePasswordSuccess_view() {
+        val view = controller.changePasswordSuccess()
+        assertThat(view).isEqualTo("changePasswordSuccess")
+      }
     }
   }
 

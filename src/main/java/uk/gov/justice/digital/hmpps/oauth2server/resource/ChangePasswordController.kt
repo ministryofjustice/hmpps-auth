@@ -38,7 +38,7 @@ class ChangePasswordController(private val jwtAuthenticationSuccessHandler: JwtA
   fun newPasswordRequest(@RequestParam token: String?): ModelAndView =
       createModelWithTokenUsernameAndIsAdmin(UserToken.TokenType.CHANGE, token, "changePassword")
 
-  @PostMapping("/change-password")
+  @PostMapping("/change-password", "/new-password")
   fun changePassword(@RequestParam token: String,
                      @RequestParam newPassword: String?, @RequestParam confirmPassword: String?,
                      request: HttpServletRequest, response: HttpServletResponse,
@@ -50,7 +50,7 @@ class ChangePasswordController(private val jwtAuthenticationSuccessHandler: JwtA
     }
     // if we're logged in already ad not in the expired password flow then can just continue to home page
     if (expired != true) {
-      return ModelAndView("redirect:/")
+      return ModelAndView("redirect:/change-password-success")
     }
     // will be error if unable to get token here as set password process has been successful
     val username = userToken.orElseThrow().user.username
@@ -66,6 +66,10 @@ class ChangePasswordController(private val jwtAuthenticationSuccessHandler: JwtA
     // return here is not required, since the success or failure handler will have redirected
     return null
   }
+
+  @GetMapping("/change-password-success")
+  fun changePasswordSuccess(): String =
+      "changePasswordSuccess"
 
   private fun authenticate(username: String, password: String) =
       authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username.toUpperCase(), password))
