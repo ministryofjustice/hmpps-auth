@@ -1,26 +1,20 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
-import geb.driver.CachingDriverFactory
+
 import groovy.json.JsonSlurper
-import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.web.client.RestTemplate
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangeExpiredPasswordPage
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginErrorPage
+import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
 class LoginSpecification extends DeliusIntegrationSpec {
 
     public static final String clientBaseUrl = 'http://localhost:8081/login'
-
-    def "The login page is present"() {
-        when: 'I go to the login page'
-        to LoginPage
-
-        then: 'The Login page is displayed'
-        at LoginPage
-    }
 
     def "Attempt login with unknown user"() {
         given: 'I am on the Login page'
@@ -184,114 +178,6 @@ class LoginSpecification extends DeliusIntegrationSpec {
                 "\nDelius is experiencing issues. Please try later if you are attempting to login using your Delius credentials."
     }
 
-    def "Log in with valid credentials"() {
-        given: 'I am on the Login page'
-        to LoginPage
-
-        when: "I login using valid credentials"
-        loginAs ITAG_USER, 'password'
-
-        then: 'My credentials are accepted and I am shown the Home page'
-        at HomePage
-        principalName == 'Itag User'
-
-        def body = parseJwt()
-        body.name == 'Itag User'
-        body.auth_source == 'nomis'
-        body.user_id == "1"
-    }
-
-    def "Log in with valid credentials sets jwt cookie"() {
-        given: 'I am on the Login page'
-        to LoginPage
-
-        when: "I login using valid credentials"
-        loginAs ITAG_USER, 'password'
-
-        then: 'My credentials are accepted and I have a cookie with my name and authentication source'
-        at HomePage
-        def body = parseJwt()
-        body.name == 'Itag User'
-        body.auth_source == 'nomis'
-    }
-
-    def "Log in with valid auth credentials"() {
-        given: 'I am on the Login page'
-        to LoginPage
-
-        when: "I login using valid credentials"
-        loginAs AUTH_USER, 'password123456'
-
-        then: 'My credentials are accepted and I am shown the Home page'
-        at HomePage
-        principalName == 'Auth Only'
-    }
-
-    def "Log in with valid auth credentials sets jwt cookie"() {
-        given: 'I am on the Login page'
-        to LoginPage
-
-        when: "I login using valid credentials"
-        loginAs AUTH_USER, 'password123456'
-
-        then: 'My credentials are accepted and I have a cookie with my name and authentication source'
-        at HomePage
-        def body = parseJwt()
-        body.name == 'Auth Only'
-        body.auth_source == 'auth'
-        body.user_id == '608955ae-52ed-44cc-884c-011597a77949'
-    }
-
-    def "Log in with valid delius credentials"() {
-        given: 'I am on the Login page'
-        to LoginPage
-
-        when: "I login using valid credentials"
-        loginAs DELIUS_USER, 'password'
-
-        then: 'My credentials are accepted and I am shown the Home page'
-        at HomePage
-        principalName == 'Delius Smith'
-    }
-
-    def "Log in with valid delius credentials sets jwt cookie"() {
-        given: 'I am on the Login page'
-        to LoginPage
-
-        when: "I login using valid credentials"
-        loginAs DELIUS_USER, 'password'
-
-        then: 'My credentials are accepted and I have a cookie with my name and authentication source'
-        at HomePage
-        def body = parseJwt()
-        body.name == 'Delius Smith'
-        body.auth_source == 'delius'
-        body.user_id == '2500077027'
-    }
-
-    def "Log in with valid credentials in lower case"() {
-        given: 'I am on the Login page'
-        to LoginPage
-
-        when: "I login using valid credentials"
-        loginAs ITAG_USER_LOWERCASE, 'password'
-
-        then: 'My credentials are accepted and I am shown the Home page'
-        at HomePage
-    }
-
-    def "View User Home Page once logged in"() {
-        given: 'I am trying to access the user home page'
-        browser.go('/auth/ui')
-        at LoginPage
-
-        when: "I login using valid credentials"
-        loginAs ITAG_USER, 'password'
-
-        then: 'My credentials are accepted and I am shown the User Home page'
-        at UserHomePage
-    }
-
     def "I can logout once logged in"() {
         given: 'I am logged in'
         to LoginPage
@@ -304,96 +190,6 @@ class LoginSpecification extends DeliusIntegrationSpec {
         then: 'I am logged out'
         at LoginPage
         warning == 'Warning\nYou have been signed out'
-    }
-
-    def "I can sign in from another client"() {
-        given: 'I am using SSO auth token to login'
-        def state = RandomStringUtils.random(6, true, true)
-        browser.go("/auth/oauth/authorize?client_id=elite2apiclient&redirect_uri=$clientBaseUrl&response_type=code&state=$state")
-        at LoginPage
-
-        when: "I login using valid credentials"
-        loginAs ITAG_USER, 'password'
-
-        then: 'I am redirected back'
-        browser.getCurrentUrl() startsWith("$clientBaseUrl?code")
-
-        and: 'state is returned'
-        browser.getCurrentUrl() contains("state=$state")
-
-        and: 'auth code is returned'
-        def params = splitQuery(new URL(browser.getCurrentUrl()))
-        def authCode = params.get('code')
-        authCode != null
-
-        and: 'auth code can be redeemed for access token'
-        def response = getAccessToken(authCode)
-        response.user_name == ITAG_USER.username
-        response.auth_source == 'nomis'
-        response.user_id == '1'
-
-        cleanup:
-        CachingDriverFactory.clearCache()
-    }
-
-    def "I can sign in from another client as auth only user"() {
-        given: 'I am using SSO auth token to login'
-        def state = RandomStringUtils.random(6, true, true)
-        browser.go("/auth/oauth/authorize?client_id=elite2apiclient&redirect_uri=$clientBaseUrl&response_type=code&state=$state")
-        at LoginPage
-
-        when: "I login using valid credentials"
-        loginAs AUTH_USER, 'password123456'
-
-        then: 'I am redirected back'
-        browser.getCurrentUrl() startsWith("$clientBaseUrl?code")
-
-        and: 'state is returned'
-        browser.getCurrentUrl() contains("state=$state")
-
-        and: 'auth code is returned'
-        def params = splitQuery(new URL(browser.getCurrentUrl()))
-        def authCode = params.get('code')
-        authCode != null
-
-        and: 'auth code can be redeemed for access token'
-        def response = getAccessToken(authCode)
-        response.user_name == AUTH_USER.username
-        response.auth_source == 'auth'
-        response.user_id == '608955ae-52ed-44cc-884c-011597a77949'
-
-        cleanup:
-        CachingDriverFactory.clearCache()
-    }
-
-    def "I can sign in from another client as delius only user"() {
-        given: 'I am using SSO auth token to login'
-        def state = RandomStringUtils.random(6, true, true)
-        browser.go("/auth/oauth/authorize?client_id=elite2apiclient&redirect_uri=$clientBaseUrl&response_type=code&state=$state")
-        at LoginPage
-
-        when: "I login using valid credentials"
-        loginAs DELIUS_USER, 'password'
-
-        then: 'I am redirected back'
-        browser.getCurrentUrl() startsWith("$clientBaseUrl?code")
-
-        and: 'state is returned'
-        browser.getCurrentUrl() contains("state=$state")
-
-        and: 'auth code is returned'
-        def params = splitQuery(new URL(browser.getCurrentUrl()))
-        def authCode = params.get('code')
-        authCode != null
-
-        and: 'auth code can be redeemed for access token'
-        def response = getAccessToken(authCode)
-        response.user_name == 'DELIUS'
-        response.auth_source == 'delius'
-        response.user_id == '2500077027'
-
-        cleanup:
-        CachingDriverFactory.clearCache()
     }
 
     static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {

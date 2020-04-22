@@ -31,18 +31,22 @@ import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
+import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
+import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
 
 @ExtendWith(MockitoExtension::class)
-internal class LoggingTokenServicesTest {
+internal class TrackingTokenServicesTest {
   private val telemetryClient: TelemetryClient = mock()
   private val tokenStore: TokenStore = mock()
   private val externalIdAuthenticationHelper: ExternalIdAuthenticationHelper = mock()
   private val restTemplate: RestTemplate = mock()
-  private var tokenServices = LoggingTokenServices(telemetryClient, restTemplate, true)
-  private var tokenServicesVerificationDisabled = LoggingTokenServices(telemetryClient, restTemplate, false)
+  private val tokenVerificationClientCredentials = TokenVerificationClientCredentials()
+  private val tokenServices = TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, true)
+  private val tokenServicesVerificationDisabled = TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, false)
 
   @BeforeEach
   fun setUp() {
+    tokenVerificationClientCredentials.clientId = "token-verification-client-id"
     tokenServices.setSupportRefreshToken(true)
     tokenServices.setTokenStore(tokenStore)
     tokenServicesVerificationDisabled.setSupportRefreshToken(true)
@@ -54,7 +58,7 @@ internal class LoggingTokenServicesTest {
   }
 
   @Nested
-  inner class `create access token`() {
+  inner class `create access token` {
     @Test
     fun createAccessToken() {
       val userAuthentication = UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")
@@ -94,20 +98,42 @@ internal class LoggingTokenServicesTest {
   }
 
   @Nested
-  inner class `refresh access token`() {
+  inner class `refresh access token` {
+    val refreshToken = JwtAuthHelper().createJwt(JwtParameters(additionalClaims = mapOf("ati" to "accessTokenId")))
+
     @Test
     fun refreshAccessToken() {
       whenever(tokenStore.readRefreshToken(anyString())).thenReturn(DefaultOAuth2RefreshToken("newValue"))
       whenever(tokenStore.readAuthenticationForRefreshToken(any())).thenReturn(OAuth2Authentication(OAUTH_2_REQUEST, UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")))
-      tokenServices.refreshAccessToken("tokenValue", TokenRequest(emptyMap(), "client", emptySet(), "refresh"))
+      tokenServices.refreshAccessToken(refreshToken, TokenRequest(emptyMap(), "client", emptySet(), "refresh"))
       verify(telemetryClient).trackEvent("RefreshAccessToken", mapOf("username" to "authenticateduser", "clientId" to "client"), null)
+    }
+
+    @Test
+    fun `refresh access token calls token verification service`() {
+      whenever(tokenStore.readRefreshToken(anyString())).thenReturn(DefaultOAuth2RefreshToken("newValue"))
+      whenever(tokenStore.readAuthenticationForRefreshToken(any())).thenReturn(OAuth2Authentication(OAUTH_2_REQUEST, UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")))
+      tokenServices.refreshAccessToken(refreshToken, TokenRequest(emptyMap(), "client", emptySet(), "refresh"))
+      verify(restTemplate).postForLocation(eq("/token/refresh/{accessJwtId}"), check {
+        assertThat(it).isInstanceOf(String::class.java).asString().hasSize(36)
+      }, eq("accessTokenId"))
     }
 
     @Test
     fun `refresh access token ignores token verification service if disabled`() {
       whenever(tokenStore.readRefreshToken(anyString())).thenReturn(DefaultOAuth2RefreshToken("newValue"))
       whenever(tokenStore.readAuthenticationForRefreshToken(any())).thenReturn(OAuth2Authentication(OAUTH_2_REQUEST, UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")))
-      tokenServicesVerificationDisabled.refreshAccessToken("tokenValue", TokenRequest(emptyMap(), "client", emptySet(), "refresh"))
+      tokenServicesVerificationDisabled.refreshAccessToken(refreshToken, TokenRequest(emptyMap(), "client", emptySet(), "refresh"))
+      verifyZeroInteractions(restTemplate)
+    }
+
+    @Test
+    fun `refresh access token ignores token verification service if client is token verification`() {
+      val tokenVerificationAuthRequest = OAuth2Request(emptyMap(), "token-verification-client-id", emptySet(), true, emptySet(), emptySet(), "redirect", null, null)
+
+      whenever(tokenStore.readRefreshToken(anyString())).thenReturn(DefaultOAuth2RefreshToken("newValue"))
+      whenever(tokenStore.readAuthenticationForRefreshToken(any())).thenReturn(OAuth2Authentication(tokenVerificationAuthRequest, UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")))
+      tokenServicesVerificationDisabled.refreshAccessToken(refreshToken, TokenRequest(emptyMap(), "token-verification-client-id", emptySet(), "refresh"))
       verifyZeroInteractions(restTemplate)
     }
   }

@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration
 
+import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.JWTParser
 import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.core.annotation.Page
 import org.fluentlenium.core.annotation.PageUrl
@@ -61,5 +63,10 @@ class HomePage : AuthPage<HomePage>("HMPPS Digital Services - Home", "Select ser
 
   fun checkHdcLinkNotPresent() {
     assertThat(find("#HDC")).isEmpty()
+  }
+
+  fun parseJwt(): JWTClaimsSet {
+    val token = driver.manage().getCookieNamed("jwtSession").value
+    return JWTParser.parse(token).jwtClaimsSet
   }
 }
