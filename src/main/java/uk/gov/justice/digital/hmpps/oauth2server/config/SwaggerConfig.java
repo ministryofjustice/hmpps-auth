@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 import com.google.common.base.Predicates;
+import io.swagger.util.ReferenceSerializationConfigurer;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +9,7 @@ import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.json.JacksonModuleRegistrar;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
@@ -54,5 +56,10 @@ public class SwaggerConfig {
                 "HMPPS Digital Studio",
                 "",
                 "feedback@digital.justice.gov.uk");
+    }
+
+    @Bean
+    public JacksonModuleRegistrar swaggerJacksonModuleRegistrar() {
+        return ReferenceSerializationConfigurer::serializeAsComputedRef;
     }
 }

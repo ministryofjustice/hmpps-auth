@@ -40,6 +40,8 @@ abstract class IntegrationTest {
   @LocalServerPort
   private var localServerPort: Int = 0
 
+  internal lateinit var baseUrl: String
+
   init {
     // Resolves an issue where Wiremock keeps previous sockets open from other tests causing connection resets
     System.setProperty("http.keepAlive", "false")
@@ -47,8 +49,9 @@ abstract class IntegrationTest {
 
   @BeforeEach
   internal fun setupPort() {
+    baseUrl = "http://localhost:${localServerPort}/auth"
     // need to override port as random port only assigned on server startup
-    (deliusApiRestTemplate.resource as DeliusClientCredentials).accessTokenUri = "http://localhost:${localServerPort}/auth/oauth/token"
+    (deliusApiRestTemplate.resource as DeliusClientCredentials).accessTokenUri = "$baseUrl/oauth/token"
     (tokenVerificationApiRestTemplate.resource as TokenVerificationClientCredentials).accessTokenUri = "http://localhost:${localServerPort}/auth/oauth/token"
   }
 

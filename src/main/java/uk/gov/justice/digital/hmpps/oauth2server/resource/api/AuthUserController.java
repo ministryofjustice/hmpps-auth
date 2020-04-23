@@ -279,7 +279,7 @@ public class AuthUserController {
         private String firstName;
         @ApiModelProperty(required = true, value = "Last name", example = "User", position = 3)
         private String lastName;
-        @ApiModelProperty(value = "Initial group, required for group managers", example = "[SITE_1_GROUP_1]", position = 4)
+        @ApiModelProperty(value = "Initial group, required for group managers", example = "SITE_1_GROUP_1", position = 4)
         private String groupCode;
     }
 
