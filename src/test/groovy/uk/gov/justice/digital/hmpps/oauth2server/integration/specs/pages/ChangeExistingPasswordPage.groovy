@@ -26,7 +26,7 @@ class ChangeExistingPasswordPage extends Page {
     $('form').newPassword = newPassword
     $('form').confirmPassword = confirmNewPassword
 
-    assert changePasswordButton.value() == 'Save new password'
+    assert changePasswordButton.value() == 'Save password'
 
     changePasswordButton.click()
   }
