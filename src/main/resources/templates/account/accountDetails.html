@@ -3,15 +3,36 @@
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}" th:with="showBack=true">
 <head>
-  <title>Account Details</title>
+  <title>Your Account Details</title>
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-full">
 
   <div role="alert">
-    <h1 class="govuk-heading-xl">Account details</h1>
+    <h1 class="govuk-heading-xl">Your account details</h1>
+  </div>
+  <div>
+    <p class="govuk-body">
+      <a class="govuk-link govuk-link--no-visited-state" th:href="@{/existing-password}" data-qa="changePassword">
+        Change your password
+      </a>
+    </p>
   </div>
   <dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Name
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="name" th:text="${user.name}">
+        Sarah Philips
+      </dd>
+      <dd class="govuk-summary-list__actions">
+        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/change-name}"
+           th:if="${authUser.authSource == 'auth'}" data-qa="changeName">
+          Change<span class="govuk-visually-hidden"> name</span>
+        </a>
+      </dd>
+    </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
         Username
@@ -25,23 +46,10 @@
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
-        Name
-      </dt>
-      <dd class="govuk-summary-list__value" data-qa="name" th:text="${user.name}">
-        Sarah Philips
-      </dd>
-      <dd class="govuk-summary-list__actions">
-        <a class="govuk-link" th:href="@{/change-name}" th:if="${authUser.authSource == 'auth'}" data-qa="changeName">
-          Change<span class="govuk-visually-hidden"> name</span>
-        </a>
-      </dd>
-    </div>
-    <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">
         Last signed in
       </dt>
       <dd class="govuk-summary-list__value" data-qa="lastLoggedIn"
-          th:text="${#temporals.format(authUser.lastLoggedIn, 'd MMMM yyyy HH:mm')}">
+          th:text="${#temporals.format(authUser.lastLoggedIn, 'd MMMM yyyy, HH:mm')}">
         24 January 2020 - 10:00:13
       </dd>
       <dd class="govuk-summary-list__actions">
@@ -50,29 +58,14 @@
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
-        Password
-      </dt>
-      <dd class="govuk-summary-list__value" data-qa="passwordExpiry">
-        ************
-      </dd>
-      <dd class="govuk-summary-list__actions">
-        <a class="govuk-link" th:href="@{/existing-password}" data-qa="changePassword">
-          Change <span class="govuk-visually-hidden"> password</span>
-        </a>
-      </dd>
-    </div>
-  </dl>
-  <h2 class="govuk-heading-m" id="authentication">Authentication</h2>
-  <dl class="govuk-summary-list">
-    <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">
-        Email
+        Email address
       </dt>
       <dd class="govuk-summary-list__value" data-qa="email" th:text="${authUser.email}">
         sarah.philips@digital.justice.gov.uk
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a class="govuk-link" th:href="@{/existing-email}" th:if="${authUser.authSource != 'delius'}"
+        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/existing-email}"
+           th:if="${authUser.authSource != 'delius'}"
            data-qa="changeEmail">
           <th:block th:text="${#strings.isEmpty(authUser.email)} ? 'Add' : 'Change'">
             Change
@@ -83,13 +76,13 @@
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
-        Email verified
+        Verified email
       </dt>
       <dd class="govuk-summary-list__value" data-qa="verified" th:text="${authUser.verified} ? 'Yes' : 'No'">
         Yes
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a class="govuk-link" th:href="@{/verify-email}"
+        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/verify-email}"
            th:unless="${#strings.isEmpty(authUser.email) || authUser.verified}"
            data-qa="verifyEmail">
           Resend <span class="govuk-visually-hidden"> email</span> code
@@ -98,63 +91,64 @@
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
-        Secondary email
+        Backup email
       </dt>
       <dd class="govuk-summary-list__value" data-qa="secondaryEmail" th:text="${authUser.secondaryEmail}">
         bob@digital.justice.gov.uk
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a class="govuk-link" th:href="@{/new-secondary-email}" th:if="${authUser.authSource != 'delius'}"
+        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/new-secondary-email}"
+           th:if="${authUser.authSource != 'delius'}"
            data-qa="changeSecondaryEmail">
           <th:block th:text="${#strings.isEmpty(authUser.secondaryEmail)} ? 'Add' : 'Change'">
             Change
           </th:block>
-          <span class="govuk-visually-hidden"> secondary email</span>
+          <span class="govuk-visually-hidden"> backup email</span>
         </a>
       </dd>
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
-        Secondary email verified
+        Verified backup email
       </dt>
       <dd class="govuk-summary-list__value" data-qa="verifiedSecondaryEmail"
           th:text="${authUser.secondaryEmailVerified} ? 'Yes' : 'No'">
         Yes
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a class="govuk-link" th:href="@{/secondary-email-resend}"
+        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/secondary-email-resend}"
            th:unless="${#strings.isEmpty(authUser.secondaryEmail) || authUser.secondaryEmailVerified}"
            data-qa="verifySecondaryEmail">
-          Resend <span class="govuk-visually-hidden"> email</span> code
+          Resend <span class="govuk-visually-hidden">backup email</span> code
         </a>
       </dd>
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
-        Mobile
+        Mobile number
       </dt>
       <dd class="govuk-summary-list__value" data-qa="mobile" th:text="${authUser.mobile}">
         01234 567890
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a class="govuk-link" th:href="@{/change-mobile}" data-qa="changeMobile">
+        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/change-mobile}" data-qa="changeMobile">
           <th:block th:text="${#strings.isEmpty(authUser.mobile)} ? 'Add' : 'Change'">
             Change
           </th:block>
-          <span class="govuk-visually-hidden"> mobile</span>
+          <span class="govuk-visually-hidden"> mobile number</span>
         </a>
       </dd>
     </div>
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
-        Mobile verified
+        Verified mobile
       </dt>
       <dd class="govuk-summary-list__value" data-qa="mobileVerified"
           th:text="${authUser.mobileVerified} ? 'Yes' : 'No'">
         No
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a class="govuk-link" th:href="@{/mobile-resend}"
+        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/mobile-resend}"
            th:unless="${#strings.isEmpty(authUser.mobile) || authUser.mobileVerified}"
            data-qa="verifyMobile">
           Resend <span class="govuk-visually-hidden"> mobile</span> code
@@ -163,7 +157,7 @@
     </div>
     <div th:class="govuk-summary-list__row">
       <dt th:class="'govuk-summary-list__key' + (${!mfaPreferenceVerified} ? ' govuk-form-group--error' : '')">
-        Security code preference
+        2-step verification
       </dt>
       <dd class="govuk-summary-list__value" data-qa="mfaPreference">
         <span th:text="#{${'mfa.preference.' + authUser.mfaPreference}}">
@@ -176,8 +170,8 @@
         </span>
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a class="govuk-link" th:href="@{/mfa-preference}" data-qa="changeMfaPreference">
-          Change <span class="govuk-visually-hidden"> mfa preference</span>
+        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/mfa-preference}" data-qa="changeMfaPreference">
+          Change <span class="govuk-visually-hidden"> 2-step verification preference</span>
         </a>
       </dd>
     </div>
