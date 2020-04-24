@@ -7,8 +7,8 @@ class AccountDetailsPage extends Page {
     static url = "/auth"
 
     static at = {
-        title == 'HMPPS Digital Services - Account Details'
-        headingText == 'Account details'
+        title == 'HMPPS Digital Services - Your Account Details'
+        headingText == 'Your account details'
     }
 
     static content = {
