@@ -22,6 +22,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import uk.gov.justice.digital.hmpps.oauth2server.resource.ClearAllSessionsLogoutHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthAuthenticationProvider;
@@ -48,6 +49,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> nomisUserDetailsService;
     private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authUserDetailsService;
     private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> deliusUserDetailsService;
+    private final ClearAllSessionsLogoutHandler clearAllSessionsLogoutHandler;
 
     @Autowired
     public AuthenticationManagerConfiguration(@Qualifier("nomisUserDetailsService") final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> nomisUserDetailsService,
@@ -62,7 +64,8 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                                               final AuthAuthenticationProvider authAuthenticationProvider,
                                               final NomisAuthenticationProvider nomisAuthenticationProvider,
                                               final DeliusAuthenticationProvider deliusAuthenticationProvider,
-                                              final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler) {
+                                              final UserStateAuthenticationFailureHandler userStateAuthenticationFailureHandler,
+                                              final ClearAllSessionsLogoutHandler clearAllSessionsLogoutHandler) {
         this.nomisUserDetailsService = nomisUserDetailsService;
         this.authUserDetailsService = authUserDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
@@ -76,6 +79,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         this.deliusAuthenticationProvider = deliusAuthenticationProvider;
         this.userStateAuthenticationFailureHandler = userStateAuthenticationFailureHandler;
         this.deliusUserDetailsService = deliusUserDetailsService;
+        this.clearAllSessionsLogoutHandler = clearAllSessionsLogoutHandler;
     }
 
     @SuppressWarnings("SpringElInspection")
@@ -109,6 +113,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .clearAuthentication(true)
                 .deleteCookies(jwtCookieName)
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .addLogoutHandler(clearAllSessionsLogoutHandler)
                 .logoutSuccessHandler(logoutSuccessHandler)
                 .permitAll()
 

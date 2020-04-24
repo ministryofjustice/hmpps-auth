@@ -67,7 +67,7 @@ public class JwtAuthenticationHelper {
      * @param jwt String
      * @return token for client
      */
-    Optional<UsernamePasswordAuthenticationToken> readAuthenticationFromJwt(final String jwt) {
+    public Optional<UsernamePasswordAuthenticationToken> readAuthenticationFromJwt(final String jwt) {
         try {
             final var body = Jwts.parser()
                     .setSigningKey(keyPair.getPublic())

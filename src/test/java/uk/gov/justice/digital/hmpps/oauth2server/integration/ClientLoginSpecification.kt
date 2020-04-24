@@ -1,7 +1,8 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "ClassName")
 
 package uk.gov.justice.digital.hmpps.oauth2server.integration
 
+import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
@@ -18,6 +19,12 @@ import org.springframework.test.web.reactive.server.WebTestClient.BodyContentSpe
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 import java.nio.charset.Charset
 
+/**
+ * Verify clients can login, be redirected back to their system and then logout again.
+ * The token-verification spring profile needs to be enabled (as well as the dev profile) for these tests.  This is
+ * done automatically in circle configuration for automated builds, but needs enabling when running these tests.  By
+ * default the dev profile doesn't have it enabled so that other clients can use this project without issues.
+ */
 class ClientLoginSpecification : AbstractAuthSpecification() {
   private val clientBaseUrl = "http://localhost:8081/login"
   private val webTestClient = WebTestClient.bindToServer().baseUrl(baseUrl).build()
@@ -32,7 +39,7 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `I can sign in from another client and send token to verification service`() {
+  fun `I can sign in from another client and send token to verification service (requires token-verification spring profile)`() {
     val jwt = goTo(loginPage).loginAs("ITAG_USER", "password").parseJwt()
 
     clientAccess()
@@ -74,7 +81,7 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `I can redeem the refresh token for an access token and send token to verification service`() {
+  fun `I can redeem the refresh token for an access token and send token to verification service (requires token-verification spring profile)`() {
     goTo(loginPage).loginAs("AUTH_USER")
 
     clientAccess()
@@ -88,6 +95,27 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
                     .withRequestBody(equalTo(accessToken[0].toString())))
               }
         }
+  }
+
+  @Test
+  fun `I can logout as a client from another system`() {
+    clientSignIn("AUTH_USER")
+    goTo("/logout?redirect_uri=$clientBaseUrl&client_id=elite2apiclient")
+    assertThat(driver.currentUrl).isEqualTo(clientBaseUrl)
+
+    // check that they are now logged out
+    val state = RandomStringUtils.random(6, true, true)
+    goTo("/oauth/authorize?client_id=elite2apiclient&redirect_uri=$clientBaseUrl&response_type=code&state=$state")
+    loginPage.isAt()
+  }
+
+  @Test
+  fun `I can logout as a client from another system and send token to verification service (requires token-verification spring profile)`() {
+    val authJwtId = goTo(loginPage).loginAs("AUTH_USER").parseJwt().jwtid
+
+    goTo("/logout?redirect_uri=$clientBaseUrl&client_id=elite2apiclient")
+
+    tokenVerificationApi.verify(deleteRequestedFor(urlPathMatching("/token/${authJwtId}")))
   }
 
   private fun clientSignIn(username: String, password: String = "password123456"): BodyContentSpec {

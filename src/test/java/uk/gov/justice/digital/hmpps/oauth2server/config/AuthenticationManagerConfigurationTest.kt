@@ -11,9 +11,16 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
+import uk.gov.justice.digital.hmpps.oauth2server.resource.ClearAllSessionsLogoutHandler
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler
-import uk.gov.justice.digital.hmpps.oauth2server.security.*
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthAuthenticationProvider
+import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationProvider
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
+import uk.gov.justice.digital.hmpps.oauth2server.security.JwtCookieAuthenticationFilter
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisAuthenticationProvider
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler
 
 class AuthenticationManagerConfigurationTest {
   private val nomisUserDetailsService: AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> = mock()
@@ -30,10 +37,11 @@ class AuthenticationManagerConfigurationTest {
   private val deliusAuthenticationProvider: DeliusAuthenticationProvider = mock()
   private val userStateAuthenticationFailureHandle: UserStateAuthenticationFailureHandler = mock()
   private val authenticationManagerBuilder: AuthenticationManagerBuilder = mock()
+  private val clearAllSessionsLogoutHandler: ClearAllSessionsLogoutHandler = mock()
   private var authenticationManagerConfiguration = AuthenticationManagerConfiguration(nomisUserDetailsService, authUserDetailsService,
       deliusUserDetailsService, accessDeniedHandler, logoutSuccessHandler, jwtAuthenticationSuccessHandler, jwtCookieAuthenticationFilter,
       jwtCookieName, cookieRequestCache, authAuthenticationProvider, nomisAuthenticationProvider, deliusAuthenticationProvider,
-      userStateAuthenticationFailureHandle)
+      userStateAuthenticationFailureHandle, clearAllSessionsLogoutHandler)
 
   @Test
   fun configure_deliusProviderIsLast() {
