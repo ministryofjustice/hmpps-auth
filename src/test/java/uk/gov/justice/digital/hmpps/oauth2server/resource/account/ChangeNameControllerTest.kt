@@ -75,7 +75,7 @@ class ChangeNameControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
 
     controller.changeName("joe", "bloggs", token, request, response)
-    verify(jwtAuthenticationSuccessHandler).addAuthenticationToRequest(eq(request), eq(response), check {
+    verify(jwtAuthenticationSuccessHandler).updateAuthenticationInRequest(eq(request), eq(response), check {
       assertThat(it.authorities).containsExactlyInAnyOrderElementsOf(authorities)
       assertThat(it.principal).isEqualTo(user)
     })

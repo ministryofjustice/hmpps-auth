@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationHelper
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtCookieHelper
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -19,11 +18,10 @@ class ClearAllSessionsLogoutHandler(private val jwtCookieHelper: JwtCookieHelper
                                     @Qualifier("tokenVerificationApiRestTemplate") private val restTemplate: RestTemplate,
                                     @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean) : LogoutHandler {
   override fun logout(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication?) {
-    val optionalAuth = jwtCookieHelper.readValueFromCookie(request).flatMap { jwtAuthenticationHelper.readAuthenticationFromJwt(it) }
+    val optionalAuth = jwtCookieHelper.readValueFromCookie(request).flatMap { jwtAuthenticationHelper.readUserDetailsFromJwt(it) }
     optionalAuth.ifPresent {
-      val udi = it.principal as UserDetailsImpl
-      log.info("Logging out user {} with jwt of {}", udi.username, udi.jwtId)
-      if (tokenVerificationEnabled) restTemplate.delete("/token/{authJwtId}", udi.jwtId)
+      log.info("Logging out user {} with jwt of {}", it.username, it.jwtId)
+      if (tokenVerificationEnabled) restTemplate.delete("/token/{authJwtId}", it.jwtId)
     }
   }
 

@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration
 
+import com.github.tomakehurst.wiremock.client.WireMock
 import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.core.annotation.PageUrl
 import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
+import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 
 class LoginSpecification : AbstractAuthSpecification() {
   @Test
@@ -56,6 +58,38 @@ class LoginSpecification : AbstractAuthSpecification() {
   fun `Log in with valid credentials in lower case`() {
     val homePage = goTo(loginPage).loginAs("itag_user", "password")
     homePage.assertNameDisplayedCorrectly("Itag User")
+  }
+
+  @Test
+  fun `I can logout once logged in`() {
+    val homePage = goTo(loginPage).loginAs("itag_user", "password")
+
+    homePage.logOut()
+
+    loginPage.isAtPage().checkLoggedOutMessage()
+  }
+
+  @Test
+  fun `I can logout once logged in and send token to verification service (requires token-verification spring profile)`() {
+    val homePage = goTo(loginPage).loginAs("itag_user", "password")
+    val authJwtId = homePage.parseJwt().jwtid
+
+    homePage.logOut()
+
+    tokenVerificationApi.verify(WireMock.deleteRequestedFor(WireMock.urlPathMatching("/token/${authJwtId}")))
+  }
+
+  @Test
+  fun `I can login again without logging out and send token to verification service (requires token-verification spring profile)`() {
+    val oldJwtId = goTo(loginPage).loginAs("itag_user", "password").parseJwt().jwtid
+    val homePage = goTo(loginPage).loginAs("itag_user_adm")
+
+    // check now logged in as new user
+    val jwt = homePage.parseJwt()
+    assertThat(jwt.getStringClaim("sub")).isEqualTo("ITAG_USER_ADM")
+    assertThat(jwt.jwtid).isNotEqualTo(oldJwtId)
+
+    tokenVerificationApi.verify(WireMock.deleteRequestedFor(WireMock.urlPathMatching("/token/${oldJwtId}")))
   }
 }
 
@@ -111,6 +145,11 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
     val termsLink = el("a[data-qa='terms']")
     assertThat(termsLink.text()).isEqualTo("Terms and conditions")
     termsLink.click()
+  }
+
+  fun checkLoggedOutMessage() {
+    val warning = el("#warning")
+    assertThat(warning.text()).isEqualTo("Warning\nYou have been signed out")
   }
 
   fun checkLoginAuthenticationFailedError(): LoginPage {

@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration
 
-import com.nimbusds.jwt.JWTClaimsSet
-import com.nimbusds.jwt.JWTParser
 import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.core.annotation.Page
 import org.fluentlenium.core.annotation.PageUrl
@@ -35,17 +33,8 @@ class HomePageSpecification : AbstractAuthSpecification() {
 
 @PageUrl("/")
 class HomePage : AuthPage<HomePage>("HMPPS Digital Services - Home", "Select service") {
-  @FindBy(css = "#principal-name")
-  private lateinit var principalName: FluentWebElement
-
   @FindBy(css = "#DETAILS")
   private lateinit var accountDetails: FluentWebElement
-
-  fun assertNameDisplayedCorrectly(name: String) {
-    assertThat(principalName.text()).isEqualTo(name)
-  }
-
-  fun getCurrentName(): String = principalName.text()
 
   fun navigateToAccountDetails() {
     assertThat(accountDetails.text()).isEqualTo("Manage account details")
@@ -63,10 +52,5 @@ class HomePage : AuthPage<HomePage>("HMPPS Digital Services - Home", "Select ser
 
   fun checkHdcLinkNotPresent() {
     assertThat(find("#HDC")).isEmpty()
-  }
-
-  fun parseJwt(): JWTClaimsSet {
-    val token = driver.manage().getCookieNamed("jwtSession").value
-    return JWTParser.parse(token).jwtClaimsSet
   }
 }
