@@ -47,13 +47,18 @@ public class JwtAuthenticationHelper {
     }
 
     String createJwt(final Authentication authentication) {
+        return createJwtWithId(authentication, UUID.randomUUID().toString());
+    }
+
+
+    String createJwtWithId(final Authentication authentication, final String jwtId) {
         final var userDetails = (UserPersonDetails) authentication.getPrincipal();
         final var username = userDetails.getUsername();
         log.debug("Creating jwt cookie for user {}", username);
         final var authorities = Optional.ofNullable(authentication.getAuthorities()).orElse(Collections.emptyList());
         final var authoritiesAsString = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
         return Jwts.builder()
-                .setId(UUID.randomUUID().toString())
+                .setId(jwtId)
                 .setSubject(username)
                 .addClaims(Map.of("authorities", authoritiesAsString, "name", userDetails.getName(), "auth_source", userDetails.getAuthSource(), "user_id", userDetails.getUserId()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiryTime.toMillis()))
@@ -68,6 +73,10 @@ public class JwtAuthenticationHelper {
      * @return token for client
      */
     public Optional<UsernamePasswordAuthenticationToken> readAuthenticationFromJwt(final String jwt) {
+        return readUserDetailsFromJwt(jwt).map(u -> new UsernamePasswordAuthenticationToken(u, null, u.getAuthorities()));
+    }
+
+    public Optional<UserDetailsImpl> readUserDetailsFromJwt(final String jwt) {
         try {
             final var body = Jwts.parser()
                     .setSigningKey(keyPair.getPublic())
@@ -84,7 +93,7 @@ public class JwtAuthenticationHelper {
             final var authSource = Optional.ofNullable(body.get("auth_source", String.class)).orElse("none");
 
             log.debug("Set authentication for {} with jwt id of {}", username, body.getId());
-            return Optional.of(new UsernamePasswordAuthenticationToken(new UserDetailsImpl(username, name, authorities, authSource, userId, body.getId()), null, authorities));
+            return Optional.of(new UserDetailsImpl(username, name, authorities, authSource, userId, body.getId()));
         } catch (final ExpiredJwtException eje) {
             // cookie set to expire at same time as JWT so unlikely really get an expired one
             log.info("Expired JWT found for user {}", eje.getClaims().getSubject());

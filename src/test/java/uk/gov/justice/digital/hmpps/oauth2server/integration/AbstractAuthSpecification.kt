@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration
 
+import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.JWTParser
 import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.adapter.junit.jupiter.FluentTest
 import org.fluentlenium.core.FluentPage
@@ -42,7 +44,10 @@ open class AuthPage<T>(val title: String, val heading: String) : FluentPage() {
   @FindBy(css = "#logout")
   private lateinit var logOut: FluentWebElement
 
-  fun logOut() {
+  @FindBy(css = "#principal-name")
+  private lateinit var principalName: FluentWebElement
+
+  internal fun logOut() {
     logOut.click()
   }
 
@@ -76,4 +81,15 @@ open class AuthPage<T>(val title: String, val heading: String) : FluentPage() {
     assertThat(errorDetail.text()).contains(error)
     return this as T
   }
+
+  internal fun parseJwt(): JWTClaimsSet {
+    val token = driver.manage().getCookieNamed("jwtSession").value
+    return JWTParser.parse(token).jwtClaimsSet
+  }
+
+  internal fun assertNameDisplayedCorrectly(name: String) {
+    assertThat(principalName.text()).isEqualTo(name)
+  }
+
+  internal fun getCurrentName(): String = principalName.text()
 }

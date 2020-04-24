@@ -1,12 +1,10 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
-
 import groovy.json.JsonSlurper
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ChangeExpiredPasswordPage
-import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginErrorPage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
 
@@ -176,20 +174,6 @@ class LoginSpecification extends DeliusIntegrationSpec {
         at LoginErrorPage
         errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times." +
                 "\nDelius is experiencing issues. Please try later if you are attempting to login using your Delius credentials."
-    }
-
-    def "I can logout once logged in"() {
-        given: 'I am logged in'
-        to LoginPage
-        loginAs ITAG_USER, 'password'
-        at HomePage
-
-        when: "I logout"
-        logout()
-
-        then: 'I am logged out'
-        at LoginPage
-        warning == 'Warning\nYou have been signed out'
     }
 
     static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {

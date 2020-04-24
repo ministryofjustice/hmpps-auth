@@ -7,7 +7,6 @@ import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationHelper
@@ -25,7 +24,7 @@ class ClearAllSessionsLogoutHandlerTest {
   private val clearAllSessionsLogoutHandlerTokenVerificationDisabled = ClearAllSessionsLogoutHandler(jwtCookieHelper, jwtAuthenticationHelper, restTemplate, false)
   private val httpServletRequest: HttpServletRequest = mock()
   private val httpServletResponse: HttpServletResponse = mock()
-  private val token = UsernamePasswordAuthenticationToken(UserDetailsImpl("user", "name", setOf(), auth.name, "userid", "jwtId"), "pass")
+  private val user = UserDetailsImpl("user", "name", setOf(), auth.name, "userid", "jwtId")
 
   @Test
   fun `logout no cookie found`() {
@@ -43,7 +42,7 @@ class ClearAllSessionsLogoutHandlerTest {
   @Test
   fun `logout cookie found`() {
     whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
-    whenever(jwtAuthenticationHelper.readAuthenticationFromJwt(anyString())).thenReturn(Optional.of(token))
+    whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
     clearAllSessionsLogoutHandler.logout(httpServletRequest, httpServletResponse, null)
     verify(restTemplate).delete("/token/{authJwtId}", "jwtId")
   }
@@ -51,7 +50,7 @@ class ClearAllSessionsLogoutHandlerTest {
   @Test
   fun `logout cookie found but verification disabled`() {
     whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
-    whenever(jwtAuthenticationHelper.readAuthenticationFromJwt(anyString())).thenReturn(Optional.of(token))
+    whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
     clearAllSessionsLogoutHandlerTokenVerificationDisabled.logout(httpServletRequest, httpServletResponse, null)
     verifyZeroInteractions(restTemplate)
   }

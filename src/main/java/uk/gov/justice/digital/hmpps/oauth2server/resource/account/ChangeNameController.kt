@@ -44,7 +44,7 @@ class ChangeNameController(private val authUserService: AuthUserService,
       // have to amend the token in the session as it will contain different user details
       val userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow()
       val successToken = UsernamePasswordAuthenticationToken(userPersonDetails, null, userPersonDetails.authorities)
-      jwtAuthenticationSuccessHandler.addAuthenticationToRequest(request, response, successToken)
+      jwtAuthenticationSuccessHandler.updateAuthenticationInRequest(request, response, successToken)
 
       ModelAndView("redirect:/account-details")
     } catch (e: CreateUserException) {

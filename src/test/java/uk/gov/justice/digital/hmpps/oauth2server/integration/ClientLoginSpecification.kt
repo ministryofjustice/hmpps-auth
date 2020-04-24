@@ -118,9 +118,8 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
     tokenVerificationApi.verify(deleteRequestedFor(urlPathMatching("/token/${authJwtId}")))
   }
 
-  private fun clientSignIn(username: String, password: String = "password123456"): BodyContentSpec {
-    return clientAccess { loginPage.isAtPage().submitLogin(username, password) }
-  }
+  private fun clientSignIn(username: String, password: String = "password123456") =
+      clientAccess { loginPage.isAtPage().submitLogin(username, password) }
 
   private fun clientAccess(doWithinAuth: () -> Unit = {}): BodyContentSpec {
     val state = RandomStringUtils.random(6, true, true)
