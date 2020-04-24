@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
-import geb.spock.GebReportingSpec
+
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.ErrorPage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
 
-class ErrorSpecification extends GebReportingSpec {
+class ErrorSpecification extends BrowserReportingSpec {
 
     def "Error page shown when error occurs"() {
         given: 'I go to the login page'

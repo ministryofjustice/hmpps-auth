@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
-import geb.spock.GebReportingSpec
+
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.HomePage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.LoginPage
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.PageNotFoundPage
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.ITAG_USER
 
-class PageNotFoundSpecification extends GebReportingSpec {
+class PageNotFoundSpecification extends BrowserReportingSpec {
     def "Page not found page shown when page does not exist"() {
         given: 'I am logged out'
         browser.go('/auth/logout')

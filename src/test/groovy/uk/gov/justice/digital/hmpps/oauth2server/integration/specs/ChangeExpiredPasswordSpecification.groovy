@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration.specs
 
-import geb.spock.GebReportingSpec
+
 import org.apache.commons.lang3.RandomStringUtils
 import uk.gov.justice.digital.hmpps.oauth2server.integration.specs.pages.*
 
 import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.UserAccount.*
 
-class ChangeExpiredPasswordSpecification extends GebReportingSpec {
+class ChangeExpiredPasswordSpecification extends BrowserReportingSpec {
   public static final String clientBaseUrl = 'http://localhost:8081/login'
 
   def "Attempt change password without credentials"() {
