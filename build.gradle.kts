@@ -94,7 +94,7 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.security:spring-security-jwt:1.1.0.RELEASE")
-  implementation("org.springframework.security.oauth:spring-security-oauth2:2.4.1.RELEASE")
+  implementation("org.springframework.security.oauth:spring-security-oauth2:2.4.0.RELEASE")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
   implementation("com.nimbusds:nimbus-jose-jwt:8.16")
