@@ -8,7 +8,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 class OauthIntTest : IntegrationTest() {
   @Test
   fun `Existing auth code stored in database can be redeemed for access token`() {
-    val authCode = "03sn0c" // from database oauth_code table
+    // from database oauth_code table.  To regenerate - put a breakpoint in ClientLoginSpecification just before the
+    // call to get the access token.  Then go to the /auth/h2-console (blank username or password) and look at the last
+    // row in the oauth_code table
+    val authCode = "03sn0c"
     val clientUrl = "http://localhost:8081/login" // same as row in oauth_code table
     webTestClient
         .post().uri("/auth/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=$clientUrl")
