@@ -71,7 +71,7 @@ internal class TrackingTokenServicesTest {
       val userAuthentication = UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")
       tokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_REQUEST, userAuthentication))
       verify(restTemplate).postForLocation(eq("/token/{authJwtId}"), check {
-        assertThat(it).isInstanceOf(String::class.java).asString().hasSize(36)
+        assertThat(it).isInstanceOf(String::class.java).asString().hasSize(28)
       }, eq("jwtId"))
     }
 
@@ -115,7 +115,7 @@ internal class TrackingTokenServicesTest {
       whenever(tokenStore.readAuthenticationForRefreshToken(any())).thenReturn(OAuth2Authentication(OAUTH_2_REQUEST, UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")))
       tokenServices.refreshAccessToken(refreshToken, TokenRequest(emptyMap(), "client", emptySet(), "refresh"))
       verify(restTemplate).postForLocation(eq("/token/refresh/{accessJwtId}"), check {
-        assertThat(it).isInstanceOf(String::class.java).asString().hasSize(36)
+        assertThat(it).isInstanceOf(String::class.java).asString().hasSize(28)
       }, eq("accessTokenId"))
     }
 
