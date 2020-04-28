@@ -5,6 +5,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration
 import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 import com.nimbusds.jwt.JWTParser
 import net.minidev.json.JSONArray
@@ -45,7 +46,7 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
     clientAccess()
         .jsonPath(".sub").isEqualTo("ITAG_USER")
         .jsonPath(".access_token").value<JSONArray> {
-          tokenVerificationApi.verify(postRequestedFor(urlPathMatching("/token/${jwt.jwtid}"))
+          tokenVerificationApi.verify(postRequestedFor(urlEqualTo("/token/${jwt.jwtid}"))
               .withRequestBody(equalTo(it[0].toString())))
         }
   }
