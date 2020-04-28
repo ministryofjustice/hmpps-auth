@@ -3,10 +3,10 @@
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
-  <title>Change Secondary Email</title>
+  <title>Change Backup Email</title>
 </head>
 <body>
-<div layout:fragment="content" class="govuk-grid-column-two-thirds" th:with="error=${param.error ?: error}">
+<div layout:fragment="content" class="govuk-grid-column-three-quarters" th:with="error=${param.error ?: error}">
   <div th:if="${error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
        data-module="govuk-error-summary">
     <h2 class="govuk-error-summary__title" id="error-summary">
@@ -21,10 +21,15 @@
       </ul>
     </div>
   </div>
-  <h1 class="govuk-label-wrapper">
-    <label class="govuk-label govuk-label--xl" for="email">What is your new secondary email address?
+  <h1 class="govuk-label-wrapper" th:if="${secondaryEmail == null}">
+    <label class="govuk-label govuk-label--l" for="email">What is your backup email address?
     </label>
   </h1>
+  <h1 class="govuk-label-wrapper" th:unless="${secondaryEmail == null}">
+    <label class="govuk-label govuk-label--l" for="email">What is your new backup email address?
+    </label>
+  </h1>
+  <p class="govuk-body">You can use this address to receive your security code for 2-step verification sign in</p>
   <form class="form" th:action="@{/verify-email}" method="POST" id="changeEmailForm">
     <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
       <span th:if="${error}" id="email-error" class="govuk-error-message"
@@ -36,7 +41,7 @@
              spellcheck="false" th:value="${secondaryEmail}">
     </div>
     <input class="govuk-button" id="submit" type="submit" role="button"
-           data-element-id="continue-button" th:value="(${secondaryEmail == null} ? 'Add' : 'Update')">
+           data-element-id="continue-button" value="continue">
   </form>
 </div>
 </body>

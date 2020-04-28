@@ -44,7 +44,7 @@ class ChangeEmailControllerTest {
       val user = User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someuser@gmail.com", true))).build()
       whenever(userService.getUserWithContacts(token.name)).thenReturn(user)
       val view = controller.newSecondaryEmailRequest(token)
-      assertThat(view.viewName).isEqualTo("account/changeSecondaryEmail")
+      assertThat(view.viewName).isEqualTo("account/changeBackupEmail")
       val model = controller.newSecondaryEmailRequest(token)
       assertThat(model.model["secondaryEmail"]).isEqualTo("someuser@gmail.com")
     }

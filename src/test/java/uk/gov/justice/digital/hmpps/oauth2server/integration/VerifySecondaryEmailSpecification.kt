@@ -99,7 +99,7 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
 }
 
   @PageUrl("/verify-email-sent")
-  open class VerifySecondaryEmailSentPage : AuthPage<VerifySecondaryEmailSentPage>("HMPPS Digital Services - Verify Email Sent", "Verification email sent") {
+  open class VerifySecondaryEmailSentPage : AuthPage<VerifySecondaryEmailSentPage>("HMPPS Digital Services - Verify Email Sent", "Verify your backup email address to complete the change") {
     @FindBy(css = "a[role='button']")
     private lateinit var continueButton: FluentWebElement
 
@@ -122,6 +122,6 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
     }
   }
 
-  @PageUrl("/verify-email-secondary-confirm")
-  open class VerifySecondaryEmailConfirmPage : AuthPage<VerifySecondaryEmailConfirmPage>("HMPPS Digital Services - Verify Email Confirmation", "Email address verified")
+@PageUrl("/verify-email-secondary-confirm")
+open class VerifySecondaryEmailConfirmPage : AuthPage<VerifySecondaryEmailConfirmPage>("HMPPS Digital Services - Verify Email Confirmation", "Your backup email address has been verified")
 

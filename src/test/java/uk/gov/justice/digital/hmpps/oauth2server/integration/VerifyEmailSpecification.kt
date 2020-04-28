@@ -139,7 +139,7 @@ open class VerifyEmailPage : AuthPage<VerifyEmailPage>("HMPPS Digital Services -
 }
 
 @PageUrl("/verify-email")
-open class VerifyEmailSentPage : AuthPage<VerifyEmailSentPage>("HMPPS Digital Services - Verify Email Sent", "Verification email sent") {
+open class VerifyEmailSentPage : AuthPage<VerifyEmailSentPage>("HMPPS Digital Services - Verify Email Sent", "Verify your email address to complete the change") {
   @FindBy(css = "a[role='button']")
   private lateinit var continueButton: FluentWebElement
 
@@ -152,10 +152,10 @@ open class VerifyEmailSentPage : AuthPage<VerifyEmailSentPage>("HMPPS Digital Se
 }
 
 @PageUrl("/verify-email-confirm")
-open class VerifyEmailConfirmPage : AuthPage<VerifyEmailConfirmPage>("HMPPS Digital Services - Verify Email Confirmation", "Email address verified")
+open class VerifyEmailConfirmPage : AuthPage<VerifyEmailConfirmPage>("HMPPS Digital Services - Verify Email Confirmation", "Your email address has been verified")
 
 @PageUrl("/verify-email-already")
-open class SecondaryEmailAlreadyVerifiedPage : AuthPage<SecondaryEmailAlreadyVerifiedPage>("HMPPS Digital Services - Verify Secondary Email Confirmation", "Secondary email already verified") {
+open class SecondaryEmailAlreadyVerifiedPage : AuthPage<SecondaryEmailAlreadyVerifiedPage>("HMPPS Digital Services - Verify Backup Email Confirmation", "Backup email already verified") {
   @FindBy(css = "#continue")
   private lateinit var continueButton: FluentWebElement
 

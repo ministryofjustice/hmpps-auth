@@ -4,17 +4,17 @@
       layout:decorate="~{fragments/layout}">
 <head>
   <title
-      th:text="${#strings.equals(param.emailType, 'PRIMARY')} ? 'Verify Email Confirmation' : 'Verify Secondary Email Confirmation'">
+      th:text="${#strings.equals(param.emailType, 'PRIMARY')} ? 'Verify Email Confirmation' : 'Verify Backup Email Confirmation'">
     Verify Email Confirmation</title>
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-full">
   <h1 class="govuk-heading-xl" th:if="${#strings.equals(param.emailType, 'PRIMARY')}">Email already verified</h1>
-  <h1 class="govuk-heading-xl" th:unless="${#strings.equals(param.emailType, 'PRIMARY')}">Secondary email already
+  <h1 class="govuk-heading-xl" th:unless="${#strings.equals(param.emailType, 'PRIMARY')}">Backup email already
     verified</h1>
 
   <p class="govuk-body">Your <span th:if="${#strings.equals(param.emailType, 'SECONDARY')}"
-                                   text=" secondary"> secondary</span> email address has already been verified</p>
+                                   text=" secondary"> backup</span> email address has already been verified</p>
 
   <a class="govuk-button" th:href="@{/}" id="continue">OK, continue</a>
 </div>

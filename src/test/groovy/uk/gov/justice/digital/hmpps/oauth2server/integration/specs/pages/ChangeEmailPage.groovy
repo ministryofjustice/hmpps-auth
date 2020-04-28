@@ -21,7 +21,7 @@ class ChangeEmailPage extends Page {
   void changeEmailAs(String newEmail, String existingEmail) {
     assert $('form').email == existingEmail
     emailInput = newEmail
-    assert changeEmailButton.value() == 'Update'
+    assert changeEmailButton.value() == 'Continue'
     changeEmailButton.click()
   }
 }

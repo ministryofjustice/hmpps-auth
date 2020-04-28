@@ -16,10 +16,10 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
   private lateinit var homePage: HomePage
 
   @Page
-  private lateinit var changeSecondaryEmailPage: ChangeSecondaryEmailPage
+  private lateinit var newSecondaryEmailPage: NewSecondaryEmailPage
 
   @Page
-  private lateinit var changeEmailPage: ChangeEmailPage
+  private lateinit var changeSecondaryEmailPage: ChangeSecondaryEmailPage
 
   @Page
   private lateinit var verifyEmailSentPage: VerifyEmailSentPage
@@ -39,7 +39,7 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
-    changeSecondaryEmailPage.addSecondaryEmailAs("bob@gmail.com")
+    newSecondaryEmailPage.addSecondaryEmailAs("bob@gmail.com")
 
     goTo(accountDetailsPage)
         .isAtPage()
@@ -116,21 +116,28 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
   }
 }
 
-@PageUrl("/new-secondary-email")
-open class ChangeSecondaryEmailPage : AuthPage<ChangeSecondaryEmailPage>("HMPPS Digital Services - Change Secondary Email", "What is your new secondary email address?") {
+@PageUrl("/new-backup-email")
+open class ChangeSecondaryEmailPage : AuthPage<ChangeSecondaryEmailPage>("HMPPS Digital Services - Change Backup Email", "What is your new backup email address?") {
+  @FindBy(css = "input[type='submit']")
+  private lateinit var changeSecondaryEmailButton: FluentWebElement
+  private lateinit var email: FluentWebElement
+
+  fun updateSecondaryEmailAs(email: String) {
+    this.email.fill().withText(email)
+    assertThat(changeSecondaryEmailButton.value()).isEqualTo("continue")
+    changeSecondaryEmailButton.click()
+  }
+}
+
+@PageUrl("/new-backup-email")
+open class NewSecondaryEmailPage : AuthPage<NewSecondaryEmailPage>("HMPPS Digital Services - Change Backup Email", "What is your backup email address?") {
   @FindBy(css = "input[type='submit']")
   private lateinit var changeSecondaryEmailButton: FluentWebElement
   private lateinit var email: FluentWebElement
 
   fun addSecondaryEmailAs(email: String) {
     this.email.fill().withText(email)
-    assertThat(changeSecondaryEmailButton.value()).isEqualTo("Add")
-    changeSecondaryEmailButton.click()
-  }
-
-  fun updateSecondaryEmailAs(email: String) {
-    this.email.fill().withText(email)
-    assertThat(changeSecondaryEmailButton.value()).isEqualTo("Update")
+    assertThat(changeSecondaryEmailButton.value()).isEqualTo("continue")
     changeSecondaryEmailButton.click()
   }
 }
