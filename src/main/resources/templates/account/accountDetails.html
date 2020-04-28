@@ -97,7 +97,7 @@
         bob@digital.justice.gov.uk
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/new-secondary-email}"
+        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/new-backup-email}"
            th:if="${authUser.authSource != 'delius'}"
            data-qa="changeSecondaryEmail">
           <th:block th:text="${#strings.isEmpty(authUser.secondaryEmail)} ? 'Add' : 'Change'">

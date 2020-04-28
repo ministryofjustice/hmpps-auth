@@ -32,10 +32,10 @@ class ChangeEmailController(private val tokenService: TokenService, private val 
         .addObject("email", currentEmail)
   }
 
-  @GetMapping("/new-secondary-email")
+  @GetMapping("/new-backup-email")
   fun newSecondaryEmailRequest(authentication: Authentication): ModelAndView {
     val currentSecondaryEmail = userService.getUserWithContacts(authentication.name).secondaryEmail
-    return ModelAndView("account/changeSecondaryEmail", "secondaryEmail", currentSecondaryEmail)
+    return ModelAndView("account/changeBackupEmail", "secondaryEmail", currentSecondaryEmail)
   }
 }
 

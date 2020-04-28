@@ -111,7 +111,7 @@ public class VerifyEmailController {
             final var confirmUrl = emailType == EmailType.PRIMARY ? "-confirm?token=" : "-secondary-confirm?token=";
             final var verifyLink = requestVerificationForUser(username, chosenEmail, request.getRequestURL().append(confirmUrl).toString(), emailType);
 
-            final var modelAndView = new ModelAndView("verifyEmailSent");
+            final var modelAndView = new ModelAndView("verifyEmailSent", "emailType", emailType);
             if (smokeTestEnabled) {
                 modelAndView.addObject("verifyLink", verifyLink);
             }
@@ -195,7 +195,7 @@ public class VerifyEmailController {
                         .addObject("email", chosenEmail)
                         .addObject("error", reason);
             case SECONDARY:
-                return new ModelAndView("redirect:/new-secondary-email")
+                return new ModelAndView("redirect:/new-backup-email")
                         .addObject("email", chosenEmail)
                         .addObject("error", reason);
             default:
@@ -215,7 +215,7 @@ public class VerifyEmailController {
             log.info("Failed to verify email due to: {}", error);
             return new ModelAndView("verifyEmailFailure", "error", error);
         }
-        return new ModelAndView("verifyEmailSuccess");
+        return new ModelAndView("verifyEmailSuccess", "emailType", "PRIMARY");
     }
 
     @GetMapping("/verify-email-secondary-confirm")
@@ -226,7 +226,7 @@ public class VerifyEmailController {
             log.info("Failed to verify secondary email due to: {}", error);
             return new ModelAndView("verifyEmailFailure", "error", error);
         }
-        return new ModelAndView("verifyEmailSuccess");
+        return new ModelAndView("verifyEmailSuccess", "emailType", "SECONDARY");
     }
 
 }

@@ -81,7 +81,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
-    newInstance(ChangeSecondaryEmailPage::class.java).isAt()
+    newInstance(NewSecondaryEmailPage::class.java).isAt()
   }
 
   @Test
