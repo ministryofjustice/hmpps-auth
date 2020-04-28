@@ -25,7 +25,7 @@ class BatchUserProcessor {
                 batch.resetProcessedAndIncrementTotal(service.processInBatches());
             } catch (final Exception e) {
                 // have to catch the exception here otherwise scheduling will stop
-                log.error("Caught exception {} for {}", e.getClass().getSimpleName(), telemetryClient, e);
+                log.error("Caught exception {} for {}", e.getClass().getSimpleName(), telemetryPrefix, e);
                 batch.recordFailure();
                 telemetryClient.trackEvent(String.format("%sError", telemetryPrefix), null, null);
             }
