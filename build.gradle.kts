@@ -107,7 +107,7 @@ dependencies {
   implementation("com.microsoft.azure:applicationinsights-logging-logback:2.6.0")
   implementation("javax.annotation:javax.annotation-api:1.3.2")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
-  implementation("com.sun.xml.bind:jaxb-impl:2.3.2")
+  implementation("com.sun.xml.bind:jaxb-impl:2.3.3")
   implementation("com.sun.xml.bind:jaxb-core:2.3.0.1")
   implementation("javax.activation:activation:1.1.1")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

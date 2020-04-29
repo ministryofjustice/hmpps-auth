@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 
@@ -61,7 +62,8 @@ public class JwtAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 
         optionalAuth.ifPresent(udi -> {
             log.info("Found existing cookie for user {} with jwt of {}", udi.getUsername(), udi.getJwtId());
-            if (tokenVerificationEnabled) restTemplate.delete("/token/{authJwtId}", udi.getJwtId());
+            if (tokenVerificationEnabled) restTemplate.delete(
+                    UriComponentsBuilder.fromPath("/token").queryParam("authJwtId", udi.getJwtId()).toUriString());
         });
 
         final var jwt = jwtAuthenticationHelper.createJwt(authentication);
