@@ -87,13 +87,14 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
 
     clientAccess()
         .jsonPath(".['refresh_token','access_token']").value<JSONArray> {
-          val accessJwtid = JWTParser.parse((it[0] as Map<*, *>)["access_token"].toString()).jwtClaimsSet.jwtid
+          val accessJwtId = JWTParser.parse((it[0] as Map<*, *>)["access_token"].toString()).jwtClaimsSet.jwtid
+          val accessJwtIdWithSpaces = accessJwtId.replace("+", " ")
 
           getRefreshToken((it[0] as Map<*, *>)["refresh_token"].toString())
               .jsonPath(".sub").isEqualTo("AUTH_USER")
               .jsonPath(".access_token").value<JSONArray> { accessToken ->
                 tokenVerificationApi.verify(postRequestedFor(urlPathEqualTo("/token/refresh"))
-                    .withQueryParam("accessJwtId", equalTo(accessJwtid))
+                    .withQueryParam("accessJwtId", equalTo(accessJwtIdWithSpaces))
                     .withRequestBody(equalTo(accessToken[0].toString())))
               }
         }
