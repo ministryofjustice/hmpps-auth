@@ -5,7 +5,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration
 import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
-import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.nimbusds.jwt.JWTParser
 import net.minidev.json.JSONArray
 import org.apache.commons.lang3.RandomStringUtils
@@ -45,7 +45,8 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
     clientAccess()
         .jsonPath(".sub").isEqualTo("ITAG_USER")
         .jsonPath(".access_token").value<JSONArray> {
-          tokenVerificationApi.verify(postRequestedFor(urlEqualTo("/token/${jwt.jwtid}"))
+          tokenVerificationApi.verify(postRequestedFor(urlPathEqualTo("/token"))
+              .withQueryParam("authJwtId", equalTo(jwt.jwtid))
               .withRequestBody(equalTo(it[0].toString())))
         }
   }
@@ -86,13 +87,14 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
 
     clientAccess()
         .jsonPath(".['refresh_token','access_token']").value<JSONArray> {
-          val accessJwtid = JWTParser.parse((it[0] as Map<*, *>)["access_token"].toString()).jwtClaimsSet.jwtid
-          val encodedAccessJwtId = accessJwtid.replace("/", "%2F")
+          val accessJwtId = JWTParser.parse((it[0] as Map<*, *>)["access_token"].toString()).jwtClaimsSet.jwtid
+          val accessJwtIdWithSpaces = accessJwtId.replace("+", " ")
 
           getRefreshToken((it[0] as Map<*, *>)["refresh_token"].toString())
               .jsonPath(".sub").isEqualTo("AUTH_USER")
               .jsonPath(".access_token").value<JSONArray> { accessToken ->
-                tokenVerificationApi.verify(postRequestedFor(urlEqualTo("/token/refresh/${encodedAccessJwtId}"))
+                tokenVerificationApi.verify(postRequestedFor(urlPathEqualTo("/token/refresh"))
+                    .withQueryParam("accessJwtId", equalTo(accessJwtIdWithSpaces))
                     .withRequestBody(equalTo(accessToken[0].toString())))
               }
         }
@@ -116,7 +118,8 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
 
     goTo("/logout?redirect_uri=$clientBaseUrl&client_id=elite2apiclient")
 
-    tokenVerificationApi.verify(deleteRequestedFor(urlEqualTo("/token/${authJwtId}")))
+    tokenVerificationApi.verify(deleteRequestedFor(urlPathEqualTo("/token"))
+        .withQueryParam("authJwtId", equalTo(authJwtId)))
   }
 
   private fun clientSignIn(username: String, password: String = "password123456") =

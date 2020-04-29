@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.core.annotation.PageUrl
 import org.fluentlenium.core.domain.FluentWebElement
@@ -76,7 +78,8 @@ class LoginSpecification : AbstractAuthSpecification() {
 
     homePage.logOut()
 
-    tokenVerificationApi.verify(WireMock.deleteRequestedFor(WireMock.urlPathMatching("/token/${authJwtId}")))
+    tokenVerificationApi.verify(deleteRequestedFor(urlPathEqualTo("/token"))
+        .withQueryParam("authJwtId", equalTo(authJwtId)))
   }
 
   @Test
@@ -89,7 +92,8 @@ class LoginSpecification : AbstractAuthSpecification() {
     assertThat(jwt.getStringClaim("sub")).isEqualTo("ITAG_USER_ADM")
     assertThat(jwt.jwtid).isNotEqualTo(oldJwtId)
 
-    tokenVerificationApi.verify(WireMock.deleteRequestedFor(WireMock.urlPathMatching("/token/${oldJwtId}")))
+    tokenVerificationApi.verify(deleteRequestedFor(urlPathEqualTo("/token"))
+        .withQueryParam("authJwtId", equalTo(oldJwtId)))
   }
 }
 

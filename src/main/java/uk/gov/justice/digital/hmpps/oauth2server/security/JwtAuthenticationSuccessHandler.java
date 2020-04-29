@@ -61,7 +61,7 @@ public class JwtAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 
         optionalAuth.ifPresent(udi -> {
             log.info("Found existing cookie for user {} with jwt of {}", udi.getUsername(), udi.getJwtId());
-            if (tokenVerificationEnabled) restTemplate.delete("/token/{authJwtId}", udi.getJwtId());
+            if (tokenVerificationEnabled) restTemplate.delete("/token?authJwtId={authJwtId}", udi.getJwtId());
         });
 
         final var jwt = jwtAuthenticationHelper.createJwt(authentication);

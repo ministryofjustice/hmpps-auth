@@ -21,7 +21,7 @@ class ClearAllSessionsLogoutHandler(private val jwtCookieHelper: JwtCookieHelper
     val optionalAuth = jwtCookieHelper.readValueFromCookie(request).flatMap { jwtAuthenticationHelper.readUserDetailsFromJwt(it) }
     optionalAuth.ifPresent {
       log.info("Logging out user {} with jwt of {}", it.username, it.jwtId)
-      if (tokenVerificationEnabled) restTemplate.delete("/token/{authJwtId}", it.jwtId)
+      if (tokenVerificationEnabled) restTemplate.delete("/token?authJwtId={authJwtId}", it.jwtId)
     }
   }
 

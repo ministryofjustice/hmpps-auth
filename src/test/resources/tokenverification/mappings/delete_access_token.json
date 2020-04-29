@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "DELETE",
-    "urlPattern": "/token/([a-zA-Z0-9-]*)"
+    "urlPattern": "/token\\?authJwtId=([a-zA-Z0-9-]*)"
   },
   "response": {
     "status": 200

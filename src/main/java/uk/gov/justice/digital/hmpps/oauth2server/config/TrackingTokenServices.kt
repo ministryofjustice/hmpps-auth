@@ -54,7 +54,7 @@ open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
     val accessTokenId = JWTParser.parse(refreshTokenValue).jwtClaimsSet.getStringClaim("ati")
     if (tokenVerificationEnabled) {
       // now send token to token verification service so can validate them
-      restTemplate.postForLocation("/token/refresh/{accessJwtId}", token.value, accessTokenId)
+      restTemplate.postForLocation("/token/refresh?accessJwtId={accessJwtId}", token.value, accessTokenId)
     }
     return accessTokenId
   }
@@ -68,7 +68,7 @@ open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
     }
     if (tokenVerificationEnabled && !jwtId.isNullOrEmpty()) {
       // now send token to token verification service so can validate them
-      restTemplate.postForLocation("/token/{authJwtId}", token.value, jwtId)
+      restTemplate.postForLocation("/token?authJwtId={authJwtId}", token.value, jwtId)
     }
     return jwtId
   }
