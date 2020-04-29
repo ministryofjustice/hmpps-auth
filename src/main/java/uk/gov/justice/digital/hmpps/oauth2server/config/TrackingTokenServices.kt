@@ -10,7 +10,6 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication
 import org.springframework.security.oauth2.provider.TokenRequest
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.web.client.RestTemplate
-import org.springframework.web.util.UriComponentsBuilder
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 
 open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
@@ -55,8 +54,7 @@ open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
     val accessTokenId = JWTParser.parse(refreshTokenValue).jwtClaimsSet.getStringClaim("ati")
     if (tokenVerificationEnabled) {
       // now send token to token verification service so can validate them
-      restTemplate.postForLocation(
-          UriComponentsBuilder.fromPath("/token/refresh").queryParam("accessJwtId", accessTokenId).toUriString(), token.value)
+      restTemplate.postForLocation("/token/refresh?accessJwtId={accessJwtId}", token.value, accessTokenId)
     }
     return accessTokenId
   }
@@ -70,8 +68,7 @@ open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
     }
     if (tokenVerificationEnabled && !jwtId.isNullOrEmpty()) {
       // now send token to token verification service so can validate them
-      restTemplate.postForLocation(
-          UriComponentsBuilder.fromPath("/token").queryParam("authJwtId", jwtId).toUriString(), token.value)
+      restTemplate.postForLocation("/token?authJwtId={authJwtId}", token.value, jwtId)
     }
     return jwtId
   }

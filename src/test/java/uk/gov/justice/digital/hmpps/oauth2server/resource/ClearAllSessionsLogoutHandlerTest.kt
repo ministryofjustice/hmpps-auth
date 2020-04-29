@@ -44,7 +44,7 @@ class ClearAllSessionsLogoutHandlerTest {
     whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
     whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
     clearAllSessionsLogoutHandler.logout(httpServletRequest, httpServletResponse, null)
-    verify(restTemplate).delete("/token?authJwtId=jwtId")
+    verify(restTemplate).delete("/token?authJwtId={authJwtId}", "jwtId")
   }
 
   @Test
