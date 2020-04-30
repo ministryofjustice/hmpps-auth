@@ -9,8 +9,8 @@
 <body>
 
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
-  <h1 th:if="!${param.client}" class="govuk-heading-xl">Add client</h1>
-  <h1 th:if="${param.client}" class="govuk-heading-xl">Edit client '<span th:text="${param.client[0]}"></span>'</h1>
+  <h1 th:if="!${param.client}" class="govuk-heading-l">Add client</h1>
+  <h1 th:if="${param.client}" class="govuk-heading-l">Edit client '<span th:text="${param.client[0]}"></span>'</h1>
 
   <form th:action="@{/ui/clients/edit}" method="post">
     <!-- signalize new client -->

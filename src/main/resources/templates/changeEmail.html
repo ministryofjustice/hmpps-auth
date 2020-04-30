@@ -22,7 +22,7 @@
     </div>
   </div>
   <span th:if="${source == 'delius'}">
-    <h1 class="govuk-heading-xl">Delius user - update email address</h1>
+    <h1 class="govuk-heading-l">Delius user - update email address</h1>
 
     <p class="govuk-body" id="delius-user-text">
       Please update your email address within Delius as you are unable to do it here
@@ -31,7 +31,7 @@
     </span>
   <span th:unless="${source == 'delius'}">
         <h1 class="govuk-label-wrapper">
-        <label class="govuk-label govuk-label--xl" for="email">What is your new email address?
+        <label class="govuk-label govuk-label--l" for="email">What is your new email address?
         </label>
       </h1>
   <form class="form" th:action="@{/verify-email}" method="POST" id="changeEmailForm">

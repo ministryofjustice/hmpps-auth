@@ -79,11 +79,6 @@ public class VerifyEmailController {
         return modelAndView;
     }
 
-    @GetMapping("/verify-email-continue")
-    public void verifyEmailContinue(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-        proceedToOriginalUrl(request, response);
-    }
-
     @GetMapping("/verify-email-skip")
     public void verifyEmailSkip(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         telemetryClient.trackEvent("VerifyEmailRequestSkip", Collections.emptyMap(), null);

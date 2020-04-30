@@ -9,7 +9,7 @@
 <div layout:fragment="content" class="govuk-grid-column-full">
 
   <div role="alert">
-    <h1 class="govuk-heading-xl">Your account details</h1>
+    <h1 class="govuk-heading-l">Your account details</h1>
   </div>
   <div>
     <p class="govuk-body">
@@ -98,7 +98,6 @@
       </dd>
       <dd class="govuk-summary-list__actions">
         <a class="govuk-link govuk-link--no-visited-state" th:href="@{/new-backup-email}"
-           th:if="${authUser.authSource != 'delius'}"
            data-qa="changeSecondaryEmail">
           <th:block th:text="${#strings.isEmpty(authUser.secondaryEmail)} ? 'Add' : 'Change'">
             Change

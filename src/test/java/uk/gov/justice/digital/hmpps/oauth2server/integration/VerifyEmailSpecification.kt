@@ -17,6 +17,9 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
   @Page
   private lateinit var verifyEmailConfirmPage: VerifyEmailConfirmPage
 
+  @Page
+  private lateinit var accountDetailsPage: AccountDetailsPage
+
   @Test
   fun `A user can cancel email verification`() {
     goTo(loginPage).loginAsWithUnverifiedEmail("DM_USER")
@@ -42,7 +45,7 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
     val verifyLink = verifyEmailSentPage.getVerifyLink()
     verifyEmailSentPage.continueProcess()
 
-    newInstance(HomePage::class.java).isAt()
+    accountDetailsPage.isAt()
 
     goTo(verifyLink)
     verifyEmailConfirmPage.isAt()
@@ -60,7 +63,7 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
     val verifyLink = verifyEmailSentPage.getVerifyLink()
     verifyEmailSentPage.continueProcess()
 
-    newInstance(HomePage::class.java).isAt()
+    accountDetailsPage.isAt()
 
     goTo(verifyLink)
     verifyEmailConfirmPage.isAt()
@@ -75,7 +78,7 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
     val verifyLink = verifyEmailSentPage.getVerifyLink()
     verifyEmailSentPage.continueProcess()
 
-    newInstance(HomePage::class.java).isAt()
+    accountDetailsPage.isAt()
 
     goTo(verifyLink)
     verifyEmailConfirmPage.isAt()
@@ -90,7 +93,7 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
     val verifyLink = verifyEmailSentPage.getVerifyLink()
     verifyEmailSentPage.continueProcess()
 
-    newInstance(HomePage::class.java).isAt()
+    accountDetailsPage.isAt()
 
     goTo(verifyLink)
     verifyEmailConfirmPage.isAt()

@@ -69,12 +69,12 @@ class VerifyEmailControllerTest {
     verify(jwtAuthenticationSuccessHandler).proceed(request, response, principal)
   }
 
-  @Test
-  fun verifyEmailContinue() {
-    SecurityContextHolder.getContext().authentication = principal
-    verifyEmailController.verifyEmailContinue(request, response)
-    verify(jwtAuthenticationSuccessHandler).proceed(request, response, principal)
-  }
+//  @Test
+//  fun verifyEmailContinue() {
+//    SecurityContextHolder.getContext().authentication = principal
+//    verifyEmailController.verifyEmailContinue(request, response)
+//    verify(jwtAuthenticationSuccessHandler).proceed(request, response, principal)
+//  }
 
   @Test
   fun verifyEmailSkip() {

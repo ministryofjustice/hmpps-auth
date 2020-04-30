@@ -63,7 +63,7 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
     secondaryEmailAlreadyVerifiedPage.isAtPage()
         .continueToAccountDetailsPage()
 
-    homePage.isAt()
+    accountDetailsPage.isAt()
   }
 
   @Test

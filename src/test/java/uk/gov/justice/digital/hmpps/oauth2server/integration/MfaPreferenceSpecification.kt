@@ -96,7 +96,7 @@ class MfaPreferenceSpecification : AbstractAuthSpecification() {
 
     mfaPreferencePage.assertEmailHintText("You will need to add and verify your work email")
     mfaPreferencePage.assertMobileHintText("You will need to add and verify a mobile number")
-    mfaPreferencePage.assertSecondaryEmailHintText("You will need to add and verify a secondary email")
+    mfaPreferencePage.assertSecondaryEmailHintText("You will need to add and verify a backup email")
   }
 }
 
@@ -117,7 +117,7 @@ open class MfaPreferencePage : AuthPage<MfaPreferencePage>("HMPPS Digital Servic
   @FindBy(css = "#mfa-pref-text-item-hint")
   private lateinit var mobileHintText: FluentWebElement
 
-  @FindBy(css = "#mfa-pref-secondary-email-item-hint")
+  @FindBy(css = "#mfa-pref-backup-email-item-hint")
   private lateinit var secondaryEmailHintText: FluentWebElement
 
   fun selectText() {

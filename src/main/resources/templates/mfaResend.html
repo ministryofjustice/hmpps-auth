@@ -9,7 +9,7 @@
 <div layout:fragment="content" class="govuk-grid-column-full"
      th:with="token=${#strings.isEmpty(token) ? param.token : token}">
 
-  <h1 class="govuk-heading-xl">Resend security code</h1>
+  <h1 class="govuk-heading-l">Resend security code</h1>
 
   <p class="govuk-body" th:if="${#strings.equals(mfaPreference, 'TEXT')}">Text messages sometimes take a few minutes to
     arrive. If you do not receive the text message,
@@ -50,13 +50,14 @@
       <div th:if="${secondaryemail} != null" class="govuk-radios__item">
         <input class="govuk-radios__input" id="mfa-pref-secondary-email" name="mfaResendPreference" type="radio"
                value="SECONDARY_EMAIL"
-               aria-describedby="mfa-pref-secondary-email-item-hint"
+               aria-describedby="mfa-pref-backup-email-item-hint"
                th:checked="(${#strings.equals(mfaPreference, 'SECONDARY_EMAIL')})">
         <label class="govuk-label govuk-radios__label govuk-label--s" for="mfa-pref-secondary-email">
-          By secondary email
+          By backup email
         </label>
-        <span id="mfa-pref-secondary-email-item-hint" class="govuk-hint govuk-radios__hint">
-          You’ll receive a 6 digit number to your secondary email <span data-qa="text" th:text="${secondaryemail}">address</span>
+        <span id="mfa-pref-backup-email-item-hint" class="govuk-hint govuk-radios__hint">
+          You’ll receive a 6 digit number to your backup email <span data-qa="text"
+                                                                     th:text="${secondaryemail}">address</span>
         </span>
       </div>
     </div>

@@ -9,14 +9,14 @@
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-full">
-  <h1 class="govuk-heading-xl" th:if="${#strings.equals(param.emailType, 'PRIMARY')}">Email already verified</h1>
-  <h1 class="govuk-heading-xl" th:unless="${#strings.equals(param.emailType, 'PRIMARY')}">Backup email already
+  <h1 class="govuk-heading-l" th:if="${#strings.equals(param.emailType, 'PRIMARY')}">Email already verified</h1>
+  <h1 class="govuk-heading-l" th:unless="${#strings.equals(param.emailType, 'PRIMARY')}">Backup email already
     verified</h1>
 
   <p class="govuk-body">Your <span th:if="${#strings.equals(param.emailType, 'SECONDARY')}"
                                    text=" secondary"> backup</span> email address has already been verified</p>
 
-  <a class="govuk-button" th:href="@{/}" id="continue">OK, continue</a>
+  <a class="govuk-button" th:href="@{/account-details}" id="continue">OK, continue</a>
 </div>
 </body>
 </html>

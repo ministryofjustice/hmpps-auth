@@ -165,7 +165,8 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
 -- delius users
 INSERT INTO users (user_id, username, email, last_logged_in, first_name, last_name, verified, enabled, locked, source)
  VALUES ('7B59A818-BC14-43F3-A1C3-93004E173B2B', 'DELIUS_EMAIL', 'delius_user@digital.justice.gov.uk', '3013-01-02 13:23:19.0000000', 'Delius', 'Smith', 1, 1, 0, 'delius'),
-        ('7B59A818-BC14-43F3-A1C3-93004E173B22', 'DELIUS_PASSWORD_RESET', 'delius_locked@digital.justice.gov.uk', '3013-01-02 13:23:19.0000000', 'Delius', 'Smith', 1, 1, 0, 'delius');
+        ('7B59A818-BC14-43F3-A1C3-93004E173B22', 'DELIUS_PASSWORD_RESET', 'delius_locked@digital.justice.gov.uk', '3013-01-02 13:23:19.0000000', 'Delius', 'Smith', 1, 1, 0, 'delius'),
+        ('7B59A818-BC14-43F3-A1C3-93004E173B23', 'DELIUS_SECOND_EMAIL_UPDATE', 'delius_email@digital.justice.gov.uk', '3013-01-02 13:23:19.0000000', 'Delius', 'Smith', 1, 1, 0, 'delius');
 
 INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, source)
  VALUES ('7B59A818-BC14-43F3-A1C3-93004E173B2C','DELIUS_EMAIL_RESET', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy','3013-01-02 13:23:19.0000000', 'delius_email@digital.justice.gov.uk',  'Delius', 'Smith', 1, 1, 0, 'delius');

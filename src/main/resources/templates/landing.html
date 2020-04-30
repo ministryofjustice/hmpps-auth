@@ -7,7 +7,7 @@
 </head>
 <body>
 <div layout:fragment="content">
-  <h1 class="govuk-heading-xl">Select service</h1>
+  <h1 class="govuk-heading-l">Select service</h1>
 
   <div class="govuk-grid-row" th:each="row: ${#numbers.sequence(0, services.size(), 3)}">
     <div th:each="i: ${#numbers.sequence(row, row + 2)}" th:if="${i &lt; services.size()}"
