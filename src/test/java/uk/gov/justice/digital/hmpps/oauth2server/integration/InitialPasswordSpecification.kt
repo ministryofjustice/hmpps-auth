@@ -12,6 +12,9 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
   private lateinit var initialPasswordPage: InitialPasswordPage
 
   @Page
+  private lateinit var setPasswordPage: SetPasswordPage
+
+  @Page
   private lateinit var newPasswordSavedPage: NewPasswordSavedPage
 
   @Page
@@ -44,7 +47,8 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
     initialPasswordPage
         .isAtPage()
         .inputAndConfirmNewPassword("password1")
-        .checkError("Your password is commonly used and may not be secure")
+
+    setPasswordPage.checkError("Your password is commonly used and may not be secure")
         .inputAndConfirmNewPassword("helloWorld2")
 
     newPasswordSavedPage
@@ -87,7 +91,10 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/initial-password")
-class InitialPasswordPage : AuthPage<InitialPasswordPage>("HMPPS Digital Services - Create a password", "Create a password") {
+class InitialPasswordPage : SetPasswordPage()
+
+@PageUrl("/set-password")
+open class SetPasswordPage : AuthPage<SetPasswordPage>("HMPPS Digital Services - Create a password", "Create a password") {
 
   @FindBy(css = "input[id='new-password']")
   private lateinit var newPassword: FluentWebElement
@@ -98,11 +105,10 @@ class InitialPasswordPage : AuthPage<InitialPasswordPage>("HMPPS Digital Service
   @FindBy(css = "input[type='submit']")
   private lateinit var savePassword: FluentWebElement
 
-  fun inputAndConfirmNewPassword(password: String): InitialPasswordPage {
+  fun inputAndConfirmNewPassword(password: String) {
     this.newPassword.fill().withText(password)
     this.confirmPassword.fill().withText(password)
     savePassword.submit()
-    return this
   }
 }
 
