@@ -28,8 +28,8 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
     String verifyLink = $('#verifyLink').@href
     continueProcess()
 
-    and: 'Your account details page is displayed'
-    at AccountDetailsPage
+    and: 'The Home page is displayed'
+    at HomePage
 
     and: 'I can then verify my email address'
     browser.go verifyLink
@@ -74,8 +74,8 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
     String verifyLink = $('#verifyLink').@href
     continueProcess()
 
-    and: 'Your account details page is displayed'
-    at AccountDetailsPage
+    and: 'The Home page is displayed'
+    at HomePage
 
     and: 'I can then verify my email address'
     browser.go verifyLink
@@ -163,8 +163,8 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
     String verifyLink = $('#verifyLink').@href
     continueProcess()
 
-    and: 'Your account details page is displayed'
-    at AccountDetailsPage
+    and: 'The Home page is displayed'
+    at HomePage
 
     and: 'I can then verify my email address'
     browser.go verifyLink
@@ -231,8 +231,8 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
     String verifyLink = $('#verifyLink').@href
     continueProcess()
 
-    and: 'Your account details page is displayed'
-    at AccountDetailsPage
+    and: 'The Home page is displayed'
+    at HomePage
 
     and: 'I can then verify my email address'
     browser.go verifyLink

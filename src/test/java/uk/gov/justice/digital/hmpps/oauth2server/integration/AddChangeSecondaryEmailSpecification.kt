@@ -62,6 +62,8 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
 
     verifyEmailSentPage.continueProcess()
 
+    homePage.navigateToAccountDetails()
+
     accountDetailsPage
         .isAtPage()
         .checkSecondaryEmailAndIsNotVerified()
@@ -89,6 +91,8 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
     val verifyLink = verifyEmailSentPage.getVerifyLink()
 
     verifyEmailSentPage.continueProcess()
+
+    homePage.navigateToAccountDetails()
 
     accountDetailsPage
         .isAtPage()
