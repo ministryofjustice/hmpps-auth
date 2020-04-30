@@ -127,7 +127,7 @@ dependencies {
   implementation("org.apache.commons:commons-lang3:3.10")
   implementation("org.apache.commons:commons-text:1.8")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.1.jre11")
-  implementation("com.github.timpeeters:spring-boot-graceful-shutdown:2.2.1")
+  implementation("com.github.timpeeters:spring-boot-graceful-shutdown:2.2.2")
   implementation("com.google.guava:guava:29.0-jre")
   implementation("io.swagger:swagger-core:1.6.1")
 

@@ -8,7 +8,7 @@ class SetPasswordPage extends Page {
 
     static at = {
         title == 'HMPPS Digital Services - Create a password'
-        headingText == 'Create a password'
+        headingText == 'Create a new password'
     }
 
     static content = {

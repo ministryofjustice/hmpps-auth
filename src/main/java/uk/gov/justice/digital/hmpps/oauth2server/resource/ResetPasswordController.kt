@@ -111,7 +111,7 @@ class ResetPasswordController(private val resetPasswordService: ResetPasswordSer
     return userTokenOptional.map { ModelAndView("resetPassword", "error", it) }.orElseGet { createModelWithTokenUsernameAndIsAdmin(TokenType.RESET, token, "setPassword") }
   }
 
-  @PostMapping("/initial-password")
+  @PostMapping("/set-password")
   fun setPassword(@RequestParam token: String,
                   @RequestParam newPassword: String?, @RequestParam confirmPassword: String?,
                   @RequestParam(required = false) initial: Boolean?): ModelAndView {
