@@ -62,7 +62,7 @@
     </strong>
   </div>
   <form th:action="@{/login}" method="POST" id="loginForm" class="govuk-grid-column-two-thirds">
-    <h1 class="govuk-heading-xl">Sign in</h1>
+    <h1 class="govuk-heading-l">Sign in</h1>
 
     <div>
       <div th:with="missinguser=${param.error != null and #arrays.contains(param.error, 'missinguser')}"

@@ -29,7 +29,7 @@
     <label class="govuk-label govuk-label--l" for="email">What is your new backup email address?
     </label>
   </h1>
-  <p class="govuk-body">You can use this address to receive your security code for 2-step verification sign in</p>
+  <p class="govuk-body">You can use this address to receive your security code for 2-step verification sign in.</p>
   <form class="form" th:action="@{/verify-email}" method="POST" id="changeEmailForm">
     <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
       <span th:if="${error}" id="email-error" class="govuk-error-message"
@@ -41,7 +41,7 @@
              spellcheck="false" th:value="${secondaryEmail}">
     </div>
     <input class="govuk-button" id="submit" type="submit" role="button"
-           data-element-id="continue-button" value="continue">
+           data-element-id="continue-button" value="Continue">
   </form>
 </div>
 </body>

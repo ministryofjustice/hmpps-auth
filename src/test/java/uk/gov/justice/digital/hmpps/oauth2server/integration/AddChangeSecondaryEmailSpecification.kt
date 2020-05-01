@@ -31,7 +31,7 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
   private lateinit var secondaryEmailAlreadyVerifiedPage: SecondaryEmailAlreadyVerifiedPage
 
   @Test
-  fun `Add Secondary mobile flow but not verify`() {
+  fun `Add Secondary email flow but not verify`() {
     goTo(loginPage)
         .loginAs("AUTH_SECOND_EMAIL_ADD")
 
@@ -48,9 +48,39 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `Add Secondary mobile flow and verify`() {
+  fun `Add Secondary email flow and verify`() {
     goTo(loginPage)
         .loginAs("AUTH_SECOND_EMAIL_UPDATE")
+
+    homePage.navigateToAccountDetails()
+
+    accountDetailsPage.navigateToChangeSecondaryEmail()
+
+    changeSecondaryEmailPage.updateSecondaryEmailAs("bob@gmail.com")
+
+    val verifyLink = verifyEmailSentPage.getVerifyLink()
+
+    verifyEmailSentPage.continueProcess()
+
+    homePage.navigateToAccountDetails()
+
+    accountDetailsPage
+        .isAtPage()
+        .checkSecondaryEmailAndIsNotVerified()
+
+    goTo(verifyLink)
+
+    verifySecondaryEmailConfirmPage.isAt()
+
+    goTo(accountDetailsPage)
+        .isAtPage()
+        .checkSecondaryEmailAndIsVerified()
+  }
+
+  @Test
+  fun `As  delius user add Secondary email flow and verify`() {
+    goTo(loginPage)
+        .loginAs("DELIUS_SECOND_EMAIL_UPDATE")
 
     homePage.navigateToAccountDetails()
 
@@ -111,8 +141,6 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
     changeSecondaryEmailPage.updateSecondaryEmailAs("john@smith.com")
 
     secondaryEmailAlreadyVerifiedPage.isAt()
-
-
   }
 }
 
@@ -124,7 +152,7 @@ open class ChangeSecondaryEmailPage : AuthPage<ChangeSecondaryEmailPage>("HMPPS 
 
   fun updateSecondaryEmailAs(email: String) {
     this.email.fill().withText(email)
-    assertThat(changeSecondaryEmailButton.value()).isEqualTo("continue")
+    assertThat(changeSecondaryEmailButton.value()).isEqualTo("Continue")
     changeSecondaryEmailButton.click()
   }
 }
@@ -137,7 +165,7 @@ open class NewSecondaryEmailPage : AuthPage<NewSecondaryEmailPage>("HMPPS Digita
 
   fun addSecondaryEmailAs(email: String) {
     this.email.fill().withText(email)
-    assertThat(changeSecondaryEmailButton.value()).isEqualTo("continue")
+    assertThat(changeSecondaryEmailButton.value()).isEqualTo("Continue")
     changeSecondaryEmailButton.click()
   }
 }

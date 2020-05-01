@@ -24,7 +24,7 @@
   <form class="form" th:action="@{/mfa-preference}" method="POST" id="mfaPreference">
     <div class="govuk-form-group">
       <fieldset class="govuk-fieldset" aria-describedby="sign-in-hint">
-        <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
           <h1 class="govuk-fieldset__heading">
             How would you prefer to receive your security code?
           </h1>
@@ -68,17 +68,18 @@
           <div class="govuk-radios__item">
             <input class="govuk-radios__input" id="mfa-pref-secondary-email" name="mfaPreference" type="radio"
                    value="SECONDARY_EMAIL"
-                   aria-describedby="mfa-pref-secondary-email-item-hint"
+                   aria-describedby="mfa-pref-backup-email-item-hint"
                    th:checked="(${#strings.equals(current, 'SECONDARY_EMAIL')})">
             <label class="govuk-label govuk-radios__label govuk-label--s" for="mfa-pref-secondary-email">
-              By secondary email
+              By backup email
             </label>
-            <span id="mfa-pref-secondary-email-item-hint" class="govuk-hint govuk-radios__hint">
+            <span id="mfa-pref-backup-email-item-hint" class="govuk-hint govuk-radios__hint">
               <span th:if="${secondaryemail}">
-                You will receive a 6 digit number to <span data-qa="text" th:text="${secondaryemail}">your secondary email</span>
+                You will receive a 6 digit number to <span data-qa="text"
+                                                           th:text="${secondaryemail}">your backup email</span>
               </span>
               <span th:unless="${secondaryemail}">
-                You will need to add and verify a secondary email
+                You will need to add and verify a backup email
               </span>
             </span>
           </div>

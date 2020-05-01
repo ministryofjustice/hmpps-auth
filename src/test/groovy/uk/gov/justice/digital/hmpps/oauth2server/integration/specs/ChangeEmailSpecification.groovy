@@ -268,7 +268,7 @@ class ChangeEmailSpecification extends DeliusIntegrationSpec {
     at VerifyEmailAlreadyPage
     continueProcess()
 
-    then: 'The Home page is displayed'
-    at HomePage
+    then: 'Your account details page is displayed'
+    at AccountDetailsPage
   }
 }
