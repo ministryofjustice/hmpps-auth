@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -31,20 +31,23 @@ class ChangePasswordController(private val jwtAuthenticationSuccessHandler: JwtA
 
   @GetMapping("/change-password")
   fun changePasswordRequest(@RequestParam token: String?): ModelAndView =
-      createModelWithTokenUsernameAndIsAdmin(UserToken.TokenType.CHANGE, token, "changePassword")
+      createModelWithTokenUsernameAndIsAdmin(TokenType.CHANGE, token, "changePassword")
           .addObject("expired", true)
 
   @GetMapping("/new-password")
   fun newPasswordRequest(@RequestParam token: String?): ModelAndView =
-      createModelWithTokenUsernameAndIsAdmin(UserToken.TokenType.CHANGE, token, "changePassword")
+      createModelWithTokenUsernameAndIsAdmin(TokenType.CHANGE, token, "changePassword")
 
   @PostMapping("/change-password", "/new-password")
-  fun changePassword(@RequestParam token: String,
+  fun changePassword(@RequestParam token: String?,
                      @RequestParam newPassword: String?, @RequestParam confirmPassword: String?,
                      request: HttpServletRequest, response: HttpServletResponse,
                      @RequestParam expired: Boolean?): ModelAndView? {
-    val userToken = tokenService.getToken(UserToken.TokenType.CHANGE, token)
-    val modelAndView = processSetPassword(UserToken.TokenType.CHANGE, "Change", token, newPassword, confirmPassword)
+
+    if (token.isNullOrBlank()) return ModelAndView("redirect:/")
+
+    val userToken = tokenService.getToken(TokenType.CHANGE, token)
+    val modelAndView = processSetPassword(TokenType.CHANGE, "Change", token, newPassword, confirmPassword)
     if (modelAndView.isPresent) {
       return modelAndView.get().addObject("expired", expired)
     }

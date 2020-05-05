@@ -7,6 +7,7 @@ import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.isNull
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -113,7 +114,14 @@ class ChangePasswordControllerTest {
   @Nested
   inner class ChangePassword {
     @Test
-    fun changePasswordRequest_NotAlphanumeric() {
+    fun `changePassword no token`() {
+      val modelAndView = controller.changePassword("   ", "@fewfewfew1", "@fewfewfew1", request, response, true)
+      assertThat(modelAndView!!.viewName).isEqualTo("redirect:/")
+      verifyZeroInteractions(tokenService)
+    }
+
+    @Test
+    fun changePassword_NotAlphanumeric() {
       setupCheckAndGetTokenValid()
       setupGetUserCallForProfile()
       val modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response, true)
@@ -122,7 +130,7 @@ class ChangePasswordControllerTest {
     }
 
     @Test
-    fun changePasswordRequest_NotExpired() {
+    fun changePassword_NotExpired() {
       setupCheckAndGetTokenValid()
       setupGetUserCallForProfile()
       val modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response, false)
@@ -130,7 +138,7 @@ class ChangePasswordControllerTest {
     }
 
     @Test
-    fun changePasswordRequest_ExpiredNotSet() {
+    fun changePassword_ExpiredNotSet() {
       setupCheckAndGetTokenValid()
       setupGetUserCallForProfile()
       val modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response, null)
@@ -233,15 +241,15 @@ class ChangePasswordControllerTest {
         assertThat(it).containsExactly(entry("username", "someuser"))
       }, isNull())
     }
+  }
 
-    @Nested
-    inner class ChangePasswordSuccess {
+  @Nested
+  inner class ChangePasswordSuccess {
 
-      @Test
-      fun ChangePasswordSuccess_view() {
-        val view = controller.changePasswordSuccess()
-        assertThat(view).isEqualTo("changePasswordSuccess")
-      }
+    @Test
+    fun `changePasswordSuccess view`() {
+      val view = controller.changePasswordSuccess()
+      assertThat(view).isEqualTo("changePasswordSuccess")
     }
   }
 

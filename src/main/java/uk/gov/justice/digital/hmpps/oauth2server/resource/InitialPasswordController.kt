@@ -18,10 +18,10 @@ import javax.servlet.http.HttpServletRequest
 @Slf4j
 @Controller
 @Validated
-class InitialPasswordController(private val resetPasswordService: ResetPasswordService,
+class InitialPasswordController(resetPasswordService: ResetPasswordService,
                                 private val initialPasswordService: InitialPasswordService,
                                 private val tokenService: TokenService, userService: UserService,
-                                private val telemetryClient: TelemetryClient,
+                                telemetryClient: TelemetryClient,
                                 @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?,
                                 @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) :
     AbstractPasswordController(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "setPassword", passwordBlacklist) {
@@ -32,7 +32,9 @@ class InitialPasswordController(private val resetPasswordService: ResetPasswordS
 
   @GetMapping("/initial-password")
   fun initialPassword(@RequestParam token: String?, request: HttpServletRequest): ModelAndView {
-    val optionalErrorCode = tokenService.checkToken(UserToken.TokenType.RESET, token!!)
+    if (token.isNullOrBlank()) return ModelAndView("redirect:/reset-password")
+
+    val optionalErrorCode = tokenService.checkToken(UserToken.TokenType.RESET, token)
 
     return optionalErrorCode.map {
       if (it == "expired") {

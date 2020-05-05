@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
@@ -40,6 +41,13 @@ class InitialPasswordControllerTest {
 
   @Nested
   inner class InitialPassword {
+    @Test
+    fun `initialPassword no token`() {
+      val modelAndView = controller.initialPassword("  ", request)
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/reset-password")
+      verifyZeroInteractions(tokenService)
+    }
+
     @Test
     fun initialPassword_checkView() {
       setupGetUserCallForProfile()
