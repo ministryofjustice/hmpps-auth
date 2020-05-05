@@ -16,6 +16,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExten
 
 @ExtendWith(DeliusExtension::class, TokenVerificationExtension::class)
 open class AbstractAuthSpecification : FluentTest() {
+  init {
+    // Resolves an issue where Wiremock keeps previous sockets open from other tests causing connection resets
+    System.setProperty("http.keepAlive", "false")
+  }
+
   @Page
   internal lateinit var loginPage: LoginPage
 
