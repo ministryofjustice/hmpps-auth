@@ -31,20 +31,20 @@ class ChangePasswordController(private val jwtAuthenticationSuccessHandler: JwtA
 
   @GetMapping("/change-password")
   fun changePasswordRequest(@RequestParam token: String?): ModelAndView =
-      createModelWithTokenUsernameAndIsAdmin(TokenType.CHANGE, token, "changePassword")
+      if (token.isNullOrBlank()) ModelAndView("redirect:/") // cope with token not supplied
+      else createModelWithTokenUsernameAndIsAdmin(TokenType.CHANGE, token, "changePassword")
           .addObject("expired", true)
 
   @GetMapping("/new-password")
   fun newPasswordRequest(@RequestParam token: String?): ModelAndView =
-      createModelWithTokenUsernameAndIsAdmin(TokenType.CHANGE, token, "changePassword")
+      if (token.isNullOrBlank()) ModelAndView("redirect:/") // cope with token not supplied
+      else createModelWithTokenUsernameAndIsAdmin(TokenType.CHANGE, token, "changePassword")
 
   @PostMapping("/change-password", "/new-password")
-  fun changePassword(@RequestParam token: String?,
+  fun changePassword(@RequestParam token: String,
                      @RequestParam newPassword: String?, @RequestParam confirmPassword: String?,
                      request: HttpServletRequest, response: HttpServletResponse,
                      @RequestParam expired: Boolean?): ModelAndView? {
-
-    if (token.isNullOrBlank()) return ModelAndView("redirect:/")
 
     val userToken = tokenService.getToken(TokenType.CHANGE, token)
     val modelAndView = processSetPassword(TokenType.CHANGE, "Change", token, newPassword, confirmPassword)

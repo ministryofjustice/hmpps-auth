@@ -64,6 +64,13 @@ class ChangePasswordControllerTest {
       val model = controller.newPasswordRequest("token")
       assertThat(model.model).doesNotContainKey("expired")
     }
+
+    @Test
+    fun `newPasswordRequest no token`() {
+      val model = controller.newPasswordRequest("  ")
+      assertThat(model.viewName).isEqualTo("redirect:/")
+      verifyZeroInteractions(tokenService)
+    }
   }
 
   @Nested
@@ -109,17 +116,17 @@ class ChangePasswordControllerTest {
       val model = controller.changePasswordRequest("token")
       assertThat(model.model["isAdmin"]).isEqualTo(false)
     }
+
+    @Test
+    fun `changePasswordRequest no token`() {
+      val model = controller.changePasswordRequest("  ")
+      assertThat(model.viewName).isEqualTo("redirect:/")
+      verifyZeroInteractions(tokenService)
+    }
   }
 
   @Nested
   inner class ChangePassword {
-    @Test
-    fun `changePassword no token`() {
-      val modelAndView = controller.changePassword("   ", "@fewfewfew1", "@fewfewfew1", request, response, true)
-      assertThat(modelAndView!!.viewName).isEqualTo("redirect:/")
-      verifyZeroInteractions(tokenService)
-    }
-
     @Test
     fun changePassword_NotAlphanumeric() {
       setupCheckAndGetTokenValid()

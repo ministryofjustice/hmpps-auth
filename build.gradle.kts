@@ -100,7 +100,7 @@ dependencies {
   implementation("com.nimbusds:nimbus-jose-jwt:8.16")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.hibernate:hibernate-core")
+  implementation("org.hibernate:hibernate-core:5.4.15.Final")
 
   implementation("net.logstash.logback:logstash-logback-encoder:6.3")
   implementation("com.microsoft.azure:applicationinsights-spring-boot-starter:2.6.0")
@@ -122,7 +122,7 @@ dependencies {
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1")
   implementation("uk.gov.service.notify:notifications-java-client:3.15.1-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:6.4.0")
+  implementation("org.flywaydb:flyway-core:6.4.1")
   implementation("com.zaxxer:HikariCP:3.4.3")
   implementation("org.apache.commons:commons-lang3:3.10")
   implementation("org.apache.commons:commons-text:1.8")
