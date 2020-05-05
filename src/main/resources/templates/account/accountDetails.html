@@ -115,7 +115,7 @@
         Yes
       </dd>
       <dd class="govuk-summary-list__actions">
-        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/secondary-email-resend}"
+        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/backup-email-resend}"
            th:unless="${#strings.isEmpty(authUser.secondaryEmail) || authUser.secondaryEmailVerified}"
            data-qa="verifySecondaryEmail">
           Resend <span class="govuk-visually-hidden">backup email</span> code

@@ -115,6 +115,25 @@ public class VerifyEmailService {
     }
 
     @Transactional(transactionManager = "authTransactionManager")
+    public Optional<String> resendVerificationCodeEmail(final String username, final String url) throws NotificationClientException, VerifyEmailException {
+        final var user = userRepository.findByUsername(username).orElseThrow();
+        if (user.getEmail() == null) {
+            throw new VerifyEmailException("noemail");
+        }
+        if (user.isVerified()) {
+            log.info("Verify email succeeded due to already verified");
+            telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
+            return Optional.empty();
+        }
+
+        final var verifyLink = url + user.createToken(TokenType.VERIFIED).getToken();
+        final var parameters = Map.of("firstName", user.getFirstName(), "fullName", user.getName(), "verifyLink", verifyLink);
+        notificationClient.sendEmail(notifyTemplateId, user.getEmail(), parameters, null);
+
+        return Optional.of(verifyLink);
+    }
+
+    @Transactional(transactionManager = "authTransactionManager")
     public Optional<String> resendVerificationCodeSecondaryEmail(final String username, final String url) throws NotificationClientException, VerifyEmailException {
         final var user = userRepository.findByUsername(username).orElseThrow();
         if (user.getSecondaryEmail() == null) {
@@ -142,6 +161,11 @@ public class VerifyEmailService {
     public void validateEmailAddress(final String email, final EmailType emailType) throws VerifyEmailException {
         validateEmailAddressExcludingGsi(email, emailType);
         if (email.matches(".*@.*\\.gsi\\.gov\\.uk")) throw new VerifyEmailException("gsi");
+    }
+
+    public String maskedSecondaryEmailFromUsername(final String username) {
+        final var user = userRepository.findByUsername(username);
+        return user.orElseThrow().getMaskedSecondaryEmail();
     }
 
     public void validateEmailAddressExcludingGsi(final String email, final EmailType emailType) throws VerifyEmailException {
@@ -211,7 +235,7 @@ public class VerifyEmailService {
 
         if (user.isSecondaryEmailVerified()) {
             log.info("Verify secondary email succeeded due to already verified");
-            telemetryClient.trackEvent("VerifySecondayEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
+            telemetryClient.trackEvent("VerifySecondaryEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
             return Optional.empty();
         }
         if (userToken.hasTokenExpired()) {

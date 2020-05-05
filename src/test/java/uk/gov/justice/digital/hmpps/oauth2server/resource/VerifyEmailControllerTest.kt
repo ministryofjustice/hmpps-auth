@@ -17,10 +17,12 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
@@ -34,9 +36,10 @@ class VerifyEmailControllerTest {
   private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler = mock()
   private val verifyEmailService: VerifyEmailService = mock()
   private val userService: UserService = mock()
+  private val tokenService: TokenService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val verifyEmailController = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, userService, telemetryClient, false)
-  private val verifyEmailControllerSmokeTestEnabled = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, userService, telemetryClient, true)
+  private val verifyEmailController = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, userService, tokenService, telemetryClient, false)
+  private val verifyEmailControllerSmokeTestEnabled = VerifyEmailController(jwtAuthenticationSuccessHandler, verifyEmailService, userService, tokenService, telemetryClient, true)
   private val principal = UsernamePasswordAuthenticationToken("user", "pass")
 
   @Test
@@ -133,10 +136,16 @@ class VerifyEmailControllerTest {
 
   @Test
   fun verifyEmailConfirm_Failure() {
-    whenever(verifyEmailService.confirmEmail(anyString())).thenReturn(Optional.of("failed"))
+    whenever(verifyEmailService.confirmEmail(anyString())).thenReturn(Optional.of("invalid"))
     val modelAndView = verifyEmailController.verifyEmailConfirm("token")
-    assertThat(modelAndView.viewName).isEqualTo("verifyEmailFailure")
-    assertThat(modelAndView.model).containsExactly(entry("error", "failed"))
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-email-failure")
+  }
+
+  @Test
+  fun verifySecondaryEmailConfirm_Failure() {
+    whenever(verifyEmailService.confirmSecondaryEmail(anyString())).thenReturn(Optional.of("invalid"))
+    val modelAndView = verifyEmailController.verifySecondaryEmailConfirm("token")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-email-failure")
   }
 
   @Test
@@ -255,5 +264,71 @@ class VerifyEmailControllerTest {
     val modelAndView = verifyEmailController.secondaryEmailResend(principal, request)
     assertThat(modelAndView.viewName).isEqualTo("redirect:/new-backup-email")
     assertThat(modelAndView.model).containsExactly(entry("email", null), entry("error", "other"))
+  }
+
+  @Test
+  fun `verify email link expired`() {
+    whenever(verifyEmailService.confirmEmail(anyString())).thenReturn(Optional.of("expired"))
+    val modelAndView = verifyEmailController.verifyEmailConfirm("token")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-email-expired")
+    assertThat(modelAndView.model).containsOnly(entry("token", "token"))
+  }
+
+  @Test
+  fun `verify secondary email link expired`() {
+    whenever(verifyEmailService.confirmSecondaryEmail(anyString())).thenReturn(Optional.of("expired"))
+    val modelAndView = verifyEmailController.verifySecondaryEmailConfirm("token")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-email-secondary-expired")
+    assertThat(modelAndView.model).containsOnly(entry("token", "token"))
+  }
+
+  @Test
+  fun `verify email link expired link resend`() {
+    whenever(tokenService.getUserFromToken(UserToken.TokenType.VERIFIED, "token"))
+        .thenReturn(User.builder().email("bob@digital.justice.gov.uk").build())
+    whenever(request.requestURL)
+        .thenReturn(StringBuffer("http://some.url/expired"))
+    whenever(verifyEmailService.resendVerificationCodeEmail(anyString(), anyString()))
+        .thenReturn(Optional.of("verifyLink"))
+    val modelAndView = verifyEmailController.verifyEmailLinkExpired("token", request)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailExpired")
+    assertThat(modelAndView.model).containsOnly(entry("email", "b******@******.gov.uk"))
+  }
+
+  @Test
+  fun `verify email link expired link resend smoke test enabled`() {
+    whenever(tokenService.getUserFromToken(UserToken.TokenType.VERIFIED, "token"))
+        .thenReturn(User.builder().username("bob").email("bob@digital.justice.gov.uk").build())
+    whenever(request.requestURL)
+        .thenReturn(StringBuffer("http://some.url/expired"))
+    whenever(verifyEmailService.resendVerificationCodeEmail(anyString(), anyString()))
+        .thenReturn(Optional.of("verifyLink"))
+    val modelAndView = verifyEmailControllerSmokeTestEnabled.verifyEmailLinkExpired("token", request)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailExpired")
+    assertThat(modelAndView.model).containsExactly(entry("email", "b******@******.gov.uk"), entry("link", "verifyLink"))
+  }
+
+  @Test
+  fun `verify secondary email link expired link resend`() {
+    whenever(tokenService.getUserFromToken(UserToken.TokenType.SECONDARY, "token"))
+        .thenReturn(User.of("bob"))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/expired"))
+    whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString())).thenReturn(Optional.of("verifyLink"))
+    whenever(verifyEmailService.maskedSecondaryEmailFromUsername(anyString())).thenReturn("b******@******ail.com")
+    val modelAndView = verifyEmailController.verifySecondaryEmailLinkExpired("token", request)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailExpired")
+    assertThat(modelAndView.model).containsOnly(entry("email", "b******@******ail.com"))
+  }
+
+  @Test
+  fun `verify secondary email link expired link resend smoke test enabled`() {
+    whenever(tokenService.getUserFromToken(UserToken.TokenType.SECONDARY, "token"))
+        .thenReturn(User.of("bob"))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/expired"))
+    whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString())).thenReturn(Optional.of("verifyLink"))
+    whenever(verifyEmailService.maskedSecondaryEmailFromUsername(anyString())).thenReturn("b******@******ail.com")
+    val modelAndView = verifyEmailControllerSmokeTestEnabled.verifySecondaryEmailLinkExpired("token", request)
+    assertThat(modelAndView.viewName).isEqualTo("verifyEmailExpired")
+    assertThat(modelAndView.model).containsExactly(entry("email", "b******@******ail.com"), entry("link", "verifyLink"))
   }
 }
