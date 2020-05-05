@@ -68,7 +68,7 @@ class ChangePasswordControllerTest {
     @Test
     fun `newPasswordRequest no token`() {
       val model = controller.newPasswordRequest("  ")
-      assertThat(view.viewName).isEqualTo("redirect:/")
+      assertThat(model.viewName).isEqualTo("redirect:/")
       verifyZeroInteractions(tokenService)
     }
   }
