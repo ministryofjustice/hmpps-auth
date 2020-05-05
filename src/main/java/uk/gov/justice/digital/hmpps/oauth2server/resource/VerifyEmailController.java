@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
+import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService;
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException;
 import uk.gov.service.notify.NotificationClientException;
@@ -33,16 +35,19 @@ public class VerifyEmailController {
     private final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
     private final VerifyEmailService verifyEmailService;
     private final UserService userService;
-
+    private final TokenService tokenService;
     private final TelemetryClient telemetryClient;
     private final boolean smokeTestEnabled;
 
     public VerifyEmailController(final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
                                  final VerifyEmailService verifyEmailService,
-                                 final UserService userService, final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
+                                 final UserService userService,
+                                 final TokenService tokenService,
+                                 final TelemetryClient telemetryClient, @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
         this.verifyEmailService = verifyEmailService;
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
         this.userService = userService;
+        this.tokenService = tokenService;
         this.telemetryClient = telemetryClient;
         this.smokeTestEnabled = smokeTestEnabled;
     }
@@ -132,7 +137,7 @@ public class VerifyEmailController {
         return "verifyEmailAlready";
     }
 
-    @GetMapping("/secondary-email-resend")
+    @GetMapping("/backup-email-resend")
     public String secondaryEmailResendRequest(final Principal principal) {
         final var secondaryEmailVerified = verifyEmailService.secondaryEmailVerified(principal.getName());
         return secondaryEmailVerified ? "redirect:/verify-email-already" : "redirect:/verify-secondary-email-resend";
@@ -167,6 +172,11 @@ public class VerifyEmailController {
     @GetMapping("/verify-email-sent")
     public String verifyEmailSent() {
         return "verifyEmailSent";
+    }
+
+    @GetMapping("/verify-email-failure")
+    public String verifyEmailfailure() {
+        return "verifyEmailFailure";
     }
 
     private ModelAndView redirectToVerifyEmailWithVerifyCode(final String verifyLink) {
@@ -213,9 +223,24 @@ public class VerifyEmailController {
         if (errorOptional.isPresent()) {
             final var error = errorOptional.get();
             log.info("Failed to verify email due to: {}", error);
-            return new ModelAndView("verifyEmailFailure", "error", error);
+            return StringUtils.equals(error, "expired") ?
+                    new ModelAndView("redirect:/verify-email-expired", "token", token) :
+                    new ModelAndView("redirect:/verify-email-failure");
         }
         return new ModelAndView("verifyEmailSuccess", "emailType", "PRIMARY");
+    }
+
+    @GetMapping("/verify-email-expired")
+    public ModelAndView verifyEmailLinkExpired(@RequestParam String token, HttpServletRequest request) throws VerifyEmailException, NotificationClientException {
+        final var user = tokenService.getUserFromToken(TokenType.VERIFIED, token);
+        final var originalUrl = request.getRequestURL().toString();
+        final var url = originalUrl.replace("expired", "confirm?token=");
+
+        final var verifyLink = verifyEmailService.resendVerificationCodeEmail(user.getUsername(), url);
+        final var modelAndView = new ModelAndView("verifyEmailExpired");
+        modelAndView.addObject("email", user.getMaskedEmail());
+        if (smokeTestEnabled) modelAndView.addObject("link", verifyLink.orElseThrow());
+        return modelAndView;
     }
 
     @GetMapping("/verify-email-secondary-confirm")
@@ -224,9 +249,23 @@ public class VerifyEmailController {
         if (errorOptional.isPresent()) {
             final var error = errorOptional.get();
             log.info("Failed to verify secondary email due to: {}", error);
-            return new ModelAndView("verifyEmailFailure", "error", error);
+            return StringUtils.equals(error, "expired") ?
+                    new ModelAndView("redirect:/verify-email-secondary-expired", "token", token) :
+                    new ModelAndView("redirect:/verify-email-failure");
         }
         return new ModelAndView("verifyEmailSuccess", "emailType", "SECONDARY");
     }
 
+    @GetMapping("/verify-email-secondary-expired")
+    public ModelAndView verifySecondaryEmailLinkExpired(@RequestParam String token, HttpServletRequest request) throws VerifyEmailException, NotificationClientException {
+        final var user = tokenService.getUserFromToken(TokenType.SECONDARY, token);
+        final var originalUrl = request.getRequestURL().toString();
+        final var url = originalUrl.replace("expired", "confirm?token=");
+
+        final var verifyCode = verifyEmailService.resendVerificationCodeSecondaryEmail(user.getUsername(), url);
+        final var modelAndView = new ModelAndView("verifyEmailExpired");
+        modelAndView.addObject("email", verifyEmailService.maskedSecondaryEmailFromUsername(user.getUsername()));
+        if (smokeTestEnabled) modelAndView.addObject("link", verifyCode.orElseThrow());
+        return modelAndView;
+    }
 }

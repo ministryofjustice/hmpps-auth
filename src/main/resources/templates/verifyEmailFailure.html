@@ -1,27 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
-      xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{fragments/layout}">
 <head>
   <title>Verify Email Confirmation</title>
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
-  <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" data-module="govuk-error-summary">
-    <th:block th:switch="${error}">
-      <div class="govuk-error-summary__body" id="error-detail">
-        <th:block th:case="'invalid'">This link is invalid. You'll need to sign in and confirm your email again so we
-          can send you a new link.
-        </th:block>
-        <th:block th:case="'expired'">This link has expired. You'll need to sign in and confirm your email again so we
-          can send you a new link.
-        </th:block>
-      </div>
-    </th:block>
-    <h1>
-      Unable to confirm email
-    </h1>
-  </div>
-</div>
+  <h1 class="govuk-heading-l">
+    This link is invalid
+  </h1>
+  <p class="govuk-body">
+    We are unable to verify email your email address.
+  </p>
+  <p class="govuk-body">
+    You will need to sign in and confirm your email again so we can send you a new link.
+  </p>
 </body>
 </html>

@@ -17,6 +17,12 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
   @Page
   private lateinit var verifyEmailConfirmPage: VerifyEmailConfirmPage
 
+  @Page
+  private lateinit var verifyEmailInvalidTokenPage: VerifyEmailInvalidTokenPage
+
+  @Page
+  private lateinit var verifyEmailExpiredTokenPage: VerifyEmailExpiredTokenPage
+
   @Test
   fun `A user can cancel email verification`() {
     goTo(loginPage).loginAsWithUnverifiedEmail("DM_USER")
@@ -100,8 +106,19 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
   fun `A user is asked to sign in again if the verification link is invalid`() {
     goTo("/verify-email-confirm?token=someinvalidtoken")
 
-    val verifyEmailConfirmErrorPage = newInstance(VerifyEmailConfirmErrorPage::class.java)
-    verifyEmailConfirmErrorPage.checkErrorContains("This link is invalid")
+    verifyEmailInvalidTokenPage.isAt()
+  }
+
+  @Test
+  fun `A user is sent a new link when they use expired verify email link`() {
+    goTo("/verify-email-confirm?token=expired1")
+
+    verifyEmailExpiredTokenPage.isAt()
+
+    val verifyLink = verifyEmailExpiredTokenPage.getVerifyLink()
+
+    goTo(verifyLink)
+    verifyEmailConfirmPage.isAt()
   }
 }
 
@@ -165,5 +182,11 @@ open class SecondaryEmailAlreadyVerifiedPage : AuthPage<SecondaryEmailAlreadyVer
   }
 }
 
-@PageUrl("/verify-email-confirm")
-open class VerifyEmailConfirmErrorPage : AuthPage<VerifyEmailConfirmErrorPage>("HMPPS Digital Services - Verify Email Confirmation", "Unable to confirm email")
+@PageUrl("/verify-email-failure")
+open class VerifyEmailInvalidTokenPage : AuthPage<VerifyEmailInvalidTokenPage>("HMPPS Digital Services - Verify Email Confirmation", "This link is invalid")
+
+@PageUrl("/verify-email-expired")
+open class VerifyEmailExpiredTokenPage : AuthPage<VerifyEmailExpiredTokenPage>("HMPPS Digital Services - Verify Email Confirmation", "The link has expired") {
+  fun getVerifyLink(): String = el("#link").attribute("href")
+}
+

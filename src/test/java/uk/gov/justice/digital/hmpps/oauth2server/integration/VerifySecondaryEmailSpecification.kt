@@ -27,6 +27,12 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
   @Page
   private lateinit var verifySecondaryEmailConfirmPage: VerifySecondaryEmailConfirmPage
 
+  @Page
+  private lateinit var verifyEmailInvalidTokenPage: VerifyEmailInvalidTokenPage
+
+  @Page
+  private lateinit var verifySecondaryEmailExpiredTokenPage: VerifySecondaryEmailExpiredTokenPage
+
   @Test
   fun `A user can resend token to verify secondary email address`() {
     goTo(loginPage)
@@ -96,6 +102,25 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
         .isAtPage()
         .checkSecondaryEmailAndIsVerified()
   }
+
+  @Test
+  fun `A user is asked to sign in again if the verification link is invalid`() {
+    goTo("/verify-email-secondary-confirm?token=someinvalidtoken")
+
+    verifyEmailInvalidTokenPage.isAt()
+  }
+
+  @Test
+  fun `A user is sent a new link when they use expired verify secondary email link`() {
+    goTo("/verify-email-secondary-confirm?token=expired2")
+
+    verifySecondaryEmailExpiredTokenPage.isAt()
+
+    val verifyLink = verifySecondaryEmailExpiredTokenPage.getVerifyLink()
+
+    goTo(verifyLink)
+    verifySecondaryEmailConfirmPage.isAt()
+  }
 }
 
   @PageUrl("/verify-email-sent")
@@ -111,17 +136,22 @@ class VerifySecondaryEmailSpecification : AbstractAuthSpecification() {
     fun getVerifyLink(): String = el("#verifyLink").attribute("href")
   }
 
-  @PageUrl("/secondary-email-resend")
+@PageUrl("/backup-email-resend")
   class SecondaryEmailVerificationResendPage : AuthPage<SecondaryEmailVerificationResendPage>("HMPPS Digital Services - Resend Verification Code", "Resend security code") {
     @FindBy(css = "input[type='submit']")
     private lateinit var continueButton: FluentWebElement
 
-    fun resendCode() {
-      assertThat(continueButton.value()).isEqualTo("Resend security code")
-      continueButton.click()
-    }
+  fun resendCode() {
+    assertThat(continueButton.value()).isEqualTo("Resend security code")
+    continueButton.click()
   }
+}
 
 @PageUrl("/verify-email-secondary-confirm")
 open class VerifySecondaryEmailConfirmPage : AuthPage<VerifySecondaryEmailConfirmPage>("HMPPS Digital Services - Verify Email Confirmation", "Your backup email address has been verified")
 
+
+@PageUrl("/verify-email-secondary-expired")
+open class VerifySecondaryEmailExpiredTokenPage : AuthPage<VerifySecondaryEmailExpiredTokenPage>("HMPPS Digital Services - Verify Email Confirmation", "The link has expired") {
+  fun getVerifyLink(): String = el("#link").attribute("href")
+}

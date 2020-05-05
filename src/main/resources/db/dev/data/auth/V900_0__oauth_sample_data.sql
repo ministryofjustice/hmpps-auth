@@ -160,7 +160,9 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D74', 'AUTH_MFA_PREF_2ND_EMAIL4', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'SECONDARY_EMAIL'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D75', 'AUTH_MFA_LOCKED_2ND_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'SECONDARY_EMAIL'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D76', 'AUTH_MFA_LOCKED2_2ND_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'SECONDARY_EMAIL'),
-        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D77', 'AUTH_MFA_PREF_2ND_EMAIL_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'SECONDARY_EMAIL');
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D77', 'AUTH_MFA_PREF_2ND_EMAIL_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'SECONDARY_EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D78', 'AUTH_USER_LINK_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 0, 1, 0, 'auth', 'SECONDARY_EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D79', 'AUTH_USER_2ND_EMAIL_LINK_EXP', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 0, 1, 0, 'auth', 'SECONDARY_EMAIL');
 
 -- delius users
 INSERT INTO users (user_id, username, email, last_logged_in, first_name, last_name, verified, enabled, locked, source)
@@ -176,6 +178,8 @@ INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset2
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset3', 'RESET', '3031-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_CREATE_USER_VALID';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset4', 'RESET', '3031-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_CREATE_USER_VALID2';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset5', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_CREATE_USER_EXPIRED';
+INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'expired1', 'VERIFIED', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_USER_LINK_EXPIRED';
+INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'expired2', 'SECONDARY', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_USER_2ND_EMAIL_LINK_EXP';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'verified', 'VERIFIED', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_DELETEALL';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'mfa_expired', 'MFA', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_MFA_EXPIRED_USER';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'mfa_token', 'MFA', '3031-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_MFA_TOKEN_USER';
@@ -260,6 +264,7 @@ INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECON
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_LOCKED_2ND_EMAIL';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_LOCKED2_2ND_EMAIL';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_PREF_EMAIL_AND_TEXT';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 0 FROM users where username = 'AUTH_USER_2ND_EMAIL_LINK_EXP';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_CHANGE_MOBILE_VERIFIED';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 0 FROM users where username = 'AUTH_CHANGE_MOBILE_UPDATE';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 0 FROM users where username = 'AUTH_UNVERIFIED';
