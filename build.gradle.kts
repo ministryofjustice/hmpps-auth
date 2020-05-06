@@ -1,6 +1,3 @@
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter.ISO_DATE
-
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "0.1.1"
   kotlin("plugin.spring") version "1.3.72"
@@ -10,9 +7,6 @@ plugins {
 repositories {
   maven("https://dl.bintray.com/gov-uk-notify/maven")
 }
-
-val todaysDate: String = LocalDate.now().format(ISO_DATE)
-version = if (System.getenv().contains("CI")) "${todaysDate}.${System.getenv("CIRCLE_BUILD_NUM")}" else todaysDate
 
 extra["spring-security.version"] = "5.3.1.RELEASE"
 
