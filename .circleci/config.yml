@@ -107,6 +107,7 @@ jobs:
 
             # build the container
             docker build --rm=false . \
+               --build-arg BUILD_NUMBER=$TAG \
                --tag "$DOCKER_IMAGE:$TAG" \
                --label "maintainer=michael.willis@digital.justice.gov.uk" \
                --label "app.version=$TAG" \
