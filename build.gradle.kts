@@ -1,86 +1,18 @@
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.owasp.dependencycheck.reporting.ReportGenerator.Format.ALL
-import org.springframework.boot.gradle.plugin.SpringBootPlugin
-import java.net.InetAddress
-import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter.ISO_DATE
 
 plugins {
-  id("java")
-  id("groovy")
-  kotlin("jvm") version "1.3.72"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "0.1.1"
   kotlin("plugin.spring") version "1.3.72"
   kotlin("plugin.jpa") version "1.3.72"
-  id("org.springframework.boot") version "2.2.6.RELEASE"
-  id("io.spring.dependency-management") version "1.0.9.RELEASE"
-  id("org.owasp.dependencycheck") version "5.3.2.1"
-  id("com.github.ben-manes.versions") version "0.28.0"
-  id("se.patrikerdes.use-latest-versions") version "0.2.13"
-  id("com.gorylenko.gradle-git-properties") version "2.2.2"
 }
 
 repositories {
-  mavenLocal()
-  mavenCentral()
   maven("https://dl.bintray.com/gov-uk-notify/maven")
 }
 
-tasks.withType<KotlinCompile> {
-  kotlinOptions {
-    jvmTarget = "11"
-  }
-}
-
-java {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
-}
-
-dependencyCheck {
-  failBuildOnCVSS = 5f
-  suppressionFiles = listOf("dependency-check-suppress-spring.xml")
-  format = ALL
-  analyzers.assemblyEnabled = false
-}
-
-fun isNonStable(version: String): Boolean {
-  val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.toUpperCase().contains(it) }
-  val regex = "^[0-9,.v-]+(-r)?$".toRegex()
-  val isStable = stableKeyword || regex.matches(version)
-  return isStable.not()
-}
-
-tasks.withType<DependencyUpdatesTask> {
-  rejectVersionIf {
-    isNonStable(candidate.version) && !isNonStable(currentVersion)
-  }
-}
-
-group = "uk.gov.justice.digital.hmpps"
-
 val todaysDate: String = LocalDate.now().format(ISO_DATE)
-val today: Instant = Instant.now()
 version = if (System.getenv().contains("CI")) "${todaysDate}.${System.getenv("CIRCLE_BUILD_NUM")}" else todaysDate
-
-springBoot {
-  buildInfo {
-    properties {
-      time = today
-      additional = mapOf(
-          "by" to System.getProperty("user.name"),
-          "operatingSystem" to "${System.getProperty("os.name")} (${System.getProperty("os.version")})",
-          "continuousIntegration" to System.getenv().containsKey("CI"),
-          "machine" to InetAddress.getLocalHost().hostName
-      )
-    }
-  }
-}
-
-dependencyManagement {
-  imports { mavenBom(SpringBootPlugin.BOM_COORDINATES) }
-}
 
 extra["spring-security.version"] = "5.3.1.RELEASE"
 
@@ -89,28 +21,20 @@ dependencies {
   annotationProcessor("org.projectlombok:lombok:1.18.12")
 
   implementation(files("lib/ojdbc10-19.3.jar"))
-  implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-  implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-  implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.security:spring-security-jwt:1.1.0.RELEASE")
   implementation("org.springframework.security.oauth:spring-security-oauth2:2.4.1.RELEASE")
-  implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
   implementation("com.nimbusds:nimbus-jose-jwt:8.16")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.hibernate:hibernate-core:5.4.15.Final")
 
-  implementation("net.logstash.logback:logstash-logback-encoder:6.3")
-  implementation("com.microsoft.azure:applicationinsights-spring-boot-starter:2.6.0")
-  implementation("com.microsoft.azure:applicationinsights-logging-logback:2.6.0")
   implementation("javax.annotation:javax.annotation-api:1.3.2")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
   implementation("com.sun.xml.bind:jaxb-impl:2.3.3")
   implementation("com.sun.xml.bind:jaxb-core:2.3.0.1")
   implementation("javax.activation:activation:1.1.1")
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
   implementation("javax.transaction:javax.transaction-api:1.3")
 
@@ -124,11 +48,8 @@ dependencies {
 
   implementation("org.flywaydb:flyway-core:6.4.1")
   implementation("com.zaxxer:HikariCP:3.4.3")
-  implementation("org.apache.commons:commons-lang3:3.10")
   implementation("org.apache.commons:commons-text:1.8")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.1.jre11")
-  implementation("com.github.timpeeters:spring-boot-graceful-shutdown:2.2.2")
-  implementation("com.google.guava:guava:29.0-jre")
   implementation("io.swagger:swagger-core:1.6.1")
 
   runtimeOnly("com.h2database:h2:1.4.200")
@@ -138,7 +59,6 @@ dependencies {
 
   testAnnotationProcessor("org.projectlombok:lombok:1.18.12")
   testCompileOnly("org.projectlombok:lombok:1.18.12")
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 
@@ -184,26 +104,5 @@ tasks {
     systemProperty("geb.env", "chromeHeadless")
     include("uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*")
     setMaxHeapSize("256m")
-  }
-
-  val agentDeps by configurations.register("agentDeps") {
-    dependencies {
-      "agentDeps"("com.microsoft.azure:applicationinsights-agent:2.6.0") {
-        isTransitive = false
-      }
-    }
-  }
-
-  val copyAgent by registering(Copy::class) {
-    from(agentDeps)
-    into("$buildDir/libs")
-  }
-
-  assemble { dependsOn(copyAgent) }
-
-  bootJar {
-    manifest {
-      attributes("Implementation-Version" to rootProject.version, "Implementation-Title" to rootProject.name)
-    }
   }
 }
