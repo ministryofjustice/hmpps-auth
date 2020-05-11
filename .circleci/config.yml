@@ -7,6 +7,8 @@ version: 2.1
 
 orbs:
   owasp: entur/owasp@0.0.10
+  hmpps: ministryofjustice/hmpps@1.0.0
+  mem: circleci/rememborb@0.0.1
 
 executors:
   builder:
@@ -24,6 +26,7 @@ jobs:
     executor: builder
     steps:
       - checkout
+      - hmpps/create_app_version
       - restore_cache:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
@@ -94,24 +97,20 @@ jobs:
       - attach_workspace:
           at: ~/app
       - setup_remote_docker
+      - mem/recall:
+          env_var: APP_VERSION
       - run:
           name: Build container and publish to docker hub
           command: |
-            APP_VERSION=$(unzip -p build/libs/oauth2server-*.jar BOOT-INF/classes/META-INF/build-info.properties | awk -F = '/build.version/ {print $2}')
-
-            # make up a good version name
-            TAG=$([[ "${CIRCLE_BRANCH}" == "master" ]] && echo "$APP_VERSION" || echo "${APP_VERSION}.${CIRCLE_BRANCH}")
-            echo "Setting app version to $TAG"
-
             DOCKER_IMAGE="mojdigitalstudio/nomis-oauth2-server"
 
             # build the container
             docker build --rm=false . \
-               --build-arg BUILD_NUMBER=$TAG \
-               --tag "$DOCKER_IMAGE:$TAG" \
+               --build-arg BUILD_NUMBER=$APP_VERSION \
+               --tag "$DOCKER_IMAGE:$APP_VERSION" \
                --label "maintainer=michael.willis@digital.justice.gov.uk" \
-               --label "app.version=$TAG" \
-               --label "build.version=$TAG" \
+               --label "app.version=$APP_VERSION" \
+               --label "build.version=$APP_VERSION" \
                --label "build.number=$CIRCLE_BUILD_NUM" \
                --label "build.url=$CIRCLE_BUILD_URL" \
                --label "build.gitref=$CIRCLE_SHA1"
@@ -119,8 +118,8 @@ jobs:
             if [[ "${CIRCLE_BRANCH}" == "master" ]]; then
               # publish to docker hub as the tag
               docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker push $DOCKER_IMAGE:$TAG
-              docker tag $DOCKER_IMAGE:$TAG $DOCKER_IMAGE:latest
+              docker push $DOCKER_IMAGE:$APP_VERSION
+              docker tag $DOCKER_IMAGE:$APP_VERSION $DOCKER_IMAGE:latest
               docker push $DOCKER_IMAGE:latest
             fi
 
