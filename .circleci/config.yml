@@ -8,6 +8,7 @@ version: 2.1
 orbs:
   owasp: entur/owasp@0.0.10
   hmpps: ministryofjustice/hmpps@1.0.0
+  mem: circleci/rememborb@0.0.1
 
 executors:
   builder:
