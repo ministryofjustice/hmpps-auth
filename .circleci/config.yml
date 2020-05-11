@@ -107,7 +107,7 @@ jobs:
             # build the container
             docker build --rm=false . \
                --build-arg BUILD_NUMBER=$APP_VERSION \
-               --APP_VERSION "$DOCKER_IMAGE:$APP_VERSION" \
+               --tag "$DOCKER_IMAGE:$APP_VERSION" \
                --label "maintainer=michael.willis@digital.justice.gov.uk" \
                --label "app.version=$APP_VERSION" \
                --label "build.version=$APP_VERSION" \
@@ -116,7 +116,7 @@ jobs:
                --label "build.gitref=$CIRCLE_SHA1"
 
             if [[ "${CIRCLE_BRANCH}" == "master" ]]; then
-              # publish to docker hub as the APP_VERSION
+              # publish to docker hub as the tag
               docker login -u $DOCKER_USER -p $DOCKER_PASS
               docker push $DOCKER_IMAGE:$APP_VERSION
               docker tag $DOCKER_IMAGE:$APP_VERSION $DOCKER_IMAGE:latest
