@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "0.1.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "0.3.0"
   kotlin("plugin.spring") version "1.3.72"
   kotlin("plugin.jpa") version "1.3.72"
 }
@@ -8,7 +8,7 @@ repositories {
   maven("https://dl.bintray.com/gov-uk-notify/maven")
 }
 
-extra["spring-security.version"] = "5.3.1.RELEASE"
+extra["spring-security.version"] = "5.3.2.RELEASE"
 
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
@@ -41,7 +41,7 @@ dependencies {
   implementation("uk.gov.service.notify:notifications-java-client:3.15.1-RELEASE")
 
   implementation("org.flywaydb:flyway-core:6.4.1")
-  implementation("com.zaxxer:HikariCP:3.4.3")
+  implementation("com.zaxxer:HikariCP:3.4.5")
   implementation("org.apache.commons:commons-text:1.8")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.1.jre11")
   implementation("io.swagger:swagger-core:1.6.1")
@@ -72,7 +72,7 @@ dependencies {
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.26.3")
   testImplementation("com.github.tomjankes:wiremock-groovy:0.2.0")
   testImplementation("org.slf4j:slf4j-api:1.7.30")
-  testImplementation("com.auth0:java-jwt:3.10.2")
+  testImplementation("com.auth0:java-jwt:3.10.3")
 
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.17.0")
   testImplementation("com.nhaarman:mockito-kotlin-kt1.1:1.6.0")
