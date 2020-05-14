@@ -438,22 +438,18 @@ class ResetPasswordServiceTest {
         .build()
   }
 
-  private fun buildStaff(): Staff {
-    return Staff.builder()
-        .staffId(1L)
-        .firstName("Bob")
-        .lastName("Smith")
-        .status("ACTIVE")
-        .build()
-  }
+  private fun buildStaff(): Staff = Staff.builder()
+      .staffId(1L)
+      .firstName("Bob")
+      .lastName("Smith")
+      .status("ACTIVE")
+      .build()
 
-  private fun buildAccountDetail(username: String, status: AccountStatus): AccountDetail {
-    return AccountDetail.builder()
-        .username(username)
-        .accountStatus(status.desc)
-        .profile("TAG_GENERAL")
-        .build()
-  }
+  private fun buildAccountDetail(username: String, status: AccountStatus): AccountDetail = AccountDetail.builder()
+      .username(username)
+      .accountStatus(status.desc)
+      .profile("TAG_GENERAL")
+      .build()
 
   companion object {
     const val ROLE_ID = 1L
