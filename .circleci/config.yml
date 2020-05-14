@@ -31,6 +31,7 @@ jobs:
 
   integration_tests:
     executor: hmpps/java
+      tag: 11-jdk-browsers
     steps:
       - checkout
       - attach_workspace:
