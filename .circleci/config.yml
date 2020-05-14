@@ -1,49 +1,28 @@
-defaults: &defaults
-  working_directory: ~/app
-  environment:
-    _JAVA_OPTIONS: -Xmx256m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-XX:+UseContainerSupport
-
 version: 2.1
 
 orbs:
   owasp: entur/owasp@0.0.10
   hmpps: ministryofjustice/hmpps@1.0.0
-  mem: circleci/rememborb@0.0.1
-
-executors:
-  builder:
-    <<: *defaults
-    docker:
-      - image: circleci/openjdk:11-jdk-browsers
-
-  deployer:
-    <<: *defaults
-    docker:
-      - image: circleci/python:3
 
 jobs:
-  build:
-    executor: builder
+  validate:
+    executor: hmpps/java
     steps:
       - checkout
-      - hmpps/create_app_version
       - restore_cache:
-          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
-      - restore_cache:
-          key: gradle-cache-{{ checksum "build.gradle.kts" }}
-      - run: ./gradlew build
+          keys:
+            - gradle-{{ checksum "build.gradle.kts" }}
+            - gradle-
+      - run:
+          command: ./gradlew build
       - save_cache:
-          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
-            - /home/circleci/.gradle/wrapper
-      - save_cache:
-          key: gradle-cache-{{ checksum "build.gradle.kts" }}
-          paths:
-            - /home/circleci/.gradle/caches
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle.kts" }}
       - store_test_results:
-          path: build/test-results/test
+          path: build/test-results
       - store_artifacts:
-          path: build/reports/tests/test
+          path: build/reports/tests
       - persist_to_workspace:
           root: .
           paths:
@@ -51,7 +30,7 @@ jobs:
             - build.gradle.kts
 
   integration_tests:
-    executor: builder
+    executor: hmpps/java
     steps:
       - checkout
       - attach_workspace:
@@ -90,50 +69,17 @@ jobs:
       - store_test_results:
           path: build/test-results
 
-  build_docker:
-    executor: deployer
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/app
-      - setup_remote_docker
-      - mem/recall:
-          env_var: APP_VERSION
-      - run:
-          name: Build container and publish to docker hub
-          command: |
-            DOCKER_IMAGE="mojdigitalstudio/nomis-oauth2-server"
-
-            # build the container
-            docker build --rm=false . \
-               --build-arg BUILD_NUMBER=$APP_VERSION \
-               --tag "$DOCKER_IMAGE:$APP_VERSION" \
-               --label "maintainer=michael.willis@digital.justice.gov.uk" \
-               --label "app.version=$APP_VERSION" \
-               --label "build.version=$APP_VERSION" \
-               --label "build.number=$CIRCLE_BUILD_NUM" \
-               --label "build.url=$CIRCLE_BUILD_URL" \
-               --label "build.gitref=$CIRCLE_SHA1"
-
-            if [[ "${CIRCLE_BRANCH}" == "master" ]]; then
-              # publish to docker hub as the tag
-              docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker push $DOCKER_IMAGE:$APP_VERSION
-              docker tag $DOCKER_IMAGE:$APP_VERSION $DOCKER_IMAGE:latest
-              docker push $DOCKER_IMAGE:latest
-            fi
-
 workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      - build:
+      - validate:
           filters:
             tags:
               ignore: /.*/
       - integration_tests:
           requires:
-            - build
+            - validate
       - build_docker:
           requires:
             - integration_tests
@@ -151,4 +97,4 @@ workflows:
                 - master
     jobs:
       - owasp/gradle_owasp_dependency_check:
-          executor: builder
+          executor: hmpps/java
