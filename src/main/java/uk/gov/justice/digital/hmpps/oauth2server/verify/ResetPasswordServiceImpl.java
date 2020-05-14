@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,16 +34,12 @@ import static uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomi
 @Transactional
 public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordService {
 
-    @SuppressWarnings("SqlResolve")
-    private static final String EXISTING_EMAIL_SQL = "select distinct internet_address from internet_addresses i " +
-            "inner join STAFF_USER_ACCOUNTS s on i.owner_id = s.staff_id and owner_class = 'STF' " +
-            "where internet_address_class = 'EMAIL' and s.username = ?";
     private final UserRepository userRepository;
     private final UserTokenRepository userTokenRepository;
     private final UserService userService;
     private final DelegatingUserService delegatingUserService;
     private final NotificationClientApi notificationClient;
-    private final JdbcTemplate jdbcTemplate;
+    private final VerifyEmailService verifyEmailService;
     private final String resetTemplateId;
     private final String resetUnavailableTemplateId;
     private final String resetUnavailableEmailNotFoundTemplateId;
@@ -55,7 +50,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
                                     final UserService userService,
                                     final DelegatingUserService delegatingUserService,
                                     final NotificationClientApi notificationClient,
-                                    final JdbcTemplate jdbcTemplate,
+                                    final VerifyEmailService verifyEmailService,
                                     @Value("${application.notify.reset.template}") final String resetTemplateId,
                                     @Value("${application.notify.reset-unavailable.template}") final String resetUnavailableTemplateId,
                                     @Value("${application.notify.reset-unavailable-email-not-found.template}") final String resetUnavailableEmailNotFoundTemplateId,
@@ -65,7 +60,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
         this.userService = userService;
         this.delegatingUserService = delegatingUserService;
         this.notificationClient = notificationClient;
-        this.jdbcTemplate = jdbcTemplate;
+        this.verifyEmailService = verifyEmailService;
         this.resetTemplateId = resetTemplateId;
         this.resetUnavailableTemplateId = resetUnavailableTemplateId;
         this.resetUnavailableEmailNotFoundTemplateId = resetUnavailableEmailNotFoundTemplateId;
@@ -128,7 +123,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
     }
 
     private Optional<String> getEmailAddressFromNomis(final String username) {
-        final var emailAddresses = jdbcTemplate.queryForList(EXISTING_EMAIL_SQL, String.class, username);
+        final var emailAddresses = verifyEmailService.getExistingEmailAddresses(username);
         final var justiceEmail = emailAddresses.stream().filter(email -> email.endsWith("justice.gov.uk")).collect(Collectors.toList());
         return justiceEmail.size() == 1 ? Optional.of(justiceEmail.get(0)) : Optional.empty();
     }

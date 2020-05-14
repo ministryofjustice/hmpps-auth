@@ -31,7 +31,7 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
     goTo("/initial-password?token=reset3")
     initialPasswordPage
         .isAtPage()
-        .inputAndConfirmNewPassword("helloWorld2", "helloWorld2")
+        .inputAndConfirmNewPassword("helloWorld2")
 
     newPasswordSavedPage
         .isAtPage()
@@ -46,10 +46,10 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
     goTo("/initial-password?token=reset4")
     initialPasswordPage
         .isAtPage()
-        .inputAndConfirmNewPassword("password1", "password1")
+        .inputAndConfirmNewPassword("password1")
 
     setPasswordPage.checkError("Your password is commonly used and may not be secure")
-        .inputAndConfirmNewPassword("helloWorld2", "helloWorld2")
+        .inputAndConfirmNewPassword("helloWorld2")
 
     newPasswordSavedPage
         .isAtPage()
@@ -72,7 +72,7 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
 
     initialPasswordPage
         .isAtPage()
-        .inputAndConfirmNewPassword("helloWorld2", "helloWorld2")
+        .inputAndConfirmNewPassword("helloWorld2")
 
     newPasswordSavedPage
         .isAtPage()
@@ -105,7 +105,7 @@ open class SetPasswordPage : AuthPage<SetPasswordPage>("HMPPS Digital Services -
   @FindBy(css = "input[type='submit']")
   private lateinit var savePassword: FluentWebElement
 
-  fun inputAndConfirmNewPassword(password: String, confirmPassword: String): SetPasswordPage {
+  fun inputAndConfirmNewPassword(password: String, confirmPassword: String = password): SetPasswordPage {
     this.newPassword.fill().withText(password)
     this.confirmPassword.fill().withText(confirmPassword)
     savePassword.submit()
@@ -125,7 +125,7 @@ open class SetNewPasswordPage : AuthPage<SetNewPasswordPage>("HMPPS Digital Serv
   @FindBy(css = "input[type='submit']")
   private lateinit var savePassword: FluentWebElement
 
-  fun inputAndConfirmNewPassword(password: String, confirmPassword: String): SetNewPasswordPage {
+  fun inputAndConfirmNewPassword(password: String, confirmPassword: String = password): SetNewPasswordPage {
     this.newPassword.fill().withText(password)
     this.confirmPassword.fill().withText(confirmPassword)
     savePassword.submit()

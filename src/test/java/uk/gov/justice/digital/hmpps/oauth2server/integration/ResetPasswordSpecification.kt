@@ -88,7 +88,7 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
         .inputUsernameAndContinue("CA_USER_TEST")
 
     usernameResetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2", "helloworld2")
+        .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
@@ -111,7 +111,7 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2", "helloworld2")
+        .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
@@ -134,7 +134,7 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2", "helloworld2")
+        .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
@@ -157,7 +157,7 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2", "helloworld2")
+        .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
@@ -180,7 +180,7 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2", "helloworld2")
+        .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
@@ -234,7 +234,7 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2", "helloworld2")
+        .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
@@ -247,12 +247,8 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
 
 @PageUrl("/reset-password")
 open class ResetPasswordRequestPage : AuthPage<ResetPasswordRequestPage>("HMPPS Digital Services - Reset Password", "Create a new password") {
-
-
   @FindBy(css = "input[type='submit']")
   private lateinit var continueButton: FluentWebElement
-
-  //  @FindBy(css = "input[name='usernameOrEmail']")
   private lateinit var usernameOrEmail: FluentWebElement
 
   fun submitUsernameOrEmail(usernameOrEmail: String): ResetPasswordRequestPage {
@@ -303,7 +299,7 @@ open class ResetPasswordPage : AuthPage<ResetPasswordPage>("HMPPS Digital Servic
   @FindBy(css = "input[type='submit']")
   private lateinit var savePassword: FluentWebElement
 
-  fun inputAndConfirmNewPassword(password: String, confirmPassword: String): ResetPasswordPage {
+  fun inputAndConfirmNewPassword(password: String, confirmPassword: String = password): ResetPasswordPage {
     this.newPassword.fill().withText(password)
     this.confirmPassword.fill().withText(confirmPassword)
     savePassword.submit()
@@ -323,7 +319,7 @@ open class UsernameResetPasswordPage : AuthPage<UsernameResetPasswordPage>("HMPP
   @FindBy(css = "input[type='submit']")
   private lateinit var savePassword: FluentWebElement
 
-  fun inputAndConfirmNewPassword(password: String, confirmPassword: String): UsernameResetPasswordPage {
+  fun inputAndConfirmNewPassword(password: String, confirmPassword: String = password): UsernameResetPasswordPage {
     this.newPassword.fill().withText(password)
     this.confirmPassword.fill().withText(confirmPassword)
     savePassword.submit()

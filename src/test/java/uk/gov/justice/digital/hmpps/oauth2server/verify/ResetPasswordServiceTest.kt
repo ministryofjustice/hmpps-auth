@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.security.authentication.LockedException
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
@@ -42,9 +41,9 @@ class ResetPasswordServiceTest {
   private val userService: UserService = mock()
   private val delegatingUserService: DelegatingUserService = mock()
   private val notificationClient: NotificationClientApi = mock()
-  private val jdbcTemplate: JdbcTemplate = mock()
+  private val verifyEmailService: VerifyEmailService = mock()
   private val resetPasswordService = ResetPasswordServiceImpl(userRepository, userTokenRepository,
-      userService, delegatingUserService, notificationClient, jdbcTemplate,
+      userService, delegatingUserService, notificationClient, verifyEmailService,
       "resetTemplate", "resetUnavailableTemplate", "resetUnavailableEmailNotFoundTemplate", "reset-confirm")
 
   @Test
@@ -389,7 +388,7 @@ class ResetPasswordServiceTest {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(buildStandardUser("user")))
     val emailAddresses = mutableListOf("Bob.smith@hmps.gsi.gov.uk", "Bob.smith@justice.gov.uk")
-    whenever(jdbcTemplate.queryForList(anyString(), any<Class<String>>(), anyString())).thenReturn(emailAddresses)
+    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(emailAddresses)
     val optionalLink = resetPasswordService.requestResetPassword("user", "url")
     assertThat(optionalLink).isPresent
   }
@@ -398,7 +397,7 @@ class ResetPasswordServiceTest {
   fun `Nomis User who has not logged reset password request no email`() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(buildStandardUser("user")))
-    whenever(jdbcTemplate.queryForList(anyString(), any<Class<String>>(), anyString())).thenReturn(mutableListOf())
+    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(mutableListOf())
     val optional = resetPasswordService.requestResetPassword("user", "url")
     assertThat(optional).isEmpty
   }
@@ -408,7 +407,7 @@ class ResetPasswordServiceTest {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(buildStandardUser("user")))
     val emailAddresses = mutableListOf("Bob.smith@hmps.gsi.gov.uk", "Bob.smith@justice.gov.uk", "Bob.smith2@justice.gov.uk")
-    whenever(jdbcTemplate.queryForList(anyString(), any<Class<String>>(), anyString())).thenReturn(emailAddresses)
+    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(emailAddresses)
     val optional = resetPasswordService.requestResetPassword("user", "url")
     assertThat(optional).isEmpty
   }
