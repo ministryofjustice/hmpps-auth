@@ -80,7 +80,8 @@ workflows:
       - integration_tests:
           requires:
             - validate
-      - build_docker:
+      - hmpps/build_docker:
+          name: build_docker
           requires:
             - integration_tests
           filters:
