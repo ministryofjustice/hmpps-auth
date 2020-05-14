@@ -30,7 +30,8 @@ jobs:
             - build.gradle.kts
 
   integration_tests:
-    executor: hmpps/java
+    executor:
+      name: hmpps/java
       tag: 11-jdk-browsers
     steps:
       - checkout
