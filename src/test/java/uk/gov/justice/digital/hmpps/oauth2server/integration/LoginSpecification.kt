@@ -108,6 +108,9 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
   @FindBy(css = "input[name='password']")
   private lateinit var password: FluentWebElement
 
+  @FindBy(linkText = "I have forgotten my password")
+  private lateinit var forgottenPassword: FluentWebElement
+
   fun loginAsWithUnverifiedEmail(username: String, password: String = "password123456"): VerifyEmailPage =
       loginWith(username, password, VerifyEmailPage::class.java)
 
@@ -174,6 +177,10 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
   fun checkLoginAccountLockedError(): LoginPage {
     checkError("Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below.")
     return this
+  }
+
+  fun forgottenPasswordLink() {
+    forgottenPassword.click()
   }
 
 }
