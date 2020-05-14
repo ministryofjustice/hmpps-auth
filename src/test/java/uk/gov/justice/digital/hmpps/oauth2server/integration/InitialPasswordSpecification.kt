@@ -24,7 +24,7 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
   private lateinit var newPasswordLinkExpiredPage: NewPasswordLinkExpiredPage
 
   @Page
-  private lateinit var resetPasswordPage: resetPasswordPage
+  private lateinit var resetNewPasswordPage: ResetNewPasswordPage
 
   @Test
   fun `A user can be created and new password saved`() {
@@ -86,7 +86,7 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
   fun `A user tries to use an invalid token to set their password is redirected to reset password page`() {
     goTo("/initial-password?token=invalid")
 
-    resetPasswordPage.isAtPage()
+    resetNewPasswordPage.isAtPage()
   }
 }
 
@@ -105,10 +105,31 @@ open class SetPasswordPage : AuthPage<SetPasswordPage>("HMPPS Digital Services -
   @FindBy(css = "input[type='submit']")
   private lateinit var savePassword: FluentWebElement
 
-  fun inputAndConfirmNewPassword(password: String) {
+  fun inputAndConfirmNewPassword(password: String, confirmPassword: String = password): SetPasswordPage {
     this.newPassword.fill().withText(password)
-    this.confirmPassword.fill().withText(password)
+    this.confirmPassword.fill().withText(confirmPassword)
     savePassword.submit()
+    return this
+  }
+}
+
+@PageUrl("/set-password")
+open class SetNewPasswordPage : AuthPage<SetNewPasswordPage>("HMPPS Digital Services - Create a password", "Create a new password") {
+
+  @FindBy(css = "input[id='new-password']")
+  private lateinit var newPassword: FluentWebElement
+
+  @FindBy(css = "input[id='confirm-password']")
+  private lateinit var confirmPassword: FluentWebElement
+
+  @FindBy(css = "input[type='submit']")
+  private lateinit var savePassword: FluentWebElement
+
+  fun inputAndConfirmNewPassword(password: String, confirmPassword: String = password): SetNewPasswordPage {
+    this.newPassword.fill().withText(password)
+    this.confirmPassword.fill().withText(confirmPassword)
+    savePassword.submit()
+    return this
   }
 }
 
@@ -125,4 +146,8 @@ class NewPasswordLinkExpiredPage : AuthPage<NewPasswordLinkExpiredPage>("HMPPS D
 
   fun getInitialPasswordLink(): String = el("#link").attribute("href")
 }
+
+@PageUrl("/reset-password")
+open class ResetNewPasswordPage : AuthPage<ResetNewPasswordPage>("HMPPS Digital Services - Reset Password", "Create a new password")
+
 

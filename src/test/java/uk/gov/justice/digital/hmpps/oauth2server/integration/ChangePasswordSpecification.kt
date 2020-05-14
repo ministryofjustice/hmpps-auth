@@ -173,7 +173,3 @@ open class ChangePasswordSuccessPage : AuthPage<ChangePasswordSuccessPage>("HMPP
     return this
   }
 }
-
-
-@PageUrl("/reset-password")
-open class resetPasswordPage : AuthPage<resetPasswordPage>("HMPPS Digital Services - Reset Password", "Create a new password")

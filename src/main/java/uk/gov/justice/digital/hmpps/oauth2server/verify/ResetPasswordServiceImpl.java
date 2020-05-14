@@ -21,9 +21,13 @@ import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis;
 
 @Service
 @Slf4j
@@ -35,15 +39,18 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
     private final UserService userService;
     private final DelegatingUserService delegatingUserService;
     private final NotificationClientApi notificationClient;
+    private final VerifyEmailService verifyEmailService;
     private final String resetTemplateId;
     private final String resetUnavailableTemplateId;
     private final String resetUnavailableEmailNotFoundTemplateId;
     private final String resetPasswordConfirmedTemplateId;
 
     public ResetPasswordServiceImpl(final UserRepository userRepository,
-                                    final UserTokenRepository userTokenRepository, final UserService userService,
+                                    final UserTokenRepository userTokenRepository,
+                                    final UserService userService,
                                     final DelegatingUserService delegatingUserService,
                                     final NotificationClientApi notificationClient,
+                                    final VerifyEmailService verifyEmailService,
                                     @Value("${application.notify.reset.template}") final String resetTemplateId,
                                     @Value("${application.notify.reset-unavailable.template}") final String resetUnavailableTemplateId,
                                     @Value("${application.notify.reset-unavailable-email-not-found.template}") final String resetUnavailableEmailNotFoundTemplateId,
@@ -53,6 +60,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
         this.userService = userService;
         this.delegatingUserService = delegatingUserService;
         this.notificationClient = notificationClient;
+        this.verifyEmailService = verifyEmailService;
         this.resetTemplateId = resetTemplateId;
         this.resetUnavailableTemplateId = resetUnavailableTemplateId;
         this.resetUnavailableEmailNotFoundTemplateId = resetUnavailableEmailNotFoundTemplateId;
@@ -61,8 +69,8 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
 
     @Override
     @Transactional(transactionManager = "authTransactionManager")
-    public Optional<String> requestResetPassword(final String usernameOrEmailAddress, final String url) throws NotificationClientRuntimeException {
-        final Optional<User> optionalUser;
+    public Optional<String> requestResetPassword(final String usernameOrEmailAddress, final String url) throws NotificationClientRuntimeException, EntityNotFoundException {
+        Optional<User> optionalUser;
         final boolean multipleMatchesAndCanBeReset;
         if (StringUtils.contains(usernameOrEmailAddress, "@")) {
             final var email = EmailHelper.format(usernameOrEmailAddress);
@@ -78,7 +86,15 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
             optionalUser = Optional.of(matches.get(0));
         } else {
             multipleMatchesAndCanBeReset = false;
-            optionalUser = userRepository.findByUsername(usernameOrEmailAddress.toUpperCase());
+
+            optionalUser = userRepository.findByUsername(usernameOrEmailAddress.toUpperCase())
+                    .or(() -> userService.findMasterUserPersonDetails(usernameOrEmailAddress.toUpperCase()).flatMap(userPersonDetails -> {
+
+                        if (AuthSource.valueOf(userPersonDetails.getAuthSource()) == nomis) {
+                            return saveNomisUser(userPersonDetails);
+                        }
+                        return Optional.empty();
+                    }));
         }
 
         if (optionalUser.isEmpty() || StringUtils.isEmpty(optionalUser.get().getEmail())) {
@@ -92,6 +108,24 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
         sendEmail(user.getUsername(), templateAndParameters, user.getEmail());
 
         return Optional.ofNullable(templateAndParameters.getResetLink());
+    }
+
+    private Optional<User> saveNomisUser(final UserPersonDetails userPersonDetails) {
+        final var user = userPersonDetails.toUser();
+        if (!passwordAllowedToBeReset(user, userPersonDetails)) {
+            return Optional.empty();
+        }
+        return getEmailAddressFromNomis(user.getUsername()).map(e -> {
+            user.setEmail(e);
+            userRepository.save(user);
+            return user;
+        });
+    }
+
+    private Optional<String> getEmailAddressFromNomis(final String username) {
+        final var emailAddresses = verifyEmailService.getExistingEmailAddresses(username);
+        final var justiceEmail = emailAddresses.stream().filter(email -> email.endsWith("justice.gov.uk")).collect(Collectors.toList());
+        return justiceEmail.size() == 1 ? Optional.of(justiceEmail.get(0)) : Optional.empty();
     }
 
     private TemplateAndParameters getTemplateAndParameters(final String url, final boolean multipleMatchesAndCanBeReset, final User user) {
@@ -143,7 +177,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
     }
 
     private boolean passwordAllowedToBeReset(final User user, final UserPersonDetails userPersonDetails) {
-        if (user.getSource() != AuthSource.nomis) {
+        if (user.getSource() != nomis) {
             // for non nomis users they must be enabled (so can be locked)
             return userPersonDetails.isEnabled();
         }
