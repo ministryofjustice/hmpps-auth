@@ -39,7 +39,7 @@ VALUES ('BOOK_MOVE', 'Book a secure move', 'Book a secure move', 'ROLE_PECS_SUPP
        ('NOMIS', 'Digital Prison Service', 'View and Manage Offenders in Prison (Old name was NEW NOMIS)', null, 'http://localhost:3000', 1, 'feedback@digital.justice.gov.uk'),
        ('OAUTHADMIN', 'Oauth Client Management', 'Manage Client Credentials for OAUTH2 Clients', 'ROLE_OAUTH_ADMIN', 'http://localhost:8080/auth/ui/', 1, null),
        ('POM', 'Allocate a POM Service', 'Allocate the appropriate offender manager to a prisoner', 'ROLE_ALLOC_MGR', 'https://moic.service.justice.gov.uk', 1, 'https://moic.service.justice.gov.uk/help'),
-       ('PATHFINDER', 'Pathfinder Service', 'View and Manage Pathfinder nominals', 'ROLE_PF_STD_PRISON,ROLE_PF_APPROVAL', 'http://localhost:3000', 1, null),
+       ('PATHFINDER', 'Pathfinder Service', 'View and Manage Pathfinder nominals', 'ROLE_PF_STD_PRISON,ROLE_PF_APPROVAL,ROLE_PF_POLICE', 'http://localhost:3000', 1, null),
        ('USERADMIN', 'Admin & Utilities Service', 'Admin & utilities Service For NOMIS and Auth User', 'ROLE_KW_MIGRATION,ROLE_MAINTAIN_ACCESS_ROLES,ROLE_MAINTAIN_ACCESS_ROLES_ADMIN,ROLE_MAINTAIN_OAUTH_USERS,ROLE_AUTH_GROUP_MANAGER', 'http://localhost:3001/admin-utilities', 1, null),
        ('DETAILS', 'Manage account details', 'View and change your account details', null, '/auth/account-details', 1, null);
 
@@ -172,6 +172,24 @@ INSERT INTO users (user_id, username, email, last_logged_in, first_name, last_na
 
 INSERT INTO users (user_id, username, password, password_expiry, email, first_name, last_name, verified, enabled, locked, source)
  VALUES ('7B59A818-BC14-43F3-A1C3-93004E173B2C','DELIUS_EMAIL_RESET', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy','3013-01-02 13:23:19.0000000', 'delius_email@digital.justice.gov.uk',  'Delius', 'Smith', 1, 1, 0, 'delius');
+
+-- oauth user (police user used by pathfinder)
+INSERT INTO users (user_id, username, password, email, first_name, last_name, verified, locked, enabled, master, create_datetime, password_expiry, last_logged_in, source, mfa_preference)
+VALUES
+('ABD94E71-0047-43F1-842B-7BD7E0EB5B09', 'TEST_PF_POLICE_1', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'test.pf.police@digital.justice.gov.uk', 'Bobby', 'London', 1, 0, 1, 0, '2020-05-01 15:07:34.5466667', '2040-04-26 16:17:28.4953990', '2020-05-18 14:16:21.7349800', 'auth', 'EMAIL');
+
+insert into roles (role_id, role_code, role_name)
+values (NEWID(), 'PF_POLICE', 'Pathfinder Police');
+
+insert into groups (group_id, group_code, group_name) values
+(NEWID(), 'PF_LONDON', 'Pathfinder Police - London');
+
+insert into group_assignable_role (role_id, group_id, automatic) values ((select role_id from roles where role_code = 'PF_POLICE'),
+                                                                         (select group_id from groups where group_code = 'PF_LONDON'), 1);
+
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'TEST_PF_POLICE_1' and role_code = 'PF_POLICE';
+
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'TEST_PF_POLICE_1' and group_code = 'PF_LONDON';
 
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'LOCKED_USER';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset2', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_DELETEALL';
