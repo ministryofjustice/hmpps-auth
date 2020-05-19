@@ -21,14 +21,14 @@ data class DeliusUserPersonDetails(private val username: String,
 
   override fun getFirstName(): String = firstName
 
-  override fun getName(): String = String.format("%s %s", firstName, surname)
+  override fun getName(): String = "$firstName $surname"
 
   override fun isAdmin(): Boolean = false
 
   override fun getAuthSource(): String = "delius"
 
   override fun toUser(): User =
-      User.builder().username(username).source(AuthSource.delius).email(email).verified(true).build()
+      User.builder().username(username).source(AuthSource.delius).email(email).verified(true).enabled(enabled).build()
 
   override fun eraseCredentials() {}
 

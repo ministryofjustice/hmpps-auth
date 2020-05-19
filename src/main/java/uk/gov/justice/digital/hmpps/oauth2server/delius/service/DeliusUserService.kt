@@ -21,16 +21,16 @@ import java.util.*
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Service
-open class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemplate: RestTemplate,
-                             @Value("\${delius.enabled:false}") private val deliusEnabled: Boolean,
-                             deliusRoleMappings: DeliusRoleMappings) {
+class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemplate: RestTemplate,
+                        @Value("\${delius.enabled:false}") private val deliusEnabled: Boolean,
+                        deliusRoleMappings: DeliusRoleMappings) {
   private val mappings: Map<String, List<String>> = deliusRoleMappings.mappings.mapKeys { it.key.toUpperCase().replace('.', '_') }
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  open fun getDeliusUserByUsername(username: String): Optional<DeliusUserPersonDetails> {
+  fun getDeliusUserByUsername(username: String): Optional<DeliusUserPersonDetails> {
     if (!deliusEnabled) {
       log.debug("Delius integration disabled, returning empty for {}", username)
       return Optional.empty()
@@ -55,7 +55,7 @@ open class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val res
     }
   }
 
-  open fun authenticateUser(username: String, password: String): Boolean {
+  fun authenticateUser(username: String, password: String): Boolean {
     if (!deliusEnabled) {
       log.debug("Delius integration disabled, returning empty for {}", username)
       return false
@@ -92,7 +92,7 @@ open class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val res
           .flatMap { r -> r.map(::SimpleGrantedAuthority) }
           .toSet()
 
-  open fun changePassword(username: String, password: String) {
+  fun changePassword(username: String, password: String) {
     if (!deliusEnabled) {
       log.debug("Delius integration disabled, returning empty for {}", username)
       return

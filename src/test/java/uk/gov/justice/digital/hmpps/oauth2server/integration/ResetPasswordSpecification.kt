@@ -243,6 +243,30 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     homePage.isAt()
   }
 
+  @Test
+  fun `A Delius user who has never logged into DPS can reset password`() {
+    goTo(loginPage)
+        .forgottenPasswordLink()
+
+    resetPasswordRequestPage
+        .submitUsernameOrEmail("DELIUS_SMITH")
+
+    resetPasswordLinkSentPage.isAtPage()
+    val resetLink = resetPasswordLinkSentPage.getResetLink()
+
+    goTo(resetLink)
+
+    resetPasswordPage
+        .inputAndConfirmNewPassword("helloworld2")
+
+    resetPasswordSuccessPage.isAtPage()
+
+    goTo(loginPage)
+        .loginAs("DELIUS_SMITH", "helloworld2")
+    homePage.isAt()
+  }
+
+
 }
 
 @PageUrl("/reset-password")

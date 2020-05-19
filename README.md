@@ -19,7 +19,7 @@ docker ps
 Will show a line like this:
 ```
 CONTAINER ID        IMAGE                                         COMMAND                 CREATED             STATUS                    PORTS                    NAMES
-d77af7e00910        mojdigitalstudio/nomis-oauth2-server:latest   "/bin/sh /app/run.sh"   38 seconds ago      Up 36 seconds (healthy)   0.0.0.0:9090->8080/tcp   nomis-oauth2-server
+d77af7e00910        quay.io/hmpps/nomis-oauth2-server:latest   "/bin/sh /app/run.sh"   38 seconds ago      Up 36 seconds (healthy)   0.0.0.0:9090->8080/tcp   nomis-oauth2-server
 ```
 
 #### View logs in docker:
