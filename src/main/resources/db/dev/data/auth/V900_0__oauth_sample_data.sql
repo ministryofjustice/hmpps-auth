@@ -176,50 +176,20 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
 -- oauth user (police user used by pathfinder)
 INSERT INTO users (user_id, username, password, email, first_name, last_name, verified, locked, enabled, master, create_datetime, password_expiry, last_logged_in, source, mfa_preference)
 VALUES
-('ABD94E71-0047-43F1-842B-7BD7E0EB5B09', 'TEST_PF_POLICE_1', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'tim.harrison@digital.justice.gov.uk', 'Bobby', 'Newcastle', 1, 0, 1, 0, '2020-05-01 15:07:34.5466667', '2040-04-26 16:17:28.4953990', '2020-05-18 14:16:21.7349800', 'auth', 'EMAIL');
+('ABD94E71-0047-43F1-842B-7BD7E0EB5B09', 'TEST_PF_POLICE_1', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'test.pf.police@digital.justice.gov.uk', 'Bobby', 'London', 1, 0, 1, 0, '2020-05-01 15:07:34.5466667', '2040-04-26 16:17:28.4953990', '2020-05-18 14:16:21.7349800', 'auth', 'EMAIL');
 
 insert into roles (role_id, role_code, role_name)
 values (NEWID(), 'PF_POLICE', 'Pathfinder Police');
 
 insert into groups (group_id, group_code, group_name) values
-(NEWID(), 'PF_NORTH_WEST', 'Pathfinder Police - North West');
-insert into groups (group_id, group_code, group_name) values
-(NEWID(), 'PF_NORTH_EAST', 'Pathfinder Police - North East');
-insert into groups (group_id, group_code, group_name) values
-(NEWID(), 'PF_SOUTH_EAST', 'Pathfinder Police - South East');
-insert into groups (group_id, group_code, group_name) values
-(NEWID(), 'PF_SOUTH_WEST', 'Pathfinder Police - South West');
-insert into groups (group_id, group_code, group_name) values
-(NEWID(), 'PF_EAST_MIDLANDS', 'Pathfinder Police - East Midlands');
-insert into groups (group_id, group_code, group_name) values
-(NEWID(), 'PF_WEST_MIDLANDS', 'Pathfinder Police - West Midlands');
-insert into groups (group_id, group_code, group_name) values
-(NEWID(), 'PF_EASTERN', 'Pathfinder Police - Eastern');
-insert into groups (group_id, group_code, group_name) values
 (NEWID(), 'PF_LONDON', 'Pathfinder Police - London');
-insert into groups (group_id, group_code, group_name) values
-(NEWID(), 'PF_WALES', 'Pathfinder Police - Wales');
 
-insert into group_assignable_role (role_id, group_id, automatic) values ((select role_id from roles where role_code = 'PF_POLICE'),
-                                                                         (select group_id from groups where group_code = 'PF_NORTH_EAST'), 1);
-insert into group_assignable_role (role_id, group_id, automatic) values ((select role_id from roles where role_code = 'PF_POLICE'),
-                                                                         (select group_id from groups where group_code = 'PF_NORTH_WEST'), 1);
-insert into group_assignable_role (role_id, group_id, automatic) values ((select role_id from roles where role_code = 'PF_POLICE'),
-                                                                         (select group_id from groups where group_code = 'PF_SOUTH_EAST'), 1);
-insert into group_assignable_role (role_id, group_id, automatic) values ((select role_id from roles where role_code = 'PF_POLICE'),
-                                                                         (select group_id from groups where group_code = 'PF_SOUTH_WEST'), 1);
-insert into group_assignable_role (role_id, group_id, automatic) values ((select role_id from roles where role_code = 'PF_POLICE'),
-                                                                         (select group_id from groups where group_code = 'PF_EAST_MIDLANDS'), 1);
-insert into group_assignable_role (role_id, group_id, automatic) values ((select role_id from roles where role_code = 'PF_POLICE'),
-                                                                         (select group_id from groups where group_code = 'PF_WEST_MIDLANDS'), 1);
-insert into group_assignable_role (role_id, group_id, automatic) values ((select role_id from roles where role_code = 'PF_POLICE'),
-                                                                         (select group_id from groups where group_code = 'PF_EASTERN'), 1);
 insert into group_assignable_role (role_id, group_id, automatic) values ((select role_id from roles where role_code = 'PF_POLICE'),
                                                                          (select group_id from groups where group_code = 'PF_LONDON'), 1);
-insert into group_assignable_role (role_id, group_id, automatic) values ((select role_id from roles where role_code = 'PF_POLICE'),
-                                                                         (select group_id from groups where group_code = 'PF_WALES'), 1);
 
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'TEST_PF_POLICE_1' and role_code = 'PF_POLICE';
+
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'TEST_PF_POLICE_1' and group_code = 'PF_LONDON';
 
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'LOCKED_USER';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset2', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_DELETEALL';
