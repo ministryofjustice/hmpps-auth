@@ -413,15 +413,26 @@ class ResetPasswordServiceTest {
   }
 
   @Test
-  fun `Delius User who has not logged reset password not yet`() {
+  fun `Delius User who has not logged into DPS reset password request`() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createDeliusUser()))
+    val optionalLink = resetPasswordService.requestResetPassword("user", "url")
+    assertThat(optionalLink).isPresent
+  }
+
+  @Test
+  fun `Delius User not enabled who has not logged into DPS reset password request`() {
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createDeliusUserNotEnabled()))
     val optional = resetPasswordService.requestResetPassword("user", "url")
     assertThat(optional).isEmpty
   }
 
   private fun createDeliusUser() =
-      DeliusUserPersonDetails(username = "user", userId = "12345", firstName = "F", surname = "L", email = "a@b.com")
+      DeliusUserPersonDetails(username = "user", userId = "12345", firstName = "F", surname = "L", email = "a@b.com", enabled = true)
+
+  private fun createDeliusUserNotEnabled() =
+      DeliusUserPersonDetails(username = "user", userId = "12345", firstName = "F", surname = "L", email = "a@b.com", enabled = false)
 
   private fun buildStandardUser(username: String): NomisUserPersonDetails {
     val staff = buildStaff()

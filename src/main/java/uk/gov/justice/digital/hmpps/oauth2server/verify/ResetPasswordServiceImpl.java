@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService;
@@ -21,13 +20,13 @@ import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
 import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis;
+import static uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.valueOf;
 
 @Service
 @Slf4j
@@ -69,8 +68,8 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
 
     @Override
     @Transactional(transactionManager = "authTransactionManager")
-    public Optional<String> requestResetPassword(final String usernameOrEmailAddress, final String url) throws NotificationClientRuntimeException, EntityNotFoundException {
-        Optional<User> optionalUser;
+    public Optional<String> requestResetPassword(final String usernameOrEmailAddress, final String url) throws NotificationClientRuntimeException {
+        final Optional<User> optionalUser;
         final boolean multipleMatchesAndCanBeReset;
         if (StringUtils.contains(usernameOrEmailAddress, "@")) {
             final var email = EmailHelper.format(usernameOrEmailAddress);
@@ -90,8 +89,11 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
             optionalUser = userRepository.findByUsername(usernameOrEmailAddress.toUpperCase())
                     .or(() -> userService.findMasterUserPersonDetails(usernameOrEmailAddress.toUpperCase()).flatMap(userPersonDetails -> {
 
-                        if (AuthSource.valueOf(userPersonDetails.getAuthSource()) == nomis) {
-                            return saveNomisUser(userPersonDetails);
+                        switch (valueOf(userPersonDetails.getAuthSource())) {
+                            case nomis:
+                                return saveNomisUser(userPersonDetails);
+                            case delius:
+                                return saveDeliusUser(userPersonDetails);
                         }
                         return Optional.empty();
                     }));
@@ -108,6 +110,15 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
         sendEmail(user.getUsername(), templateAndParameters, user.getEmail());
 
         return Optional.ofNullable(templateAndParameters.getResetLink());
+    }
+
+    private Optional<User> saveDeliusUser(final UserPersonDetails userPersonDetails) {
+        final var user = userPersonDetails.toUser();
+        if (!passwordAllowedToBeReset(user, userPersonDetails)) {
+            return Optional.empty();
+        }
+        userRepository.save(user);
+        return Optional.of(user);
     }
 
     private Optional<User> saveNomisUser(final UserPersonDetails userPersonDetails) {
