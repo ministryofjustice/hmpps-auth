@@ -1,13 +1,13 @@
 version: '3.1'
 services:
 
-  nomis-oauth2-server:
-    image: quay.io/hmpps/nomis-oauth2-server:latest
-    container_name: nomis-oauth2-server
+  hmpps-auth:
+    image: quay.io/hmpps/hmpps-auth:latest
+    container_name: hmpps-auth
     ports:
-    - "9090:8080"
+      - "9090:8080"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/auth/health"]
     environment:
-    - SERVER_PORT=8080
-    - SPRING_PROFILES_ACTIVE=dev
+      - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=dev

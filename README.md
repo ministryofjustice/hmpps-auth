@@ -18,12 +18,12 @@ docker ps
 ```
 Will show a line like this:
 ```
-CONTAINER ID        IMAGE                                         COMMAND                 CREATED             STATUS                    PORTS                    NAMES
-d77af7e00910        quay.io/hmpps/nomis-oauth2-server:latest   "/bin/sh /app/run.sh"   38 seconds ago      Up 36 seconds (healthy)   0.0.0.0:9090->8080/tcp   nomis-oauth2-server
+CONTAINER ID        IMAGE                                         COMMAND                 CREATED             STATUS                    PORTS           NAMES
+d77af7e00910        quay.io/hmpps/hnpps-auth:latest   "/bin/sh /app/run.sh"   38 seconds ago      Up 36 seconds (healthy)   0.0.0.0:9090->8080/tcp   hmpps-auth
 ```
 
 #### View logs in docker:
-```docker logs nomis-oauth2-server```
+```docker logs hmpps-auth```
 
 #### API Documentation
 
