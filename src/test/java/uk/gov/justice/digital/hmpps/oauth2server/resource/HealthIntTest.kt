@@ -43,7 +43,6 @@ class HealthIntTest : IntegrationTest() {
         .exchange()
         .expectStatus().isOk
         .expectBody().jsonPath("components.authDataSource.details.database").isEqualTo("H2")
-        .jsonPath("components.authDataSource.details.result").isEqualTo(1)
-        .jsonPath("components.authDataSource.details.validationQuery").isEqualTo("SELECT 1")
+        .jsonPath("components.authDataSource.details.validationQuery").isEqualTo("isValid()")
   }
 }
