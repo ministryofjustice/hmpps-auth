@@ -3,8 +3,9 @@ server:
     context-path: /auth
   forward-headers-strategy: native
   tomcat:
-    remote-ip-header: x-forwarded-for
-    protocol_header: x-forwarded-proto
+    remoteip:
+      remote-ip-header: x-forwarded-for
+      protocol_header: x-forwarded-proto
 
 spring:
   application:
