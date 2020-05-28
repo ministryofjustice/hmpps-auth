@@ -84,8 +84,6 @@ workflows:
             - validate
       - hmpps/build_docker:
           name: build_docker
-          requires:
-            - integration_tests
           filters:
             branches:
               only:
