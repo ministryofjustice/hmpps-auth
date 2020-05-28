@@ -97,7 +97,7 @@ workflows:
                 - k8s_deploy
           requires:
             - build_docker
-            - validate
+            - integration_tests
 
       - request-stage-approval:
           type: approval
