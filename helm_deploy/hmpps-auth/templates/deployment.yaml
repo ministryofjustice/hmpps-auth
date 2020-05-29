@@ -47,7 +47,7 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /elite2api/ping
+              path: {{ .Values.image.livenessProbePath }}
               port: {{ .Values.image.port }}
             periodSeconds: 30
             initialDelaySeconds: 90
@@ -55,7 +55,7 @@ spec:
             failureThreshold: 10
           readinessProbe:
             httpGet:
-              path: /elite2api/ping
+              path: {{ .Values.image.readinessProbePath }}
               port: {{ .Values.image.port }}
             periodSeconds: 20
             initialDelaySeconds: 60

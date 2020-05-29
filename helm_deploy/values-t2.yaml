@@ -8,3 +8,5 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
   port: 8080
+  livenessProbePath: /auth/ping
+  readinessProbePath: /auth/ping
