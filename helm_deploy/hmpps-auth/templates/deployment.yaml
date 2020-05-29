@@ -38,7 +38,6 @@ spec:
                   values:
                   - {{ template "app.name" . }}
               topologyKey: kubernetes.io/hostname
-      dnsPolicy: Default
       containers:
         - name: {{ template "app.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}" 
