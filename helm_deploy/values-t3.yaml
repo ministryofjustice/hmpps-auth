@@ -10,3 +10,7 @@ image:
   port: 8080
   livenessProbePath: /auth/ping
   readinessProbePath: /auth/ping
+
+mfa_whitelist:
+  office: "217.33.148.210/32"
+  mojvpn: "81.134.202.29/32"

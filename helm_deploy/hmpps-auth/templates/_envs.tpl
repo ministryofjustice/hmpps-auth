@@ -174,4 +174,7 @@ env:
       secretKeyRef:
         key: TOKENVERIFICATION_ENDPOINT_URL
         name: {{ template "app.name" . }}
+  - name: APPLICATION_AUTHENTICATION_MFA_WHITELIST
+    value: {{ include "app.joinListWithComma" .Values.mfa_whitelist | quote }}
 {{- end }}
+

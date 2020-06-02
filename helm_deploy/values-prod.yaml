@@ -10,3 +10,31 @@ image:
   port: 8080
   livenessProbePath: /auth/ping
   readinessProbePath: /auth/ping
+
+mfa_whitelist:
+  office: "217.33.148.210/32"
+  quantum: "62.25.109.197/32"
+  quantum_alt: "212.137.36.230/32"
+  health-kick: "35.177.252.195/32"
+  digitalprisons1: "52.56.112.98/32"
+  digitalprisons2: "52.56.118.154/32"
+  mojvpn: "81.134.202.29/32"
+  j5-phones-1: "35.177.125.252/32"
+  j5-phones-2: "35.177.137.160/32"
+  sodexo-northumberland: "88.98.48.10/32"
+  sodexo2: "51.148.9.201"
+  thameside-private-prison: "217.22.14.151/32"
+  ark-nps-hmcts-ttp1: "195.59.75.0/24"
+  ark-nps-hmcts-ttp2: "194.33.192.0/25"
+  ark-nps-hmcts-ttp3: "194.33.193.0/25"
+  ark-nps-hmcts-ttp4: "194.33.196.0/25"
+  ark-nps-hmcts-ttp5: "194.33.197.0/25"
+  oakwood-1: "217.161.76.187/32"
+  oakwood-2: "217.161.76.195/32"
+  cloudplatform-live1-1: "35.178.209.113/32"
+  cloudplatform-live1-2: "3.8.51.207/32"
+  cloudplatform-live1-3: "35.177.252.54/32"
+  dxc_webproxy1: "195.92.38.20/32"
+  dxc_webproxy2: "195.92.38.21/32"
+  dxc_webproxy3: "195.92.38.22/32"
+  dxc_webproxy4: "195.92.38.23/32"
