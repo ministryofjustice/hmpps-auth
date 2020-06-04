@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.azure.service.AzureUserService
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
@@ -28,9 +29,10 @@ class UserServiceTest {
   private val nomisUserService: NomisUserService = mock()
   private val authUserService: AuthUserService = mock()
   private val deliusUserService: DeliusUserService = mock()
+  private val azureUserService: AzureUserService = mock()
   private val userRepository: UserRepository = mock()
   private val verifyEmailService: VerifyEmailService = mock()
-  private val userService = UserService(nomisUserService, authUserService, deliusUserService, userRepository, verifyEmailService)
+  private val userService = UserService(nomisUserService, authUserService, deliusUserService, azureUserService, userRepository, verifyEmailService)
 
   @Nested
   inner class FindMasterUserPersonDetails {
