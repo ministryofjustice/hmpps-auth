@@ -15,6 +15,15 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.provider.endpoint.DefaultRedirectResolver;
 import org.springframework.security.oauth2.provider.endpoint.RedirectResolver;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
@@ -22,6 +31,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.reactive.function.client.WebClient;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ClearAllSessionsLogoutHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler;
@@ -30,7 +40,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationPr
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtCookieAuthenticationFilter;
 import uk.gov.justice.digital.hmpps.oauth2server.security.NomisAuthenticationProvider;
+import uk.gov.justice.digital.hmpps.oauth2server.security.OidcJwtAuthenticationSuccessHandler;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @Order(4)
@@ -38,6 +52,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     private final LoggingAccessDeniedHandler accessDeniedHandler;
     private final RedirectingLogoutSuccessHandler logoutSuccessHandler;
+    private final OidcJwtAuthenticationSuccessHandler oidcJwtAuthenticationSuccessHandler;
     private final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler;
     private final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter;
     private final String jwtCookieName;
@@ -49,14 +64,17 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> nomisUserDetailsService;
     private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authUserDetailsService;
     private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> deliusUserDetailsService;
+    private final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> azureUserDetailsService;
     private final ClearAllSessionsLogoutHandler clearAllSessionsLogoutHandler;
 
     @Autowired
     public AuthenticationManagerConfiguration(@Qualifier("nomisUserDetailsService") final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> nomisUserDetailsService,
                                               @Qualifier("authUserDetailsService") final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authUserDetailsService,
                                               @Qualifier("deliusUserDetailsService") final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> deliusUserDetailsService,
+                                              @Qualifier("azureUserDetailsService") final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> azureUserDetailsService,
                                               final LoggingAccessDeniedHandler accessDeniedHandler,
                                               final RedirectingLogoutSuccessHandler logoutSuccessHandler,
+                                              final OidcJwtAuthenticationSuccessHandler oidcJwtAuthenticationSuccessHandler,
                                               final JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler,
                                               final JwtCookieAuthenticationFilter jwtCookieAuthenticationFilter,
                                               @Value("${jwt.cookie.name}") final String jwtCookieName,
@@ -68,8 +86,10 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                                               final ClearAllSessionsLogoutHandler clearAllSessionsLogoutHandler) {
         this.nomisUserDetailsService = nomisUserDetailsService;
         this.authUserDetailsService = authUserDetailsService;
+        this.azureUserDetailsService = azureUserDetailsService;
         this.accessDeniedHandler = accessDeniedHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
+        this.oidcJwtAuthenticationSuccessHandler = oidcJwtAuthenticationSuccessHandler;
         this.jwtAuthenticationSuccessHandler = jwtAuthenticationSuccessHandler;
         this.jwtCookieAuthenticationFilter = jwtCookieAuthenticationFilter;
         this.jwtCookieName = jwtCookieName;
@@ -99,8 +119,14 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .antMatchers(HttpMethod.POST, "/login").permitAll()
                 .antMatchers("/ui/**").access("isAuthenticated() and @authIpSecurity.check(request)")
                 .anyRequest().authenticated()
-
             .and()
+                .oauth2Login()
+                        .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
+                        .loginPage("/login")
+                        .successHandler(oidcJwtAuthenticationSuccessHandler)
+                        .failureHandler(userStateAuthenticationFailureHandler)
+                        .permitAll()
+                .and()
                 .formLogin()
                 .loginPage("/login")
                 .successHandler(jwtAuthenticationSuccessHandler)
@@ -126,6 +152,33 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
                 .requestCache().requestCache(cookieRequestCache);
         // @formatter:on
+    }
+
+    /**
+     * Custom User Service for the Azure OIDC integration. Spring expects to get the username from the userinfo endpoint,
+     * unfortunately the Azure endpoint doesn't return the field we need - i.e. preferred_username. Therefore the username field is set
+     * to sub in the configuration, and modified here once the token and userinfo attributes are merged.
+     *
+     * Also capitalises the username so the Auth database lookups work.
+     */
+    @Bean
+    public OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
+        final OidcUserService delegate = new OidcUserService();
+
+        return (userRequest) -> {
+            // Delegate to the default implementation for loading a user
+            OidcUser oidcUser = delegate.loadUser(userRequest);
+
+            // Now we have the claims from the id token and the userinfo response combined, we can set the preferred_username field to be the name source
+            var idToken = oidcUser.getIdToken();
+
+            Map<String,Object> newClaims = new HashMap<>(idToken.getClaims());
+            newClaims.replace("preferred_username", ((String)newClaims.get("preferred_username")).toUpperCase());
+
+            var oidcIdToken = new OidcIdToken(idToken.getTokenValue(),idToken.getIssuedAt(), idToken.getExpiresAt(), newClaims);
+
+            return new DefaultOidcUser(oidcUser.getAuthorities(), oidcIdToken, oidcUser.getUserInfo(), "preferred_username");
+        };
     }
 
     @Override
@@ -161,6 +214,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         auth.authenticationProvider(deliusAuthenticationProvider);
         auth.authenticationProvider(preAuthProvider(authUserDetailsService));
         auth.authenticationProvider(preAuthProvider(nomisUserDetailsService));
+        auth.authenticationProvider(preAuthProvider(azureUserDetailsService));
         auth.authenticationProvider(preAuthProvider(deliusUserDetailsService));
     }
 
@@ -189,5 +243,15 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
         final var redirectResolver = new DefaultRedirectResolver();
         redirectResolver.setMatchSubdomains(matchSubdomains);
         return redirectResolver;
+    }
+
+    @Bean
+    WebClient webClient(ClientRegistrationRepository clientRegistrationRepository,
+                        OAuth2AuthorizedClientRepository authorizedClientRepository) {
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 =
+                new ServletOAuth2AuthorizedClientExchangeFilterFunction(clientRegistrationRepository,
+                        authorizedClientRepository);
+        oauth2.setDefaultOAuth2AuthorizedClient(true);
+        return WebClient.builder().apply(oauth2.oauth2Configuration()).build();
     }
 }
