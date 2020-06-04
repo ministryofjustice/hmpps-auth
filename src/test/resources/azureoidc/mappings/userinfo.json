@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/oidc/userinfo"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "sub":"6C2x9vsoM3Fgi9QmeYZGUT4hdYme3Dw1566tp8yc1vE",
+      "name": "Test User",
+      "family_name": "User",
+      "given_name": "Test",
+      "picture": "https://graph.microsoft.com/v1.0/me/photo/$value"
+    }
+  }
+}
