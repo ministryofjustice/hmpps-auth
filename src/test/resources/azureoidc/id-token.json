@@ -1,0 +1,17 @@
+{
+  "aud": "dummy-client-id",
+  "iss": "https://login.microsoftonline.com/0bb413d7-160d-4839-868a-f3d46537f6af/v2.0",
+  "iat": 1600428229,
+  "nbf": 1600428229,
+  "exp": 1800432129,
+  "name": "[ADM] Ed Brindley",
+  "nonce": "Tjq1JynBp5irH_6Eu4DBS1tdhj3pOA_P7hp8XJEqav8",
+  "oid": "d6165ad0-aed3-4146-9ef7-222876b57549",
+  "preferred_username": "ebrindley-admin@devl.justice.gov.uk",
+  "rh": "0.AAAA1xO0Cw0WOUiGivPUZTf2r1O3W-tR4IVPvEOROtEpaTNdAKA.",
+  "sub": "6C2x9vsoM3Fgi9QmeYZGUT4hdYme3Dw1566tp8yc1vE",
+  "tid": "0bb413d7-160d-4839-868a-f3d46537f6af",
+  "upn": "ebrindley-admin@devl.justice.gov.uk",
+  "uti": "BZ7mcqYRr0q6glNHuFD8AA",
+  "ver": "2.0"
+}

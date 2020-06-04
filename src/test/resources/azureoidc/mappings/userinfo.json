@@ -1,0 +1,22 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "GET",
+    "urlPattern": "/oidc/userinfo"
+  },
+  "response": {
+    "transformers": [
+      "response-template"
+    ],
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {"sub":"6C2x9vsoM3Fgi9QmeYZGUT4hdYme3Dw1566tp8yc1vE",
+      "name": "[ADM] Ed Brindley",
+      "family_name": "Brindley",
+      "given_name": "Ed",
+      "picture": "https://graph.microsoft.com/v1.0/me/photo/$value"
+    }
+  }
+}
