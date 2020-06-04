@@ -93,9 +93,12 @@
         </div>
       </div>
     </div>
-    <div class="govuk-form-group">
-      <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="continue-button"
-             value="Sign in">
+    <div th:if="${@environment.getProperty('application.authentication.show-azure-link')}"  class="govuk-form-group">
+      <ul class="govuk-list">
+      <li><input class="govuk-button" id="submit" type="submit" role="button" data-element-id="continue-button"
+             value="Sign in"></li>
+        <li><a class="govuk-link" href="/auth/oauth2/authorization/microsoft">Log in with a Windows DOM1 account</a></li>
+      </ul>
     </div>
     <div class="govuk-form-group">
       <h2 class="govuk-heading-m">Problems signing in</h2>

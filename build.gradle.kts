@@ -22,6 +22,9 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
+  implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+  implementation("org.springframework.boot:spring-boot-starter-webflux")
+
   implementation("javax.annotation:javax.annotation-api:1.3.2")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
   implementation("com.sun.xml.bind:jaxb-impl:2.3.3")

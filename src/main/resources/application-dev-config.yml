@@ -2,6 +2,23 @@ spring:
   h2:
     console:
       enabled: true
+  security:
+    oauth2:
+      client:
+        registration:
+          microsoft:
+            client-id: dummy
+            client-secret: dummy
+            scope: openid,email,profile
+            authorization-grant-type: authorization_code
+            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
+        provider:
+          microsoft:
+            authorization-uri: https://login.microsoftonline.com/0bb413d7-160d-4839-868a-f3d46537f6af/oauth2/v2.0/authorize
+            token-uri: https://login.microsoftonline.com/0bb413d7-160d-4839-868a-f3d46537f6af/oauth2/v2.0/token
+            user-info-uri: https://graph.microsoft.com/oidc/userinfo
+            user-name-attribute: sub
+            jwk-set-uri: https://login.microsoftonline.com/0bb413d7-160d-4839-868a-f3d46537f6af/discovery/v2.0/keys
 
 application:
   smoketest:
@@ -9,6 +26,7 @@ application:
 
   authentication:
     lockout-count: 3
+    show-azure-link: true
 
   # test key which doesn't send emails, but is automatically accepted by notify
   notify:
