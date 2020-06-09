@@ -9,7 +9,13 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthorityPropertyEditor;
 import uk.gov.justice.digital.hmpps.oauth2server.config.SplitCollectionEditor;
 
@@ -48,7 +54,7 @@ public class ClientsController {
     @PostMapping(value = "/edit")
     @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
     public String editClient(
-            @ModelAttribute final BaseClientDetails clientDetails,
+            @ModelAttribute final AuthClientDetails clientDetails,
             @RequestParam(value = "newClient", required = false) final String newClient) {
 
         if (newClient == null) {
@@ -68,5 +74,17 @@ public class ClientsController {
     public String deleteClient(@PathVariable final String clientId) {
         clientsDetailsService.removeClientDetails(clientId);
         return "redirect:/ui";
+    }
+
+    // Unfortunately the getAdditionalInformation getter creates an unmodifiable map, so can't be used with web binder.
+    // Have to therefore extend and create our own accessor instead.
+    public static class AuthClientDetails extends BaseClientDetails {
+        public String getJwtFields() {
+            return (String) getAdditionalInformation().get("jwtFields");
+        }
+
+        public void setJwtFields(final String jwtFields) {
+            addAdditionalInformation("jwtFields", jwtFields);
+        }
     }
 }

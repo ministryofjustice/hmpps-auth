@@ -98,6 +98,14 @@
       </div>
     </div>
 
+    <div class="govuk-form-group">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="clientId">JWT Fields Configuration</label>
+        <input class="govuk-input" id="jwtFields" type="text" name="jwtFields"
+               th:value="${clientDetails.additionalInformation['jwtFields']}"/>
+      </div>
+    </div>
+
     <input type="submit" class="govuk-button" name="client-submit" value="Submit">
   </form>
 </div>
