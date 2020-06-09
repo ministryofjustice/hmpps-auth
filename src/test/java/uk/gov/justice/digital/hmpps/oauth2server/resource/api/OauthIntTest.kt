@@ -20,7 +20,7 @@ class OauthIntTest : IntegrationTest() {
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
         .expectBody()
-        .jsonPath(".user_name").isEqualTo("ITAG_USER_ADM")
+        .jsonPath(".name").isEqualTo("Itag User")
         .jsonPath(".user_id").isEqualTo("1")
         .jsonPath(".sub").isEqualTo("ITAG_USER_ADM")
         .jsonPath(".auth_source").isEqualTo("nomis")

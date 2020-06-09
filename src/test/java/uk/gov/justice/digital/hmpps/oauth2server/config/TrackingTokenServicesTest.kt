@@ -16,16 +16,16 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.common.DefaultOAuth2RefreshToken
 import org.springframework.security.oauth2.provider.OAuth2Authentication
 import org.springframework.security.oauth2.provider.OAuth2Request
 import org.springframework.security.oauth2.provider.TokenRequest
+import org.springframework.security.oauth2.provider.client.BaseClientDetails
+import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.client.RestTemplate
@@ -34,10 +34,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
 
-@ExtendWith(MockitoExtension::class)
 internal class TrackingTokenServicesTest {
   private val telemetryClient: TelemetryClient = mock()
   private val tokenStore: TokenStore = mock()
+  private val clientDetailsService: JdbcClientDetailsService = mock()
   private val externalIdAuthenticationHelper: ExternalIdAuthenticationHelper = mock()
   private val restTemplate: RestTemplate = mock()
   private val tokenVerificationClientCredentials = TokenVerificationClientCredentials()
@@ -53,8 +53,11 @@ internal class TrackingTokenServicesTest {
     tokenServicesVerificationDisabled.setTokenStore(tokenStore)
     val tokenEnhancer = JWTTokenEnhancer()
     ReflectionTestUtils.setField(tokenEnhancer, "externalIdAuthenticationHelper", externalIdAuthenticationHelper)
+    ReflectionTestUtils.setField(tokenEnhancer, "clientsDetailsService", clientDetailsService)
     tokenServices.setTokenEnhancer(tokenEnhancer)
     tokenServicesVerificationDisabled.setTokenEnhancer(tokenEnhancer)
+
+    whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
   }
 
   @Nested
@@ -71,7 +74,7 @@ internal class TrackingTokenServicesTest {
       val userAuthentication = UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")
       tokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_REQUEST, userAuthentication))
       verify(restTemplate).postForLocation(eq("/token?authJwtId={authJwtId}"), check {
-        assertThat(it).isInstanceOf(String::class.java).asString().hasSize(28)
+        assertThat(it).isInstanceOf(String::class.java).asString().hasSize(27)
       }, eq("jwtId"))
     }
 
@@ -99,7 +102,7 @@ internal class TrackingTokenServicesTest {
 
   @Nested
   inner class `refresh access token` {
-    val refreshToken = JwtAuthHelper().createJwt(JwtParameters(additionalClaims = mapOf("ati" to "accessTokenId")))
+    private val refreshToken = JwtAuthHelper().createJwt(JwtParameters(additionalClaims = mapOf("ati" to "accessTokenId")))
 
     @Test
     fun refreshAccessToken() {
@@ -115,7 +118,7 @@ internal class TrackingTokenServicesTest {
       whenever(tokenStore.readAuthenticationForRefreshToken(any())).thenReturn(OAuth2Authentication(OAUTH_2_REQUEST, UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")))
       tokenServices.refreshAccessToken(refreshToken, TokenRequest(emptyMap(), "client", emptySet(), "refresh"))
       verify(restTemplate).postForLocation(eq("/token/refresh?accessJwtId={accessJwtId}"), check {
-        assertThat(it).isInstanceOf(String::class.java).asString().hasSize(28)
+        assertThat(it).isInstanceOf(String::class.java).asString().hasSize(27)
       }, eq("accessTokenId"))
     }
 

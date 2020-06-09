@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -63,15 +64,18 @@ public class JWTTokenEnhancer implements TokenEnhancer {
         return accessToken;
     }
 
-    private Map<String, Object> filterAdditionalInfo(final Map<String, String> info, final ClientDetails clientDetails) {
+    private Map<String, Object> filterAdditionalInfo(final Map<String, Object> info, final ClientDetails clientDetails) {
         final var jwtFields = (String) clientDetails.getAdditionalInformation().getOrDefault("jwtFields", "");
-        final var entries = Stream.of(jwtFields.split(",")).collect(
-                Collectors.toMap(f -> f.substring(1), f -> f.charAt(0) == '+')).entrySet();
+
+        final var entries = StringUtils.isBlank(jwtFields) ? Collections.<Entry<String, Boolean>>emptySet() :
+                Stream.of(jwtFields.split(",")).collect(
+                        Collectors.toMap(f -> f.substring(1), f -> f.charAt(0) == '+')).entrySet();
         final var fieldsToKeep = entries.stream().filter(Entry::getValue).map(Entry::getKey).collect(Collectors.toSet());
         final var fieldsToRemove = entries.stream().filter(not(Entry::getValue)).map(Entry::getKey).collect(Collectors.toSet());
 
         // for field addition, just remove from deprecated fields
-        fieldsToRemove.addAll(DEPRECATED_JWT_FIELDS.stream().filter(fieldsToKeep::contains).collect(Collectors.toList()));
+        fieldsToRemove.addAll(DEPRECATED_JWT_FIELDS);
+        fieldsToRemove.removeAll(fieldsToKeep);
 
         return info.entrySet().stream().filter(e -> !fieldsToRemove.contains(e.getKey())).collect(
                 Collectors.toMap(Entry::getKey, Entry::getValue));
