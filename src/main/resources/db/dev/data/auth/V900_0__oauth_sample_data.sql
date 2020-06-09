@@ -30,6 +30,9 @@ VALUES ('omicuser','1200',null,'SYSTEM_READ_ONLY','password,authorization_code,r
        ('token-verification-auth-api-client','3600', null,'ROLE_AUTH_TOKEN_VERIFICATION','client_credentials', null,'{bcrypt}$2a$10$hQPvQMNfbh2vhjTjDWHpoeN.iRFRddJJug6qtBkWzQ8uPEc53isZy', null, null,'read', null),
        ('v1-client','1200',null,'ROLE_NOMIS_API_V1,ROLE_BOOKING_CREATE,ROLE_BOOKING_RECALL,ROLE_GLOBAL_SEARCH','client_credentials',null,'$2a$10$r12DB/sqXduodnjtAY/ykO0S3KCySdVW4zhG3jlIRaIsfVkFOEds2',null,null,'read,write,proxy-user',null);
 
+UPDATE oauth_client_details
+SET additional_information = '{"jwtFields":"-name,+user_name"}'
+WHERE additional_information IS NULL;
 
 INSERT INTO oauth_service (code, name, description, authorised_roles, url, enabled, email)
 VALUES ('BOOK_MOVE', 'Book a secure move', 'Book a secure move', 'ROLE_PECS_SUPPLIER,ROLE_PECS_POLICE,', 'https://bookasecuremove.service.justice.gov.uk', 1, 'bookasecuremove@digital.justice.gov.uk'),
