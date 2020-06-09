@@ -74,7 +74,7 @@ open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
   }
 
   private fun retrieveUsernameFromToken(token: OAuth2AccessToken): String {
-    val username = token.additionalInformation[JWTTokenEnhancer.ADD_INFO_USER_NAME] as String?
+    val username = token.additionalInformation[JWTTokenEnhancer.SUBJECT] as String?
     return if (username.isNullOrEmpty()) "none" else username
   }
 }

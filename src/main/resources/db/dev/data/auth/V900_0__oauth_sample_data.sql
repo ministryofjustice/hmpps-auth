@@ -1,5 +1,5 @@
 INSERT INTO oauth_client_details (client_id, access_token_validity, additional_information, authorities, authorized_grant_types, autoapprove, client_secret, refresh_token_validity, resource_ids, scope, web_server_redirect_uri)
-VALUES ('omicuser','1200',null,'SYSTEM_READ_ONLY','password,authorization_code,refresh_token','read','$2a$10$EiAoV/3ZSHl4KsVAkYZmH.pfZ6tLcK2vlvJTBgQBML3p3LrcPjaCi',null,null,'read','http://localhost:3000/login'),
+VALUES ('omicuser','1200','','SYSTEM_READ_ONLY','password,authorization_code,refresh_token','read','$2a$10$RYwV0QebHAovVXWPySb2lefr3HTDntGu1euXHDJc3zwh2NsqeNGHG',null,null,'read','http://localhost:3000/login,http://localhost:8081/login'),
        ('elite2apiclient','28800',null,null,'password,authorization_code,refresh_token','read,write','$2a$10$RYwV0QebHAovVXWPySb2lefr3HTDntGu1euXHDJc3zwh2NsqeNGHG','43200',null,'read,write','http://localhost:8081/login,http://localhost:3000/,http://localhost:3001/,http://localhost:3000/login/callback,http://localhost:3001/login/callback,http://localhost:3002/login/callback,http://localhost:8081/webjars/springfox-swagger-ui/oauth2-redirect.html'),
        ('omic','28800',null,null,'password,authorization_code,refresh_token','read,write','$2a$10$oUonidUHlG34P/mbiRs2d.owes0fvNeyUBACo6lzkq7Hr/68cfxOW','43200',null,'read,write',null),
        ('licences','28800',null,null,'password,authorization_code,refresh_token','read,write','$2a$10$1FTv04xDqLuKWjBjBnxMJuQ9fEXH0CHJKZXpOjMB7hdmrMBoKhi7.','43200',null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
@@ -30,6 +30,9 @@ VALUES ('omicuser','1200',null,'SYSTEM_READ_ONLY','password,authorization_code,r
        ('token-verification-auth-api-client','3600', null,'ROLE_AUTH_TOKEN_VERIFICATION','client_credentials', null,'{bcrypt}$2a$10$hQPvQMNfbh2vhjTjDWHpoeN.iRFRddJJug6qtBkWzQ8uPEc53isZy', null, null,'read', null),
        ('v1-client','1200',null,'ROLE_NOMIS_API_V1,ROLE_BOOKING_CREATE,ROLE_BOOKING_RECALL,ROLE_GLOBAL_SEARCH','client_credentials',null,'$2a$10$r12DB/sqXduodnjtAY/ykO0S3KCySdVW4zhG3jlIRaIsfVkFOEds2',null,null,'read,write,proxy-user',null);
 
+UPDATE oauth_client_details
+SET additional_information = '{"jwtFields":"-name,+user_name"}'
+WHERE additional_information IS NULL;
 
 INSERT INTO oauth_service (code, name, description, authorised_roles, url, enabled, email)
 VALUES ('BOOK_MOVE', 'Book a secure move', 'Book a secure move', 'ROLE_PECS_SUPPLIER,ROLE_PECS_POLICE,', 'https://bookasecuremove.service.justice.gov.uk', 1, 'bookasecuremove@digital.justice.gov.uk'),

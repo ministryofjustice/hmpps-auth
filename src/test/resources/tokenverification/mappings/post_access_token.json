@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "POST",
-    "urlPattern": "/token\\?authJwtId=([a-zA-Z0-9/%+-]*)"
+    "urlPattern": "/token\\?authJwtId=([a-zA-Z0-9/%+_-]*)"
   },
   "response": {
     "status": 200

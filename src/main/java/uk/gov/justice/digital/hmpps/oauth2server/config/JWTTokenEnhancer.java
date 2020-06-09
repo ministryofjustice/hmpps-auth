@@ -6,23 +6,36 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.function.Predicate.not;
+
+@SuppressWarnings("deprecation")
 public class JWTTokenEnhancer implements TokenEnhancer {
     private static final String ADD_INFO_AUTH_SOURCE = "auth_source";
+    static final String ADD_INFO_NAME = "name";
     static final String ADD_INFO_USER_NAME = "user_name";
     static final String ADD_INFO_USER_ID = "user_id";
     static final String SUBJECT = "sub";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
+    private static final Set<String> DEPRECATED_JWT_FIELDS = Set.of(ADD_INFO_USER_NAME);
+
+    @Autowired
+    private JdbcClientDetailsService clientsDetailsService;
 
     @Autowired
     private ExternalIdAuthenticationHelper externalIdAuthenticationHelper;
@@ -37,15 +50,35 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             final var userAuthentication = authentication.getUserAuthentication();
             final var userDetails = (UserPersonDetails) userAuthentication.getPrincipal();
             final var userId = StringUtils.defaultString(userDetails.getUserId(), userAuthentication.getName());
-            additionalInfo = Map.of(
-                    SUBJECT, userAuthentication.getName(),
-                    ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
-                    ADD_INFO_USER_NAME, userAuthentication.getName(),
-                    ADD_INFO_USER_ID, userId);
+
+            final var clientDetails = clientsDetailsService.loadClientByClientId(authentication.getOAuth2Request().getClientId());
+            additionalInfo = filterAdditionalInfo(
+                    Map.of(SUBJECT, userAuthentication.getName(),
+                            ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
+                            ADD_INFO_USER_NAME, userAuthentication.getName(),
+                            ADD_INFO_USER_ID, userId,
+                            ADD_INFO_NAME, userDetails.getName()), clientDetails);
         }
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
         return accessToken;
+    }
+
+    private Map<String, Object> filterAdditionalInfo(final Map<String, Object> info, final ClientDetails clientDetails) {
+        final var jwtFields = (String) clientDetails.getAdditionalInformation().getOrDefault("jwtFields", "");
+
+        final var entries = StringUtils.isBlank(jwtFields) ? Collections.<Entry<String, Boolean>>emptySet() :
+                Stream.of(jwtFields.split(",")).collect(
+                        Collectors.toMap(f -> f.substring(1), f -> f.charAt(0) == '+')).entrySet();
+        final var fieldsToKeep = entries.stream().filter(Entry::getValue).map(Entry::getKey).collect(Collectors.toSet());
+        final var fieldsToRemove = entries.stream().filter(not(Entry::getValue)).map(Entry::getKey).collect(Collectors.toSet());
+
+        // for field addition, just remove from deprecated fields
+        fieldsToRemove.addAll(DEPRECATED_JWT_FIELDS);
+        fieldsToRemove.removeAll(fieldsToKeep);
+
+        return info.entrySet().stream().filter(e -> !fieldsToRemove.contains(e.getKey())).collect(
+                Collectors.toMap(Entry::getKey, Entry::getValue));
     }
 
     // Checks for existence of request parameters that define an external user identifier type and identifier.

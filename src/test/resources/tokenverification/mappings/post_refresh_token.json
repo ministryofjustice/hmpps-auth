@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "POST",
-    "urlPattern": "/token/refresh\\?accessJwtId=([a-zA-Z0-9+%/]*)"
+    "urlPattern": "/token/refresh\\?accessJwtId=([a-zA-Z0-9_-]*)"
   },
   "response": {
     "status": 200

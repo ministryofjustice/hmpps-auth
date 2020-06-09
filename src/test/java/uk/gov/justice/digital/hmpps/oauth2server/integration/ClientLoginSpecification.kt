@@ -18,6 +18,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.BodyContentSpec
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 import java.nio.charset.Charset
+import java.util.*
 
 /**
  * Verify clients can login, be redirected back to their system and then logout again.
@@ -33,6 +34,17 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
   fun `I can sign in from another client`() {
     clientSignIn("ITAG_USER", "password")
         .jsonPath(".user_name").isEqualTo("ITAG_USER")
+        .jsonPath(".user_id").isEqualTo("1")
+        .jsonPath(".sub").isEqualTo("ITAG_USER")
+        .jsonPath(".auth_source").isEqualTo("nomis")
+        .jsonPath(".name").doesNotExist()
+  }
+
+  @Test
+  fun `I can sign in from a client with jwt fields name configured`() {
+    clientSignIn("ITAG_USER", "password", "omicuser")
+        .jsonPath(".user_name").doesNotExist()
+        .jsonPath(".name").isEqualTo("Itag User")
         .jsonPath(".user_id").isEqualTo("1")
         .jsonPath(".sub").isEqualTo("ITAG_USER")
         .jsonPath(".auth_source").isEqualTo("nomis")
@@ -122,12 +134,12 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
         .withQueryParam("authJwtId", equalTo(authJwtId)))
   }
 
-  private fun clientSignIn(username: String, password: String = "password123456") =
-      clientAccess { loginPage.isAtPage().submitLogin(username, password) }
+  private fun clientSignIn(username: String, password: String = "password123456", clientId: String = "elite2apiclient") =
+      clientAccess({ loginPage.isAtPage().submitLogin(username, password) }, clientId)
 
-  private fun clientAccess(doWithinAuth: () -> Unit = {}): BodyContentSpec {
+  private fun clientAccess(doWithinAuth: () -> Unit = {}, clientId: String = "elite2apiclient"): BodyContentSpec {
     val state = RandomStringUtils.random(6, true, true)
-    goTo("/oauth/authorize?client_id=elite2apiclient&redirect_uri=$clientBaseUrl&response_type=code&state=$state")
+    goTo("/oauth/authorize?client_id=$clientId&redirect_uri=$clientBaseUrl&response_type=code&state=$state")
 
     doWithinAuth()
 
@@ -136,17 +148,19 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
     val params = URLEncodedUtils.parse(driver.currentUrl.replace("$clientBaseUrl?", ""), Charset.forName("UTF-8"))
     val code = params.find { it.name == "code" }!!.value
 
-    return getAccessToken(code)
+    return getAccessToken(code, clientId)
   }
 
-  private fun getAccessToken(authCode: String): BodyContentSpec =
-      webTestClient
-          .post().uri("/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=$clientBaseUrl")
-          .headers { it.set(HttpHeaders.AUTHORIZATION, "Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA==") }
-          .exchange()
-          .expectStatus().isOk
-          .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-          .expectBody()
+  private fun getAccessToken(authCode: String, clientId: String): BodyContentSpec {
+    val auth = Base64.getEncoder().encodeToString("$clientId:clientsecret".toByteArray())
+    return webTestClient
+        .post().uri("/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=$clientBaseUrl")
+        .headers { it.set(HttpHeaders.AUTHORIZATION, "Basic $auth") }
+        .exchange()
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+        .expectBody()
+  }
 
   private fun getRefreshToken(refreshToken: String): BodyContentSpec =
       webTestClient
