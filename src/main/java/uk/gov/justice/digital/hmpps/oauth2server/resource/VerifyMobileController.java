@@ -23,7 +23,6 @@ import java.util.Map;
 public class VerifyMobileController {
     private final VerifyMobileService verifyMobileService;
     private final TelemetryClient telemetryClient;
-    private final UserService userService;
     private final boolean smokeTestEnabled;
 
     public VerifyMobileController(final VerifyMobileService verifyMobileService,
@@ -32,7 +31,6 @@ public class VerifyMobileController {
                                   @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
         this.verifyMobileService = verifyMobileService;
         this.telemetryClient = telemetryClient;
-        this.userService = userService;
         this.smokeTestEnabled = smokeTestEnabled;
     }
 
