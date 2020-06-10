@@ -32,7 +32,7 @@ VALUES ('omicuser','1200','{}','SYSTEM_READ_ONLY','password,authorization_code,r
 
 UPDATE oauth_client_details
 SET additional_information = '{"jwtFields":"-name,+user_name"}'
-WHERE client_id != 'omicuser' and authorities != 'client_credentials';
+WHERE client_id != 'omicuser' and authorized_grant_types != 'client_credentials';
 
 INSERT INTO oauth_service (code, name, description, authorised_roles, url, enabled, email)
 VALUES ('BOOK_MOVE', 'Book a secure move', 'Book a secure move', 'ROLE_PECS_SUPPLIER,ROLE_PECS_POLICE,', 'https://bookasecuremove.service.justice.gov.uk', 1, 'bookasecuremove@digital.justice.gov.uk'),
