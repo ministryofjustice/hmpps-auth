@@ -6,8 +6,8 @@ import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.whenever
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -62,8 +62,10 @@ class ClientControllerTest {
       val exception = ClientAlreadyExistsException("Client already exists: ")
       doThrow(exception).whenever(clientDetailsService).addClientDetails(authClientDetails)
 
-      Assertions.assertThatThrownBy { controller.editClient(authentication, authClientDetails, "true") }.isEqualTo(exception)
+      assertThatThrownBy { controller.editClient(authentication, authClientDetails, "true") }.isEqualTo(exception)
 
+      verify(telemetryClient, times(0)).trackEvent("AuthClientDetailsAdd", mapOf("username" to "user", "clientId" to "client"), null)
+      verify(telemetryClient, times(0)).trackEvent("AuthClientSecretUpdated", mapOf("username" to "user", "clientId" to "client"), null)
     }
 
     @Test
@@ -82,8 +84,9 @@ class ClientControllerTest {
       val exception = NoSuchClientException("No client found with id = ")
       doThrow(exception).whenever(clientDetailsService).updateClientDetails(authClientDetails)
 
-      Assertions.assertThatThrownBy { controller.editClient(authentication, authClientDetails, null) }.isEqualTo(exception)
-
+      assertThatThrownBy { controller.editClient(authentication, authClientDetails, null) }.isEqualTo(exception)
+      verify(telemetryClient, times(0)).trackEvent("AuthClientDetailsUpdate", mapOf("username" to "user", "clientId" to "client"), null)
+      verify(telemetryClient, times(0)).trackEvent("AuthClientSecretUpdated", mapOf("username" to "user", "clientId" to "client"), null)
     }
 
     @Test
@@ -123,8 +126,10 @@ class ClientControllerTest {
       val exception = NoSuchClientException("No client found with id = ")
       doThrow(exception).whenever(clientDetailsService).removeClientDetails(anyString())
 
-      Assertions.assertThatThrownBy { controller.deleteClient(authentication, "client") }.isEqualTo(exception)
+      assertThatThrownBy { controller.deleteClient(authentication, "client") }.isEqualTo(exception)
 
+      verify(telemetryClient, times(0)).trackEvent("AuthClientDetailsDeleted", mapOf("username" to "user", "clientId" to "client"), null)
+      verify(telemetryClient, times(0)).trackEvent("AuthClientSecretUpdated", mapOf("username" to "user", "clientId" to "client"), null)
     }
 
   }
