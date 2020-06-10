@@ -5,6 +5,7 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -64,8 +65,7 @@ class ClientControllerTest {
 
       assertThatThrownBy { controller.editClient(authentication, authClientDetails, "true") }.isEqualTo(exception)
 
-      verify(telemetryClient, times(0)).trackEvent("AuthClientDetailsAdd", mapOf("username" to "user", "clientId" to "client"), null)
-      verify(telemetryClient, times(0)).trackEvent("AuthClientSecretUpdated", mapOf("username" to "user", "clientId" to "client"), null)
+      verifyZeroInteractions(telemetryClient);
     }
 
     @Test
@@ -85,8 +85,8 @@ class ClientControllerTest {
       doThrow(exception).whenever(clientDetailsService).updateClientDetails(authClientDetails)
 
       assertThatThrownBy { controller.editClient(authentication, authClientDetails, null) }.isEqualTo(exception)
-      verify(telemetryClient, times(0)).trackEvent("AuthClientDetailsUpdate", mapOf("username" to "user", "clientId" to "client"), null)
-      verify(telemetryClient, times(0)).trackEvent("AuthClientSecretUpdated", mapOf("username" to "user", "clientId" to "client"), null)
+
+      verifyZeroInteractions(telemetryClient);
     }
 
     @Test
@@ -128,8 +128,7 @@ class ClientControllerTest {
 
       assertThatThrownBy { controller.deleteClient(authentication, "client") }.isEqualTo(exception)
 
-      verify(telemetryClient, times(0)).trackEvent("AuthClientDetailsDeleted", mapOf("username" to "user", "clientId" to "client"), null)
-      verify(telemetryClient, times(0)).trackEvent("AuthClientSecretUpdated", mapOf("username" to "user", "clientId" to "client"), null)
+      verifyZeroInteractions(telemetryClient);
     }
 
   }
