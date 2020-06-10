@@ -101,6 +101,9 @@
     <div class="govuk-form-group">
       <div class="govuk-form-group">
         <label class="govuk-label" for="clientId">JWT Fields Configuration</label>
+        <span class="govuk-hint">
+          Comma separated list of fields, prefixed with + to add, - to remove e.g. +name,-user_name
+        </span>
         <input class="govuk-input" id="jwtFields" type="text" name="jwtFields"
                th:value="${clientDetails.additionalInformation['jwtFields']}"/>
       </div>
