@@ -23,7 +23,8 @@
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="clientSecret">Client Secret</label>
-        <input class="govuk-input" id="clientSecret" type="password" name="clientSecret"/>
+        <input class="govuk-input" id="clientSecret" type="password" name="clientSecret" readonly="readonly"
+               onfocus="this.removeAttribute('readonly');"/>
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="registeredRedirectUri">Registered redirect URIs</label>
@@ -104,7 +105,8 @@
         <span class="govuk-hint">
           Comma separated list of fields, prefixed with + to add, - to remove e.g. +name,-user_name
         </span>
-        <input class="govuk-input" id="jwtFields" type="text" name="jwtFields"
+        <input class="govuk-input" id="jwtFields" type="text" name="jwtFields" readonly="readonly"
+               onfocus="this.removeAttribute('readonly');"
                th:value="${clientDetails.additionalInformation['jwtFields']}"/>
       </div>
     </div>
