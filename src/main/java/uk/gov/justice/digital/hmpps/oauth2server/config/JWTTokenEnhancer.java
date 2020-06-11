@@ -32,7 +32,6 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     static final String ADD_INFO_USER_ID = "user_id";
     static final String SUBJECT = "sub";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
-    private static final Set<String> DEPRECATED_JWT_FIELDS = Set.of(ADD_INFO_USER_NAME);
 
     @Autowired
     private JdbcClientDetailsService clientsDetailsService;
@@ -52,6 +51,8 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             final var userId = StringUtils.defaultString(userDetails.getUserId(), userAuthentication.getName());
 
             final var clientDetails = clientsDetailsService.loadClientByClientId(authentication.getOAuth2Request().getClientId());
+            // note that DefaultUserAuthenticationConverter will automatically add user_name to the access token, so
+            // removal of user_name will only affect the authorisation code response and not the access token field.
             additionalInfo = filterAdditionalInfo(
                     Map.of(SUBJECT, userAuthentication.getName(),
                             ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
@@ -74,7 +75,6 @@ public class JWTTokenEnhancer implements TokenEnhancer {
         final var fieldsToRemove = entries.stream().filter(not(Entry::getValue)).map(Entry::getKey).collect(Collectors.toSet());
 
         // for field addition, just remove from deprecated fields
-        fieldsToRemove.addAll(DEPRECATED_JWT_FIELDS);
         fieldsToRemove.removeAll(fieldsToKeep);
 
         return info.entrySet().stream().filter(e -> !fieldsToRemove.contains(e.getKey())).collect(

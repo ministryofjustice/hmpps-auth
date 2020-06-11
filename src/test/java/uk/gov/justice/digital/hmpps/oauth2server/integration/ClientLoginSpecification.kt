@@ -41,6 +41,19 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `I can sign in from another client - check access token`() {
+    clientSignIn("ITAG_USER", "password")
+        .jsonPath(".access_token").value<JSONArray> {
+          val claims = JWTParser.parse(it[0].toString()).jwtClaimsSet
+          assertThat(claims.getClaim("user_name")).isEqualTo("ITAG_USER")
+          assertThat(claims.getClaim("name")).isNull()
+          assertThat(claims.getClaim("user_id")).isEqualTo("1")
+          assertThat(claims.getClaim("sub")).isEqualTo("ITAG_USER")
+          assertThat(claims.getClaim("auth_source")).isEqualTo("nomis")
+        }
+  }
+
+  @Test
   fun `I can sign in from a client with jwt fields name configured`() {
     clientSignIn("ITAG_USER", "password", "omicuser")
         .jsonPath(".user_name").doesNotExist()
@@ -48,6 +61,20 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
         .jsonPath(".user_id").isEqualTo("1")
         .jsonPath(".sub").isEqualTo("ITAG_USER")
         .jsonPath(".auth_source").isEqualTo("nomis")
+  }
+
+  @Test
+  fun `I can sign in from a client with jwt fields name configured - check access token`() {
+    clientSignIn("ITAG_USER", "password", "omicuser")
+        .jsonPath(".access_token").value<JSONArray> {
+          val claims = JWTParser.parse(it[0].toString()).jwtClaimsSet
+          // note that user_name still exists even though as comes from DefaultUserAuthenticationConverter instead
+          assertThat(claims.getClaim("user_name")).isEqualTo("ITAG_USER")
+          assertThat(claims.getClaim("name")).isEqualTo("Itag User")
+          assertThat(claims.getClaim("user_id")).isEqualTo("1")
+          assertThat(claims.getClaim("sub")).isEqualTo("ITAG_USER")
+          assertThat(claims.getClaim("auth_source")).isEqualTo("nomis")
+        }
   }
 
   @Test

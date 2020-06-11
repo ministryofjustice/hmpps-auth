@@ -67,6 +67,7 @@ internal class JWTTokenEnhancerTest {
     assertThat(token.additionalInformation).containsOnly(
         entry("sub", "user"),
         entry("name", "Joe bloggs"),
+        entry("user_name", "user"),
         entry("user_id", uuid.toString()))
   }
 
@@ -84,6 +85,7 @@ internal class JWTTokenEnhancerTest {
         entry("sub", "user"),
         entry("name", "Joe bloggs"),
         entry("auth_source", "auth"),
+        entry("user_name", "user"),
         entry("user_id", uuid.toString()))
   }
 

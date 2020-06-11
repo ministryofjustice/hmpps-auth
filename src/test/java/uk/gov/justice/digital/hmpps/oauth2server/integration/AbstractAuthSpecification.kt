@@ -39,7 +39,7 @@ open class AbstractAuthSpecification : FluentTest() {
 }
 
 @Suppress("UNCHECKED_CAST")
-open class AuthPage<T>(val title: String, val heading: String) : FluentPage() {
+open class AuthPage<T>(private val title: String, private val heading: String, private val headingStartsWith: Boolean = false) : FluentPage() {
   @FindBy(css = "#main-content h1")
   private lateinit var headingText: FluentWebElement
 
@@ -60,7 +60,11 @@ open class AuthPage<T>(val title: String, val heading: String) : FluentPage() {
     super.isAt()
 
     assertThat(window().title()).isEqualTo(title)
-    assertThat(headingText.text()).isEqualTo(heading)
+    if (headingStartsWith) {
+      assertThat(headingText.text()).startsWith(heading)
+    } else {
+      assertThat(headingText.text()).isEqualTo(heading)
+    }
   }
 
   internal fun isAtPage(): T {
