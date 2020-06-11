@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.microsoft.applicationinsights.TelemetryClient;
+import lombok.AllArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
@@ -18,16 +20,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthorityPropertyEditor;
 import uk.gov.justice.digital.hmpps.oauth2server.config.SplitCollectionEditor;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
+@AllArgsConstructor
 @Controller
 @RequestMapping("ui/clients")
 public class ClientsController {
 
-    @Autowired
-    private JdbcClientDetailsService clientsDetailsService;
+    private final JdbcClientDetailsService clientsDetailsService;
+    private final TelemetryClient telemetryClient;
 
     @InitBinder
     public void initBinder(final WebDataBinder binder) {
@@ -54,25 +59,37 @@ public class ClientsController {
     @PostMapping(value = "/edit")
     @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
     public String editClient(
+            final Authentication authentication,
             @ModelAttribute final AuthClientDetails clientDetails,
             @RequestParam(value = "newClient", required = false) final String newClient) {
 
+        final var userDetails = (UserPersonDetails) authentication.getPrincipal();
+        final var telemetryMap = Map.of("username", userDetails.getUsername(), "clientId", clientDetails.getClientId());
+
         if (newClient == null) {
             clientsDetailsService.updateClientDetails(clientDetails);
+            telemetryClient.trackEvent("AuthClientDetailsUpdate", telemetryMap, null);
         } else {
             clientsDetailsService.addClientDetails(clientDetails);
+            telemetryClient.trackEvent("AuthClientDetailsAdd", telemetryMap, null);
         }
 
         if (!clientDetails.getClientSecret().isEmpty()) {
             clientsDetailsService.updateClientSecret(clientDetails.getClientId(), clientDetails.getClientSecret());
+            telemetryClient.trackEvent("AuthClientSecretUpdated", telemetryMap, null);
         }
         return "redirect:/ui";
     }
 
     @GetMapping(value = "/{clientId}/delete")
     @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
-    public String deleteClient(@PathVariable final String clientId) {
+    public String deleteClient(final Authentication authentication, @PathVariable final String clientId) {
+        final var userDetails = (UserPersonDetails) authentication.getPrincipal();
+        final var telemetryMap = Map.of("username", userDetails.getUsername(), "clientId", clientId);
+
         clientsDetailsService.removeClientDetails(clientId);
+        telemetryClient.trackEvent("AuthClientDetailsDeleted", telemetryMap, null);
+
         return "redirect:/ui";
     }
 
