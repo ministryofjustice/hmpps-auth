@@ -1,52 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="false">
-    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
-    <property name="LOG_PATTERN" value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m | %mdc %n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}" />
 
-    <springProperty scope="context" name="appName" source="info.app.name"/>
-    <springProperty scope="context" name="appVersion" source="info.app.version"/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <property name="LOG_PATTERN"
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m | %mdc %n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
 
-    <springProfile name="!logstash">
-        <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+    <springProperty scope="context" name="app" source="spring.application.name"/>
+
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>${LOG_PATTERN}</Pattern>
+        </layout>
+    </appender>
+
+    <springProfile name="dev || stdout">
+        <appender name="logAppender" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
                 <Pattern>${LOG_PATTERN}</Pattern>
             </layout>
         </appender>
-        <appender name="aiAppender" class="ch.qos.logback.core.helpers.NOPAppender"/>
     </springProfile>
 
-    <springProfile name="logstash">
-        <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <includeCallerInfo>true</includeCallerInfo>
-            </encoder>
-        </appender>
-
-        <appender name="aiAppender" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender"/>
+    <springProfile name="!(dev || stdout)">
+        <appender name="logAppender" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender"/>
     </springProfile>
 
-    <logger name="uk.gov.justice.digital.hmpps" additivity="false" level="DEBUG">
+    <logger name="uk.gov.justice.digital.hmpps.oauth2server.Oauth2serverApplication" additivity="false" level="DEBUG">
+        <appender-ref ref="logAppender"/>
         <appender-ref ref="consoleAppender"/>
-        <appender-ref ref="aiAppender"/>
     </logger>
 
-    <logger name="org.springframework" additivity="false" level="INFO" >
-        <appender-ref ref="consoleAppender"/>
-        <appender-ref ref="aiAppender"/>
+    <logger name="uk.gov.justice.hmpps" additivity="false" level="DEBUG">
+        <appender-ref ref="logAppender"/>
     </logger>
 
-    <logger name="springfox.documentation.spring" additivity="false" level="INFO" >
-        <appender-ref ref="consoleAppender"/>
-        <appender-ref ref="aiAppender"/>
+    <logger name="org.springframework" additivity="false" level="INFO">
+        <appender-ref ref="logAppender"/>
     </logger>
 
-    <logger name="com.zaxxer.hikari" additivity="false" level="WARN" >
+    <logger name="springfox.documentation.spring" additivity="false" level="INFO">
+        <appender-ref ref="logAppender"/>
+    </logger>
+
+    <logger name="com.microsoft.applicationinsights" additivity="false" level="INFO">
+        <appender-ref ref="logAppender"/>
+    </logger>
+
+    <logger name="com.zaxxer.hikari" additivity="false" level="INFO">
+        <appender-ref ref="logAppender"/>
+    </logger>
+
+    <logger name="org.apache.catalina" additivity="false" level="INFO">
         <appender-ref ref="consoleAppender"/>
-        <appender-ref ref="aiAppender"/>
+    </logger>
+
+    <logger name="org.flywaydb" additivity="false" level="INFO">
+        <appender-ref ref="logAppender"/>
     </logger>
 
     <root level="INFO">
-        <appender-ref ref="consoleAppender"/>
-        <appender-ref ref="aiAppender"/>
+        <appender-ref ref="logAppender"/>
     </root>
+
 </configuration>
