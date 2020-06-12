@@ -2,16 +2,21 @@
 
 package uk.gov.justice.digital.hmpps.oauth2server.config
 
+import org.apache.http.client.config.RequestConfig
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import org.hibernate.validator.constraints.URL
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.security.oauth2.client.OAuth2RestTemplate
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails
 import org.springframework.web.client.RestTemplate
 import java.time.Duration
+import java.util.concurrent.TimeUnit.SECONDS
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Configuration
@@ -21,12 +26,20 @@ class TokenVerificationRestTemplateConfiguration(private val apiDetails: TokenVe
                                                  @Value("\${tokenverification.endpoint.timeout:5s}") private val apiTimeout: Duration) {
 
   @Bean(name = ["tokenVerificationApiRestTemplate"])
-  fun tokenVerificationRestTemplate(restTemplateBuilder: RestTemplateBuilder): OAuth2RestTemplate =
-      restTemplateBuilder
-          .rootUri(tokenVerificationEndpointUrl)
-          .setConnectTimeout(apiTimeout)
-          .setReadTimeout(apiTimeout)
-          .configure(OAuth2RestTemplate(apiDetails))
+  fun tokenVerificationRestTemplate(restTemplateBuilder: RestTemplateBuilder): OAuth2RestTemplate {
+    // load balancer has timeout of 4 minutes so set to one second less than that
+    val poolManager = PoolingHttpClientConnectionManager(60 * 4 - 1, SECONDS)
+    poolManager.validateAfterInactivity = 500
+    poolManager.maxTotal = 10
+    poolManager.defaultMaxPerRoute = 5
+    val httpClient = HttpClientBuilder.create().useSystemProperties().setConnectionManager(poolManager).build()
+    return restTemplateBuilder
+        .rootUri(tokenVerificationEndpointUrl)
+        .setConnectTimeout(apiTimeout)
+        .setReadTimeout(apiTimeout)
+        .requestFactory { HttpComponentsClientHttpRequestFactory(httpClient) }
+        .configure(OAuth2RestTemplate(apiDetails))
+  }
 
   @Bean(name = ["tokenVerificationApiHealthRestTemplate"])
   fun tokenVerificationHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate =
