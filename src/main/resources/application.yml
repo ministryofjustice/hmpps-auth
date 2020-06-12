@@ -40,13 +40,8 @@ auth:
     hibernate:
       hbm2ddl:
         auto: none
-    properties:
-      hibernate:
-        show_sql: true
   endpoint.url: http://localhost:${server.port:8080}/auth
   token.url: ${auth.endpoint.url}/oauth/token
-
-logging.level.uk.gov: INFO
 
 management:
   endpoints:
