@@ -7,13 +7,8 @@
 
     <springProperty scope="context" name="app" source="spring.application.name"/>
 
-    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>${LOG_PATTERN}</Pattern>
-        </layout>
-    </appender>
-
     <springProfile name="dev || stdout">
+        <appender name="consoleAppender" class="ch.qos.logback.core.helpers.NOPAppender" />
         <appender name="logAppender" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
                 <Pattern>${LOG_PATTERN}</Pattern>
@@ -22,6 +17,11 @@
     </springProfile>
 
     <springProfile name="!(dev || stdout)">
+        <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <Pattern>${LOG_PATTERN}</Pattern>
+            </layout>
+        </appender>
         <appender name="logAppender" class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender"/>
     </springProfile>
 
@@ -51,6 +51,7 @@
     </logger>
 
     <logger name="org.apache.catalina" additivity="false" level="INFO">
+        <appender-ref ref="logAppender"/>
         <appender-ref ref="consoleAppender"/>
     </logger>
 
