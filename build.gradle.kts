@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "0.4.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "0.4.2"
   kotlin("plugin.spring") version "1.3.72"
   kotlin("plugin.jpa") version "1.3.72"
 }
@@ -37,7 +37,7 @@ dependencies {
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1")
   implementation("uk.gov.service.notify:notifications-java-client:3.15.1-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:6.4.3")
+  implementation("org.flywaydb:flyway-core:6.4.4")
   implementation("com.zaxxer:HikariCP:3.4.5")
   implementation("org.apache.commons:commons-text:1.8")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.1.jre11")
@@ -53,7 +53,7 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 
-  testImplementation("org.codehaus.groovy:groovy-all:3.0.3")
+  testImplementation("org.codehaus.groovy:groovy-all:3.0.4")
   testImplementation("org.spockframework:spock-spring:1.3-groovy-2.5")
   testImplementation("org.spockframework:spock-core:1.3-groovy-2.5") {
     exclude(mapOf("group" to "org.codehaus.groovy"))
@@ -71,7 +71,7 @@ dependencies {
   testImplementation("org.slf4j:slf4j-api:1.7.30")
   testImplementation("com.auth0:java-jwt:3.10.3")
 
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.17.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.18.0")
   testImplementation("com.nhaarman:mockito-kotlin-kt1.1:1.6.0")
   testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.3.1")
   testImplementation("org.fluentlenium:fluentlenium-assertj:4.3.1")
