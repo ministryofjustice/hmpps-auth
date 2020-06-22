@@ -18,7 +18,7 @@ __Test chart template rendering:__
 This will out the fully rendered kubernetes resources in raw yaml.
 
 ```sh
-helm template [path to chart] --values=values-dev.yaml --values=secrets-example.yaml
+helm template [path to chart] --values=values-t3.yaml --values=secrets-example.yaml
 ```
 
 __List releases:__
@@ -50,7 +50,7 @@ helm upgrade [release name] [path to chart]. \
   --install --wait --force --reset-values --timeout 5m --history-max 10 \
   --dry-run \
   --namespace [namespace] \
-  --values values-dev.yaml \
+  --values values-t3.yaml \
   --values example-secrets.yaml
 ```
 

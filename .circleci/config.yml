@@ -84,6 +84,7 @@ workflows:
             - validate
       - hmpps/helm_lint:
           name: helm_lint
+          env: "t3"
       - hmpps/build_docker:
           name: build_docker
           filters:
