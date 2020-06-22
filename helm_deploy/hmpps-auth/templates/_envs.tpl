@@ -84,36 +84,28 @@ env:
       secretKeyRef:
         key: DELIUS_ENDPOINT_URL
         name: {{ template "app.name" . }}
-  - name: DELIUS_ROLES_MAPPINGS_CTRBT001
-    valueFrom:
-      secretKeyRef:
-        key: DELIUS_ROLES_MAPPINGS_CTRBT001
-        name: {{ template "app.name" . }}
-  - name: DELIUS_ROLES_MAPPINGS_CTRBT002
-    valueFrom:
-      secretKeyRef:
-        key: DELIUS_ROLES_MAPPINGS_CTRBT002
-        name: {{ template "app.name" . }}
-  - name: DELIUS_ROLES_MAPPINGS_CTRBT003
-    valueFrom:
-      secretKeyRef:
-        key: DELIUS_ROLES_MAPPINGS_CTRBT003
-        name: {{ template "app.name" . }}
-  - name: DELIUS_ROLES_MAPPINGS_LHDCBT001
-    valueFrom:
-      secretKeyRef:
-        key: DELIUS_ROLES_MAPPINGS_LHDCBT001
-        name: {{ template "app.name" . }}
-  - name: DELIUS_ROLES_MAPPINGS_LHDCBT002
-    valueFrom:
-      secretKeyRef:
-        key: DELIUS_ROLES_MAPPINGS_LHDCBT002
-        name: {{ template "app.name" . }}
-  - name: DELIUS_ROLES_MAPPINGS_LHDCBT003
-    valueFrom:
-      secretKeyRef:
-        key: DELIUS_ROLES_MAPPINGS_LHDCBT003
-        name: {{ template "app.name" . }}
+
+  - name: DELIUS_ROLES_MAPPINGS_CTRBT001:
+  - value: "ROLE_PF_STD_PROBATION,ROLE_GLOBAL_SEARCH"
+
+  - name: DELIUS_ROLES_MAPPINGS_CTRBT002:
+  - value: "ROLE_PF_APPROVAL"
+
+  - name: DELIUS_ROLES_MAPPINGS_CTRBT003:
+  - value: "ROLE_PF_STD_PROBATION_RO"
+
+  - name: DELIUS_ROLES_MAPPINGS_CWBT300:
+  - value: "ROLE_PREPARE_A_CASE"
+
+  - name: DELIUS_ROLES_MAPPINGS_LHDCBT001:
+  - value: "ROLE_LICENCE_RO,ROLE_GLOBAL_SEARCH"
+
+  - name: DELIUS_ROLES_MAPPINGS_LHDCBT002:
+  - value: "ROLE_LICENCE_RO,ROLE_GLOBAL_SEARCH"
+
+  - name: DELIUS_ROLES_MAPPINGS_LHDCBT003:
+  - value: "ROLE_LICENCE_RO,ROLE_LICENCE_VARY,ROLE_GLOBAL_SEARCH"
+
   - name: JWT_COOKIE_EXPIRY_TIME
     valueFrom:
       secretKeyRef:
