@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   owasp: entur/owasp@0.0.10
-  hmpps: ministryofjustice/hmpps@1.0.0
+  hmpps: ministryofjustice/hmpps@1.1.0
 
 jobs:
   validate:
@@ -82,6 +82,8 @@ workflows:
       - integration_tests:
           requires:
             - validate
+      - hmpps/helm_lint:
+          name: helm_lint
       - hmpps/build_docker:
           name: build_docker
           filters:
@@ -97,8 +99,8 @@ workflows:
                 - main
           requires:
             - build_docker
+            - helm_lint
             - integration_tests
-
       - request-stage-approval:
           type: approval
           requires:
