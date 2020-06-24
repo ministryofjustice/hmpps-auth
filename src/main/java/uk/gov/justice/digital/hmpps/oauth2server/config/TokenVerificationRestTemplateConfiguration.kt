@@ -27,8 +27,8 @@ class TokenVerificationRestTemplateConfiguration(private val apiDetails: TokenVe
 
   @Bean(name = ["tokenVerificationApiRestTemplate"])
   fun tokenVerificationRestTemplate(restTemplateBuilder: RestTemplateBuilder): OAuth2RestTemplate {
-    // load balancer has timeout of 4 minutes so set to one second less than that
-    val poolManager = PoolingHttpClientConnectionManager(60 * 4 - 1, SECONDS)
+    // load balancer has timeout of 4 minutes, but we will try 2 minutes minus 1 second
+    val poolManager = PoolingHttpClientConnectionManager(60 * 2 - 1, SECONDS)
     poolManager.validateAfterInactivity = 500
     poolManager.maxTotal = 10
     poolManager.defaultMaxPerRoute = 5
