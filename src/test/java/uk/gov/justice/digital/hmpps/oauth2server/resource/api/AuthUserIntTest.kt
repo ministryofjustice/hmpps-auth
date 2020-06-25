@@ -131,7 +131,9 @@ class AuthUserIntTest : IntegrationTest() {
         .get().uri("/auth/api/authuser?email=nobody@nowhere")
         .headers(setAuthorisation("AUTH_ADM"))
         .exchange()
-        .expectStatus().isNoContent
+        .expectStatus().isOk
+        .expectBody()
+        .json("[]")
   }
 
   @Test
@@ -145,5 +147,17 @@ class AuthUserIntTest : IntegrationTest() {
         .expectBody()
         .json("auth_user_search.json".readFile())
   }
+
+  @Test
+  fun `Auth User search endpoint returns no data if not found`() {
+    webTestClient
+        .get().uri("/auth/api/authuser/search?name=nobody")
+        .headers(setAuthorisation("AUTH_ADM"))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .json("[]")
+  }
+
 }
 

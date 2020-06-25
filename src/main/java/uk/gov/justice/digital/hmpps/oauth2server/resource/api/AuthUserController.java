@@ -86,12 +86,11 @@ public class AuthUserController {
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK", response = AuthUser.class, responseContainer = "List"),
-            @ApiResponse(code = 204, message = "No users found."),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class)})
     public ResponseEntity<Object> searchForUser(@ApiParam(value = "The email address of the user.", required = true) @RequestParam final String email) {
         final var users = authUserService.findAuthUsersByEmail(email).stream().map(AuthUser::fromUser).collect(Collectors.toList());
 
-        return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/api/authuser/search")
@@ -99,7 +98,6 @@ public class AuthUserController {
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK", response = AuthUser.class, responseContainer = "List"),
-            @ApiResponse(code = 204, message = "No users found."),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class)})
     @ApiImplicitParams({
             @ApiImplicitParam(name = "page", dataType = "int", paramType = "query",
@@ -115,7 +113,7 @@ public class AuthUserController {
             @PageableDefault(sort = {"username"}, direction = ASC) final Pageable pageable) {
         final var users = authUserService.findAuthUsers(name, role, group, pageable).stream().map(AuthUser::fromUser).collect(Collectors.toList());
 
-        return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/api/authuser/me/assignable-groups")

@@ -70,8 +70,8 @@ class AuthUserControllerTest {
   fun search_noResults() {
     whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf())
     val responseEntity = authUserController.searchForUser("joe")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(204)
-    assertThat(responseEntity.body).isNull()
+    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
+    assertThat(responseEntity.body).isEqualTo(listOf<AuthUser>())
   }
 
   @Test
