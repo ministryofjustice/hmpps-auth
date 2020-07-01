@@ -5,13 +5,18 @@ Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS DB and New Auth DB
 To get started, either run an instance locally, or point to the dev (t3) instance - https://gateway.t3.nomis-api.hmpps.dsd.io/auth/.
 For t3 you will need client credentials to connect, ask in #dps-tech to get setup.
 
-### Run locally on the command line ###
+### Run locally on the command line
 ```bash
 SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 ```
 
 The service should start up using the dev profile, perform the flyway migrations on its local HSQLDB and then seed local development data.
 Can then be accessed in a browser on http://localhost:8080/auth/login
+
+### Run integration tests locally
+```bash
+SPRING_PROFILES_ACTIVE=dev,token-verification ./gradlew testFluentIntegration
+```
 
 #### Run in docker-compose
 ```bash
