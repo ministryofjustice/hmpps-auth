@@ -75,7 +75,8 @@ INSERT INTO users (user_id, username, email, verified, source)
         ('5C72B180-5211-454D-9605-CF29573B946F', 'UOF_REVIEWER_USER', 'uof_reviewer@digital.justice.gov.uk', 1, 'nomis'),
         ('98FBF8D7-4164-47B3-826F-ECD3BB643005', 'RCTL_USER', 'rctl_user@digital.justice.gov.uk', 1, 'nomis'),
         ('AAABF8D7-4164-47B3-826F-ECD3BB64300F', 'PF_RO_USER', 'pf_ro_user@digital.justice.gov.uk', 1, 'nomis'),
-        ('C3B15C4B-ADF5-493B-9424-DBCC65E7BFED', 'UOF_COORDINATOR_USER', 'uof_coordinator@digital.justice.gov.uk', 1, 'nomis');
+        ('C3B15C4B-ADF5-493B-9424-DBCC65E7BFED', 'UOF_COORDINATOR_USER', 'uof_coordinator@digital.justice.gov.uk', 1, 'nomis'),
+        ('C3B15C4B-ADF5-493B-9424-DBCC65E7BFEE', 'LICENCE_READONLY_TEST', 'licence_readonly_test@digital.justice.gov.uk', 1, 'nomis');
 
 INSERT INTO users (user_id, username, email, verified, last_logged_in, source)
  VALUES ('A2B6E3C0-2CE4-4148-9DFB-42E94BC78D02', 'NOMIS_DELETE', 'locked@somewhere.com', 1, '2018-02-04 13:23:19.0000000', 'nomis');
