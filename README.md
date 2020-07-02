@@ -40,6 +40,16 @@ d77af7e00910        quay.io/hmpps/hnpps-auth:latest   "/bin/sh /app/run.sh"   38
 #### View logs in docker:
 ```docker logs hmpps-auth```
 
+
+### H2 database consoles 
+
+When running locally with the SPRING_ACTIVE_PROFILES=dev the seeded H2 database consoles are available at http://localhost:8080/auth/h2-console
+
+| Database | JDBC connection     |  username | password |
+|----------|---------------------|-----------|----------|
+| NOMIS    | jdbc:h2:mem:authdb  |  <blank>  | <blank>  |
+| AUTH     | jdbc:h2:mem:nomisdb |  <blank>  | <blank>  |
+
 #### API Documentation
 
 Is available on a running local server at http://localhost:9090/auth/swagger-ui.html.  Alternatively production
