@@ -22,8 +22,10 @@ VALUES ('omicuser','1200','{"jwtFields":"-user_name"}','SYSTEM_READ_ONLY','passw
        ('my-diary','1200','{}',null,'authorization_code,refresh_token','read,write','{bcrypt}$2a$10$NATyxrjfisAqVua3E7xe/u1C4gr1527esDOAE23ouCwpO2ne6JHR.',43200,null,'read,write','http://localhost:3005/login/callback,http://localhost:3005'),
        ('use-of-force-system','3600','{}','ROLE_SYSTEM_READ_ONLY','client_credentials','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
        ('whereabouts-api-client','3600','{}','ROLE_PAY, ROLE_CASE_NOTE_ADMIN,GLOBAL_SEARCH','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read,write',null),
-       ('pathfinder-client','3600','{}',null,'authorization_code,refresh_token','read,write','$2a$10$WzgtydqXSuhdivpWDR3WXO.yjLBm4yuDqP64Og.7E4XURdrSfhOTi',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
+       ('pathfinder-client','3600','{}',null,'authorization_code','read,write','$2a$10$WzgtydqXSuhdivpWDR3WXO.yjLBm4yuDqP64Og.7E4XURdrSfhOTi',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
        ('pathfinder-admin','3600','{}','ROLE_GLOBAL_SEARCH,ROLE_SYSTEM_USER,ROLE_COMMUNITY','client_credentials','read,write','$2a$10$ajGimbJNWF1/FmZQMJWvieeQ/OdYaxWHQPgOjYDvvWu/4/744Yw7S',43200,null,'read,write',null),
+       ('manage-soc-cases-client','3600','{}',null,'authorization_code','read,write','$2a$10$WzgtydqXSuhdivpWDR3WXO.yjLBm4yuDqP64Og.7E4XURdrSfhOTi',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
+       ('manage-soc-cases-admin','3600','{}','ROLE_GLOBAL_SEARCH,ROLE_SYSTEM_USER,ROLE_COMMUNITY','client_credentials','read,write','$2a$10$ajGimbJNWF1/FmZQMJWvieeQ/OdYaxWHQPgOjYDvvWu/4/744Yw7S',43200,null,'read,write',null),
        ('prison-to-probation-update-api-client','3600','{}','ROLE_SYSTEM_USER,ROLE_COMMUNITY','client_credentials','read,write','$2a$10$.95l4ENV1OEZ6qWd4R5QTOXZrjvTQmN402z1pjRUr2EwGFYdkDDnm',43200,null,'read,write',null),
        ('prison-to-nhs-update-api-client','3600','{}','ROLE_SYSTEM_USER','client_credentials','read,write','$2a$10$.95l4ENV1OEZ6qWd4R5QTOXZrjvTQmN402z1pjRUr2EwGFYdkDDnm',43200,null,'read,write',null),
        ('prisoner-offender-search-client','3600','{}','ROLE_SYSTEM_USER,ROLE_PRISONER_INDEX,ROLE_GLOBAL_SEARCH','client_credentials','read,write','$2a$10$.95l4ENV1OEZ6qWd4R5QTOXZrjvTQmN402z1pjRUr2EwGFYdkDDnm',43200,null,'read,write',null),
@@ -46,6 +48,7 @@ VALUES ('BOOK_MOVE', 'Book a secure move', 'Book a secure move', 'ROLE_PECS_SUPP
        ('OAUTHADMIN', 'Oauth Client Management', 'Manage Client Credentials for OAUTH2 Clients', 'ROLE_OAUTH_ADMIN', 'http://localhost:8080/auth/ui/', 1, null),
        ('POM', 'Allocate a POM Service', 'Allocate the appropriate offender manager to a prisoner', 'ROLE_ALLOC_MGR', 'https://moic.service.justice.gov.uk', 1, 'https://moic.service.justice.gov.uk/help'),
        ('PATHFINDER', 'Pathfinder Service', 'View and Manage Pathfinder nominals', 'ROLE_PF_STD_PRISON,ROLE_PF_APPROVAL,ROLE_PF_POLICE', 'http://localhost:3000', 1, null),
+       ('SOC', 'Manage SOC cases', 'View and manage SOC cases', 'ROLE_SOC_CUSTODY,ROLE_SOC_COMMUNITY,ROLE_SOC_RESTRICTED', 'http://localhost:3000', 1, null),
        ('USERADMIN', 'Admin & Utilities Service', 'Admin & utilities Service For NOMIS and Auth User', 'ROLE_KW_MIGRATION,ROLE_MAINTAIN_ACCESS_ROLES,ROLE_MAINTAIN_ACCESS_ROLES_ADMIN,ROLE_MAINTAIN_OAUTH_USERS,ROLE_AUTH_GROUP_MANAGER', 'http://localhost:3001/admin-utilities', 1, null),
        ('DETAILS', 'Manage account details', 'View and change your account details', null, '/auth/account-details', 1, null);
 
@@ -76,7 +79,8 @@ INSERT INTO users (user_id, username, email, verified, source)
         ('98FBF8D7-4164-47B3-826F-ECD3BB643005', 'RCTL_USER', 'rctl_user@digital.justice.gov.uk', 1, 'nomis'),
         ('AAABF8D7-4164-47B3-826F-ECD3BB64300F', 'PF_RO_USER', 'pf_ro_user@digital.justice.gov.uk', 1, 'nomis'),
         ('C3B15C4B-ADF5-493B-9424-DBCC65E7BFED', 'UOF_COORDINATOR_USER', 'uof_coordinator@digital.justice.gov.uk', 1, 'nomis'),
-        ('C3B15C4B-ADF5-493B-9424-DBCC65E7BFEE', 'LICENCE_READONLY_TEST', 'licence_readonly_test@digital.justice.gov.uk', 1, 'nomis');
+        ('C3B15C4B-ADF5-493B-9424-DBCC65E7BFEE', 'LICENCE_READONLY_TEST', 'licence_readonly_test@digital.justice.gov.uk', 1, 'nomis'),
+        ('C3B15C4B-ADF5-667B-8711-DA7EB4432CED', 'SOC_PRISON_LOCAL', 'soc_prison_local@digital.justice.gov.uk', 1, 'nomis');
 
 INSERT INTO users (user_id, username, email, verified, last_logged_in, source)
  VALUES ('A2B6E3C0-2CE4-4148-9DFB-42E94BC78D02', 'NOMIS_DELETE', 'locked@somewhere.com', 1, '2018-02-04 13:23:19.0000000', 'nomis');
@@ -194,6 +198,21 @@ insert into group_assignable_role (role_id, group_id, automatic) values ((select
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'TEST_PF_POLICE_1' and role_code = 'PF_POLICE';
 
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'TEST_PF_POLICE_1' and group_code = 'PF_LONDON';
+
+-- Local police accounts for manage-soc-cases
+INSERT INTO users (user_id, username, password, email, first_name, last_name, verified, locked, enabled, master, password_expiry, source, mfa_preference)
+VALUES ('ABCF4E74-0056-43D1-454B-8BD7E0ED5B10', 'SOC_POLICE_LOCAL_NE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'soc.ne@digital.justice.gov.uk', 'Bobby', 'Gateshead', 1, 0, 1, 0, '2040-04-26 16:17:28.0000000', 'auth', 'EMAIL');
+
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'SOC_POLICE_LOCAL_NE' and role_code = 'SOC_RESTRICTED';
+
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'SOC_POLICE_LOCAL_NE' and group_code = 'SOC_NORTH_EAST';
+
+INSERT INTO users (user_id, username, password, email, first_name, last_name, verified, locked, enabled, master, password_expiry, source, mfa_preference)
+VALUES ('ABCF4F85-0057-43E1-454C-87D345DD510A', 'SOC_POLICE_LOCAL_NW', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'soc.nw@digital.justice.gov.uk', 'Bobby', 'Chester', 1, 0, 1, 0, '2040-04-26 16:17:28.0000000', 'auth', 'EMAIL');
+
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'SOC_POLICE_LOCAL_NW' and role_code = 'SOC_RESTRICTED';
+
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'SOC_POLICE_LOCAL_NW' and group_code = 'SOC_NORTH_WEST';
 
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'LOCKED_USER';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset2', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_DELETEALL';

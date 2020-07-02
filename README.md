@@ -3,7 +3,22 @@
 Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS DB and New Auth DB.
 
 To get started, either run an instance locally, or point to the dev (t3) instance - https://gateway.t3.nomis-api.hmpps.dsd.io/auth/.
-For t3 you will need client credentials to connect, ask in #newnomis_projectteam to get setup.
+For t3 you will need client credentials to connect, ask in #dps-tech to get setup.
+
+### Run locally on the command line
+```bash
+SPRING_PROFILES_ACTIVE=dev,token-verification ./gradlew bootRun
+```
+
+The service should start up using the dev profile, perform the flyway migrations on its local HSQLDB and then seed local development data.
+Can then be accessed in a browser on http://localhost:8080/auth/login OR
+
+### Run integration tests locally against the development instance (in a separate terminal) with:
+```bash
+./gradlew testFluentIntegration
+```
+
+(Will require a matching version of chromedriver to be downloaded and available on the path - check the version of selenium in build.gradle.kts)
 
 #### Run in docker-compose
 ```bash
@@ -24,6 +39,16 @@ d77af7e00910        quay.io/hmpps/hnpps-auth:latest   "/bin/sh /app/run.sh"   38
 
 #### View logs in docker:
 ```docker logs hmpps-auth```
+
+
+### H2 database consoles 
+
+When running locally with the SPRING_ACTIVE_PROFILES=dev the seeded H2 database consoles are available at http://localhost:8080/auth/h2-console
+
+| Database | JDBC connection     |  username | password |
+|----------|---------------------|-----------|----------|
+| NOMIS    | jdbc:h2:mem:authdb  |  <blank>  | <blank>  |
+| AUTH     | jdbc:h2:mem:nomisdb |  <blank>  | <blank>  |
 
 #### API Documentation
 
