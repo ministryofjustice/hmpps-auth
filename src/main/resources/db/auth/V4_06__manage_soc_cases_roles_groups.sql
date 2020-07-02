@@ -1,6 +1,6 @@
-INSERT INTO roles (role_id, role_code, role_name) values (NEWID(), 'SOC_CUSTODY', 'SOCU Prison Role');
-INSERT INTO roles (role_id, role_code, role_name) values (NEWID(), 'SOC_COMMUNITY', 'SOCU Probation Role');
-INSERT INTO roles (role_id, role_code, role_name) values (NEWID(), 'SOC_RESTRICTED', 'SOCU Restricted Caseload');
+INSERT INTO roles (role_id, role_code, role_name) values (NEWID(), 'SOC_CUSTODY', 'SOC Prison Role');
+INSERT INTO roles (role_id, role_code, role_name) values (NEWID(), 'SOC_COMMUNITY', 'SOC Probation Role');
+INSERT INTO roles (role_id, role_code, role_name) values (NEWID(), 'SOC_RESTRICTED', 'SOC Restricted Caseload');
 
 INSERT INTO groups (group_id, group_code, group_name)
 VALUES (NEWID(), 'SOC_NORTH_EAST', 'SOCU North East');

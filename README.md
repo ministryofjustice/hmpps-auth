@@ -7,16 +7,18 @@ For t3 you will need client credentials to connect, ask in #dps-tech to get setu
 
 ### Run locally on the command line
 ```bash
-SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+SPRING_PROFILES_ACTIVE=dev,token-verification ./gradlew bootRun
 ```
 
 The service should start up using the dev profile, perform the flyway migrations on its local HSQLDB and then seed local development data.
-Can then be accessed in a browser on http://localhost:8080/auth/login
+Can then be accessed in a browser on http://localhost:8080/auth/login OR
 
-### Run integration tests locally
+### Run integration tests locally against the development instance (in a separate terminal) with:
 ```bash
-SPRING_PROFILES_ACTIVE=dev,token-verification ./gradlew testFluentIntegration
+./gradlew testFluentIntegration
 ```
+
+(Will require a matching version of chromedriver to be downloaded and available on the path - check the version of selenium in build.gradle.kts)
 
 #### Run in docker-compose
 ```bash

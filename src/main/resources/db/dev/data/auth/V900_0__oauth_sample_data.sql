@@ -22,9 +22,9 @@ VALUES ('omicuser','1200','{"jwtFields":"-user_name"}','SYSTEM_READ_ONLY','passw
        ('my-diary','1200','{}',null,'authorization_code,refresh_token','read,write','{bcrypt}$2a$10$NATyxrjfisAqVua3E7xe/u1C4gr1527esDOAE23ouCwpO2ne6JHR.',43200,null,'read,write','http://localhost:3005/login/callback,http://localhost:3005'),
        ('use-of-force-system','3600','{}','ROLE_SYSTEM_READ_ONLY','client_credentials','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
        ('whereabouts-api-client','3600','{}','ROLE_PAY, ROLE_CASE_NOTE_ADMIN,GLOBAL_SEARCH','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read,write',null),
-       ('pathfinder-client','3600','{}',null,'authorization_code,refresh_token','read,write','$2a$10$WzgtydqXSuhdivpWDR3WXO.yjLBm4yuDqP64Og.7E4XURdrSfhOTi',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
+       ('pathfinder-client','3600','{}',null,'authorization_code','read,write','$2a$10$WzgtydqXSuhdivpWDR3WXO.yjLBm4yuDqP64Og.7E4XURdrSfhOTi',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
        ('pathfinder-admin','3600','{}','ROLE_GLOBAL_SEARCH,ROLE_SYSTEM_USER,ROLE_COMMUNITY','client_credentials','read,write','$2a$10$ajGimbJNWF1/FmZQMJWvieeQ/OdYaxWHQPgOjYDvvWu/4/744Yw7S',43200,null,'read,write',null),
-       ('manage-soc-cases-client','3600','{}',null,'authorization_code,refresh_token','read,write','$2a$10$WzgtydqXSuhdivpWDR3WXO.yjLBm4yuDqP64Og.7E4XURdrSfhOTi',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
+       ('manage-soc-cases-client','3600','{}',null,'authorization_code','read,write','$2a$10$WzgtydqXSuhdivpWDR3WXO.yjLBm4yuDqP64Og.7E4XURdrSfhOTi',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
        ('manage-soc-cases-admin','3600','{}','ROLE_GLOBAL_SEARCH,ROLE_SYSTEM_USER,ROLE_COMMUNITY','client_credentials','read,write','$2a$10$ajGimbJNWF1/FmZQMJWvieeQ/OdYaxWHQPgOjYDvvWu/4/744Yw7S',43200,null,'read,write',null),
        ('prison-to-probation-update-api-client','3600','{}','ROLE_SYSTEM_USER,ROLE_COMMUNITY','client_credentials','read,write','$2a$10$.95l4ENV1OEZ6qWd4R5QTOXZrjvTQmN402z1pjRUr2EwGFYdkDDnm',43200,null,'read,write',null),
        ('prison-to-nhs-update-api-client','3600','{}','ROLE_SYSTEM_USER','client_credentials','read,write','$2a$10$.95l4ENV1OEZ6qWd4R5QTOXZrjvTQmN402z1pjRUr2EwGFYdkDDnm',43200,null,'read,write',null),
@@ -48,7 +48,7 @@ VALUES ('BOOK_MOVE', 'Book a secure move', 'Book a secure move', 'ROLE_PECS_SUPP
        ('OAUTHADMIN', 'Oauth Client Management', 'Manage Client Credentials for OAUTH2 Clients', 'ROLE_OAUTH_ADMIN', 'http://localhost:8080/auth/ui/', 1, null),
        ('POM', 'Allocate a POM Service', 'Allocate the appropriate offender manager to a prisoner', 'ROLE_ALLOC_MGR', 'https://moic.service.justice.gov.uk', 1, 'https://moic.service.justice.gov.uk/help'),
        ('PATHFINDER', 'Pathfinder Service', 'View and Manage Pathfinder nominals', 'ROLE_PF_STD_PRISON,ROLE_PF_APPROVAL,ROLE_PF_POLICE', 'http://localhost:3000', 1, null),
-       ('SOCU', 'Manage SOC Cases', 'View and Manage SOC cases', 'ROLE_SOC_CUSTODY,ROLE_SOC_COMMUNITY,ROLE_SOC_RESTRICTED', 'http://localhost:3000', 1, null),
+       ('SOC', 'Manage SOC cases', 'View and manage SOC cases', 'ROLE_SOC_CUSTODY,ROLE_SOC_COMMUNITY,ROLE_SOC_RESTRICTED', 'http://localhost:3000', 1, null),
        ('USERADMIN', 'Admin & Utilities Service', 'Admin & utilities Service For NOMIS and Auth User', 'ROLE_KW_MIGRATION,ROLE_MAINTAIN_ACCESS_ROLES,ROLE_MAINTAIN_ACCESS_ROLES_ADMIN,ROLE_MAINTAIN_OAUTH_USERS,ROLE_AUTH_GROUP_MANAGER', 'http://localhost:3001/admin-utilities', 1, null),
        ('DETAILS', 'Manage account details', 'View and change your account details', null, '/auth/account-details', 1, null);
 
