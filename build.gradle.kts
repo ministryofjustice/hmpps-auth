@@ -37,11 +37,11 @@ dependencies {
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1")
   implementation("uk.gov.service.notify:notifications-java-client:3.15.1-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:6.4.4")
+  implementation("org.flywaydb:flyway-core:6.5.0")
   implementation("com.zaxxer:HikariCP:3.4.5")
   implementation("org.apache.commons:commons-text:1.8")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.1.jre11")
-  implementation("io.swagger:swagger-core:1.6.1")
+  implementation("io.swagger:swagger-core:1.6.2")
 
   runtimeOnly("com.h2database:h2:1.4.200")
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
@@ -66,12 +66,12 @@ dependencies {
   testImplementation("org.seleniumhq.selenium:selenium-firefox-driver:3.141.59")
   testImplementation("io.github.http-builder-ng:http-builder-ng-apache:1.0.4")
 
-  testImplementation("com.github.tomakehurst:wiremock-standalone:2.26.3")
+  testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.1")
   testImplementation("com.github.tomjankes:wiremock-groovy:0.2.0")
   testImplementation("org.slf4j:slf4j-api:1.7.30")
   testImplementation("com.auth0:java-jwt:3.10.3")
 
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.18.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.18.1")
   testImplementation("com.nhaarman:mockito-kotlin-kt1.1:1.6.0")
   testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.3.1")
   testImplementation("org.fluentlenium:fluentlenium-assertj:4.3.1")
