@@ -19,22 +19,30 @@
         <th class="govuk-table__header" scope="col">Roles</th>
         <th class="govuk-table__header" scope="col">Url / email</th>
         <th class="govuk-table__header" scope="col">Enabled</th>
+        <th class="govuk-table__header" scope="col"></th>
       </tr>
       </thead>
       <tbody class="govuk-table__body">
-      <tr th:each="service : ${serviceDetails}" class="govuk-table__row">
+      <tr th:each="service : ${serviceDetails}" class="govuk-table__row" th:attr="data-qa=${service.code}">
         <td th:text="${service.name}" class="govuk-table__cell"></td>
         <td th:text="${service.description}" class="govuk-table__cell"></td>
         <td th:text="${service.roles}" class="govuk-table__cell"></td>
         <td class="govuk-table__cell">
           <span th:text="${service.url}"></span>
-          <span th:text="${' / ' + service.email}" th:if="${service.email}"></span>
-          <span th:text="${'/ no email set'}" th:unless="${service.email}"></span>
+          <span th:if="${#strings.isEmpty(service.email)}" th:text="${'/ no email set'}"></span>
+          <span th:unless="${#strings.isEmpty(service.email)}" th:text="${' / ' + service.email}"></span>
         </td>
         <td th:text="${service.enabled}" class="govuk-table__cell"></td>
+        <td>
+          <a th:id="'edit-' + ${service.code}" role="button" class="govuk-button"
+             th:href="@{/ui/services/form?code=__${service.code}__}">Edit</a>
+        </td>
       </tr>
       </tbody>
     </table>
+    <p class="govuk-body">
+      <a class="govuk-button" role="button" id="edit-service" th:href="@{/ui/services/form}">Add service</a>
+    </p>
   </div>
 </div>
 </body>

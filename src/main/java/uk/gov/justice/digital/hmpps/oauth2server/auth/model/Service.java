@@ -44,7 +44,6 @@ public class Service {
     private String email;
 
     public List<String> getRoles() {
-        //noinspection UnstableApiUsage
         return StringUtils.isBlank(authorisedRoles) ? Collections.emptyList() : Splitter.on(',').trimResults().splitToList(authorisedRoles);
     }
 
@@ -65,7 +64,15 @@ public class Service {
     }
 
     public String getAuthorisedRoles() {
-        return this.authorisedRoles;
+        return authorisedRoles;
+    }
+
+    public String getAuthorisedRolesWithNewlines() {
+        return StringUtils.defaultIfBlank(authorisedRoles, "").replaceAll(",", "\n");
+    }
+
+    public void setAuthorisedRolesWithNewlines(final String authorisedRolesWithNewlines) {
+        authorisedRoles = StringUtils.defaultIfBlank(authorisedRolesWithNewlines, "").replaceAll("\n", ",");
     }
 
     public String getUrl() {

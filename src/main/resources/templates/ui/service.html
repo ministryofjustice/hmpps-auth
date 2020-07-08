@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head lang="en">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <title>Manage Service Configuration</title>
+</head>
+<body>
+
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <h1 th:if="${param.code}" class="govuk-heading-l">Edit service '<span th:text="${param.code[0]}"></span>'</h1>
+  <h1 th:unless="${param.code}" class="govuk-heading-l">Add service</h1>
+
+  <form th:action="@{/ui/services/edit}" method="post">
+    <!-- signalize new service -->
+    <input type="hidden" th:if="${param.code}" id="code" name="code" th:value="${service.code}"/>
+    <input type="hidden" th:unless="${param.code}" name="newService" value="true"/>
+
+    <div class="govuk-form-group">
+      <div class="govuk-form-group" th:unless="${param.code}">
+        <label class="govuk-label" for="code">Code</label>
+        <input class="govuk-input" id="code" type="text" name="code" th:value="${service.code}"/>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="name">Name</label>
+        <span class="govuk-hint">
+          Usually sentence case so only first word normally capitalised
+        </span>
+        <input class="govuk-input" id="name" type="text" name="name" th:value="${service.name}"/>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="description">Description</label>
+        <span class="govuk-hint">
+          Optional - if blank just the name will be shown
+        </span>
+        <input class="govuk-input" id="description" type="text" name="description" th:value="${service.description}"/>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="authorisedRoles">Authorised roles</label>
+        <span class="govuk-hint">
+          Comma separated list of roles to display the service for
+        </span>
+        <textarea class="govuk-textarea" id="authorisedRoles" name="authorisedRolesWithNewlines" rows="6"
+                  th:text="${service.authorisedRolesWithNewlines}"></textarea>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="url">URL</label>
+        <input class="govuk-input" id="url" type="text" name="url" th:value="${service.url}"/>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="email">Contact us URL or email</label>
+        <span class="govuk-hint">
+          Optional - if blank then the service won't appear on the contact us page
+        </span>
+        <input class="govuk-input" id="email" type="text" name="email" th:value="${service.email}"/>
+      </div>
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend">Status</legend>
+          <div class="govuk-radios govuk-radios--inline">
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="enabled" name="enabled" type="radio" value="true"
+                     th:checked="${service.enabled}"/>
+              <label class="govuk-label govuk-radios__label" for="enabled">Enabled</label>
+            </div>
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="disabled" name="enabled" type="radio" value="false"
+                     th:checked="!${service.enabled}"/>
+              <label class="govuk-label govuk-radios__label" for="disabled">Disabled</label>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <input type="submit" class="govuk-button" name="service-submit" value="Save">
+  </form>
+</div>
+</body>
+</html>
