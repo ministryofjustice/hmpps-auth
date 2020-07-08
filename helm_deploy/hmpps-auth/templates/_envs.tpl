@@ -166,11 +166,7 @@ env:
       secretKeyRef:
         key: TOKENVERIFICATION_ENDPOINT_URL
         name: {{ template "app.name" . }}
-
   - name: APPLICATION_AUTHENTICATION_MFA_WHITELIST
     value: {{ include "app.joinListWithComma" .Values.mfa_whitelist | quote }}
-
-  - name: APPLICATION_AUTHENTICATION_MFA_ROLES
-    value: "ROLE_MFA,ROLE_MAINTAIN_ACCESS_ROLES,ROLE_MAINTAIN_ACCESS_ROLES_ADMIN,ROLE_MAINTAIN_OAUTH_USERS,ROLE_AUTH_GROUP_MANAGER"
 {{- end }}
 
