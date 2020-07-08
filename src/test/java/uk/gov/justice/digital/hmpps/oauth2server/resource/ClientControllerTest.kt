@@ -1,19 +1,17 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.provider.ClientAlreadyExistsException
@@ -23,10 +21,9 @@ import org.springframework.ui.ExtendedModelMap
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 
-@ExtendWith(MockitoExtension::class)
 class ClientControllerTest {
   private val clientDetailsService: JdbcClientDetailsService = mock()
-  private val telemetryClient: TelemetryClient = com.nhaarman.mockito_kotlin.mock()
+  private val telemetryClient: TelemetryClient = mock()
   private val controller = ClientsController(clientDetailsService, telemetryClient)
   private val authentication = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"), "pass")
 
