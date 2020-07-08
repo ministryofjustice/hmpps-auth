@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface OauthServiceRepository extends CrudRepository<Service, String> {
     List<Service> findAllByEnabledTrueOrderByName();
+
+    List<Service> findAllByOrderByName();
 }

@@ -46,6 +46,11 @@ class OauthServiceRepositoryTest {
     assertThat(repository.findAllByEnabledTrueOrderByName()).extracting<String> { it.name }.contains("Digital Categorisation Service", "Home Detention Curfew", "Allocate a POM Service")
   }
 
+  @Test
+  fun findAllByOrderByName() {
+    assertThat(repository.findAllByOrderByName()).extracting<String> { it.name }.contains("Digital Categorisation Service", "Home Detention Curfew", "Allocate a POM Service")
+  }
+
   private fun transientEntity(): Service {
     return Service("CODE", "NAME", "Description", "SOME_ROLE", "http://some.url", true, "a@b.com")
   }

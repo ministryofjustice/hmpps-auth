@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <title>Services Dashboard</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <h1 class="govuk-heading-l">Services dashboard</h1>
+
+  <div sec:authorize="hasRole('ROLE_OAUTH_ADMIN')">
+    <h2 class="govuk-heading-m">Services</h2>
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th class="govuk-table__header" scope="col">Name</th>
+        <th class="govuk-table__header" scope="col">Description</th>
+        <th class="govuk-table__header" scope="col">Roles</th>
+        <th class="govuk-table__header" scope="col">Url / email</th>
+        <th class="govuk-table__header" scope="col">Enabled</th>
+      </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+      <tr th:each="service : ${serviceDetails}" class="govuk-table__row">
+        <td th:text="${service.name}" class="govuk-table__cell"></td>
+        <td th:text="${service.description}" class="govuk-table__cell"></td>
+        <td th:text="${service.roles}" class="govuk-table__cell"></td>
+        <td class="govuk-table__cell">
+          <span th:text="${service.url}"></span>
+          <span th:text="${' / ' + service.email}" th:if="${service.email}"></span>
+          <span th:text="${'/ no email set'}" th:unless="${service.email}"></span>
+        </td>
+        <td th:text="${service.enabled}" class="govuk-table__cell"></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>
