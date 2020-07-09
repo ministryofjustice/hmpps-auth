@@ -23,7 +23,7 @@
       </tr>
       </thead>
       <tbody class="govuk-table__body">
-      <tr th:each="client : ${clientDetails}" class="govuk-table__row">
+      <tr th:each="client : ${clientDetails}" class="govuk-table__row" th:attr="data-qa=${client.clientId}">
         <td th:text="${client.clientId}" class="govuk-table__cell"></td>
         <td th:text="${client.scope}" class="govuk-table__cell"></td>
         <td th:text="${client.authorizedGrantTypes}" class="govuk-table__cell"></td>
