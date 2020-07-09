@@ -85,7 +85,6 @@ class ServicesSpecification : AbstractAuthSpecification() {
       false 
       Edit
       """)
-        .editService()
 
     // now remove so test is re-runnable
     goTo("/ui/services/NEW/delete")
