@@ -1,17 +1,24 @@
 # HMPPS Oauth2 / SSO Server
 
-Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS DB and New Auth DB.
+Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS database, DELIUS (via community api) and an auth database for storing external users.
+
+Please raise any questions on the server on the #dps_tech_team channel in slack - https://mojdt.slack.com/archives/CK0QLCQ1G.
 
 To get started, either run an instance locally, or point to the dev (t3) instance - https://gateway.t3.nomis-api.hmpps.dsd.io/auth/.
-For t3 you will need client credentials to connect, ask in #dps-tech to get setup.
+For dev (t3) you will need client credentials to connect, ask in #dps_tech_team to get setup.
 
 ### Run locally on the command line
 ```bash
-SPRING_PROFILES_ACTIVE=dev,token-verification ./gradlew bootRun
+SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 ```
 
 The service should start up using the dev profile, perform the flyway migrations on its local HSQLDB and then seed local development data.
-Can then be accessed in a browser on http://localhost:8080/auth/login OR
+Can then be accessed in a browser on http://localhost:8080/auth/login
+
+### Run locally with token verification and delius enabled (for integration tests) on the command line
+```bash
+SPRING_PROFILES_ACTIVE=dev,token-verification,delius ./gradlew bootRun
+```
 
 ### Run integration tests locally against the development instance (in a separate terminal) with:
 ```bash
@@ -58,18 +65,19 @@ include /auth in the requests if calling an api endpoint.`
 
 #### Health
 
-- `/ping`: will respond `pong` to all requests.  This should be used by dependent systems to check connectivity to auth,
+- `/health/ping`: will respond `{"status":"UP"}` to all requests.  This should be used by dependent systems to check connectivity to auth,
 rather than calling the `/health` endpoint.
 - `/health`: provides information about the application health and its dependencies.  This should only be used
 by auth health monitoring (e.g. pager duty) and not other systems who wish to find out the state of auth.
 - `/info`: provides information about the version of deployed application.
 
 ### Profiles:
+- dev - development configuration plus seeding of both databases
 - dev-config - development configuration
 - auth-seed - seed auth database with api clients and sample users
 - nomis-seed - create tables and seed nomis database with sample users
-- dev - development configuration plus seeding of both databases
 - oracle - oracle DB integration with NOMIS DB, specify datasource url, username and password
+- token-verification - turns on token verification, requires the token verification api server running
 
 ### Get a JWT token
 ```bash
