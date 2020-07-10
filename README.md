@@ -78,6 +78,7 @@ by auth health monitoring (e.g. pager duty) and not other systems who wish to fi
 - nomis-seed - create tables and seed nomis database with sample users
 - oracle - oracle DB integration with NOMIS DB, specify datasource url, username and password
 - token-verification - turns on token verification, requires the token verification api server running
+- delius - turns on integration with delius, requires community api server running
 
 ### Get a JWT token
 ```bash
