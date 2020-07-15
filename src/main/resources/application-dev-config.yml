@@ -39,6 +39,3 @@ tokenverification:
     client-id: token-verification-auth-api-client
     client-secret: token-verification-auth-api-client
 
-graceful:
-  shutdown:
-    enabled: false

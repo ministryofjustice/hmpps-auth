@@ -5,7 +5,8 @@ server:
   tomcat:
     remoteip:
       remote-ip-header: x-forwarded-for
-      protocol_header: x-forwarded-proto
+      protocol-header: x-forwarded-proto
+  shutdown: graceful
 
 spring:
   application:
@@ -48,7 +49,10 @@ management:
     web:
       base-path: /
       exposure:
-        include: 'info, health, ping'
+        include: 'info, health'
+  health:
+    probes:
+      enabled: true
   endpoint:
     health:
       cache:
@@ -132,4 +136,3 @@ tokenverification:
 
 logging.uris.exclude.regex: /auth/health|/auth/info|/auth/ping|/auth/swagger.*|/auth/webjars/.*|/auth/v2/api-docs
 
-graceful.shutdown.enabled: true
