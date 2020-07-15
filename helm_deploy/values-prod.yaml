@@ -8,8 +8,8 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
   port: 8080
-  livenessProbePath: /auth/ping
-  readinessProbePath: /auth/ping
+  livenessProbePath: /auth/health/liveness
+  readinessProbePath: /auth/health/readiness
 
 mfa_whitelist:
   office: "217.33.148.210/32"

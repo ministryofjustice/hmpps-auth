@@ -39,11 +39,13 @@ DEBUG_CREATION=${7?No debug indicator specified}
 
 # Set the environment-specific hostname for the oauth2 service
 if [[ "$ENV" == "t3" ]]; then
-  HOST="https://gateway.t3.nomis-api.hmpps.dsd.io"
+  HOST="https://sign-in-dev.hmpps.service.justice.gov.uk"
 elif [[ "$ENV" == "t2" ]]; then
-  HOST="https://gateway.t2.nomis-api.hmpps.dsd.io"
-else
-  HOST="https://gateway.$ENV.nomis-api.service.hmpps.dsd.io"
+  HOST="https://sign-in-stage.hmpps.service.justice.gov.uk"
+elif [[ "$ENV" == "preprod" ]]; then
+  HOST="https://sign-in-preprod.hmpps.service.justice.gov.uk"
+elif [[ "$ENV" == "prod" ]]; then
+  HOST="https://sign-in.hmpps.service.justice.gov.uk"
 fi
 
 # Check whether the file exists and is readable

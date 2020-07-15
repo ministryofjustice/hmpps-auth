@@ -4,7 +4,7 @@ Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS database, DELIUS (
 
 Please raise any questions on the server on the #dps_tech_team channel in slack - https://mojdt.slack.com/archives/CK0QLCQ1G.
 
-To get started, either run an instance locally, or point to the dev (t3) instance - https://gateway.t3.nomis-api.hmpps.dsd.io/auth/.
+To get started, either run an instance locally, or point to the dev (t3) instance - https://sign-in-dev.hmpps.service.justice.gov.uk/auth/.
 For dev (t3) you will need client credentials to connect, ask in #dps_tech_team to get setup.
 
 ### Run locally on the command line
@@ -60,7 +60,7 @@ When running locally with the SPRING_ACTIVE_PROFILES=dev the seeded H2 database 
 #### API Documentation
 
 Is available on a running local server at http://localhost:9090/auth/swagger-ui.html.  Alternatively production
-documentation can be found at https://gateway.prod.nomis-api.service.hmpps.dsd.io/auth/swagger-ui.html.  Don't forget to
+documentation can be found at https://sign-in.hmpps.service.justice.gov.uk/auth/swagger-ui.html.  Don't forget to
 include /auth in the requests if calling an api endpoint.`
 
 #### Health

@@ -22,7 +22,7 @@ RUN addgroup --gid 2000 --system appgroup && \
 
 WORKDIR /app
 
-COPY --from=builder --chown=appuser:appgroup /app/build/libs/oauth2server*.jar /app/app.jar
+COPY --from=builder --chown=appuser:appgroup /app/build/libs/hmpps-auth*.jar /app/app.jar
 COPY --from=builder --chown=appuser:appgroup /app/build/libs/applicationinsights-agent*.jar /app/agent.jar
 COPY --from=builder --chown=appuser:appgroup /app/run.sh /app
 COPY --from=builder --chown=appuser:appgroup /app/AI-Agent.xml /app
