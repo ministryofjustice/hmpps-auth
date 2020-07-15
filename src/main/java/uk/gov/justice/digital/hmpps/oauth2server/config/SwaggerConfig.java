@@ -45,8 +45,8 @@ public class SwaggerConfig {
 
     private ApiInfo apiInfo(final BuildProperties buildProperties) {
         return new ApiInfo(
-                "Nomis OAUTH2 Server",
-                "OAUTH2 Server for accessing the Nomis APIs",
+                "HMPPS Auth",
+                "HMPPS Auth API Documentation",
                 buildProperties.getVersion(), "", contactInfo(), "Open Government Licence v3.0", "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
                 Collections.emptyList());
     }
