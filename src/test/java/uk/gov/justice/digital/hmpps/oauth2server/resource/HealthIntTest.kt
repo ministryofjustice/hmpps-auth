@@ -45,4 +45,20 @@ class HealthIntTest : IntegrationTest() {
         .expectBody().jsonPath("components.authDataSource.details.database").isEqualTo("H2")
         .jsonPath("components.authDataSource.details.validationQuery").isEqualTo("isValid()")
   }
+
+  @Test
+  fun `Health liveness page is accessible`() {
+    webTestClient.get().uri("/auth/health/liveness")
+        .exchange()
+        .expectStatus().isOk
+        .expectBody().jsonPath("status").isEqualTo("UP")
+  }
+
+  @Test
+  fun `Health readiness page is accessible`() {
+    webTestClient.get().uri("/auth/health/readiness")
+        .exchange()
+        .expectStatus().isOk
+        .expectBody().jsonPath("status").isEqualTo("UP")
+  }
 }
