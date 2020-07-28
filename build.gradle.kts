@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "0.4.6"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "0.4.7"
   kotlin("plugin.spring") version "1.3.72"
   kotlin("plugin.jpa") version "1.3.72"
 }
@@ -37,9 +37,9 @@ dependencies {
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1")
   implementation("uk.gov.service.notify:notifications-java-client:3.15.1-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:6.5.1")
+  implementation("org.flywaydb:flyway-core:6.5.2")
   implementation("com.zaxxer:HikariCP:3.4.5")
-  implementation("org.apache.commons:commons-text:1.8")
+  implementation("org.apache.commons:commons-text:1.9")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.2.jre11")
   implementation("io.swagger:swagger-core:1.6.2")
 
@@ -53,7 +53,7 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 
-  testImplementation("org.codehaus.groovy:groovy-all:3.0.4")
+  testImplementation("org.codehaus.groovy:groovy-all:3.0.5")
   testImplementation("org.spockframework:spock-spring:1.3-groovy-2.5")
   testImplementation("org.spockframework:spock-core:1.3-groovy-2.5") {
     exclude(mapOf("group" to "org.codehaus.groovy"))
