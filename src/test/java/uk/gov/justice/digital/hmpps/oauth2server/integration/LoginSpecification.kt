@@ -95,6 +95,19 @@ class LoginSpecification : AbstractAuthSpecification() {
     tokenVerificationApi.verify(deleteRequestedFor(urlPathEqualTo("/token"))
         .withQueryParam("authJwtId", equalTo(oldJwtId)))
   }
+
+  @Test
+  fun `Log in with valid credentials same user name in Auth and Nomis but Auth account disabled`() {
+    val homePage = goTo(loginPage).loginAs("NOMIS_ENABLED_AUTH_DISABLED", "password123456")
+    homePage.assertNameDisplayedCorrectly("Nomis Enabled Auth Disabled")
+  }
+
+  @Test
+  fun `Log in fails with valid credentials same user name in Auth and Nomis but both accounts disabled`() {
+    goTo(loginPage).loginError("NOMIS_LOCKED_AUTH_DISABLED", "password123456")
+        .checkError("Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below.")
+
+  }
 }
 
 @PageUrl("/login")
