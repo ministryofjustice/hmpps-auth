@@ -139,9 +139,8 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A6B', 'AUTH_CREATE_USER_INVALID', null, '2020-01-28 13:23:19.0000000', 'auth_invalid_token@digital.justice.gov.uk', 'email', 'User', 0, 1, 0, 'auth'),
         ('6c76f1fa-3393-11ea-978f-2e728ce88125', 'AUTH_VIDEO_LINK_COURT_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'vlb_court_user@digital.justice.gov.uk', 'VLB Court', 'User', 1, 1, 0, 'auth'),
         ('ADD7D37E2-DBAD-4B98-AF8D-429E822A6DD', 'NOMIS_ENABLED_AUTH_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'nomis_auth_user@digital.justice.gov.uk', 'nomis_enabled', 'Auth Disabled', 1, 0, 0, 'auth'),
-        ('ADD7D37E2-DBAD-4B98-AF8D-429E822A6DE', 'NOMIS_LOCKED_AUTH_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'nomis_auth_user@digital.justice.gov.uk', 'nomis_disabled', 'Auth Disabled', 1, 0, 0, 'auth');
-
--- password 'password1234567' - {bcrypt}$2a$10$DLx2IKLFX8XtP/5XUIHCsuTf1.8heE/kK1EU1a61nTR.1Wd7wPFUG
+        ('ADD7D37E2-DBAD-4B98-AF8D-429E822A6DE', 'NOMIS_LOCKED_AUTH_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'nomis_auth_user@digital.justice.gov.uk', 'nomis_disabled', 'Auth Disabled', 1, 0, 0, 'auth'),
+        ('ADD7D37E2-DBAD-4B98-AF8D-429E822A6DF', 'DELIUS_ENABLED_AUTH_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'nomis_auth_user@digital.justice.gov.uk', 'nomis_disabled', 'Auth Disabled', 1, 0, 0, 'auth');
 
 INSERT INTO users (user_id, username, password, last_logged_in, first_name, last_name, verified, enabled, locked, source)
  VALUES ('7B59A818-BC14-43F3-A1C3-93004E173B2A', 'AUTH_DELETE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2018-01-02 13:23:19.0000000', 'Auth', 'Delete', 1, 0, 0, 'auth'),

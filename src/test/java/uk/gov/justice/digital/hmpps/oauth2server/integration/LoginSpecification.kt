@@ -97,6 +97,12 @@ class LoginSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `Log in with valid credentials same user name in Auth and Delius but Auth account disabled`() {
+    val homePage = goTo(loginPage).loginAs("DELIUS_ENABLED_AUTH_DISABLED", "password")
+    homePage.assertNameDisplayedCorrectly("Delius Smith")
+  }
+
+  @Test
   fun `Log in with valid credentials same user name in Auth and Nomis but Auth account disabled`() {
     val homePage = goTo(loginPage).loginAs("NOMIS_ENABLED_AUTH_DISABLED", "password123456")
     homePage.assertNameDisplayedCorrectly("Nomis Enabled Auth Disabled")
