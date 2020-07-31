@@ -303,7 +303,9 @@ class UserRepositoryTest {
   fun findAll_UserFilter_ByFirstNameLastName() {
     assertThat(repository.findAll(UserFilter.builder().name("a no").build()))
         .extracting<String> { it.username }
-        .containsExactly("AUTH_NO_EMAIL", "AUTH_MFA_NOEMAIL_USER", "AUTH_MFA_NOTEXT_USER", "AUTH_MFA_PREF_TEXT_EMAIL")
+        .containsExactly("AUTH_NO_EMAIL", "AUTH_MFA_NOEMAIL_USER", "NOMIS_ENABLED_AUTH_DISABLED", "NOMIS_LOCKED_AUTH_DISABLED"
+            , "DELIUS_ENABLED_AUTH_DISABLED", "AUTH_MFA_NOTEXT_USER", "AUTH_MFA_PREF_TEXT_EMAIL"
+        )
   }
 
   @Test

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.security;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
@@ -11,6 +12,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
@@ -41,6 +43,29 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
         final var delegatingPasswordEncoder = new DelegatingPasswordEncoder("bcrypt", encoders);
         delegatingPasswordEncoder.setDefaultPasswordEncoderForMatches(oracleSha1PasswordEncoder);
         setPasswordEncoder(delegatingPasswordEncoder);
+        setPreAuthenticationChecks(new PreAuthenticationChecks());
+    }
+
+    private class PreAuthenticationChecks implements UserDetailsChecker {
+        public void check(UserDetails user) {
+            if (!user.isAccountNonLocked()) {
+                throw new LockedException(messages.getMessage(
+                        "AbstractUserDetailsAuthenticationProvider.locked",
+                        "User account is locked"));
+            }
+
+            if (!user.isEnabled()) {
+                throw new NextProviderDisabledException(messages.getMessage(
+                        "AbstractUserDetailsAuthenticationProvider.disabled",
+                        "User is disabled"));
+            }
+
+            if (!user.isAccountNonExpired()) {
+                throw new AccountExpiredException(messages.getMessage(
+                        "AbstractUserDetailsAuthenticationProvider.expired",
+                        "User account has expired"));
+            }
+        }
     }
 
     @Override
@@ -113,6 +138,12 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
 
     public static class MfaUnavailableException extends AccountStatusException {
         public MfaUnavailableException(final String msg) {
+            super(msg);
+        }
+    }
+
+    private class NextProviderDisabledException extends AuthenticationException {
+        public NextProviderDisabledException(final String msg) {
             super(msg);
         }
     }
