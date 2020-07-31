@@ -103,7 +103,7 @@ class ExistingPasswordControllerTest {
 
     @Test
     fun `authenticate failure delius down`() {
-      whenever(authenticationManager.authenticate(any())).thenThrow(DeliusAuthenticationServiceException())
+      whenever(authenticationManager.authenticate(any())).thenThrow(DeliusAuthenticationServiceException("bob"))
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
       val mandv = controller.existingPassword("somepass", "password", token)
       assertThat(mandv.viewName).isEqualTo("user/existingPassword")

@@ -81,7 +81,7 @@ class UserStateAuthenticationFailureHandlerTest {
 
   @Test
   fun onAuthenticationFailure_deliusDown() {
-    handler.onAuthenticationFailure(request, response, DeliusAuthenticationServiceException())
+    handler.onAuthenticationFailure(request, response, DeliusAuthenticationServiceException("joe"))
     verify(redirectStrategy).sendRedirect(request, response, "/login?error=invalid&error=deliusdown")
     verify(telemetryClient).trackEvent("AuthenticateFailure", mapOf("username" to "missinguser", "type" to "invalid"), null)
   }

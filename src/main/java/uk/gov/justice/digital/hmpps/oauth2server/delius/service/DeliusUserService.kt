@@ -49,7 +49,7 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
     } catch (e: Exception) {
       log.warn("Unable to retrieve details from Delius for user {} due to {}", username, e)
       when(e) {
-        is ResourceAccessException, is HttpServerErrorException -> throw DeliusAuthenticationServiceException()
+        is ResourceAccessException, is HttpServerErrorException -> throw DeliusAuthenticationServiceException(username)
         else -> Optional.empty()
       }
     }
