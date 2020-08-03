@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.delius.service
 
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -27,7 +26,7 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
   private val mappings: Map<String, List<String>> = deliusRoleMappings.mappings.mapKeys { it.key.toUpperCase().replace('.', '_') }
 
   companion object {
-    val log: Logger = LoggerFactory.getLogger(this::class.java)
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 
   fun getDeliusUserByUsername(username: String): Optional<DeliusUserPersonDetails> {
@@ -47,7 +46,7 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
       }
       Optional.empty()
     } catch (e: Exception) {
-      log.warn("Unable to retrieve details from Delius for user {} due to {}", username, e)
+      log.warn("Unable to retrieve details from Delius for user {} due to", username, e)
       when(e) {
         is ResourceAccessException, is HttpServerErrorException -> throw DeliusAuthenticationServiceException(username)
         else -> Optional.empty()

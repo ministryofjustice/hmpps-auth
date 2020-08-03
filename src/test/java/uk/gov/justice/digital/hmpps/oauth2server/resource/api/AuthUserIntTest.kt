@@ -90,6 +90,24 @@ class AuthUserIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `Create User endpoint returns failure message if delius server error`() {
+    val username = "delius_server_error"
+    val user = NewUser("bob@bobdigital.justice.gov.uk", "Bob", "Smith")
+
+    webTestClient
+        .put().uri("/auth/api/authuser/$username").bodyValue(user)
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .exchange()
+        .expectStatus().isUnauthorized
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody()
+        .jsonPath("$").value<Map<String, Any>> {
+          assertThat(it).containsExactlyInAnyOrderEntriesOf(
+              mapOf("error" to "unauthorized", "error_description" to "Unable to retrieve information for delius_server_error from Delius.  We are unable to connect to Delius or there is an issue with delius_server_error in Delius"))
+        }
+  }
+
+  @Test
   fun `Auth User endpoint returns user data`() {
     webTestClient
         .get().uri("/auth/api/authuser/AUTH_USER_LAST_LOGIN")
