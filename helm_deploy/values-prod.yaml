@@ -38,3 +38,7 @@ mfa_whitelist:
   dxc_webproxy2: "195.92.38.21/32"
   dxc_webproxy3: "195.92.38.22/32"
   dxc_webproxy4: "195.92.38.23/32"
+  pttp_staff_services_temp_set1-1: "3.8.106.3/32"
+  pttp_staff_services_temp_set1-2: "18.133.9.57/32"
+  pttp_staff_services_preprod: "194.33.251.0/24"
+  pttp_staff_services_prod: "194.33.252.0/24"
