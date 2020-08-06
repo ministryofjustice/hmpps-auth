@@ -66,7 +66,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             // this is a temporary change to enable initial delius integration.
             // in the future tokens will contain either "delius_id", "nomis_id",
             // "oasys_id" etc. depending on the client that requested the token
-            if (userDetails.getAuthSource() == "delius" &&
+            if (userDetails.getAuthSource().equals("delius") &&
                 clientDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ACCESS_DELIUS_ID"))) {
                 additionalInfo.put(DELIUS_ID, userId);
             }
