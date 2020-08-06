@@ -31,6 +31,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     static final String ADD_INFO_USER_NAME = "user_name";
     static final String ADD_INFO_USER_ID = "user_id";
     static final String SUBJECT = "sub";
+    static final String DELIUS_ID = "delius_id";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
 
     @Autowired
@@ -41,7 +42,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
 
     @Override
     public OAuth2AccessToken enhance(final OAuth2AccessToken accessToken, final OAuth2Authentication authentication) {
-        final Map<String, Object> additionalInfo;
+        Map<String, Object> additionalInfo;
 
         if (authentication.isClientOnly()) {
             additionalInfo = addUserFromExternalId(authentication, accessToken);
@@ -53,12 +54,24 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             final var clientDetails = clientsDetailsService.loadClientByClientId(authentication.getOAuth2Request().getClientId());
             // note that DefaultUserAuthenticationConverter will automatically add user_name to the access token, so
             // removal of user_name will only affect the authorisation code response and not the access token field.
-            additionalInfo = filterAdditionalInfo(
-                    Map.of(SUBJECT, userAuthentication.getName(),
-                            ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
-                            ADD_INFO_USER_NAME, userAuthentication.getName(),
-                            ADD_INFO_USER_ID, userId,
-                            ADD_INFO_NAME, userDetails.getName()), clientDetails);
+
+            additionalInfo = new HashMap<>(Map.of(
+                SUBJECT, userAuthentication.getName(),
+                ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
+                ADD_INFO_USER_NAME, userAuthentication.getName(),
+                ADD_INFO_USER_ID, userId,
+                ADD_INFO_NAME, userDetails.getName()
+            ));
+
+            // this is a temporary change to enable initial delius integration.
+            // in the future tokens will contain either "delius_id", "nomis_id",
+            // "oasys_id" etc. depending on the client that requested the token
+            if (userDetails.getAuthSource() == "delius" &&
+                clientDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ACCESS_DELIUS_ID"))) {
+                additionalInfo.put(DELIUS_ID, userId);
+            }
+
+            additionalInfo = filterAdditionalInfo(additionalInfo, clientDetails);
         }
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
