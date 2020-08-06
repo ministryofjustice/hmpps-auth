@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api;
 
+import com.nimbusds.jwt.JWTParser;
 import io.swagger.annotations.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 
 import java.security.Principal;
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -33,10 +36,26 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK", response = UserDetail.class),
             @ApiResponse(code = 401, message = "Unauthorized", response = ErrorDetail.class)})
-    public UserDetail me(@ApiIgnore final Principal principal) {
+    public UserDetail me(@ApiIgnore final Principal principal,
+                         @ApiIgnore final Authentication authentication) {
         final var user = userService.findMasterUserPersonDetails(principal.getName());
+        final var userDetail = user.map(UserDetail::fromPerson).orElse(UserDetail.fromUsername(principal.getName()));
 
-        return user.map(UserDetail::fromPerson).orElse(UserDetail.fromUsername(principal.getName()));
+        // if additional user IDs are present in the access token, include them in the UserDetail object
+        String deliusId = null;
+        final String token = ((OAuth2AuthenticationDetails)authentication.getDetails()).getTokenValue();
+        try {
+            final var tokenClaims = JWTParser.parse(token).getJWTClaimsSet();
+            deliusId = tokenClaims.getStringClaim("delius_id");
+        } catch (ParseException e) {
+            // todo: log a warning
+        }
+
+        if (deliusId != null) {
+            userDetail.setDeliusId(deliusId);
+        }
+
+        return userDetail;
     }
 
     @GetMapping("/api/user/me/roles")

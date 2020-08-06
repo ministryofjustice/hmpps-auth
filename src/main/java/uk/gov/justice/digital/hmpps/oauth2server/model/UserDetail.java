@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Setter;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
@@ -38,6 +39,10 @@ public class UserDetail {
 
     @ApiModelProperty(value = "User Id", notes = "Unique identifier for user, will be UUID for auth users or staff ID for nomis users", example = "231232", position = 7)
     private final String userId;
+
+    @ApiModelProperty(value = "Delius Id", notes = "The Delius username for the user, if one exists", example = "JaneDoeNPS", position = 8)
+    @Setter
+    private String deliusId;
 
     public static UserDetail fromPerson(final UserPersonDetails u) {
         final var authSource = AuthSource.fromNullableString(u.getAuthSource());
