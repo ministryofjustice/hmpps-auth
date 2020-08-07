@@ -41,9 +41,8 @@ class ResetPasswordServiceTest {
   private val userService: UserService = mock()
   private val delegatingUserService: DelegatingUserService = mock()
   private val notificationClient: NotificationClientApi = mock()
-  private val verifyEmailService: VerifyEmailService = mock()
   private val resetPasswordService = ResetPasswordServiceImpl(userRepository, userTokenRepository,
-      userService, delegatingUserService, notificationClient, verifyEmailService,
+      userService, delegatingUserService, notificationClient,
       "resetTemplate", "resetUnavailableTemplate", "resetUnavailableEmailNotFoundTemplate", "reset-confirm")
 
   @Test
@@ -387,8 +386,7 @@ class ResetPasswordServiceTest {
   fun `Nomis User who has not logged into auth can reset password`() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(buildStandardUser("user")))
-    val emailAddresses = mutableListOf("Bob.smith@hmps.gsi.gov.uk", "Bob.smith@justice.gov.uk")
-    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(emailAddresses)
+    whenever(userService.getEmailAddressFromNomis(anyString())).thenReturn(Optional.of("Bob.smith@justice.gov.uk"))
     val optionalLink = resetPasswordService.requestResetPassword("user", "url")
     assertThat(optionalLink).isPresent
   }
@@ -397,7 +395,7 @@ class ResetPasswordServiceTest {
   fun `Nomis User who has not logged reset password request no email`() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(buildStandardUser("user")))
-    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(mutableListOf())
+    whenever(userService.getEmailAddressFromNomis(anyString())).thenReturn(Optional.empty())
     val optional = resetPasswordService.requestResetPassword("user", "url")
     assertThat(optional).isEmpty
   }
@@ -406,8 +404,7 @@ class ResetPasswordServiceTest {
   fun `Nomis User who has not logged reset password request multiple justice emails`() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(buildStandardUser("user")))
-    val emailAddresses = mutableListOf("Bob.smith@hmps.gsi.gov.uk", "Bob.smith@justice.gov.uk", "Bob.smith2@justice.gov.uk")
-    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(emailAddresses)
+    whenever(userService.getEmailAddressFromNomis(anyString())).thenReturn(Optional.empty())
     val optional = resetPasswordService.requestResetPassword("user", "url")
     assertThat(optional).isEmpty
   }
