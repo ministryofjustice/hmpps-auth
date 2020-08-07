@@ -37,7 +37,7 @@ class UserControllerTest {
     setupFindUserCallForNomis()
     val responseEntity = userController.user("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, null, "5"))
+    assertThat(responseEntity.body).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, null, "5", null))
   }
 
   @Test
@@ -46,7 +46,7 @@ class UserControllerTest {
     staffUserAccount.activeCaseLoadId = "somecase"
     val responseEntity = userController.user("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, "somecase", "5"))
+    assertThat(responseEntity.body).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, "somecase", "5", null))
   }
 
   @Test
@@ -54,20 +54,20 @@ class UserControllerTest {
     setupFindUserCallForAuth()
     val responseEntity = userController.user("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body).isEqualTo(UserDetail("principal", true, "Joe Bloggs", AuthSource.auth, null, null, USER_ID))
+    assertThat(responseEntity.body).isEqualTo(UserDetail("principal", true, "Joe Bloggs", AuthSource.auth, null, null, USER_ID, null))
   }
 
   @Test
   fun me_userNotFound() {
     val principal = TestingAuthenticationToken("principal", "credentials")
-    assertThat(userController.me(principal)).isEqualTo(UserDetail.fromUsername("principal"))
+    assertThat(userController.me(principal, principal)).isEqualTo(UserDetail.fromUsername("principal"))
   }
 
   @Test
   fun me_nomisUserNoCaseload() {
     setupFindUserCallForNomis()
     val principal = TestingAuthenticationToken("principal", "credentials")
-    assertThat(userController.me(principal)).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, null, "5"))
+    assertThat(userController.me(principal, principal)).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, null, "5", null))
   }
 
   @Test
@@ -75,14 +75,14 @@ class UserControllerTest {
     val staffUserAccount = setupFindUserCallForNomis()
     staffUserAccount.activeCaseLoadId = "somecase"
     val principal = TestingAuthenticationToken("principal", "credentials")
-    assertThat(userController.me(principal)).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, "somecase", "5"))
+    assertThat(userController.me(principal, principal)).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, "somecase", "5", null))
   }
 
   @Test
   fun me_authUser() {
     setupFindUserCallForAuth()
     val principal = TestingAuthenticationToken("principal", "credentials")
-    assertThat(userController.me(principal)).isEqualTo(UserDetail("principal", true, "Joe Bloggs", AuthSource.auth, null, null, USER_ID))
+    assertThat(userController.me(principal, principal)).isEqualTo(UserDetail("principal", true, "Joe Bloggs", AuthSource.auth, null, null, USER_ID, null))
   }
 
   @Test
