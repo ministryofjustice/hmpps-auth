@@ -40,9 +40,9 @@ public class UserDetail {
     @ApiModelProperty(value = "User Id", notes = "Unique identifier for user, will be UUID for auth users or staff ID for nomis users", example = "231232", position = 7)
     private final String userId;
 
-    @ApiModelProperty(value = "Delius Id", notes = "The Delius username for the user, if one exists", example = "JaneDoeNPS", position = 8)
+    @ApiModelProperty(value = "Delius Username", notes = "The Delius username for the user, if one exists", example = "JaneDoeNPS", position = 8)
     @Setter
-    private String deliusId;
+    private String deliusUsername;
 
     public static UserDetail fromPerson(final UserPersonDetails u) {
         final var authSource = AuthSource.fromNullableString(u.getAuthSource());

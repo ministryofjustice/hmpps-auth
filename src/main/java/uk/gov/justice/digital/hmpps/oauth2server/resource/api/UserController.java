@@ -42,17 +42,17 @@ public class UserController {
         final var userDetail = user.map(UserDetail::fromPerson).orElse(UserDetail.fromUsername(principal.getName()));
 
         // if additional user IDs are present in the access token, include them in the UserDetail object
-        String deliusId = null;
+        String deliusUsername = null;
         final String token = ((OAuth2AuthenticationDetails)authentication.getDetails()).getTokenValue();
         try {
             final var tokenClaims = JWTParser.parse(token).getJWTClaimsSet();
-            deliusId = tokenClaims.getStringClaim("delius_id");
+            deliusUsername = tokenClaims.getStringClaim("delius_username");
         } catch (ParseException e) {
             log.error("failed to parse JWT in /api/user/me", e);
         }
 
-        if (deliusId != null) {
-            userDetail.setDeliusId(deliusId);
+        if (deliusUsername != null) {
+            userDetail.setDeliusUsername(deliusUsername);
         }
 
         return userDetail;

@@ -31,7 +31,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     static final String ADD_INFO_USER_NAME = "user_name";
     static final String ADD_INFO_USER_ID = "user_id";
     static final String SUBJECT = "sub";
-    static final String ADD_INFO_DELIUS_ID = "delius_id";
+    static final String ADD_INFO_DELIUS_USERNAME = "delius_username";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
 
     @Autowired
@@ -55,20 +55,21 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             // note that DefaultUserAuthenticationConverter will automatically add user_name to the access token, so
             // removal of user_name will only affect the authorisation code response and not the access token field.
 
+            final var userName = userAuthentication.getName();
             additionalInfo = new HashMap<>(Map.of(
-                SUBJECT, userAuthentication.getName(),
+                SUBJECT, userName,
                 ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
-                ADD_INFO_USER_NAME, userAuthentication.getName(),
+                ADD_INFO_USER_NAME, userName,
                 ADD_INFO_USER_ID, userId,
                 ADD_INFO_NAME, userDetails.getName()
             ));
 
             // this is a temporary change to enable initial delius integration.
-            // in the future tokens will contain either "delius_id", "nomis_id",
-            // "oasys_id" etc. depending on the client that requested the token
+            // in the future tokens will contain either "delius_username", "nomis_username",
+            // "oasys_username" etc. depending on the client that requested the token
             if (userDetails.getAuthSource().equals("delius") &&
                 clientDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ACCESS_DELIUS_ID"))) {
-                additionalInfo.put(ADD_INFO_DELIUS_ID, userId);
+                additionalInfo.put(ADD_INFO_DELIUS_USERNAME, userName);
             }
 
             additionalInfo = filterAdditionalInfo(additionalInfo, clientDetails);
