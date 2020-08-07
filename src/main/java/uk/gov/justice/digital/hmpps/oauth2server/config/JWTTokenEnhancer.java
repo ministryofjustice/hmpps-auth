@@ -31,7 +31,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     static final String ADD_INFO_USER_NAME = "user_name";
     static final String ADD_INFO_USER_ID = "user_id";
     static final String SUBJECT = "sub";
-    static final String DELIUS_ID = "delius_id";
+    static final String ADD_INFO_DELIUS_ID = "delius_id";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
 
     @Autowired
@@ -68,7 +68,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             // "oasys_id" etc. depending on the client that requested the token
             if (userDetails.getAuthSource().equals("delius") &&
                 clientDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ACCESS_DELIUS_ID"))) {
-                additionalInfo.put(DELIUS_ID, userId);
+                additionalInfo.put(ADD_INFO_DELIUS_ID, userId);
             }
 
             additionalInfo = filterAdditionalInfo(additionalInfo, clientDetails);

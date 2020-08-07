@@ -48,7 +48,7 @@ public class UserController {
             final var tokenClaims = JWTParser.parse(token).getJWTClaimsSet();
             deliusId = tokenClaims.getStringClaim("delius_id");
         } catch (ParseException e) {
-            // todo: log a warning
+            log.error("failed to parse JWT in /api/user/me", e);
         }
 
         if (deliusId != null) {
