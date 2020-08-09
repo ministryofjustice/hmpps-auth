@@ -100,7 +100,7 @@ class UserControllerTest {
 
   @Test
   fun userEmail_found() {
-    whenever(userService.getOrCreateUserWithEmail(anyString())).thenReturn(Optional.of(User.builder().username("JOE").verified(true).email("someemail").build()))
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(User.builder().username("JOE").verified(true).email("someemail").build()))
     val responseEntity = userController.getUserEmail("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(200)
     assertThat(responseEntity.body).isEqualTo(EmailAddress("JOE", "someemail"))
@@ -108,7 +108,7 @@ class UserControllerTest {
 
   @Test
   fun userEmail_notFound() {
-    whenever(userService.getOrCreateUserWithEmail(anyString())).thenReturn(Optional.empty())
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.empty())
     val responseEntity = userController.getUserEmail("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(404)
     assertThat(responseEntity.body).isEqualTo(ErrorDetail("Not Found", "Account for username joe not found", "username"))
@@ -116,7 +116,7 @@ class UserControllerTest {
 
   @Test
   fun userEmail_notVerified() {
-    whenever(userService.getOrCreateUserWithEmail(anyString())).thenReturn(Optional.of(User.of("JOE")))
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(User.of("JOE")))
     val responseEntity = userController.getUserEmail("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
     assertThat(responseEntity.body).isNull()

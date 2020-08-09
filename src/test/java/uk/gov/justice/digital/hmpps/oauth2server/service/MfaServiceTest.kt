@@ -157,7 +157,7 @@ class MfaServiceTest {
   @Test
   fun `createTokenAndSendMfaCode success`() {
     val user = User.builder().username("bob").person(Person("first", "last")).email("email").verified(true).build()
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
@@ -168,7 +168,7 @@ class MfaServiceTest {
   @Test
   fun `createTokenAndSendMfaCode by Email check email params`() {
     val user = User.builder().username("bob").person(Person("first", "last")).email("email").verified(true).build()
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
@@ -181,7 +181,7 @@ class MfaServiceTest {
   @Test
   fun `createTokenAndSendMfaCode by text check text params`() {
     val user = User.builder().username("bob").mobile("07700900321").mobileVerified(true).mfaPreference(MfaPreferenceType.TEXT).build()
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
@@ -200,7 +200,7 @@ class MfaServiceTest {
         .contacts(setOf(Contact(MOBILE_PHONE, "07700900321", false), (Contact(SECONDARY_EMAIL, "secondaryEmail", true))))
         .mfaPreference(MfaPreferenceType.SECONDARY_EMAIL)
         .build()
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
@@ -219,7 +219,7 @@ class MfaServiceTest {
         .contacts(setOf(Contact(MOBILE_PHONE, "07700900321", true), (Contact(SECONDARY_EMAIL, "secondaryEmail", true))))
         .mfaPreference(MfaPreferenceType.EMAIL)
         .build()
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
@@ -238,7 +238,7 @@ class MfaServiceTest {
         .contacts(setOf(Contact(MOBILE_PHONE, "07700900321", false), (Contact(SECONDARY_EMAIL, "secondaryEmail", true))))
         .mfaPreference(MfaPreferenceType.TEXT)
         .build()
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
@@ -257,7 +257,7 @@ class MfaServiceTest {
         .contacts(setOf(Contact(MOBILE_PHONE, "07700900321", true), (Contact(SECONDARY_EMAIL, "secondaryEmail", false))))
         .mfaPreference(MfaPreferenceType.SECONDARY_EMAIL)
         .build()
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
@@ -270,7 +270,7 @@ class MfaServiceTest {
   @Test
   fun `createTokenAndSendMfaCode no valid preference`() {
     val user = User.builder().username("bob").build()
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     whenever(tokenService.createToken(eq(TokenType.MFA), anyString())).thenReturn("sometoken")
     whenever(tokenService.createToken(eq(TokenType.MFA_CODE), anyString())).thenReturn("somecode")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))

@@ -124,6 +124,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
         }
         return userService.getEmailAddressFromNomis(user.getUsername()).map(e -> {
             user.setEmail(e);
+            user.setVerified(true);
             userRepository.save(user);
             return user;
         });

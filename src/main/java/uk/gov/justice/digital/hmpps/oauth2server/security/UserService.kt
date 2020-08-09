@@ -45,19 +45,15 @@ class UserService(private val nomisUserService: NomisUserService,
             .orElseThrow { UsernameNotFoundException("User with username $username not found") }
 
     @Transactional(transactionManager = "authTransactionManager")
-    fun getOrCreateUser(username: String): User =
-            findUser(username).orElseGet {
-                val userPersonDetails = findMasterUserPersonDetails(username).orElseThrow()
-                userRepository.save(userPersonDetails.toUser())
-            }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    fun getOrCreateUserWithEmail(username: String): Optional<User> =
+    fun getOrCreateUser(username: String): Optional<User> =
             findUser(username).or {
                 findMasterUserPersonDetails(username).map {
                     val user = it.toUser()
                     if (AuthSource.valueOf(user.authSource) == AuthSource.nomis) {
-                        getEmailAddressFromNomis(username).ifPresent { email -> user.email = email }
+                        getEmailAddressFromNomis(username).ifPresent {
+                            email -> user.email = email
+                            user.isVerified = true
+                        }
                     }
                     userRepository.save(user)
                 }

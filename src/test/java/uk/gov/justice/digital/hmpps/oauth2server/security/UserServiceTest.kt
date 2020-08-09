@@ -59,28 +59,6 @@ class UserServiceTest {
     }
 
     @Nested
-    inner class GetOrCreateUser {
-
-
-        @Test
-        fun `getOrCreateUser user exists already`() {
-            val user = User.of("joe")
-            whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-            val newUser = userService.getOrCreateUser("bob")
-            assertThat(newUser).isSameAs(user)
-        }
-
-        @Test
-        fun `getOrCreateUser no user already`() {
-            val user = User.of("joe")
-            whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(user))
-            whenever(userRepository.save<User>(any())).thenReturn(user)
-            val newUser = userService.getOrCreateUser("bob")
-            assertThat(newUser).isSameAs(user)
-        }
-    }
-
-    @Nested
     inner class GetEmailAddressFromNomis {
         @Test
         fun `getEmailAddressFromNomis no email addresses`() {
@@ -124,7 +102,7 @@ class UserServiceTest {
         fun `getOrCreateUserWithEmail user exists already`() {
             val user = User.of("joe")
             whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-            val newUserOpt = userService.getOrCreateUserWithEmail("joe")
+            val newUserOpt = userService.getOrCreateUser("joe")
             // can't compare directly User.equals only compares id!
 
             assertThat(newUserOpt).hasValueSatisfying {
@@ -140,7 +118,7 @@ class UserServiceTest {
             whenever(verifyEmailService.getExistingEmailAddresses(any())).thenReturn(listOf())
             whenever(userRepository.save<User>(any())).thenAnswer { it.getArguments()[0] }
 
-            val newUser = userService.getOrCreateUserWithEmail("joe")
+            val newUser = userService.getOrCreateUser("joe")
             assertThat(newUser).hasValueSatisfying {
                 assertThat(it.username).isEqualTo("joe")
             }
@@ -154,10 +132,12 @@ class UserServiceTest {
             whenever(verifyEmailService.getExistingEmailAddresses(any())).thenReturn(listOf("a@b.justice.gov.uk"))
             whenever(userRepository.save<User>(any())).thenAnswer { it.getArguments()[0] }
 
-            val newUser = userService.getOrCreateUserWithEmail("joe")
+            val newUser = userService.getOrCreateUser("joe")
             assertThat(newUser).hasValueSatisfying {
                 assertThat(it.username).isEqualTo("joe")
                 assertThat(it.email).isEqualTo("a@b.justice.gov.uk")
+                assertThat(it.isVerified).isTrue()
+                assertThat(it.authSource).isEqualTo(AuthSource.nomis.name)
             }
         }
     }

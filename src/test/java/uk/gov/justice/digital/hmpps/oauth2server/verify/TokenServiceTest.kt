@@ -101,7 +101,7 @@ class TokenServiceTest {
   @Test
   fun createToken() {
     val user = User.of("joe")
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     val token = tokenService.createToken(RESET, "token")
     assertThat(token).isNotNull()
     assertThat(user.tokens.map { it.token }).contains(token)
@@ -110,7 +110,7 @@ class TokenServiceTest {
   @Test
   fun `createToken check telemetry`() {
     val user = User.of("joe")
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(user)
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     tokenService.createToken(RESET, "token")
     verify(telemetryClient).trackEvent(eq("ResetPasswordRequest"), check {
       assertThat(it).containsOnly(entry("username", "token"))

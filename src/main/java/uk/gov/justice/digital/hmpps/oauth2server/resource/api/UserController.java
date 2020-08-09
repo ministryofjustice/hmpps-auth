@@ -74,7 +74,7 @@ public class UserController {
             @ApiResponse(code = 404, message = "User not found.  The user doesn't exist in auth so could have never logged in", response = ErrorDetail.class)})
     public ResponseEntity<?> getUserEmail(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
         return userService
-                .getOrCreateUserWithEmail(username)
+                .getOrCreateUser(username)
                 .map(email -> email.isVerified() ? ResponseEntity.ok(EmailAddress.fromUser(email)) : ResponseEntity.noContent().build())
                 .orElseGet(() -> notFoundResponse(username));
     }
