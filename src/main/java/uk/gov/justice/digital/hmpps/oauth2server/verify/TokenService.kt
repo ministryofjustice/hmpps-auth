@@ -56,7 +56,7 @@ class TokenService(private val userTokenRepository: UserTokenRepository,
   @Transactional(transactionManager = "authTransactionManager")
   fun createToken(tokenType: TokenType, username: String): String {
     log.info("Requesting {} for {}", tokenType.description, username)
-    val user = userService.getOrCreateUser(username)
+    val user = userService.getOrCreateUser(username).orElseThrow()
     val userToken = user.createToken(tokenType)
     telemetryClient.trackEvent("${tokenType.description}Request",
         mapOf("username" to username), null)

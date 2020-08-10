@@ -53,7 +53,7 @@ class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelis
   @Throws(MfaUnavailableException::class)
   fun createTokenAndSendMfaCode(username: String): MfaData {
     log.info("Creating token and sending email for {}", username)
-    val user = userService.getOrCreateUser(username)
+    val user = userService.getOrCreateUser(username).orElseThrow()
 
     val token = tokenService.createToken(TokenType.MFA, username)
     val code = tokenService.createToken(TokenType.MFA_CODE, username)

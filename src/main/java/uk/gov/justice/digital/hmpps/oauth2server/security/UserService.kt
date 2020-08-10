@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.util.*
 
 @Service
@@ -18,7 +19,8 @@ import java.util.*
 class UserService(private val nomisUserService: NomisUserService,
                   private val authUserService: AuthUserService,
                   private val deliusUserService: DeliusUserService,
-                  private val userRepository: UserRepository) {
+                  private val userRepository: UserRepository,
+                  private val verifyEmailService: VerifyEmailService) {
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -42,11 +44,27 @@ class UserService(private val nomisUserService: NomisUserService,
       .orElseThrow { UsernameNotFoundException("User with username $username not found") }
 
   @Transactional(transactionManager = "authTransactionManager")
-  fun getOrCreateUser(username: String): User =
-      findUser(username).orElseGet {
-        val userPersonDetails = findMasterUserPersonDetails(username).orElseThrow()
-        userRepository.save(userPersonDetails.toUser())
+  fun getOrCreateUser(username: String): Optional<User> =
+      findUser(username).or {
+        findMasterUserPersonDetails(username).map {
+          val user = it.toUser()
+          if (AuthSource.valueOf(user.authSource) == AuthSource.nomis) {
+            getEmailAddressFromNomis(username).ifPresent { email ->
+              user.email = email
+              user.isVerified = true
+            }
+          }
+          userRepository.save(user)
+        }
       }
+
+  fun getEmailAddressFromNomis(username: String): Optional<String> {
+    val emailAddresses = verifyEmailService.getExistingEmailAddresses(username)
+    val justiceEmail = emailAddresses
+        .filter { email -> email.endsWith("justice.gov.uk") }
+        .toList()
+    return if (justiceEmail.size == 1) Optional.of(justiceEmail[0]) else Optional.empty()
+  }
 
   fun hasVerifiedMfaMethod(userDetails: UserPersonDetails): Boolean {
     val user = findUser(userDetails.username).orElseGet { userDetails.toUser() }

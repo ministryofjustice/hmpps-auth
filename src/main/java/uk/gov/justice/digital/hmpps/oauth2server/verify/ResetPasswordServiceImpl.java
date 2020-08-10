@@ -23,7 +23,6 @@ import uk.gov.service.notify.NotificationClientException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis;
 import static uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.valueOf;
@@ -38,7 +37,6 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
     private final UserService userService;
     private final DelegatingUserService delegatingUserService;
     private final NotificationClientApi notificationClient;
-    private final VerifyEmailService verifyEmailService;
     private final String resetTemplateId;
     private final String resetUnavailableTemplateId;
     private final String resetUnavailableEmailNotFoundTemplateId;
@@ -49,7 +47,6 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
                                     final UserService userService,
                                     final DelegatingUserService delegatingUserService,
                                     final NotificationClientApi notificationClient,
-                                    final VerifyEmailService verifyEmailService,
                                     @Value("${application.notify.reset.template}") final String resetTemplateId,
                                     @Value("${application.notify.reset-unavailable.template}") final String resetUnavailableTemplateId,
                                     @Value("${application.notify.reset-unavailable-email-not-found.template}") final String resetUnavailableEmailNotFoundTemplateId,
@@ -59,7 +56,6 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
         this.userService = userService;
         this.delegatingUserService = delegatingUserService;
         this.notificationClient = notificationClient;
-        this.verifyEmailService = verifyEmailService;
         this.resetTemplateId = resetTemplateId;
         this.resetUnavailableTemplateId = resetUnavailableTemplateId;
         this.resetUnavailableEmailNotFoundTemplateId = resetUnavailableEmailNotFoundTemplateId;
@@ -126,17 +122,12 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
         if (!passwordAllowedToBeReset(user, userPersonDetails)) {
             return Optional.empty();
         }
-        return getEmailAddressFromNomis(user.getUsername()).map(e -> {
+        return userService.getEmailAddressFromNomis(user.getUsername()).map(e -> {
             user.setEmail(e);
+            user.setVerified(true);
             userRepository.save(user);
             return user;
         });
-    }
-
-    private Optional<String> getEmailAddressFromNomis(final String username) {
-        final var emailAddresses = verifyEmailService.getExistingEmailAddresses(username);
-        final var justiceEmail = emailAddresses.stream().filter(email -> email.endsWith("justice.gov.uk")).collect(Collectors.toList());
-        return justiceEmail.size() == 1 ? Optional.of(justiceEmail.get(0)) : Optional.empty();
     }
 
     private TemplateAndParameters getTemplateAndParameters(final String url, final boolean multipleMatchesAndCanBeReset, final User user) {
