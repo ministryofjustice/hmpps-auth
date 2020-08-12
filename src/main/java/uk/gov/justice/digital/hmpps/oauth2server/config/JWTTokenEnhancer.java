@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
+import uk.gov.justice.digital.hmpps.oauth2server.service.UserMappingService;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,9 +41,12 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     @Autowired
     private ExternalIdAuthenticationHelper externalIdAuthenticationHelper;
 
+    @Autowired
+    private UserMappingService userMappingService;
+
     @Override
     public OAuth2AccessToken enhance(final OAuth2AccessToken accessToken, final OAuth2Authentication authentication) {
-        Map<String, Object> additionalInfo;
+        final Map<String, Object> additionalInfo;
 
         if (authentication.isClientOnly()) {
             additionalInfo = addUserFromExternalId(authentication, accessToken);
@@ -55,24 +59,26 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             // note that DefaultUserAuthenticationConverter will automatically add user_name to the access token, so
             // removal of user_name will only affect the authorisation code response and not the access token field.
 
-            final var userName = userAuthentication.getName();
-            additionalInfo = new HashMap<>(Map.of(
-                SUBJECT, userName,
-                ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
-                ADD_INFO_USER_NAME, userName,
-                ADD_INFO_USER_ID, userId,
-                ADD_INFO_NAME, userDetails.getName()
-            ));
+            // please ignore all style violations, use of crappy constructs etc. below, this is just POC at this point
+            var authSource = StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none");
+            var userName = userAuthentication.getName();
 
-            // this is a temporary change to enable initial delius integration.
-            // in the future tokens will contain either "delius_username", "nomis_username",
-            // "oasys_username" etc. depending on the client that requested the token
-            if (userDetails.getAuthSource().equals("delius") &&
-                clientDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ACCESS_DELIUS_ID"))) {
-                additionalInfo.put(ADD_INFO_DELIUS_USERNAME, userName);
+            if (authentication.getOAuth2Request().getScope().contains("delius")) {
+                // client has been granted 'delius' scope; adjust the user info if possible
+                final var deliusAuthSource = "delius";
+                final var deliusUsername = userMappingService.map(userName, authSource, deliusAuthSource);
+                if (deliusUsername != userName) {
+                    userName = deliusUsername;
+                    authSource = deliusAuthSource;
+                }
             }
 
-            additionalInfo = filterAdditionalInfo(additionalInfo, clientDetails);
+            additionalInfo = filterAdditionalInfo(
+                Map.of(SUBJECT, userName,
+                       ADD_INFO_AUTH_SOURCE, authSource,
+                       ADD_INFO_USER_NAME, userName,
+                       ADD_INFO_USER_ID, userId,
+                       ADD_INFO_NAME, userDetails.getName()), clientDetails);
         }
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
