@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 
 import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
@@ -13,6 +14,7 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.service.UserMappingService;
+import uk.gov.justice.digital.hmpps.oauth2server.service.UserMappingException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import java.util.stream.Stream;
 import static java.util.function.Predicate.not;
 
 @SuppressWarnings("deprecation")
+@Slf4j
 public class JWTTokenEnhancer implements TokenEnhancer {
     private static final String ADD_INFO_AUTH_SOURCE = "auth_source";
     static final String ADD_INFO_NAME = "name";
@@ -53,23 +56,24 @@ public class JWTTokenEnhancer implements TokenEnhancer {
         } else {
             final var userAuthentication = authentication.getUserAuthentication();
             final var userDetails = (UserPersonDetails) userAuthentication.getPrincipal();
-            final var userId = StringUtils.defaultString(userDetails.getUserId(), userAuthentication.getName());
 
             final var clientDetails = clientsDetailsService.loadClientByClientId(authentication.getOAuth2Request().getClientId());
             // note that DefaultUserAuthenticationConverter will automatically add user_name to the access token, so
             // removal of user_name will only affect the authorisation code response and not the access token field.
 
-            // please ignore all style violations, use of crappy constructs etc. below, this is just POC at this point
             var authSource = StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none");
             var userName = userAuthentication.getName();
+            var userId = StringUtils.defaultString(userDetails.getUserId(), userAuthentication.getName());
 
             if (authentication.getOAuth2Request().getScope().contains("delius")) {
                 // client has been granted 'delius' scope; adjust the user info if possible
-                final var deliusAuthSource = "delius";
-                final var deliusUsername = userMappingService.map(userName, authSource, deliusAuthSource);
-                if (deliusUsername != userName) {
-                    userName = deliusUsername;
-                    authSource = deliusAuthSource;
+                try {
+                    final var deliusUser = userMappingService.map(userName, authSource, "delius");
+                    authSource = deliusUser.getAuthSource();
+                    userName = deliusUser.getUsername();
+                    userId = deliusUser.getUserId();
+                } catch(UserMappingException e) {
+                    log.error("user mapping failed", e);
                 }
             }
 
