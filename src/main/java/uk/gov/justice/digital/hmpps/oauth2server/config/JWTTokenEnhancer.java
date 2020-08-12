@@ -35,7 +35,6 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     static final String ADD_INFO_USER_NAME = "user_name";
     static final String ADD_INFO_USER_ID = "user_id";
     static final String SUBJECT = "sub";
-    static final String ADD_INFO_DELIUS_USERNAME = "delius_username";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
 
     @Autowired
