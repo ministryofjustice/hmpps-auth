@@ -60,7 +60,7 @@ internal class TrackingTokenServicesTest {
     ReflectionTestUtils.setField(tokenEnhancer, "userContextService", userContextService)
     tokenServices.setTokenEnhancer(tokenEnhancer)
     tokenServicesVerificationDisabled.setTokenEnhancer(tokenEnhancer)
-
+    whenever(userContextService.resolveUser(any(), any())).thenReturn(USER_DETAILS);
     whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
   }
 
