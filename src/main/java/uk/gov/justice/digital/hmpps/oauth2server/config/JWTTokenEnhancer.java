@@ -60,7 +60,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             // removal of user_name will only affect the authorisation code response and not the access token field.
             additionalInfo = filterAdditionalInfo(
                 Map.of(SUBJECT, userDetails.getUsername(),
-                       ADD_INFO_AUTH_SOURCE, userDetails.getAuthSource(),
+                       ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
                        ADD_INFO_USER_NAME, userDetails.getUsername(),
                        ADD_INFO_USER_ID, userDetails.getUserId(),
                        ADD_INFO_NAME, userDetails.getName()),
