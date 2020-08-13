@@ -22,7 +22,7 @@ class UserContextService {
     return loginUser
   }
 
-  fun map(username: String, from: String, to: String): UserPersonDetails? = when (from) {
+  private fun map(username: String, from: String, to: String): UserPersonDetails? = when (from) {
     to -> null
     "azure" -> mapFromAzure(username, to)
     else -> throw UserMappingException("auth source '${from}' not supported")
