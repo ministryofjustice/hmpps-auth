@@ -12,18 +12,18 @@ class UserMappingException(message: String): Exception(message)
 
 @Service
 class UserMappingService {
-    companion object {
-        private val log = LoggerFactory.getLogger(UserMappingService::class.java)
-    }
+  companion object {
+    private val log = LoggerFactory.getLogger(UserMappingService::class.java)
+  }
 
-    @Throws(UserMappingException::class)
-    fun map(username: String, from: String, to: String): UserPersonDetails? = when (from) {
-        "azure" -> mapFromAzure(username, to)
-        else -> throw UserMappingException("auth source '${from}' not supported")
-    }
+  @Throws(UserMappingException::class)
+  fun map(username: String, from: String, to: String): UserPersonDetails? = when (from) {
+    to -> null
+    "azure" -> mapFromAzure(username, to)
+    else -> throw UserMappingException("auth source '${from}' not supported")
+  }
 
-    private fun mapFromAzure(username: String, to: String): UserPersonDetails? = when (to) {
-        else -> throw UserMappingException("auth -> '${to}' mapping not supported")
-
-    }
+  private fun mapFromAzure(username: String, to: String): UserPersonDetails? = when (to) {
+    else -> throw UserMappingException("auth -> '${to}' mapping not supported")
+  }
 }

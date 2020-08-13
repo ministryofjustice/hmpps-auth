@@ -68,9 +68,11 @@ public class JWTTokenEnhancer implements TokenEnhancer {
                 // client has been granted 'delius' scope; adjust the user info if possible
                 try {
                     final var deliusUser = userMappingService.map(userName, authSource, "delius");
-                    authSource = deliusUser.getAuthSource();
-                    userName = deliusUser.getUsername();
-                    userId = deliusUser.getUserId();
+                    if (deliusUser != null) {
+                        authSource = deliusUser.getAuthSource();
+                        userName = deliusUser.getUsername();
+                        userId = deliusUser.getUserId();
+                    }
                 } catch(UserMappingException e) {
                     log.error("user mapping failed", e);
                 }
