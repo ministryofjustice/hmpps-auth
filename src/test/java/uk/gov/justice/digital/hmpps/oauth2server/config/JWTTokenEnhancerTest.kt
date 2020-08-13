@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
+import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 import java.util.*
 
 internal class JWTTokenEnhancerTest {
@@ -30,11 +31,13 @@ internal class JWTTokenEnhancerTest {
   private val clientDetailsService: JdbcClientDetailsService = mock()
   private val externalIdAuthenticationHelper: ExternalIdAuthenticationHelper = mock()
   private val jwtTokenEnhancer = JWTTokenEnhancer()
+  private val userContextService: UserContextService = mock()
 
   @BeforeEach
   internal fun setUp() {
     ReflectionTestUtils.setField(jwtTokenEnhancer, "clientsDetailsService", clientDetailsService)
     ReflectionTestUtils.setField(jwtTokenEnhancer, "externalIdAuthenticationHelper", externalIdAuthenticationHelper)
+    ReflectionTestUtils.setField(jwtTokenEnhancer, "userContextService", userContextService)
   }
 
   @Test
