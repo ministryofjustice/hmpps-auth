@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 
-import org.apache.commons.lang3.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
@@ -59,12 +59,12 @@ public class JWTTokenEnhancer implements TokenEnhancer {
             // note that DefaultUserAuthenticationConverter will automatically add user_name to the access token, so
             // removal of user_name will only affect the authorisation code response and not the access token field.
             additionalInfo = filterAdditionalInfo(
-                Map.of(SUBJECT, userDetails.getUsername(),
-                       ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
-                       ADD_INFO_USER_NAME, userDetails.getUsername(),
-                       ADD_INFO_USER_ID, userDetails.getUserId(),
-                       ADD_INFO_NAME, userDetails.getName()),
-                clientDetails);
+                    Map.of(SUBJECT, userDetails.getUsername(),
+                            ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
+                            ADD_INFO_USER_NAME, userDetails.getUsername(),
+                            ADD_INFO_USER_ID, userDetails.getUserId(),
+                            ADD_INFO_NAME, userDetails.getName()),
+                    clientDetails);
         }
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
@@ -72,7 +72,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     }
 
     private UserPersonDetails getUser(final OAuth2Authentication authentication) {
-        final var loginUser = (UserPersonDetails)authentication.getUserAuthentication().getPrincipal();
+        final var loginUser = (UserPersonDetails) authentication.getUserAuthentication().getPrincipal();
         try {
             final var user = userContextService.getUser(loginUser, authentication.getOAuth2Request().getScope());
             if (user != null) {
