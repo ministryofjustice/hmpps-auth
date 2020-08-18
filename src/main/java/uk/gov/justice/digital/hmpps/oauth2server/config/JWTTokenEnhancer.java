@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,6 +13,8 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
+import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService;
+import uk.gov.justice.digital.hmpps.oauth2server.service.UserMappingException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +28,7 @@ import java.util.stream.Stream;
 import static java.util.function.Predicate.not;
 
 @SuppressWarnings("deprecation")
+@Slf4j
 public class JWTTokenEnhancer implements TokenEnhancer {
     private static final String ADD_INFO_AUTH_SOURCE = "auth_source";
     static final String ADD_INFO_NAME = "name";
@@ -39,6 +43,9 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     @Autowired
     private ExternalIdAuthenticationHelper externalIdAuthenticationHelper;
 
+    @Autowired
+    private UserContextService userContextService;
+
     @Override
     public OAuth2AccessToken enhance(final OAuth2AccessToken accessToken, final OAuth2Authentication authentication) {
         final Map<String, Object> additionalInfo;
@@ -46,23 +53,33 @@ public class JWTTokenEnhancer implements TokenEnhancer {
         if (authentication.isClientOnly()) {
             additionalInfo = addUserFromExternalId(authentication, accessToken);
         } else {
-            final var userAuthentication = authentication.getUserAuthentication();
-            final var userDetails = (UserPersonDetails) userAuthentication.getPrincipal();
-            final var userId = StringUtils.defaultString(userDetails.getUserId(), userAuthentication.getName());
-
             final var clientDetails = clientsDetailsService.loadClientByClientId(authentication.getOAuth2Request().getClientId());
+            final var userDetails = getUser(authentication);
+
             // note that DefaultUserAuthenticationConverter will automatically add user_name to the access token, so
             // removal of user_name will only affect the authorisation code response and not the access token field.
             additionalInfo = filterAdditionalInfo(
-                    Map.of(SUBJECT, userAuthentication.getName(),
+                    Map.of(SUBJECT, userDetails.getUsername(),
                             ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
-                            ADD_INFO_USER_NAME, userAuthentication.getName(),
-                            ADD_INFO_USER_ID, userId,
-                            ADD_INFO_NAME, userDetails.getName()), clientDetails);
+                            ADD_INFO_USER_NAME, userDetails.getUsername(),
+                            ADD_INFO_USER_ID, userDetails.getUserId(),
+                            ADD_INFO_NAME, userDetails.getName()),
+                    clientDetails);
         }
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
         return accessToken;
+    }
+
+    private UserPersonDetails getUser(final OAuth2Authentication authentication) {
+        final var loginUser = (UserPersonDetails) authentication.getUserAuthentication().getPrincipal();
+        try {
+            return userContextService.resolveUser(loginUser, authentication.getOAuth2Request().getScope());
+        } catch (UserMappingException e) {
+            log.error("user mapping failed", e);
+        }
+
+        return loginUser;
     }
 
     private Map<String, Object> filterAdditionalInfo(final Map<String, Object> info, final ClientDetails clientDetails) {

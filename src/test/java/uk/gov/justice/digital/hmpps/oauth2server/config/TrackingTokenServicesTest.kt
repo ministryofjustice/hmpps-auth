@@ -31,6 +31,7 @@ import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
+import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
 
@@ -43,6 +44,8 @@ internal class TrackingTokenServicesTest {
   private val tokenVerificationClientCredentials = TokenVerificationClientCredentials()
   private val tokenServices = TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, true)
   private val tokenServicesVerificationDisabled = TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, false)
+  private val userContextService: UserContextService = mock()
+
 
   @BeforeEach
   fun setUp() {
@@ -54,9 +57,10 @@ internal class TrackingTokenServicesTest {
     val tokenEnhancer = JWTTokenEnhancer()
     ReflectionTestUtils.setField(tokenEnhancer, "externalIdAuthenticationHelper", externalIdAuthenticationHelper)
     ReflectionTestUtils.setField(tokenEnhancer, "clientsDetailsService", clientDetailsService)
+    ReflectionTestUtils.setField(tokenEnhancer, "userContextService", userContextService)
     tokenServices.setTokenEnhancer(tokenEnhancer)
     tokenServicesVerificationDisabled.setTokenEnhancer(tokenEnhancer)
-
+    whenever(userContextService.resolveUser(any(), any())).thenReturn(USER_DETAILS);
     whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
   }
 
