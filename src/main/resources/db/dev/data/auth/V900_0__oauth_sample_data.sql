@@ -35,7 +35,9 @@ VALUES ('omicuser','1200','{"jwtFields":"-user_name"}','SYSTEM_READ_ONLY','passw
        ('token-verification-auth-api-client','3600', '{}','ROLE_AUTH_TOKEN_VERIFICATION','client_credentials', null,'{bcrypt}$2a$10$hQPvQMNfbh2vhjTjDWHpoeN.iRFRddJJug6qtBkWzQ8uPEc53isZy', null, null,'read', null),
        ('v1-client','1200','{}','ROLE_NOMIS_API_V1,ROLE_BOOKING_CREATE,ROLE_BOOKING_RECALL,ROLE_GLOBAL_SEARCH','client_credentials',null,'$2a$10$r12DB/sqXduodnjtAY/ykO0S3KCySdVW4zhG3jlIRaIsfVkFOEds2',null,null,'read,write,proxy-user',null),
        ('probation-offender-search-indexer-client','3600','{}','ROLE_PROBATION_INDEX,ROLE_COMMUNITY','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read',null),
-       ('delius-login-client','28800','{}','ROLE_ACCESS_DELIUS_ID,ROLE_COMMUNITY','authorization_code,refresh_token','read,delius','$2a$10$RYwV0QebHAovVXWPySb2lefr3HTDntGu1euXHDJc3zwh2NsqeNGHG','43200',null,'read,delius','http://localhost:5000/login/callback');
+       ('delius-login-client','28800','{}','ROLE_ACCESS_DELIUS_ID,ROLE_COMMUNITY','authorization_code,refresh_token','read,delius','$2a$10$RYwV0QebHAovVXWPySb2lefr3HTDntGu1euXHDJc3zwh2NsqeNGHG','43200',null,'read,delius','http://localhost:5000/login/callback'),
+       ('hmpps-ppm-client','3600','{}',null,'authorization_code','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
+       ('hmpps-ppm-system','3600','{}','ROLE_GLOBAL_SEARCH','client_credentials','read','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read',null);
 
 UPDATE oauth_client_details
 SET additional_information = '{"jwtFields":"-name"}'
