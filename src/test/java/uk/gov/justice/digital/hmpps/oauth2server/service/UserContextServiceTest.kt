@@ -1,14 +1,17 @@
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
+import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 
 internal class UserContextServiceTest {
-  private val userContextService = UserContextService()
+  private val deliusUserService: DeliusUserService = mock()
+  private val userContextService = UserContextService(deliusUserService)
 
   @Test
   fun `resolveUser returns the same user for clients with 'normal' scopes`() {
