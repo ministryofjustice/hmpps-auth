@@ -18,6 +18,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole
 import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
 import java.util.*
 
+class DeliusUserList : MutableList<UserDetails> by ArrayList()
+
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Service
 class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemplate: RestTemplate,
@@ -29,6 +31,43 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
+  fun getDeliusUserByEmail(email: String): DeliusUserPersonDetails? {
+    if (!deliusEnabled) {
+      log.debug("delius integration disabled; unable to proceed for user with email {}", email)
+      return null
+    }
+
+    return try {
+      val userDetailsList = restTemplate.getForObject("/users/search/email/{email}/details", DeliusUserList::class.java, email)
+      when (userDetailsList.size) {
+        1 -> mapUserDetailsToDeliusUser(userDetailsList[0])
+        0 -> {
+          log.debug("user with email {} not found in delius", email)
+          null
+        }
+        else -> {
+          log.warn("multiple users found for email {}; unable to proceed", email)
+          null
+        }
+      }
+    } catch (e: Exception) {
+      when (e) {
+        is ResourceAccessException, is HttpServerErrorException -> {
+          log.warn("unable to retrieve details from delius for user with email {} due to delius error", email, e)
+          throw DeliusAuthenticationServiceException(email)
+        }
+        is HttpClientErrorException -> {
+          log.warn("unable to retrieve details from delius for user with email {} due to http error [{}]", email, e.statusCode, e)
+          null
+        }
+        else -> {
+          log.warn("unable to retrieve details from delius for user with email {} due to unknown error", email, e)
+          null
+        }
+      }
+    }
+  }
+
   fun getDeliusUserByUsername(username: String): Optional<DeliusUserPersonDetails> {
     if (!deliusEnabled) {
       log.debug("Delius integration disabled, returning empty for {}", username)
@@ -37,7 +76,7 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
 
     return try {
       val userDetails = restTemplate.getForObject("/users/{username}/details", UserDetails::class.java, username)
-      Optional.ofNullable(userDetails).map { u -> mapUserDetailsToDeliusUser(u, username) }
+      Optional.ofNullable(userDetails).map { u -> mapUserDetailsToDeliusUser(u) }
     } catch (e: HttpClientErrorException) {
       if (e.statusCode == HttpStatus.NOT_FOUND) {
         log.debug("User not found in delius due to {}", e.message)
@@ -76,9 +115,9 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
     }
   }
 
-  private fun mapUserDetailsToDeliusUser(userDetails: UserDetails, username: String): DeliusUserPersonDetails =
+  private fun mapUserDetailsToDeliusUser(userDetails: UserDetails): DeliusUserPersonDetails =
       DeliusUserPersonDetails(
-          username = username.toUpperCase(),
+          username = userDetails.username.toUpperCase(),
           userId = userDetails.userId,
           firstName = userDetails.firstName,
           surname = userDetails.surname,

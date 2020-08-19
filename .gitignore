@@ -2,6 +2,7 @@
 /build/
 !gradle/wrapper/gradle-wrapper.jar
 .DS_Store
+.run/
 
 ### STS ###
 .apt_generated
