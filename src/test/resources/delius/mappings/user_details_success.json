@@ -8,6 +8,7 @@
     "status": 200,
     "jsonBody": {
       "userId": 2500077027,
+      "username": "DeliusSmith",
       "firstName": "Delius",
       "surname": "Smith",
       "email": "test@digital.justice.gov.uk",
