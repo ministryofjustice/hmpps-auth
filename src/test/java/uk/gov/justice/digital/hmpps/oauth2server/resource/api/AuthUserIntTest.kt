@@ -91,7 +91,7 @@ class AuthUserIntTest : IntegrationTest() {
 
   @Test
   fun `Create User endpoint returns failure message if delius server error`() {
-    val username = "delius_server_error"
+    val username = "DELIUS_ERROR_SERVER"
     val user = NewUser("bob@bobdigital.justice.gov.uk", "Bob", "Smith")
 
     webTestClient
@@ -103,7 +103,7 @@ class AuthUserIntTest : IntegrationTest() {
         .expectBody()
         .jsonPath("$").value<Map<String, Any>> {
           assertThat(it).containsExactlyInAnyOrderEntriesOf(
-              mapOf("error" to "unauthorized", "error_description" to "Unable to retrieve information for delius_server_error from Delius.  We are unable to connect to Delius or there is an issue with delius_server_error in Delius"))
+              mapOf("error" to "unauthorized", "error_description" to "Unable to retrieve information for DELIUS_ERROR_SERVER from Delius.  We are unable to connect to Delius or there is an issue with delius_server_error in Delius"))
         }
   }
 
