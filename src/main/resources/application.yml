@@ -58,14 +58,14 @@ management:
       show-details: always
       probes:
         enabled: true
-      group:
-        liveness:
-          include: livenessStateProbeIndicator
-        readiness:
-          include: readinessStateProbeIndicator
     info:
       cache:
         time-to-live: 2000ms
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
 
 application:
   caseload.id: NWEB
