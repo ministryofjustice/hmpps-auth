@@ -103,7 +103,7 @@ class AuthUserIntTest : IntegrationTest() {
         .expectBody()
         .jsonPath("$").value<Map<String, Any>> {
           assertThat(it).containsExactlyInAnyOrderEntriesOf(
-              mapOf("error" to "unauthorized", "error_description" to "Unable to retrieve information for DELIUS_ERROR_SERVER from Delius.  We are unable to connect to Delius or there is an issue with delius_server_error in Delius"))
+              mapOf("error" to "unauthorized", "error_description" to "Unable to retrieve information for DELIUS_ERROR_SERVER from Delius.  We are unable to connect to Delius or there is an issue with DELIUS_ERROR_SERVER in Delius"))
         }
   }
 
