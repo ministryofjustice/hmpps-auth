@@ -61,11 +61,7 @@ management:
     info:
       cache:
         time-to-live: 2000ms
-  health:
-    livenessstate:
-      enabled: true
-    readinessstate:
-      enabled: true
+
 
 application:
   caseload.id: NWEB
