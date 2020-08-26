@@ -37,7 +37,7 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
 
     return try {
       val userDetails = restTemplate.getForObject("/users/{username}/details", UserDetails::class.java, username)
-      Optional.ofNullable(userDetails).map { u -> mapUserDetailsToDeliusUser(u, username) }
+      Optional.ofNullable(userDetails).map { u -> mapUserDetailsToDeliusUser(u) }
     } catch (e: HttpClientErrorException) {
       if (e.statusCode == HttpStatus.NOT_FOUND) {
         log.debug("User not found in delius due to {}", e.message)
@@ -76,9 +76,9 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
     }
   }
 
-  private fun mapUserDetailsToDeliusUser(userDetails: UserDetails, username: String): DeliusUserPersonDetails =
+  private fun mapUserDetailsToDeliusUser(userDetails: UserDetails): DeliusUserPersonDetails =
       DeliusUserPersonDetails(
-          username = username.toUpperCase(),
+          username = userDetails.username.toUpperCase(),
           userId = userDetails.userId,
           firstName = userDetails.firstName,
           surname = userDetails.surname,

@@ -5,7 +5,7 @@
     "bodyPatterns": [
       {
         "equalToJson": {
-          "username": "DELFAIL"
+          "username": "DELIUS_ERROR_FAIL"
         },
         "ignoreExtraElements": true
       }
@@ -15,7 +15,7 @@
     "status": 401,
     "jsonBody": {
       "status": 401,
-      "developerMessage": "User with username delfail"
+      "developerMessage": "User with username DELIUS_ERROR_FAIL"
     },
     "headers": {
       "Content-Type": "application/json"

@@ -12,6 +12,7 @@ class UserDetailsTest {
     val userDetails = ObjectMapper().readValue(stream, UserDetails::class.java)
     assertThat(userDetails).isEqualTo(
         UserDetails(userId = "2500077027",
+            username = "JohnSmith",
             surname = "Smith",
             firstName = "John",
             email = "test@digital.justice.gov.uk",
@@ -25,6 +26,7 @@ class UserDetailsTest {
     val userDetails = ObjectMapper().readValue(stream, UserDetails::class.java)
     assertThat(userDetails).isEqualTo(
         UserDetails(userId = "2500077027",
+            username = "JohnSmith",
             surname = "Smith",
             firstName = "John",
             email = "test@digital.justice.gov.uk",
