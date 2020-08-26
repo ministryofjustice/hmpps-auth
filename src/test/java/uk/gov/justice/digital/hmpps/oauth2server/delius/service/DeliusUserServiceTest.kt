@@ -24,13 +24,13 @@ class DeliusUserServiceTest {
 
   @Test
   fun `deliusUserByUsername disabled`() {
-    disabledDeliusService.getDeliusUserByUsername("bob")
+    disabledDeliusService.getDeliusUserByUsername("DeliusSmith")
     verify(restTemplate, never()).getForObject<UserDetails>(anyString(), any(), anyString())
   }
 
   @Test
   fun `deliusUserByUsername enabled`() {
-    deliusService.getDeliusUserByUsername("bob")
+    deliusService.getDeliusUserByUsername("DeliusSmith")
     verify(restTemplate).getForObject<UserDetails>(anyString(), any(), anyString())
   }
 

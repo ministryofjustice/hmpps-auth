@@ -6,7 +6,7 @@
     "bodyPatterns": [
       {
         "equalToJson": {
-          "username": "DELIUSLOCKED"
+          "username": "DELIUS_ERROR_LOCKED"
         },
         "ignoreExtraElements": true
       }
@@ -16,7 +16,7 @@
     "status": 401,
     "jsonBody": {
       "status": 401,
-      "developerMessage": "User with username deliuslocked"
+      "developerMessage": "User with username DELIUS_ERROR_LOCKED"
     },
     "headers": {
       "Content-Type": "application/json"

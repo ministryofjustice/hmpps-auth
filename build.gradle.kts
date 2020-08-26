@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "0.4.7"
-  kotlin("plugin.spring") version "1.3.72"
-  kotlin("plugin.jpa") version "1.3.72"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.0"
+  kotlin("plugin.spring") version "1.4.0"
+  kotlin("plugin.jpa") version "1.4.0"
 }
 
 repositories {
@@ -17,7 +17,7 @@ dependencies {
   implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
   implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.0.RELEASE")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
-  implementation("com.nimbusds:nimbus-jose-jwt:8.19")
+  implementation("com.nimbusds:nimbus-jose-jwt:8.20")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
@@ -38,9 +38,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1")
-  implementation("uk.gov.service.notify:notifications-java-client:3.15.1-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:3.17.0-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:6.5.2")
+  implementation("org.flywaydb:flyway-core:6.5.5")
   implementation("com.zaxxer:HikariCP:3.4.5")
   implementation("org.apache.commons:commons-text:1.9")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.2.jre11")
@@ -77,7 +77,7 @@ dependencies {
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.18.1")
   testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.3.1")
   testImplementation("org.fluentlenium:fluentlenium-assertj:4.3.1")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.20")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.21")
 }
 
 tasks {
