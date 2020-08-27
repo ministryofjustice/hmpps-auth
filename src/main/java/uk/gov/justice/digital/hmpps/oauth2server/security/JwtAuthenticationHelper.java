@@ -56,14 +56,14 @@ public class JwtAuthenticationHelper {
 
     String createJwtWithIdFromOidcAuthentication(final OAuth2AuthenticationToken authentication, final String jwtId) {
         final var userDetails = (DefaultOidcUser) authentication.getPrincipal();
-        final var username = userDetails.getName();
+        final var username = userDetails.getName().toUpperCase();
         log.debug("Creating jwt cookie for user {}", username);
         final var authorities = Optional.ofNullable(authentication.getAuthorities()).orElse(Collections.emptyList());
         final var authoritiesAsString = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
         return Jwts.builder()
                 .setId(jwtId)
                 .setSubject(username)
-                .addClaims(Map.of("authorities", authoritiesAsString, "name", userDetails.getFullName(), "auth_source", "azure", "user_id", userDetails.getPreferredUsername()))
+                .addClaims(Map.of("authorities", authoritiesAsString, "name", userDetails.getFullName(), "auth_source", "azuread", "user_id", userDetails.getPreferredUsername()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiryTime.toMillis()))
                 .signWith(SignatureAlgorithm.RS256, keyPair.getPrivate())
                 .compact();

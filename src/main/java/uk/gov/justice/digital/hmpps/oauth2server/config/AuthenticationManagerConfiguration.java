@@ -156,7 +156,7 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     /**
      * Custom User Service for the Azure OIDC integration. Spring expects to get the username from the userinfo endpoint,
-     * unfortunately the Azure endpoint doesn't return the field we need - i.e. preferred_username. Therefore the username field is set
+     * unfortunately the Azure endpoint doesn't return the field we need - i.e. oid. Therefore the username field is set
      * to sub in the configuration, and modified here once the token and userinfo attributes are merged.
      *
      * Also capitalises the username so the Auth database lookups work.
@@ -172,12 +172,9 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
             // Now we have the claims from the id token and the userinfo response combined, we can set the preferred_username field to be the name source
             var idToken = oidcUser.getIdToken();
 
-            Map<String,Object> newClaims = new HashMap<>(idToken.getClaims());
-            newClaims.replace("preferred_username", ((String)newClaims.get("preferred_username")).toUpperCase());
+            var oidcIdToken = new OidcIdToken(idToken.getTokenValue(),idToken.getIssuedAt(), idToken.getExpiresAt(), idToken.getClaims());
 
-            var oidcIdToken = new OidcIdToken(idToken.getTokenValue(),idToken.getIssuedAt(), idToken.getExpiresAt(), newClaims);
-
-            return new DefaultOidcUser(oidcUser.getAuthorities(), oidcIdToken, oidcUser.getUserInfo(), "preferred_username");
+            return new DefaultOidcUser(oidcUser.getAuthorities(), oidcIdToken, oidcUser.getUserInfo(), "oid");
         };
     }
 

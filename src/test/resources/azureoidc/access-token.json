@@ -1,0 +1,45 @@
+{
+  "aud": "00000003-0000-0000-c000-000000000000",
+  "iss": "https://sts.windows.net/0bb413d7-160d-4839-868a-f3d46537f6af/",
+  "iat": 1600428229,
+  "nbf": 1600428229,
+  "exp": 1800432129,
+  "acct": 0,
+  "acr": "1",
+  "aio": "E2BgYCgKeL5pe6Nr/PKZNRIdtdt6Tl+pYFzuqq/3sOgVexrXvTAA",
+  "amr": [
+    "pwd"
+  ],
+  "app_displayname": "DPS Auth (Access Team Test)",
+  "appid": "eb5bb753-e051-4f85-bc43-913ad1296933",
+  "appidacr": "1",
+  "family_name": "Brindley",
+  "given_name": "Ed",
+  "idtyp": "user",
+  "ipaddr": "176.25.104.142",
+  "name": "[ADM] Ed Brindley",
+  "oid": "d6165ad0-aed3-4146-9ef7-222876b57549",
+  "platf": "14",
+  "puid": "10032000C25CE860",
+  "rh": "0.AAAA1xO0Cw0WOUiGivPUZTf2r1O3W-tR4IVPvEOROtEpaTNdAKA.",
+  "scp": "openid profile User.Read User.Read.All User.ReadBasic.All email",
+  "signin_state": [
+    "kmsi"
+  ],
+  "sub": "CtQWQ8RwHKNbRbmRlWu8w_7Facv5B7la-bgW4ynk5_M",
+  "tenant_region_scope": "EU",
+  "tid": "0bb413d7-160d-4839-868a-f3d46537f6af",
+  "unique_name": "ebrindley-admin@devl.justice.gov.uk",
+  "upn": "ebrindley-admin@devl.justice.gov.uk",
+  "uti": "BZ7mcqYRr0q6glNHuFD8AA",
+  "ver": "1.0",
+  "wids": [
+    "f2ef992c-3afb-46b9-b7cf-a126ee74c451",
+    "9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3",
+    "b79fbf4d-3ef9-4689-8143-76b194e85509"
+  ],
+  "xms_st": {
+    "sub": "6C2x9vsoM3Fgi9QmeYZGUT4hdYme3Dw1566tp8yc1vE"
+  },
+  "xms_tcdt": 1579690220
+}

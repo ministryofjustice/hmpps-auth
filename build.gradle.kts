@@ -18,7 +18,6 @@ dependencies {
   implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
   implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.0.RELEASE")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
-  implementation("com.nimbusds:nimbus-jose-jwt:9.0.1")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 

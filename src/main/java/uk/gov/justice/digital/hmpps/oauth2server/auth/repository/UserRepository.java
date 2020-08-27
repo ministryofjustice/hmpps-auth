@@ -8,8 +8,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface UserRepository extends CrudRepository<User, String>, JpaSpecificationExecutor<User> {
+public interface UserRepository extends CrudRepository<User, UUID>, JpaSpecificationExecutor<User> {
     Optional<User> findByUsername(String username);
 
     Optional<User> findByUsernameAndSource(String username, AuthSource source);

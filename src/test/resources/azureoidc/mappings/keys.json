@@ -1,0 +1,26 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "GET",
+    "urlPattern": "/tenant-id/discovery/v2.0/keys"
+  },
+  "response": {
+    "transformers": [
+      "response-template"
+    ],
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "keys": [
+        {
+          "kty": "RSA",
+          "e": "AQAB",
+          "kid": "dev-jwk-kid",
+          "n": "hu4ADRoY-9sYn3d0rZ3zo_iepSCDx-zOqIzb8kAIkkwfHJQJQlK-qBPwoUr07tStMxOJciOESx71DBaahvFNxrVezePQi-jEzrTmfFF08QJ8BAKjL1YEPqeUwooa1G5yZ2jh7k9lTKbrGhYNnsoNCxGeTF3iuBRl0EOGCo0elZeLfZe6n3JhaPQp5wMN8S3LAYJQ7k8qOJs35r_XXnFapOIsNV56CEPsYxx7dJ2FNzNRTDk3rVLhwaDsCRGzJwEsqt9X_WPRcrm7jDyGV2pSfk9-Pe0dey8RX196zzOGMQveYizqVMHordTDUXdZ-AEqE0BF00wRz8vuqoAWQQKH_w"
+        }
+      ]
+    }
+  }
+}

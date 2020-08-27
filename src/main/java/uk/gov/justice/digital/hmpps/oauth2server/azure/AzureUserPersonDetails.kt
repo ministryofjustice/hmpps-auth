@@ -13,7 +13,6 @@ data class AzureUserPersonDetails(private val authorities: MutableCollection<Gra
                                   val surname: String,
                                   val email: String,
                                   private val credentialsNonExpired: Boolean,
-                                  private val password: String,
                                   private val accountNonExpired: Boolean,
                                   private val accountNonLocked: Boolean) : UserPersonDetails {
     override fun getAuthorities(): Collection<GrantedAuthority?> = authorities
@@ -24,7 +23,7 @@ data class AzureUserPersonDetails(private val authorities: MutableCollection<Gra
 
     override fun isCredentialsNonExpired(): Boolean = credentialsNonExpired
 
-    override fun getPassword(): String = password
+    override fun getPassword(): String = ""
 
     override fun isAccountNonExpired(): Boolean = accountNonExpired
 
@@ -36,7 +35,7 @@ data class AzureUserPersonDetails(private val authorities: MutableCollection<Gra
 
     override fun getFirstName(): String = firstName
 
-    override fun getAuthSource(): String? = AuthSource.azure.name
+    override fun getAuthSource(): String? = AuthSource.azuread.name
 
     override fun eraseCredentials() {
     }
@@ -44,7 +43,7 @@ data class AzureUserPersonDetails(private val authorities: MutableCollection<Gra
     override fun toUser(): User? {
         return User.builder()
                 .username(username)
-                .source(AuthSource.azure)
+                .source(AuthSource.azuread)
                 .email(email)
                 .verified(true)
                 .enabled(enabled)

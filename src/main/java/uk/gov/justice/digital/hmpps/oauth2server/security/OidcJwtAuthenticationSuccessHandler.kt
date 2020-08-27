@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.security
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
@@ -11,6 +10,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.azure.AzureUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.io.IOException
+import java.util.*
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -26,35 +26,38 @@ class OidcJwtAuthenticationSuccessHandler(jwtCookieHelper: JwtCookieHelper?,
     @Throws(IOException::class, ServletException::class)
     override fun onAuthenticationSuccess(request: HttpServletRequest, response: HttpServletResponse,
                                          authentication: Authentication) {
-        val authenticationResult = authentication as OAuth2AuthenticationToken
-        val principal = authenticationResult.principal as DefaultOidcUser
+        val oidcUser = authentication.principal
+        if (oidcUser is DefaultOidcUser) {
+            userRetriesService.resetRetriesAndRecordLogin(constructAzureUserPersonDetails(oidcUser))
+            super.onAuthenticationSuccess(request, response, authentication)
+        } else {
+            throw RuntimeException("Expected a DefaultOidcUser - is the Azure OIDC configuration correct?")
+        }
+    }
 
+    private fun constructAzureUserPersonDetails(principal: DefaultOidcUser): AzureUserPersonDetails {
         // Enables compatibility with dev and production Azure configurations
         val givenName = when {
             principal.givenName != null -> principal.givenName
-            principal.fullName.split(",").size == 2 -> principal.fullName.split(",")[1]
+            principal.fullName.split(",").size == 2 -> principal.fullName.split(",")[1].trim()
             else -> ""
         }
 
         val familyName = when {
             principal.familyName != null -> principal.familyName
-            principal.fullName.split(",").size == 2 -> principal.fullName.split(",")[0]
+            principal.fullName.split(",").size == 2 -> principal.fullName.split(",")[0].trim()
             else -> ""
         }
 
-        val upd = AzureUserPersonDetails(ArrayList(),
+        return AzureUserPersonDetails(
+                ArrayList(),
                 true,
-                principal.name,
+                principal.getClaim<String>("oid").toUpperCase(),
                 givenName,
                 familyName,
                 principal.preferredUsername,
                 true,
-                "",
                 accountNonExpired = true,
                 accountNonLocked = true)
-
-        userRetriesService.resetRetriesAndRecordLogin(upd)
-        super.onAuthenticationSuccess(request, response, authentication)
     }
-
 }

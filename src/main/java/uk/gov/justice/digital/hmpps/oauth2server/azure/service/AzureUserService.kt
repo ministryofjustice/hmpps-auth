@@ -18,20 +18,21 @@ class AzureUserService(private val userRepository: UserRepository) {
     }
 
     fun getAzureUserByUsername(username: String?): Optional<AzureUserPersonDetails> {
-        val user = userRepository.findByUsernameAndSource(username, AuthSource.azure)
+        val user = userRepository.findByUsernameAndSource(username, AuthSource.azuread)
 
         if (user.isPresent) {
-            return Optional.of(AzureUserPersonDetails(Collections.emptyList(),
-                true,
-                user.get().username,
-                user.get().person.firstName,
-                user.get().person.lastName,
-                user.get().email,
-                credentialsNonExpired = true,
-                password = "",
-                accountNonExpired = true,
-                accountNonLocked = true))
+            return Optional.of(AzureUserPersonDetails(
+                    Collections.emptyList(),
+                    true,
+                    user.get().username,
+                    user.get().person.firstName,
+                    user.get().person.lastName,
+                    user.get().email,
+                    credentialsNonExpired = true,
+                    accountNonExpired = true,
+                    accountNonLocked = true))
         }
+
         return Optional.empty()
     }
 }
