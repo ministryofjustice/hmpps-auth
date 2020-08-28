@@ -39,6 +39,15 @@ class UserService(
       .or { azureUserService.getAzureUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
       .or { deliusUserService.getDeliusUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
 
+  fun getMasterUserPersonDetails(username: String, authSource: AuthSource): Optional<UserPersonDetails> =
+    when (authSource) {
+      AuthSource.auth -> authUserService.getAuthUserByUsername(username)
+      AuthSource.nomis -> nomisUserService.getNomisUserByUsername(username)
+      AuthSource.azuread -> azureUserService.getAzureUserByUsername(username)
+      AuthSource.delius -> deliusUserService.getDeliusUserByUsername(username)
+      AuthSource.none -> Optional.empty()
+    }.map { UserPersonDetails::class.java.cast(it) }
+
   fun findUser(username: String): Optional<User> = userRepository.findByUsername(StringUtils.upperCase(username))
 
   fun getUser(username: String): User =
