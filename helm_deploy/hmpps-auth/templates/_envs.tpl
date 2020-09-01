@@ -169,6 +169,6 @@ env:
   - name: APPLICATION_AUTHENTICATION_MFA_WHITELIST
     value: {{ include "app.joinListWithComma" .Values.mfa_whitelist | quote }}
   - name: APPLICATION_AUTHENTICATION_MFA_ROLES
-    value: "ROLE_MFA,ROLE_PECS_COURT"
+    value: "ROLE_MFA,ROLE_PECS_COURT,ROLE_PECS_SUPPLIER"
 {{- end }}
 
