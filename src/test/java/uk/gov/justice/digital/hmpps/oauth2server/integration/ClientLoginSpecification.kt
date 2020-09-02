@@ -12,10 +12,12 @@ import org.apache.commons.lang3.RandomStringUtils
 import org.apache.http.client.utils.URLEncodedUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.BodyContentSpec
+import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 import java.nio.charset.Charset
 import java.util.*
@@ -26,6 +28,7 @@ import java.util.*
  * done automatically in circle configuration for automated builds, but needs enabling when running these tests.  By
  * default the dev profile doesn't have it enabled so that other clients can use this project without issues.
  */
+@ExtendWith(RemoteClientExtension::class)
 class ClientLoginSpecification : AbstractAuthSpecification() {
   private val clientBaseUrl = "http://localhost:8081/login"
   private val webTestClient = WebTestClient.bindToServer().baseUrl(baseUrl).build()

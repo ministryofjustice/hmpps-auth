@@ -20,9 +20,4 @@
 *.ipr
 /out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+dps-gradle-spring-boot-suppressions.xml
