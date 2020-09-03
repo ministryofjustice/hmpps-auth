@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.2"
   kotlin("plugin.spring") version "1.4.0"
   kotlin("plugin.jpa") version "1.4.0"
 }
@@ -40,7 +40,7 @@ dependencies {
   implementation("org.flywaydb:flyway-core:6.5.5")
   implementation("com.zaxxer:HikariCP:3.4.5")
   implementation("org.apache.commons:commons-text:1.9")
-  implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.2.jre11")
+  implementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre11")
   implementation("io.swagger:swagger-core:1.6.2")
 
   runtimeOnly("com.h2database:h2:1.4.200")
@@ -72,8 +72,8 @@ dependencies {
   testImplementation("com.auth0:java-jwt:3.10.3")
 
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.18.1")
-  testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.3.1")
-  testImplementation("org.fluentlenium:fluentlenium-assertj:4.3.1")
+  testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.5.1")
+  testImplementation("org.fluentlenium:fluentlenium-assertj:4.5.1")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.21")
 }
 
