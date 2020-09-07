@@ -54,8 +54,8 @@ When running locally with the SPRING_ACTIVE_PROFILES=dev the seeded H2 database 
 
 | Database | JDBC connection     |  username | password |
 |----------|---------------------|-----------|----------|
-| NOMIS    | jdbc:h2:mem:authdb  |  <blank>  | <blank>  |
-| AUTH     | jdbc:h2:mem:nomisdb |  <blank>  | <blank>  |
+| NOMIS    | jdbc:h2:mem:nomisdb  |  <blank>  | <blank>  |
+| AUTH     | jdbc:h2:mem:authdb |  <blank>  | <blank>  |
 
 #### API Documentation
 
