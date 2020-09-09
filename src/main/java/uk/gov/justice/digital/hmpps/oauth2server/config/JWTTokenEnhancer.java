@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import java.util.Collections;
@@ -105,13 +106,11 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     }
 
     private String getAuthSourceFromRequestParam(final Map<String, String> requestParams) {
-        if (requestParams.containsKey(REQUEST_PARAM_AUTH_SOURCE)) {
-            final var authSource = StringUtils.lowerCase(requestParams.get(REQUEST_PARAM_AUTH_SOURCE));
-            if (StringUtils.isNotBlank(authSource)) {
-                return authSource;
-            }
+        try {
+            return AuthSource.fromNullableString(requestParams.get(REQUEST_PARAM_AUTH_SOURCE)).getSource();
+        } catch (final IllegalArgumentException iae) {
+            return AuthSource.none.getSource();
         }
-        return "none";
     }
 
     @NotNull

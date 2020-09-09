@@ -88,8 +88,8 @@ class OauthSpecification extends TestSpecification {
         and: 'refresh token does not exist'
         token.refreshToken == null
 
-        and: 'authentication source is nomis'
-        token.additionalInformation.auth_source == 'nomis'
+        and: 'authentication source is none as no auth source parameter supplied'
+        token.additionalInformation.auth_source == 'none'
     }
 
     def "Client Credentials Login access token for auth user"() {
@@ -110,20 +110,30 @@ class OauthSpecification extends TestSpecification {
         and: 'refresh token does not exist'
         token.refreshToken == null
 
-        and: 'authentication source is auth'
-        token.additionalInformation.auth_source == 'auth'
+        and: 'authentication source is none as no auth source parameter supplied'
+        token.additionalInformation.auth_source == 'none'
     }
 
-    def "Client Credentials Login failure token for unknown user"() {
+    def "Client Credentials Login access token with auth source"() {
 
         given:
-        def oauthRestTemplate = getOauthClientGrant("community-api-client", "clientsecret", "username=NPSUser")
+        def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret", "username=AUTH_USER&auth_source=delius")
 
         when:
-        oauthRestTemplate.getAccessToken()
+        def token = oauthRestTemplate.getAccessToken()
 
         then:
-        OAuth2AccessDeniedException ex = thrown()
+        token.value != null
+
+        and: 'expiry is in 1 hour'
+        token.expiresIn >= 3590
+        token.expiresIn <= 3600
+
+        and: 'refresh token does not exist'
+        token.refreshToken == null
+
+        and: 'authentication source is passed through from parameter'
+        token.additionalInformation.auth_source == 'delius'
     }
 
     def "Client Credentials Login access token for proxy user with no username"() {
@@ -146,18 +156,6 @@ class OauthSpecification extends TestSpecification {
 
         and: 'authentication source is auth'
         token.additionalInformation.auth_source == 'none'
-    }
-
-    def "Client Credentials Login failure for non auth or nomis user without scope priv"() {
-
-        given:
-        def oauthRestTemplate = getOauthClientGrant("omicadmin", "clientsecret", "username=NPSUser")
-
-        when:
-        def token = oauthRestTemplate.getAccessToken()
-
-        then:
-        OAuth2AccessDeniedException ex = thrown()
     }
 
 

@@ -144,4 +144,17 @@ internal class JWTTokenEnhancerTest {
         entry("user_name", "JOE"),
         entry("auth_source", "delius"))
   }
+
+  @Test
+  fun `enhance client credentials with auth source invalid`() {
+    val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
+    whenever(authentication.isClientOnly).thenReturn(true)
+    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf("username" to "jOe", "auth_source" to "billybob"), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.name).thenReturn("principal")
+    jwtTokenEnhancer.enhance(token, authentication)
+    assertThat(token.additionalInformation).containsOnly(
+        entry("sub", "JOE"),
+        entry("user_name", "JOE"),
+        entry("auth_source", "none"))
+  }
 }
