@@ -31,6 +31,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     static final String SUBJECT = "sub";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
     private static final String REQUEST_PARAM_USER_NAME = "username";
+    private static final String REQUEST_PARAM_AUTH_SOURCE = "auth_source";
 
     @Autowired
     private JdbcClientDetailsService clientsDetailsService;
@@ -93,14 +94,24 @@ public class JWTTokenEnhancer implements TokenEnhancer {
 
         final var username = getUsernameFromRequestParam(requestParams);
         if (username.isPresent()) {
-            additionalInfo.put(ADD_INFO_USER_NAME, username);
-            additionalInfo.put(SUBJECT, username);
+            additionalInfo.put(ADD_INFO_USER_NAME, username.get());
+            additionalInfo.put(SUBJECT, username.get());
         } else {
-            additionalInfo.put(ADD_INFO_AUTH_SOURCE, "none");
             additionalInfo.put(SUBJECT, authentication.getName());
         }
+        additionalInfo.put(ADD_INFO_AUTH_SOURCE, getAuthSourceFromRequestParam(requestParams));
 
         return additionalInfo;
+    }
+
+    private String getAuthSourceFromRequestParam(final Map<String, String> requestParams) {
+        if (requestParams.containsKey(REQUEST_PARAM_AUTH_SOURCE)) {
+            final var authSource = StringUtils.lowerCase(requestParams.get(REQUEST_PARAM_AUTH_SOURCE));
+            if (StringUtils.isNotBlank(authSource)) {
+                return authSource;
+            }
+        }
+        return "none";
     }
 
     @NotNull
