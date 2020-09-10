@@ -2,21 +2,23 @@ package uk.gov.justice.digital.hmpps.oauth2server.config;
 
 
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,10 +32,12 @@ public class JWTTokenEnhancer implements TokenEnhancer {
     static final String ADD_INFO_USER_ID = "user_id";
     static final String SUBJECT = "sub";
     private static final String ADD_INFO_AUTHORITIES = "authorities";
-    private static final String REQUEST_PARAM_USER_NAME = "username";
 
     @Autowired
     private JdbcClientDetailsService clientsDetailsService;
+
+    @Autowired
+    private ExternalIdAuthenticationHelper externalIdAuthenticationHelper;
 
     @Override
     public OAuth2AccessToken enhance(final OAuth2AccessToken accessToken, final OAuth2Authentication authentication) {
@@ -91,26 +95,29 @@ public class JWTTokenEnhancer implements TokenEnhancer {
 
         final var requestParams = request.getRequestParameters();
 
-        final var username = getUsernameFromRequestParam(requestParams);
-        if (username.isPresent()) {
-            additionalInfo.put(ADD_INFO_USER_NAME, username);
-            additionalInfo.put(SUBJECT, username);
+        // Non-blank user_id_type and user_id to check - delegate to external identifier auth component
+        final var userDetails = externalIdAuthenticationHelper.getUserDetails(requestParams);
+
+        if (userDetails != null) {
+            additionalInfo.put(ADD_INFO_AUTH_SOURCE, userDetails.getAuthSource());
+            additionalInfo.put(ADD_INFO_USER_NAME, userDetails.getUsername());
+            additionalInfo.put(ADD_INFO_USER_ID, userDetails.getUserId());
+            additionalInfo.put(SUBJECT, userDetails.getUsername());
+
+            // TODO: remove once write credential has been added to clients
+            // Add "write" scope with those for client credentials
+            final Set<String> scope = new HashSet<>(request.getScope());
+            scope.add("write");
+            ((DefaultOAuth2AccessToken) accessToken).setScope(scope);
+
+            // Merge user authorities with those associated with client credentials
+            additionalInfo.put(ADD_INFO_AUTHORITIES,
+                    request.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()));
         } else {
             additionalInfo.put(ADD_INFO_AUTH_SOURCE, "none");
             additionalInfo.put(SUBJECT, authentication.getName());
         }
 
         return additionalInfo;
-    }
-
-    @NotNull
-    private Optional<String> getUsernameFromRequestParam(final Map<String, String> requestParams) {
-        if (requestParams.containsKey(REQUEST_PARAM_USER_NAME)) {
-            final var username = StringUtils.upperCase(requestParams.get(REQUEST_PARAM_USER_NAME));
-            if (StringUtils.isNotBlank(username)) {
-                return Optional.of(username);
-            }
-        }
-        return Optional.empty();
     }
 }
