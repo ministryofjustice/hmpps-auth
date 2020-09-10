@@ -80,7 +80,7 @@ class VerifyEmailServiceTest {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
     verifyEmailService.requestVerification("user", "email@john.com", "firstname", "full name", "url", User.EmailType.PRIMARY)
-    assertThat(user.tokens).hasSize(1).extracting<String> { it.token }.doesNotContain(existingUserToken.token)
+    assertThat(user.tokens).hasSize(1).extracting<String> { it.token }.containsExactly(existingUserToken.token)
   }
 
   @Test
@@ -90,7 +90,7 @@ class VerifyEmailServiceTest {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
     verifyEmailService.requestVerification("user", "email@john.com", "firstname", "full name", "url", User.EmailType.SECONDARY)
-    assertThat(user.tokens).hasSize(1).extracting<String> { it.token }.doesNotContain(existingUserToken.token)
+    assertThat(user.tokens).hasSize(1).extracting<String> { it.token }.containsExactly(existingUserToken.token)
   }
 
   @Test
