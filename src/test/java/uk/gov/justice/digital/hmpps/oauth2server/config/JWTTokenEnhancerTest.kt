@@ -21,20 +21,17 @@ import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
-import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import java.util.*
 
 internal class JWTTokenEnhancerTest {
   private val authentication: OAuth2Authentication = mock()
   private val clientDetailsService: JdbcClientDetailsService = mock()
-  private val externalIdAuthenticationHelper: ExternalIdAuthenticationHelper = mock()
   private val jwtTokenEnhancer = JWTTokenEnhancer()
 
   @BeforeEach
   internal fun setUp() {
     ReflectionTestUtils.setField(jwtTokenEnhancer, "clientsDetailsService", clientDetailsService)
-    ReflectionTestUtils.setField(jwtTokenEnhancer, "externalIdAuthenticationHelper", externalIdAuthenticationHelper)
   }
 
   @Test
@@ -108,5 +105,56 @@ internal class JWTTokenEnhancerTest {
         entry("user_name", "user"),
         entry("auth_source", "none"),
         entry("user_id", "userID"))
+  }
+
+  @Test
+  fun `enhance client credentials no username`() {
+    val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
+    whenever(authentication.isClientOnly).thenReturn(true)
+    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf(), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.name).thenReturn("principal")
+    jwtTokenEnhancer.enhance(token, authentication)
+    assertThat(token.additionalInformation).containsOnly(
+        entry("sub", "principal"),
+        entry("auth_source", "none"))
+  }
+
+  @Test
+  fun `enhance client credentials with username`() {
+    val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
+    whenever(authentication.isClientOnly).thenReturn(true)
+    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf("username" to "joe"), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.name).thenReturn("principal")
+    jwtTokenEnhancer.enhance(token, authentication)
+    assertThat(token.additionalInformation).containsOnly(
+        entry("sub", "JOE"),
+        entry("user_name", "JOE"),
+        entry("auth_source", "none"))
+  }
+
+  @Test
+  fun `enhance client credentials with auth source`() {
+    val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
+    whenever(authentication.isClientOnly).thenReturn(true)
+    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf("username" to "jOe", "auth_source" to "deLius"), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.name).thenReturn("principal")
+    jwtTokenEnhancer.enhance(token, authentication)
+    assertThat(token.additionalInformation).containsOnly(
+        entry("sub", "JOE"),
+        entry("user_name", "JOE"),
+        entry("auth_source", "delius"))
+  }
+
+  @Test
+  fun `enhance client credentials with auth source invalid`() {
+    val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
+    whenever(authentication.isClientOnly).thenReturn(true)
+    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf("username" to "jOe", "auth_source" to "billybob"), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.name).thenReturn("principal")
+    jwtTokenEnhancer.enhance(token, authentication)
+    assertThat(token.additionalInformation).containsOnly(
+        entry("sub", "JOE"),
+        entry("user_name", "JOE"),
+        entry("auth_source", "none"))
   }
 }

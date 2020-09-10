@@ -29,7 +29,6 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.client.RestTemplate
-import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
@@ -38,7 +37,6 @@ internal class TrackingTokenServicesTest {
   private val telemetryClient: TelemetryClient = mock()
   private val tokenStore: TokenStore = mock()
   private val clientDetailsService: JdbcClientDetailsService = mock()
-  private val externalIdAuthenticationHelper: ExternalIdAuthenticationHelper = mock()
   private val restTemplate: RestTemplate = mock()
   private val tokenVerificationClientCredentials = TokenVerificationClientCredentials()
   private val tokenServices = TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, true)
@@ -52,7 +50,6 @@ internal class TrackingTokenServicesTest {
     tokenServicesVerificationDisabled.setSupportRefreshToken(true)
     tokenServicesVerificationDisabled.setTokenStore(tokenStore)
     val tokenEnhancer = JWTTokenEnhancer()
-    ReflectionTestUtils.setField(tokenEnhancer, "externalIdAuthenticationHelper", externalIdAuthenticationHelper)
     ReflectionTestUtils.setField(tokenEnhancer, "clientsDetailsService", clientDetailsService)
     tokenServices.setTokenEnhancer(tokenEnhancer)
     tokenServicesVerificationDisabled.setTokenEnhancer(tokenEnhancer)
@@ -87,14 +84,12 @@ internal class TrackingTokenServicesTest {
 
     @Test
     fun createAccessToken_ClientOnly() {
-      whenever(externalIdAuthenticationHelper.getUserDetails(anyMap())).thenReturn(USER_DETAILS)
       tokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_REQUEST, null))
       verify(telemetryClient, never()).trackEvent(any(), anyMap(), isNull())
     }
 
     @Test
     fun createAccessToken_ClientOnlyProxyUser() {
-      whenever(externalIdAuthenticationHelper.getUserDetails(anyMap())).thenReturn(UNCHECKED_USER_DETAILS)
       tokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_SCOPE_REQUEST, null))
       verify(telemetryClient, never()).trackEvent(any(), anyMap(), isNull())
     }
