@@ -18,7 +18,7 @@ open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
                                  private val tokenVerificationEnabled: Boolean) : DefaultTokenServices() {
 
   companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = LoggerFactory.getLogger(TrackingTokenServices::class.java)
   }
 
   override fun createAccessToken(authentication: OAuth2Authentication): OAuth2AccessToken {

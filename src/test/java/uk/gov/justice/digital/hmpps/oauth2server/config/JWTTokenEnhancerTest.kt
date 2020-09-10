@@ -21,17 +21,20 @@ import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import uk.gov.justice.digital.hmpps.oauth2server.security.ExternalIdAuthenticationHelper
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import java.util.*
 
 internal class JWTTokenEnhancerTest {
   private val authentication: OAuth2Authentication = mock()
   private val clientDetailsService: JdbcClientDetailsService = mock()
+  private val externalIdAuthenticationHelper: ExternalIdAuthenticationHelper = mock()
   private val jwtTokenEnhancer = JWTTokenEnhancer()
 
   @BeforeEach
   internal fun setUp() {
     ReflectionTestUtils.setField(jwtTokenEnhancer, "clientsDetailsService", clientDetailsService)
+    ReflectionTestUtils.setField(jwtTokenEnhancer, "externalIdAuthenticationHelper", externalIdAuthenticationHelper)
   }
 
   @Test
