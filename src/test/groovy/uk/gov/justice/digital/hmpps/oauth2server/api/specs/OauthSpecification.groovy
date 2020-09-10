@@ -364,7 +364,7 @@ class OauthSpecification extends TestSpecification {
     def "Password Credentials Login with Locked Login for Delius User"() {
 
         given:
-        def oauthRestTemplate = getOauthPasswordGrant("DELIUS_ERROR_LOCKED", "password123456", "elite2apiclient", "clientsecret")
+        def oauthRestTemplate = getOauthPasswordGrant("dellocked", "password123456", "elite2apiclient", "clientsecret")
 
         when:
         oauthRestTemplate.getAccessToken()

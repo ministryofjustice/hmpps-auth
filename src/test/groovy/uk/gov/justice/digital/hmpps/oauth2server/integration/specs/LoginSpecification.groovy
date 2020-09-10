@@ -148,7 +148,7 @@ class LoginSpecification extends DeliusIntegrationSpec {
     }
 
     def "Attempt login when delius connections time out"() {
-      // dev-config defines timeout to delius as 2 seconds.  The DELIUS_ERROR_TIMEOUT user has a success mapping,
+      // dev-config defines timeout to delius as 2 seconds.  The deliustimeout user has a success mapping,
       // but with fixed delay of 2 seconds which should therefore cause the timeout.
       // If timeout not working then login will succeed instead and test will fail.
         given: 'I am on the Login page'

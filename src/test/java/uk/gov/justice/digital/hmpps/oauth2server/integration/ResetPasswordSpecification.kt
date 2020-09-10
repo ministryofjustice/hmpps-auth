@@ -249,7 +249,7 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
         .forgottenPasswordLink()
 
     resetPasswordRequestPage
-        .submitUsernameOrEmail("DELIUS_PASSWORD_NEW")
+        .submitUsernameOrEmail("DELIUS_SMITH")
 
     resetPasswordLinkSentPage.isAtPage()
     val resetLink = resetPasswordLinkSentPage.getResetLink()
@@ -262,7 +262,7 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     resetPasswordSuccessPage.isAtPage()
 
     goTo(loginPage)
-        .loginAs("DELIUS_PASSWORD_NEW", "helloworld2")
+        .loginAs("DELIUS_SMITH", "helloworld2")
     homePage.isAt()
   }
 
