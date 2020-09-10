@@ -24,23 +24,23 @@ class DeliusUserServiceTest {
 
   @Test
   fun `deliusUserByUsername disabled`() {
-    disabledDeliusService.getDeliusUserByUsername("DeliusSmith")
+    disabledDeliusService.getDeliusUserByUsername("bob")
     verify(restTemplate, never()).getForObject<UserDetails>(anyString(), any(), anyString())
   }
 
   @Test
   fun `deliusUserByUsername enabled`() {
-    deliusService.getDeliusUserByUsername("DeliusSmith")
+    deliusService.getDeliusUserByUsername("bob")
     verify(restTemplate).getForObject<UserDetails>(anyString(), any(), anyString())
   }
 
   @Test
   fun `deliusUserByUsername test role mappings no roles granted`() {
     whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(createUserDetails())
-    val optionalDetails = deliusService.getDeliusUserByUsername("DeliusSmith")
+    val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
-            username = "DELIUSSMITH",
+            username = "BOB",
             userId = "12345",
             firstName = "Delius",
             surname = "Smith",
@@ -53,10 +53,10 @@ class DeliusUserServiceTest {
   fun `deliusUserByUsername test role mappings`() {
     whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
         createUserDetails().copy(roles = listOf(UserRole("AROLE"), UserRole("bob"))))
-    val optionalDetails = deliusService.getDeliusUserByUsername("DeliusSmith")
+    val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
-            username = "DELIUSSMITH",
+            username = "BOB",
             userId = "12345",
             firstName = "Delius",
             surname = "Smith",
@@ -69,10 +69,10 @@ class DeliusUserServiceTest {
   fun `deliusUserByUsername test role mappings multiple roles`() {
     whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
         createUserDetails().copy(roles = listOf(UserRole("TEST_ROLE"), UserRole("AROLE"), UserRole("other"))))
-    val optionalDetails = deliusService.getDeliusUserByUsername("DeliusSmith")
+    val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
-            username = "DELIUSSMITH",
+            username = "BOB",
             userId = "12345",
             firstName = "Delius",
             surname = "Smith",
@@ -84,10 +84,10 @@ class DeliusUserServiceTest {
   @Test
   fun `deliusUserByUsername test username upper case`() {
     whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(createUserDetails())
-    val optionalDetails = deliusService.getDeliusUserByUsername("DELIUSSMITH")
+    val optionalDetails = deliusService.getDeliusUserByUsername("bob")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
-            username = "DELIUSSMITH",
+            username = "BOB",
             userId = "12345",
             firstName = "Delius",
             surname = "Smith",
@@ -100,10 +100,10 @@ class DeliusUserServiceTest {
   fun `deliusUserByUsername test email lower case`() {
     whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
         createUserDetails().copy(email = "someWHERE@bob.COM"))
-    val optionalDetails = deliusService.getDeliusUserByUsername("DeliusSmith")
+    val optionalDetails = deliusService.getDeliusUserByUsername("BoB")
     assertThat(optionalDetails).get().isEqualTo(
         DeliusUserPersonDetails(
-            username = "DELIUSSMITH",
+            username = "BOB",
             userId = "12345",
             firstName = "Delius",
             surname = "Smith",
@@ -120,7 +120,7 @@ class DeliusUserServiceTest {
   }
 
   private fun createUserDetails(): UserDetails =
-      UserDetails(userId = "12345", username = "DeliusSmith", surname = "Smith", firstName = "Delius", enabled = true, email = "a@where.com", roles = emptyList())
+      UserDetails(userId = "12345", surname = "Smith", firstName = "Delius", enabled = true, email = "a@where.com", roles = emptyList())
 
   @Test
   fun `authenticateUser disabled`() {

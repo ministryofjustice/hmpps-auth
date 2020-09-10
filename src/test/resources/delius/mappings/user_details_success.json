@@ -2,14 +2,12 @@
   "priority": 2,
   "request": {
     "method": "GET",
-    "urlPattern": "/secure/users/DELIUS.*/details"
+    "urlPattern": "/secure/users/[dD][eE][lL][iI][uU][sS].*/details"
   },
   "response": {
-    "transformers": ["response-template"],
     "status": 200,
     "jsonBody": {
       "userId": 2500077027,
-      "username": "{{request.path.[2]}}",
       "firstName": "Delius",
       "surname": "Smith",
       "email": "test@digital.justice.gov.uk",
