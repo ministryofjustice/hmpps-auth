@@ -18,7 +18,7 @@ dependencies {
   implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
   implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.0.RELEASE")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
-  implementation("com.nimbusds:nimbus-jose-jwt:8.20")
+  implementation("com.nimbusds:nimbus-jose-jwt:9.0")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
@@ -72,7 +72,7 @@ dependencies {
   testImplementation("org.slf4j:slf4j-api:1.7.30")
   testImplementation("com.auth0:java-jwt:3.10.3")
 
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.18.1")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.19.0")
   testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.5.1")
   testImplementation("org.fluentlenium:fluentlenium-assertj:4.5.1")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.21")
