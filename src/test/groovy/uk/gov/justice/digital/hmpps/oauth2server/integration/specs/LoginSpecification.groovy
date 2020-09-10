@@ -79,21 +79,21 @@ class LoginSpecification extends DeliusIntegrationSpec {
         to LoginPage
 
         when: "I login with wrong password as a delius user"
-        loginAs DELIUS_LOCKED, 'wrongpassword'
+        loginAs 'DELIUS_LOCKED_IN_AUTH', 'wrongpassword'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
         errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times."
 
         when: "I login with wrong password as a delius user"
-        loginAs DELIUS_LOCKED, 'wrongpassword'
+        loginAs 'DELIUS_LOCKED_IN_AUTH', 'wrongpassword'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
         errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times."
 
         when: "I login with wrong password as a delius user"
-        loginAs DELIUS_LOCKED, 'wrongpassword'
+        loginAs 'DELIUS_LOCKED_IN_AUTH', 'wrongpassword'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
@@ -105,7 +105,7 @@ class LoginSpecification extends DeliusIntegrationSpec {
         to LoginPage
 
         when: "I login with disabled delius user"
-        loginAs DELIUS_DISABLED, 'password123456'
+        loginAs DELIUS_LOCKED, 'password123456'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
@@ -148,7 +148,7 @@ class LoginSpecification extends DeliusIntegrationSpec {
     }
 
     def "Attempt login when delius connections time out"() {
-      // dev-config defines timeout to delius as 2 seconds.  The deliustimeout user has a success mapping,
+      // dev-config defines timeout to delius as 2 seconds.  The DELIUS_ERROR_TIMEOUT user has a success mapping,
       // but with fixed delay of 2 seconds which should therefore cause the timeout.
       // If timeout not working then login will succeed instead and test will fail.
         given: 'I am on the Login page'
