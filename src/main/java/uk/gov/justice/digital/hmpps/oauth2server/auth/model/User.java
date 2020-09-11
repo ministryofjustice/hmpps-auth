@@ -38,6 +38,7 @@ import java.util.UUID;
 
 import static javax.persistence.FetchType.EAGER;
 
+@SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
 @Table(name = "USERS")
 @NoArgsConstructor
@@ -170,10 +171,15 @@ public class User implements UserPersonDetails, CredentialsContainer {
     }
 
     public UserToken createToken(final TokenType tokenType) {
-        final var token = new UserToken(tokenType, this);
-        // equals and hashcode by token type so remove will remove any token of same type
-        tokens.remove(token);
-        tokens.add(token);
+        final var optionalToken = tokens.stream().filter(t -> t.getTokenType() == tokenType).findFirst();
+        final UserToken token;
+        if (optionalToken.isPresent()) {
+            token = optionalToken.get();
+            token.resetExpiry();
+        } else {
+            token = new UserToken(tokenType, this);
+            tokens.add(token);
+        }
         return token;
     }
 

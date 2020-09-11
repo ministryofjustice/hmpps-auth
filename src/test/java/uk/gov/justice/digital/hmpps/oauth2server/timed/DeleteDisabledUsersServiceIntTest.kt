@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig
 import javax.sql.DataSource
 
+@Suppress("SqlResolve")
 @DataJpaTest
 @ActiveProfiles("test")
 @Import(AuthDbConfig::class, NomisDbConfig::class, FlywayConfig::class)
@@ -57,16 +58,16 @@ class DeleteDisabledUsersServiceIntTest {
     TestTransaction.start()
     val jdbcTemplate = JdbcTemplate(dataSource)
     val usernameWhereClause = "where username in ('AUTH_DELETE', 'AUTH_DELETEALL', 'NOMIS_DELETE')"
-    val userIdWhereClause = String.format("where user_id in ('%s', '%s', '%s')", authDeleteId, authDeleteAllId, nomisDeleteId)
-    val retries = jdbcTemplate.queryForList(String.format("select * from user_retries %s", usernameWhereClause))
+    val userIdWhereClause = "where user_id in ('$authDeleteId', '$authDeleteAllId', '$nomisDeleteId')"
+    checkNoRows(jdbcTemplate, "user_retries", usernameWhereClause)
+    checkNoRows(jdbcTemplate, "users", usernameWhereClause)
+    checkNoRows(jdbcTemplate, "user_token", userIdWhereClause)
+    checkNoRows(jdbcTemplate, "user_role", userIdWhereClause)
+    checkNoRows(jdbcTemplate, "user_group", userIdWhereClause)
+  }
+
+  private fun checkNoRows(jdbcTemplate: JdbcTemplate, table: String, whereClause: String) {
+    val retries = jdbcTemplate.queryForList("select * from $table $whereClause")
     assertThat(retries).isEmpty()
-    val users = jdbcTemplate.queryForList(String.format("select * from users %s", usernameWhereClause))
-    assertThat(users).isEmpty()
-    val tokens = jdbcTemplate.queryForList(String.format("select * from user_token %s", userIdWhereClause))
-    assertThat(tokens).isEmpty()
-    val roles = jdbcTemplate.queryForList(String.format("select * from user_role %s", userIdWhereClause))
-    assertThat(roles).isEmpty()
-    val groups = jdbcTemplate.queryForList(String.format("select * from user_group %s", userIdWhereClause))
-    assertThat(groups).isEmpty()
   }
 }

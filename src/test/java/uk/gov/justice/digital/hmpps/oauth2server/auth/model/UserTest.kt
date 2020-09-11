@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceTy
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.CHANGE
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import java.time.LocalDateTime
 
 @Suppress("UsePropertyAccessSyntax")
 class UserTest {
@@ -22,6 +23,19 @@ class UserTest {
       val resetToken = user.createToken(RESET)
       assertThat(user.tokens).containsOnly(changeToken, resetToken)
       assertThat(user.tokens).extracting<String> { it.token }.containsOnly(changeToken.token, resetToken.token)
+    }
+
+    @Test
+    fun `test create token reuses existing token and resets expiry`() {
+      val user = User.of("user")
+      val token = user.createToken(RESET)
+      val now = LocalDateTime.now()
+      token.tokenExpiry = now
+
+      val newToken = user.createToken(RESET)
+      assertThat(newToken).isSameAs(token)
+      val tomorrow = now.plusDays(1) // reset tokens expire one day later
+      assertThat(newToken.tokenExpiry).isBetween(tomorrow.minusMinutes(5), tomorrow.plusMinutes(5))
     }
   }
 

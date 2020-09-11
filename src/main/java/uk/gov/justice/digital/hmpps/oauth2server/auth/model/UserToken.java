@@ -22,7 +22,7 @@ import java.util.UUID;
 @Table(name = "USER_TOKEN")
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = {"tokenType"})
+@EqualsAndHashCode(of = {"user", "tokenType"})
 @ToString(exclude = "user")
 public class UserToken {
 
@@ -46,6 +46,10 @@ public class UserToken {
         this.tokenType = tokenType;
         this.user = user;
 
+        resetExpiry();
+    }
+
+    void resetExpiry() {
         final var now = LocalDateTime.now();
         this.tokenExpiry = tokenType == TokenType.CHANGE || tokenType == TokenType.MFA ? now.plusMinutes(20) : now.plusDays(1);
     }
