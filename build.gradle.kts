@@ -1,8 +1,8 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.2"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.4"
   id("groovy")
-  kotlin("plugin.spring") version "1.4.0"
-  kotlin("plugin.jpa") version "1.4.0"
+  kotlin("plugin.spring") version "1.4.10"
+  kotlin("plugin.jpa") version "1.4.10"
 }
 
 repositories {
@@ -18,7 +18,7 @@ dependencies {
   implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
   implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.0.RELEASE")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
-  implementation("com.nimbusds:nimbus-jose-jwt:9.0")
+  implementation("com.nimbusds:nimbus-jose-jwt:9.0.1")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
@@ -35,7 +35,7 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
-  implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1")
+  implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.1")
   implementation("uk.gov.service.notify:notifications-java-client:3.17.0-RELEASE")
 
   implementation("org.flywaydb:flyway-core:6.5.5")
@@ -67,7 +67,7 @@ dependencies {
   testImplementation("org.seleniumhq.selenium:selenium-firefox-driver:3.141.59")
   testImplementation("io.github.http-builder-ng:http-builder-ng-apache:1.0.4")
 
-  testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.1")
+  testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("com.github.tomjankes:wiremock-groovy:0.2.0")
   testImplementation("org.slf4j:slf4j-api:1.7.30")
   testImplementation("com.auth0:java-jwt:3.10.3")
