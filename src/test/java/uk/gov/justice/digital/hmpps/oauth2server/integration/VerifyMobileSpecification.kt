@@ -12,6 +12,9 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
   private lateinit var changeMobilePage: ChangeMobilePage
 
   @Page
+  private lateinit var addMobilePage: AddMobilePage
+
+  @Page
   private lateinit var verifyMobileSentPage: VerifyMobileSentPage
 
   @Page
@@ -64,12 +67,12 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `Resend code page without phone number is redirected to enter new phone number page`() {
-    goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE2")
+    goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE3")
 
     goTo(mobileVerificationResendPage)
         .resendCode()
 
-    changeMobilePage.checkError("No phone number found")
+    addMobilePage.checkError("No phone number found")
   }
 
   @Test
@@ -86,12 +89,12 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/mobile-resend")
-class MobileVerificationResendPage : AuthPage<MobileVerificationResendPage>("HMPPS Digital Services - Resend Verification Code", "Resend security code") {
+class MobileVerificationResendPage : AuthPage<MobileVerificationResendPage>("HMPPS Digital Services - Resend Verification Code", "Send another text message") {
   @FindBy(css = "input[type='submit']")
   private lateinit var continueButton: FluentWebElement
 
   fun resendCode() {
-    assertThat(continueButton.value()).isEqualTo("Resend security code")
+    assertThat(continueButton.value()).isEqualTo("Send text")
     continueButton.click()
   }
 }

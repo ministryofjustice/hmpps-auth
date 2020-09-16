@@ -22,15 +22,19 @@
     </div>
   </div>
   <h1 class="govuk-label-wrapper">
-    <label class="govuk-label govuk-label--xl" for="mobile">What is your new mobile phone number?
+    <label class="govuk-label govuk-label--xl" for="mobile" th:if="${mobile == null}">What is your mobile phone number?
+    </label>
+    <label class="govuk-label govuk-label--xl" for="mobile" th:unless="${mobile == null}">What is your new mobile phone
+      number?
     </label>
   </h1>
+  <p class="govuk-body">We might use your mobile number to confirm your identity when you sign in.</p>
   <form class="form" th:action="@{/change-mobile}" method="POST" id="changeMobileForm">
     <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
       <span th:if="${error}" id="mobile-error" class="govuk-error-message"
             th:text="#{${'verifymobile.' + error}}">No error</span>
       <span id="mobile-number-hint" class="govuk-hint">
-    Must be a UK mobile number, for example 07700 900321 or +44 7700 900321
+    This must be a UK mobile number, for example 07700 900321 or +44 7700 900321
       </span>
       <input th:class="'govuk-input govuk-input--width-20'  + (${error} ? ' govuk-input--error' : '')"
              id="mobile" name="mobile" type="tel" inputmode=”numeric” pattern="[+0-9 ]*" autocomplete="tel"
@@ -39,12 +43,9 @@
              maxlength="20" th:value="${mobile}">
     </div>
     <input class="govuk-button" id="submit" type="submit" role="button"
-           data-element-id="continue-button" th:value="(${mobile == null} ? 'Add' : 'Update')">
+           data-element-id="continue-button" th:value="Continue">
   </form>
 
-  <p class="govuk-body">
-    We will use your number to confirm your identity if necessary when logging in.
-  </p>
 </div>
 </body>
 </html>
