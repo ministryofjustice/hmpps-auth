@@ -139,7 +139,7 @@ class OauthSpecification extends TestSpecification {
     def "Client Credentials Login access token for proxy user with no username"() {
 
         given:
-        def oauthRestTemplate = getOauthClientGrant("community-api-client", "clientsecret")
+        def oauthRestTemplate = getOauthClientGrant("community-api-client", "community-api-client")
 
         when:
         def token = oauthRestTemplate.getAccessToken()
