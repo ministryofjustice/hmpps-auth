@@ -22,10 +22,9 @@
     </div>
   </div>
   <h1 class="govuk-label-wrapper">
-    <label class="govuk-label govuk-label--xl" for="mobile" th:if="${mobile == null}">What is your mobile phone number?
+    <label class="govuk-label govuk-label--xl" for="mobile" th:if="${mobile == null}">What is your mobile number?
     </label>
-    <label class="govuk-label govuk-label--xl" for="mobile" th:unless="${mobile == null}">What is your new mobile phone
-      number?
+    <label class="govuk-label govuk-label--xl" for="mobile" th:unless="${mobile == null}">What is your new mobile number?
     </label>
   </h1>
   <p class="govuk-body">We might use your mobile number to confirm your identity when you sign in.</p>
@@ -45,7 +44,6 @@
     <input class="govuk-button" id="submit" type="submit" role="button"
            data-element-id="continue-button" th:value="Continue">
   </form>
-
 </div>
 </body>
 </html>

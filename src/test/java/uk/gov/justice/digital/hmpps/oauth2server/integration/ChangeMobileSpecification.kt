@@ -45,9 +45,9 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     goTo(changeMobilePage)
         .setMobileAs("07")
-        .checkError("Enter a mobile phone number in the correct format")
+        .checkError("Enter a mobile number in the correct format")
         .updateMobileAs("", "07")
-        .checkError("Enter a mobile phone number")
+        .checkError("Enter a mobile number")
   }
 
   @Test
@@ -78,7 +78,7 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/change-mobile")
-open class ChangeMobilePage : AuthPage<ChangeMobilePage>("HMPPS Digital Services - Change Mobile Number", "What is your new mobile phone number?") {
+open class ChangeMobilePage : AuthPage<ChangeMobilePage>("HMPPS Digital Services - Change Mobile Number", "What is your new mobile number?") {
   @FindBy(css = "input[type='submit']")
   private lateinit var changeMobileButton: FluentWebElement
   private lateinit var mobile: FluentWebElement
@@ -105,7 +105,7 @@ open class ChangeMobilePage : AuthPage<ChangeMobilePage>("HMPPS Digital Services
 }
 
 @PageUrl("/change-mobile")
-open class AddMobilePage : AuthPage<AddMobilePage>("HMPPS Digital Services - Change Mobile Number", "What is your mobile phone number?") {
+open class AddMobilePage : AuthPage<AddMobilePage>("HMPPS Digital Services - Change Mobile Number", "What is your mobile number?") {
   @FindBy(css = "input[type='submit']")
   private lateinit var changeMobileButton: FluentWebElement
   private lateinit var mobile: FluentWebElement
