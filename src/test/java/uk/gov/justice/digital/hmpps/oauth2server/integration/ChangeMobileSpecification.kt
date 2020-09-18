@@ -9,6 +9,9 @@ import org.openqa.selenium.support.FindBy
 
 class ChangeMobileSpecification : AbstractAuthSpecification() {
   @Page
+  private lateinit var addMobilePage: AddMobilePage
+
+  @Page
   private lateinit var changeMobilePage: ChangeMobilePage
 
   @Page
@@ -43,7 +46,7 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
   fun `Change mobile invalid number entered`() {
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE2")
 
-    goTo(changeMobilePage)
+    goTo(addMobilePage)
         .setMobileAs("07")
         .checkError("Enter a mobile number in the correct format")
         .updateMobileAs("", "07")

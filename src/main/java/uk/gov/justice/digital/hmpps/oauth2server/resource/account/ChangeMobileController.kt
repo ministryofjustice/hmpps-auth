@@ -23,11 +23,13 @@ class ChangeMobileController(private val userService: UserService,
   @GetMapping("/change-mobile")
   fun changeMobileRequest(authentication: Authentication): ModelAndView {
     val currentMobile = userService.getUserWithContacts(authentication.name).mobile
+    val requestType = if (currentMobile.isNullOrEmpty()) "add" else "Change"
     return ModelAndView("account/changeMobile", "mobile", currentMobile)
+        .addObject("requestType", requestType)
   }
 
   @PostMapping("/change-mobile")
-  fun changeMobile(@RequestParam mobile: String?, authentication: Authentication): ModelAndView {
+  fun changeMobile(@RequestParam mobile: String?, requestType: String, authentication: Authentication): ModelAndView {
     val username = authentication.name
     if (userService.isSameAsCurrentVerifiedMobile(username, mobile)) {
       return ModelAndView("redirect:/verify-mobile-already")
@@ -39,19 +41,20 @@ class ChangeMobileController(private val userService: UserService,
       log.info("Validation failed for mobile phone number due to {}", e.reason)
       telemetryClient.trackEvent("VerifyMobileRequestFailure", mapOf("username" to username, "reason" to e.reason), null)
 
-      createChangeOrVerifyMobileError(e.reason, mobile)
+      createChangeOrVerifyMobileError(e.reason, mobile, requestType)
     } catch (e: NotificationClientException) {
       log.error("Failed to send sms due to", e)
       telemetryClient.trackEvent("VerifyMobileRequestFailure", mapOf("username" to username, "reason" to "notify"), null)
 
-      createChangeOrVerifyMobileError("other", mobile)
+      createChangeOrVerifyMobileError("other", mobile, requestType)
     }
   }
 
-  private fun createChangeOrVerifyMobileError(reason: String, currentMobile: String?): ModelAndView =
+  private fun createChangeOrVerifyMobileError(reason: String, currentMobile: String?, requestType: String): ModelAndView =
       ModelAndView("account/changeMobile")
           .addObject("error", reason)
           .addObject("mobile", currentMobile)
+          .addObject("requestType", requestType)
 
   private fun redirectToVerifyMobileWithVerifyCode(verifyCode: String): ModelAndView {
     val modelAndView = ModelAndView("redirect:/verify-mobile")

@@ -22,9 +22,9 @@
     </div>
   </div>
   <h1 class="govuk-label-wrapper">
-    <label class="govuk-label govuk-label--xl" for="mobile" th:if="${mobile == null}">What is your mobile number?
+    <label class="govuk-label govuk-label--xl" for="mobile" th:if="${requestType == 'add'}">What is your mobile number?
     </label>
-    <label class="govuk-label govuk-label--xl" for="mobile" th:unless="${mobile == null}">What is your new mobile number?
+    <label class="govuk-label govuk-label--xl" for="mobile" th:unless="${requestType == 'add'}">What is your new mobile number?
     </label>
   </h1>
   <p class="govuk-body">We might use your mobile number to confirm your identity when you sign in.</p>
@@ -35,6 +35,8 @@
       <span id="mobile-number-hint" class="govuk-hint">
     This must be a UK mobile number, for example 07700 900321 or +44 7700 900321
       </span>
+      <input id="requestType" name="requestType" type="hidden" data-element-id="requestType"
+             th:value="${requestType}">
       <input th:class="'govuk-input govuk-input--width-20'  + (${error} ? ' govuk-input--error' : '')"
              id="mobile" name="mobile" type="tel" inputmode=”numeric” pattern="[+0-9 ]*" autocomplete="tel"
              autocapitalize="off" spellcheck="false" data-element-id="mobile"
