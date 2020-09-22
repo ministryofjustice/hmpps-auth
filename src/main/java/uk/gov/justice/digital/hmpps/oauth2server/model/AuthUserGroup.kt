@@ -1,21 +1,16 @@
-package uk.gov.justice.digital.hmpps.oauth2server.model;
+package uk.gov.justice.digital.hmpps.oauth2server.model
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group;
+import io.swagger.annotations.ApiModel
+import io.swagger.annotations.ApiModelProperty
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 
 @ApiModel(description = "User Group")
-@Data
-public class AuthUserGroup {
-    @ApiModelProperty(required = true, value = "Group Code", example = "HDC_NPS_NE", position = 1)
-    private final String groupCode;
+data class AuthUserGroup(
+    @ApiModelProperty(required = true, value = "Group Code", example = "HDC_NPS_NE")
+    val groupCode: String,
 
-    @ApiModelProperty(required = true, value = "Group Name", example = "HDC NPS North East", position = 2)
-    private final String groupName;
+    @ApiModelProperty(required = true, value = "Group Name", example = "HDC NPS North East")
+    val groupName: String) {
 
-    public AuthUserGroup(final Group group) {
-        groupCode = group.getGroupCode();
-        groupName = group.getGroupName();
-    }
+  constructor(g: Group) : this(g.groupCode, g.groupName)
 }

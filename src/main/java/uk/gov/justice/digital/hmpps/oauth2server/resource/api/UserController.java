@@ -1,6 +1,10 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -75,7 +79,7 @@ public class UserController {
     public ResponseEntity<?> getUserEmail(@ApiParam(value = "The username of the user.", required = true) @PathVariable final String username) {
         return userService
                 .getOrCreateUser(username)
-                .map(email -> email.isVerified() ? ResponseEntity.ok(EmailAddress.fromUser(email)) : ResponseEntity.noContent().build())
+                .map(user -> user.isVerified() ? ResponseEntity.ok(new EmailAddress(user)) : ResponseEntity.noContent().build())
                 .orElseGet(() -> notFoundResponse(username));
     }
 
