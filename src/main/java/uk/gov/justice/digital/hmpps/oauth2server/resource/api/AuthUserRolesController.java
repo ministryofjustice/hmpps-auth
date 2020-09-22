@@ -1,13 +1,21 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService;
@@ -122,14 +130,14 @@ public class AuthUserRolesController {
             final var usernameInDb = u.getUsername();
             try {
                 authUserRoleService.removeRole(usernameInDb, role, authentication.getName(), authentication.getAuthorities());
-            } catch (AuthUserRoleException e) {
+            } catch (final AuthUserRoleException e) {
                 log.info("Add role failed for user {} and role {} for field {} with reason {}", usernameInDb, role, e.getField(), e.getErrorCode());
                 return ResponseEntity.badRequest().<Object>body(new ErrorDetail(String.format("%s.%s", e.getField(), e.getErrorCode()),
                         String.format("%s failed validation", e.getField()), e.getField()));
-            } catch (AuthUserGroupRelationshipException e) {
-                log.info("Add role failed for user {} with reason {}", usernameInDb,  e.getErrorCode());
+            } catch (final AuthUserGroupRelationshipException e) {
+                log.info("Add role failed for user {} with reason {}", usernameInDb, e.getErrorCode());
                 return ResponseEntity.status(HttpStatus.CONFLICT).
-                        <Object>body(new ErrorDetail("unable to remove role", "Unable to remove user, the user is not within one of your groups", "role"));
+                        <Object>body(new ErrorDetail("unable to remove role", "Unable to remove role, the user is not within one of your groups", "role"));
             }
 
             log.info("Remove role succeeded for user {} and role {}", usernameInDb, role);
