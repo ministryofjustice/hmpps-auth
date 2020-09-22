@@ -4,7 +4,6 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
@@ -20,7 +19,6 @@ class AuthAllGroupsControllerTest {
     val groups = listOf(group2, group1)
     whenever(authUserGroupService.allGroups).thenReturn(groups)
     val response = controller.allGroups()
-    assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-    assertThat(response.body).containsOnly(AuthUserGroup(group1), AuthUserGroup(group2))
+    assertThat(response).containsOnly(AuthUserGroup(group1), AuthUserGroup(group2))
   }
 }
