@@ -31,7 +31,7 @@ internal class AuthUserRolesServiceTest {
   @Test
   fun addRole_notfound() {
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")))
-    assertThatThrownBy { service.addRole("user", "        ", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Add role failed for field role with reason: notfound")
+    assertThatThrownBy { service.addRole("user", "        ", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: role.notfound")
   }
 
   @Test
@@ -40,7 +40,7 @@ internal class AuthUserRolesServiceTest {
     val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
     whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
     whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(Authority("FRED", "Role Fred")))
-    assertThatThrownBy { service.addRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Add role failed for field role with reason: invalid")
+    assertThatThrownBy { service.addRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: invalid")
   }
 
   @Test
@@ -72,7 +72,7 @@ internal class AuthUserRolesServiceTest {
     val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
     whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
     whenever(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(listOf(Authority("FRED", "Role Fred")))
-    assertThatThrownBy { service.addRole("user", "BOB", "admin", GROUP_MANAGER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Add role failed for field role with reason: invalid")
+    assertThatThrownBy { service.addRole("user", "BOB", "admin", GROUP_MANAGER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: invalid")
   }
 
   @Test
@@ -81,7 +81,7 @@ internal class AuthUserRolesServiceTest {
     val role = Authority("ROLE_OAUTH_ADMIN", "Role Licence Vary")
     whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
     whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(role))
-    assertThatThrownBy { service.addRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Add role failed for field role with reason: invalid")
+    assertThatThrownBy { service.addRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: invalid")
   }
 
   @Test
@@ -103,7 +103,7 @@ internal class AuthUserRolesServiceTest {
     user.authorities = HashSet(listOf(role))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
-    assertThatThrownBy { service.addRole("user", "LICENCE_VARY", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Add role failed for field role with reason: exists")
+    assertThatThrownBy { service.addRole("user", "LICENCE_VARY", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: role.exists")
   }
 
   @Test
@@ -142,7 +142,7 @@ internal class AuthUserRolesServiceTest {
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     val role2 = Authority("BOB", "Bloggs")
     whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2))
-    assertThatThrownBy { service.removeRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Add role failed for field role with reason: missing")
+    assertThatThrownBy { service.removeRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: role.missing")
   }
 
   @Test
@@ -154,7 +154,7 @@ internal class AuthUserRolesServiceTest {
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2))
     whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(role))
-    assertThatThrownBy { service.removeRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Add role failed for field role with reason: invalid")
+    assertThatThrownBy { service.removeRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: invalid")
   }
 
   @Test
@@ -188,7 +188,7 @@ internal class AuthUserRolesServiceTest {
         .thenReturn(Optional.of(groupManager))
     whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2))
     whenever(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(listOf(role))
-    assertThatThrownBy { service.removeRole("user", "BOB", "admin", GROUP_MANAGER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Add role failed for field role with reason: invalid")
+    assertThatThrownBy { service.removeRole("user", "BOB", "admin", GROUP_MANAGER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: invalid")
   }
 
   @Test
@@ -198,7 +198,7 @@ internal class AuthUserRolesServiceTest {
     val role2 = Authority("BOB", "Bloggs")
     user.authorities = HashSet(listOf(role, role2))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
-    assertThatThrownBy { service.removeRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Add role failed for field role with reason: notfound")
+    assertThatThrownBy { service.removeRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: role.notfound")
   }
 
   @Test

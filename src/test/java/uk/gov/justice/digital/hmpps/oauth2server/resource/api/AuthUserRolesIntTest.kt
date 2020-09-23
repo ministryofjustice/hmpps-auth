@@ -28,7 +28,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.CONFLICT)
-        .expectBody().json("""{error: "role.exists", error_description: "Username AUTH_RO_USER already has role licence_ro", field: "role"}""")
+        .expectBody().json("""{error: "role.exists", error_description: "Modify role failed for field role with reason: role.exists", field: "role"}""")
   }
 
   @Test
@@ -38,7 +38,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
         .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.CONFLICT)
-        .expectBody().json("""{error: "unable to add role", error_description: "Unable to add role, the user is not within one of your groups", field: "role"}""")
+        .expectBody().json("""{error: "User not with your groups", error_description: "Unable to maintain user: Auth Adm with reason: User not with your groups", field: "username"}""")
   }
 
   @Test
@@ -48,7 +48,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .exchange()
         .expectStatus().isBadRequest
-        .expectBody().json("""{error: "role.notfound", error_description: "role failed validation", field: "role"}""")
+        .expectBody().json("""{error: "role.notfound", error_description: "Modify role failed for field role with reason: role.notfound", field: "role"}""")
   }
 
   @Test
@@ -73,13 +73,23 @@ class AuthUserRolesIntTest : IntegrationTest() {
   }
 
   @Test
-  fun `Auth User Roles remove role endpoint removes a role from a user that isn't on the user`() {
+  fun `Auth User Roles remove role endpoint removes a role from a user that isn't found`() {
     webTestClient
         .delete().uri("/auth/api/authuser/AUTH_RO_USER_TEST/roles/licence_bob")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .exchange()
         .expectStatus().isBadRequest
-        .expectBody().json("""{error: "role.notfound", error_description: "role failed validation", field: "role"}""")
+        .expectBody().json("""{error: "role.notfound", error_description: "Modify role failed for field role with reason: role.notfound", field: "role"}""")
+  }
+
+  @Test
+  fun `Auth User Roles remove role endpoint removes a role from a user that isn't on the user`() {
+    webTestClient
+        .delete().uri("/auth/api/authuser/AUTH_RO_USER_TEST/roles/VIDEO_LINK_COURT_USER")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .exchange()
+        .expectStatus().isBadRequest
+        .expectBody().json("""{error: "role.missing", error_description: "Modify role failed for field role with reason: role.missing", field: "role"}""")
   }
 
   @Test
@@ -89,7 +99,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
         .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.CONFLICT)
-        .expectBody().json("""{error: "unable to remove role", error_description: "Unable to remove role, the user is not within one of your groups", field: "role"}""")
+        .expectBody().json("""{error: "User not with your groups", error_description: "Unable to maintain user: Auth Adm with reason: User not with your groups", field: "username"}""")
   }
 
   @Test
