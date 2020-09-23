@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security;
 
 import com.google.common.collect.Sets;
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
@@ -36,7 +35,6 @@ public class MaintainUserCheck {
         }
     }
 
-    @Getter
     public static class AuthUserGroupRelationshipException extends Exception {
         private final String username;
         private final String errorCode;
@@ -46,6 +44,14 @@ public class MaintainUserCheck {
 
             this.username = username;
             this.errorCode = errorCode;
+        }
+
+        public String getUsername() {
+            return this.username;
+        }
+
+        public String getErrorCode() {
+            return this.errorCode;
         }
     }
 }
