@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.maintain;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
@@ -39,7 +38,7 @@ public class AuthUserRoleService {
         maintainUserCheck.ensureUserLoggedInUserRelationship(loggedInUser, authorities, user);
 
         // check that role exists
-        final var role = roleRepository.findByRoleCode(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "notfound"));
+        final var role = roleRepository.findByRoleCode(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "role.notfound"));
 
         if (user.getAuthorities().contains(role)) {
             throw new AuthUserRoleExistsException();
@@ -63,10 +62,10 @@ public class AuthUserRoleService {
         maintainUserCheck.ensureUserLoggedInUserRelationship(loggedInUser, authorities, user);
 
         final var roleFormatted = formatRole(roleCode);
-        final var role = roleRepository.findByRoleCode(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "notfound"));
+        final var role = roleRepository.findByRoleCode(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "role.notfound"));
 
         if (!user.getAuthorities().contains(role)) {
-            throw new AuthUserRoleException("role", "missing");
+            throw new AuthUserRoleException("role", "role.missing");
         }
 
         if (!getAssignableRoles(username, authorities).contains(role)) {
@@ -97,7 +96,7 @@ public class AuthUserRoleService {
 
     public static class AuthUserRoleExistsException extends AuthUserRoleException {
         public AuthUserRoleExistsException() {
-            super("role", "exists");
+            super("role", "role.exists");
         }
     }
 
@@ -105,16 +104,23 @@ public class AuthUserRoleService {
         return authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_OAUTH_ADMIN"::equals);
     }
 
-    @Getter
     public static class AuthUserRoleException extends Exception {
         private final String errorCode;
         private final String field;
 
         public AuthUserRoleException(final String field, final String errorCode) {
-            super(String.format("Add role failed for field %s with reason: %s", field, errorCode));
+            super(String.format("Modify role failed for field %s with reason: %s", field, errorCode));
 
             this.field = field;
             this.errorCode = errorCode;
+        }
+
+        public String getErrorCode() {
+            return this.errorCode;
+        }
+
+        public String getField() {
+            return this.field;
         }
     }
 }
