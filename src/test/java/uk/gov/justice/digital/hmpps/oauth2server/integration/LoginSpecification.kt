@@ -173,12 +173,6 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
     signInButton.submit()
   }
 
-  fun viewContact() {
-    val contactLink = el("a[data-qa='contact']")
-    assertThat(contactLink.text()).isEqualTo("Contact")
-    contactLink.click()
-  }
-
   fun viewTerms() {
     val termsLink = el("a[data-qa='terms']")
     assertThat(termsLink.text()).isEqualTo("Terms and conditions")

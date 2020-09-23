@@ -4,28 +4,10 @@ services:
   hmpps-auth:
     image: quay.io/hmpps/hmpps-auth:latest
     container_name: hmpps-auth
-    networks:
-      - hmpps
     ports:
       - "9090:8080"
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/auth/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/auth/health"]
     environment:
+      - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=dev
-
-  prison-api:
-    image: quay.io/hmpps/prison-api:latest
-    container_name: prison-api
-    networks:
-      - hmpps
-    depends_on:
-      - hmpps-auth
-    ports:
-      - "8080:8080"
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
-    environment:
-      - SPRING_PROFILES_ACTIVE=nomis-hsqldb
-
-networks:
-  hmpps:
