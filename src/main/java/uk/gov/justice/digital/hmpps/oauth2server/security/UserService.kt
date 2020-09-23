@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.azure.service.AzureUserService
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
@@ -19,6 +20,7 @@ import java.util.*
 class UserService(private val nomisUserService: NomisUserService,
                   private val authUserService: AuthUserService,
                   private val deliusUserService: DeliusUserService,
+                  private val azureUserService: AzureUserService,
                   private val userRepository: UserRepository,
                   private val verifyEmailService: VerifyEmailService) {
 
@@ -29,6 +31,7 @@ class UserService(private val nomisUserService: NomisUserService,
   fun findMasterUserPersonDetails(username: String): Optional<UserPersonDetails> =
       authUserService.getAuthUserByUsername(username).map { UserPersonDetails::class.java.cast(it) }
           .or { nomisUserService.getNomisUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
+          .or { azureUserService.getAzureUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
           .or { deliusUserService.getDeliusUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
 
   fun findUser(username: String): Optional<User> = userRepository.findByUsername(StringUtils.upperCase(username))

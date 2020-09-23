@@ -13,6 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 import org.springframework.stereotype.Component;
 
@@ -47,9 +49,24 @@ public class JwtAuthenticationHelper {
     }
 
     String createJwt(final Authentication authentication) {
-        return createJwtWithId(authentication, UUID.randomUUID().toString());
+        return authentication instanceof OAuth2AuthenticationToken ?
+                createJwtWithIdFromOidcAuthentication((OAuth2AuthenticationToken)authentication, UUID.randomUUID().toString())
+                : createJwtWithId(authentication, UUID.randomUUID().toString());
     }
 
+    String createJwtWithIdFromOidcAuthentication(final OAuth2AuthenticationToken authentication, final String jwtId) {
+        final var userDetails = (DefaultOidcUser) authentication.getPrincipal();
+        final var username = userDetails.getName().toUpperCase();
+        final var authorities = Optional.ofNullable(authentication.getAuthorities()).orElse(Collections.emptyList());
+        final var authoritiesAsString = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
+        return Jwts.builder()
+                .setId(jwtId)
+                .setSubject(username)
+                .addClaims(Map.of("authorities", authoritiesAsString, "name", userDetails.getFullName(), "auth_source", AuthSource.azuread.getSource(), "user_id", userDetails.getPreferredUsername()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiryTime.toMillis()))
+                .signWith(SignatureAlgorithm.RS256, keyPair.getPrivate())
+                .compact();
+    }
 
     String createJwtWithId(final Authentication authentication, final String jwtId) {
         final var userDetails = (UserPersonDetails) authentication.getPrincipal();
