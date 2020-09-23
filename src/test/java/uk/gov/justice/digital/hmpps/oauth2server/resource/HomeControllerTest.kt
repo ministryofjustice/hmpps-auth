@@ -38,23 +38,6 @@ class HomeControllerTest {
     assertThat(modelAndView.viewName).isEqualTo("landing")
   }
 
-  @Test
-  fun contact_servicesModel() {
-    whenever(landingService.findAllServices()).thenReturn(ALL_SERVICES)
-    val homeController = HomeController(landingService)
-    val modelAndView = homeController.contact()
-    val allocatedServices = modelAndView.model["services"] as List<Service>?
-    assertThat(allocatedServices).extracting<String> { it.code }.containsExactly("DM", "NOMIS")
-  }
-
-  @Test
-  fun contact_view() {
-    whenever(landingService.findAllServices()).thenReturn(ALL_SERVICES)
-    val homeController = HomeController(landingService)
-    val modelAndView = homeController.contact()
-    assertThat(modelAndView.viewName).isEqualTo("contact")
-  }
-
   private fun authenticationWithRole(vararg roles: String): Authentication {
     val authorities = roles.map { SimpleGrantedAuthority(it) }.toList()
     return UsernamePasswordAuthenticationToken("user", "pass", authorities)

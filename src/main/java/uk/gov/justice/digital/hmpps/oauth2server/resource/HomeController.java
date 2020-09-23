@@ -31,15 +31,4 @@ public class HomeController {
     public String terms() {
         return "terms";
     }
-
-    @GetMapping("/contact")
-    public ModelAndView contact() {
-        final var services = landingService.findAllServices();
-
-        // create a list of services that have email addresses
-        final var servicesWithEmail = services.stream()
-                .filter((s) -> s.getEmail() != null)
-                .collect(Collectors.toList());
-        return new ModelAndView("contact", "services", servicesWithEmail);
-    }
 }

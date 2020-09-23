@@ -9,8 +9,9 @@
           <h2 class="govuk-visually-hidden">Support links</h2>
           <ul class="govuk-footer__inline-list">
             <li class="govuk-footer__inline-list-item">
-              <a th:href="@{/contact}" data-qa="contact" class="govuk-footer__link">
-                Contact
+              <a th:href="${@environment.getProperty('application.support.url')}" data-qa="contact"
+                 class="govuk-footer__link">
+                Feedback and support
               </a>
             </li>
             <li class="govuk-footer__inline-list-item">
