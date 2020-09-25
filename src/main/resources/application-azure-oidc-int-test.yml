@@ -1,0 +1,23 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          microsoft:
+            client-id: dummy-client-id
+            client-secret: dummy-client-secret
+            scope: openid,email,profile
+            authorization-grant-type: authorization_code
+            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
+        provider:
+          microsoft:
+            authorization-uri: http://localhost:8101/oauth2/v2.0/authorize
+            token-uri: http://localhost:8101/tenant-id/oauth2/v2.0/token
+            user-info-uri: http://localhost:8101/oidc/userinfo
+            user-name-attribute: sub
+            jwk-set-uri: http://localhost:8101/tenant-id/discovery/v2.0/keys
+
+application:
+  authentication:
+    microsoft:
+      linktext: Log in with a justice.gov.uk email
