@@ -33,27 +33,32 @@ public class AuthUserRoleService {
     private final MaintainUserCheck maintainUserCheck;
 
     @Transactional(transactionManager = "authTransactionManager")
-    public void addRole(final String username, final String roleCode, final String loggedInUser, final Collection<? extends GrantedAuthority> authorities) throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
-        final var roleFormatted = formatRole(roleCode);
-
+    public void addRoles(final String username, final List<String> roleCodes, final String loggedInUser, final Collection<? extends GrantedAuthority> authorities) throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
         // already checked that user exists
         final var user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
         maintainUserCheck.ensureUserLoggedInUserRelationship(loggedInUser, authorities, user);
 
-        // check that role exists
-        final var role = roleRepository.findByRoleCode(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "role.notfound"));
+        final var formattedRoles = roleCodes.stream().map(this::formatRole).collect(Collectors.toList());
+        final var allAssignableRoles = getAllAssignableRoles(username, authorities);
 
-        if (user.getAuthorities().contains(role)) {
-            throw new AuthUserRoleExistsException();
+        for (final var roleCode : formattedRoles) {
+            // check that role exists
+            final var role = roleRepository.findByRoleCode(roleCode).orElseThrow(() -> new AuthUserRoleException("role", "role.notfound"));
+
+            if (user.getAuthorities().contains(role)) {
+                throw new AuthUserRoleExistsException();
+            }
+
+            if (!allAssignableRoles.contains(role)) {
+                throw new AuthUserRoleException("role", "invalid");
+            }
+            user.getAuthorities().add(role);
         }
-
-        if (!getAllAssignableRoles(username, authorities).contains(role)) {
-            throw new AuthUserRoleException("role", "invalid");
-        }
-
-        log.info("Adding role {} to user {}", roleFormatted, username);
-        user.getAuthorities().add(role);
-        telemetryClient.trackEvent("AuthUserRoleAddSuccess", Map.of("username", username, "role", roleFormatted, "admin", loggedInUser), null);
+        // now that roles have all been added, then audit the role additions
+        formattedRoles.forEach((roleCode) -> {
+            telemetryClient.trackEvent("AuthUserRoleAddSuccess", Map.of("username", username, "role", roleCode, "admin", loggedInUser), null);
+            log.info("Adding role {} to user {}", roleCode, username);
+        });
     }
 
     @Transactional(transactionManager = "authTransactionManager")
