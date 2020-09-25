@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
-import java.util.stream.Collectors
 
 @Slf4j
 @RestController
@@ -20,5 +19,5 @@ class AuthAllGroupsController(private val authUserGroupService: AuthUserGroupSer
   @ApiOperation(value = "Get all possible groups.", notes = "Get all groups allowed for auth users.", nickname = "allgroups", consumes = "application/json", produces = "application/json")
   @ApiResponses(value = [ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)])
   fun allGroups(): List<AuthUserGroup> =
-      authUserGroupService.allGroups.stream().map { AuthUserGroup(it) }.collect(Collectors.toList())
+      authUserGroupService.allGroups.map { AuthUserGroup(it) }
 }
