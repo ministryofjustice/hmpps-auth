@@ -2,15 +2,19 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.util.UriComponentsBuilder;
+import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,16 +28,44 @@ public class LoginController {
 
     private Iterable<ClientRegistration> clientRegistrationIterable;
 
-    public LoginController(Iterable<ClientRegistration> clientRegistrationIterable) {
+    @Autowired
+    private CookieRequestCache cookieRequestCache;
+
+    @Autowired
+    private ClientDetailsService clientDetailsService;
+
+    public LoginController(Iterable<ClientRegistration> clientRegistrationIterable, CookieRequestCache cookieRequestCache,
+                           ClientDetailsService clientDetailsService) {
         this.clientRegistrationIterable = clientRegistrationIterable;
+        this.cookieRequestCache = cookieRequestCache;
+        this.clientDetailsService = clientDetailsService;
     }
 
     @GetMapping("/login")
-    public ModelAndView loginPage(@RequestParam(required = false) final String error) {
+    public ModelAndView loginPage(@RequestParam(required = false) final String error, final HttpServletRequest request, final HttpServletResponse response) {
         val oauth2Clients = clientRegistrationIterable.spliterator() != null ? StreamSupport
                 .stream(clientRegistrationIterable.spliterator(), false)
                 .collect(Collectors.toList()) : Collections.emptyList();
 
+        final var savedRequest = cookieRequestCache.getRequest(request, response);
+
+        if (savedRequest != null) {
+            final var redirectUrl = UriComponentsBuilder.fromUriString(savedRequest.getRedirectUrl()).build();
+            final String clientId = redirectUrl.getQueryParams().getFirst("client_id");
+
+            final var isOAuthLogin = redirectUrl.getPath().endsWith("/oauth/authorize") && clientId != null;
+
+            if(isOAuthLogin) {
+                final var clientDetails = clientDetailsService.loadClientByClientId(clientId);
+
+                final Boolean skipToAzure = (Boolean) clientDetails.getAdditionalInformation().getOrDefault("skipToAzureField", false);
+
+                if (skipToAzure) {
+                    return new ModelAndView("redirect:/oauth2/authorization/microsoft");
+                }
+            }
+
+        }
         final var modelAndView = new ModelAndView("login", Collections.singletonMap("oauth2Clients", oauth2Clients));
         // send bad request if password wrong so that browser won't offer to save the password
         if (StringUtils.isNotBlank(error)) {
