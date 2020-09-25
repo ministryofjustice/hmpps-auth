@@ -312,7 +312,7 @@ class UserRepositoryTest {
   fun findAll_UserFilter_ByLastNameFirstName() {
     assertThat(repository.findAll(UserFilter.builder().name("orton, r").build()))
         .extracting<String> { it.username }
-        .containsOnly("AUTH_RO_USER", "AUTH_RO_VARY_USER", "AUTH_RO_USER_TEST")
+        .containsOnly("AUTH_RO_USER", "AUTH_RO_VARY_USER", "AUTH_RO_USER_TEST", "AUTH_RO_USER_TEST2")
   }
 
   @Test

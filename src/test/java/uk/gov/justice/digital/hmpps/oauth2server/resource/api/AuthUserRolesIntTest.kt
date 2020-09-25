@@ -138,22 +138,21 @@ class AuthUserRolesIntTest : IntegrationTest() {
         .expectBody()
         .jsonPath("$.[*].roleCode").value<List<String>> {
           assertThat(it).hasSizeGreaterThan(5)
-          assertThat(it).contains("GLOBAL_SEARCH")
+          assertThat(it).contains("PECS_COURT")
         }
   }
 
   @Test
   fun `Auth Roles endpoint returns all assignable auth roles for a group for group manager`() {
     webTestClient
-        .get().uri("/auth/api/authuser/AUTH_RO_USER/assignable-roles")
+        .get().uri("/auth/api/authuser/AUTH_RO_USER_TEST2/assignable-roles")
         .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
         .expectBody()
         .jsonPath("$.[*].roleCode").value<List<String>> {
-          assertThat(it).hasSize(3)
-          assertThat(it).containsExactlyInAnyOrder("GLOBAL_SEARCH", "LICENCE_RO", "LICENCE_VARY")
+          assertThat(it).containsExactlyInAnyOrder("LICENCE_RO", "LICENCE_VARY")
         }
   }
 
