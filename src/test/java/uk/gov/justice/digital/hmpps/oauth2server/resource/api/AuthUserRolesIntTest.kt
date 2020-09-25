@@ -145,14 +145,14 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth Roles endpoint returns all assignable auth roles for a group for group manager`() {
     webTestClient
-        .get().uri("/auth/api/authuser/AUTH_RO_USER_TEST/assignable-roles")
+        .get().uri("/auth/api/authuser/AUTH_RO_USER_TEST2/assignable-roles")
         .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
         .exchange()
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
         .expectBody()
         .jsonPath("$.[*].roleCode").value<List<String>> {
-          assertThat(it).containsExactlyInAnyOrder("LICENCE_VARY")
+          assertThat(it).containsExactlyInAnyOrder("LICENCE_RO", "LICENCE_VARY")
         }
   }
 
