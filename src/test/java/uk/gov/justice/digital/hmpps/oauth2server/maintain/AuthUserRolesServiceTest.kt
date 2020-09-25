@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.maintain
 
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -30,24 +31,24 @@ internal class AuthUserRolesServiceTest {
   private val service = AuthUserRoleService(userRepository, roleRepository, telemetryClient, maintainUserCheck)
 
   @Nested
-  inner class AddRole {
+  inner class AddRoles {
     @Test
-    fun addRole_notfound() {
+    fun addRoles_notfound() {
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")))
-      assertThatThrownBy { service.addRole("user", "        ", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: role.notfound")
+      assertThatThrownBy { service.addRoles("user", listOf("        "), "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: role.notfound")
     }
 
     @Test
-    fun addRole_invalidRole() {
+    fun addRoles_invalidRole() {
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")))
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(Authority("FRED", "Role Fred")))
-      assertThatThrownBy { service.addRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: invalid")
+      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: invalid")
     }
 
     @Test
-    fun addRole_noaccess() {
+    fun addRoles_noaccess() {
       val user = User.of("user")
       user.groups = setOf(Group("group", "desc"))
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
@@ -59,11 +60,11 @@ internal class AuthUserRolesServiceTest {
           .thenReturn(Optional.of(user))
           .thenReturn(Optional.of(groupManager))
       doThrow(AuthUserGroupRelationshipException("user", "User not with your groups")).whenever(maintainUserCheck).ensureUserLoggedInUserRelationship(anyString(), ArgumentMatchers.anyCollection(), ArgumentMatchers.any(User::class.java))
-      assertThatThrownBy { service.addRole("user", "BOB", "admin", GROUP_MANAGER) }.isInstanceOf(AuthUserGroupRelationshipException::class.java).hasMessage("Unable to maintain user: user with reason: User not with your groups")
+      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", GROUP_MANAGER) }.isInstanceOf(AuthUserGroupRelationshipException::class.java).hasMessage("Unable to maintain user: user with reason: User not with your groups")
     }
 
     @Test
-    fun addRole_invalidRoleGroupManager() {
+    fun addRoles_invalidRoleGroupManager() {
       val user = User.of("user")
       val group1 = Group("group", "desc")
       user.groups = setOf(group1)
@@ -75,54 +76,72 @@ internal class AuthUserRolesServiceTest {
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(setOf(Authority("FRED", "Role Fred")))
-      assertThatThrownBy { service.addRole("user", "BOB", "admin", GROUP_MANAGER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: invalid")
+      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", GROUP_MANAGER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: invalid")
     }
 
     @Test
-    fun addRole_oauthAdminRestricted() {
+    fun addRoles_oauthAdminRestricted() {
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")))
       val role = Authority("ROLE_OAUTH_ADMIN", "Role Licence Vary")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(role))
-      assertThatThrownBy { service.addRole("user", "BOB", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: invalid")
+      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: invalid")
     }
 
     @Test
-    fun addRole_oauthAdminRestricted_success() {
+    fun addRoles_oauthAdminRestricted_success() {
       val user = User.of("user")
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
       val role = Authority("ROLE_OAUTH_ADMIN", "Role Auth Admin")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(role))
-      service.addRole("user", "BOB", "admin",
+      service.addRoles("user", listOf("BOB"), "admin",
           setOf(SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"), SimpleGrantedAuthority("ROLE_OAUTH_ADMIN")))
       assertThat(user.authorities).extracting<String> { it.authority }.containsOnly("ROLE_OAUTH_ADMIN")
     }
 
     @Test
-    fun addRole_roleAlreadyOnUser() {
+    fun addRoles_roleAlreadyOnUser() {
       val user = User.of("user")
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       user.authorities = HashSet(listOf(role))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
-      assertThatThrownBy { service.addRole("user", "LICENCE_VARY", "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: role.exists")
+      assertThatThrownBy { service.addRoles("user", listOf("LICENCE_VARY"), "admin", SUPER_USER) }.isInstanceOf(AuthUserRoleException::class.java).hasMessage("Modify role failed for field role with reason: role.exists")
     }
 
     @Test
-    fun addRole_success() {
+    fun addRoles_success() {
       val user = User.of("user")
       user.authorities = HashSet(listOf(Authority("JOE", "bloggs")))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(role))
-      service.addRole("user", "ROLE_LICENCE_VARY", "admin", SUPER_USER)
+      service.addRoles("user", listOf("ROLE_LICENCE_VARY"), "admin", SUPER_USER)
       assertThat(user.authorities).extracting<String> { it.authority }.containsOnly("ROLE_JOE", "ROLE_LICENCE_VARY")
     }
 
     @Test
-    fun addRole_successGroupManager() {
+    fun `addRoles success multiple roles`() {
+      val user = User.of("user")
+      user.authorities = HashSet(listOf(Authority("JOE", "bloggs")))
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
+      val role1 = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
+      val role2 = Authority("ROLE_OTHER", "Role Other")
+      whenever(roleRepository.findByRoleCode(anyString()))
+          .thenReturn(Optional.of(role1))
+          .thenReturn(Optional.of(role2))
+      whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(role1, role2))
+      service.addRoles("user", listOf("ROLE_LICENCE_VARY", "ROLE_OTHER"), "admin", SUPER_USER)
+      assertThat(user.authorities).extracting<String> { it.authority }.containsOnly("ROLE_JOE", "ROLE_LICENCE_VARY", "ROLE_OTHER")
+
+      verify(telemetryClient).trackEvent("AuthUserRoleAddSuccess", mapOf("username" to "user", "role" to "LICENCE_VARY", "admin" to "admin"), null)
+      verify(telemetryClient).trackEvent("AuthUserRoleAddSuccess", mapOf("username" to "user", "role" to "OTHER", "admin" to "admin"), null)
+    }
+
+    @Test
+    fun addRoles_successGroupManager() {
       val user = User.of("user")
       val group1 = Group("group", "desc")
       user.groups = setOf(group1, Group("group2", "desc"))
@@ -135,7 +154,7 @@ internal class AuthUserRolesServiceTest {
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(setOf(role))
-      service.addRole("user", "ROLE_LICENCE_VARY", "admin", GROUP_MANAGER)
+      service.addRoles("user", listOf("ROLE_LICENCE_VARY"), "admin", GROUP_MANAGER)
       assertThat(user.authorities).extracting<String> { it.authority }.containsOnly("ROLE_JOE", "ROLE_LICENCE_VARY")
     }
   }

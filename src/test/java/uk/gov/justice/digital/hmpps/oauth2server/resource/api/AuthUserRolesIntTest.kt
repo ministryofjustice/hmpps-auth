@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.oauth2server.resource.DeliusExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 
@@ -154,6 +155,18 @@ class AuthUserRolesIntTest : IntegrationTest() {
         .jsonPath("$.[*].roleCode").value<List<String>> {
           assertThat(it).containsExactlyInAnyOrder("LICENCE_RO", "LICENCE_VARY")
         }
+  }
+
+  @Test
+  fun `Auth User Roles add role POST endpoint adds a role to a user`() {
+    webTestClient
+        .post().uri("/auth/api/authuser/AUTH_ADD_ROLE_TEST/roles")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .body(BodyInserters.fromValue(listOf("GLOBAL_SEARCH", "LICENCE_RO")))
+        .exchange()
+        .expectStatus().isNoContent
+
+    checkRolesForUser("AUTH_RO_USER", listOf("GLOBAL_SEARCH", "LICENCE_RO"))
   }
 
   private fun checkRolesForUser(user: String, roles: List<String>) {
