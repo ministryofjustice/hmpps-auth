@@ -13,44 +13,43 @@ data class AzureUserPersonDetails(private val authorities: MutableCollection<Gra
                                   val surname: String,
                                   val email: String,
                                   private val credentialsNonExpired: Boolean,
-                                  private val password: String,
                                   private val accountNonExpired: Boolean,
                                   private val accountNonLocked: Boolean) : UserPersonDetails {
-    override fun getAuthorities(): Collection<GrantedAuthority?> = authorities
+  override fun getAuthorities(): Collection<GrantedAuthority?> = authorities
 
-    override fun isEnabled(): Boolean = enabled
+  override fun isEnabled(): Boolean = enabled
 
-    override fun getUsername(): String = username
+  override fun getUsername(): String = username
 
-    override fun isCredentialsNonExpired(): Boolean = credentialsNonExpired
+  override fun isCredentialsNonExpired(): Boolean = credentialsNonExpired
 
-    override fun getPassword(): String = password
+  override fun getPassword(): String = ""
 
-    override fun isAccountNonExpired(): Boolean = accountNonExpired
+  override fun isAccountNonExpired(): Boolean = accountNonExpired
 
-    override fun isAccountNonLocked(): Boolean = accountNonLocked
+  override fun isAccountNonLocked(): Boolean = accountNonLocked
 
-    override fun getUserId(): String = username
+  override fun getUserId(): String = username
 
-    override fun getName(): String = "$firstName $surname"
+  override fun getName(): String = "$firstName $surname"
 
-    override fun getFirstName(): String = firstName
+  override fun getFirstName(): String = firstName
 
-    override fun getAuthSource(): String? = AuthSource.azure.name
+  override fun getAuthSource(): String? = AuthSource.azuread.name
 
-    override fun eraseCredentials() {
-    }
+  override fun eraseCredentials() {
+  }
 
-    override fun toUser(): User? {
-        return User.builder()
-                .username(username)
-                .source(AuthSource.azure)
-                .email(email)
-                .verified(true)
-                .enabled(enabled)
-                .person(Person(firstName, surname))
-                .build()
-    }
+  override fun toUser(): User? {
+    return User.builder()
+        .username(username)
+        .source(AuthSource.azuread)
+        .email(email)
+        .verified(true)
+        .enabled(enabled)
+        .person(Person(firstName, surname))
+        .build()
+  }
 
-    override fun isAdmin(): Boolean = false
+  override fun isAdmin(): Boolean = false
 }

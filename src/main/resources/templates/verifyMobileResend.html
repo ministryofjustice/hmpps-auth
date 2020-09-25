@@ -8,11 +8,10 @@
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
   <h1 class="govuk-heading-l">
-    Resend security code
+    Send another text message
   </h1>
   <p class="govuk-body">
-    Text messages sometimes take a few minutes to arrive. If you do not receive a security code, HMPPS can send you a
-    new one.
+    We will send another text message to your mobile phone with a security code.
   </p>
   <form th:action="@{/verify-mobile-resend}" method="POST" id="mobileForm" autocomplete="off" novalidate>
     <div class="govuk-form-group">
@@ -20,7 +19,7 @@
     </div>
     <div class="govuk-form-group">
       <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="resend-button"
-             value="Resend security code">
+             value="Send text">
     </div>
   </form>
 </div>

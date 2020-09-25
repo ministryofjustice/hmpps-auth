@@ -135,7 +135,7 @@ class ResetPasswordServiceTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val existingUserToken = user.createToken(UserToken.TokenType.RESET)
     resetPasswordService.requestResetPassword("user", "url")
-    assertThat(user.tokens).hasSize(1).extracting<String> { obj: UserToken -> obj.token }.doesNotContain(existingUserToken.token)
+    assertThat(user.tokens).hasSize(1).extracting<String> { it.token }.containsExactly(existingUserToken.token)
   }
 
   @Test

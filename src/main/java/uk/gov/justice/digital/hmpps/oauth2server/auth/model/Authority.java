@@ -7,7 +7,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.security.core.GrantedAuthority;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.UUID;
 
 @Entity
@@ -42,5 +46,17 @@ public class Authority implements GrantedAuthority {
     @Override
     public String getAuthority() {
         return ROLE_PREFIX + roleCode;
+    }
+
+    public UUID getId() {
+        return this.id;
+    }
+
+    public String getRoleCode() {
+        return this.roleCode;
+    }
+
+    public String getRoleName() {
+        return this.roleName;
     }
 }

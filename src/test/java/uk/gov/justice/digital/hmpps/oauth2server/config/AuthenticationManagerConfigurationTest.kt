@@ -9,6 +9,7 @@ import org.mockito.Mockito.verify
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ClearAllSessionsLogoutHandler
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationP
 import uk.gov.justice.digital.hmpps.oauth2server.security.NomisAuthenticationProvider
 import uk.gov.justice.digital.hmpps.oauth2server.security.OidcJwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler
+import java.util.*
 
 class AuthenticationManagerConfigurationTest {
   private val nomisUserDetailsService: AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> = mock()
@@ -41,9 +43,10 @@ class AuthenticationManagerConfigurationTest {
   private val userStateAuthenticationFailureHandle: UserStateAuthenticationFailureHandler = mock()
   private val authenticationManagerBuilder: AuthenticationManagerBuilder = mock()
   private val clearAllSessionsLogoutHandler: ClearAllSessionsLogoutHandler = mock()
+  private val clientRegistrationRepository: Optional<InMemoryClientRegistrationRepository> = Optional.empty()
   private var authenticationManagerConfiguration = AuthenticationManagerConfiguration(nomisUserDetailsService, authUserDetailsService,
       deliusUserDetailsService, azureUserDetailsService, accessDeniedHandler, logoutSuccessHandler, oidcJwtAuthenticationSuccessHandler, jwtAuthenticationSuccessHandler, jwtCookieAuthenticationFilter,
-      jwtCookieName, cookieRequestCache, authAuthenticationProvider, nomisAuthenticationProvider, deliusAuthenticationProvider, userStateAuthenticationFailureHandle, clearAllSessionsLogoutHandler)
+      jwtCookieName, cookieRequestCache, authAuthenticationProvider, nomisAuthenticationProvider, deliusAuthenticationProvider, userStateAuthenticationFailureHandle, clearAllSessionsLogoutHandler, clientRegistrationRepository)
 
   @Test
   fun configure_deliusProviderIsLast() {

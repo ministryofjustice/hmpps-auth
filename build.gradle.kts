@@ -1,7 +1,8 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.0"
-  kotlin("plugin.spring") version "1.4.0"
-  kotlin("plugin.jpa") version "1.4.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.5"
+  id("groovy")
+  kotlin("plugin.spring") version "1.4.10"
+  kotlin("plugin.jpa") version "1.4.10"
 }
 
 repositories {
@@ -17,7 +18,6 @@ dependencies {
   implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
   implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.0.RELEASE")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
-  implementation("com.nimbusds:nimbus-jose-jwt:8.20")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
@@ -37,13 +37,13 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
-  implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.4.1")
+  implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.1")
   implementation("uk.gov.service.notify:notifications-java-client:3.17.0-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:6.5.5")
+  implementation("org.flywaydb:flyway-core:6.5.6")
   implementation("com.zaxxer:HikariCP:3.4.5")
   implementation("org.apache.commons:commons-text:1.9")
-  implementation("com.microsoft.sqlserver:mssql-jdbc:8.2.2.jre11")
+  implementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre11")
   implementation("io.swagger:swagger-core:1.6.2")
 
   runtimeOnly("com.h2database:h2:1.4.200")
@@ -69,14 +69,14 @@ dependencies {
   testImplementation("org.seleniumhq.selenium:selenium-firefox-driver:3.141.59")
   testImplementation("io.github.http-builder-ng:http-builder-ng-apache:1.0.4")
 
-  testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.1")
+  testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("com.github.tomjankes:wiremock-groovy:0.2.0")
   testImplementation("org.slf4j:slf4j-api:1.7.30")
   testImplementation("com.auth0:java-jwt:3.10.3")
 
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.18.1")
-  testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.3.1")
-  testImplementation("org.fluentlenium:fluentlenium-assertj:4.3.1")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.19.0")
+  testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.5.1")
+  testImplementation("org.fluentlenium:fluentlenium-assertj:4.5.1")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.21")
 }
 

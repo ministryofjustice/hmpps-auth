@@ -79,21 +79,21 @@ class LoginSpecification extends DeliusIntegrationSpec {
         to LoginPage
 
         when: "I login with wrong password as a delius user"
-        loginAs DELIUS_LOCKED, 'wrongpassword'
+        loginAs 'DELIUS_LOCKED_IN_AUTH', 'wrongpassword'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
         errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times."
 
         when: "I login with wrong password as a delius user"
-        loginAs DELIUS_LOCKED, 'wrongpassword'
+        loginAs 'DELIUS_LOCKED_IN_AUTH', 'wrongpassword'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
         errorText == "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times."
 
         when: "I login with wrong password as a delius user"
-        loginAs DELIUS_LOCKED, 'wrongpassword'
+        loginAs 'DELIUS_LOCKED_IN_AUTH', 'wrongpassword'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage
@@ -105,7 +105,7 @@ class LoginSpecification extends DeliusIntegrationSpec {
         to LoginPage
 
         when: "I login with disabled delius user"
-        loginAs DELIUS_DISABLED, 'password123456'
+        loginAs DELIUS_LOCKED, 'password123456'
 
         then: 'My credentials are rejected and I am still on the Login page'
         at LoginErrorPage

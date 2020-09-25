@@ -33,7 +33,7 @@
     <div>
       <div th:with="missingcode=${error != null and #arrays.contains(error, 'missingcode')}"
            th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
-        <label class="govuk-label" for="code">Text message code</label>
+        <label class="govuk-label" for="code">Enter the code</label>
         <span id="code-hint" class="govuk-hint">
           For example 321456
         </span>
@@ -53,10 +53,12 @@
   </form>
 
   <div class="govuk-form-group">
-    <ul class="govuk-list">
-      <li><a class="govuk-link" th:href="@{/mobile-resend}" id="resend-mobile-code">Not received a text message?</a>
-      </li>
-    </ul>
+    <p class="govuk-list">
+      Text messages sometimes take a few minutes to arrive. if you have not received a message,
+      <a class="govuk-link" th:href="@{/mobile-resend}" id="resend-mobile-code">you can request a new code to be
+        sent</a>
+
+    </p>
   </div>
 
   <p th:if="${param.verifyCode}" class="govuk-body">

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Optional;
 
 public enum AuthSource {
-    auth, azure, delius, nomis, none;
+    nomis, auth, delius, azuread, none;
 
     @JsonValue
     public String getSource() {

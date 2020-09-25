@@ -61,7 +61,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
-    newInstance(ChangeMobilePage::class.java).isAt()
+    newInstance(AddMobilePage::class.java).isAt()
   }
 
   @Test

@@ -2,7 +2,7 @@
   "priority": 2,
   "request": {
     "method": "GET",
-    "urlPattern": "/secure/users/DELIUS.*/details"
+    "urlPattern": "(?i)/secure/users/DELIUS.*/details"
   },
   "response": {
     "transformers": ["response-template"],

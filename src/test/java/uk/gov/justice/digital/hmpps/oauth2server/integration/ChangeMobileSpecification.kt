@@ -9,6 +9,9 @@ import org.openqa.selenium.support.FindBy
 
 class ChangeMobileSpecification : AbstractAuthSpecification() {
   @Page
+  private lateinit var addMobilePage: AddMobilePage
+
+  @Page
   private lateinit var changeMobilePage: ChangeMobilePage
 
   @Page
@@ -41,13 +44,13 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `Change mobile invalid number entered`() {
-    goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE")
+    goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE2")
 
-    goTo(changeMobilePage)
+    goTo(addMobilePage)
         .setMobileAs("07")
-        .checkError("Enter a mobile phone number in the correct format")
+        .checkError("Enter a mobile number in the correct format")
         .updateMobileAs("", "07")
-        .checkError("Enter a mobile phone number")
+        .checkError("Enter a mobile number")
   }
 
   @Test
@@ -78,7 +81,7 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/change-mobile")
-open class ChangeMobilePage : AuthPage<ChangeMobilePage>("HMPPS Digital Services - Change Mobile Number", "What is your new mobile phone number?") {
+open class ChangeMobilePage : AuthPage<ChangeMobilePage>("HMPPS Digital Services - Change Mobile Number", "What is your new mobile number?") {
   @FindBy(css = "input[type='submit']")
   private lateinit var changeMobileButton: FluentWebElement
   private lateinit var mobile: FluentWebElement
@@ -86,18 +89,45 @@ open class ChangeMobilePage : AuthPage<ChangeMobilePage>("HMPPS Digital Services
   fun updateMobileAs(mobile: String, existingMobile: String): ChangeMobilePage {
     assertThat(this.mobile.value()).isEqualTo(existingMobile)
     this.mobile.fill().withText(mobile)
-    assertThat(changeMobileButton.value()).isEqualTo("Update")
+    assertThat(changeMobileButton.value()).isEqualTo("Continue")
     changeMobileButton.click()
     return this
   }
 
   fun addMobileAs(mobile: String) {
     this.mobile.fill().withText(mobile)
-    assertThat(changeMobileButton.value()).isEqualTo("Add")
+    assertThat(changeMobileButton.value()).isEqualTo("Continue")
     changeMobileButton.click()
   }
 
   fun setMobileAs(mobile: String): ChangeMobilePage {
+    this.mobile.fill().withText(mobile)
+    changeMobileButton.click()
+    return this
+  }
+}
+
+@PageUrl("/change-mobile")
+open class AddMobilePage : AuthPage<AddMobilePage>("HMPPS Digital Services - Change Mobile Number", "What is your mobile number?") {
+  @FindBy(css = "input[type='submit']")
+  private lateinit var changeMobileButton: FluentWebElement
+  private lateinit var mobile: FluentWebElement
+
+  fun updateMobileAs(mobile: String, existingMobile: String): AddMobilePage {
+    assertThat(this.mobile.value()).isEqualTo(existingMobile)
+    this.mobile.fill().withText(mobile)
+    assertThat(changeMobileButton.value()).isEqualTo("Continue")
+    changeMobileButton.click()
+    return this
+  }
+
+  fun addMobileAs(mobile: String) {
+    this.mobile.fill().withText(mobile)
+    assertThat(changeMobileButton.value()).isEqualTo("Continue")
+    changeMobileButton.click()
+  }
+
+  fun setMobileAs(mobile: String): AddMobilePage {
     this.mobile.fill().withText(mobile)
     changeMobileButton.click()
     return this
@@ -119,18 +149,18 @@ open class VerifyMobileSentPage : AuthPage<VerifyMobileSentPage>("HMPPS Digital 
 
   fun resendMobileCode() {
     val resendLink = el("a[id='resend-mobile-code']")
-    assertThat(resendLink.text()).isEqualTo("Not received a text message?")
+    assertThat(resendLink.text()).isEqualTo("you can request a new code to be sent")
     resendLink.click()
   }
 }
 
 @PageUrl("/verify-mobile")
-open class VerifyMobileConfirmPage : AuthPage<VerifyMobileConfirmPage>("HMPPS Digital Services - Verify Mobile Confirmation", "Mobile number verified") {
+open class VerifyMobileConfirmPage : AuthPage<VerifyMobileConfirmPage>("HMPPS Digital Services - Verify Mobile Confirmation", "Your mobile number has been verified") {
   @FindBy(css = "#continue")
   private lateinit var continueButton: FluentWebElement
 
   fun continueToAccountDetailsPage() {
-    assertThat(continueButton.text()).isEqualTo("OK, continue")
+    assertThat(continueButton.text()).isEqualTo("Continue")
     continueButton.click()
   }
 }
