@@ -4,7 +4,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import org.assertj.core.api.Assertions.assertThat
-import org.fluentlenium.core.annotation.Page
 import org.fluentlenium.core.annotation.PageUrl
 import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
@@ -12,9 +11,6 @@ import org.openqa.selenium.support.FindBy
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 
 class LoginSpecification : AbstractAuthSpecification() {
-  @Page
-  internal lateinit var homePage: HomePage
-
   @Test
   fun `Log in with valid auth credentials`() {
     val homePage = goTo(loginPage).loginAs("AUTH_USER")
@@ -116,12 +112,7 @@ class LoginSpecification : AbstractAuthSpecification() {
   fun `Log in fails with valid credentials same user name in Auth and Nomis but both accounts disabled`() {
     goTo(loginPage).loginError("NOMIS_LOCKED_AUTH_DISABLED", "password123456")
         .checkError("Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below.")
-  }
 
-  @Test
-  fun `Log in with Azure justice email credentials link results in successful login`() {
-    goTo(loginPage).clickAzureOIDCLink()
-    homePage.isAt()
   }
 }
 
@@ -138,9 +129,6 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
 
   @FindBy(linkText = "I have forgotten my password")
   private lateinit var forgottenPassword: FluentWebElement
-
-  @FindBy(id = "oauth2-client-microsoft")
-  private lateinit var azureOIDCLink: FluentWebElement
 
   fun loginAsWithUnverifiedEmail(username: String, password: String = "password123456"): VerifyEmailPage =
       loginWith(username, password, VerifyEmailPage::class.java)
@@ -214,7 +202,4 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
     forgottenPassword.click()
   }
 
-  fun clickAzureOIDCLink() {
-    azureOIDCLink.click()
-  }
 }
