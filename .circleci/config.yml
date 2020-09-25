@@ -39,7 +39,7 @@ jobs:
           at: ~/app
       - run:
           name: Run the java app.
-          command: env spring.profiles.active=dev,token-verification,delius java -Xmx256m -jar build/libs/hmpps-auth-*.jar
+          command: env spring.profiles.active=dev,token-verification,delius,azure-oidc-int-test java -Xmx256m -jar build/libs/hmpps-auth-*.jar
           background: true
       - run:
           name: Wait for java app to start

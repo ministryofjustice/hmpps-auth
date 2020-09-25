@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
-import java.util.stream.Collectors
 
 @Slf4j
 @RestController
@@ -20,5 +19,5 @@ class AuthAllRolesController(private val authUserRoleService: AuthUserRoleServic
   @ApiOperation(value = "Get all possible roles.", notes = "Get all roles allowed for auth users.", nickname = "allroles", consumes = "application/json", produces = "application/json")
   @ApiResponses(value = [ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)])
   fun allRoles(): List<AuthUserRole> =
-      authUserRoleService.allRoles.stream().map { AuthUserRole(it) }.collect(Collectors.toList())
+      authUserRoleService.allRoles.map { AuthUserRole(it) }
 }

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain;
 
+import com.google.common.collect.Sets;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +14,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -44,7 +47,7 @@ public class AuthUserRoleService {
             throw new AuthUserRoleExistsException();
         }
 
-        if (!getAssignableRoles(username, authorities).contains(role)) {
+        if (!getAllAssignableRoles(username, authorities).contains(role)) {
             throw new AuthUserRoleException("role", "invalid");
         }
 
@@ -68,7 +71,7 @@ public class AuthUserRoleService {
             throw new AuthUserRoleException("role", "role.missing");
         }
 
-        if (!getAssignableRoles(username, authorities).contains(role)) {
+        if (!getAllAssignableRoles(username, authorities).contains(role)) {
             throw new AuthUserRoleException("role", "invalid");
         }
 
@@ -85,13 +88,25 @@ public class AuthUserRoleService {
         return roleRepository.findAllByOrderByRoleName();
     }
 
-    public List<Authority> getAssignableRoles(final String username, final Collection<? extends GrantedAuthority> authorities) {
+    private Set<Authority> getAllAssignableRoles(final String username, final Collection<? extends GrantedAuthority> authorities) {
         if (MaintainUserCheck.canMaintainAuthUsers(authorities)) {
             // only allow oauth admins to see that role
-            return getAllRoles().stream().filter(r -> !"OAUTH_ADMIN".equals(r.getRoleCode()) || canAddAuthClients(authorities)).collect(Collectors.toList());
+            return getAllRoles().stream().filter(r -> !"OAUTH_ADMIN".equals(r.getRoleCode()) || canAddAuthClients(authorities)).collect(Collectors.toSet());
         }
         // otherwise they can assign all roles that can be assigned to any of their groups
         return roleRepository.findByGroupAssignableRolesForUsername(username);
+    }
+
+    public List<Authority> getAssignableRoles(final String username, final Collection<? extends GrantedAuthority> authorities) {
+        final var user = userRepository.findByUsernameAndMasterIsTrue(username.toUpperCase()).orElseThrow();
+        final var userRoles = user.getAuthorities();
+
+        final var allAssignableRoles = getAllAssignableRoles(username, authorities);
+
+        return Sets.difference(allAssignableRoles, userRoles)
+                .stream()
+                .sorted(Comparator.comparing(Authority::getRoleName))
+                .collect(Collectors.toList());
     }
 
     public static class AuthUserRoleExistsException extends AuthUserRoleException {

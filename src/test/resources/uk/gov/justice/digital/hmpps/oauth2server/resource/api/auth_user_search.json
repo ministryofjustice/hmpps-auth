@@ -18,5 +18,15 @@
     "locked": false,
     "enabled": true,
     "verified": true
+  },
+  {
+    "userId": "90f930e1-2195-4afd-92ce-0eb5672da02b",
+    "username": "AUTH_RO_USER_TEST2",
+    "email": "auth_ro_user_test2@digital.justice.gov.uk",
+    "firstName": "Ryan-Auth",
+    "lastName": "Orton2",
+    "locked": false,
+    "enabled": true,
+    "verified": true
   }
 ]
