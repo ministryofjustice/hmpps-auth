@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azure
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.fromNullableString
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
@@ -32,11 +32,11 @@ class UserContextService(
 
   private fun map(username: String, from: AuthSource, to: AuthSource): UserPersonDetails? = when (from) {
     to -> null
-    azure -> mapFromAzure(username, to)
+    azuread -> mapFromAzureAD(username, to)
     else -> throw UserMappingException("auth source '${from}' not supported")
   }
 
-  private fun mapFromAzure(email: String, to: AuthSource): UserPersonDetails? = when (to) {
+  private fun mapFromAzureAD(email: String, to: AuthSource): UserPersonDetails? = when (to) {
     delius -> {
       log.debug("mapping user context from azure -> delius")
       deliusUserService.getDeliusUserByEmail(email)

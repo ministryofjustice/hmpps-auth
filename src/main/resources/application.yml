@@ -105,7 +105,6 @@ application:
     mfa:
       whitelist: 172.16.0.0/12
       roles: ROLE_MFA
-    show-azure-link: false
 
 jwt:
   keystore:

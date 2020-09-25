@@ -154,6 +154,9 @@ internal class JWTTokenEnhancerTest {
         entry("user_name", "user"),
         entry("auth_source", "auth"),
         entry("user_id", uuid.toString()))
+  }
+
+  @Test
   fun `enhance client credentials no username`() {
     val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
     whenever(authentication.isClientOnly).thenReturn(true)
