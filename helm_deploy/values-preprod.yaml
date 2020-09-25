@@ -42,3 +42,6 @@ mfa_whitelist:
   pttp_staff_services_temp_set1-2: "18.133.9.57/32"
   pttp_staff_services_preprod: "194.33.251.0/24"
   pttp_staff_services_prod: "194.33.252.0/24"
+
+env:
+  APPLICATION_SUPPORT_URL: "https://support-preprod.hmpps.service.justice.gov.uk/feedback-and-support"

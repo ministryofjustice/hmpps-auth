@@ -47,6 +47,23 @@ d77af7e00910        quay.io/hmpps/hnpps-auth:latest   "/bin/sh /app/run.sh"   38
 #### View logs in docker:
 ```docker logs hmpps-auth```
 
+### Run locally against a SQL Server database
+Auth by default runs against an in memory h2 database.  Sometimes it is necessary to run against an sql server database
+i.e. if making database changes and need to verify that they work before being deployed to a test environment.
+
+Steps are:
+
+* Run a local docker container
+```
+docker stop sql1 && docker rm sql1 && docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=YourStrong!Passw0rd' -p 1433:1433 --name sql1 -d mcr.microsoft.com/mssql/server:2017-latest
+```
+* Within Intellij set the active profile to `dev` and override the following parameters
+```
+auth.datasource.url=jdbc:sqlserver://localhost\sql1:1433
+auth.datasource.username=sa
+auth.datasource.password=YourStrong!Passw0rd
+auth.jpa.hibernate.dialect=org.hibernate.dialect.SQLServer2012Dialect
+```
 
 ### H2 database consoles 
 
@@ -54,8 +71,8 @@ When running locally with the SPRING_ACTIVE_PROFILES=dev the seeded H2 database 
 
 | Database | JDBC connection     |  username | password |
 |----------|---------------------|-----------|----------|
-| NOMIS    | jdbc:h2:mem:nomisdb  |  <blank>  | <blank>  |
-| AUTH     | jdbc:h2:mem:authdb |  <blank>  | <blank>  |
+| NOMIS    | jdbc:h2:mem:nomisdb  |  `<blank>`  | `<blank>`  |
+| AUTH     | jdbc:h2:mem:authdb |  `<blank>`  | `<blank>`  |
 
 #### API Documentation
 
