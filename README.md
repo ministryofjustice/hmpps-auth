@@ -110,3 +110,45 @@ the authorization header, which allows password, authorization_code and refresh 
 This will go to github to get the specified version of the front end toolkit.  Very noddy at present, so if the assets have changed at https://github.com/alphagov/govuk-frontend/tree/master/dist/assets/fonts for the specified version in question, then the list in the bash script will need updating to cope.
 
 It will sort out the css references to `/assets` as we run in a `/auth` context instead. 
+
+### Enabling Azure AD OIDC as an additional authentication provider
+
+It is possible to enable Azure AD as an external OIDC provider. This functionality is enabled by adding a client registration, detailed below.
+
+#### Prerequisites
+- Access to an Azure instance, and permissions to create app registrations. For development purposes we have been
+creating registrations on the `DEVL` Azure instance, which is operated by the PTTP team. 
+
+#### Creating an Azure app registration
+1. Navigate to the app registrations page https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredApps
+2. Create a new app registration. For "Supported account types", select: "Accounts in any organizational directory (Any Azure AD directory - Multitenant)". Set the redirect URL to `http://localhost:8080/auth/login/oauth2/code/microsoft`
+3. Save the registration. Note the Client ID and Directory ID.
+4. Navigate to the Certificates & Secrets tab, and add a new client secret, and note the secret value
+
+#### Configuring Auth
+Add the following configuration to HMPPS Auth, replacing the `<placeholders>` with real values from the Azure App registration
+```
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          microsoft: # This is used in the redirect-uri template below, so must match the redirect uri in Azure
+            client-id: <Client ID>
+            client-secret: <Client Secret>
+            scope: openid,email,profile
+            authorization-grant-type: authorization_code
+            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
+        provider:
+          microsoft:
+            authorization-uri: https://login.microsoftonline.com/<Directory (tenant) ID>/oauth2/v2.0/authorize
+            token-uri: https://login.microsoftonline.com/<Directory (tenant) ID>/oauth2/v2.0/token
+            user-info-uri: https://graph.microsoft.com/oidc/userinfo
+            user-name-attribute: sub
+            jwk-set-uri: https://login.microsoftonline.com/<Directory (tenant) ID>/discovery/v2.0/keys
+
+application:
+  authentication:
+    microsoft: # Name must correspond with the registration above
+      linktext: Log in with a justice.gov.uk email
+```
