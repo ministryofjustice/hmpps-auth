@@ -53,7 +53,7 @@ class DeliusUserServiceTest {
 
   @Test
   fun `getDeliusUserByEmail single records returns user`() {
-    whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenReturn(createUserDetailsList(1))
+    whenever(restTemplate.getForObject<MutableList<UserDetails>>(anyString(), any(), anyString())).thenReturn(createUserDetailsList(1))
     val user = deliusService.getDeliusUserByEmail("a@where.com")
     assertThat(user).isEqualTo(
         DeliusUserPersonDetails(
@@ -68,21 +68,21 @@ class DeliusUserServiceTest {
 
   @Test
   fun `getDeliusUserByEmail converts ResourceAccessException and rethrows`() {
-    whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenThrow(ResourceAccessException::class.java)
+    whenever(restTemplate.getForObject<MutableList<UserDetails>>(anyString(), any(), anyString())).thenThrow(ResourceAccessException::class.java)
 
     assertThatThrownBy { deliusService.getDeliusUserByEmail("a@where.com") }.isInstanceOf(DeliusAuthenticationServiceException::class.java)
   }
 
   @Test
   fun `getDeliusUserByEmail converts HttpServerErrorException and rethrows`() {
-    whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenThrow(HttpServerErrorException::class.java)
+    whenever(restTemplate.getForObject<MutableList<UserDetails>>(anyString(), any(), anyString())).thenThrow(HttpServerErrorException::class.java)
 
     assertThatThrownBy { deliusService.getDeliusUserByEmail("a@where.com") }.isInstanceOf(DeliusAuthenticationServiceException::class.java)
   }
 
   @Test
   fun `getDeliusUserByEmail handles HttpClientErrorException and returns null`() {
-    whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenThrow(HttpClientErrorException::class.java)
+    whenever(restTemplate.getForObject<MutableList<UserDetails>>(anyString(), any(), anyString())).thenThrow(HttpClientErrorException::class.java)
 
     val user = deliusService.getDeliusUserByEmail("a@where.com")
     assertThat(user).isNull()
@@ -90,7 +90,7 @@ class DeliusUserServiceTest {
 
   @Test
   fun `getDeliusUserByEmail handles random exceptions and returns null`() {
-    whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenThrow(RuntimeException::class.java)
+    whenever(restTemplate.getForObject<MutableList<UserDetails>>(anyString(), any(), anyString())).thenThrow(RuntimeException::class.java)
 
     val user = deliusService.getDeliusUserByEmail("a@where.com")
     assertThat(user).isNull()
@@ -196,14 +196,10 @@ class DeliusUserServiceTest {
   private fun createUserDetails(): UserDetails =
       UserDetails(userId = "12345", username = "DeliusSmith", surname = "Smith", firstName = "Delius", enabled = true, email = "a@where.com", roles = emptyList())
 
-  private fun createUserDetailsList(size: Int): DeliusUserList {
-    val users = DeliusUserList()
-    users.addAll(
-      MutableList(size) {
+  private fun createUserDetailsList(size: Int): MutableList<UserDetails> {
+      return MutableList(size) {
         UserDetails(userId = "12345", username = "DeliusSmith", surname = "Smith", firstName = "Delius", enabled = true, email = "a@where.com", roles = emptyList())
       }
-    )
-    return users
   }
 
   @Test

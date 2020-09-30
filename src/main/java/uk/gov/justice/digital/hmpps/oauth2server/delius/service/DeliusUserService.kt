@@ -16,9 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDe
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole
 import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
-import java.util.Optional
-
-class DeliusUserList : MutableList<UserDetails> by ArrayList()
+import java.util.*
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Service
@@ -38,7 +36,7 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
     }
 
     return try {
-      val userDetailsList = restTemplate.getForObject("/users/search/email/{email}/details", DeliusUserList::class.java, email)
+      val userDetailsList = restTemplate.getForObject("/users/search/email/{email}/details", ArrayList<UserDetails>().javaClass, email)
       when (userDetailsList.size) {
         1 -> mapUserDetailsToDeliusUser(userDetailsList[0])
         0 -> {
