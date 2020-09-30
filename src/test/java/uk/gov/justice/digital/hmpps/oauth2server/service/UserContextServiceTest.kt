@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 
 internal class UserContextServiceTest {
   private val deliusUserService: DeliusUserService = mock()
@@ -38,8 +39,29 @@ internal class UserContextServiceTest {
 
   @Test
   fun `resolveUser returns the same user when attempting to map users to the same auth source`() {
-    val loginUser = DeliusUserPersonDetails("username", "id", "user", "name", "email@email.com")
+    val loginUser = UserDetailsImpl("username", "name", listOf(), "delius", "userId", "jwtId")
     val scopes = setOf("delius")
+
+    val user = userContextService.resolveUser(loginUser, scopes)
+    assertEquals(user, loginUser)
+  }
+
+  @Test
+  fun `resolveUser can map from azureAD to delius`() {
+    val deliusUser = DeliusUserPersonDetails("username", "id", "user", "name", "email@email.com")
+    val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "email@email.com", "jwtId")
+    val scopes = setOf("delius")
+    whenever(deliusUserService.getDeliusUserByEmail("email@email.com")).thenReturn(deliusUser)
+
+    val user = userContextService.resolveUser(loginUser, scopes)
+    assertEquals(user, deliusUser)
+  }
+
+  @Test
+  fun `resolveUser returns the same user when the user service returns a null value`() {
+    val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "email@email.com", "jwtId")
+    val scopes = setOf("delius")
+    whenever(deliusUserService.getDeliusUserByEmail("email@email.com")).thenReturn(null)
 
     val user = userContextService.resolveUser(loginUser, scopes)
     assertEquals(user, loginUser)

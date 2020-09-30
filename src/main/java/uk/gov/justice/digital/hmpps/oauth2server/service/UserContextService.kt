@@ -24,22 +24,22 @@ class UserContextService(
   @Throws(UserMappingException::class)
   fun resolveUser(loginUser: UserPersonDetails, scopes: Set<String>): UserPersonDetails {
     if (scopes.contains(deliusScope)) {
-      return map(loginUser.username, fromNullableString(loginUser.authSource), delius) ?: loginUser
+      return map(loginUser, fromNullableString(loginUser.authSource), delius) ?: loginUser
     }
 
     return loginUser
   }
 
-  private fun map(username: String, from: AuthSource, to: AuthSource): UserPersonDetails? = when (from) {
+  private fun map(user: UserPersonDetails, from: AuthSource, to: AuthSource): UserPersonDetails? = when (from) {
     to -> null
-    azuread -> mapFromAzureAD(username, to)
+    azuread -> mapFromAzureAD(user, to)
     else -> throw UserMappingException("auth source '${from}' not supported")
   }
 
-  private fun mapFromAzureAD(email: String, to: AuthSource): UserPersonDetails? = when (to) {
+  private fun mapFromAzureAD(user: UserPersonDetails, to: AuthSource): UserPersonDetails? = when (to) {
     delius -> {
       log.debug("mapping user context from azure -> delius")
-      deliusUserService.getDeliusUserByEmail(email)
+      deliusUserService.getDeliusUserByEmail(user.userId)
     }
     else -> throw UserMappingException("auth -> '${to}' mapping not supported")
   }
