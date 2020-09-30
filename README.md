@@ -125,30 +125,10 @@ creating registrations on the `DEVL` Azure instance, which is operated by the PT
 3. Save the registration. Note the Client ID and Directory ID.
 4. Navigate to the Certificates & Secrets tab, and add a new client secret, and note the secret value
 
-#### Configuring Auth
-Add the following configuration to HMPPS Auth, replacing the `<placeholders>` with real values from the Azure App registration
+#### Configuring Auth to use Azure AD OIDC
+Set the active Spring profiles to additionally include the `azure-oidc` profile, then provide values for the following Spring properties:
 ```
-spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          microsoft: # This is used in the redirect-uri template below, so must match the redirect uri in Azure
-            client-id: <Client ID>
-            client-secret: <Client Secret>
-            scope: openid,email,profile
-            authorization-grant-type: authorization_code
-            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
-        provider:
-          microsoft:
-            authorization-uri: https://login.microsoftonline.com/<Directory (tenant) ID>/oauth2/v2.0/authorize
-            token-uri: https://login.microsoftonline.com/<Directory (tenant) ID>/oauth2/v2.0/token
-            user-info-uri: https://graph.microsoft.com/oidc/userinfo
-            user-name-attribute: sub
-            jwk-set-uri: https://login.microsoftonline.com/<Directory (tenant) ID>/discovery/v2.0/keys
-
-application:
-  authentication:
-    microsoft: # Name must correspond with the registration above
-      linktext: Log in with a justice.gov.uk email
-```
+auth.azureoidc.client_id=<client_id>
+auth.azureoidc.client_secret=<client_secret>
+auth.azureoidc.tenant_id=<tenant_id>
+``` 
