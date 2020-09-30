@@ -111,8 +111,5 @@ public class ClientsController {
         public void setSkipToAzureField(Boolean skipToAzure){
             addAdditionalInformation("skipToAzureField", skipToAzure);
         }
-
     }
-
-
 }

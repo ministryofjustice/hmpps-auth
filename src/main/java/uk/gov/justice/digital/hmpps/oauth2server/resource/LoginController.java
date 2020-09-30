@@ -26,20 +26,18 @@ import java.util.stream.StreamSupport;
 @Controller
 public class LoginController {
     final private List<ClientRegistration> clientRegistrations;
-
-    private CookieRequestCache cookieRequestCache;
+    private final CookieRequestCache cookieRequestCache;
+    
+    @Autowired
     private ClientDetailsService clientDetailsService;
 
-    @Autowired
     public LoginController(final Optional<InMemoryClientRegistrationRepository> clientRegistrationRepository,
-                           CookieRequestCache cookieRequestCache,
-                           ClientDetailsService clientDetailsService) {
+                           final CookieRequestCache cookieRequestCache) {
         clientRegistrations = clientRegistrationRepository.map(registrations -> StreamSupport
                 .stream(registrations.spliterator(), false)
                 .collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
         this.cookieRequestCache = cookieRequestCache;
-        this.clientDetailsService = clientDetailsService;
     }
 
     @GetMapping("/login")
