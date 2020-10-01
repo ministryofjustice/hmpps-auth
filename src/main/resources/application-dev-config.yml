@@ -14,6 +14,8 @@ application:
   notify:
     key: testkey-992308b2-1e8f-4667-816b-8bdde781a4ac-9c211cf4-96d1-4c30-848b-8f172bca0b41
 
+  support.url: https://localhost:9101/feedback-and-support
+
 delius:
   enabled: false
   endpoint:

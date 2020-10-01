@@ -24,9 +24,12 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.OAuth2RequestFactory;
+import org.springframework.security.oauth2.provider.approval.UserApprovalHandler;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices;
 import org.springframework.security.oauth2.provider.endpoint.RedirectResolver;
+import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
@@ -35,6 +38,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserContextApprovalHandler;
 
 import javax.sql.DataSource;
 import java.security.interfaces.RSAPublicKey;
@@ -61,6 +65,9 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private final RestTemplate restTemplate;
     private final boolean tokenVerificationEnabled;
     private final TokenVerificationClientCredentials tokenVerificationClientCredentials;
+    private JdbcClientDetailsService jdbcClientDetailsService;
+    private JwtTokenStore tokenStore;
+    private DefaultOAuth2RequestFactory oAuth2RequestFactory;
 
     @Autowired
     public OAuth2AuthorizationServerConfig(@Lazy final AuthenticationManager authenticationManager,
@@ -91,14 +98,19 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 
     @Bean
     public TokenStore tokenStore() {
-        return new JwtTokenStore(accessTokenConverter());
+        if (tokenStore == null) {
+            tokenStore = new JwtTokenStore(accessTokenConverter());
+        }
+        return tokenStore;
     }
 
     @Bean
     @Primary
     public JdbcClientDetailsService jdbcClientDetailsService() {
-        final var jdbcClientDetailsService = new JdbcClientDetailsService(dataSource);
-        jdbcClientDetailsService.setPasswordEncoder(passwordEncoder);
+        if (jdbcClientDetailsService == null) {
+            jdbcClientDetailsService = new JdbcClientDetailsService(dataSource);
+            jdbcClientDetailsService.setPasswordEncoder(passwordEncoder);
+        }
         return jdbcClientDetailsService;
     }
 
@@ -133,7 +145,24 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
                 .redirectResolver(redirectResolver)
                 .authenticationManager(authenticationManager)
                 .authorizationCodeServices(new JdbcAuthorizationCodeServices(dataSource))
+                .requestFactory(requestFactory())
+                .userApprovalHandler(userApprovalHandler())
                 .tokenServices(tokenServices());
+    }
+
+    private UserApprovalHandler userApprovalHandler() {
+        final var approvalHandler = new UserContextApprovalHandler();
+        approvalHandler.setClientDetailsService(jdbcClientDetailsService());
+        approvalHandler.setRequestFactory(requestFactory());
+        approvalHandler.setTokenStore(tokenStore());
+        return approvalHandler;
+    }
+
+    private OAuth2RequestFactory requestFactory() {
+        if (oAuth2RequestFactory == null) {
+            oAuth2RequestFactory = new DefaultOAuth2RequestFactory(jdbcClientDetailsService());
+        }
+        return oAuth2RequestFactory;
     }
 
     @Bean

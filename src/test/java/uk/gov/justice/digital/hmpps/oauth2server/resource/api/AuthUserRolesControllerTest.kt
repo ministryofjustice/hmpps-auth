@@ -49,7 +49,7 @@ class AuthUserRolesControllerTest {
   fun addRole_success() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     authUserRolesController.addRole("someuser", "role", principal)
-    verify(authUserRoleService).addRole("USER", "role", "bob", principal.authorities)
+    verify(authUserRoleService).addRoles("USER", listOf("role"), "bob", principal.authorities)
   }
 
   @Test

@@ -106,6 +106,9 @@ env:
   - name: DELIUS_ROLES_MAPPINGS_LHDCBT003
     value: "ROLE_LICENCE_RO,ROLE_LICENCE_VARY,ROLE_GLOBAL_SEARCH"
 
+  - name: DELIUS_ROLES_MAPPINGS_SOCBT001
+    value: "ROLE_SOC_COMMUNITY"
+
   - name: JWT_COOKIE_EXPIRY_TIME
     valueFrom:
       secretKeyRef:
@@ -170,5 +173,7 @@ env:
     value: {{ include "app.joinListWithComma" .Values.mfa_whitelist | quote }}
   - name: APPLICATION_AUTHENTICATION_MFA_ROLES
     value: "ROLE_MFA,ROLE_PECS_COURT,ROLE_PECS_SUPPLIER"
+  - name: APPLICATION_SUPPORT_URL
+    value: {{ .Values.env.APPLICATION_SUPPORT_URL | quote }}
 {{- end }}
 

@@ -15,7 +15,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
@@ -23,6 +25,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
+import javax.validation.constraints.NotEmpty
 
 @Slf4j
 @RestController
@@ -62,12 +65,12 @@ class AuthUserRolesController(
     ApiResponse(code = 409, message = "Role for user already exists.", response = ErrorDetail::class),
     ApiResponse(code = 500, message = "Server exception e.g. failed to insert row.", response = ErrorDetail::class)])
   fun addRole(
-      @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String?,
-      @ApiParam(value = "The role to be added to the user.", required = true) @PathVariable role: String?,
+      @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
+      @ApiParam(value = "The role to be added to the user.", required = true) @PathVariable role: String,
       @ApiIgnore authentication: Authentication) {
     val user = authUserService.getAuthUserByUsername(username).orElseThrow { UsernameNotFoundException("Account for username $username not found") }
     val usernameInDb = user.username
-    authUserRoleService.addRole(usernameInDb, role, authentication.name, authentication.authorities)
+    authUserRoleService.addRoles(usernameInDb, listOf(role), authentication.name, authentication.authorities)
     log.info("Add role succeeded for user {} and role {}", usernameInDb, role)
   }
 
@@ -88,6 +91,26 @@ class AuthUserRolesController(
     val usernameInDb = user.username
     authUserRoleService.removeRole(usernameInDb, role, authentication.name, authentication.authorities)
     log.info("Remove role succeeded for user {} and role {}", usernameInDb, role)
+  }
+
+  @PostMapping("/api/authuser/{username}/roles")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
+  @ApiOperation(value = "Add roles to user.", notes = "Add role to user, post version taking multiple roles", nickname = "addRole", consumes = "application/json", produces = "application/json")
+  @ApiResponses(value = [
+    ApiResponse(code = 400, message = "Validation failed.", response = ErrorDetail::class),
+    ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+    ApiResponse(code = 404, message = "User not found.", response = ErrorDetail::class),
+    ApiResponse(code = 409, message = "Role(s) for user already exists.", response = ErrorDetail::class),
+    ApiResponse(code = 500, message = "Server exception e.g. failed to insert row.", response = ErrorDetail::class)])
+  fun addRole(
+      @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
+      @ApiParam(value = "List of roles to be assigned.", required = true) @RequestBody @NotEmpty roles: List<String>,
+      @ApiIgnore authentication: Authentication) {
+    val user = authUserService.getAuthUserByUsername(username).orElseThrow { UsernameNotFoundException("Account for username $username not found") }
+    val usernameInDb = user.username
+    authUserRoleService.addRoles(usernameInDb, roles, authentication.name, authentication.authorities)
+    log.info("Add role succeeded for user {} and roles {}", usernameInDb, roles.toString())
   }
 
   companion object {

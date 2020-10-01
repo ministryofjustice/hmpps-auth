@@ -47,6 +47,23 @@ d77af7e00910        quay.io/hmpps/hnpps-auth:latest   "/bin/sh /app/run.sh"   38
 #### View logs in docker:
 ```docker logs hmpps-auth```
 
+### Run locally against a SQL Server database
+Auth by default runs against an in memory h2 database.  Sometimes it is necessary to run against an sql server database
+i.e. if making database changes and need to verify that they work before being deployed to a test environment.
+
+Steps are:
+
+* Run a local docker container
+```
+docker stop sql1 && docker rm sql1 && docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=YourStrong!Passw0rd' -p 1433:1433 --name sql1 -d mcr.microsoft.com/mssql/server:2017-latest
+```
+* Within Intellij set the active profile to `dev` and override the following parameters
+```
+auth.datasource.url=jdbc:sqlserver://localhost\sql1:1433
+auth.datasource.username=sa
+auth.datasource.password=YourStrong!Passw0rd
+auth.jpa.hibernate.dialect=org.hibernate.dialect.SQLServer2012Dialect
+```
 
 ### H2 database consoles 
 
@@ -54,8 +71,8 @@ When running locally with the SPRING_ACTIVE_PROFILES=dev the seeded H2 database 
 
 | Database | JDBC connection     |  username | password |
 |----------|---------------------|-----------|----------|
-| NOMIS    | jdbc:h2:mem:nomisdb  |  <blank>  | <blank>  |
-| AUTH     | jdbc:h2:mem:authdb |  <blank>  | <blank>  |
+| NOMIS    | jdbc:h2:mem:nomisdb  |  `<blank>`  | `<blank>`  |
+| AUTH     | jdbc:h2:mem:authdb |  `<blank>`  | `<blank>`  |
 
 #### API Documentation
 
@@ -93,3 +110,25 @@ the authorization header, which allows password, authorization_code and refresh 
 This will go to github to get the specified version of the front end toolkit.  Very noddy at present, so if the assets have changed at https://github.com/alphagov/govuk-frontend/tree/master/dist/assets/fonts for the specified version in question, then the list in the bash script will need updating to cope.
 
 It will sort out the css references to `/assets` as we run in a `/auth` context instead. 
+
+### Enabling Azure AD OIDC as an additional authentication provider
+
+It is possible to enable Azure AD as an external OIDC provider. This functionality is enabled by adding a client registration, detailed below.
+
+#### Prerequisites
+- Access to an Azure instance, and permissions to create app registrations. For development purposes we have been
+creating registrations on the `DEVL` Azure instance, which is operated by the PTTP team. 
+
+#### Creating an Azure app registration
+1. Navigate to the app registrations page https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredApps
+2. Create a new app registration. For "Supported account types", select: "Accounts in any organizational directory (Any Azure AD directory - Multitenant)". Set the redirect URL to `http://localhost:8080/auth/login/oauth2/code/microsoft`
+3. Save the registration. Note the Client ID and Directory ID.
+4. Navigate to the Certificates & Secrets tab, and add a new client secret, and note the secret value
+
+#### Configuring Auth to use Azure AD OIDC
+Set the active Spring profiles to additionally include the `azure-oidc` profile, then provide values for the following Spring properties:
+```
+auth.azureoidc.client_id=<client_id>
+auth.azureoidc.client_secret=<client_secret>
+auth.azureoidc.tenant_id=<tenant_id>
+``` 
