@@ -64,8 +64,6 @@ env:
         key: DELIUS_CLIENT_CLIENT_SECRET
         name: {{ template "app.name" . }}
 
-  - name: DELIUS_ENABLED
-    value: {{ .Values.env.DELIUS_ENABLED | quote }}
   - name: DELIUS_ENDPOINT_URL
     value: {{ .Values.env.DELIUS_ENDPOINT_URL | quote }}
 
@@ -125,7 +123,7 @@ env:
         name: {{ template "app.name" . }}
 
   - name: SPRING_PROFILES_ACTIVE
-    value: "oracle"
+    value: {{ .Values.env.SPRING_PROFILES_ACTIVE | quote }}
 
   - name: TOKENVERIFICATION_CLIENT_CLIENT_ID
     valueFrom:
@@ -138,8 +136,6 @@ env:
         key: TOKENVERIFICATION_CLIENT_CLIENT_SECRET
         name: {{ template "app.name" . }}
 
-  - name: TOKENVERIFICATION_ENABLED
-    value: {{ .Values.env.TOKENVERIFICATION_ENABLED | quote }}
   - name: TOKENVERIFICATION_ENDPOINT_URL
     value: {{ .Values.env.TOKENVERIFICATION_ENDPOINT_URL | quote }}
 
