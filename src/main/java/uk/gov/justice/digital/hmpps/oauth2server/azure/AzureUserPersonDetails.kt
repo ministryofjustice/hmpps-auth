@@ -29,7 +29,7 @@ data class AzureUserPersonDetails(private val authorities: MutableCollection<Gra
 
   override fun isAccountNonLocked(): Boolean = accountNonLocked
 
-  override fun getUserId(): String = username
+  override fun getUserId(): String = email
 
   override fun getName(): String = "$firstName $surname"
 
