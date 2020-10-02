@@ -50,7 +50,7 @@ class LoginControllerTest{
   fun `login page shows links when OIDC clients are configured`() {
     val clients = listOf(ClientRegistration
             .withRegistrationId("test")
-            .clientName("Test")
+            .clientName("test")
             .clientId("bd4de96a-437d-4fef-b1b2-5f4c1e39c080")
             .redirectUriTemplate("{baseUrl}/login/oauth2/code/{registrationId}")
             .authorizationUri("/test")
@@ -70,6 +70,18 @@ class LoginControllerTest{
 
   @Test
   fun `redirect to Microsoft Login`(){
+    val clients = listOf(ClientRegistration
+            .withRegistrationId("test")
+            .clientName("test")
+            .clientId("bd4de96a-437d-4fef-b1b2-5f4c1e39c080")
+            .redirectUriTemplate("{baseUrl}/login/oauth2/code/{registrationId}")
+            .authorizationUri("/test")
+            .tokenUri("/test")
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .build())
+
+    val clientRegistrationRepository = Optional.of(InMemoryClientRegistrationRepository(clients))
+    val controller = LoginController(clientRegistrationRepository, cookieRequestCacheMock, clientDetailsService)
     var returnRequest = SimpleSavedRequest("test.com/oauth/authorize?client_id=test_id")
     var clientDetailsMock: BaseClientDetails = BaseClientDetails()
 
@@ -81,8 +93,9 @@ class LoginControllerTest{
             thenReturn(clientDetailsMock)
     val modelAndView = controller.loginPage(null, null, null)
 
-    assertThat(modelAndView.viewName).isEqualTo("redirect:/oauth2/authorization/microsoft")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/oauth2/authorization/test")
     assertThat(modelAndView.status).isNull()
+    assertThat(modelAndView.modelMap["oauth2Clients"]).asList().hasSize(1)
   }
 
   @Test
@@ -97,6 +110,7 @@ class LoginControllerTest{
     val modelAndView = controller.loginPage(null, null, null)
 
     assertThat(modelAndView.viewName).isEqualTo("login")
+    assertThat(modelAndView.status).isNull()
   }
 
   @Test

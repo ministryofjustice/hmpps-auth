@@ -42,7 +42,7 @@ public class LoginController {
     @GetMapping("/login")
     public ModelAndView loginPage(@RequestParam(required = false) final String error,
                                   final HttpServletRequest request, final HttpServletResponse response) {
-        
+
         final var savedRequest = cookieRequestCache.getRequest(request, response);
         if (savedRequest != null) {
             final var redirectUrl = UriComponentsBuilder.fromUriString(savedRequest.getRedirectUrl()).build();
@@ -56,7 +56,8 @@ public class LoginController {
                 final Boolean skipToAzure = (Boolean) clientDetails.getAdditionalInformation().getOrDefault("skipToAzureField", false);
 
                 if (skipToAzure) {
-                    return new ModelAndView("redirect:/oauth2/authorization/" + clientRegistrations.get(0).getClientName());
+                    return new ModelAndView("redirect:/oauth2/authorization/" + clientRegistrations.get(0).getClientName(),
+                            Collections.singletonMap("oauth2Clients", clientRegistrations));
                 }
             }
 
