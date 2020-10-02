@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
-import com.nhaarman.mockitokotlin2.*
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyString
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
@@ -20,11 +22,11 @@ internal class UserContextServiceTest {
 
     var scopes = setOf("read")
     var user = userContextService.resolveUser(loginUser, scopes)
-    assertEquals(user, loginUser)
+    assertThat(user).isEqualTo(loginUser)
 
     scopes = setOf("read", "write")
     user = userContextService.resolveUser(loginUser, scopes)
-    assertEquals(user, loginUser)
+    assertThat(user).isEqualTo(loginUser)
   }
 
   @Test
@@ -32,9 +34,7 @@ internal class UserContextServiceTest {
     val loginUser = User.builder().username("username").source(auth).build()
     val scopes = setOf("read", "delius")
 
-    assertThrows(UserMappingException::class.java) {
-      userContextService.resolveUser(loginUser, scopes)
-    }
+    assertThatThrownBy { userContextService.resolveUser(loginUser, scopes) }.isInstanceOf(UserMappingException::class.java)
   }
 
   @Test
@@ -43,7 +43,7 @@ internal class UserContextServiceTest {
     val scopes = setOf("delius")
 
     val user = userContextService.resolveUser(loginUser, scopes)
-    assertEquals(user, loginUser)
+    assertThat(user).isEqualTo(loginUser)
   }
 
   @Test
@@ -51,10 +51,10 @@ internal class UserContextServiceTest {
     val deliusUser = DeliusUserPersonDetails("username", "id", "user", "name", "email@email.com")
     val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "email@email.com", "jwtId")
     val scopes = setOf("delius")
-    whenever(deliusUserService.getDeliusUserByEmail("email@email.com")).thenReturn(deliusUser)
+    whenever(deliusUserService.getDeliusUserByEmail(anyString())).thenReturn(deliusUser)
 
     val user = userContextService.resolveUser(loginUser, scopes)
-    assertEquals(user, deliusUser)
+    assertThat(user).isEqualTo(deliusUser)
   }
 
   @Test
@@ -64,6 +64,6 @@ internal class UserContextServiceTest {
     whenever(deliusUserService.getDeliusUserByEmail("email@email.com")).thenReturn(null)
 
     val user = userContextService.resolveUser(loginUser, scopes)
-    assertEquals(user, loginUser)
+    assertThat(user).isEqualTo(loginUser)
   }
 }
