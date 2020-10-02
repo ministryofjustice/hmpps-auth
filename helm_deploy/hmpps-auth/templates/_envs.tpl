@@ -32,7 +32,7 @@ env:
         name: {{ template "app.name" . }}
 
   - name: APPLICATION_SMOKETEST_ENABLED
-    value: false
+    value: "false"
 
   - name: AUTH_DATASOURCE_PASSWORD
     valueFrom:
@@ -49,11 +49,10 @@ env:
       secretKeyRef:
         key: AUTH_DATASOURCE_USERNAME
         name: {{ template "app.name" . }}
+
   - name: AUTH_JPA_HIBERNATE_DIALECT
-    valueFrom:
-      secretKeyRef:
-        key: AUTH_JPA_HIBERNATE_DIALECT
-        name: {{ template "app.name" . }}
+    value: "org.hibernate.dialect.SQLServer2012Dialect"
+
   - name: DELIUS_CLIENT_CLIENT_ID
     valueFrom:
       secretKeyRef:
@@ -126,7 +125,7 @@ env:
         name: {{ template "app.name" . }}
 
   - name: SPRING_PROFILES_ACTIVE
-    value: oracle
+    value: "oracle"
 
   - name: TOKENVERIFICATION_CLIENT_CLIENT_ID
     valueFrom:

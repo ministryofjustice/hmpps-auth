@@ -45,14 +45,14 @@ mfa_whitelist:
 
 env:
   APPLICATION_SUPPORT_URL: "https://support.hmpps.service.justice.gov.uk/feedback-and-support"
-  APPLICATION_AUTHENTICATION_MATCH_SUBDOMAINS: "false",
-  APPLICATION_AUTHENTICATION_UI_WHITELIST: "81.134.202.29,217.33.148.210",
-  APPLICATION_NON_PROD_WARNING_ENABLED: "false",
-  APPLICATION_NON_PROD_WARNING_PROD_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth/",
-  DELIUS_ENABLED: "true",
-  DELIUS_ENDPOINT_URL: "https://community-api-secure.probation.service.justice.gov.uk",
-  JWT_COOKIE_EXPIRY_TIME: "12h",
-  JWT_JWK_KEY_ID: "prod-jwk-kid",
-  TOKENVERIFICATION_ENABLED: "true",
+  APPLICATION_AUTHENTICATION_MATCH_SUBDOMAINS: "false"
+  APPLICATION_AUTHENTICATION_UI_WHITELIST: "81.134.202.29,217.33.148.210"
+  APPLICATION_NON_PROD_WARNING_ENABLED: "false"
+  APPLICATION_NON_PROD_WARNING_PROD_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth/"
+  DELIUS_ENABLED: "true"
+  DELIUS_ENDPOINT_URL: "https://community-api-secure.probation.service.justice.gov.uk"
+  JWT_COOKIE_EXPIRY_TIME: "12h"
+  JWT_JWK_KEY_ID: "prod-jwk-kid"
+  TOKENVERIFICATION_ENABLED: "true"
   TOKENVERIFICATION_ENDPOINT_URL: "https://token-verification-api.prison.service.justice.gov.uk"
 
