@@ -60,7 +60,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
                     Map.of(SUBJECT, userDetails.getUsername(),
                             ADD_INFO_AUTH_SOURCE, StringUtils.defaultIfBlank(userDetails.getAuthSource(), "none"),
                             ADD_INFO_USER_NAME, userDetails.getUsername(),
-                            ADD_INFO_USER_ID, userDetails.getUserId(),
+                            ADD_INFO_USER_ID, StringUtils.defaultString(userDetails.getUserId(), userDetails.getUsername()),
                             ADD_INFO_NAME, userDetails.getName()),
                     clientDetails);
         }

@@ -46,7 +46,7 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
           null
         }
         else -> {
-          log.warn("multiple users found for email {}; unable to proceed", email)
+          log.info("multiple users found for email {}; unable to proceed", email)
           null
         }
       }
