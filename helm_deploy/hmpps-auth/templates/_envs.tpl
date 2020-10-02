@@ -145,5 +145,23 @@ env:
     value: "ROLE_MFA,ROLE_PECS_COURT,ROLE_PECS_SUPPLIER"
   - name: APPLICATION_SUPPORT_URL
     value: {{ .Values.env.APPLICATION_SUPPORT_URL | quote }}
+
+  - name: AUTH_AZUREOIDC_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        key: AUTH_AZUREOIDC_CLIENT_ID
+        name: {{ template "app.name" . }}
+
+  - name: AUTH_AZUREOIDC_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        key: AUTH_AZUREOIDC_CLIENT_SECRET
+        name: {{ template "app.name" . }}
+
+  - name: AUTH_AZUREOIDC_TENANT_ID
+    valueFrom:
+      secretKeyRef:
+        key: AUTH_AZUREOIDC_TENANT_ID
+        name: {{ template "app.name" . }}
 {{- end }}
 
