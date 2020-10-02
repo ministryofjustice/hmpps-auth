@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -27,25 +26,24 @@ import java.util.stream.StreamSupport;
 public class LoginController {
     final private List<ClientRegistration> clientRegistrations;
     private final CookieRequestCache cookieRequestCache;
-    
-    @Autowired
     private ClientDetailsService clientDetailsService;
 
     public LoginController(final Optional<InMemoryClientRegistrationRepository> clientRegistrationRepository,
-                           final CookieRequestCache cookieRequestCache) {
+                           final CookieRequestCache cookieRequestCache,
+                           final ClientDetailsService clientDetailsService) {
         clientRegistrations = clientRegistrationRepository.map(registrations -> StreamSupport
                 .stream(registrations.spliterator(), false)
                 .collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
         this.cookieRequestCache = cookieRequestCache;
+        this.clientDetailsService = clientDetailsService;
     }
 
     @GetMapping("/login")
     public ModelAndView loginPage(@RequestParam(required = false) final String error,
                                   final HttpServletRequest request, final HttpServletResponse response) {
-
+        
         final var savedRequest = cookieRequestCache.getRequest(request, response);
-
         if (savedRequest != null) {
             final var redirectUrl = UriComponentsBuilder.fromUriString(savedRequest.getRedirectUrl()).build();
             final String clientId = redirectUrl.getQueryParams().getFirst("client_id");
@@ -58,7 +56,7 @@ public class LoginController {
                 final Boolean skipToAzure = (Boolean) clientDetails.getAdditionalInformation().getOrDefault("skipToAzureField", false);
 
                 if (skipToAzure) {
-                    return new ModelAndView("redirect:/oauth2/authorization/microsoft");
+                    return new ModelAndView("redirect:/oauth2/authorization/" + clientRegistrations.get(0).getClientName());
                 }
             }
 

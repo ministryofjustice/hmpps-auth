@@ -4,34 +4,26 @@ import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers
-import org.mockito.InjectMocks
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.http.HttpStatus
 import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
 import org.springframework.security.oauth2.core.AuthorizationGrantType
-import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.web.savedrequest.SimpleSavedRequest
 import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
 import java.util.*
-import javax.servlet.http.HttpServletRequest
 
 class LoginControllerTest{
   private val clientRegistrationRepository: Optional<InMemoryClientRegistrationRepository> = Optional.empty()
   private val cookieRequestCacheMock: CookieRequestCache = mock()
   private val clientDetailsService: ClientDetailsService = mock()
 
-  private val controller = LoginController(clientRegistrationRepository, cookieRequestCacheMock)
+  private val controller = LoginController(clientRegistrationRepository, cookieRequestCacheMock, clientDetailsService)
 
   @BeforeEach
   internal fun setUp() {
@@ -68,7 +60,7 @@ class LoginControllerTest{
 
     val clientRegistrationRepository = Optional.of(InMemoryClientRegistrationRepository(clients))
 
-    val controller = LoginController(clientRegistrationRepository, cookieRequestCacheMock)
+    val controller = LoginController(clientRegistrationRepository, cookieRequestCacheMock, clientDetailsService)
 
     val modelAndView = controller.loginPage(null, null, null)
     assertThat(modelAndView.viewName).isEqualTo("login")
