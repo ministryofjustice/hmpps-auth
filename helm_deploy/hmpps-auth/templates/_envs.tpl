@@ -5,15 +5,10 @@ Environment variables for web and worker containers
 {{- define "deployment.envs" }}
 env:
   - name: APPLICATION_AUTHENTICATION_MATCH_SUBDOMAINS
-    valueFrom:
-      secretKeyRef:
-        key: APPLICATION_AUTHENTICATION_MATCH_SUBDOMAINS
-        name: {{ template "app.name" . }}
+    value: {{ .Values.env.APPLICATION_AUTHENTICATION_MATCH_SUBDOMAINS | quote }}
   - name: APPLICATION_AUTHENTICATION_UI_WHITELIST
-    valueFrom:
-      secretKeyRef:
-        key: APPLICATION_AUTHENTICATION_UI_WHITELIST
-        name: {{ template "app.name" . }}
+    value: {{ .Values.env.APPLICATION_AUTHENTICATION_UI_WHITELIST | quote }}
+
   - name: APPLICATION_GOOGLE_TAG_ID
     valueFrom:
       secretKeyRef:
@@ -24,26 +19,21 @@ env:
       secretKeyRef:
         key: APPLICATION_INSIGHTS_IKEY
         name: {{ template "app.name" . }}
+
   - name: APPLICATION_NON_PROD_WARNING_ENABLED
-    valueFrom:
-      secretKeyRef:
-        key: APPLICATION_NON_PROD_WARNING_ENABLED
-        name: {{ template "app.name" . }}
+    value: {{ .Values.env.APPLICATION_NON_PROD_WARNING_ENABLED | quote }}
   - name: APPLICATION_NON_PROD_WARNING_PROD_URL
-    valueFrom:
-      secretKeyRef:
-        key: APPLICATION_NON_PROD_WARNING_PROD_URL
-        name: {{ template "app.name" . }}
+    value: {{ .Values.env.APPLICATION_NON_PROD_WARNING_PROD_URL | quote }}
+ 
   - name: APPLICATION_NOTIFY_KEY
     valueFrom:
       secretKeyRef:
         key: APPLICATION_NOTIFY_KEY
         name: {{ template "app.name" . }}
+
   - name: APPLICATION_SMOKETEST_ENABLED
-    valueFrom:
-      secretKeyRef:
-        key: APPLICATION_SMOKETEST_ENABLED
-        name: {{ template "app.name" . }}
+    value: "false"
+
   - name: AUTH_DATASOURCE_PASSWORD
     valueFrom:
       secretKeyRef:
@@ -59,11 +49,10 @@ env:
       secretKeyRef:
         key: AUTH_DATASOURCE_USERNAME
         name: {{ template "app.name" . }}
+
   - name: AUTH_JPA_HIBERNATE_DIALECT
-    valueFrom:
-      secretKeyRef:
-        key: AUTH_JPA_HIBERNATE_DIALECT
-        name: {{ template "app.name" . }}
+    value: "org.hibernate.dialect.SQLServer2012Dialect"
+
   - name: DELIUS_CLIENT_CLIENT_ID
     valueFrom:
       secretKeyRef:
@@ -74,16 +63,9 @@ env:
       secretKeyRef:
         key: DELIUS_CLIENT_CLIENT_SECRET
         name: {{ template "app.name" . }}
-  - name: DELIUS_ENABLED
-    valueFrom:
-      secretKeyRef:
-        key: DELIUS_ENABLED
-        name: {{ template "app.name" . }}
+
   - name: DELIUS_ENDPOINT_URL
-    valueFrom:
-      secretKeyRef:
-        key: DELIUS_ENDPOINT_URL
-        name: {{ template "app.name" . }}
+    value: {{ .Values.env.DELIUS_ENDPOINT_URL | quote }}
 
   - name: DELIUS_ROLES_MAPPINGS_CTRBT001
     value: "ROLE_PF_STD_PROBATION,ROLE_GLOBAL_SEARCH"
@@ -110,15 +92,10 @@ env:
     value: "ROLE_SOC_COMMUNITY"
 
   - name: JWT_COOKIE_EXPIRY_TIME
-    valueFrom:
-      secretKeyRef:
-        key: JWT_COOKIE_EXPIRY_TIME
-        name: {{ template "app.name" . }}
+    value: {{ .Values.env.JWT_COOKIE_EXPIRY_TIME | quote }}
   - name: JWT_JWK_KEY_ID
-    valueFrom:
-      secretKeyRef:
-        key: JWT_JWK_KEY_ID
-        name: {{ template "app.name" . }}
+    value: {{ .Values.env.JWT_JWK_KEY_ID | quote }}
+
   - name: JWT_KEYSTORE_PASSWORD
     valueFrom:
       secretKeyRef:
@@ -144,11 +121,10 @@ env:
       secretKeyRef:
         key: SPRING_DATASOURCE_USERNAME
         name: {{ template "app.name" . }}
+
   - name: SPRING_PROFILES_ACTIVE
-    valueFrom:
-      secretKeyRef:
-        key: SPRING_PROFILES_ACTIVE
-        name: {{ template "app.name" . }}
+    value: {{ .Values.env.SPRING_PROFILES_ACTIVE | quote }}
+
   - name: TOKENVERIFICATION_CLIENT_CLIENT_ID
     valueFrom:
       secretKeyRef:
@@ -159,21 +135,33 @@ env:
       secretKeyRef:
         key: TOKENVERIFICATION_CLIENT_CLIENT_SECRET
         name: {{ template "app.name" . }}
-  - name: TOKENVERIFICATION_ENABLED
-    valueFrom:
-      secretKeyRef:
-        key: TOKENVERIFICATION_ENABLED
-        name: {{ template "app.name" . }}
+
   - name: TOKENVERIFICATION_ENDPOINT_URL
-    valueFrom:
-      secretKeyRef:
-        key: TOKENVERIFICATION_ENDPOINT_URL
-        name: {{ template "app.name" . }}
+    value: {{ .Values.env.TOKENVERIFICATION_ENDPOINT_URL | quote }}
+
   - name: APPLICATION_AUTHENTICATION_MFA_WHITELIST
     value: {{ include "app.joinListWithComma" .Values.mfa_whitelist | quote }}
   - name: APPLICATION_AUTHENTICATION_MFA_ROLES
     value: "ROLE_MFA,ROLE_PECS_COURT,ROLE_PECS_SUPPLIER"
   - name: APPLICATION_SUPPORT_URL
     value: {{ .Values.env.APPLICATION_SUPPORT_URL | quote }}
+
+  - name: AUTH_AZUREOIDC_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        key: AUTH_AZUREOIDC_CLIENT_ID
+        name: {{ template "app.name" . }}
+
+  - name: AUTH_AZUREOIDC_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        key: AUTH_AZUREOIDC_CLIENT_SECRET
+        name: {{ template "app.name" . }}
+
+  - name: AUTH_AZUREOIDC_TENANT_ID
+    valueFrom:
+      secretKeyRef:
+        key: AUTH_AZUREOIDC_TENANT_ID
+        name: {{ template "app.name" . }}
 {{- end }}
 
