@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
-import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
