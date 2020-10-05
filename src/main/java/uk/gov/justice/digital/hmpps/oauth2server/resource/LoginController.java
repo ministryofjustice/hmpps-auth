@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource;
 
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,7 +45,7 @@ public class LoginController {
                                   final HttpServletRequest request, final HttpServletResponse response) {
 
         final var savedRequest = cookieRequestCache.getRequest(request, response);
-        if (savedRequest != null) {
+        if (savedRequest != null && clientRegistrations.size() >= 1) {
             final var redirectUrl = UriComponentsBuilder.fromUriString(savedRequest.getRedirectUrl()).build();
             final String clientId = redirectUrl.getQueryParams().getFirst("client_id");
 
@@ -56,7 +57,8 @@ public class LoginController {
                 final Boolean skipToAzure = (Boolean) clientDetails.getAdditionalInformation().getOrDefault("skipToAzureField", false);
 
                 if (skipToAzure) {
-                    return new ModelAndView("redirect:/oauth2/authorization/" + clientRegistrations.get(0).getClientName(),
+                    var azureADClient = clientRegistrations.get(0).getClientName();
+                    return new ModelAndView("redirect:/oauth2/authorization/" + azureADClient,
                             Collections.singletonMap("oauth2Clients", clientRegistrations));
                 }
             }
