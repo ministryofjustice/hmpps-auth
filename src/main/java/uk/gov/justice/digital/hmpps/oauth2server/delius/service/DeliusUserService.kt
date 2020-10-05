@@ -33,7 +33,7 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
 
   fun getDeliusUserByEmail(email: String): DeliusUserPersonDetails? {
     if (!deliusEnabled) {
-      log.debug("delius integration disabled; unable to proceed for user with email {}", email)
+      log.debug("Delius integration disabled; unable to proceed for user with email {}", email)
       return null
     }
 
@@ -42,26 +42,26 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
       when (userDetailsList.size) {
         1 -> mapUserDetailsToDeliusUser(userDetailsList[0])
         0 -> {
-          log.debug("user with email {} not found in delius", email)
+          log.debug("User with email {} not found in delius", email)
           null
         }
         else -> {
-          log.info("multiple users found for email {}; unable to proceed", email)
+          log.info("Multiple users found for email {}; unable to proceed", email)
           null
         }
       }
     } catch (e: Exception) {
       when (e) {
         is ResourceAccessException, is HttpServerErrorException -> {
-          log.warn("unable to retrieve details from delius for user with email {} due to delius error", email, e)
+          log.warn("Unable to retrieve details from delius for user with email {} due to delius error", email, e)
           throw DeliusAuthenticationServiceException(email)
         }
         is HttpClientErrorException -> {
-          log.warn("unable to retrieve details from delius for user with email {} due to http error [{}]", email, e.statusCode, e)
+          log.warn("Unable to retrieve details from delius for user with email {} due to http error [{}]", email, e.statusCode, e)
           null
         }
         else -> {
-          log.warn("unable to retrieve details from delius for user with email {} due to unknown error", email, e)
+          log.warn("Unable to retrieve details from delius for user with email {} due to unknown error", email, e)
           null
         }
       }

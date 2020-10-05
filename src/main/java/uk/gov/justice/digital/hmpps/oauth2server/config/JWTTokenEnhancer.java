@@ -74,7 +74,7 @@ public class JWTTokenEnhancer implements TokenEnhancer {
         try {
             return userContextService.resolveUser(loginUser, authentication.getOAuth2Request().getScope());
         } catch (UserMappingException e) {
-            log.error("user mapping failed", e);
+            log.error("User mapping failed", e);
         }
 
         return loginUser;

@@ -33,14 +33,14 @@ class UserContextService(
   private fun map(user: UserPersonDetails, from: AuthSource, to: AuthSource): UserPersonDetails = when (from) {
     to -> user
     azuread -> mapFromAzureAD(user, to)
-    else -> throw UserMappingException("auth source '${from}' not supported")
+    else -> throw UserMappingException("Auth source '${from}' not supported")
   }
 
   private fun mapFromAzureAD(user: UserPersonDetails, to: AuthSource): UserPersonDetails = when (to) {
     delius -> {
-      log.debug("mapping user context from azure -> delius")
+      log.debug("Mapping user context from azure -> delius")
       deliusUserService.getDeliusUserByEmail(user.userId) ?: user
     }
-    else -> throw UserMappingException("auth -> '${to}' mapping not supported")
+    else -> throw UserMappingException("Auth -> '${to}' mapping not supported")
   }
 }
