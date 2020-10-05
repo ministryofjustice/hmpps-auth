@@ -16,7 +16,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDe
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole
 import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
-import java.util.*
+import java.util.Optional
+
+class DeliusUserList : MutableList<UserDetails> by ArrayList()
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Service
@@ -27,6 +29,43 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
+  }
+
+  fun getDeliusUserByEmail(email: String): DeliusUserPersonDetails? {
+    if (!deliusEnabled) {
+      log.debug("Delius integration disabled; unable to proceed for user with email {}", email)
+      return null
+    }
+
+    return try {
+      val userDetailsList = restTemplate.getForObject("/users/search/email/{email}/details", DeliusUserList::class.java, email)
+      when (userDetailsList.size) {
+        1 -> mapUserDetailsToDeliusUser(userDetailsList[0])
+        0 -> {
+          log.debug("User with email {} not found in delius", email)
+          null
+        }
+        else -> {
+          log.info("Multiple users found for email {}; unable to proceed", email)
+          null
+        }
+      }
+    } catch (e: Exception) {
+      when (e) {
+        is ResourceAccessException, is HttpServerErrorException -> {
+          log.warn("Unable to retrieve details from delius for user with email {} due to delius error", email, e)
+          throw DeliusAuthenticationServiceException(email)
+        }
+        is HttpClientErrorException -> {
+          log.warn("Unable to retrieve details from delius for user with email {} due to http error [{}]", email, e.statusCode, e)
+          null
+        }
+        else -> {
+          log.warn("Unable to retrieve details from delius for user with email {} due to unknown error", email, e)
+          null
+        }
+      }
+    }
   }
 
   fun getDeliusUserByUsername(username: String): Optional<DeliusUserPersonDetails> {
