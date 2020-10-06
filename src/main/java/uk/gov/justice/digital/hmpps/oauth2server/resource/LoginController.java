@@ -47,12 +47,10 @@ public class LoginController {
         if (savedRequest != null && clientRegistrations.size() >= 1) {
             final var redirectUrl = UriComponentsBuilder.fromUriString(savedRequest.getRedirectUrl()).build();
             final String clientId = redirectUrl.getQueryParams().getFirst("client_id");
-
             final var isOAuthLogin = redirectUrl.getPath().endsWith("/oauth/authorize") && clientId != null;
 
             if(isOAuthLogin) {
                 final var clientDetails = clientDetailsService.loadClientByClientId(clientId);
-
                 final Boolean skipToAzure = (Boolean) clientDetails.getAdditionalInformation().getOrDefault("skipToAzureField", false);
 
                 if (skipToAzure) {
@@ -61,7 +59,6 @@ public class LoginController {
                             Collections.singletonMap("oauth2Clients", clientRegistrations));
                 }
             }
-
         }
 
         final var modelAndView = new ModelAndView("login", Collections.singletonMap("oauth2Clients", clientRegistrations));

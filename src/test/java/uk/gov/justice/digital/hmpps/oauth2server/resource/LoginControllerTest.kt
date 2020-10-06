@@ -69,7 +69,7 @@ class LoginControllerTest{
   }
 
   @Test
-  fun `redirect to Microsoft Login`(){
+  fun `redirect to Microsoft Login`() {
     val clients = listOf(ClientRegistration
             .withRegistrationId("test")
             .clientName("test")
@@ -99,7 +99,7 @@ class LoginControllerTest{
   }
 
   @Test
-  fun `load login page as skip to azure not set`(){
+  fun `load login page as skip to azure not set`() {
     var returnRequest = SimpleSavedRequest("test.com/oauth/authorize?client_id=test_id")
     var clientDetailsMock: BaseClientDetails = BaseClientDetails()
 
@@ -114,7 +114,7 @@ class LoginControllerTest{
   }
 
   @Test
-  fun `show login page as not an OAuth Login`(){
+  fun `show login page as not an OAuth Login`() {
     var returnRequest = SimpleSavedRequest("test.com/test?client_id=test_id")
 
     whenever(cookieRequestCacheMock.getRequest(ArgumentMatchers.any(), ArgumentMatchers.any())).
@@ -123,7 +123,5 @@ class LoginControllerTest{
 
     assertThat(modelAndView.viewName).isEqualTo("login")
    }
-
-
 
 }
