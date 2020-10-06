@@ -1,29 +1,19 @@
-package uk.gov.justice.digital.hmpps.oauth2server.security;
+package uk.gov.justice.digital.hmpps.oauth2server.security
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
-
-import java.util.Optional;
+import org.apache.commons.lang3.StringUtils
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository
+import java.util.*
 
 @Service
-@Slf4j
 @Transactional(readOnly = true)
-@AllArgsConstructor
-public abstract class NomisUserService {
-    private final StaffUserAccountRepository staffUserAccountRepository;
+abstract class NomisUserService(private val staffUserAccountRepository: StaffUserAccountRepository) {
+  fun getNomisUserByUsername(username: String): Optional<NomisUserPersonDetails> =
+      staffUserAccountRepository.findById(StringUtils.upperCase(username))
 
-    public Optional<NomisUserPersonDetails> getNomisUserByUsername(final String username) {
-        return staffUserAccountRepository.findById(StringUtils.upperCase(username));
-    }
-
-    public abstract void changePassword(String username, String password);
-
-    public abstract void changePasswordWithUnlock(String username, String password);
-
-    public abstract void lockAccount(String username);
+  abstract fun changePassword(username: String?, password: String?)
+  abstract fun changePasswordWithUnlock(username: String?, password: String?)
+  abstract fun lockAccount(username: String?)
 }
