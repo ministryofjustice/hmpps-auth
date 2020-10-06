@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.fromNullableString
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.none
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 
 class UserMappingException(message: String) : Exception(message)
@@ -27,22 +28,28 @@ class UserContextService(
     }
   }
 
-  fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String>): List<UserPersonDetails> {
+  private fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String>): List<UserPersonDetails> {
     val loginUserAuthSource = fromNullableString(loginUser.authSource)
     if (loginUserAuthSource != azuread) return listOf(loginUser)
 
-    val desiredSources = scopes.map { fromNullableString(it) }.filter { it != AuthSource.none }
+    val desiredSources = scopes.map {
+      try {
+        fromNullableString(it)
+      } catch (iae: IllegalArgumentException) {
+        none
+      }
+    }.filter { it != none }
     if (desiredSources.isEmpty()) return listOf(loginUser)
 
     return desiredSources
-        .map { mapFromAzureAD(loginUser, it) }
+        .map { mapFromAzureAD(loginUser.userId, it).filter { it.isEnabled } }
         .filter { it.isNotEmpty() }
         .flatten()
   }
 
-  private fun mapFromAzureAD(user: UserPersonDetails, to: AuthSource): List<UserPersonDetails> = when (to) {
-    delius -> deliusUserService.getDeliusUsersByEmail(user.userId)
-    auth -> authUserService.findAuthUsersByEmail(user.userId)
+  private fun mapFromAzureAD(email: String, to: AuthSource): List<UserPersonDetails> = when (to) {
+    delius -> deliusUserService.getDeliusUsersByEmail(email)
+    auth -> authUserService.findAuthUsersByEmail(email)
     else -> emptyList()
   }
 }
