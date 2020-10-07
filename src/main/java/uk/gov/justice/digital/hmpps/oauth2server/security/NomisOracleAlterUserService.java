@@ -7,6 +7,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 
 import javax.sql.DataSource;
@@ -23,8 +24,9 @@ public class NomisOracleAlterUserService extends NomisUserService {
     private final JdbcTemplate jdbcTemplate;
 
     public NomisOracleAlterUserService(@Qualifier("dataSource") final DataSource dataSource,
-                                       final StaffUserAccountRepository staffUserAccountRepository) {
-        super(staffUserAccountRepository);
+                                       final StaffUserAccountRepository staffUserAccountRepository,
+                                       final UserRepository userRepository) {
+        super(staffUserAccountRepository, userRepository);
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
