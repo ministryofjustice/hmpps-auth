@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
 import io.swagger.annotations.Api
+import io.swagger.annotations.ApiModelProperty
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
@@ -44,10 +45,15 @@ class PrisonUserController(private val userService: UserService) {
 
 
 data class PrisonUser(
+    @ApiModelProperty(required = true, example = "RO_USER_TEST")
     val username: String,
+    @ApiModelProperty(required = false, example = "Ryan")
     val firstName: String?,
+    @ApiModelProperty(required = false, example = "Orton")
     val lastName: String?,
+    @ApiModelProperty(required = false, example = "ryanorton@justice.gov.uk")
     val emailAddress: String?,
+    @ApiModelProperty(required = true, example = "true")
     val verified: Boolean,
 )
 
