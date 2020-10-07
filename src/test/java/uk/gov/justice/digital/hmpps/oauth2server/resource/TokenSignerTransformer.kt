@@ -17,6 +17,7 @@ import com.nimbusds.jose.Payload
 import com.nimbusds.jose.crypto.RSASSASigner
 import com.nimbusds.jose.jwk.RSAKey
 import org.apache.commons.lang3.StringUtils
+import java.net.URL
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -32,26 +33,24 @@ class TokenSignerTransformer : ResponseDefinitionTransformer() {
 
   override fun applyGlobally(): Boolean = false
 
-  override fun transform(request: Request?, responseDefinition: ResponseDefinition?, files: FileSource?, parameters: Parameters?): ResponseDefinition {
+  override fun transform(request: Request, responseDefinition: ResponseDefinition, files: FileSource, parameters: Parameters): ResponseDefinition {
 
-    val accessToken: Map<String, Any> = mapper.readValue(this.javaClass.getResource(parameters?.get("accessToken") as String?), typeRef)
-    val idToken: MutableMap<String, Any> = mapper.readValue(this.javaClass.getResource(parameters?.get("idToken") as String?), typeRef)
+    val accessToken = mapper.readValue(parameters.readJson("accessToken"), typeRef)
+    val idToken = mapper.readValue(parameters.readJson("idToken"), typeRef)
+    parameters["email"]?.let { idToken["preferred_username"] = it }
 
     // Incorporate the nonce value with that supplied in the original authorize request.
     // The nonce is sent back to the client as the "code" in response to the authorize request,
     // which would not normally happen, but means the mock server does not have to be stateful)
-    val nonce = getFormValues(request!!.bodyAsString)["code"]
+    getFormValues(request.bodyAsString)["code"]?.let { idToken["nonce"] = it }
 
-    if (nonce != null) {
-      idToken["nonce"] = nonce
-    }
+    val rsaJWK = RSAKey.parse(parameters.readJson("privateKey").readText())
 
-    val rsaJWK = RSAKey.parse(this.javaClass.getResource(parameters?.get("privateKey") as String?).readText())
-
-    val jsonResponse = HashMap<String, String?>()
-    jsonResponse["token_type"] = "bearer"
-    jsonResponse["access_token"] = getSignedToken(rsaJWK, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(accessToken))
-    jsonResponse["id_token"] = getSignedToken(rsaJWK, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(idToken))
+    val jsonResponse = mapOf(
+        "token_type" to "bearer",
+        "access_token" to getSignedToken(rsaJWK, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(accessToken)),
+        "id_token" to getSignedToken(rsaJWK, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(idToken)),
+    )
 
     return ResponseDefinitionBuilder()
         .withHeader("Content-Type", "application/json")
@@ -81,4 +80,7 @@ class TokenSignerTransformer : ResponseDefinitionTransformer() {
     }
     return valueMap
   }
+
+  internal fun Parameters.readJson(parameterName: String): URL =
+      this@TokenSignerTransformer::class.java.getResource(this.get(parameterName) as String)
 }
