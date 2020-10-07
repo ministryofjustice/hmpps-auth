@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
 
 import javax.sql.DataSource;
@@ -21,8 +22,9 @@ public class NomisH2AlterUserService extends NomisUserService {
 
     public NomisH2AlterUserService(@Qualifier("dataSource") final DataSource dataSource,
                                    final PasswordEncoder passwordEncoder,
-                                   final StaffUserAccountRepository staffUserAccountRepository) {
-        super(staffUserAccountRepository);
+                                   final StaffUserAccountRepository staffUserAccountRepository,
+                                   final UserRepository userRepository) {
+        super(staffUserAccountRepository, userRepository);
         jdbcTemplate = new JdbcTemplate(dataSource);
         encoder = passwordEncoder;
     }
