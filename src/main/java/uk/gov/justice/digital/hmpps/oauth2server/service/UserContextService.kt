@@ -8,15 +8,17 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.fromNullableString
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.none
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 
 class UserMappingException(message: String) : Exception(message)
 
 @Service
-class UserContextService(
-    private val deliusUserService: DeliusUserService,
-    private val authUserService: AuthUserService) {
+class UserContextService(private val deliusUserService: DeliusUserService,
+                         private val authUserService: AuthUserService,
+                         private val nomisUserService: NomisUserService) {
 
   @Throws(UserMappingException::class)
   fun resolveUser(loginUser: UserPersonDetails, scopes: Set<String>): UserPersonDetails {
@@ -50,6 +52,7 @@ class UserContextService(
   private fun mapFromAzureAD(email: String, to: AuthSource): List<UserPersonDetails> = when (to) {
     delius -> deliusUserService.getDeliusUsersByEmail(email)
     auth -> authUserService.findAuthUsersByEmail(email)
+    nomis -> nomisUserService.getNomisUsersByEmail(email)
     else -> emptyList()
   }
 }
