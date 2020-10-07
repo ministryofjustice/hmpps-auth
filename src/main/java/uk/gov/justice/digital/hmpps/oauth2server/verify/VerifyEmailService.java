@@ -3,8 +3,9 @@ package uk.gov.justice.digital.hmpps.oauth2server.verify;
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType;
@@ -18,9 +19,7 @@ import uk.gov.service.notify.NotificationClientApi;
 import uk.gov.service.notify.NotificationClientException;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -28,12 +27,24 @@ import java.util.Optional;
 public class VerifyEmailService {
 
     @SuppressWarnings("SqlResolve")
-    private static final String EXISTING_EMAIL_SQL = "select distinct internet_address from internet_addresses i " +
-            "inner join STAFF_USER_ACCOUNTS s on i.owner_id = s.staff_id and owner_class = 'STF' " +
-            "where internet_address_class = 'EMAIL' and s.username = ?";
+    private static final String EXISTING_EMAIL_SQL =
+            "       select distinct internet_address " +
+                    " from internet_addresses i " +
+                    "      inner join STAFF_USER_ACCOUNTS s on i.owner_id = s.staff_id and owner_class = 'STF' " +
+                    "where internet_address_class = 'EMAIL' and s.username = :username";
+
+    @SuppressWarnings("SqlResolve")
+    private static final String EXISTING_EMAIL_FOR_USERNAMES_SQL =
+            "          select s.username username, " +
+                    "         internet_address email " +
+                    "    from internet_addresses i " +
+                    "         inner join STAFF_USER_ACCOUNTS s on i.owner_id = s.staff_id and owner_class = 'STF' " +
+                    "   where internet_address_class = 'EMAIL' and s.username in (:usernames)" +
+                    "group by s.username, internet_address";
+
     private final UserRepository userRepository;
     private final UserTokenRepository userTokenRepository;
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
     private final TelemetryClient telemetryClient;
     private final NotificationClientApi notificationClient;
     private final ReferenceCodesService referenceCodesService;
@@ -41,7 +52,7 @@ public class VerifyEmailService {
 
     public VerifyEmailService(final UserRepository userRepository,
                               final UserTokenRepository userTokenRepository,
-                              final JdbcTemplate jdbcTemplate,
+                              final NamedParameterJdbcTemplate jdbcTemplate,
                               final TelemetryClient telemetryClient,
                               final NotificationClientApi notificationClient,
                               final ReferenceCodesService referenceCodesService, @Value("${application.notify.verify.template}") final String notifyTemplateId) {
@@ -62,8 +73,27 @@ public class VerifyEmailService {
         return !getEmail(name).map(User::isVerified).orElse(Boolean.FALSE);
     }
 
-    public List<String> getExistingEmailAddresses(final String username) {
-        return jdbcTemplate.queryForList(EXISTING_EMAIL_SQL, String.class, username);
+    public List<String> getExistingEmailAddressesForUsername(final String username) {
+        return jdbcTemplate.queryForList(EXISTING_EMAIL_SQL, Map.of("username", username), String.class);
+    }
+
+    public Map<String, Set<String>> getExistingEmailAddressesForUsernames(@NotNull List<String> usernames) {
+        Map<String, Set<String>> emailsByUsername = new HashMap<>();
+
+        if (usernames.isEmpty()) {
+            return emailsByUsername;
+        }
+
+        jdbcTemplate.query(EXISTING_EMAIL_FOR_USERNAMES_SQL,
+                Map.of("usernames", usernames),
+                rs -> {
+                    String username = rs.getString("USERNAME");
+                    String email = rs.getString("EMAIL");
+                    emailsByUsername
+                            .computeIfAbsent(username, notUsed -> new HashSet<>())
+                            .add(email);
+                });
+        return emailsByUsername;
     }
 
     @Transactional(transactionManager = "authTransactionManager")

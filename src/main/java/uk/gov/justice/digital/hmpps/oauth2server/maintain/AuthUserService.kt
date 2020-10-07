@@ -88,6 +88,10 @@ class AuthUserService(private val userRepository: UserRepository,
     return userRepository.findAll(userFilter, pageable)
   }
 
+  fun findAuthUsersByUsernames(usernames: List<String>): List<User> {
+    return userRepository.findByUsernameIn(usernames)
+  }
+
   @Throws(CreateUserException::class)
   private fun getInitialGroup(groupCode: String?, creator: String, authorities: Collection<GrantedAuthority>): Group? {
     if (groupCode.isNullOrEmpty()) {

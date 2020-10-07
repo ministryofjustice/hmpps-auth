@@ -77,7 +77,7 @@ public class VerifyEmailController {
         }
 
         // retrieve email addresses that are currently in use
-        final var existingEmailAddresses = verifyEmailService.getExistingEmailAddresses(username);
+        final var existingEmailAddresses = verifyEmailService.getExistingEmailAddressesForUsername(username);
 
         modelAndView.addObject("candidates", existingEmailAddresses);
 

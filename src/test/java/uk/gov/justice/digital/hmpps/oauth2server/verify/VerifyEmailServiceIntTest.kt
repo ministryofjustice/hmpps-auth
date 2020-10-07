@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
@@ -19,12 +19,14 @@ import uk.gov.service.notify.NotificationClientApi
 @Transactional(transactionManager = "authTransactionManager")
 open class VerifyEmailServiceIntTest {
   @Autowired
-  private lateinit var jdbcTemplate: JdbcTemplate
+  private lateinit var jdbcTemplate: NamedParameterJdbcTemplate
   private lateinit var verifyEmailService: VerifyEmailService
   private val telemetryClient: TelemetryClient = mock()
   private val notificationClient: NotificationClientApi = mock()
+
   @Autowired
   private lateinit var referenceCodesService: ReferenceCodesService
+
   @Autowired
   private lateinit var userRepository: UserRepository
 
@@ -34,14 +36,28 @@ open class VerifyEmailServiceIntTest {
   }
 
   @Test
-  fun existingEmailAddresses() {
-    val emails = verifyEmailService.getExistingEmailAddresses("RO_USER")
+  fun existingEmailAddressesForUsername() {
+    val emails = verifyEmailService.getExistingEmailAddressesForUsername("RO_USER")
     assertThat(emails).containsExactlyInAnyOrder("phillips@bobjustice.gov.uk", "phillips@fredjustice.gov.uk")
   }
 
   @Test
+  fun existingEmailAddressesForUsernames() {
+    val emailAddressesByUsername = verifyEmailService.getExistingEmailAddressesForUsernames(listOf("RO_USER", "RO_DEMO", "CA_USER", "UNKNOWN_USER"))
+    assertThat(emailAddressesByUsername).hasSize(2)
+    assertThat(emailAddressesByUsername["RO_USER"]).containsExactlyInAnyOrder("phillips@bobjustice.gov.uk", "phillips@fredjustice.gov.uk")
+    assertThat(emailAddressesByUsername["RO_DEMO"]).containsExactlyInAnyOrder("ro_user@some.justice.gov.uk")
+  }
+
+  @Test
+  fun `existingEmailAddressesForUsernames - no usernames` () {
+    val emailAddressesByUsername = verifyEmailService.getExistingEmailAddressesForUsernames(listOf())
+    assertThat(emailAddressesByUsername).hasSize(0)
+  }
+
+  @Test
   fun existingEmailAddresses_NotFound() {
-    val emails = verifyEmailService.getExistingEmailAddresses("CA_USER")
+    val emails = verifyEmailService.getExistingEmailAddressesForUsername("CA_USER")
     assertThat(emails).isEmpty()
   }
 

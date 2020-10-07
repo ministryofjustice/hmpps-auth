@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.repository
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDeta
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.UserCaseloadRole
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -24,6 +26,15 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccou
 class NomisUserPersonDetailsRepositoryTest {
   @Autowired
   private lateinit var repository: StaffUserAccountRepository
+
+  @Test
+  fun findByFirstAndLastName() {
+    val results = repository.findByStaffFirstNameIgnoreCaseAndStaffLastNameIgnoreCase("rYaN", "OrtON")
+
+    assertThat(results)
+        .extracting("username", "staff.firstName", "staff.lastName")
+        .containsExactly(tuple("RO_USER_TEST", "Ryan", "Orton"))
+  }
 
   @Test
   fun givenATransientEntityItCanBePeristed() {

@@ -1,17 +1,20 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import org.apache.commons.lang3.StringUtils
+import org.apache.commons.text.WordUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.azure.service.AzureUserService
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.util.*
 
@@ -26,6 +29,7 @@ class UserService(private val nomisUserService: NomisUserService,
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
+    fun isHmppsEmail(email: String) = email.endsWith("justice.gov.uk")
   }
 
   fun findMasterUserPersonDetails(username: String): Optional<UserPersonDetails> =
@@ -62,9 +66,9 @@ class UserService(private val nomisUserService: NomisUserService,
       }
 
   fun getEmailAddressFromNomis(username: String): Optional<String> {
-    val emailAddresses = verifyEmailService.getExistingEmailAddresses(username)
+    val emailAddresses = verifyEmailService.getExistingEmailAddressesForUsername(username)
     val justiceEmail = emailAddresses
-        .filter { email -> email.endsWith("justice.gov.uk") }
+        .filter(UserService::isHmppsEmail)
         .toList()
     return if (justiceEmail.size == 1) Optional.of(justiceEmail[0]) else Optional.empty()
   }
@@ -86,5 +90,45 @@ class UserService(private val nomisUserService: NomisUserService,
       return user.isSecondaryEmailVerified && email == user.secondaryEmail
     }
     return user.isVerified && email == user.email
+  }
+
+  fun findPrisonUsersByFirstAndLastNames(firstName: String, lastName: String): List<User> {
+    val nomisUsers: List<NomisUserPersonDetails> = nomisUserService.findPrisonUsersByFirstAndLastNames(firstName, lastName)
+    val nomisUsernames = nomisUsers.map { it.username }
+
+    val authUsers: List<User> = authUserService
+        .findAuthUsersByUsernames(nomisUsernames)
+        .filter {
+          !it.email.isNullOrBlank() && it.source == AuthSource.nomis
+        }
+
+    val authUsernames = authUsers.map { it.username }
+
+    val missingUsernames = nomisUsernames.minus(authUsernames)
+
+    val emailsByUsername = verifyEmailService.getExistingEmailAddressesForUsernames(missingUsernames)
+
+    val validEmailByUsername = emailsByUsername
+        .mapValues { (_, emails) -> emails.filter(UserService::isHmppsEmail) }
+        .filter { (_, emails) -> emails.size == 1 }
+        .mapValues { (_, emails) -> emails.first() }
+
+    val usersFromNomisUsers = nomisUsers
+        .filter { user -> missingUsernames.contains(user.username) }
+        .map { user ->
+          User
+              .builder()
+              .username(user.username)
+              .person(
+                  Person(
+                      user.firstName,
+                      // Person.getFirstName uses capitalizeFully, so do the same for lastName...
+                      WordUtils.capitalizeFully(user.lastName)
+                  ))
+              .email(validEmailByUsername[user.username])
+              .verified(validEmailByUsername.containsKey(user.username))
+              .build()
+        }
+    return authUsers.plus(usersFromNomisUsers)
   }
 }

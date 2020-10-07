@@ -45,7 +45,7 @@ class VerifyEmailControllerTest {
   @Test
   fun verifyEmailRequest() {
     val emails = listOf("bob")
-    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(emails)
+    whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(emails)
     val modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView.model).containsExactly(entry("candidates", emails))
@@ -90,7 +90,7 @@ class VerifyEmailControllerTest {
   @Test
   fun verifyEmail_noselection() {
     val candidates = listOf("joe", "bob")
-    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(candidates)
+    whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(candidates)
     val modelAndView = verifyEmailController.verifyEmail("", "", EmailType.PRIMARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView.model).containsExactly(entry("error", "noselection"), entry("candidates", candidates))
@@ -151,7 +151,7 @@ class VerifyEmailControllerTest {
   @Test
   fun verifySecondaryEmail_noselection() {
     val candidates = listOf("joe", "bob")
-    whenever(verifyEmailService.getExistingEmailAddresses(anyString())).thenReturn(candidates)
+    whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(candidates)
     val modelAndView = verifyEmailController.verifyEmail("", "", EmailType.SECONDARY, principal, request, response)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView.model).containsExactly(entry("error", "noselection"), entry("candidates", candidates))

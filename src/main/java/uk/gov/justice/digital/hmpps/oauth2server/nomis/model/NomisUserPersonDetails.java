@@ -68,6 +68,10 @@ public class NomisUserPersonDetails implements UserPersonDetails {
         return getStaff().getFirstName();
     }
 
+    public String getLastName() {
+        return getStaff().getLastName();
+    }
+
     @Override
     public String getUserId() {
         return getStaff().getStaffId().toString();
