@@ -59,6 +59,18 @@ internal class UserContextServiceTest {
   }
 
   @Test
+  fun `resolveUser tries all three sources when no valid scopes found`() {
+    val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "emailid@email.com", "jwtId")
+    val scopes = setOf("read,write")
+
+    val user = userContextService.resolveUser(loginUser, scopes)
+    assertThat(user).isSameAs(loginUser)
+    verify(deliusUserService).getDeliusUsersByEmail("emailid@email.com")
+    verify(nomisUserService).getNomisUsersByEmail("emailid@email.com")
+    verify(authUserService).findAuthUsersByEmail("emailid@email.com")
+  }
+
+  @Test
   fun `resolveUser can map from azureAD to nomis`() {
     val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "emailid@email.com", "jwtId")
     val nomisUser = NomisUserPersonDetails("username", "", null, "GEN", "MDI", listOf(),
