@@ -112,6 +112,19 @@
       </div>
     </div>
 
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="skipToAzureField">Azure Ad Login Flow</label>
+      <span class="govuk-hint">
+          Customize behaviour of Azure AD login (BETA)
+        </span>
+      <div class="govuk-checkboxes__item">
+        <input name="_skipToAzureField" type="hidden" value="on" />
+        <input class="govuk-checkboxes__input" type="checkbox" name="skipToAzureField" id="skipToAzureField"
+               th:checked="*{clientDetails.additionalInformation['skipToAzureField']}"/>
+        <label class="govuk-label govuk-checkboxes__label" for="skipToAzureField">Auto redirect</label>
+      </div>
+    </div>
+
     <input type="submit" class="govuk-button" name="client-submit" value="Save">
   </form>
 </div>
