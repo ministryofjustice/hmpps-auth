@@ -73,8 +73,15 @@ internal class UserContextServiceTest {
   @Test
   fun `resolveUser can map from azureAD to nomis`() {
     val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "emailid@email.com", "jwtId")
-    val nomisUser = NomisUserPersonDetails("username", "", null, "GEN", "MDI", listOf(),
-        AccountDetail("username", "OPEN", "GEN", null))
+    val nomisUser = NomisUserPersonDetails(
+      "username",
+      "",
+      null,
+      "GEN",
+      "MDI",
+      listOf(),
+      AccountDetail("username", "OPEN", "GEN", null)
+    )
     val scopes = setOf("nomis")
     whenever(nomisUserService.getNomisUsersByEmail(anyString())).thenReturn(listOf(nomisUser))
 
@@ -113,8 +120,8 @@ internal class UserContextServiceTest {
     whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser))
 
     assertThatThrownBy { userContextService.resolveUser(loginUser, scopes) }
-        .isInstanceOf(UserMappingException::class.java)
-        .hasMessage("Multiple users found with scopes $scopes")
+      .isInstanceOf(UserMappingException::class.java)
+      .hasMessage("Multiple users found with scopes $scopes")
   }
 
   @Test
@@ -125,15 +132,21 @@ internal class UserContextServiceTest {
     whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser, authUser))
 
     assertThatThrownBy { userContextService.resolveUser(loginUser, scopes) }
-        .isInstanceOf(UserMappingException::class.java)
-        .hasMessage("Multiple users found with scopes $scopes")
+      .isInstanceOf(UserMappingException::class.java)
+      .hasMessage("Multiple users found with scopes $scopes")
   }
 
   @Test
   fun `resolveUser ignores disabled users`() {
     val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "email@email.com", "jwtId")
-    val deliusUser = DeliusUserPersonDetails("username", "id", "user", "name", "email@email.com",
-        enabled = false)
+    val deliusUser = DeliusUserPersonDetails(
+      "username",
+      "id",
+      "user",
+      "name",
+      "email@email.com",
+      enabled = false
+    )
     val authUser = User.builder().username("username").source(auth).enabled(true).build()
     val scopes = setOf("delius", "auth")
     whenever(deliusUserService.getDeliusUsersByEmail(anyString())).thenReturn(listOf(deliusUser))

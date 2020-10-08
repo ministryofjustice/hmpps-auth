@@ -25,8 +25,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
-import java.util.*
 import java.util.Map.entry
+import java.util.Optional
 import javax.servlet.http.HttpServletRequest
 
 class ResetPasswordControllerTest {
@@ -36,7 +36,15 @@ class ResetPasswordControllerTest {
   private val verifyEmailService: VerifyEmailService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val request: HttpServletRequest = mock()
-  private val controller = ResetPasswordController(resetPasswordService, tokenService, userService, verifyEmailService, telemetryClient, true, setOf("password1"))
+  private val controller = ResetPasswordController(
+    resetPasswordService,
+    tokenService,
+    userService,
+    verifyEmailService,
+    telemetryClient,
+    true,
+    setOf("password1")
+  )
 
   @Nested
   inner class ResetPasswordSuccess {
@@ -83,9 +91,13 @@ class ResetPasswordControllerTest {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty())
       controller.resetPasswordRequest("user", request)
-      verify(telemetryClient).trackEvent(eq("ResetPasswordRequestFailure"), check {
-        assertThat(it).containsOnly(entry("username", "user"), entry("error", "nolink"))
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("ResetPasswordRequestFailure"),
+        check {
+          assertThat(it).containsOnly(entry("username", "user"), entry("error", "nolink"))
+        },
+        isNull()
+      )
     }
 
     @Test
@@ -101,16 +113,28 @@ class ResetPasswordControllerTest {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.of("somelink"))
       controller.resetPasswordRequest("user", request)
-      verify(telemetryClient).trackEvent(eq("ResetPasswordRequestSuccess"), check {
-        assertThat(it).containsOnly(entry("username", "user"))
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("ResetPasswordRequestSuccess"),
+        check {
+          assertThat(it).containsOnly(entry("username", "user"))
+        },
+        isNull()
+      )
     }
 
     @Test
     fun resetPasswordRequest_success() {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenReturn(Optional.empty())
-      val modelAndView = ResetPasswordController(resetPasswordService, tokenService, userService, verifyEmailService, telemetryClient, false, null).resetPasswordRequest("user", request)
+      val modelAndView = ResetPasswordController(
+        resetPasswordService,
+        tokenService,
+        userService,
+        verifyEmailService,
+        telemetryClient,
+        false,
+        null
+      ).resetPasswordRequest("user", request)
       assertThat(modelAndView.viewName).isEqualTo("resetPasswordSent")
       assertThat(modelAndView.model).isEmpty()
     }
@@ -118,7 +142,9 @@ class ResetPasswordControllerTest {
     @Test
     fun resetPasswordRequest_failed() {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
-      whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(NotificationClientRuntimeException(NotificationClientException("failure message")))
+      whenever(resetPasswordService.requestResetPassword(anyString(), anyString())).thenThrow(
+        NotificationClientRuntimeException(NotificationClientException("failure message"))
+      )
       val modelAndView = controller.resetPasswordRequest("user", request)
       assertThat(modelAndView.viewName).isEqualTo("resetPassword")
       assertThat(modelAndView.model).containsExactly(entry("error", "other"))
@@ -126,15 +152,20 @@ class ResetPasswordControllerTest {
 
     @Test
     fun resetPasswordRequest_emailfailed() {
-      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddressExcludingGsi(anyString(), eq(User.EmailType.PRIMARY))
+      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService)
+        .validateEmailAddressExcludingGsi(anyString(), eq(User.EmailType.PRIMARY))
       val modelAndView = controller.resetPasswordRequest("user@somewhere", request)
       assertThat(modelAndView.viewName).isEqualTo("resetPassword")
-      assertThat(modelAndView.model).containsOnly(entry("error", "email.reason"), entry("usernameOrEmail", "user@somewhere"))
+      assertThat(modelAndView.model).containsOnly(
+        entry("error", "email.reason"),
+        entry("usernameOrEmail", "user@somewhere")
+      )
     }
 
     @Test
     fun resetPasswordRequest_emailhelperapostrophe() {
-      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService).validateEmailAddressExcludingGsi(anyString(), eq(User.EmailType.PRIMARY))
+      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService)
+        .validateEmailAddressExcludingGsi(anyString(), eq(User.EmailType.PRIMARY))
       val modelAndView = controller.resetPasswordRequest("us.o’er@someWHERE.com   ", request)
       assertThat(modelAndView.viewName).isEqualTo("resetPassword")
       verify(verifyEmailService).validateEmailAddressExcludingGsi("us.o'er@somewhere.com", User.EmailType.PRIMARY)
@@ -156,7 +187,13 @@ class ResetPasswordControllerTest {
       setupGetUserCallForProfile()
       setupCheckAndGetTokenValid()
       val modelAndView = controller.resetPasswordConfirm("sometoken")
-      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken", "isAdmin" to false, "username" to "someuser"))
+      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "token" to "sometoken",
+          "isAdmin" to false,
+          "username" to "someuser"
+        )
+      )
     }
 
     @Test
@@ -165,7 +202,13 @@ class ResetPasswordControllerTest {
       user.accountDetail.profile = "TAG_ADMIN"
       setupCheckAndGetTokenValid()
       val modelAndView = controller.resetPasswordConfirm("sometoken")
-      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken", "isAdmin" to true, "username" to "someuser"))
+      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "token" to "sometoken",
+          "isAdmin" to true,
+          "username" to "someuser"
+        )
+      )
     }
 
     @Test
@@ -280,14 +323,25 @@ class ResetPasswordControllerTest {
       setupGetToken()
       whenever(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenReturn("token")
       val modelAndView = controller.resetPasswordChosen("sometoken", "user")
-      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "token", "isAdmin" to false, "username" to "someuser"))
+      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "token" to "token",
+          "isAdmin" to false,
+          "username" to "someuser"
+        )
+      )
     }
 
     @Test
     fun setPasswordChosen_validationFailure_checkView() {
       setupGetUserCallForProfile()
       setupCheckAndGetTokenValid()
-      whenever(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenThrow(ResetPasswordException("reason"))
+      whenever(
+        resetPasswordService.moveTokenToAccount(
+          anyString(),
+          anyString()
+        )
+      ).thenThrow(ResetPasswordException("reason"))
       val modelAndView = controller.resetPasswordChosen("sometoken", "user")
       assertThat(modelAndView.viewName).isEqualTo("setPasswordSelect")
     }
@@ -296,9 +350,20 @@ class ResetPasswordControllerTest {
     fun setPasswordChosen_validationFailure_checkModel() {
       setupGetUserCallForProfile()
       setupCheckAndGetTokenValid()
-      whenever(resetPasswordService.moveTokenToAccount(anyString(), anyString())).thenThrow(ResetPasswordException("reason"))
+      whenever(
+        resetPasswordService.moveTokenToAccount(
+          anyString(),
+          anyString()
+        )
+      ).thenThrow(ResetPasswordException("reason"))
       val modelAndView = controller.resetPasswordChosen("sometoken", "someuser")
-      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken", "error" to "reason", "username" to "someuser"))
+      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "token" to "sometoken",
+          "error" to "reason",
+          "username" to "someuser"
+        )
+      )
     }
   }
 
@@ -309,12 +374,22 @@ class ResetPasswordControllerTest {
   private fun setupCheckAndGetTokenValid() {
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
     val user = User.builder().username("someuser").email("email@somewhere.com").verified(true).build()
-    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(user.createToken(UserToken.TokenType.RESET)))
+    whenever(
+      tokenService.getToken(
+        any(),
+        anyString()
+      )
+    ).thenReturn(Optional.of(user.createToken(UserToken.TokenType.RESET)))
   }
 
   private fun setupGetToken() {
     val user = User.builder().username("someuser").email("email@somewhere.com").verified(true).build()
-    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(user.createToken(UserToken.TokenType.RESET)))
+    whenever(
+      tokenService.getToken(
+        any(),
+        anyString()
+      )
+    ).thenReturn(Optional.of(user.createToken(UserToken.TokenType.RESET)))
   }
 
   private fun setupGetUserCallForProfile(): NomisUserPersonDetails {

@@ -10,6 +10,7 @@ import org.springframework.web.context.request.ServletRequestAttributes
 
 internal class IpAddressHelperTest {
   private val request = MockHttpServletRequest()
+
   @AfterEach
   fun tearDown() {
     RequestContextHolder.resetRequestAttributes()

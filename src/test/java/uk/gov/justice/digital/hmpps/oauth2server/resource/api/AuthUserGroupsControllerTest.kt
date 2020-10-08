@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import java.security.Principal
-import java.util.*
+import java.util.Optional
 
 class AuthUserGroupsControllerTest {
   private val principal: Principal = UsernamePasswordAuthenticationToken("bob", "pass")
@@ -29,7 +29,13 @@ class AuthUserGroupsControllerTest {
   fun groups_userNotFound() {
     val responseEntity = authUserGroupsController.groups("bob")
     assertThat(responseEntity.statusCodeValue).isEqualTo(404)
-    assertThat(responseEntity.body).isEqualTo(ErrorDetail("Not Found", "Account for username bob not found", "username"))
+    assertThat(responseEntity.body).isEqualTo(
+      ErrorDetail(
+        "Not Found",
+        "Account for username bob not found",
+        "username"
+      )
+    )
   }
 
   @Test
@@ -46,7 +52,13 @@ class AuthUserGroupsControllerTest {
   fun addGroup_userNotFound() {
     val responseEntity = authUserGroupsController.addGroup("bob", "group", principal)
     assertThat(responseEntity.statusCodeValue).isEqualTo(404)
-    assertThat(responseEntity.body).isEqualTo(ErrorDetail("Not Found", "Account for username bob not found", "username"))
+    assertThat(responseEntity.body).isEqualTo(
+      ErrorDetail(
+        "Not Found",
+        "Account for username bob not found",
+        "username"
+      )
+    )
   }
 
   @Test
@@ -60,7 +72,8 @@ class AuthUserGroupsControllerTest {
   @Test
   fun addGroup_conflict() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
-    doThrow(AuthUserGroupExistsException()).whenever(authUserGroupService).addGroup(anyString(), anyString(), anyString())
+    doThrow(AuthUserGroupExistsException()).whenever(authUserGroupService)
+      .addGroup(anyString(), anyString(), anyString())
     val responseEntity = authUserGroupsController.addGroup("someuser", "joe", principal)
     assertThat(responseEntity.statusCodeValue).isEqualTo(409)
   }
@@ -68,7 +81,8 @@ class AuthUserGroupsControllerTest {
   @Test
   fun addGroup_validation() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
-    doThrow(AuthUserGroupException("group", "error")).whenever(authUserGroupService).addGroup(anyString(), anyString(), anyString())
+    doThrow(AuthUserGroupException("group", "error")).whenever(authUserGroupService)
+      .addGroup(anyString(), anyString(), anyString())
     val responseEntity = authUserGroupsController.addGroup("someuser", "harry", principal)
     assertThat(responseEntity.statusCodeValue).isEqualTo(400)
     assertThat(responseEntity.body).isEqualTo(ErrorDetail("group.error", "group failed validation", "group"))
@@ -78,7 +92,13 @@ class AuthUserGroupsControllerTest {
   fun removeGroup_userNotFound() {
     val responseEntity = authUserGroupsController.removeGroup("bob", "group", principal)
     assertThat(responseEntity.statusCodeValue).isEqualTo(404)
-    assertThat(responseEntity.body).isEqualTo(ErrorDetail("Not Found", "Account for username bob not found", "username"))
+    assertThat(responseEntity.body).isEqualTo(
+      ErrorDetail(
+        "Not Found",
+        "Account for username bob not found",
+        "username"
+      )
+    )
   }
 
   @Test
@@ -92,7 +112,8 @@ class AuthUserGroupsControllerTest {
   @Test
   fun removeGroup_groupMissing() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
-    doThrow(AuthUserGroupException("group", "error")).whenever(authUserGroupService).removeGroup(anyString(), anyString(), anyString())
+    doThrow(AuthUserGroupException("group", "error")).whenever(authUserGroupService)
+      .removeGroup(anyString(), anyString(), anyString())
     val responseEntity = authUserGroupsController.removeGroup("someuser", "harry", principal)
     assertThat(responseEntity.statusCodeValue).isEqualTo(400)
   }

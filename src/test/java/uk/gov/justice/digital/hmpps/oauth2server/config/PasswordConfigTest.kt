@@ -6,6 +6,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 internal class PasswordConfigTest {
   private val passwordEncoder = PasswordConfig().passwordEncoder()
+
   @Test
   fun encodePassword() {
     val encoded = passwordEncoder.encode("some_password_123456")

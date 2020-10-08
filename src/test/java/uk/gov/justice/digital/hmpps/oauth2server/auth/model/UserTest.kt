@@ -138,7 +138,9 @@ class UserTest {
 
     @Test
     fun `mobile set and verified, email set and verified`() {
-      val user = userBuilder().email("someemail").verified(true).contacts(setOf(Contact(MOBILE_PHONE, "077009000000", true))).build()
+      val user =
+        userBuilder().email("someemail").verified(true).contacts(setOf(Contact(MOBILE_PHONE, "077009000000", true)))
+          .build()
       assertThat(user.hasVerifiedMfaMethod()).isTrue()
     }
   }
@@ -195,13 +197,17 @@ class UserTest {
 
     @Test
     fun `mobile set and verified, email set and verified`() {
-      val user = userBuilder().email("someemail").verified(true).contacts(setOf(Contact(MOBILE_PHONE, "someemail", true))).build()
+      val user =
+        userBuilder().email("someemail").verified(true).contacts(setOf(Contact(MOBILE_PHONE, "someemail", true)))
+          .build()
       assertThat(user.calculateMfaFromPreference()).get().isEqualTo(MfaPreferenceType.EMAIL)
     }
 
     @Test
     fun `mobile set and verified, email set and verified, preference text`() {
-      val user = userBuilder().email("someemail").verified(true).contacts(setOf(Contact(MOBILE_PHONE, "someemail", true))).mfaPreference(MfaPreferenceType.TEXT).build()
+      val user =
+        userBuilder().email("someemail").verified(true).contacts(setOf(Contact(MOBILE_PHONE, "someemail", true)))
+          .mfaPreference(MfaPreferenceType.TEXT).build()
       assertThat(user.calculateMfaFromPreference()).get().isEqualTo(MfaPreferenceType.TEXT)
     }
   }
@@ -243,7 +249,8 @@ class UserTest {
 
     @Test
     fun `mfaPreferenceVerified preference text verified`() {
-      val user = User.builder().contacts(setOf(Contact(MOBILE_PHONE, "", true))).mfaPreference(MfaPreferenceType.TEXT).build()
+      val user =
+        User.builder().contacts(setOf(Contact(MOBILE_PHONE, "", true))).mfaPreference(MfaPreferenceType.TEXT).build()
       assertThat(user.mfaPreferenceVerified()).isTrue()
     }
 
@@ -267,7 +274,8 @@ class UserTest {
 
     @Test
     fun `mfaPreferenceTextVerified verified`() {
-      val user = User.builder().contacts(setOf(Contact(MOBILE_PHONE, "", true))).mfaPreference(MfaPreferenceType.TEXT).build()
+      val user =
+        User.builder().contacts(setOf(Contact(MOBILE_PHONE, "", true))).mfaPreference(MfaPreferenceType.TEXT).build()
       assertThat(user.mfaPreferenceTextVerified()).isTrue()
     }
 

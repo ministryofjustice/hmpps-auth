@@ -7,11 +7,11 @@ class HealthDeliusDownIntTest : IntegrationTest() {
   @Test
   fun `Health reports delius info`() {
     webTestClient.get().uri("/auth/health/deliusApiHealth")
-        .exchange()
-        .expectStatus().isOk
-        .expectBody().jsonPath("status").isEqualTo("UP")
-        .jsonPath("details.error").value<String> {
-          assertThat(it).contains("I/O error on GET request for")
-        }
+      .exchange()
+      .expectStatus().isOk
+      .expectBody().jsonPath("status").isEqualTo("UP")
+      .jsonPath("details.error").value<String> {
+        assertThat(it).contains("I/O error on GET request for")
+      }
   }
 }

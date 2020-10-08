@@ -13,7 +13,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException
-import java.util.*
+import java.util.HashSet
+import java.util.Optional
 
 class AuthUserGroupServiceTest {
   private val userRepository: UserRepository = mock()
@@ -24,7 +25,14 @@ class AuthUserGroupServiceTest {
   @Test
   fun addGroup_blank() {
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")))
-    assertThatThrownBy { service.addGroup("user", "        ", "admin") }.isInstanceOf(AuthUserGroupException::class.java).hasMessage("Add group failed for field group with reason: notfound")
+    assertThatThrownBy {
+      service.addGroup(
+        "user",
+        "        ",
+        "admin"
+      )
+    }.isInstanceOf(AuthUserGroupException::class.java)
+      .hasMessage("Add group failed for field group with reason: notfound")
   }
 
   @Test
@@ -34,7 +42,14 @@ class AuthUserGroupServiceTest {
     user.groups = HashSet(listOf(group))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     whenever(groupRepository.findByGroupCode(anyString())).thenReturn(Optional.of(group))
-    assertThatThrownBy { service.addGroup("user", "LICENCE_VARY", "admin") }.isInstanceOf(AuthUserGroupException::class.java).hasMessage("Add group failed for field group with reason: exists")
+    assertThatThrownBy {
+      service.addGroup(
+        "user",
+        "LICENCE_VARY",
+        "admin"
+      )
+    }.isInstanceOf(AuthUserGroupException::class.java)
+      .hasMessage("Add group failed for field group with reason: exists")
   }
 
   @Test
@@ -52,7 +67,8 @@ class AuthUserGroupServiceTest {
   fun removeGroup_groupNotOnUser() {
     val user = User.of("user")
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
-    assertThatThrownBy { service.removeGroup("user", "BOB", "admin") }.isInstanceOf(AuthUserGroupException::class.java).hasMessage("Add group failed for field group with reason: missing")
+    assertThatThrownBy { service.removeGroup("user", "BOB", "admin") }.isInstanceOf(AuthUserGroupException::class.java)
+      .hasMessage("Add group failed for field group with reason: missing")
   }
 
   @Test
@@ -98,7 +114,12 @@ class AuthUserGroupServiceTest {
 
   @Test
   fun authUserAssignableGroups_superUser() {
-    whenever(groupRepository.findAllByOrderByGroupName()).thenReturn(listOf(Group("JOE", "desc"), Group("LICENCE_VARY", "desc2")))
+    whenever(groupRepository.findAllByOrderByGroupName()).thenReturn(
+      listOf(
+        Group("JOE", "desc"),
+        Group("LICENCE_VARY", "desc2")
+      )
+    )
     val groups = service.getAssignableGroups(" BOB ", setOf(SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS")))
     assertThat(groups).extracting<String> { it.groupCode }.containsOnly("JOE", "LICENCE_VARY")
   }

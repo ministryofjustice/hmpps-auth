@@ -19,18 +19,22 @@ import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
 import java.sql.ResultSet
-import java.util.*
+import java.util.HashMap
+import java.util.HashSet
+import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
 @Service
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
-class VerifyEmailService(private val userRepository: UserRepository,
-                         private val userTokenRepository: UserTokenRepository,
-                         private val jdbcTemplate: NamedParameterJdbcTemplate,
-                         private val telemetryClient: TelemetryClient,
-                         private val notificationClient: NotificationClientApi,
-                         private val referenceCodesService: ReferenceCodesService,
-                         @Value("\${application.notify.verify.template}") private val notifyTemplateId: String) {
+class VerifyEmailService(
+  private val userRepository: UserRepository,
+  private val userTokenRepository: UserTokenRepository,
+  private val jdbcTemplate: NamedParameterJdbcTemplate,
+  private val telemetryClient: TelemetryClient,
+  private val notificationClient: NotificationClientApi,
+  private val referenceCodesService: ReferenceCodesService,
+  @Value("\${application.notify.verify.template}") private val notifyTemplateId: String
+) {
 
   fun getEmail(username: String): Optional<User> {
     return userRepository.findByUsername(username).filter { ue: User -> StringUtils.isNotBlank(ue.email) }
@@ -49,28 +53,32 @@ class VerifyEmailService(private val userRepository: UserRepository,
     if (usernames.isEmpty()) {
       return emailsByUsername
     }
-    jdbcTemplate.query(EXISTING_EMAIL_FOR_USERNAMES_SQL,
-        java.util.Map.of("usernames", usernames)
+    jdbcTemplate.query(
+      EXISTING_EMAIL_FOR_USERNAMES_SQL,
+      java.util.Map.of("usernames", usernames)
     ) { rs: ResultSet ->
       val username = rs.getString("USERNAME")
       val email = rs.getString("EMAIL")
       emailsByUsername
-          .computeIfAbsent(username) { HashSet() }
-          .add(email)
+        .computeIfAbsent(username) { HashSet() }
+        .add(email)
     }
     return emailsByUsername
   }
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(NotificationClientException::class, VerifyEmailException::class)
-  fun requestVerification(username: String,
-                          emailInput: String?,
-                          firstName: String?,
-                          fullname: String?,
-                          url: String,
-                          emailType: EmailType): String {
+  fun requestVerification(
+    username: String,
+    emailInput: String?,
+    firstName: String?,
+    fullname: String?,
+    url: String,
+    emailType: EmailType
+  ): String {
     val user = userRepository.findByUsername(username).orElseThrow()
-    val verifyLink = url + user.createToken(if (emailType == EmailType.PRIMARY) UserToken.TokenType.VERIFIED else UserToken.TokenType.SECONDARY).token
+    val verifyLink =
+      url + user.createToken(if (emailType == EmailType.PRIMARY) UserToken.TokenType.VERIFIED else UserToken.TokenType.SECONDARY).token
     val parameters = java.util.Map.of("firstName", firstName, "fullName", fullname, "verifyLink", verifyLink)
     val email = EmailHelper.format(emailInput)
     validateEmailAddress(email, emailType)
@@ -88,7 +96,11 @@ class VerifyEmailService(private val userRepository: UserRepository,
     } catch (e: NotificationClientException) {
       val reason = (if (e.cause != null) e.cause else e)!!.javaClass.simpleName
       log.warn("Failed to send email verification to notify for user {}", username, e)
-      telemetryClient.trackEvent("VerifyEmailRequestFailure", java.util.Map.of("username", username, "reason", reason), null)
+      telemetryClient.trackEvent(
+        "VerifyEmailRequestFailure",
+        java.util.Map.of("username", username, "reason", reason),
+        null
+      )
       if (e.httpResult >= 500) {
         // second time lucky
         notificationClient.sendEmail(notifyTemplateId, email, parameters, null, null)
@@ -108,7 +120,11 @@ class VerifyEmailService(private val userRepository: UserRepository,
     }
     if (user.isVerified) {
       log.info("Verify email succeeded due to already verified")
-      telemetryClient.trackEvent("VerifyEmailConfirmFailure", java.util.Map.of("reason", "alreadyverified", "username", username), null)
+      telemetryClient.trackEvent(
+        "VerifyEmailConfirmFailure",
+        java.util.Map.of("reason", "alreadyverified", "username", username),
+        null
+      )
       return Optional.empty()
     }
     val verifyLink = url + user.createToken(UserToken.TokenType.VERIFIED).token
@@ -126,7 +142,11 @@ class VerifyEmailService(private val userRepository: UserRepository,
     }
     if (user.isSecondaryEmailVerified) {
       log.info("Verify secondary email succeeded due to already verified")
-      telemetryClient.trackEvent("VerifySecondaryEmailConfirmFailure", java.util.Map.of("reason", "alreadyverified", "username", username), null)
+      telemetryClient.trackEvent(
+        "VerifySecondaryEmailConfirmFailure",
+        java.util.Map.of("reason", "alreadyverified", "username", username),
+        null
+      )
       return Optional.empty()
     }
     val verifyLink = url + user.createToken(UserToken.TokenType.SECONDARY).token
@@ -137,8 +157,8 @@ class VerifyEmailService(private val userRepository: UserRepository,
 
   fun secondaryEmailVerified(username: String): Boolean {
     return userRepository.findByUsername(username)
-        .orElseThrow { EntityNotFoundException(String.format("User not found with username %s", username)) }
-        .isSecondaryEmailVerified
+      .orElseThrow { EntityNotFoundException(String.format("User not found with username %s", username)) }
+      .isSecondaryEmailVerified
   }
 
   @Throws(VerifyEmailException::class)
@@ -194,7 +214,11 @@ class VerifyEmailService(private val userRepository: UserRepository,
     val username = user.username
     if (user.isVerified) {
       log.info("Verify email succeeded due to already verified")
-      telemetryClient.trackEvent("VerifyEmailConfirmFailure", java.util.Map.of("reason", "alreadyverified", "username", username), null)
+      telemetryClient.trackEvent(
+        "VerifyEmailConfirmFailure",
+        java.util.Map.of("reason", "alreadyverified", "username", username),
+        null
+      )
       return Optional.empty()
     }
     if (userToken.hasTokenExpired()) {
@@ -215,7 +239,11 @@ class VerifyEmailService(private val userRepository: UserRepository,
     val username = user.username
     if (user.isSecondaryEmailVerified) {
       log.info("Verify secondary email succeeded due to already verified")
-      telemetryClient.trackEvent("VerifySecondaryEmailConfirmFailure", java.util.Map.of("reason", "alreadyverified", "username", username), null)
+      telemetryClient.trackEvent(
+        "VerifySecondaryEmailConfirmFailure",
+        java.util.Map.of("reason", "alreadyverified", "username", username),
+        null
+      )
       return Optional.empty()
     }
     if (userToken.hasTokenExpired()) {
@@ -249,15 +277,21 @@ class VerifyEmailService(private val userRepository: UserRepository,
 
   private fun trackAndReturnFailureForExpiredToken(username: String): Optional<String> {
     log.info("Verify email failed due to expired token")
-    telemetryClient.trackEvent("VerifyEmailConfirmFailure", java.util.Map.of("reason", "expired", "username", username), null)
+    telemetryClient.trackEvent(
+      "VerifyEmailConfirmFailure",
+      java.util.Map.of("reason", "expired", "username", username),
+      null
+    )
     return Optional.of("expired")
   }
 
-  class VerifyEmailException(val reason: String?) : Exception(String.format("Verify email failed with reason: %s", reason))
+  class VerifyEmailException(val reason: String?) :
+    Exception(String.format("Verify email failed with reason: %s", reason))
 
   @Suppress("SqlResolve")
   companion object {
-    private const val EXISTING_EMAIL_SQL = """
+    private const val EXISTING_EMAIL_SQL =
+      """
       select distinct internet_address  
         from internet_addresses i       
              inner join STAFF_USER_ACCOUNTS s on i.owner_id = s.staff_id and owner_class = 'STF' 
@@ -265,7 +299,8 @@ class VerifyEmailService(private val userRepository: UserRepository,
              and s.username = :username
       """
 
-    private const val EXISTING_EMAIL_FOR_USERNAMES_SQL = """
+    private const val EXISTING_EMAIL_FOR_USERNAMES_SQL =
+      """
         select s.username username,
                internet_address email     
           from internet_addresses i

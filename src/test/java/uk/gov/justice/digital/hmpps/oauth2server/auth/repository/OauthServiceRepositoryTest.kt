@@ -43,12 +43,14 @@ class OauthServiceRepositoryTest {
 
   @Test
   fun findAllByEnabledTrueOrderByName() {
-    assertThat(repository.findAllByEnabledTrueOrderByName()).extracting<String> { it.name }.contains("Digital Categorisation Service", "Home Detention Curfew", "Allocate a POM Service")
+    assertThat(repository.findAllByEnabledTrueOrderByName()).extracting<String> { it.name }
+      .contains("Digital Categorisation Service", "Home Detention Curfew", "Allocate a POM Service")
   }
 
   @Test
   fun findAllByOrderByName() {
-    assertThat(repository.findAllByOrderByName()).extracting<String> { it.name }.contains("Digital Categorisation Service", "Home Detention Curfew", "Allocate a POM Service")
+    assertThat(repository.findAllByOrderByName()).extracting<String> { it.name }
+      .contains("Digital Categorisation Service", "Home Detention Curfew", "Allocate a POM Service")
   }
 
   private fun transientEntity(): Service {

@@ -2,7 +2,6 @@
 
 package uk.gov.justice.digital.hmpps.oauth2server.config
 
-import org.apache.http.client.config.RequestConfig
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import org.hibernate.validator.constraints.URL
@@ -20,10 +19,12 @@ import java.util.concurrent.TimeUnit.SECONDS
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Configuration
-class TokenVerificationRestTemplateConfiguration(private val apiDetails: TokenVerificationClientCredentials,
-                                                 @Value("\${tokenverification.endpoint.url}") private val tokenVerificationEndpointUrl: @URL String,
-                                                 @Value("\${tokenverification.health.timeout:1s}") private val healthTimeout: Duration,
-                                                 @Value("\${tokenverification.endpoint.timeout:5s}") private val apiTimeout: Duration) {
+class TokenVerificationRestTemplateConfiguration(
+  private val apiDetails: TokenVerificationClientCredentials,
+  @Value("\${tokenverification.endpoint.url}") private val tokenVerificationEndpointUrl: @URL String,
+  @Value("\${tokenverification.health.timeout:1s}") private val healthTimeout: Duration,
+  @Value("\${tokenverification.endpoint.timeout:5s}") private val apiTimeout: Duration
+) {
 
   @Bean(name = ["tokenVerificationApiRestTemplate"])
   fun tokenVerificationRestTemplate(restTemplateBuilder: RestTemplateBuilder): OAuth2RestTemplate {
@@ -34,24 +35,23 @@ class TokenVerificationRestTemplateConfiguration(private val apiDetails: TokenVe
     poolManager.defaultMaxPerRoute = 5
     val httpClient = HttpClientBuilder.create().useSystemProperties().setConnectionManager(poolManager).build()
     return restTemplateBuilder
-        .rootUri(tokenVerificationEndpointUrl)
-        .setConnectTimeout(apiTimeout)
-        .setReadTimeout(apiTimeout)
-        .requestFactory { HttpComponentsClientHttpRequestFactory(httpClient) }
-        .configure(OAuth2RestTemplate(apiDetails))
+      .rootUri(tokenVerificationEndpointUrl)
+      .setConnectTimeout(apiTimeout)
+      .setReadTimeout(apiTimeout)
+      .requestFactory { HttpComponentsClientHttpRequestFactory(httpClient) }
+      .configure(OAuth2RestTemplate(apiDetails))
   }
 
   @Bean(name = ["tokenVerificationApiHealthRestTemplate"])
   fun tokenVerificationHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate =
-      getHealthRestTemplate(restTemplateBuilder, tokenVerificationEndpointUrl)
+    getHealthRestTemplate(restTemplateBuilder, tokenVerificationEndpointUrl)
 
   private fun getHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder, uri: String): RestTemplate =
-      restTemplateBuilder
-          .rootUri(uri)
-          .setConnectTimeout(healthTimeout)
-          .setReadTimeout(healthTimeout)
-          .build()
-
+    restTemplateBuilder
+      .rootUri(uri)
+      .setConnectTimeout(healthTimeout)
+      .setReadTimeout(healthTimeout)
+      .build()
 }
 
 @Suppress("ConfigurationProperties")

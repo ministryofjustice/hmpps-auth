@@ -15,9 +15,11 @@ class RemoveExpiredAuthCodesServiceTest {
   @Test
   fun removeExpiredAuthCodes() {
     removeExpiredAuthCodesService.removeExpiredAuthCodes()
-    verify(repository).deleteByCreatedDateBefore(check {
-      val now = LocalDateTime.now()
-      assertThat(it).isBetween(now.minusDays(1).minusMinutes(1), now.minusDays(1).plusMinutes(1))
-    })
+    verify(repository).deleteByCreatedDateBefore(
+      check {
+        val now = LocalDateTime.now()
+        assertThat(it).isBetween(now.minusDays(1).minusMinutes(1), now.minusDays(1).plusMinutes(1))
+      }
+    )
   }
 }

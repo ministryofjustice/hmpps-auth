@@ -17,13 +17,14 @@ import javax.persistence.PersistenceContext
 @Service("nomisUserDetailsService")
 @Transactional(readOnly = true, noRollbackFor = [UsernameNotFoundException::class])
 class NomisUserDetailsService(private val nomisUserService: NomisUserService) :
-    UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
+  UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
 
   @PersistenceContext(unitName = "nomis")
   private lateinit var nomisEntityManager: EntityManager
 
   override fun loadUserByUsername(username: String): UserDetails {
-    val userPersonDetails = nomisUserService.getNomisUserByUsername(username).orElseThrow { UsernameNotFoundException(username) }
+    val userPersonDetails =
+      nomisUserService.getNomisUserByUsername(username).orElseThrow { UsernameNotFoundException(username) }
     // ensure that any changes to user details past this point are not persisted - e.g. by calling CredentialsContainer.eraseCredentials
     nomisEntityManager.detach(userPersonDetails)
     return userPersonDetails
@@ -34,9 +35,11 @@ class NomisUserDetailsService(private val nomisUserService: NomisUserService) :
 
 @Component
 @Transactional(readOnly = true, noRollbackFor = [BadCredentialsException::class])
-class NomisAuthenticationProvider(nomisUserDetailsService: NomisUserDetailsService,
-                                  userRetriesService: UserRetriesService,
-                                  mfaService: MfaService,
-                                  userService: UserService,
-                                  telemetryClient: TelemetryClient) :
-    LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, mfaService, userService, telemetryClient)
+class NomisAuthenticationProvider(
+  nomisUserDetailsService: NomisUserDetailsService,
+  userRetriesService: UserRetriesService,
+  mfaService: MfaService,
+  userService: UserService,
+  telemetryClient: TelemetryClient
+) :
+  LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, mfaService, userService, telemetryClient)

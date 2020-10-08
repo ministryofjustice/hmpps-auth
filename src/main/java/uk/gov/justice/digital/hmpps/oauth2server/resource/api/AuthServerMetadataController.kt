@@ -11,10 +11,10 @@ class AuthServerMetadataController {
   fun metadata(): Map<String, Any> {
     val baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString()
     return mapOf(
-        "issuer"                 to "$baseUrl/issuer",
-        "authorization_endpoint" to "$baseUrl/oauth/authorize",
-        "token_endpoint"         to "$baseUrl/oauth/token",
-        "jwks_uri"               to "$baseUrl/.well-known/jwks.json"
+      "issuer" to "$baseUrl/issuer",
+      "authorization_endpoint" to "$baseUrl/oauth/authorize",
+      "token_endpoint" to "$baseUrl/oauth/token",
+      "jwks_uri" to "$baseUrl/.well-known/jwks.json"
     )
   }
 }

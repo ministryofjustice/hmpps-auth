@@ -29,6 +29,7 @@ class ClientTrackingTelemetryModuleTest {
   @Suppress("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
   private lateinit var clientTrackingTelemetryModule: ClientTrackingTelemetryModule
+
   @Suppress("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
   private lateinit var jwtAuthHelper: JwtAuthHelper
@@ -64,7 +65,13 @@ class ClientTrackingTelemetryModuleTest {
   }
 
   private fun createJwt(user: String, duration: Long) =
-      jwtAuthHelper.createJwt(JwtParameters(username = user, scope = listOf("read", "write"), expiryTime = Duration.ofDays(duration)))
+    jwtAuthHelper.createJwt(
+      JwtParameters(
+        username = user,
+        scope = listOf("read", "write"),
+        expiryTime = Duration.ofDays(duration)
+      )
+    )
 
   @Test
   fun shouldAddClientIpToInsightTelemetry() {

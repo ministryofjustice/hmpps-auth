@@ -14,16 +14,18 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserServic
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
-import java.util.*
+import java.util.Optional
 
 @Service
 @Transactional(readOnly = true)
-class UserService(private val nomisUserService: NomisUserService,
-                  private val authUserService: AuthUserService,
-                  private val deliusUserService: DeliusUserService,
-                  private val azureUserService: AzureUserService,
-                  private val userRepository: UserRepository,
-                  private val verifyEmailService: VerifyEmailService) {
+class UserService(
+  private val nomisUserService: NomisUserService,
+  private val authUserService: AuthUserService,
+  private val deliusUserService: DeliusUserService,
+  private val azureUserService: AzureUserService,
+  private val userRepository: UserRepository,
+  private val verifyEmailService: VerifyEmailService
+) {
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -31,43 +33,44 @@ class UserService(private val nomisUserService: NomisUserService,
   }
 
   fun findMasterUserPersonDetails(username: String): Optional<UserPersonDetails> =
-      authUserService.getAuthUserByUsername(username).map { UserPersonDetails::class.java.cast(it) }
-          .or { nomisUserService.getNomisUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
-          .or { azureUserService.getAzureUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
-          .or { deliusUserService.getDeliusUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
+    authUserService.getAuthUserByUsername(username).map { UserPersonDetails::class.java.cast(it) }
+      .or { nomisUserService.getNomisUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
+      .or { azureUserService.getAzureUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
+      .or { deliusUserService.getDeliusUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
 
   fun findUser(username: String): Optional<User> = userRepository.findByUsername(StringUtils.upperCase(username))
 
-  fun getUser(username: String): User = findUser(username).orElseThrow { UsernameNotFoundException("User with username $username not found") }
+  fun getUser(username: String): User =
+    findUser(username).orElseThrow { UsernameNotFoundException("User with username $username not found") }
 
   fun getUserWithContacts(username: String): User = findUser(username)
-      .map {
-        // initialise contacts by calling size
-        it.contacts.size
-        it
-      }
-      .orElseThrow { UsernameNotFoundException("User with username $username not found") }
+    .map {
+      // initialise contacts by calling size
+      it.contacts.size
+      it
+    }
+    .orElseThrow { UsernameNotFoundException("User with username $username not found") }
 
   @Transactional(transactionManager = "authTransactionManager")
   fun getOrCreateUser(username: String): Optional<User> =
-      findUser(username).or {
-        findMasterUserPersonDetails(username).map {
-          val user = it.toUser()
-          if (AuthSource.valueOf(user.authSource) == AuthSource.nomis) {
-            getEmailAddressFromNomis(username).ifPresent { email ->
-              user.email = email
-              user.isVerified = true
-            }
+    findUser(username).or {
+      findMasterUserPersonDetails(username).map {
+        val user = it.toUser()
+        if (AuthSource.valueOf(user.authSource) == AuthSource.nomis) {
+          getEmailAddressFromNomis(username).ifPresent { email ->
+            user.email = email
+            user.isVerified = true
           }
-          userRepository.save(user)
         }
+        userRepository.save(user)
       }
+    }
 
   fun getEmailAddressFromNomis(username: String): Optional<String> {
     val emailAddresses = verifyEmailService.getExistingEmailAddressesForUsername(username)
     val justiceEmail = emailAddresses
-        .filter(UserService::isHmppsEmail)
-        .toList()
+      .filter(UserService::isHmppsEmail)
+      .toList()
     return if (justiceEmail.size == 1) Optional.of(justiceEmail[0]) else Optional.empty()
   }
 
@@ -91,14 +94,15 @@ class UserService(private val nomisUserService: NomisUserService,
   }
 
   fun findPrisonUsersByFirstAndLastNames(firstName: String, lastName: String): List<User> {
-    val nomisUsers: List<NomisUserPersonDetails> = nomisUserService.findPrisonUsersByFirstAndLastNames(firstName, lastName)
+    val nomisUsers: List<NomisUserPersonDetails> =
+      nomisUserService.findPrisonUsersByFirstAndLastNames(firstName, lastName)
     val nomisUsernames = nomisUsers.map { it.username }
 
     val authUsers: List<User> = authUserService
-        .findAuthUsersByUsernames(nomisUsernames)
-        .filter {
-          !it.email.isNullOrBlank() && it.source == AuthSource.nomis
-        }
+      .findAuthUsersByUsernames(nomisUsernames)
+      .filter {
+        !it.email.isNullOrBlank() && it.source == AuthSource.nomis
+      }
 
     val authUsernames = authUsers.map { it.username }
 
@@ -107,18 +111,18 @@ class UserService(private val nomisUserService: NomisUserService,
     val emailsByUsername = verifyEmailService.getExistingEmailAddressesForUsernames(missingUsernames)
 
     val validEmailByUsername = emailsByUsername
-        .mapValues { (_, emails) -> emails.filter(UserService::isHmppsEmail) }
-        .filter { (_, emails) -> emails.size == 1 }
-        .mapValues { (_, emails) -> emails.first() }
+      .mapValues { (_, emails) -> emails.filter(UserService::isHmppsEmail) }
+      .filter { (_, emails) -> emails.size == 1 }
+      .mapValues { (_, emails) -> emails.first() }
 
     val usersFromNomisUsers = nomisUsers
-        .filter { user -> missingUsernames.contains(user.username) }
-        .map { upd ->
-          val user = upd.toUser()
-          user.email = validEmailByUsername[user.username]
-          user.isVerified = validEmailByUsername.containsKey(user.username)
-          user
-        }
+      .filter { user -> missingUsernames.contains(user.username) }
+      .map { upd ->
+        val user = upd.toUser()
+        user.email = validEmailByUsername[user.username]
+        user.isVerified = validEmailByUsername.containsKey(user.username)
+        user
+      }
     return authUsers.plus(usersFromNomisUsers)
   }
 }

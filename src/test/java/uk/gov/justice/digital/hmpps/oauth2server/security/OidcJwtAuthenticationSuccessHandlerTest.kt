@@ -30,33 +30,39 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
   private val response: HttpServletResponse = mock()
   private val authentication: Authentication = mock()
 
-  private val oidcJwtAuthenticationSuccessHandler = OidcJwtAuthenticationSuccessHandler(mockJwtCookieHelper,
-      mockJwtAuthenticationHelper,
-      cookieRequestCache,
-      verifyEmailService,
-      restTemplate,
-      tokenVerificationEnabled = false,
-      userRetriesService
+  private val oidcJwtAuthenticationSuccessHandler = OidcJwtAuthenticationSuccessHandler(
+    mockJwtCookieHelper,
+    mockJwtAuthenticationHelper,
+    cookieRequestCache,
+    verifyEmailService,
+    restTemplate,
+    tokenVerificationEnabled = false,
+    userRetriesService
   )
 
   @Test
   fun `onAuthenticationSuccess uses GivenName and FamilyName when available`() {
-    val oidcToken = OidcIdToken("tokenValue", Instant.now(), Instant.now().plusSeconds(1000),
-        //id claims
-        mapOf(
-            "sub" to "6C2x9vsoM3Fgi9QmeYZGUT4hdYme3Dw1566tp8yc1vE",
-            "given_name" to "Joe",
-            "family_name" to "Bloggs",
-            "oid" to "d6165ad0-aed3-4146-9ef7-222876b57549",
-            "preferred_username" to "Joe.Bloggs@justice.gov.uk",
-        ))
+    val oidcToken = OidcIdToken(
+      "tokenValue",
+      Instant.now(),
+      Instant.now().plusSeconds(1000),
+      // id claims
+      mapOf(
+        "sub" to "6C2x9vsoM3Fgi9QmeYZGUT4hdYme3Dw1566tp8yc1vE",
+        "given_name" to "Joe",
+        "family_name" to "Bloggs",
+        "oid" to "d6165ad0-aed3-4146-9ef7-222876b57549",
+        "preferred_username" to "Joe.Bloggs@justice.gov.uk",
+      )
+    )
 
     whenever(authentication.principal)
-        .thenReturn(DefaultOidcUser(listOf(OidcUserAuthority(oidcToken)), oidcToken))
+      .thenReturn(DefaultOidcUser(listOf(OidcUserAuthority(oidcToken)), oidcToken))
 
     oidcJwtAuthenticationSuccessHandler.onAuthenticationSuccess(mockRequest, response, authentication)
 
-    verify(userRetriesService).resetRetriesAndRecordLogin(AzureUserPersonDetails(
+    verify(userRetriesService).resetRetriesAndRecordLogin(
+      AzureUserPersonDetails(
         ArrayList(),
         true,
         "D6165AD0-AED3-4146-9EF7-222876B57549",
@@ -65,26 +71,33 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
         "joe.bloggs@justice.gov.uk",
         true,
         accountNonExpired = true,
-        accountNonLocked = true))
+        accountNonLocked = true
+      )
+    )
   }
 
   @Test
   fun `onAuthenticationSuccess uses Name if GivenName and FamilyName not available`() {
-    val oidcToken = OidcIdToken("tokenValue", Instant.now(), Instant.now().plusSeconds(1000),
-        //id claims
-        mapOf(
-            "sub" to "6C2x9vsoM3Fgi9QmeYZGUT4hdYme3Dw1566tp8yc1vE",
-            "name" to "Bloggs, Joe",
-            "oid" to "d6165ad0-aed3-4146-9ef7-222876b57549",
-            "preferred_username" to "joe.bloggs@justice.gov.uk",
-        ))
+    val oidcToken = OidcIdToken(
+      "tokenValue",
+      Instant.now(),
+      Instant.now().plusSeconds(1000),
+      // id claims
+      mapOf(
+        "sub" to "6C2x9vsoM3Fgi9QmeYZGUT4hdYme3Dw1566tp8yc1vE",
+        "name" to "Bloggs, Joe",
+        "oid" to "d6165ad0-aed3-4146-9ef7-222876b57549",
+        "preferred_username" to "joe.bloggs@justice.gov.uk",
+      )
+    )
 
     whenever(authentication.principal)
-        .thenReturn(DefaultOidcUser(listOf(OidcUserAuthority(oidcToken)), oidcToken))
+      .thenReturn(DefaultOidcUser(listOf(OidcUserAuthority(oidcToken)), oidcToken))
 
     oidcJwtAuthenticationSuccessHandler.onAuthenticationSuccess(mockRequest, response, authentication)
 
-    verify(userRetriesService).resetRetriesAndRecordLogin(AzureUserPersonDetails(
+    verify(userRetriesService).resetRetriesAndRecordLogin(
+      AzureUserPersonDetails(
         ArrayList(),
         true,
         "D6165AD0-AED3-4146-9EF7-222876B57549",
@@ -93,17 +106,19 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
         "joe.bloggs@justice.gov.uk",
         true,
         accountNonExpired = true,
-        accountNonLocked = true))
+        accountNonLocked = true
+      )
+    )
   }
 
   @Test
   fun `onAuthenticationSuccess throws exception if principal not DefaultOidcUser`() {
     whenever(authentication.principal)
-        .thenReturn("Dummy principal")
+      .thenReturn("Dummy principal")
 
     assertThatThrownBy {
       oidcJwtAuthenticationSuccessHandler
-          .onAuthenticationSuccess(mockRequest, response, authentication)
+        .onAuthenticationSuccess(mockRequest, response, authentication)
     }.isInstanceOf(RuntimeException::class.java)
   }
 }

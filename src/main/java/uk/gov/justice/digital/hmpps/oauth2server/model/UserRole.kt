@@ -5,5 +5,6 @@ import io.swagger.annotations.ApiModelProperty
 
 @ApiModel(description = "User Role")
 data class UserRole(
-    @ApiModelProperty(required = true, value = "Role Code", example = "GLOBAL_SEARCH")
-    val roleCode: String)
+  @ApiModelProperty(required = true, value = "Role Code", example = "GLOBAL_SEARCH")
+  val roleCode: String
+)

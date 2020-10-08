@@ -28,7 +28,10 @@ class ExistingPasswordControllerTest {
   private val tokenService: TokenService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val controller = ExistingPasswordController(authenticationManager, tokenService, telemetryClient)
-  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"), "pass")
+  private val token = TestingAuthenticationToken(
+    UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"),
+    "pass"
+  )
 
   @Nested
   inner class ExistingPasswordRequest {
@@ -45,14 +48,26 @@ class ExistingPasswordControllerTest {
     fun `password null`() {
       val mandv = controller.existingPassword(null, "password", token)
       assertThat(mandv.viewName).isEqualTo("user/existingPassword")
-      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "required", "username" to "user", "type" to "password"))
+      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "error" to "required",
+          "username" to "user",
+          "type" to "password"
+        )
+      )
     }
 
     @Test
     fun `password blank`() {
       val mandv = controller.existingPassword("    ", "password", token)
       assertThat(mandv.viewName).isEqualTo("user/existingPassword")
-      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "required", "username" to "user", "type" to "password"))
+      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "error" to "required",
+          "username" to "user",
+          "type" to "password"
+        )
+      )
     }
 
     @Test
@@ -95,10 +110,12 @@ class ExistingPasswordControllerTest {
       whenever(authenticationManager.authenticate(any())).thenReturn(token)
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
       controller.existingPassword("somepass", "password", token)
-      verify(authenticationManager).authenticate(check {
-        assertThat(it.credentials).isEqualTo("somepass")
-        assertThat(it.principal).isEqualTo("USER")
-      })
+      verify(authenticationManager).authenticate(
+        check {
+          assertThat(it.credentials).isEqualTo("somepass")
+          assertThat(it.principal).isEqualTo("USER")
+        }
+      )
     }
 
     @Test
@@ -107,7 +124,13 @@ class ExistingPasswordControllerTest {
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
       val mandv = controller.existingPassword("somepass", "password", token)
       assertThat(mandv.viewName).isEqualTo("user/existingPassword")
-      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to listOf("invalid", "deliusdown"), "username" to "user", "type" to "password"))
+      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "error" to listOf("invalid", "deliusdown"),
+          "username" to "user",
+          "type" to "password"
+        )
+      )
     }
 
     @Test
@@ -116,7 +139,13 @@ class ExistingPasswordControllerTest {
       whenever(tokenService.createToken(any(), anyString())).thenReturn("sometoken")
       val mandv = controller.existingPassword("somepass", "password", token)
       assertThat(mandv.viewName).isEqualTo("user/existingPassword")
-      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "invalid", "username" to "user", "type" to "password"))
+      assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "error" to "invalid",
+          "username" to "user",
+          "type" to "password"
+        )
+      )
     }
 
     @Test

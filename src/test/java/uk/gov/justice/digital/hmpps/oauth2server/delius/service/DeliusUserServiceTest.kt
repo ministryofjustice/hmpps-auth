@@ -23,9 +23,12 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationSe
 
 class DeliusUserServiceTest {
   private val restTemplate: RestTemplate = mock()
-  private val mappings = DeliusRoleMappings(mapOf(
+  private val mappings = DeliusRoleMappings(
+    mapOf(
       Pair("arole", listOf("role1", "role2")),
-      Pair("test.role", listOf("role1", "role3"))))
+      Pair("test.role", listOf("role1", "role3"))
+    )
+  )
   private val disabledDeliusService = DeliusUserService(restTemplate, false, mappings)
   private val deliusService = DeliusUserService(restTemplate, true, mappings)
 
@@ -45,43 +48,59 @@ class DeliusUserServiceTest {
 
     @Test
     fun `getDeliusUsersByEmail records returns all records`() {
-      whenever(restTemplate.getForObject<MutableList<UserDetails>>(anyString(), any(), anyString())).thenReturn(createUserDetailsList(2))
+      whenever(restTemplate.getForObject<MutableList<UserDetails>>(anyString(), any(), anyString())).thenReturn(
+        createUserDetailsList(2)
+      )
       val user = deliusService.getDeliusUsersByEmail("a@where.com")
       assertThat(user).hasSize(2)
     }
 
     @Test
     fun `getDeliusUsersByEmail records returns mapped user`() {
-      whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenReturn(createUserDetailsList(1))
+      whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenReturn(
+        createUserDetailsList(1)
+      )
       val user = deliusService.getDeliusUsersByEmail("a@where.com")
       assertThat(user).containsExactly(
-          DeliusUserPersonDetails(
-              username = "DELIUSSMITH",
-              userId = "12345",
-              firstName = "Delius",
-              surname = "Smith",
-              email = "a@where.com",
-              enabled = true,
-              roles = emptySet()))
+        DeliusUserPersonDetails(
+          username = "DELIUSSMITH",
+          userId = "12345",
+          firstName = "Delius",
+          surname = "Smith",
+          email = "a@where.com",
+          enabled = true,
+          roles = emptySet()
+        )
+      )
     }
 
     @Test
     fun `getDeliusUsersByEmail converts ResourceAccessException and rethrows`() {
-      whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenThrow(ResourceAccessException::class.java)
+      whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenThrow(
+        ResourceAccessException::class.java
+      )
 
-      assertThatThrownBy { deliusService.getDeliusUsersByEmail("a@where.com") }.isInstanceOf(DeliusAuthenticationServiceException::class.java)
+      assertThatThrownBy { deliusService.getDeliusUsersByEmail("a@where.com") }.isInstanceOf(
+        DeliusAuthenticationServiceException::class.java
+      )
     }
 
     @Test
     fun `getDeliusUsersByEmail converts HttpServerErrorException and rethrows`() {
-      whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenThrow(HttpServerErrorException::class.java)
+      whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenThrow(
+        HttpServerErrorException::class.java
+      )
 
-      assertThatThrownBy { deliusService.getDeliusUsersByEmail("a@where.com") }.isInstanceOf(DeliusAuthenticationServiceException::class.java)
+      assertThatThrownBy { deliusService.getDeliusUsersByEmail("a@where.com") }.isInstanceOf(
+        DeliusAuthenticationServiceException::class.java
+      )
     }
 
     @Test
     fun `getDeliusUsersByEmail handles HttpClientErrorException and returns empty list`() {
-      whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenThrow(HttpClientErrorException::class.java)
+      whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenThrow(
+        HttpClientErrorException::class.java
+      )
 
       val user = deliusService.getDeliusUsersByEmail("a@where.com")
       assertThat(user).isEmpty()
@@ -89,7 +108,13 @@ class DeliusUserServiceTest {
 
     @Test
     fun `getDeliusUsersByEmail handles random exceptions and returns empty list`() {
-      whenever(restTemplate.getForObject<DeliusUserList>(anyString(), any(), anyString())).thenThrow(RuntimeException::class.java)
+      whenever(
+        restTemplate.getForObject<DeliusUserList>(
+          anyString(),
+          any(),
+          anyString()
+        )
+      ).thenThrow(RuntimeException::class.java)
 
       val user = deliusService.getDeliusUsersByEmail("a@where.com")
       assertThat(user).isEmpty()
@@ -115,46 +140,58 @@ class DeliusUserServiceTest {
       whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(createUserDetails())
       val optionalDetails = deliusService.getDeliusUserByUsername("DeliusSmith")
       assertThat(optionalDetails).get().isEqualTo(
-          DeliusUserPersonDetails(
-              username = "DELIUSSMITH",
-              userId = "12345",
-              firstName = "Delius",
-              surname = "Smith",
-              email = "a@where.com",
-              enabled = true,
-              roles = emptySet()))
+        DeliusUserPersonDetails(
+          username = "DELIUSSMITH",
+          userId = "12345",
+          firstName = "Delius",
+          surname = "Smith",
+          email = "a@where.com",
+          enabled = true,
+          roles = emptySet()
+        )
+      )
     }
 
     @Test
     fun `deliusUserByUsername test role mappings`() {
       whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
-          createUserDetails().copy(roles = listOf(UserRole("AROLE"), UserRole("bob"))))
+        createUserDetails().copy(roles = listOf(UserRole("AROLE"), UserRole("bob")))
+      )
       val optionalDetails = deliusService.getDeliusUserByUsername("DeliusSmith")
       assertThat(optionalDetails).get().isEqualTo(
-          DeliusUserPersonDetails(
-              username = "DELIUSSMITH",
-              userId = "12345",
-              firstName = "Delius",
-              surname = "Smith",
-              email = "a@where.com",
-              enabled = true,
-              roles = setOf(SimpleGrantedAuthority("role1"), SimpleGrantedAuthority("role2"))))
+        DeliusUserPersonDetails(
+          username = "DELIUSSMITH",
+          userId = "12345",
+          firstName = "Delius",
+          surname = "Smith",
+          email = "a@where.com",
+          enabled = true,
+          roles = setOf(SimpleGrantedAuthority("role1"), SimpleGrantedAuthority("role2"))
+        )
+      )
     }
 
     @Test
     fun `deliusUserByUsername test role mappings multiple roles`() {
       whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
-          createUserDetails().copy(roles = listOf(UserRole("TEST_ROLE"), UserRole("AROLE"), UserRole("other"))))
+        createUserDetails().copy(roles = listOf(UserRole("TEST_ROLE"), UserRole("AROLE"), UserRole("other")))
+      )
       val optionalDetails = deliusService.getDeliusUserByUsername("DeliusSmith")
       assertThat(optionalDetails).get().isEqualTo(
-          DeliusUserPersonDetails(
-              username = "DELIUSSMITH",
-              userId = "12345",
-              firstName = "Delius",
-              surname = "Smith",
-              email = "a@where.com",
-              enabled = true,
-              roles = setOf(SimpleGrantedAuthority("role1"), SimpleGrantedAuthority("role2"), SimpleGrantedAuthority("role3"))))
+        DeliusUserPersonDetails(
+          username = "DELIUSSMITH",
+          userId = "12345",
+          firstName = "Delius",
+          surname = "Smith",
+          email = "a@where.com",
+          enabled = true,
+          roles = setOf(
+            SimpleGrantedAuthority("role1"),
+            SimpleGrantedAuthority("role2"),
+            SimpleGrantedAuthority("role3")
+          )
+        )
+      )
     }
 
     @Test
@@ -162,49 +199,74 @@ class DeliusUserServiceTest {
       whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(createUserDetails())
       val optionalDetails = deliusService.getDeliusUserByUsername("DELIUSSMITH")
       assertThat(optionalDetails).get().isEqualTo(
-          DeliusUserPersonDetails(
-              username = "DELIUSSMITH",
-              userId = "12345",
-              firstName = "Delius",
-              surname = "Smith",
-              email = "a@where.com",
-              enabled = true,
-              roles = emptySet()))
+        DeliusUserPersonDetails(
+          username = "DELIUSSMITH",
+          userId = "12345",
+          firstName = "Delius",
+          surname = "Smith",
+          email = "a@where.com",
+          enabled = true,
+          roles = emptySet()
+        )
+      )
     }
 
     @Test
     fun `deliusUserByUsername test email lower case`() {
       whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenReturn(
-          createUserDetails().copy(email = "someWHERE@bob.COM"))
+        createUserDetails().copy(email = "someWHERE@bob.COM")
+      )
       val optionalDetails = deliusService.getDeliusUserByUsername("DeliusSmith")
       assertThat(optionalDetails).get().isEqualTo(
-          DeliusUserPersonDetails(
-              username = "DELIUSSMITH",
-              userId = "12345",
-              firstName = "Delius",
-              surname = "Smith",
-              email = "somewhere@bob.com",
-              enabled = true,
-              roles = emptySet()))
+        DeliusUserPersonDetails(
+          username = "DELIUSSMITH",
+          userId = "12345",
+          firstName = "Delius",
+          surname = "Smith",
+          email = "somewhere@bob.com",
+          enabled = true,
+          roles = emptySet()
+        )
+      )
     }
 
     @Test
     fun `getDeliusUserByUsername converts ResourceAccessException and rethrows`() {
-      whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenThrow(ResourceAccessException::class.java)
+      whenever(restTemplate.getForObject<UserDetails>(anyString(), any(), anyString())).thenThrow(
+        ResourceAccessException::class.java
+      )
 
-      assertThatThrownBy { deliusService.getDeliusUserByUsername("any_username") }.isInstanceOf(DeliusAuthenticationServiceException::class.java)
+      assertThatThrownBy { deliusService.getDeliusUserByUsername("any_username") }.isInstanceOf(
+        DeliusAuthenticationServiceException::class.java
+      )
     }
   }
 
   private fun createUserDetails(): UserDetails =
-      UserDetails(userId = "12345", username = "DeliusSmith", surname = "Smith", firstName = "Delius", enabled = true, email = "a@where.com", roles = emptyList())
+    UserDetails(
+      userId = "12345",
+      username = "DeliusSmith",
+      surname = "Smith",
+      firstName = "Delius",
+      enabled = true,
+      email = "a@where.com",
+      roles = emptyList()
+    )
 
   private fun createUserDetailsList(size: Int): DeliusUserList {
     val users = DeliusUserList()
     users.addAll(
-        MutableList(size) {
-          UserDetails(userId = "12345", username = "DeliusSmith", surname = "Smith", firstName = "Delius", enabled = true, email = "a@where.com", roles = emptyList())
-        }
+      MutableList(size) {
+        UserDetails(
+          userId = "12345",
+          username = "DeliusSmith",
+          surname = "Smith",
+          firstName = "Delius",
+          enabled = true,
+          email = "a@where.com",
+          roles = emptyList()
+        )
+      }
     )
     return users
   }

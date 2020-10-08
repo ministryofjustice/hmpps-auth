@@ -34,19 +34,19 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE_ADD")
 
     goTo(changeMobilePage)
-        .addMobileAs("07700900321")
+      .addMobileAs("07700900321")
 
     verifyMobileSentPage.isAtPage()
-        .resendMobileCode()
+      .resendMobileCode()
 
     mobileVerificationResendPage.isAtPage()
-        .resendCode()
+      .resendCode()
 
     verifyMobileSentPage.isAtPage()
-        .submitCode()
+      .submitCode()
 
     verifyMobileConfirmPage.isAtPage()
-        .continueToAccountDetailsPage()
+      .continueToAccountDetailsPage()
 
     accountDetailsPage.isAt()
   }
@@ -57,10 +57,10 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE_UPDATE")
 
     goTo(changeMobilePage)
-        .updateMobileAs("07700900322", "07700900321")
+      .updateMobileAs("07700900322", "07700900321")
 
     verifyMobileSentPage.isAtPage()
-        .submitCode("123456")
+      .submitCode("123456")
 
     verifyMobileSentPage.checkError("Enter the code received in the text message")
   }
@@ -70,7 +70,7 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE3")
 
     goTo(mobileVerificationResendPage)
-        .resendCode()
+      .resendCode()
 
     addMobilePage.checkError("No phone number found")
   }
@@ -82,14 +82,17 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
     goTo(mobileVerificationResendPage)
 
     verifyMobileAlreadyPage.isAtPage()
-        .continueToAccountDetailsPage()
+      .continueToAccountDetailsPage()
 
     accountDetailsPage.isAt()
   }
 }
 
 @PageUrl("/mobile-resend")
-class MobileVerificationResendPage : AuthPage<MobileVerificationResendPage>("HMPPS Digital Services - Resend Verification Code", "Send another text message") {
+class MobileVerificationResendPage : AuthPage<MobileVerificationResendPage>(
+  "HMPPS Digital Services - Resend Verification Code",
+  "Send another text message"
+) {
   @FindBy(css = "input[type='submit']")
   private lateinit var continueButton: FluentWebElement
 

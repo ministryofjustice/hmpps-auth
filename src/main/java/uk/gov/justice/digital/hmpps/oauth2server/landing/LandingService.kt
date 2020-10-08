@@ -8,5 +8,5 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRep
 @Service
 class LandingService(private val oauthServiceRepository: OauthServiceRepository) {
   fun findAllServices(): List<uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service> =
-      oauthServiceRepository.findAllByEnabledTrueOrderByName()
+    oauthServiceRepository.findAllByEnabledTrueOrderByName()
 }

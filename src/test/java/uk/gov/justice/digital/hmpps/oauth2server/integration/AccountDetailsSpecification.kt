@@ -5,7 +5,6 @@ import org.fluentlenium.core.annotation.Page
 import org.fluentlenium.core.annotation.PageUrl
 import org.junit.jupiter.api.Test
 
-
 class AccountDetailsSpecification : AbstractAuthSpecification() {
   @Page
   private lateinit var accountDetailsPage: AccountDetailsPage
@@ -13,7 +12,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
   @Test
   fun `auth account details`() {
     goTo(loginPage).loginAs("AUTH_RO_USER")
-        .navigateToAccountDetails()
+      .navigateToAccountDetails()
 
     accountDetailsPage.isAt()
     accountDetailsPage.checkAuthDetails()
@@ -47,7 +46,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
   @Test
   fun `navigation - change name`() {
     goTo(loginPage).loginAs("AUTH_RO_USER")
-        .navigateToAccountDetails()
+      .navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeName()
 
@@ -57,7 +56,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
   @Test
   fun `navigation - change mobile`() {
     goTo(loginPage).loginAs("AUTH_RO_USER")
-        .navigateToAccountDetails()
+      .navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeMobile()
 
@@ -67,7 +66,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
   @Test
   fun `navigation - change email`() {
     goTo(loginPage).loginAs("AUTH_RO_USER")
-        .navigateToAccountDetails()
+      .navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeEmail()
 
@@ -77,7 +76,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
   @Test
   fun `navigation - change Secondary email`() {
     goTo(loginPage).loginAs("AUTH_RO_USER")
-        .navigateToAccountDetails()
+      .navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
@@ -87,7 +86,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
   @Test
   fun `navigation - change password`() {
     goTo(loginPage).loginAs("AUTH_RO_USER")
-        .navigateToAccountDetails()
+      .navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangePassword()
 
@@ -97,7 +96,7 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
   @Test
   fun `navigation - Change mfa preference`() {
     goTo(loginPage).loginAs("AUTH_RO_USER")
-        .navigateToAccountDetails()
+      .navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeMfaPreference()
 
@@ -120,7 +119,8 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/account-details")
-class AccountDetailsPage : AuthPage<AccountDetailsPage>("HMPPS Digital Services - Your Account Details", "Your account details") {
+class AccountDetailsPage :
+  AuthPage<AccountDetailsPage>("HMPPS Digital Services - Your Account Details", "Your account details") {
   @Suppress("UsePropertyAccessSyntax")
   fun checkAuthDetails(): AccountDetailsPage {
     assertThat(el("[data-qa='changePassword']").text()).isEqualToNormalizingWhitespace("Change your password")

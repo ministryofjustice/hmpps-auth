@@ -31,11 +31,18 @@ open class VerifyEmailServiceIntTest {
   @Autowired
   private lateinit var userRepository: UserRepository
 
-
   @BeforeEach
   fun setUp() {
     val userTokenRepository: UserTokenRepository = mock()
-    verifyEmailService = VerifyEmailService(userRepository, userTokenRepository, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId")
+    verifyEmailService = VerifyEmailService(
+      userRepository,
+      userTokenRepository,
+      jdbcTemplate,
+      telemetryClient,
+      notificationClient,
+      referenceCodesService,
+      "templateId"
+    )
   }
 
   @Test
@@ -46,14 +53,18 @@ open class VerifyEmailServiceIntTest {
 
   @Test
   fun existingEmailAddressesForUsernames() {
-    val emailAddressesByUsername = verifyEmailService.getExistingEmailAddressesForUsernames(listOf("RO_USER", "RO_DEMO", "CA_USER", "UNKNOWN_USER"))
+    val emailAddressesByUsername =
+      verifyEmailService.getExistingEmailAddressesForUsernames(listOf("RO_USER", "RO_DEMO", "CA_USER", "UNKNOWN_USER"))
     assertThat(emailAddressesByUsername).hasSize(2)
-    assertThat(emailAddressesByUsername["RO_USER"]).containsExactlyInAnyOrder("phillips@bobjustice.gov.uk", "phillips@fredjustice.gov.uk")
+    assertThat(emailAddressesByUsername["RO_USER"]).containsExactlyInAnyOrder(
+      "phillips@bobjustice.gov.uk",
+      "phillips@fredjustice.gov.uk"
+    )
     assertThat(emailAddressesByUsername["RO_DEMO"]).containsExactlyInAnyOrder("ro_user@some.justice.gov.uk")
   }
 
   @Test
-  fun `existingEmailAddressesForUsernames - no usernames` () {
+  fun `existingEmailAddressesForUsernames - no usernames`() {
     val emailAddressesByUsername = verifyEmailService.getExistingEmailAddressesForUsernames(listOf())
     assertThat(emailAddressesByUsername).hasSize(0)
   }
@@ -68,7 +79,14 @@ open class VerifyEmailServiceIntTest {
   fun emailAddressSetToNotVerified() {
     val userBefore = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
     assertThat(userBefore.get().isVerified).isTrue()
-    verifyEmailService.requestVerification("AUTH_CHANGE_EMAIL", "phillips@fredjustice.gov.uk", "AUTH", "full name", "url", User.EmailType.PRIMARY)
+    verifyEmailService.requestVerification(
+      "AUTH_CHANGE_EMAIL",
+      "phillips@fredjustice.gov.uk",
+      "AUTH",
+      "full name",
+      "url",
+      User.EmailType.PRIMARY
+    )
     val userAfter = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
     assertThat(userAfter.get().isVerified).isFalse()
   }
@@ -77,7 +95,14 @@ open class VerifyEmailServiceIntTest {
   fun secondaryEmailAddressSetToNotVerified() {
     val userBefore = userRepository.findByUsername("AUTH_SECOND_EMAIL_CHANGE")
     assertThat(userBefore.get().isSecondaryEmailVerified).isTrue()
-    verifyEmailService.requestVerification("AUTH_CHANGE_EMAIL", "phillips@fredjustice.gov.uk", "AUTH", "full name", "url", User.EmailType.SECONDARY)
+    verifyEmailService.requestVerification(
+      "AUTH_CHANGE_EMAIL",
+      "phillips@fredjustice.gov.uk",
+      "AUTH",
+      "full name",
+      "url",
+      User.EmailType.SECONDARY
+    )
     val userAfter = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
     assertThat(userAfter.get().isSecondaryEmailVerified).isFalse()
   }

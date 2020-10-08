@@ -8,9 +8,10 @@ import javax.persistence.Table
 @Entity
 @Table(name = "USER_RETRIES")
 data class UserRetries(
-    @Id
-    @Column(name = "username", nullable = false)
-    val username: String? = null) {
+  @Id
+  @Column(name = "username", nullable = false)
+  val username: String? = null
+) {
 
   @Column(name = "retry_count")
   var retryCount: Int = 0

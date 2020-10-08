@@ -31,21 +31,28 @@ class AzureOIDCExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallba
 }
 
 class AzureOIDCMockServer : WireMockServer(
-    wireMockConfig()
-        .port(8101)
-        .usingFilesUnderClasspath("azureoidc")
-        .extensions(ResponseTemplateTransformer(false), TokenSignerTransformer())) {
+  wireMockConfig()
+    .port(8101)
+    .usingFilesUnderClasspath("azureoidc")
+    .extensions(ResponseTemplateTransformer(false), TokenSignerTransformer())
+) {
 
   fun stubToken(email: String) {
-    stubFor(post(urlEqualTo("/tenant-id/oauth2/v2.0/token")).willReturn(aResponse()
-        .withStatus(200)
-        .withHeader("Content-Type", "application/json")
-        .withTransformers("token-signer")
-        .withTransformerParameters(mapOf(
-            "accessToken" to "/azureoidc/access-token.json",
-            "idToken" to "/azureoidc/id-token.json",
-            "privateKey" to "/azureoidc/mock-azure-oidc-private-key.json",
-            "email" to email,
-        ))))
+    stubFor(
+      post(urlEqualTo("/tenant-id/oauth2/v2.0/token")).willReturn(
+        aResponse()
+          .withStatus(200)
+          .withHeader("Content-Type", "application/json")
+          .withTransformers("token-signer")
+          .withTransformerParameters(
+            mapOf(
+              "accessToken" to "/azureoidc/access-token.json",
+              "idToken" to "/azureoidc/id-token.json",
+              "privateKey" to "/azureoidc/mock-azure-oidc-private-key.json",
+              "email" to email,
+            )
+          )
+      )
+    )
   }
 }

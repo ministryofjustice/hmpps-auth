@@ -11,39 +11,38 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.Au
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 
-
 @RestControllerAdvice
 class AuthExceptionHandler {
   @ExceptionHandler(UsernameNotFoundException::class)
   fun handleNotFoundException(e: UsernameNotFoundException): ResponseEntity<ErrorDetail> {
     log.debug("Username not found exception caught: {}", e.message)
     return ResponseEntity
-        .status(HttpStatus.NOT_FOUND)
-        .body(ErrorDetail(HttpStatus.NOT_FOUND.reasonPhrase, e.message ?: "Error message not set", "username"))
+      .status(HttpStatus.NOT_FOUND)
+      .body(ErrorDetail(HttpStatus.NOT_FOUND.reasonPhrase, e.message ?: "Error message not set", "username"))
   }
 
   @ExceptionHandler(AuthUserRoleExistsException::class)
   fun handleAuthUserRoleExistsException(e: AuthUserRoleExistsException): ResponseEntity<ErrorDetail> {
     log.debug("Auth user role exists exception caught: {}", e.message)
     return ResponseEntity
-        .status(HttpStatus.CONFLICT)
-        .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", e.field))
+      .status(HttpStatus.CONFLICT)
+      .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", e.field))
   }
 
   @ExceptionHandler(AuthUserGroupRelationshipException::class)
   fun handleAuthUserGroupRelationshipException(e: AuthUserGroupRelationshipException): ResponseEntity<ErrorDetail> {
     log.debug("Auth user group relationship exception caught: {}", e.message)
     return ResponseEntity
-        .status(HttpStatus.CONFLICT)
-        .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", "username"))
+      .status(HttpStatus.CONFLICT)
+      .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", "username"))
   }
 
   @ExceptionHandler(AuthUserRoleException::class)
   fun handleAuthUserRoleException(e: AuthUserRoleException): ResponseEntity<ErrorDetail> {
     log.debug("Auth user role exception caught: {}", e.message)
     return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
-        .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", e.field))
+      .status(HttpStatus.BAD_REQUEST)
+      .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", e.field))
   }
 
   companion object {

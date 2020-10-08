@@ -16,9 +16,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 class UserMappingException(message: String) : Exception(message)
 
 @Service
-class UserContextService(private val deliusUserService: DeliusUserService,
-                         private val authUserService: AuthUserService,
-                         private val nomisUserService: NomisUserService) {
+class UserContextService(
+  private val deliusUserService: DeliusUserService,
+  private val authUserService: AuthUserService,
+  private val nomisUserService: NomisUserService
+) {
 
   @Throws(UserMappingException::class)
   fun resolveUser(loginUser: UserPersonDetails, scopes: Set<String>): UserPersonDetails {
@@ -45,9 +47,9 @@ class UserContextService(private val deliusUserService: DeliusUserService,
     val desiredSources = if (sourcesFromScopes.isEmpty()) listOf(nomis, auth, delius) else sourcesFromScopes
 
     return desiredSources
-        .map { mapFromAzureAD(loginUser.userId, it).filter { it.isEnabled } }
-        .filter { it.isNotEmpty() }
-        .flatten()
+      .map { mapFromAzureAD(loginUser.userId, it).filter { it.isEnabled } }
+      .filter { it.isNotEmpty() }
+      .flatten()
   }
 
   private fun mapFromAzureAD(email: String, to: AuthSource): List<UserPersonDetails> = when (to) {

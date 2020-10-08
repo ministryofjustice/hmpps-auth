@@ -14,10 +14,12 @@ import java.time.LocalDateTime
 @Service
 @Slf4j
 @Transactional(transactionManager = "authTransactionManager")
-open class UserRetriesService(private val userRetriesRepository: UserRetriesRepository,
-                              private val userRepository: UserRepository,
-                              private val delegatingUserService: DelegatingUserService,
-                              @Value("\${application.authentication.lockout-count}") private val accountLockoutCount: Int) {
+open class UserRetriesService(
+  private val userRetriesRepository: UserRetriesRepository,
+  private val userRepository: UserRepository,
+  private val delegatingUserService: DelegatingUserService,
+  @Value("\${application.authentication.lockout-count}") private val accountLockoutCount: Int
+) {
 
   open fun resetRetriesAndRecordLogin(userPersonDetails: UserPersonDetails) {
     val username = userPersonDetails.username

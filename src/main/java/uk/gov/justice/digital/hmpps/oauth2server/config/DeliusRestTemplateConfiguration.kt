@@ -16,30 +16,31 @@ import java.time.Duration
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Configuration
-class DeliusRestTemplateConfiguration(private val apiDetails: DeliusClientCredentials,
-                                      @Value("\${delius.endpoint.url}") private val deliusEndpointUrl: @URL String,
-                                      @Value("\${delius.health.timeout:1s}") private val healthTimeout: Duration,
-                                      @Value("\${delius.endpoint.timeout:5s}") private val apiTimeout: Duration) {
+class DeliusRestTemplateConfiguration(
+  private val apiDetails: DeliusClientCredentials,
+  @Value("\${delius.endpoint.url}") private val deliusEndpointUrl: @URL String,
+  @Value("\${delius.health.timeout:1s}") private val healthTimeout: Duration,
+  @Value("\${delius.endpoint.timeout:5s}") private val apiTimeout: Duration
+) {
 
   @Bean(name = ["deliusApiRestTemplate"])
   fun deliusRestTemplate(restTemplateBuilder: RestTemplateBuilder): OAuth2RestTemplate =
-      restTemplateBuilder
-          .rootUri("${deliusEndpointUrl}/secure")
-          .setConnectTimeout(apiTimeout)
-          .setReadTimeout(apiTimeout)
-          .configure(OAuth2RestTemplate(apiDetails))
+    restTemplateBuilder
+      .rootUri("$deliusEndpointUrl/secure")
+      .setConnectTimeout(apiTimeout)
+      .setReadTimeout(apiTimeout)
+      .configure(OAuth2RestTemplate(apiDetails))
 
   @Bean(name = ["deliusApiHealthRestTemplate"])
   fun deliusHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder): RestTemplate =
-      getHealthRestTemplate(restTemplateBuilder, deliusEndpointUrl)
+    getHealthRestTemplate(restTemplateBuilder, deliusEndpointUrl)
 
   private fun getHealthRestTemplate(restTemplateBuilder: RestTemplateBuilder, uri: String): RestTemplate =
-      restTemplateBuilder
-          .rootUri(uri)
-          .setConnectTimeout(healthTimeout)
-          .setReadTimeout(healthTimeout)
-          .build()
-
+    restTemplateBuilder
+      .rootUri(uri)
+      .setConnectTimeout(healthTimeout)
+      .setReadTimeout(healthTimeout)
+      .build()
 }
 
 @Suppress("ConfigurationProperties")

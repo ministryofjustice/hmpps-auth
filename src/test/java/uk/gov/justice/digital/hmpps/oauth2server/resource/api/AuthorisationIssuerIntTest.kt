@@ -9,11 +9,11 @@ class AuthorisationIssuerIntTest : IntegrationTest() {
   @Test
   fun `Metadata page responds and can be parsed`() {
     webTestClient.get().uri("/auth/issuer/.well-known/openid-configuration")
-        .exchange()
-        .expectStatus().isOk
-        .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBody().jsonPath("issuer").value<String> {
-          assertThat(it).contains("http://localhost")
-        }
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody().jsonPath("issuer").value<String> {
+        assertThat(it).contains("http://localhost")
+      }
   }
 }

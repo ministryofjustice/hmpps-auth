@@ -19,7 +19,8 @@ class ServicesControllerTest {
   private val authServicesService: AuthServicesService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val controller = ServicesController(authServicesService, telemetryClient)
-  private val authentication = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), auth.name, "userid", "jwtId"), "pass")
+  private val authentication =
+    TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), auth.name, "userid", "jwtId"), "pass")
 
   @Nested
   inner class ListRequest {
@@ -69,7 +70,11 @@ class ServicesControllerTest {
       val url = controller.editService(authentication, service, true)
       assertThat(url).isEqualTo("redirect:/ui/services")
       verify(authServicesService).addService(service)
-      verify(telemetryClient).trackEvent("AuthServiceDetailsAdd", mapOf("username" to "user", "code" to "newcode"), null)
+      verify(telemetryClient).trackEvent(
+        "AuthServiceDetailsAdd",
+        mapOf("username" to "user", "code" to "newcode"),
+        null
+      )
     }
 
     @Test
@@ -79,7 +84,11 @@ class ServicesControllerTest {
       val url = controller.editService(authentication, service)
       assertThat(url).isEqualTo("redirect:/ui/services")
       verify(authServicesService).updateService(service)
-      verify(telemetryClient).trackEvent("AuthServiceDetailsUpdate", mapOf("username" to "user", "code" to "editcode"), null)
+      verify(telemetryClient).trackEvent(
+        "AuthServiceDetailsUpdate",
+        mapOf("username" to "user", "code" to "editcode"),
+        null
+      )
     }
   }
 
@@ -90,7 +99,11 @@ class ServicesControllerTest {
       val url = controller.deleteService(authentication, "code")
       assertThat(url).isEqualTo("redirect:/ui/services")
       verify(authServicesService).removeService("code")
-      verify(telemetryClient).trackEvent("AuthServiceDetailsDeleted", mapOf("username" to "user", "code" to "code"), null)
+      verify(telemetryClient).trackEvent(
+        "AuthServiceDetailsDeleted",
+        mapOf("username" to "user", "code" to "code"),
+        null
+      )
     }
   }
 }

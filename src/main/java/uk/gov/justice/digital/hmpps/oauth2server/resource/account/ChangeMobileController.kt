@@ -15,17 +15,19 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService.Veri
 import uk.gov.service.notify.NotificationClientException
 
 @Controller
-class ChangeMobileController(private val userService: UserService,
-                             private val verifyMobileService: VerifyMobileService,
-                             private val telemetryClient: TelemetryClient,
-                             @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) {
+class ChangeMobileController(
+  private val userService: UserService,
+  private val verifyMobileService: VerifyMobileService,
+  private val telemetryClient: TelemetryClient,
+  @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean
+) {
 
   @GetMapping("/change-mobile")
   fun changeMobileRequest(authentication: Authentication): ModelAndView {
     val currentMobile = userService.getUserWithContacts(authentication.name).mobile
     val requestType = if (currentMobile.isNullOrEmpty()) "add" else "Change"
     return ModelAndView("account/changeMobile", "mobile", currentMobile)
-        .addObject("requestType", requestType)
+      .addObject("requestType", requestType)
   }
 
   @PostMapping("/change-mobile")
@@ -39,22 +41,34 @@ class ChangeMobileController(private val userService: UserService,
       redirectToVerifyMobileWithVerifyCode(verifyCode)
     } catch (e: VerifyMobileException) {
       log.info("Validation failed for mobile phone number due to {}", e.reason)
-      telemetryClient.trackEvent("VerifyMobileRequestFailure", mapOf("username" to username, "reason" to e.reason), null)
+      telemetryClient.trackEvent(
+        "VerifyMobileRequestFailure",
+        mapOf("username" to username, "reason" to e.reason),
+        null
+      )
 
       createChangeOrVerifyMobileError(e.reason, mobile, requestType)
     } catch (e: NotificationClientException) {
       log.error("Failed to send sms due to", e)
-      telemetryClient.trackEvent("VerifyMobileRequestFailure", mapOf("username" to username, "reason" to "notify"), null)
+      telemetryClient.trackEvent(
+        "VerifyMobileRequestFailure",
+        mapOf("username" to username, "reason" to "notify"),
+        null
+      )
 
       createChangeOrVerifyMobileError("other", mobile, requestType)
     }
   }
 
-  private fun createChangeOrVerifyMobileError(reason: String, currentMobile: String?, requestType: String): ModelAndView =
-      ModelAndView("account/changeMobile")
-          .addObject("error", reason)
-          .addObject("mobile", currentMobile)
-          .addObject("requestType", requestType)
+  private fun createChangeOrVerifyMobileError(
+    reason: String,
+    currentMobile: String?,
+    requestType: String
+  ): ModelAndView =
+    ModelAndView("account/changeMobile")
+      .addObject("error", reason)
+      .addObject("mobile", currentMobile)
+      .addObject("requestType", requestType)
 
   private fun redirectToVerifyMobileWithVerifyCode(verifyCode: String): ModelAndView {
     val modelAndView = ModelAndView("redirect:/verify-mobile")
@@ -68,4 +82,3 @@ class ChangeMobileController(private val userService: UserService,
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
-

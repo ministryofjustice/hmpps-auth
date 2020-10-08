@@ -23,7 +23,8 @@ import java.time.LocalDateTime
 class DisableInactiveAuthUsersServiceTest {
   private val userRepository: UserRepository = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val service: DisableInactiveAuthUsersService = DisableInactiveAuthUsersService(userRepository, telemetryClient, 10)
+  private val service: DisableInactiveAuthUsersService =
+    DisableInactiveAuthUsersService(userRepository, telemetryClient, 10)
 
   @Captor
   private lateinit var mapCaptor: ArgumentCaptor<Map<String, String>>
@@ -32,7 +33,7 @@ class DisableInactiveAuthUsersServiceTest {
   fun findAndDisableInactiveAuthUsers_Processed() {
     val users = listOf(User.of("user"), User.of("joe"))
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
-        .thenReturn(users)
+      .thenReturn(users)
     assertThat(service.processInBatches()).isEqualTo(2)
   }
 
@@ -40,20 +41,23 @@ class DisableInactiveAuthUsersServiceTest {
   fun findAndDisableInactiveAuthUsers_CheckAge() {
     val users = listOf(User.of("user"), User.of("joe"))
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
-        .thenReturn(users)
+      .thenReturn(users)
     assertThat(service.processInBatches()).isEqualTo(2)
-    verify(userRepository).findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(check {
-      assertThat(it).isBetween(LocalDateTime.now().minusDays(11), LocalDateTime.now().minusDays(9))
-    })
+    verify(userRepository).findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(
+      check {
+        assertThat(it).isBetween(LocalDateTime.now().minusDays(11), LocalDateTime.now().minusDays(9))
+      }
+    )
   }
 
   @Test
   fun findAndDisableInactiveAuthUsers_Disabled() {
     val users = listOf(
-        User.builder().username("user").enabled(true).build(),
-        User.builder().username("joe").enabled(true).build())
+      User.builder().username("user").enabled(true).build(),
+      User.builder().username("joe").enabled(true).build()
+    )
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
-        .thenReturn(users)
+      .thenReturn(users)
     service.processInBatches()
     assertThat(users).extracting<Boolean> { it.isEnabled }.containsExactly(false, false)
   }
@@ -61,12 +65,17 @@ class DisableInactiveAuthUsersServiceTest {
   @Test
   fun findAndDisableInactiveAuthUsers_Telemetry() {
     val users = listOf(
-        User.builder().username("user").enabled(true).build(),
-        User.builder().username("joe").enabled(true).build())
+      User.builder().username("user").enabled(true).build(),
+      User.builder().username("joe").enabled(true).build()
+    )
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
-        .thenReturn(users)
+      .thenReturn(users)
     service.processInBatches()
-    verify(telemetryClient, times(2)).trackEvent(ArgumentMatchers.eq("DisableInactiveAuthUsersProcessed"), mapCaptor.capture(), isNull())
+    verify(telemetryClient, times(2)).trackEvent(
+      ArgumentMatchers.eq("DisableInactiveAuthUsersProcessed"),
+      mapCaptor.capture(),
+      isNull()
+    )
     assertThat(mapCaptor.allValues.map { it["username"] }).containsExactly("user", "joe")
   }
 }

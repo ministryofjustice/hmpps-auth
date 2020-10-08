@@ -25,29 +25,40 @@ import javax.validation.constraints.NotEmpty
 class PrisonUserController(private val userService: UserService) {
   @GetMapping
   @PreAuthorize("hasRole('ROLE_USE_OF_FORCE')")
-  @ApiOperation(value = "Find prison users by first and last names.", notes = "Find prison users by first and last names.", nickname = "Prison users", produces = "application/json")
+  @ApiOperation(
+    value = "Find prison users by first and last names.",
+    notes = "Find prison users by first and last names.",
+    nickname = "Prison users",
+    produces = "application/json"
+  )
   // 200 response added automatically
   @ApiResponses(value = [ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)])
   fun prisonUsersByFirstAndLastName(
-      @ApiParam(value = "The first name to match. Case insensitive.", required = true) @RequestParam @NotEmpty firstName: String,
-      @ApiParam(value = "The last name to match. Case insensitive", required = true) @RequestParam @NotEmpty lastName: String
+    @ApiParam(
+      value = "The first name to match. Case insensitive.",
+      required = true
+    ) @RequestParam @NotEmpty firstName: String,
+    @ApiParam(
+      value = "The last name to match. Case insensitive",
+      required = true
+    ) @RequestParam @NotEmpty lastName: String
   ): List<PrisonUser> {
     return userService.findPrisonUsersByFirstAndLastNames(firstName, lastName)
-        .map {
-          PrisonUser(
-              username = it.username,
-              emailAddress = it.email,
-              verified = it.isVerified)
-        }
+      .map {
+        PrisonUser(
+          username = it.username,
+          emailAddress = it.email,
+          verified = it.isVerified
+        )
+      }
   }
 }
 
 data class PrisonUser(
-    @ApiModelProperty(required = true, example = "RO_USER_TEST")
-    val username: String,
-    @ApiModelProperty(required = false, example = "ryanorton@justice.gov.uk")
-    val emailAddress: String?,
-    @ApiModelProperty(required = true, example = "true")
-    val verified: Boolean,
+  @ApiModelProperty(required = true, example = "RO_USER_TEST")
+  val username: String,
+  @ApiModelProperty(required = false, example = "ryanorton@justice.gov.uk")
+  val emailAddress: String?,
+  @ApiModelProperty(required = true, example = "true")
+  val verified: Boolean,
 )
-

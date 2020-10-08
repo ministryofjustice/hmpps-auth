@@ -23,8 +23,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.service.notify.NotificationClientApi
-import java.util.*
 import java.util.Map.entry
+import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
 class InitialPasswordServiceTest {
@@ -34,7 +34,14 @@ class InitialPasswordServiceTest {
   private val notificationClient: NotificationClientApi = mock()
   private val telemetryClient: TelemetryClient = mock()
 
-  private val initialPasswordService = InitialPasswordService(userRepository, oauthServiceRepository, userService, notificationClient, "resendTemplate", telemetryClient)
+  private val initialPasswordService = InitialPasswordService(
+    userRepository,
+    oauthServiceRepository,
+    userService,
+    notificationClient,
+    "resendTemplate",
+    telemetryClient
+  )
 
   @Test
   fun `resend Initial Password Link`() {
@@ -44,9 +51,19 @@ class InitialPasswordServiceTest {
     val service = Service("serviceCode", "service", "service", "ANY_ROLES", "ANY_URL", true, "supportLink")
     whenever(oauthServiceRepository.findById(anyString())).thenReturn(Optional.of(service))
     val link = initialPasswordService.resendInitialPasswordLink("user", "url-expired")
-    verify(notificationClient).sendEmail(eq("resendTemplate"), eq("email"), check {
-      assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("resetLink", link), entry("supportLink", "supportLink"))
-    }, isNull())
+    verify(notificationClient).sendEmail(
+      eq("resendTemplate"),
+      eq("email"),
+      check {
+        assertThat(it).containsOnly(
+          entry("firstName", "Bob"),
+          entry("fullName", "Bob Smith"),
+          entry("resetLink", link),
+          entry("supportLink", "supportLink")
+        )
+      },
+      isNull()
+    )
     assertThat(link).isNotEmpty()
   }
 
@@ -64,15 +81,20 @@ class InitialPasswordServiceTest {
   @Test
   fun `resend Initial Password Link User not found`() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
-    assertThatThrownBy { initialPasswordService.resendInitialPasswordLink("user", "url-expired") }.isInstanceOf(EntityNotFoundException::class.java)
+    assertThatThrownBy { initialPasswordService.resendInitialPasswordLink("user", "url-expired") }.isInstanceOf(
+      EntityNotFoundException::class.java
+    )
   }
 
   @Test
   fun `resend Initial Password Link Master User not found`() {
-    val user = User.builder().username("someuser").person(Person("Bob", "Smith")).email("email").source(AuthSource.nomis).build()
+    val user =
+      User.builder().username("someuser").person(Person("Bob", "Smith")).email("email").source(AuthSource.nomis).build()
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
-    assertThatThrownBy { initialPasswordService.resendInitialPasswordLink("user", "url-expired") }.isInstanceOf(EntityNotFoundException::class.java)
+    assertThatThrownBy { initialPasswordService.resendInitialPasswordLink("user", "url-expired") }.isInstanceOf(
+      EntityNotFoundException::class.java
+    )
   }
 
   private val staffUserAccountForBob: UserPersonDetails
@@ -89,5 +111,4 @@ class InitialPasswordServiceTest {
     }
 
   private val staffUserAccountForBobOptional: Optional<UserPersonDetails> = Optional.of(staffUserAccountForBob)
-
 }

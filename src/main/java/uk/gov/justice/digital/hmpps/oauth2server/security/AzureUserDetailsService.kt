@@ -11,10 +11,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.azure.service.AzureUserService
 
 @Service("azureUserDetailsService")
 class AzureUserDetailsService(private val azureUserService: AzureUserService) :
-    UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
+  UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
   override fun loadUserByUsername(username: String): AzureUserPersonDetails {
     return azureUserService.getAzureUserByUsername(username)
-        .orElseThrow { UsernameNotFoundException(username) }
+      .orElseThrow { UsernameNotFoundException(username) }
   }
 
   override fun loadUserDetails(token: PreAuthenticatedAuthenticationToken): UserDetails = loadUserByUsername(token.name)

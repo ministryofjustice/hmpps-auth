@@ -16,8 +16,14 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 @Api(tags = ["/api/authgroups"])
 class AuthAllGroupsController(private val authUserGroupService: AuthUserGroupService) {
   @GetMapping("/api/authgroups")
-  @ApiOperation(value = "Get all possible groups.", notes = "Get all groups allowed for auth users.", nickname = "allgroups", consumes = "application/json", produces = "application/json")
+  @ApiOperation(
+    value = "Get all possible groups.",
+    notes = "Get all groups allowed for auth users.",
+    nickname = "allgroups",
+    consumes = "application/json",
+    produces = "application/json"
+  )
   @ApiResponses(value = [ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)])
   fun allGroups(): List<AuthUserGroup> =
-      authUserGroupService.allGroups.map { AuthUserGroup(it) }
+    authUserGroupService.allGroups.map { AuthUserGroup(it) }
 }

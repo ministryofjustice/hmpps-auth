@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.AzureOIDCExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 import java.nio.charset.Charset
-import java.util.*
+import java.util.Base64
 
 /**
  * Verify clients can login, be redirected back to their system and then logout again.
@@ -37,48 +37,48 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
   @Test
   fun `I can sign in from another client`() {
     clientSignIn("ITAG_USER", "password")
-        .jsonPath(".user_name").isEqualTo("ITAG_USER")
-        .jsonPath(".user_id").isEqualTo("1")
-        .jsonPath(".sub").isEqualTo("ITAG_USER")
-        .jsonPath(".auth_source").isEqualTo("nomis")
-        .jsonPath(".name").doesNotExist()
+      .jsonPath(".user_name").isEqualTo("ITAG_USER")
+      .jsonPath(".user_id").isEqualTo("1")
+      .jsonPath(".sub").isEqualTo("ITAG_USER")
+      .jsonPath(".auth_source").isEqualTo("nomis")
+      .jsonPath(".name").doesNotExist()
   }
 
   @Test
   fun `I can sign in from another client - check access token`() {
     clientSignIn("ITAG_USER", "password")
-        .jsonPath(".access_token").value<JSONArray> {
-          val claims = JWTParser.parse(it[0].toString()).jwtClaimsSet
-          assertThat(claims.getClaim("user_name")).isEqualTo("ITAG_USER")
-          assertThat(claims.getClaim("name")).isNull()
-          assertThat(claims.getClaim("user_id")).isEqualTo("1")
-          assertThat(claims.getClaim("sub")).isEqualTo("ITAG_USER")
-          assertThat(claims.getClaim("auth_source")).isEqualTo("nomis")
-        }
+      .jsonPath(".access_token").value<JSONArray> {
+        val claims = JWTParser.parse(it[0].toString()).jwtClaimsSet
+        assertThat(claims.getClaim("user_name")).isEqualTo("ITAG_USER")
+        assertThat(claims.getClaim("name")).isNull()
+        assertThat(claims.getClaim("user_id")).isEqualTo("1")
+        assertThat(claims.getClaim("sub")).isEqualTo("ITAG_USER")
+        assertThat(claims.getClaim("auth_source")).isEqualTo("nomis")
+      }
   }
 
   @Test
   fun `I can sign in from a client with jwt fields name configured`() {
     clientSignIn("ITAG_USER", "password", "omicuser")
-        .jsonPath(".user_name").doesNotExist()
-        .jsonPath(".name").isEqualTo("Itag User")
-        .jsonPath(".user_id").isEqualTo("1")
-        .jsonPath(".sub").isEqualTo("ITAG_USER")
-        .jsonPath(".auth_source").isEqualTo("nomis")
+      .jsonPath(".user_name").doesNotExist()
+      .jsonPath(".name").isEqualTo("Itag User")
+      .jsonPath(".user_id").isEqualTo("1")
+      .jsonPath(".sub").isEqualTo("ITAG_USER")
+      .jsonPath(".auth_source").isEqualTo("nomis")
   }
 
   @Test
   fun `I can sign in from a client with jwt fields name configured - check access token`() {
     clientSignIn("ITAG_USER", "password", "omicuser")
-        .jsonPath(".access_token").value<JSONArray> {
-          val claims = JWTParser.parse(it[0].toString()).jwtClaimsSet
-          // note that user_name still exists even though as comes from DefaultUserAuthenticationConverter instead
-          assertThat(claims.getClaim("user_name")).isEqualTo("ITAG_USER")
-          assertThat(claims.getClaim("name")).isEqualTo("Itag User")
-          assertThat(claims.getClaim("user_id")).isEqualTo("1")
-          assertThat(claims.getClaim("sub")).isEqualTo("ITAG_USER")
-          assertThat(claims.getClaim("auth_source")).isEqualTo("nomis")
-        }
+      .jsonPath(".access_token").value<JSONArray> {
+        val claims = JWTParser.parse(it[0].toString()).jwtClaimsSet
+        // note that user_name still exists even though as comes from DefaultUserAuthenticationConverter instead
+        assertThat(claims.getClaim("user_name")).isEqualTo("ITAG_USER")
+        assertThat(claims.getClaim("name")).isEqualTo("Itag User")
+        assertThat(claims.getClaim("user_id")).isEqualTo("1")
+        assertThat(claims.getClaim("sub")).isEqualTo("ITAG_USER")
+        assertThat(claims.getClaim("auth_source")).isEqualTo("nomis")
+      }
   }
 
   @Test
@@ -86,83 +86,84 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
     val jwt = goTo(loginPage).loginAs("ITAG_USER", "password").parseJwt()
 
     clientAccess()
-        .jsonPath(".sub").isEqualTo("ITAG_USER")
-        .jsonPath(".access_token").value<JSONArray> {
-          tokenVerificationApi.verify(postRequestedFor(urlPathEqualTo("/token"))
-              .withQueryParam("authJwtId", equalTo(jwt.jwtid))
-              .withRequestBody(equalTo(it[0].toString())))
-        }
+      .jsonPath(".sub").isEqualTo("ITAG_USER")
+      .jsonPath(".access_token").value<JSONArray> {
+        tokenVerificationApi.verify(
+          postRequestedFor(urlPathEqualTo("/token"))
+            .withQueryParam("authJwtId", equalTo(jwt.jwtid))
+            .withRequestBody(equalTo(it[0].toString()))
+        )
+      }
   }
 
   @Test
   fun `I can sign in from another client as delius only user`() {
     clientSignIn("DELIUS_USER", "password")
-        .jsonPath(".user_name").isEqualTo("DELIUS_USER")
-        .jsonPath(".user_id").isEqualTo("2500077027")
-        .jsonPath(".sub").isEqualTo("DELIUS_USER")
-        .jsonPath(".auth_source").isEqualTo("delius")
+      .jsonPath(".user_name").isEqualTo("DELIUS_USER")
+      .jsonPath(".user_id").isEqualTo("2500077027")
+      .jsonPath(".sub").isEqualTo("DELIUS_USER")
+      .jsonPath(".auth_source").isEqualTo("delius")
   }
 
   @Test
   fun `I can sign in from another client as auth only user`() {
     clientSignIn("AUTH_USER")
-        .jsonPath(".user_name").isEqualTo("AUTH_USER")
-        .jsonPath(".user_id").isEqualTo("608955ae-52ed-44cc-884c-011597a77949")
-        .jsonPath(".sub").isEqualTo("AUTH_USER")
-        .jsonPath(".auth_source").isEqualTo("auth")
+      .jsonPath(".user_name").isEqualTo("AUTH_USER")
+      .jsonPath(".user_id").isEqualTo("608955ae-52ed-44cc-884c-011597a77949")
+      .jsonPath(".sub").isEqualTo("AUTH_USER")
+      .jsonPath(".auth_source").isEqualTo("auth")
   }
 
   @Test
   fun `I can sign in from another client as azure ad user with a nomis account`() {
     // The email is mapped to RO_USER in the nomis database
     azureClientSignIn("phillips@fredjustice.gov.uk", "azure-login-client")
-        .jsonPath(".user_name").isEqualTo("RO_USER")
-        .jsonPath(".user_id").isEqualTo("4")
-        .jsonPath(".sub").isEqualTo("RO_USER")
-        .jsonPath(".auth_source").isEqualTo("nomis")
+      .jsonPath(".user_name").isEqualTo("RO_USER")
+      .jsonPath(".user_id").isEqualTo("4")
+      .jsonPath(".sub").isEqualTo("RO_USER")
+      .jsonPath(".auth_source").isEqualTo("nomis")
   }
-
 
   @Test
   fun `I can sign in from another client as azure ad user with a nomis account and verified auth email`() {
     // The email is mapped to RO_USER in the nomis database
     azureClientSignIn("itag_user@digital.justice.gov.uk", "azure-login-client")
-        .jsonPath(".user_name").isEqualTo("ITAG_USER")
-        .jsonPath(".user_id").isEqualTo("1")
-        .jsonPath(".sub").isEqualTo("ITAG_USER")
-        .jsonPath(".auth_source").isEqualTo("nomis")
+      .jsonPath(".user_name").isEqualTo("ITAG_USER")
+      .jsonPath(".user_id").isEqualTo("1")
+      .jsonPath(".sub").isEqualTo("ITAG_USER")
+      .jsonPath(".auth_source").isEqualTo("nomis")
   }
 
   @Test
   fun `I can sign in from another client as azure ad user with an auth account`() {
     // The email is mapped to AUTH_GROUP_MANAGER in the nomis database
     azureClientSignIn("auth_group_manager@digital.justice.gov.uk", "azure-login-client")
-        .jsonPath(".user_name").isEqualTo("AUTH_GROUP_MANAGER")
-        .jsonPath(".user_id").isEqualTo("1f650f15-0993-4db7-9a32-5b930ff86035")
-        .jsonPath(".sub").isEqualTo("AUTH_GROUP_MANAGER")
-        .jsonPath(".auth_source").isEqualTo("auth")
+      .jsonPath(".user_name").isEqualTo("AUTH_GROUP_MANAGER")
+      .jsonPath(".user_id").isEqualTo("1f650f15-0993-4db7-9a32-5b930ff86035")
+      .jsonPath(".sub").isEqualTo("AUTH_GROUP_MANAGER")
+      .jsonPath(".auth_source").isEqualTo("auth")
   }
 
   @Test
   fun `Sign in as azure ad user with a disabled auth account leaves user as azure`() {
     // The email is mapped to AUTH_GROUP_MANAGER in the nomis database
     azureClientSignIn("auth_disabled@digital.justice.gov.uk", "azure-login-client")
-        .jsonPath(".user_name").isEqualTo("FE016DC1-83A6-4B39-9ACC-7CE82D2921D9")
-        .jsonPath(".user_id").isEqualTo("auth_disabled@digital.justice.gov.uk")
-        .jsonPath(".sub").isEqualTo("FE016DC1-83A6-4B39-9ACC-7CE82D2921D9")
-        .jsonPath(".auth_source").isEqualTo("azuread")
+      .jsonPath(".user_name").isEqualTo("FE016DC1-83A6-4B39-9ACC-7CE82D2921D9")
+      .jsonPath(".user_id").isEqualTo("auth_disabled@digital.justice.gov.uk")
+      .jsonPath(".sub").isEqualTo("FE016DC1-83A6-4B39-9ACC-7CE82D2921D9")
+      .jsonPath(".auth_source").isEqualTo("azuread")
   }
 
   @Test
   fun `I can redeem the access token for a refresh token`() {
     clientSignIn("AUTH_USER")
-        .jsonPath(".refresh_token").value<JSONArray> {
-          getRefreshToken(it[0].toString())
-              .jsonPath(".user_name").isEqualTo("AUTH_USER")
-              .jsonPath(".user_id").isEqualTo("608955ae-52ed-44cc-884c-011597a77949")
-              .jsonPath(".sub").isEqualTo("AUTH_USER")
-              .jsonPath(".auth_source").isEqualTo("auth")
-        }
+      .jsonPath(".refresh_token").value<JSONArray> {
+        getRefreshToken(it[0].toString())
+          .jsonPath(".user_name").isEqualTo("AUTH_USER")
+          .jsonPath(".user_id").isEqualTo("608955ae-52ed-44cc-884c-011597a77949")
+          .jsonPath(".sub").isEqualTo("AUTH_USER")
+          .jsonPath(".auth_source").isEqualTo("auth")
+      }
   }
 
   @Test
@@ -170,18 +171,20 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
     goTo(loginPage).loginAs("AUTH_USER")
 
     clientAccess()
-        .jsonPath(".['refresh_token','access_token']").value<JSONArray> {
-          val accessJwtId = JWTParser.parse((it[0] as Map<*, *>)["access_token"].toString()).jwtClaimsSet.jwtid
-          val accessJwtIdWithSpaces = accessJwtId.replace("+", " ")
+      .jsonPath(".['refresh_token','access_token']").value<JSONArray> {
+        val accessJwtId = JWTParser.parse((it[0] as Map<*, *>)["access_token"].toString()).jwtClaimsSet.jwtid
+        val accessJwtIdWithSpaces = accessJwtId.replace("+", " ")
 
-          getRefreshToken((it[0] as Map<*, *>)["refresh_token"].toString())
-              .jsonPath(".sub").isEqualTo("AUTH_USER")
-              .jsonPath(".access_token").value<JSONArray> { accessToken ->
-                tokenVerificationApi.verify(postRequestedFor(urlPathEqualTo("/token/refresh"))
-                    .withQueryParam("accessJwtId", equalTo(accessJwtIdWithSpaces))
-                    .withRequestBody(equalTo(accessToken[0].toString())))
-              }
-        }
+        getRefreshToken((it[0] as Map<*, *>)["refresh_token"].toString())
+          .jsonPath(".sub").isEqualTo("AUTH_USER")
+          .jsonPath(".access_token").value<JSONArray> { accessToken ->
+            tokenVerificationApi.verify(
+              postRequestedFor(urlPathEqualTo("/token/refresh"))
+                .withQueryParam("accessJwtId", equalTo(accessJwtIdWithSpaces))
+                .withRequestBody(equalTo(accessToken[0].toString()))
+            )
+          }
+      }
   }
 
   @Test
@@ -202,12 +205,18 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
 
     goTo("/logout?redirect_uri=$clientBaseUrl&client_id=elite2apiclient")
 
-    tokenVerificationApi.verify(deleteRequestedFor(urlPathEqualTo("/token"))
-        .withQueryParam("authJwtId", equalTo(authJwtId)))
+    tokenVerificationApi.verify(
+      deleteRequestedFor(urlPathEqualTo("/token"))
+        .withQueryParam("authJwtId", equalTo(authJwtId))
+    )
   }
 
-  private fun clientSignIn(username: String, password: String = "password123456", clientId: String = "elite2apiclient") =
-      clientAccess({ loginPage.isAtPage().submitLogin(username, password) }, clientId)
+  private fun clientSignIn(
+    username: String,
+    password: String = "password123456",
+    clientId: String = "elite2apiclient"
+  ) =
+    clientAccess({ loginPage.isAtPage().submitLogin(username, password) }, clientId)
 
   private fun azureClientSignIn(email: String, clientId: String = "elite2apiclient"): BodyContentSpec {
     AzureOIDCExtension.azureOIDC.stubToken(email)
@@ -231,20 +240,20 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
   private fun getAccessToken(authCode: String, clientId: String): BodyContentSpec {
     val auth = Base64.getEncoder().encodeToString("$clientId:clientsecret".toByteArray())
     return webTestClient
-        .post().uri("/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=$clientBaseUrl")
-        .headers { it.set(HttpHeaders.AUTHORIZATION, "Basic $auth") }
-        .exchange()
-        .expectStatus().isOk
-        .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-        .expectBody()
+      .post().uri("/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=$clientBaseUrl")
+      .headers { it.set(HttpHeaders.AUTHORIZATION, "Basic $auth") }
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+      .expectBody()
   }
 
   private fun getRefreshToken(refreshToken: String): BodyContentSpec =
-      webTestClient
-          .post().uri("/oauth/token?grant_type=refresh_token&refresh_token=$refreshToken")
-          .headers { it.set(HttpHeaders.AUTHORIZATION, "Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA==") }
-          .exchange()
-          .expectStatus().isOk
-          .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-          .expectBody()
+    webTestClient
+      .post().uri("/oauth/token?grant_type=refresh_token&refresh_token=$refreshToken")
+      .headers { it.set(HttpHeaders.AUTHORIZATION, "Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA==") }
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+      .expectBody()
 }

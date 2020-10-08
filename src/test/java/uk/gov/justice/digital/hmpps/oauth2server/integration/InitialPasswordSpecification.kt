@@ -30,12 +30,12 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
   fun `A user can be created and new password saved`() {
     goTo("/initial-password?token=reset3")
     initialPasswordPage
-        .isAtPage()
-        .inputAndConfirmNewPassword("helloWorld2")
+      .isAtPage()
+      .inputAndConfirmNewPassword("helloWorld2")
 
     newPasswordSavedPage
-        .isAtPage()
-        .selectSignInLink()
+      .isAtPage()
+      .selectSignInLink()
 
     goTo(loginPage).loginAs("AUTH_CREATE_USER_VALID", "helloWorld2")
     homePage.isAt()
@@ -45,15 +45,15 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
   fun `A user can be created and password validated`() {
     goTo("/initial-password?token=reset4")
     initialPasswordPage
-        .isAtPage()
-        .inputAndConfirmNewPassword("password1")
+      .isAtPage()
+      .inputAndConfirmNewPassword("password1")
 
     setPasswordPage.checkError("Your password is commonly used and may not be secure")
-        .inputAndConfirmNewPassword("helloWorld2")
+      .inputAndConfirmNewPassword("helloWorld2")
 
     newPasswordSavedPage
-        .isAtPage()
-        .selectSignInLink()
+      .isAtPage()
+      .selectSignInLink()
 
     goTo(loginPage).loginAs("AUTH_CREATE_USER_VALID2", "helloWorld2")
     homePage.isAt()
@@ -64,19 +64,19 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
     goTo("/initial-password?token=reset5")
 
     newPasswordLinkExpiredPage
-        .isAtPage()
+      .isAtPage()
 
     val newInitialPasswordLink = newPasswordLinkExpiredPage.getInitialPasswordLink()
 
     goTo(newInitialPasswordLink)
 
     initialPasswordPage
-        .isAtPage()
-        .inputAndConfirmNewPassword("helloWorld2")
+      .isAtPage()
+      .inputAndConfirmNewPassword("helloWorld2")
 
     newPasswordSavedPage
-        .isAtPage()
-        .selectSignInLink()
+      .isAtPage()
+      .selectSignInLink()
 
     goTo(loginPage).loginAs("AUTH_CREATE_USER_EXPIRED", "helloWorld2")
     homePage.isAt()
@@ -94,7 +94,8 @@ class InitialPasswordSpecification : AbstractAuthSpecification() {
 class InitialPasswordPage : SetPasswordPage()
 
 @PageUrl("/set-password")
-open class SetPasswordPage : AuthPage<SetPasswordPage>("HMPPS Digital Services - Create a password", "Create a password") {
+open class SetPasswordPage :
+  AuthPage<SetPasswordPage>("HMPPS Digital Services - Create a password", "Create a password") {
 
   @FindBy(css = "input[id='new-password']")
   private lateinit var newPassword: FluentWebElement
@@ -114,7 +115,8 @@ open class SetPasswordPage : AuthPage<SetPasswordPage>("HMPPS Digital Services -
 }
 
 @PageUrl("/set-password")
-open class SetNewPasswordPage : AuthPage<SetNewPasswordPage>("HMPPS Digital Services - Create a password", "Create a new password") {
+open class SetNewPasswordPage :
+  AuthPage<SetNewPasswordPage>("HMPPS Digital Services - Create a password", "Create a new password") {
 
   @FindBy(css = "input[id='new-password']")
   private lateinit var newPassword: FluentWebElement
@@ -134,7 +136,8 @@ open class SetNewPasswordPage : AuthPage<SetNewPasswordPage>("HMPPS Digital Serv
 }
 
 @PageUrl("/initial-password-success")
-class NewPasswordSavedPage : AuthPage<NewPasswordSavedPage>("HMPPS Digital Services - New Password Saved", "New password saved") {
+class NewPasswordSavedPage :
+  AuthPage<NewPasswordSavedPage>("HMPPS Digital Services - New Password Saved", "New password saved") {
 
   fun selectSignInLink() {
     el("[data-qa='initial-signin']").click()
@@ -142,12 +145,14 @@ class NewPasswordSavedPage : AuthPage<NewPasswordSavedPage>("HMPPS Digital Servi
 }
 
 @PageUrl("/initial-password-expired")
-class NewPasswordLinkExpiredPage : AuthPage<NewPasswordLinkExpiredPage>("HMPPS Digital Services - Create Password token resent", "Your create a password link has expired") {
+class NewPasswordLinkExpiredPage : AuthPage<NewPasswordLinkExpiredPage>(
+  "HMPPS Digital Services - Create Password token resent",
+  "Your create a password link has expired"
+) {
 
   fun getInitialPasswordLink(): String = el("#link").attribute("href")
 }
 
 @PageUrl("/reset-password")
-open class ResetNewPasswordPage : AuthPage<ResetNewPasswordPage>("HMPPS Digital Services - Reset Password", "Create a new password")
-
-
+open class ResetNewPasswordPage :
+  AuthPage<ResetNewPasswordPage>("HMPPS Digital Services - Reset Password", "Create a new password")

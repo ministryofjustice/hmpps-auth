@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
-import java.util.*
+import java.util.Optional
 
 class MaintainUserCheckTest {
   private val userRepository: UserRepository = mock()
@@ -22,7 +22,13 @@ class MaintainUserCheckTest {
   @Test
   fun superUserDoesNotThrowError() {
     val user = User.of("user")
-    assertThatCode { maintainUserCheck.ensureUserLoggedInUserRelationship("SuperUser", SUPER_USER, user) }.doesNotThrowAnyException()
+    assertThatCode {
+      maintainUserCheck.ensureUserLoggedInUserRelationship(
+        "SuperUser",
+        SUPER_USER,
+        user
+      )
+    }.doesNotThrowAnyException()
   }
 
   @Test
@@ -33,8 +39,14 @@ class MaintainUserCheckTest {
     val groupManager = User.of("groupManager")
     groupManager.groups = setOf(Group("group3", "desc"), group1)
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
-        .thenReturn(Optional.of(groupManager))
-    assertThatCode { maintainUserCheck.ensureUserLoggedInUserRelationship("GroupManager", GROUP_MANAGER, user) }.doesNotThrowAnyException()
+      .thenReturn(Optional.of(groupManager))
+    assertThatCode {
+      maintainUserCheck.ensureUserLoggedInUserRelationship(
+        "GroupManager",
+        GROUP_MANAGER,
+        user
+      )
+    }.doesNotThrowAnyException()
     verify(userRepository).findByUsernameAndMasterIsTrue(anyString())
   }
 
@@ -43,7 +55,14 @@ class MaintainUserCheckTest {
     val user = User.of("user")
     val optionalUserEmail = createUser()
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail)
-    assertThatThrownBy { maintainUserCheck.ensureUserLoggedInUserRelationship("GroupManager", GROUP_MANAGER, user) }.isInstanceOf(AuthUserGroupRelationshipException::class.java).hasMessage("Unable to maintain user: user with reason: User not with your groups")
+    assertThatThrownBy {
+      maintainUserCheck.ensureUserLoggedInUserRelationship(
+        "GroupManager",
+        GROUP_MANAGER,
+        user
+      )
+    }.isInstanceOf(AuthUserGroupRelationshipException::class.java)
+      .hasMessage("Unable to maintain user: user with reason: User not with your groups")
     verify(userRepository).findByUsernameAndMasterIsTrue(anyString())
   }
 
