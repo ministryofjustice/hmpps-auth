@@ -9,7 +9,7 @@ import javax.persistence.Enumerated
 data class Contact(
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  val type: ContactType
+  val type: ContactType,
 ) {
   constructor(type: ContactType, value: String, verified: Boolean = false) : this(type) {
     this.value = value

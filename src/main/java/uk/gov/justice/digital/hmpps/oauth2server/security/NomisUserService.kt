@@ -12,7 +12,7 @@ import java.util.Optional
 @Transactional(readOnly = true)
 abstract class NomisUserService(
   private val staffUserAccountRepository: StaffUserAccountRepository,
-  private val userRepository: UserRepository
+  private val userRepository: UserRepository,
 ) {
   fun getNomisUserByUsername(username: String): Optional<NomisUserPersonDetails> =
     staffUserAccountRepository.findById(username.toUpperCase())

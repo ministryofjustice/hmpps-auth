@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 open class DelegatingUserService(
   private val nomisUserService: NomisUserService,
   private val authUserService: AuthUserService,
-  private val deliusUserService: DeliusUserService
+  private val deliusUserService: DeliusUserService,
 ) {
 
   open fun lockAccount(userPersonDetails: UserPersonDetails) {

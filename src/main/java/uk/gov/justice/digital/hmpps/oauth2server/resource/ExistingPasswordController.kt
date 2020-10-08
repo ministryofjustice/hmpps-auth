@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 class ExistingPasswordController(
   private val authenticationManager: AuthenticationManager,
   private val tokenService: TokenService,
-  private val telemetryClient: TelemetryClient
+  private val telemetryClient: TelemetryClient,
 ) {
 
   @GetMapping("/existing-email")
@@ -37,7 +37,7 @@ class ExistingPasswordController(
   fun existingPassword(
     @RequestParam password: String?,
     @RequestParam type: String,
-    authentication: Authentication
+    authentication: Authentication,
   ): ModelAndView {
     if (password.isNullOrBlank()) return createModelAndViewWithUsername(authentication)
       .addObject("error", "required")

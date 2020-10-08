@@ -13,7 +13,7 @@ data class EmailAddress(
   val username: String,
 
   @ApiModelProperty(required = true, value = "Email", example = "john.smith@digital.justice.gov.uk", position = 2)
-  val email: String
+  val email: String,
 ) {
 
   constructor(u: User) : this(u.username, u.email)

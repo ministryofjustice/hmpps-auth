@@ -20,7 +20,7 @@ class DeliusRestTemplateConfiguration(
   private val apiDetails: DeliusClientCredentials,
   @Value("\${delius.endpoint.url}") private val deliusEndpointUrl: @URL String,
   @Value("\${delius.health.timeout:1s}") private val healthTimeout: Duration,
-  @Value("\${delius.endpoint.timeout:5s}") private val apiTimeout: Duration
+  @Value("\${delius.endpoint.timeout:5s}") private val apiTimeout: Duration,
 ) {
 
   @Bean(name = ["deliusApiRestTemplate"])

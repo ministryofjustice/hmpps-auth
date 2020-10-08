@@ -40,6 +40,6 @@ class NomisAuthenticationProvider(
   userRetriesService: UserRetriesService,
   mfaService: MfaService,
   userService: UserService,
-  telemetryClient: TelemetryClient
+  telemetryClient: TelemetryClient,
 ) :
   LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, mfaService, userService, telemetryClient)

@@ -10,7 +10,7 @@ data class UserDetails @JsonCreator constructor(
   @JsonProperty("firstName") val firstName: String,
   @JsonProperty("email") val email: String,
   @JsonProperty("enabled") val enabled: Boolean,
-  @JsonProperty("roles") val roles: List<UserRole>
+  @JsonProperty("roles") val roles: List<UserRole>,
 )
 
 data class UserRole @JsonCreator constructor(@JsonProperty("name") val name: String)

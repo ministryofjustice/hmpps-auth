@@ -10,5 +10,5 @@ data class ErrorDetail(
   val error_description: String,
 
   @ApiModelProperty(required = false, value = "Field in error", example = "username", position = 3)
-  val field: String? = null
+  val field: String? = null,
 )

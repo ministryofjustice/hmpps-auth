@@ -33,7 +33,7 @@ class ResetPasswordController(
   private val verifyEmailService: VerifyEmailService,
   private val telemetryClient: TelemetryClient,
   @param:Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
-  @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?
+  @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?,
 ) :
   AbstractPasswordController(
     resetPasswordService,
@@ -54,7 +54,7 @@ class ResetPasswordController(
   @PostMapping("/reset-password")
   fun resetPasswordRequest(
     @RequestParam(required = false) usernameOrEmail: String?,
-    request: HttpServletRequest
+    request: HttpServletRequest,
   ): ModelAndView {
     if (usernameOrEmail.isNullOrBlank()) {
       telemetryClient.trackEvent("ResetPasswordRequestFailure", mapOf("error" to "missing"), null)
@@ -149,7 +149,7 @@ class ResetPasswordController(
     @RequestParam token: String,
     @RequestParam newPassword: String?,
     @RequestParam confirmPassword: String?,
-    @RequestParam(required = false) initial: Boolean?
+    @RequestParam(required = false) initial: Boolean?,
   ): ModelAndView {
     val modelAndView = processSetPassword(
       TokenType.RESET,

@@ -16,7 +16,7 @@ open class TrackingTokenServices(
   private val telemetryClient: TelemetryClient,
   private val restTemplate: RestTemplate,
   private val tokenVerificationClientCredentials: TokenVerificationClientCredentials,
-  private val tokenVerificationEnabled: Boolean
+  private val tokenVerificationEnabled: Boolean,
 ) : DefaultTokenServices() {
 
   companion object {
@@ -63,7 +63,7 @@ open class TrackingTokenServices(
 
   private fun sendAuthJwtIdToTokenVerification(
     authentication: OAuth2Authentication,
-    token: OAuth2AccessToken
+    token: OAuth2AccessToken,
   ): String? {
     val jwtId = if (authentication.principal is UserDetailsImpl) {
       (authentication.principal as UserDetailsImpl).jwtId
