@@ -43,7 +43,7 @@ public class LoginController {
                                   final HttpServletRequest request, final HttpServletResponse response) {
 
         final var savedRequest = cookieRequestCache.getRequest(request, response);
-        if (savedRequest != null && clientRegistrations.size() >= 1) {
+        if (savedRequest != null && !clientRegistrations.isEmpty()) {
             final var redirectUrl = UriComponentsBuilder.fromUriString(savedRequest.getRedirectUrl()).build();
             final String clientId = redirectUrl.getQueryParams().getFirst("client_id");
             final var isOAuthLogin = redirectUrl.getPath().endsWith("/oauth/authorize") && clientId != null;
