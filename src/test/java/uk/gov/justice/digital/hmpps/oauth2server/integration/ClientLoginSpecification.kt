@@ -17,6 +17,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.BodyContentSpec
+import uk.gov.justice.digital.hmpps.oauth2server.resource.AzureOIDCExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 import java.nio.charset.Charset
@@ -112,6 +113,47 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `I can sign in from another client as azure ad user with a nomis account`() {
+    // The email is mapped to RO_USER in the nomis database
+    azureClientSignIn("phillips@fredjustice.gov.uk", "azure-login-client")
+        .jsonPath(".user_name").isEqualTo("RO_USER")
+        .jsonPath(".user_id").isEqualTo("4")
+        .jsonPath(".sub").isEqualTo("RO_USER")
+        .jsonPath(".auth_source").isEqualTo("nomis")
+  }
+
+
+  @Test
+  fun `I can sign in from another client as azure ad user with a nomis account and verified auth email`() {
+    // The email is mapped to RO_USER in the nomis database
+    azureClientSignIn("itag_user@digital.justice.gov.uk", "azure-login-client")
+        .jsonPath(".user_name").isEqualTo("ITAG_USER")
+        .jsonPath(".user_id").isEqualTo("1")
+        .jsonPath(".sub").isEqualTo("ITAG_USER")
+        .jsonPath(".auth_source").isEqualTo("nomis")
+  }
+
+  @Test
+  fun `I can sign in from another client as azure ad user with an auth account`() {
+    // The email is mapped to AUTH_GROUP_MANAGER in the nomis database
+    azureClientSignIn("auth_group_manager@digital.justice.gov.uk", "azure-login-client")
+        .jsonPath(".user_name").isEqualTo("AUTH_GROUP_MANAGER")
+        .jsonPath(".user_id").isEqualTo("1f650f15-0993-4db7-9a32-5b930ff86035")
+        .jsonPath(".sub").isEqualTo("AUTH_GROUP_MANAGER")
+        .jsonPath(".auth_source").isEqualTo("auth")
+  }
+
+  @Test
+  fun `Sign in as azure ad user with a disabled auth account leaves user as azure`() {
+    // The email is mapped to AUTH_GROUP_MANAGER in the nomis database
+    azureClientSignIn("auth_disabled@digital.justice.gov.uk", "azure-login-client")
+        .jsonPath(".user_name").isEqualTo("FE016DC1-83A6-4B39-9ACC-7CE82D2921D9")
+        .jsonPath(".user_id").isEqualTo("auth_disabled@digital.justice.gov.uk")
+        .jsonPath(".sub").isEqualTo("FE016DC1-83A6-4B39-9ACC-7CE82D2921D9")
+        .jsonPath(".auth_source").isEqualTo("azuread")
+  }
+
+  @Test
   fun `I can redeem the access token for a refresh token`() {
     clientSignIn("AUTH_USER")
         .jsonPath(".refresh_token").value<JSONArray> {
@@ -166,6 +208,11 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
 
   private fun clientSignIn(username: String, password: String = "password123456", clientId: String = "elite2apiclient") =
       clientAccess({ loginPage.isAtPage().submitLogin(username, password) }, clientId)
+
+  private fun azureClientSignIn(email: String, clientId: String = "elite2apiclient"): BodyContentSpec {
+    AzureOIDCExtension.azureOIDC.stubToken(email)
+    return clientAccess({ loginPage.clickAzureOIDCLink() }, clientId)
+  }
 
   private fun clientAccess(doWithinAuth: () -> Unit = {}, clientId: String = "elite2apiclient"): BodyContentSpec {
     val state = RandomStringUtils.random(6, true, true)
