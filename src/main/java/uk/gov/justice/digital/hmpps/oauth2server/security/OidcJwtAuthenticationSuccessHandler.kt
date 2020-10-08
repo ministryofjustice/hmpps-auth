@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.azure.AzureUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.io.IOException
-import java.util.*
+import java.util.ArrayList
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -55,7 +55,7 @@ class OidcJwtAuthenticationSuccessHandler(jwtCookieHelper: JwtCookieHelper?,
         principal.getClaim<String>("oid").toUpperCase(),
         givenName,
         familyName,
-        principal.preferredUsername,
+        principal.preferredUsername.toLowerCase(),
         true,
         accountNonExpired = true,
         accountNonLocked = true)
