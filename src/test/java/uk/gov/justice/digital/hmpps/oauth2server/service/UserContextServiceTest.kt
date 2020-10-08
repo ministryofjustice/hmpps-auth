@@ -11,13 +11,17 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
+import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 
 internal class UserContextServiceTest {
   private val deliusUserService: DeliusUserService = mock()
   private val authUserService: AuthUserService = mock()
-  private val userContextService = UserContextService(deliusUserService, authUserService)
+  private val nomisUserService: NomisUserService = mock()
+  private val userContextService = UserContextService(deliusUserService, authUserService, nomisUserService)
 
   @Test
   fun `resolveUser returns the same user for clients with 'normal' scopes`() {
@@ -52,6 +56,20 @@ internal class UserContextServiceTest {
     assertThat(user).isSameAs(deliusUser)
 
     verify(deliusUserService).getDeliusUsersByEmail("emailid@email.com")
+  }
+
+  @Test
+  fun `resolveUser can map from azureAD to nomis`() {
+    val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "emailid@email.com", "jwtId")
+    val nomisUser = NomisUserPersonDetails("username", "", null, "GEN", "MDI", listOf(),
+        AccountDetail("username", "OPEN", "GEN", null))
+    val scopes = setOf("nomis")
+    whenever(nomisUserService.getNomisUsersByEmail(anyString())).thenReturn(listOf(nomisUser))
+
+    val user = userContextService.resolveUser(loginUser, scopes)
+    assertThat(user).isSameAs(nomisUser)
+
+    verify(nomisUserService).getNomisUsersByEmail("emailid@email.com")
   }
 
   @Test
