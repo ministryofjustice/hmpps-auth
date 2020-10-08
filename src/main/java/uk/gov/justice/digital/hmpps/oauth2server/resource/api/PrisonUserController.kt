@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import lombok.AllArgsConstructor
 import lombok.extern.slf4j.Slf4j
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -23,6 +24,7 @@ import javax.validation.constraints.NotEmpty
 @AllArgsConstructor
 class PrisonUserController(private val userService: UserService) {
   @GetMapping
+  @PreAuthorize("hasRole('ROLE_USE_OF_FORCE')")
   @ApiOperation(value = "Find prison users by first and last names.", notes = "Find prison users by first and last names.", nickname = "Prison users", produces = "application/json")
   // 200 response added automatically
   @ApiResponses(value = [ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)])
@@ -39,7 +41,6 @@ class PrisonUserController(private val userService: UserService) {
         }
   }
 }
-
 
 data class PrisonUser(
     @ApiModelProperty(required = true, example = "RO_USER_TEST")
