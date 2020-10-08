@@ -31,6 +31,10 @@ abstract class NomisUserService(private val staffUserAccountRepository: StaffUse
     return allNomis.union(allNomisInAuth).toList()
   }
 
+  fun findPrisonUsersByFirstAndLastNames(firstName: String, lastName: String): List<NomisUserPersonDetails> {
+    return staffUserAccountRepository.findByStaffFirstNameIgnoreCaseAndStaffLastNameIgnoreCase(firstName, lastName)
+  }
+
   abstract fun changePassword(username: String?, password: String?)
   abstract fun changePasswordWithUnlock(username: String?, password: String?)
   abstract fun lockAccount(username: String?)

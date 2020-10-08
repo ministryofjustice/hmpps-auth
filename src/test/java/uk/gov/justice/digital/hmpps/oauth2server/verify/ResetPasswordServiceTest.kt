@@ -153,7 +153,7 @@ class ResetPasswordServiceTest {
   @Test
   fun requestResetPassword_uppercaseUsername() {
     val user = User.builder().username("SOMEUSER").email("email").locked(true).build()
-    whenever(userRepository.findByUsername(any())).thenReturn(Optional.of(user))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     resetPasswordService.requestResetPassword("someuser", "url")
     verify(userRepository).findByUsername("SOMEUSER")

@@ -14,17 +14,16 @@ import uk.gov.justice.digital.hmpps.oauth2server.azure.AzureUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.time.Instant
-import java.util.*
+import java.util.ArrayList
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 internal class OidcJwtAuthenticationSuccessHandlerTest {
   private val mockJwtCookieHelper: JwtCookieHelper = mock()
   private val mockJwtAuthenticationHelper: JwtAuthenticationHelper = mock()
-  private val cookieRequestCache: CookieRequestCache? = mock()
-  private val verifyEmailService: VerifyEmailService? = mock()
-  private val restTemplate: RestTemplate? = mock()
-  private val tokenVerificationEnabled = false
+  private val cookieRequestCache: CookieRequestCache = mock()
+  private val verifyEmailService: VerifyEmailService = mock()
+  private val restTemplate: RestTemplate = mock()
   private val userRetriesService: UserRetriesService = mock()
 
   private val mockRequest: HttpServletRequest = mock()
@@ -36,7 +35,7 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
       cookieRequestCache,
       verifyEmailService,
       restTemplate,
-      tokenVerificationEnabled,
+      tokenVerificationEnabled = false,
       userRetriesService
   )
 
@@ -49,7 +48,7 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
             "given_name" to "Joe",
             "family_name" to "Bloggs",
             "oid" to "d6165ad0-aed3-4146-9ef7-222876b57549",
-            "preferred_username" to "joe.bloggs@justice.gov.uk",
+            "preferred_username" to "Joe.Bloggs@justice.gov.uk",
         ))
 
     whenever(authentication.principal)

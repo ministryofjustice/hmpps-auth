@@ -12,6 +12,7 @@ import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.SECONDARY_EMAIL
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
@@ -29,7 +30,7 @@ import javax.persistence.EntityNotFoundException
 class VerifyEmailServiceTest {
   private val userRepository: UserRepository = mock()
   private val userTokenRepository: UserTokenRepository = mock()
-  private val jdbcTemplate: JdbcTemplate = mock()
+  private val jdbcTemplate: NamedParameterJdbcTemplate = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val notificationClient: NotificationClientApi = mock()
   private val referenceCodesService: ReferenceCodesService = mock()
