@@ -4,7 +4,6 @@ import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.springframework.http.HttpStatus
@@ -14,7 +13,6 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.web.savedrequest.SimpleSavedRequest
-import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
 import java.util.*
 
@@ -24,11 +22,6 @@ class LoginControllerTest{
   private val clientDetailsService: ClientDetailsService = mock()
 
   private val controller = LoginController(clientRegistrationRepository, cookieRequestCacheMock, clientDetailsService)
-
-  @BeforeEach
-  internal fun setUp() {
-    ReflectionTestUtils.setField(controller, "clientDetailsService", clientDetailsService)
-  }
 
   @Test
   fun loginPage_NoError() {
