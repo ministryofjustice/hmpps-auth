@@ -88,9 +88,7 @@ class AuthUserService(private val userRepository: UserRepository,
     return userRepository.findAll(userFilter, pageable)
   }
 
-  fun findAuthUsersByUsernames(usernames: List<String>): List<User> {
-    return userRepository.findByUsernameIn(usernames)
-  }
+  fun findAuthUsersByUsernames(usernames: List<String>): List<User> = userRepository.findByUsernameIn(usernames)
 
   @Throws(CreateUserException::class)
   private fun getInitialGroup(groupCode: String?, creator: String, authorities: Collection<GrantedAuthority>): Group? {
@@ -137,7 +135,13 @@ class AuthUserService(private val userRepository: UserRepository,
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(VerifyEmailException::class, NotificationClientException::class, AuthUserGroupRelationshipException::class)
-  fun amendUserEmail(usernameInput: String?, emailAddressInput: String?, url: String, admin: String, authorities: Collection<GrantedAuthority?>?, emailType: EmailType): String {
+  fun amendUserEmail(
+      usernameInput: String,
+      emailAddressInput: String?,
+      url: String,
+      admin: String,
+      authorities: Collection<GrantedAuthority?>?,
+      emailType: EmailType): String {
     val username = StringUtils.upperCase(usernameInput)
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
         .orElseThrow { EntityNotFoundException("User not found with username $username") }
@@ -263,6 +267,7 @@ class AuthUserService(private val userRepository: UserRepository,
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
+
     // Data item field size validation checks
     private const val MAX_LENGTH_USERNAME = 30
     private const val MAX_LENGTH_FIRST_NAME = 50

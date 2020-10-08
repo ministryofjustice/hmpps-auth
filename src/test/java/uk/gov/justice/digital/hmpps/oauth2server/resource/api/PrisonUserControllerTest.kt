@@ -37,8 +37,6 @@ class PrisonUserControllerTest {
                 username = "username",
                 verified = true,
                 emailAddress = "user@justice.gov.uk",
-                firstName = "first",
-                lastName = "last"
             )
         )
   }
@@ -58,8 +56,6 @@ class PrisonUserControllerTest {
             PrisonUser(
                 username = "username",
                 verified = false,
-                firstName = null,
-                lastName = null,
                 emailAddress = null
             )
         )

@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
 import uk.gov.service.notify.NotificationClientApi
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -30,9 +31,11 @@ open class VerifyEmailServiceIntTest {
   @Autowired
   private lateinit var userRepository: UserRepository
 
+
   @BeforeEach
   fun setUp() {
-    verifyEmailService = VerifyEmailService(userRepository, null, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId")
+    val userTokenRepository: UserTokenRepository = mock()
+    verifyEmailService = VerifyEmailService(userRepository, userTokenRepository, jdbcTemplate, telemetryClient, notificationClient, referenceCodesService, "templateId")
   }
 
   @Test

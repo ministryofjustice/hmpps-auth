@@ -18,15 +18,14 @@ import javax.validation.constraints.NotEmpty
 
 @Slf4j
 @RestController
-@Api(tags = ["/api/prisonusers"])
-@RequestMapping("/api/prisonusers")
+@Api(tags = ["/api/prisonuser"])
+@RequestMapping("/api/prisonuser")
 @AllArgsConstructor
 class PrisonUserController(private val userService: UserService) {
   @GetMapping
   @ApiOperation(value = "Find prison users by first and last names.", notes = "Find prison users by first and last names.", nickname = "Prison users", produces = "application/json")
-  @ApiResponses(value = [
-    ApiResponse(code = 200, message = "OK", response = PrisonUser::class, responseContainer = "List"),
-    ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)])
+  // 200 response added automatically
+  @ApiResponses(value = [ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)])
   fun prisonUsersByFirstAndLastName(
       @ApiParam(value = "The first name to match. Case insensitive.", required = true) @RequestParam @NotEmpty firstName: String,
       @ApiParam(value = "The last name to match. Case insensitive", required = true) @RequestParam @NotEmpty lastName: String
@@ -35,8 +34,6 @@ class PrisonUserController(private val userService: UserService) {
         .map {
           PrisonUser(
               username = it.username,
-              firstName = it.person?.firstName,
-              lastName = it.person?.lastName,
               emailAddress = it.email,
               verified = it.isVerified)
         }
@@ -47,10 +44,6 @@ class PrisonUserController(private val userService: UserService) {
 data class PrisonUser(
     @ApiModelProperty(required = true, example = "RO_USER_TEST")
     val username: String,
-    @ApiModelProperty(required = false, example = "Ryan")
-    val firstName: String?,
-    @ApiModelProperty(required = false, example = "Orton")
-    val lastName: String?,
     @ApiModelProperty(required = false, example = "ryanorton@justice.gov.uk")
     val emailAddress: String?,
     @ApiModelProperty(required = true, example = "true")

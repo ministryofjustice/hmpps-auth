@@ -65,28 +65,28 @@ class UserServiceTest {
   inner class GetEmailAddressFromNomis {
     @Test
     fun `getEmailAddressFromNomis no email addresses`() {
-      whenever(verifyEmailService.getExistingEmailAddressesForUsername(any())).thenReturn(listOf())
+      whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(listOf())
       val optionalAddress = userService.getEmailAddressFromNomis("joe")
       assertThat(optionalAddress).isEmpty
     }
 
     @Test
     fun `getEmailAddressFromNomis not a justice email`() {
-      whenever(verifyEmailService.getExistingEmailAddressesForUsername(any())).thenReturn(listOf("a@b.gov.uk"))
+      whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(listOf("a@b.gov.uk"))
       val optionalAddress = userService.getEmailAddressFromNomis("joe")
       assertThat(optionalAddress).isEmpty
     }
 
     @Test
     fun `getEmailAddressFromNomis one justice email`() {
-      whenever(verifyEmailService.getExistingEmailAddressesForUsername(any())).thenReturn(listOf("Bob.smith@hmps.gsi.gov.uk", "Bob.smith@justice.gov.uk"))
+      whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(listOf("Bob.smith@hmps.gsi.gov.uk", "Bob.smith@justice.gov.uk"))
       val optionalAddress = userService.getEmailAddressFromNomis("joe")
       assertThat(optionalAddress).hasValue("Bob.smith@justice.gov.uk")
     }
 
     @Test
     fun `getEmailAddressFromNomis multiple justice emails`() {
-      whenever(verifyEmailService.getExistingEmailAddressesForUsername(any())).thenReturn(listOf(
+      whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(listOf(
           "Bob.smith@hmps.gsi.gov.uk",
           "Bob.smith@justice.gov.uk",
           "Bob.smith2@justice.gov.uk"
@@ -111,10 +111,10 @@ class UserServiceTest {
 
     @Test
     fun `getOrCreateUser migrate from NOMIS`() {
-      whenever(userRepository.findByUsername(any())).thenReturn(Optional.empty())
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.empty())
       whenever(nomisUserService.getNomisUserByUsername("joe")).thenReturn(Optional.of(NomisUserPersonDetails.builder().username("joe").build()))
-      whenever(verifyEmailService.getExistingEmailAddressesForUsername(any())).thenReturn(listOf())
+      whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(listOf())
       whenever(userRepository.save<User>(any())).thenAnswer { it.getArguments()[0] }
 
       val newUser = userService.getOrCreateUser("joe")
@@ -125,10 +125,10 @@ class UserServiceTest {
 
     @Test
     fun `getOrCreateUser migrate from NOMIS with email`() {
-      whenever(userRepository.findByUsername(any())).thenReturn(Optional.empty())
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.empty())
       whenever(nomisUserService.getNomisUserByUsername("joe")).thenReturn(Optional.of(NomisUserPersonDetails.builder().username("joe").build()))
-      whenever(verifyEmailService.getExistingEmailAddressesForUsername(any())).thenReturn(listOf("a@b.justice.gov.uk"))
+      whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(listOf("a@b.justice.gov.uk"))
       whenever(userRepository.save<User>(any())).thenAnswer { it.getArguments()[0] }
 
       val newUser = userService.getOrCreateUser("joe")
@@ -301,60 +301,46 @@ class UserServiceTest {
 
     @Test
     fun `prison users only`() {
-      val staff = Staff.builder().firstName("first").lastName("last").build()
 
       whenever(authUserService.findAuthUsersByUsernames(listOf())).thenReturn(listOf())
 
-      val updBuilder = NomisUserPersonDetails.builder().staff(staff)
-
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
           listOf(
-              updBuilder.username("U1").build(),
-              updBuilder.username("U2").build(),
-              updBuilder.username("U3").build(),
+              NomisUserPersonDetails.builder().username("U1").build(),
+              NomisUserPersonDetails.builder().username("U2").build(),
+              NomisUserPersonDetails.builder().username("U3").build(),
           ))
 
       whenever(verifyEmailService.getExistingEmailAddressesForUsernames(anyList()))
           .thenReturn(
               mapOf(
-                  Pair("U1", setOf("u1@justice.gov.uk", "u1@somethingelse.gov.uk")),
+                  Pair("U1", mutableSetOf("u1@justice.gov.uk", "u1@somethingelse.gov.uk")),
 
                   // Two matching e-mail suffixes results in no e-mail address.
-                  Pair("U3", setOf("u3@justice.gov.uk", "another-u3@justice.gov.uk"))
+                  Pair("U3", mutableSetOf("u3@justice.gov.uk", "another-u3@justice.gov.uk"))
               ))
 
       assertThat(userService.findPrisonUsersByFirstAndLastNames("first", "last"))
-          .extracting("username", "email", "verified", "person.firstName", "person.lastName")
+          .extracting("username", "email", "verified")
           .containsExactlyInAnyOrder(
-              tuple("U1", "u1@justice.gov.uk", true, "First", "Last"),
-              tuple("U2", null, false, "First", "Last"),
-              tuple("U3", null, false, "First", "Last")
+              tuple("U1", "u1@justice.gov.uk", true),
+              tuple("U2", null, false),
+              tuple("U3", null, false)
           )
       verify(verifyEmailService).getExistingEmailAddressesForUsernames(listOf("U1", "U2", "U3"))
     }
 
     @Test
     fun `Prison users matched in auth`() {
-      val updBuilder = NomisUserPersonDetails
-          .builder()
-          .staff(Staff
-              .builder()
-              .firstName("xxx")
-              .lastName("xxx")
-              .build())
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
           listOf(
-              updBuilder.username("U1").build(),
-              updBuilder.username("U2").build(),
-              updBuilder.username("U3").build(),
+              NomisUserPersonDetails.builder().username("U1").build(),
+              NomisUserPersonDetails.builder().username("U2").build(),
+              NomisUserPersonDetails.builder().username("U3").build(),
           ))
 
-      val userBuilder = User
-          .builder()
-          .verified(true)
-          .person(Person("First", "Last"))
-          .source(AuthSource.nomis)
+      val userBuilder = User.builder().verified(true).source(AuthSource.nomis)
 
       whenever(authUserService.findAuthUsersByUsernames(anyList())).thenReturn(
           listOf(
@@ -364,11 +350,11 @@ class UserServiceTest {
           ))
 
       assertThat(userService.findPrisonUsersByFirstAndLastNames("first", "last"))
-          .extracting("username", "email", "verified", "person.firstName", "person.lastName")
+          .extracting("username", "email", "verified")
           .containsExactlyInAnyOrder(
-              tuple("U1", "u1@b.com", true, "First", "Last"),
-              tuple("U2", "u2@b.com", true, "First", "Last"),
-              tuple("U3", "u3@b.com", false, "First", "Last")
+              tuple("U1", "u1@b.com", true),
+              tuple("U2", "u2@b.com", true),
+              tuple("U3", "u3@b.com", false)
           )
 
       verify(verifyEmailService).getExistingEmailAddressesForUsernames(listOf())
@@ -376,27 +362,17 @@ class UserServiceTest {
 
     @Test
     fun `Prison users partially matched in auth`() {
-      val updBuilder = NomisUserPersonDetails
-          .builder()
-          .staff(Staff
-              .builder()
-              .firstName("NFirst")
-              .lastName("NLast")
-              .build())
+
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
           listOf(
-              updBuilder.username("U1").build(),
-              updBuilder.username("U2").build(),
-              updBuilder.username("U3").build(),
-              updBuilder.username("U4").build(),
+              NomisUserPersonDetails.builder().username("U1").build(),
+              NomisUserPersonDetails.builder().username("U2").build(),
+              NomisUserPersonDetails.builder().username("U3").build(),
+              NomisUserPersonDetails.builder().username("U4").build(),
           ))
 
-      val userBuilder = User
-          .builder()
-          .verified(true)
-          .person(Person("AFirst", "ALast"))
-          .source(AuthSource.nomis)
+      val userBuilder = User.builder().verified(true).source(AuthSource.nomis)
 
       whenever(authUserService.findAuthUsersByUsernames(anyList())).thenReturn(
           listOf(
@@ -410,26 +386,26 @@ class UserServiceTest {
       whenever(verifyEmailService.getExistingEmailAddressesForUsernames(anyList()))
           .thenReturn(
               mapOf(
-                  Pair("U2", setOf("u2@justice.gov.uk", "u2@somethingelse.gov.uk")),
-                  Pair("U3", setOf("u3@justice.gov.uk")),
+                  Pair("U2", mutableSetOf("u2@justice.gov.uk", "u2@somethingelse.gov.uk")),
+                  Pair("U3", mutableSetOf("u3@justice.gov.uk")),
               ))
 
 
 
       assertThat(userService.findPrisonUsersByFirstAndLastNames("first", "last"))
-          .extracting("username", "email", "verified", "person.firstName", "person.lastName")
+          .extracting("username", "email", "verified")
           .containsExactlyInAnyOrder(
               // e-mail from auth service user
-              tuple("U1", "u1@b.com", true, "AFirst", "ALast"),
+              tuple("U1", "u1@b.com", true),
 
               // U2 found in auth has correct auth source but no email.  Therefore take email from NOMIS. Is this right?
-              tuple("U2", "u2@justice.gov.uk", true, "Nfirst", "Nlast"),
+              tuple("U2", "u2@justice.gov.uk", true),
 
               // U3 from NOMIS - matching auth user has wrong auth source.  Is this right?
-              tuple("U3", "u3@justice.gov.uk", true, "Nfirst", "Nlast"),
+              tuple("U3", "u3@justice.gov.uk", true),
 
 
-              tuple("U4", null, false, "Nfirst", "Nlast")
+              tuple("U4", null, false)
           )
 
       verify(verifyEmailService).getExistingEmailAddressesForUsernames(listOf("U2", "U3", "U4"))

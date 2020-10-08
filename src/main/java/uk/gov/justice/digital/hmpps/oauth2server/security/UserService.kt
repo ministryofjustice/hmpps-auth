@@ -1,13 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import org.apache.commons.lang3.StringUtils
-import org.apache.commons.text.WordUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
@@ -115,19 +113,11 @@ class UserService(private val nomisUserService: NomisUserService,
 
     val usersFromNomisUsers = nomisUsers
         .filter { user -> missingUsernames.contains(user.username) }
-        .map { user ->
-          User
-              .builder()
-              .username(user.username)
-              .person(
-                  Person(
-                      user.firstName,
-                      // Person.getFirstName uses capitalizeFully, so do the same for lastName...
-                      WordUtils.capitalizeFully(user.lastName)
-                  ))
-              .email(validEmailByUsername[user.username])
-              .verified(validEmailByUsername.containsKey(user.username))
-              .build()
+        .map { upd ->
+          val user = upd.toUser()
+          user.email = validEmailByUsername[user.username]
+          user.isVerified = validEmailByUsername.containsKey(user.username)
+          user
         }
     return authUsers.plus(usersFromNomisUsers)
   }

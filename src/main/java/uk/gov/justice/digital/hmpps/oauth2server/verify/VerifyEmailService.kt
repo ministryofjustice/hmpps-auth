@@ -1,322 +1,280 @@
-package uk.gov.justice.digital.hmpps.oauth2server.verify;
+package uk.gov.justice.digital.hmpps.oauth2server.verify
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper;
-import uk.gov.service.notify.NotificationClientApi;
-import uk.gov.service.notify.NotificationClientException;
-
-import javax.persistence.EntityNotFoundException;
-import java.util.*;
+import com.microsoft.applicationinsights.TelemetryClient
+import org.apache.commons.lang3.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
+import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
+import uk.gov.service.notify.NotificationClientApi
+import uk.gov.service.notify.NotificationClientException
+import java.sql.ResultSet
+import java.util.*
+import javax.persistence.EntityNotFoundException
 
 @Service
-@Slf4j
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
-public class VerifyEmailService {
+class VerifyEmailService(private val userRepository: UserRepository,
+                         private val userTokenRepository: UserTokenRepository,
+                         private val jdbcTemplate: NamedParameterJdbcTemplate,
+                         private val telemetryClient: TelemetryClient,
+                         private val notificationClient: NotificationClientApi,
+                         private val referenceCodesService: ReferenceCodesService,
+                         @Value("\${application.notify.verify.template}") private val notifyTemplateId: String) {
 
-    @SuppressWarnings("SqlResolve")
-    private static final String EXISTING_EMAIL_SQL =
-            "       select distinct internet_address " +
-                    " from internet_addresses i " +
-                    "      inner join STAFF_USER_ACCOUNTS s on i.owner_id = s.staff_id and owner_class = 'STF' " +
-                    "where internet_address_class = 'EMAIL' and s.username = :username";
+  fun getEmail(username: String): Optional<User> {
+    return userRepository.findByUsername(username).filter { ue: User -> StringUtils.isNotBlank(ue.email) }
+  }
 
-    @SuppressWarnings("SqlResolve")
-    private static final String EXISTING_EMAIL_FOR_USERNAMES_SQL =
-            "          select s.username username, " +
-                    "         internet_address email " +
-                    "    from internet_addresses i " +
-                    "         inner join STAFF_USER_ACCOUNTS s on i.owner_id = s.staff_id and owner_class = 'STF' " +
-                    "   where internet_address_class = 'EMAIL' and s.username in (:usernames)" +
-                    "group by s.username, internet_address";
+  fun isNotVerified(name: String): Boolean {
+    return !getEmail(name).map { obj: User -> obj.isVerified }.orElse(java.lang.Boolean.FALSE)
+  }
 
-    private final UserRepository userRepository;
-    private final UserTokenRepository userTokenRepository;
-    private final NamedParameterJdbcTemplate jdbcTemplate;
-    private final TelemetryClient telemetryClient;
-    private final NotificationClientApi notificationClient;
-    private final ReferenceCodesService referenceCodesService;
-    private final String notifyTemplateId;
+  fun getExistingEmailAddressesForUsername(username: String): List<String> {
+    return jdbcTemplate.queryForList(EXISTING_EMAIL_SQL, java.util.Map.of("username", username), String::class.java)
+  }
 
-    public VerifyEmailService(final UserRepository userRepository,
-                              final UserTokenRepository userTokenRepository,
-                              final NamedParameterJdbcTemplate jdbcTemplate,
-                              final TelemetryClient telemetryClient,
-                              final NotificationClientApi notificationClient,
-                              final ReferenceCodesService referenceCodesService, @Value("${application.notify.verify.template}") final String notifyTemplateId) {
-        this.userRepository = userRepository;
-        this.userTokenRepository = userTokenRepository;
-        this.jdbcTemplate = jdbcTemplate;
-        this.telemetryClient = telemetryClient;
-        this.notificationClient = notificationClient;
-        this.referenceCodesService = referenceCodesService;
-        this.notifyTemplateId = notifyTemplateId;
+  fun getExistingEmailAddressesForUsernames(usernames: List<String>): Map<String, MutableSet<String>> {
+    val emailsByUsername: MutableMap<String, MutableSet<String>> = HashMap()
+    if (usernames.isEmpty()) {
+      return emailsByUsername
     }
-
-    public Optional<User> getEmail(final String username) {
-        return userRepository.findByUsername(username).filter(ue -> StringUtils.isNotBlank(ue.getEmail()));
+    jdbcTemplate.query(EXISTING_EMAIL_FOR_USERNAMES_SQL,
+        java.util.Map.of("usernames", usernames)
+    ) { rs: ResultSet ->
+      val username = rs.getString("USERNAME")
+      val email = rs.getString("EMAIL")
+      emailsByUsername
+          .computeIfAbsent(username) { HashSet() }
+          .add(email)
     }
+    return emailsByUsername
+  }
 
-    public boolean isNotVerified(final String name) {
-        return !getEmail(name).map(User::isVerified).orElse(Boolean.FALSE);
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(NotificationClientException::class, VerifyEmailException::class)
+  fun requestVerification(username: String,
+                          emailInput: String?,
+                          firstName: String?,
+                          fullname: String?,
+                          url: String,
+                          emailType: EmailType): String {
+    val user = userRepository.findByUsername(username).orElseThrow()
+    val verifyLink = url + user.createToken(if (emailType == EmailType.PRIMARY) UserToken.TokenType.VERIFIED else UserToken.TokenType.SECONDARY).token
+    val parameters = java.util.Map.of("firstName", firstName, "fullName", fullname, "verifyLink", verifyLink)
+    val email = EmailHelper.format(emailInput)
+    validateEmailAddress(email, emailType)
+    when (emailType) {
+      EmailType.PRIMARY -> {
+        user.email = email
+        user.isVerified = false
+      }
+      EmailType.SECONDARY -> user.addContact(ContactType.SECONDARY_EMAIL, email)
     }
-
-    public List<String> getExistingEmailAddressesForUsername(final String username) {
-        return jdbcTemplate.queryForList(EXISTING_EMAIL_SQL, Map.of("username", username), String.class);
+    try {
+      log.info("Sending email verification to notify for user {}", username)
+      notificationClient.sendEmail(notifyTemplateId, email, parameters, null)
+      telemetryClient.trackEvent("VerifyEmailRequestSuccess", java.util.Map.of("username", username), null)
+    } catch (e: NotificationClientException) {
+      val reason = (if (e.cause != null) e.cause else e)!!.javaClass.simpleName
+      log.warn("Failed to send email verification to notify for user {}", username, e)
+      telemetryClient.trackEvent("VerifyEmailRequestFailure", java.util.Map.of("username", username, "reason", reason), null)
+      if (e.httpResult >= 500) {
+        // second time lucky
+        notificationClient.sendEmail(notifyTemplateId, email, parameters, null, null)
+      }
+      throw e
     }
+    userRepository.save(user)
+    return verifyLink
+  }
 
-    public Map<String, Set<String>> getExistingEmailAddressesForUsernames(@NotNull List<String> usernames) {
-        Map<String, Set<String>> emailsByUsername = new HashMap<>();
-
-        if (usernames.isEmpty()) {
-            return emailsByUsername;
-        }
-
-        jdbcTemplate.query(EXISTING_EMAIL_FOR_USERNAMES_SQL,
-                Map.of("usernames", usernames),
-                rs -> {
-                    String username = rs.getString("USERNAME");
-                    String email = rs.getString("EMAIL");
-                    emailsByUsername
-                            .computeIfAbsent(username, notUsed -> new HashSet<>())
-                            .add(email);
-                });
-        return emailsByUsername;
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(NotificationClientException::class, VerifyEmailException::class)
+  fun resendVerificationCodeEmail(username: String, url: String): Optional<String> {
+    val user = userRepository.findByUsername(username).orElseThrow()
+    if (user.email == null) {
+      throw VerifyEmailException("noemail")
     }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public String requestVerification(final String username,
-                                      final String emailInput,
-                                      final String firstName,
-                                      final String fullname,
-                                      final String url,
-                                      final EmailType emailType) throws NotificationClientException, VerifyEmailException {
-        final var user = userRepository.findByUsername(username).orElseThrow();
-        final var verifyLink = url + user.createToken(emailType == EmailType.PRIMARY ? TokenType.VERIFIED : TokenType.SECONDARY).getToken();
-        final var parameters = Map.of("firstName", firstName, "fullName", fullname, "verifyLink", verifyLink);
-
-        final var email = EmailHelper.format(emailInput);
-        validateEmailAddress(email, emailType);
-
-        switch (emailType) {
-            case PRIMARY:
-                user.setEmail(email);
-                user.setVerified(false);
-                break;
-            case SECONDARY:
-                user.addContact(ContactType.SECONDARY_EMAIL, email);
-                break;
-            default:
-                log.warn("Failed to send email verification to notify for user {} invalid emailType Enum - {}", username, emailType);
-                telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", "invalid emailType Enum - "), null);
-                throw new RuntimeException("invalid emailType Enum - " + emailType);
-        }
-
-        try {
-            log.info("Sending email verification to notify for user {}", username);
-            notificationClient.sendEmail(notifyTemplateId, email, parameters, null);
-            telemetryClient.trackEvent("VerifyEmailRequestSuccess", Map.of("username", username), null);
-        } catch (final NotificationClientException e) {
-            final var reason = (e.getCause() != null ? e.getCause() : e).getClass().getSimpleName();
-            log.warn("Failed to send email verification to notify for user {}", username, e);
-            telemetryClient.trackEvent("VerifyEmailRequestFailure", Map.of("username", username, "reason", reason), null);
-            if (e.getHttpResult() >= 500) {
-                // second time lucky
-                notificationClient.sendEmail(notifyTemplateId, email, parameters, null, null);
-            }
-            throw e;
-        }
-
-        userRepository.save(user);
-
-        return verifyLink;
+    if (user.isVerified) {
+      log.info("Verify email succeeded due to already verified")
+      telemetryClient.trackEvent("VerifyEmailConfirmFailure", java.util.Map.of("reason", "alreadyverified", "username", username), null)
+      return Optional.empty()
     }
+    val verifyLink = url + user.createToken(UserToken.TokenType.VERIFIED).token
+    val parameters = java.util.Map.of("firstName", user.firstName, "fullName", user.name, "verifyLink", verifyLink)
+    notificationClient.sendEmail(notifyTemplateId, user.email, parameters, null)
+    return Optional.of(verifyLink)
+  }
 
-    @Transactional(transactionManager = "authTransactionManager")
-    public Optional<String> resendVerificationCodeEmail(final String username, final String url) throws NotificationClientException, VerifyEmailException {
-        final var user = userRepository.findByUsername(username).orElseThrow();
-        if (user.getEmail() == null) {
-            throw new VerifyEmailException("noemail");
-        }
-        if (user.isVerified()) {
-            log.info("Verify email succeeded due to already verified");
-            telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
-            return Optional.empty();
-        }
-
-        final var verifyLink = url + user.createToken(TokenType.VERIFIED).getToken();
-        final var parameters = Map.of("firstName", user.getFirstName(), "fullName", user.getName(), "verifyLink", verifyLink);
-        notificationClient.sendEmail(notifyTemplateId, user.getEmail(), parameters, null);
-
-        return Optional.of(verifyLink);
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(NotificationClientException::class, VerifyEmailException::class)
+  fun resendVerificationCodeSecondaryEmail(username: String, url: String): Optional<String> {
+    val user = userRepository.findByUsername(username).orElseThrow()
+    if (user.secondaryEmail == null) {
+      throw VerifyEmailException("nosecondaryemail")
     }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public Optional<String> resendVerificationCodeSecondaryEmail(final String username, final String url) throws NotificationClientException, VerifyEmailException {
-        final var user = userRepository.findByUsername(username).orElseThrow();
-        if (user.getSecondaryEmail() == null) {
-            throw new VerifyEmailException("nosecondaryemail");
-        }
-        if (user.isSecondaryEmailVerified()) {
-            log.info("Verify secondary email succeeded due to already verified");
-            telemetryClient.trackEvent("VerifySecondaryEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
-            return Optional.empty();
-        }
-
-        final var verifyLink = url + user.createToken(TokenType.SECONDARY).getToken();
-        final var parameters = Map.of("firstName", user.getFirstName(), "fullName", user.getName(), "verifyLink", verifyLink);
-        notificationClient.sendEmail(notifyTemplateId, user.getSecondaryEmail(), parameters, null);
-
-        return Optional.of(verifyLink);
+    if (user.isSecondaryEmailVerified) {
+      log.info("Verify secondary email succeeded due to already verified")
+      telemetryClient.trackEvent("VerifySecondaryEmailConfirmFailure", java.util.Map.of("reason", "alreadyverified", "username", username), null)
+      return Optional.empty()
     }
+    val verifyLink = url + user.createToken(UserToken.TokenType.SECONDARY).token
+    val parameters = java.util.Map.of("firstName", user.firstName, "fullName", user.name, "verifyLink", verifyLink)
+    notificationClient.sendEmail(notifyTemplateId, user.secondaryEmail, parameters, null)
+    return Optional.of(verifyLink)
+  }
 
-    public boolean secondaryEmailVerified(final String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User not found with username %s", username)))
-                .isSecondaryEmailVerified();
+  fun secondaryEmailVerified(username: String): Boolean {
+    return userRepository.findByUsername(username)
+        .orElseThrow { EntityNotFoundException(String.format("User not found with username %s", username)) }
+        .isSecondaryEmailVerified
+  }
+
+  @Throws(VerifyEmailException::class)
+  fun validateEmailAddress(email: String?, emailType: EmailType) {
+    if (email == null) {
+      throw VerifyEmailException("blank")
     }
+    validateEmailAddressExcludingGsi(email, emailType)
+    if (email.matches(Regex(".*@.*\\.gsi\\.gov\\.uk"))) throw VerifyEmailException("gsi")
+  }
 
-    public void validateEmailAddress(final String email, final EmailType emailType) throws VerifyEmailException {
-        validateEmailAddressExcludingGsi(email, emailType);
-        if (email.matches(".*@.*\\.gsi\\.gov\\.uk")) throw new VerifyEmailException("gsi");
+  fun maskedSecondaryEmailFromUsername(username: String): String {
+    val user = userRepository.findByUsername(username)
+    return user.orElseThrow().maskedSecondaryEmail
+  }
+
+  @Throws(VerifyEmailException::class)
+  fun validateEmailAddressExcludingGsi(email: String, emailType: EmailType) {
+    val atIndex = StringUtils.indexOf(email, '@'.toInt())
+    if (atIndex == -1 || !email.matches(Regex(".*@.*\\..*"))) {
+      throw VerifyEmailException("format")
     }
-
-    public String maskedSecondaryEmailFromUsername(final String username) {
-        final var user = userRepository.findByUsername(username);
-        return user.orElseThrow().getMaskedSecondaryEmail();
+    val firstCharacter = email[0]
+    val lastCharacter = email[email.length - 1]
+    if (firstCharacter == '.' || firstCharacter == '@' || lastCharacter == '.' || lastCharacter == '@') {
+      throw VerifyEmailException("firstlast")
     }
-
-    public void validateEmailAddressExcludingGsi(final String email, final EmailType emailType) throws VerifyEmailException {
-        if (StringUtils.isBlank(email)) {
-            throw new VerifyEmailException("blank");
-        }
-
-        final var atIndex = StringUtils.indexOf(email, '@');
-        if (atIndex == -1 || !email.matches(".*@.*\\..*")) {
-            throw new VerifyEmailException("format");
-        }
-        final var firstCharacter = email.charAt(0);
-        final var lastCharacter = email.charAt(email.length() - 1);
-        if (firstCharacter == '.' || firstCharacter == '@' ||
-                lastCharacter == '.' || lastCharacter == '@') {
-            throw new VerifyEmailException("firstlast");
-        }
-        if (email.matches(".*\\.@.*") || email.matches(".*@\\..*")) {
-            throw new VerifyEmailException("together");
-        }
-        if (StringUtils.countMatches(email, '@') > 1) {
-            throw new VerifyEmailException("at");
-        }
-        if (StringUtils.containsWhitespace(email)) {
-            throw new VerifyEmailException("white");
-        }
-        if (!email.matches("[0-9A-Za-z@.'_\\-+]*")) {
-            throw new VerifyEmailException("characters");
-        }
-        if (emailType == EmailType.PRIMARY && !referenceCodesService.isValidEmailDomain(email.substring(atIndex + 1))) {
-            throw new VerifyEmailException("domain");
-        }
+    if (email.matches(Regex(".*\\.@.*")) || email.matches(Regex(".*@\\..*"))) {
+      throw VerifyEmailException("together")
     }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public Optional<String> confirmEmail(final String token) {
-        final var userTokenOptional = userTokenRepository.findById(token);
-        if (userTokenOptional.isEmpty()) {
-            return trackAndReturnFailureForInvalidToken();
-        }
-        final var userToken = userTokenOptional.get();
-        final var user = userToken.getUser();
-        final var username = user.getUsername();
-
-        if (user.isVerified()) {
-            log.info("Verify email succeeded due to already verified");
-            telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
-            return Optional.empty();
-        }
-        if (userToken.hasTokenExpired()) {
-            return trackAndReturnFailureForExpiredToken(username);
-        }
-
-        markEmailAsVerified(user);
-        return Optional.empty();
+    if (StringUtils.countMatches(email, '@') > 1) {
+      throw VerifyEmailException("at")
     }
-
-    @Transactional(transactionManager = "authTransactionManager")
-    public Optional<String> confirmSecondaryEmail(final String token) {
-        final var userTokenOptional = userTokenRepository.findById(token);
-        if (userTokenOptional.isEmpty()) {
-            return trackAndReturnFailureForInvalidToken();
-        }
-        final var userToken = userTokenOptional.get();
-        final var user = userToken.getUser();
-        final var username = user.getUsername();
-
-        if (user.isSecondaryEmailVerified()) {
-            log.info("Verify secondary email succeeded due to already verified");
-            telemetryClient.trackEvent("VerifySecondaryEmailConfirmFailure", Map.of("reason", "alreadyverified", "username", username), null);
-            return Optional.empty();
-        }
-        if (userToken.hasTokenExpired()) {
-            return trackAndReturnFailureForExpiredToken(username);
-        }
-
-        markSecondaryEmailAsVerified(user);
-        return Optional.empty();
+    if (StringUtils.containsWhitespace(email)) {
+      throw VerifyEmailException("white")
     }
-
-    private void markEmailAsVerified(final User user) {
-        // verification token match
-        user.setVerified(true);
-        userRepository.save(user);
-
-        log.info("Verify email succeeded for {}", user.getUsername());
-        telemetryClient.trackEvent("VerifyEmailConfirmSuccess", Map.of("username", user.getUsername()), null);
+    if (!email.matches(Regex("[0-9A-Za-z@.'_\\-+]*"))) {
+      throw VerifyEmailException("characters")
     }
-
-    private void markSecondaryEmailAsVerified(final User user) {
-        // verification token match
-        user.findContact(ContactType.SECONDARY_EMAIL).ifPresent(c -> c.setVerified(true));
-        userRepository.save(user);
-
-        log.info("Verify secondary email succeeded for {}", user.getUsername());
-        telemetryClient.trackEvent("VerifySecondaryEmailConfirmSuccess", Map.of("username", user.getUsername()), null);
+    if (emailType == EmailType.PRIMARY && !referenceCodesService.isValidEmailDomain(email.substring(atIndex + 1))) {
+      throw VerifyEmailException("domain")
     }
+  }
 
-    private Optional<String> trackAndReturnFailureForInvalidToken() {
-        log.info("Verify email failed due to invalid token");
-        telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", "invalid"), null);
-        return Optional.of("invalid");
+  @Transactional(transactionManager = "authTransactionManager")
+  fun confirmEmail(token: String): Optional<String> {
+    val userTokenOptional = userTokenRepository.findById(token)
+    if (userTokenOptional.isEmpty) {
+      return trackAndReturnFailureForInvalidToken()
     }
-
-    private Optional<String> trackAndReturnFailureForExpiredToken(final String username) {
-        log.info("Verify email failed due to expired token");
-        telemetryClient.trackEvent("VerifyEmailConfirmFailure", Map.of("reason", "expired", "username", username), null);
-        return Optional.of("expired");
+    val userToken = userTokenOptional.get()
+    val user = userToken.user
+    val username = user.username
+    if (user.isVerified) {
+      log.info("Verify email succeeded due to already verified")
+      telemetryClient.trackEvent("VerifyEmailConfirmFailure", java.util.Map.of("reason", "alreadyverified", "username", username), null)
+      return Optional.empty()
     }
-
-    public static class VerifyEmailException extends Exception {
-        private final String reason;
-
-        public VerifyEmailException(final String reason) {
-            super(String.format("Verify email failed with reason: %s", reason));
-            this.reason = reason;
-        }
-
-        public String getReason() {
-            return this.reason;
-        }
+    if (userToken.hasTokenExpired()) {
+      return trackAndReturnFailureForExpiredToken(username)
     }
+    markEmailAsVerified(user)
+    return Optional.empty()
+  }
 
+  @Transactional(transactionManager = "authTransactionManager")
+  fun confirmSecondaryEmail(token: String): Optional<String> {
+    val userTokenOptional = userTokenRepository.findById(token)
+    if (userTokenOptional.isEmpty) {
+      return trackAndReturnFailureForInvalidToken()
+    }
+    val userToken = userTokenOptional.get()
+    val user = userToken.user
+    val username = user.username
+    if (user.isSecondaryEmailVerified) {
+      log.info("Verify secondary email succeeded due to already verified")
+      telemetryClient.trackEvent("VerifySecondaryEmailConfirmFailure", java.util.Map.of("reason", "alreadyverified", "username", username), null)
+      return Optional.empty()
+    }
+    if (userToken.hasTokenExpired()) {
+      return trackAndReturnFailureForExpiredToken(username)
+    }
+    markSecondaryEmailAsVerified(user)
+    return Optional.empty()
+  }
+
+  private fun markEmailAsVerified(user: User) {
+    // verification token match
+    user.isVerified = true
+    userRepository.save(user)
+    log.info("Verify email succeeded for {}", user.username)
+    telemetryClient.trackEvent("VerifyEmailConfirmSuccess", java.util.Map.of("username", user.username), null)
+  }
+
+  private fun markSecondaryEmailAsVerified(user: User) {
+    // verification token match
+    user.findContact(ContactType.SECONDARY_EMAIL).ifPresent { c: Contact -> c.verified = true }
+    userRepository.save(user)
+    log.info("Verify secondary email succeeded for {}", user.username)
+    telemetryClient.trackEvent("VerifySecondaryEmailConfirmSuccess", java.util.Map.of("username", user.username), null)
+  }
+
+  private fun trackAndReturnFailureForInvalidToken(): Optional<String> {
+    log.info("Verify email failed due to invalid token")
+    telemetryClient.trackEvent("VerifyEmailConfirmFailure", java.util.Map.of("reason", "invalid"), null)
+    return Optional.of("invalid")
+  }
+
+  private fun trackAndReturnFailureForExpiredToken(username: String): Optional<String> {
+    log.info("Verify email failed due to expired token")
+    telemetryClient.trackEvent("VerifyEmailConfirmFailure", java.util.Map.of("reason", "expired", "username", username), null)
+    return Optional.of("expired")
+  }
+
+  class VerifyEmailException(val reason: String?) : Exception(String.format("Verify email failed with reason: %s", reason))
+
+  @Suppress("SqlResolve")
+  companion object {
+    private const val EXISTING_EMAIL_SQL = """
+      select distinct internet_address  
+        from internet_addresses i       
+             inner join STAFF_USER_ACCOUNTS s on i.owner_id = s.staff_id and owner_class = 'STF' 
+       where internet_address_class = 'EMAIL' 
+             and s.username = :username
+      """
+
+    private const val EXISTING_EMAIL_FOR_USERNAMES_SQL = """
+        select s.username username,
+               internet_address email     
+          from internet_addresses i
+               inner join STAFF_USER_ACCOUNTS s on i.owner_id = s.staff_id and owner_class = 'STF'
+         where internet_address_class = 'EMAIL' and 
+               s.username in (:usernames) 
+      group by s.username, internet_address
+      """
+
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 }

@@ -15,7 +15,7 @@ class AzureUserService(private val userRepository: UserRepository) {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getAzureUserByUsername(username: String?): Optional<AzureUserPersonDetails> =
+  fun getAzureUserByUsername(username: String): Optional<AzureUserPersonDetails> =
       userRepository.findByUsernameAndSource(username, AuthSource.azuread)
           .map {
             AzureUserPersonDetails(

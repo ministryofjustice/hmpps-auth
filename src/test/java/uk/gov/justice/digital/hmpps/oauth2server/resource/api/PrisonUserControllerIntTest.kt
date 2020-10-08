@@ -9,7 +9,7 @@ class PrisonUserControllerIntTest : IntegrationTest() {
   @Test
   fun `prisonuser end-point returns results`() {
     webTestClient
-        .get().uri("/auth/api/prisonusers?firstName=ryAn&lastName=OrtoN")
+        .get().uri("/auth/api/prisonuser?firstName=ryAn&lastName=OrtoN")
         .headers(setAuthorisation("UOF_REVIEWER_USER", listOf()))
         .exchange()
         .expectStatus().isOk
@@ -18,8 +18,6 @@ class PrisonUserControllerIntTest : IntegrationTest() {
         .json("""
           [{
             "username":"RO_USER_TEST",
-            "firstName":null,
-            "lastName":null,
             "emailAddress":"ro_user_test@digital.justice.gov.uk",
             "verified":true
         }]
@@ -29,7 +27,7 @@ class PrisonUserControllerIntTest : IntegrationTest() {
   @Test
   fun `prisonuser end-point rejects invalid query`() {
     webTestClient
-        .get().uri("/auth/api/prisonusers")
+        .get().uri("/auth/api/prisonuser")
         .headers(setAuthorisation("UOF_REVIEWER_USER", listOf()))
         .exchange()
         .expectStatus().is4xxClientError
