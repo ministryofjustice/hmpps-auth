@@ -34,14 +34,15 @@ class UserContextService(private val deliusUserService: DeliusUserService,
     val loginUserAuthSource = fromNullableString(loginUser.authSource)
     if (loginUserAuthSource != azuread) return listOf(loginUser)
 
-    val desiredSources = scopes.map {
+    val sourcesFromScopes = scopes.map {
       try {
         fromNullableString(it)
       } catch (iae: IllegalArgumentException) {
         none
       }
     }.filter { it != none }
-    if (desiredSources.isEmpty()) return listOf(loginUser)
+
+    val desiredSources = if (sourcesFromScopes.isEmpty()) listOf(nomis, auth, delius) else sourcesFromScopes
 
     return desiredSources
         .map { mapFromAzureAD(loginUser.userId, it).filter { it.isEnabled } }
