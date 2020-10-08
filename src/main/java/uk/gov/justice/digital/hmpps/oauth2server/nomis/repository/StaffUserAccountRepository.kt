@@ -10,4 +10,6 @@ interface StaffUserAccountRepository : CrudRepository<NomisUserPersonDetails, St
     inner join INTERNET_ADDRESSES i on i.owner_id = s.staff_id and owner_class = 'STF'
     where internet_address_class = 'EMAIL' and i.internet_address = ?""", nativeQuery = true)
   fun findAllNomisUsersByEmailAddress(email: String): List<NomisUserPersonDetails>
+
+  fun findByStaffFirstNameIgnoreCaseAndStaffLastNameIgnoreCase(firstName: String, lastName: String): List<NomisUserPersonDetails>
 }
