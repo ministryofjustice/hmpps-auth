@@ -16,8 +16,14 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 @Api(tags = ["/api/authroles"])
 class AuthAllRolesController(private val authUserRoleService: AuthUserRoleService) {
   @GetMapping("/api/authroles")
-  @ApiOperation(value = "Get all possible roles.", notes = "Get all roles allowed for auth users.", nickname = "allroles", consumes = "application/json", produces = "application/json")
+  @ApiOperation(
+    value = "Get all possible roles.",
+    notes = "Get all roles allowed for auth users.",
+    nickname = "allroles",
+    consumes = "application/json",
+    produces = "application/json"
+  )
   @ApiResponses(value = [ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)])
   fun allRoles(): List<AuthUserRole> =
-      authUserRoleService.allRoles.map { AuthUserRole(it) }
+    authUserRoleService.allRoles.map { AuthUserRole(it) }
 }

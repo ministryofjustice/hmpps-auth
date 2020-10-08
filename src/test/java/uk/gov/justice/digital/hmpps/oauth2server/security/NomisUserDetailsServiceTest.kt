@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Role
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.UserCaseloadRole
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.UserCaseloadRoleIdentity
-import java.util.*
+import java.util.Optional
 import javax.persistence.EntityManager
 
 class NomisUserDetailsServiceTest {
@@ -126,16 +126,20 @@ class NomisUserDetailsServiceTest {
   private fun buildStandardUser(username: String): NomisUserPersonDetails {
     val staff = buildStaff()
     return NomisUserPersonDetails.builder()
-        .username(username)
-        .password("pass")
-        .type("GENERAL")
-        .staff(staff)
-        .roles(listOf(UserCaseloadRole.builder()
+      .username(username)
+      .password("pass")
+      .type("GENERAL")
+      .staff(staff)
+      .roles(
+        listOf(
+          UserCaseloadRole.builder()
             .id(UserCaseloadRoleIdentity.builder().caseload("NWEB").roleId(ROLE_ID).username(username).build())
             .role(Role.builder().code("ROLE1").id(ROLE_ID).build())
-            .build()))
-        .accountDetail(buildAccountDetail(username, OPEN))
-        .build()
+            .build()
+        )
+      )
+      .accountDetail(buildAccountDetail(username, OPEN))
+      .build()
   }
 
   private fun buildExpiredUser(): NomisUserPersonDetails {
@@ -170,19 +174,19 @@ class NomisUserDetailsServiceTest {
 
   private fun buildAccountDetail(username: String, status: AccountStatus): AccountDetail {
     return AccountDetail.builder()
-        .username(username)
-        .accountStatus(status.desc)
-        .profile("TAG_GENERAL")
-        .build()
+      .username(username)
+      .accountStatus(status.desc)
+      .profile("TAG_GENERAL")
+      .build()
   }
 
   private fun buildStaff(): Staff {
     return Staff.builder()
-        .staffId(1L)
-        .firstName("ITAG")
-        .lastName("USER")
-        .status("ACTIVE")
-        .build()
+      .staffId(1L)
+      .firstName("ITAG")
+      .lastName("USER")
+      .status("ACTIVE")
+      .build()
   }
 
   companion object {

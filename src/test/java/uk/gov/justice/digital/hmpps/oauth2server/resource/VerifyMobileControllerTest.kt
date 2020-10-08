@@ -1,7 +1,12 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
-import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.check
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.isNull
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.MapEntry.entry
 import org.junit.jupiter.api.Nested
@@ -13,7 +18,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService.VerifyMobileException
 import uk.gov.service.notify.NotificationClientException
-import java.util.*
+import java.util.Optional
 
 class VerifyMobileControllerTest {
   private val verifyMobileService: VerifyMobileService = mock()
@@ -61,7 +66,14 @@ class VerifyMobileControllerTest {
 
     @Test
     fun verifyMobileConfirm_Expired() {
-      whenever(verifyMobileService.confirmMobile(anyString())).thenReturn(Optional.of(mapOf("error" to "expired", "verifyCode" to "123456")))
+      whenever(verifyMobileService.confirmMobile(anyString())).thenReturn(
+        Optional.of(
+          mapOf(
+            "error" to "expired",
+            "verifyCode" to "123456"
+          )
+        )
+      )
       val modelAndView = controller.verifyMobileConfirm("token")
       assertThat(modelAndView.viewName).isEqualTo("verifyMobileSent")
       assertThat(modelAndView.model).containsExactly(entry("error", "expired"))
@@ -69,7 +81,14 @@ class VerifyMobileControllerTest {
 
     @Test
     fun `verifyMobileConfirm expired smoke enabled`() {
-      whenever(verifyMobileService.confirmMobile(anyString())).thenReturn(Optional.of(mapOf("error" to "expired", "verifyCode" to "123456")))
+      whenever(verifyMobileService.confirmMobile(anyString())).thenReturn(
+        Optional.of(
+          mapOf(
+            "error" to "expired",
+            "verifyCode" to "123456"
+          )
+        )
+      )
       val modelAndView = controllerSmokeEnabled.verifyMobileConfirm("token")
       assertThat(modelAndView.viewName).isEqualTo("verifyMobileSent")
       assertThat(modelAndView.model).containsExactly(entry("error", "expired"), entry("verifyCode", "123456"))
@@ -136,9 +155,13 @@ class VerifyMobileControllerTest {
       val modelAndView = controller.mobileResend(principal)
       assertThat(modelAndView.viewName).isEqualTo("redirect:/change-mobile")
       assertThat(modelAndView.model).containsExactly(entry("error", "reason"))
-      verify(telemetryClient).trackEvent(eq("VerifyMobileRequestFailure"), check {
-        assertThat(it).containsExactlyInAnyOrderEntriesOf(mapOf("username" to "user", "reason" to "reason"))
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("VerifyMobileRequestFailure"),
+        check {
+          assertThat(it).containsExactlyInAnyOrderEntriesOf(mapOf("username" to "user", "reason" to "reason"))
+        },
+        isNull()
+      )
     }
 
     @Test

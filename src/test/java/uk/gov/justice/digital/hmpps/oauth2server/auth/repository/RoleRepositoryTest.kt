@@ -50,12 +50,14 @@ class RoleRepositoryTest {
 
   @Test
   fun findAllByOrderByRoleName() {
-    assertThat(repository.findAllByOrderByRoleName()).extracting<String> { obj: Authority -> obj.authority }.contains("ROLE_GLOBAL_SEARCH", "ROLE_PECS_POLICE")
+    assertThat(repository.findAllByOrderByRoleName()).extracting<String> { obj: Authority -> obj.authority }
+      .contains("ROLE_GLOBAL_SEARCH", "ROLE_PECS_POLICE")
   }
 
   @Test
   fun findByGroupAssignableRolesForUsername() {
-    assertThat(repository.findByGroupAssignableRolesForUsername("AUTH_RO_VARY_USER")).extracting<String> { obj: Authority -> obj.roleCode }.containsExactly("GLOBAL_SEARCH", "LICENCE_RO", "LICENCE_VARY")
+    assertThat(repository.findByGroupAssignableRolesForUsername("AUTH_RO_VARY_USER")).extracting<String> { obj: Authority -> obj.roleCode }
+      .containsExactly("GLOBAL_SEARCH", "LICENCE_RO", "LICENCE_VARY")
   }
 
   private fun transientEntity() = Authority("hdc", "Licences")

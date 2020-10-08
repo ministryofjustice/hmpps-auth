@@ -18,12 +18,14 @@ import javax.sql.DataSource
 class FlywayConfig {
   @Bean(name = ["authFlyway"], initMethod = "migrate")
   @FlywayDataSource
-  fun authFlyway(@Qualifier("authDataSource") authDataSource: DataSource,
-                 @Value("\${auth.flyway.locations}") flywayLocations: List<String>): Flyway {
+  fun authFlyway(
+    @Qualifier("authDataSource") authDataSource: DataSource,
+    @Value("\${auth.flyway.locations}") flywayLocations: List<String>
+  ): Flyway {
     val flyway = Flyway.configure()
-        .dataSource(authDataSource)
-        .locations(*replaceVendorLocations(flywayLocations, authDataSource).toTypedArray())
-        .load()
+      .dataSource(authDataSource)
+      .locations(*replaceVendorLocations(flywayLocations, authDataSource).toTypedArray())
+      .load()
     flyway.migrate()
     return flyway
   }
@@ -34,12 +36,12 @@ class FlywayConfig {
   }
 
   private fun getDatabaseDriver(dataSource: DataSource) =
-      try {
-        val url = JdbcUtils.extractDatabaseMetaData<String>(dataSource, "getURL")
-        DatabaseDriver.fromJdbcUrl(url)
-      } catch (ex: MetaDataAccessException) {
-        throw IllegalStateException(ex)
-      }
+    try {
+      val url = JdbcUtils.extractDatabaseMetaData<String>(dataSource, "getURL")
+      DatabaseDriver.fromJdbcUrl(url)
+    } catch (ex: MetaDataAccessException) {
+      throw IllegalStateException(ex)
+    }
 
   private fun replaceVendorLocations(locations: List<String>, databaseDriver: DatabaseDriver): List<String> {
     if (databaseDriver === UNKNOWN) {
@@ -53,13 +55,15 @@ class FlywayConfig {
   @FlywayDataSource
   @Primary
   @Profile("nomis-seed")
-  fun nomisFlyway(@Qualifier("dataSource") dataSource: DataSource,
-                  @Value("\${nomis.flyway.locations}") flywayLocations: List<String>): Flyway {
+  fun nomisFlyway(
+    @Qualifier("dataSource") dataSource: DataSource,
+    @Value("\${nomis.flyway.locations}") flywayLocations: List<String>
+  ): Flyway {
     val flyway = Flyway.configure()
-        .dataSource(dataSource)
-        .locations(*flywayLocations.toTypedArray())
-        .installedBy("nomis-seed")
-        .load()
+      .dataSource(dataSource)
+      .locations(*flywayLocations.toTypedArray())
+      .installedBy("nomis-seed")
+      .load()
     flyway.migrate()
     return flyway
   }

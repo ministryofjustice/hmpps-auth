@@ -7,9 +7,10 @@ import javax.persistence.Enumerated
 
 @Embeddable
 data class Contact(
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    val type: ContactType) {
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  val type: ContactType
+) {
   constructor(type: ContactType, value: String, verified: Boolean = false) : this(type) {
     this.value = value
     this.verified = verified

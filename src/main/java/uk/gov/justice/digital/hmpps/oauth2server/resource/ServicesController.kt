@@ -17,8 +17,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.service.AuthServicesService
 
 @Controller
 @RequestMapping("ui/services")
-class ServicesController(private val authServicesService: AuthServicesService,
-                         private val telemetryClient: TelemetryClient) {
+class ServicesController(
+  private val authServicesService: AuthServicesService,
+  private val telemetryClient: TelemetryClient
+) {
 
   @GetMapping
   fun userIndex() = ModelAndView("ui/services", "serviceDetails", authServicesService.list())
@@ -36,8 +38,11 @@ class ServicesController(private val authServicesService: AuthServicesService,
 
   @PostMapping("/edit")
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
-  fun editService(authentication: Authentication, @ModelAttribute service: Service,
-                  @RequestParam(value = "newService", required = false) newService: Boolean = false): String? {
+  fun editService(
+    authentication: Authentication,
+    @ModelAttribute service: Service,
+    @RequestParam(value = "newService", required = false) newService: Boolean = false
+  ): String? {
     val userDetails = authentication.principal as UserPersonDetails
     val telemetryMap = mapOf("username" to userDetails.username, "code" to service.code)
     if (newService) {

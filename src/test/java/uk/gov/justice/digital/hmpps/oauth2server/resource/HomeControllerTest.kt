@@ -45,12 +45,13 @@ class HomeControllerTest {
 
   companion object {
     private val ALL_SERVICES = listOf(
-        createService("DM", "ROLE_LICENCE_DM", "a@b.com"),  // single role
-        createService("LIC", "ROLE_LICENCE_CA,ROLE_LICENCE_DM,ROLE_LICENCE_RO", null),  // multiple role
-        createService("NOMIS", null, "c@d.com"),  // available to all roles
-        createService("OTHER", "ROLE_OTHER", null)) // not available
+      createService("DM", "ROLE_LICENCE_DM", "a@b.com"), // single role
+      createService("LIC", "ROLE_LICENCE_CA,ROLE_LICENCE_DM,ROLE_LICENCE_RO", null), // multiple role
+      createService("NOMIS", null, "c@d.com"), // available to all roles
+      createService("OTHER", "ROLE_OTHER", null)
+    ) // not available
 
     private fun createService(code: String, roles: String?, email: String?): Service =
-        Service(code, "NAME", "Description", roles, "http://some.url", true, email)
+      Service(code, "NAME", "Description", roles, "http://some.url", true, email)
   }
 }

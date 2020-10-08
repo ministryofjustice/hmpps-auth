@@ -7,9 +7,9 @@ class PingIntTest : IntegrationTest() {
   @Test
   fun `Ping returns pong`() {
     webTestClient.get().uri("/auth/ping")
-        .exchange()
-        .expectStatus().isOk
-        .expectHeader().contentType("text/plain;charset=UTF-8")
-        .expectBody(String::class.java).isEqualTo<Nothing>("pong")
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType("text/plain;charset=UTF-8")
+      .expectBody(String::class.java).isEqualTo<Nothing>("pong")
   }
 }

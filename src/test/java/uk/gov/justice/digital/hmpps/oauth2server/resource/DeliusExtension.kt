@@ -28,7 +28,8 @@ class DeliusExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback 
 }
 
 class CommunityApiMockServer : WireMockServer(
-    wireMockConfig()
-        .port(8099)
-        .usingFilesUnderClasspath("delius")
-        .extensions(ResponseTemplateTransformer(false)))
+  wireMockConfig()
+    .port(8099)
+    .usingFilesUnderClasspath("delius")
+    .extensions(ResponseTemplateTransformer(false))
+)

@@ -22,7 +22,8 @@ internal class NomisUserServiceTest {
   private val passwordEncoder: PasswordEncoder = mock()
   private val staffUserAccountRepository: StaffUserAccountRepository = mock()
   private val userRepository: UserRepository = mock()
-  private val nomisUserService: NomisUserService = NomisH2AlterUserService(dataSource, passwordEncoder, staffUserAccountRepository, userRepository)
+  private val nomisUserService: NomisUserService =
+    NomisH2AlterUserService(dataSource, passwordEncoder, staffUserAccountRepository, userRepository)
 
   @Test
   fun `getNomisUsersByEmail no users found`() {
@@ -39,9 +40,16 @@ internal class NomisUserServiceTest {
     val fred = getNomisUser("FRED")
     val harry = getNomisUser("HARRY")
     val bob = getNomisUser("BOB")
-    whenever(staffUserAccountRepository.findAllNomisUsersByEmailAddress(anyString())).thenReturn(listOf(joe, fred, harry))
+    whenever(staffUserAccountRepository.findAllNomisUsersByEmailAddress(anyString())).thenReturn(
+      listOf(
+        joe,
+        fred,
+        harry
+      )
+    )
     whenever(userRepository.findByEmailAndSourceOrderByUsername(anyString(), any())).thenReturn(
-        listOf(getUserFromAuth("JOE"), getUserFromAuth("BOB")))
+      listOf(getUserFromAuth("JOE"), getUserFromAuth("BOB"))
+    )
     whenever(staffUserAccountRepository.findAllById(any())).thenReturn(listOf(joe, bob))
     assertThat(nomisUserService.getNomisUsersByEmail("email")).containsExactlyInAnyOrder(joe, fred, harry, bob)
 

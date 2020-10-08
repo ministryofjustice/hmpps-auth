@@ -21,7 +21,8 @@ class MfaPreferenceControllerTest {
 
   @Test
   fun `mfaPreferenceRequest check view`() {
-    val user = User.builder().mobile("07700900321").email("someuser").mfaPreference(User.MfaPreferenceType.EMAIL).build()
+    val user =
+      User.builder().mobile("07700900321").email("someuser").mfaPreference(User.MfaPreferenceType.EMAIL).build()
     whenever(userService.getUserWithContacts(anyString())).thenReturn(user)
     val modelAndView = controller.mfaPreferenceRequest(authentication)
     assertThat(modelAndView.viewName).isEqualTo("mfaPreference")
@@ -29,18 +30,34 @@ class MfaPreferenceControllerTest {
 
   @Test
   fun `mfaPreferenceRequest check model`() {
-    val user = User.builder().mobile("07700900321").email("someuser").mfaPreference(User.MfaPreferenceType.EMAIL).build()
+    val user =
+      User.builder().mobile("07700900321").email("someuser").mfaPreference(User.MfaPreferenceType.EMAIL).build()
     whenever(userService.getUserWithContacts(anyString())).thenReturn(user)
     val modelAndView = controller.mfaPreferenceRequest(authentication)
-    assertThat(modelAndView.model).containsOnly(entry("current", User.MfaPreferenceType.EMAIL), entry("email", "someuser"), entry("secondaryemail", null), entry("text", "07700900321"))
+    assertThat(modelAndView.model).containsOnly(
+      entry("current", User.MfaPreferenceType.EMAIL),
+      entry("email", "someuser"),
+      entry("secondaryemail", null),
+      entry("text", "07700900321")
+    )
   }
 
   @Test
   fun `mfaPreferenceRequest check model containing all preferences`() {
-    val user = User.builder().email("someuser").contacts(setOf(Contact(ContactType.MOBILE_PHONE, "07700900321", true), (Contact(ContactType.SECONDARY_EMAIL, "secondaryEmail", true)))).mfaPreference(User.MfaPreferenceType.EMAIL).build()
+    val user = User.builder().email("someuser").contacts(
+      setOf(
+        Contact(ContactType.MOBILE_PHONE, "07700900321", true),
+        (Contact(ContactType.SECONDARY_EMAIL, "secondaryEmail", true))
+      )
+    ).mfaPreference(User.MfaPreferenceType.EMAIL).build()
     whenever(userService.getUserWithContacts(anyString())).thenReturn(user)
     val modelAndView = controller.mfaPreferenceRequest(authentication)
-    assertThat(modelAndView.model).containsOnly(entry("current", User.MfaPreferenceType.EMAIL), entry("email", "someuser"), entry("secondaryemail", "secondaryEmail"), entry("text", "07700900321"))
+    assertThat(modelAndView.model).containsOnly(
+      entry("current", User.MfaPreferenceType.EMAIL),
+      entry("email", "someuser"),
+      entry("secondaryemail", "secondaryEmail"),
+      entry("text", "07700900321")
+    )
   }
 
   @Test

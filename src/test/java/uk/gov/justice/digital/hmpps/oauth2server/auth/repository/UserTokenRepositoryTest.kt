@@ -74,10 +74,11 @@ class UserTokenRepositoryTest {
     TestTransaction.start()
 
     val jdbcTemplate = JdbcTemplate(dataSource)
-    val list = jdbcTemplate.queryForList("select * from user_token where user_id = '${retrievedEntity.user.id}' and token_type = '${retrievedEntity.tokenType}'")
-    assertThat(list).hasSize(1);
+    val list =
+      jdbcTemplate.queryForList("select * from user_token where user_id = '${retrievedEntity.user.id}' and token_type = '${retrievedEntity.tokenType}'")
+    assertThat(list).hasSize(1)
   }
 
   private fun transientUser(): User =
-      User.builder().username("userTokenRepository").email("a@b.com").source(auth).build()
+    User.builder().username("userTokenRepository").email("a@b.com").source(auth).build()
 }

@@ -9,14 +9,15 @@ import javax.persistence.EntityNotFoundException
 class AuthServicesService(private val oauthServiceRepository: OauthServiceRepository) {
   fun list(): MutableIterable<Service> = oauthServiceRepository.findAllByOrderByName()
   fun getService(code: String): Service = oauthServiceRepository.findById(code)
-      .orElseThrow { EntityNotFoundException("Entity $code not found") };
+    .orElseThrow { EntityNotFoundException("Entity $code not found") }
 
   fun updateService(service: Service) {
     oauthServiceRepository.save(service)
   }
 
   fun addService(service: Service) {
-    oauthServiceRepository.findById(service.code).ifPresent { throw EntityExistsException("Entity ${service.code} already exists") }
+    oauthServiceRepository.findById(service.code)
+      .ifPresent { throw EntityExistsException("Entity ${service.code} already exists") }
     oauthServiceRepository.save(service)
   }
 

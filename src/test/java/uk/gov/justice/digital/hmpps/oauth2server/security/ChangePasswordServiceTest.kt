@@ -17,14 +17,15 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService
-import java.util.*
+import java.util.Optional
 
 class ChangePasswordServiceTest {
   private val userRepository: UserRepository = mock()
   private val userTokenRepository: UserTokenRepository = mock()
   private val userService: UserService = mock()
   private val delegatingUserService: DelegatingUserService = mock()
-  private var changePasswordService = ChangePasswordService(userTokenRepository, userRepository, userService, delegatingUserService)
+  private var changePasswordService =
+    ChangePasswordService(userTokenRepository, userRepository, userService, delegatingUserService)
 
   @Test
   fun setPassword_AlterUser() {
@@ -102,7 +103,7 @@ class ChangePasswordServiceTest {
 
   private fun buildAuthUser(): Optional<UserPersonDetails> {
     val user = User.builder().username("user").email("email").verified(true)
-        .person(Person("first", "last")).enabled(true).build()
+      .person(Person("first", "last")).enabled(true).build()
     return Optional.of(user)
   }
 

@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 import uk.gov.justice.digital.hmpps.oauth2server.service.UserMappingException
-import java.util.*
+import java.util.UUID
 
 internal class JWTTokenEnhancerTest {
   private val authentication: OAuth2Authentication = mock()
@@ -46,14 +46,27 @@ internal class JWTTokenEnhancerTest {
     val user = User.builder().id(uuid).username("user").source(AuthSource.auth).build()
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
     whenever(userContextService.resolveUser(any(), any())).thenReturn(user)
-    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf(), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf(),
+        "client_id",
+        listOf(),
+        true,
+        setOf(),
+        setOf(),
+        "redirect",
+        setOf(),
+        mapOf()
+      )
+    )
     whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createBaseClientDetails("+user_name,-name"))
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
-        entry("sub", "user"),
-        entry("user_name", "user"),
-        entry("auth_source", "auth"),
-        entry("user_id", uuid.toString()))
+      entry("sub", "user"),
+      entry("user_name", "user"),
+      entry("auth_source", "auth"),
+      entry("user_id", uuid.toString())
+    )
   }
 
   @Test
@@ -64,14 +77,27 @@ internal class JWTTokenEnhancerTest {
     val user = User.builder().id(uuid).username("user").person(Person("Joe", "bloggs")).source(AuthSource.auth).build()
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
     whenever(userContextService.resolveUser(any(), any())).thenReturn(user)
-    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf(), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf(),
+        "client_id",
+        listOf(),
+        true,
+        setOf(),
+        setOf(),
+        "redirect",
+        setOf(),
+        mapOf()
+      )
+    )
     whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createBaseClientDetails("-auth_source"))
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
-        entry("sub", "user"),
-        entry("name", "Joe bloggs"),
-        entry("user_name", "user"),
-        entry("user_id", uuid.toString()))
+      entry("sub", "user"),
+      entry("name", "Joe bloggs"),
+      entry("user_name", "user"),
+      entry("user_id", uuid.toString())
+    )
   }
 
   @Test
@@ -82,15 +108,28 @@ internal class JWTTokenEnhancerTest {
     val user = User.builder().id(uuid).username("user").person(Person("Joe", "bloggs")).source(AuthSource.auth).build()
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
     whenever(userContextService.resolveUser(any(), any())).thenReturn(user)
-    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf(), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf(),
+        "client_id",
+        listOf(),
+        true,
+        setOf(),
+        setOf(),
+        "redirect",
+        setOf(),
+        mapOf()
+      )
+    )
     whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
-        entry("sub", "user"),
-        entry("name", "Joe bloggs"),
-        entry("auth_source", "auth"),
-        entry("user_name", "user"),
-        entry("user_id", uuid.toString()))
+      entry("sub", "user"),
+      entry("name", "Joe bloggs"),
+      entry("auth_source", "auth"),
+      entry("user_name", "user"),
+      entry("user_id", uuid.toString())
+    )
   }
 
   private fun createBaseClientDetails(jwtFields: String = "-name"): ClientDetails {
@@ -106,14 +145,27 @@ internal class JWTTokenEnhancerTest {
     val user = UserDetailsImpl("user", "name", emptyList(), "none", "userID", "jwtId")
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
     whenever(userContextService.resolveUser(any(), any())).thenReturn(user)
-    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf(), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf(),
+        "client_id",
+        listOf(),
+        true,
+        setOf(),
+        setOf(),
+        "redirect",
+        setOf(),
+        mapOf()
+      )
+    )
     whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createBaseClientDetails("-name,+user_name"))
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
-        entry("sub", "user"),
-        entry("user_name", "user"),
-        entry("auth_source", "none"),
-        entry("user_id", "userID"))
+      entry("sub", "user"),
+      entry("user_name", "user"),
+      entry("auth_source", "none"),
+      entry("user_id", "userID")
+    )
   }
 
   @Test
@@ -126,15 +178,28 @@ internal class JWTTokenEnhancerTest {
 
     whenever(userContextService.resolveUser(any(), any())).thenReturn(deliusUser)
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(loginUser, "pass"))
-    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf(), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf(),
+        "client_id",
+        listOf(),
+        true,
+        setOf(),
+        setOf(),
+        "redirect",
+        setOf(),
+        mapOf()
+      )
+    )
     whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createBaseClientDetails("+user_name,-name"))
 
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
-        entry("sub", "deliusUser"),
-        entry("user_name", "deliusUser"),
-        entry("auth_source", "delius"),
-        entry("user_id", deliusuuid.toString()))
+      entry("sub", "deliusUser"),
+      entry("user_name", "deliusUser"),
+      entry("auth_source", "delius"),
+      entry("user_id", deliusuuid.toString())
+    )
   }
 
   @Test
@@ -145,65 +210,122 @@ internal class JWTTokenEnhancerTest {
 
     whenever(userContextService.resolveUser(any(), any())).thenThrow(UserMappingException::class.java)
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
-    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf(), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf(),
+        "client_id",
+        listOf(),
+        true,
+        setOf(),
+        setOf(),
+        "redirect",
+        setOf(),
+        mapOf()
+      )
+    )
     whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createBaseClientDetails("+user_name,-name"))
 
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
-        entry("sub", "user"),
-        entry("user_name", "user"),
-        entry("auth_source", "auth"),
-        entry("user_id", uuid.toString()))
+      entry("sub", "user"),
+      entry("user_name", "user"),
+      entry("auth_source", "auth"),
+      entry("user_id", uuid.toString())
+    )
   }
 
   @Test
   fun `enhance client credentials no username`() {
     val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
     whenever(authentication.isClientOnly).thenReturn(true)
-    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf(), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf(),
+        "client_id",
+        listOf(),
+        true,
+        setOf(),
+        setOf(),
+        "redirect",
+        setOf(),
+        mapOf()
+      )
+    )
     whenever(authentication.name).thenReturn("principal")
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
-        entry("sub", "principal"),
-        entry("auth_source", "none"))
+      entry("sub", "principal"),
+      entry("auth_source", "none")
+    )
   }
 
   @Test
   fun `enhance client credentials with username`() {
     val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
     whenever(authentication.isClientOnly).thenReturn(true)
-    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf("username" to "joe"), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf("username" to "joe"),
+        "client_id",
+        listOf(),
+        true,
+        setOf(),
+        setOf(),
+        "redirect",
+        setOf(),
+        mapOf()
+      )
+    )
     whenever(authentication.name).thenReturn("principal")
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
-        entry("sub", "JOE"),
-        entry("user_name", "JOE"),
-        entry("auth_source", "none"))
+      entry("sub", "JOE"),
+      entry("user_name", "JOE"),
+      entry("auth_source", "none")
+    )
   }
 
   @Test
   fun `enhance client credentials with auth source`() {
     val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
     whenever(authentication.isClientOnly).thenReturn(true)
-    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf("username" to "jOe", "auth_source" to "deLius"), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf(
+          "username" to "jOe",
+          "auth_source" to "deLius"
+        ),
+        "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()
+      )
+    )
     whenever(authentication.name).thenReturn("principal")
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
-        entry("sub", "JOE"),
-        entry("user_name", "JOE"),
-        entry("auth_source", "delius"))
+      entry("sub", "JOE"),
+      entry("user_name", "JOE"),
+      entry("auth_source", "delius")
+    )
   }
 
   @Test
   fun `enhance client credentials with auth source invalid`() {
     val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
     whenever(authentication.isClientOnly).thenReturn(true)
-    whenever(authentication.oAuth2Request).thenReturn(OAuth2Request(mapOf("username" to "jOe", "auth_source" to "billybob"), "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()))
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf(
+          "username" to "jOe",
+          "auth_source" to "billybob"
+        ),
+        "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()
+      )
+    )
     whenever(authentication.name).thenReturn("principal")
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
-        entry("sub", "JOE"),
-        entry("user_name", "JOE"),
-        entry("auth_source", "none"))
+      entry("sub", "JOE"),
+      entry("user_name", "JOE"),
+      entry("auth_source", "none")
+    )
   }
 }

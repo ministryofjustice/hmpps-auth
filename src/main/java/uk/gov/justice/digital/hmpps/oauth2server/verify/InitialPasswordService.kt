@@ -21,12 +21,13 @@ import javax.persistence.EntityNotFoundException
 @Service
 @Transactional(transactionManager = "authTransactionManager")
 class InitialPasswordService(
-    private val userRepository: UserRepository,
-    private val oauthServiceRepository: OauthServiceRepository,
-    private val userService: UserService,
-    private val notificationClient: NotificationClientApi,
-    @Value("\${application.notify.create-initial-password-resend.template}") private val initialPasswordResendTemplateId: String,
-    private val telemetryClient: TelemetryClient) {
+  private val userRepository: UserRepository,
+  private val oauthServiceRepository: OauthServiceRepository,
+  private val userService: UserService,
+  private val notificationClient: NotificationClientApi,
+  @Value("\${application.notify.create-initial-password-resend.template}") private val initialPasswordResendTemplateId: String,
+  private val telemetryClient: TelemetryClient
+) {
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -35,23 +36,25 @@ class InitialPasswordService(
   @Transactional(transactionManager = "authTransactionManager")
   fun resendInitialPasswordLink(username: String, url: String): String {
     val user: User = userRepository.findByUsername(username.toUpperCase())
-        .orElseThrow { EntityNotFoundException(String.format("User not found with username %s", username)) }
+      .orElseThrow { EntityNotFoundException(String.format("User not found with username %s", username)) }
     val userDetails: UserPersonDetails
     userDetails = if (user.isMaster) {
       user
     } else {
       userService.findMasterUserPersonDetails(user.username)
-          .orElseThrow { EntityNotFoundException(String.format("User not found with username %s", username)) }
+        .orElseThrow { EntityNotFoundException(String.format("User not found with username %s", username)) }
     }
     val userToken = user.createToken(UserToken.TokenType.RESET)
     val shortenedUrl = url.replace("-expired", "")
     val resetLink = String.format("%s?token=%s", shortenedUrl, userToken.token)
     val supportLink: String = getInitialEmailSupportLink(userDetails.toUser().groups)
     val parameters =
-        mapOf("firstName" to userDetails.firstName,
-            "fullName" to userDetails.name,
-            "supportLink" to supportLink,
-            "resetLink" to resetLink)
+      mapOf(
+        "firstName" to userDetails.firstName,
+        "fullName" to userDetails.name,
+        "supportLink" to supportLink,
+        "resetLink" to resetLink
+      )
     sendEmail(user.username, initialPasswordResendTemplateId, parameters, user.email)
     return resetLink
   }

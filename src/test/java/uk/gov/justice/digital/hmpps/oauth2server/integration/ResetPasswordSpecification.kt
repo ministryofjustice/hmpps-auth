@@ -39,10 +39,10 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
   @Test
   fun `A user can cancel reset password`() {
     goTo(loginPage)
-        .forgottenPasswordLink()
+      .forgottenPasswordLink()
 
     resetPasswordRequestPage.isAtPage()
-        .cancel()
+      .cancel()
 
     loginPage.isAtPage()
   }
@@ -50,21 +50,21 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
   @Test
   fun `A user must enter a valid email address`() {
     goTo(loginPage)
-        .forgottenPasswordLink()
+      .forgottenPasswordLink()
 
     resetPasswordRequestPage.isAtPage()
-        .submitUsernameOrEmail("joe@bloggs.com")
-        .checkError("Enter your work email address")
-        .assertUsernameOrEmailText("joe@bloggs.com")
+      .submitUsernameOrEmail("joe@bloggs.com")
+      .checkError("Enter your work email address")
+      .assertUsernameOrEmailText("joe@bloggs.com")
   }
 
   @Test
   fun `A user can enter their gsi email address to reset their password`() {
     goTo(loginPage)
-        .forgottenPasswordLink()
+      .forgottenPasswordLink()
 
     resetPasswordRequestPage.isAtPage()
-        .submitUsernameOrEmail("reset_test@hmps.gsi.gov.uk")
+      .submitUsernameOrEmail("reset_test@hmps.gsi.gov.uk")
 
     resetPasswordLinkSentPage.isAtPage()
   }
@@ -72,10 +72,10 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
   @Test
   fun `A user can reset their password by email address`() {
     goTo(loginPage)
-        .forgottenPasswordLink()
+      .forgottenPasswordLink()
 
     resetPasswordRequestPage
-        .submitUsernameOrEmail("reset_test@digital.justice.gov.uk")
+      .submitUsernameOrEmail("reset_test@digital.justice.gov.uk")
 
     resetPasswordLinkSentPage.isAtPage()
     val resetLink = resetPasswordLinkSentPage.getResetLink()
@@ -83,27 +83,27 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordUsernamePage
-        .inputUsernameAndContinue("EXPIRED_TEST2_USER")
-        .checkError("The username entered is not linked to your email address")
-        .inputUsernameAndContinue("CA_USER_TEST")
+      .inputUsernameAndContinue("EXPIRED_TEST2_USER")
+      .checkError("The username entered is not linked to your email address")
+      .inputUsernameAndContinue("CA_USER_TEST")
 
     usernameResetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2")
+      .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
     goTo(loginPage)
-        .loginAs("CA_USER_TEST", "helloworld2")
+      .loginAs("CA_USER_TEST", "helloworld2")
     homePage.isAt()
   }
 
   @Test
   fun `A user can reset their password by username`() {
     goTo(loginPage)
-        .forgottenPasswordLink()
+      .forgottenPasswordLink()
 
     resetPasswordRequestPage
-        .submitUsernameOrEmail("RESET_TEST_USER")
+      .submitUsernameOrEmail("RESET_TEST_USER")
 
     resetPasswordLinkSentPage.isAtPage()
     val resetLink = resetPasswordLinkSentPage.getResetLink()
@@ -111,22 +111,22 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2")
+      .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
     goTo(loginPage)
-        .loginAs("RESET_TEST_USER", "helloworld2")
+      .loginAs("RESET_TEST_USER", "helloworld2")
     homePage.isAt()
   }
 
   @Test
   fun `An auth user can reset their password`() {
     goTo(loginPage)
-        .forgottenPasswordLink()
+      .forgottenPasswordLink()
 
     resetPasswordRequestPage
-        .submitUsernameOrEmail("AUTH_LOCKED2")
+      .submitUsernameOrEmail("AUTH_LOCKED2")
 
     resetPasswordLinkSentPage.isAtPage()
     val resetLink = resetPasswordLinkSentPage.getResetLink()
@@ -134,22 +134,22 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2")
+      .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
     goTo(loginPage)
-        .loginAs("AUTH_LOCKED2", "helloworld2")
+      .loginAs("AUTH_LOCKED2", "helloworld2")
     homePage.isAt()
   }
 
   @Test
   fun `A DELIUS user can reset their password`() {
     goTo(loginPage)
-        .forgottenPasswordLink()
+      .forgottenPasswordLink()
 
     resetPasswordRequestPage
-        .submitUsernameOrEmail("DELIUS_PASSWORD_RESET")
+      .submitUsernameOrEmail("DELIUS_PASSWORD_RESET")
 
     resetPasswordLinkSentPage.isAtPage()
     val resetLink = resetPasswordLinkSentPage.getResetLink()
@@ -157,22 +157,22 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2")
+      .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
     goTo(loginPage)
-        .loginAs("DELIUS_PASSWORD_RESET", "helloworld2")
+      .loginAs("DELIUS_PASSWORD_RESET", "helloworld2")
     homePage.isAt()
   }
 
   @Test
   fun `A user can reset their password back with lowercase username`() {
     goTo(loginPage)
-        .forgottenPasswordLink()
+      .forgottenPasswordLink()
 
     resetPasswordRequestPage
-        .submitUsernameOrEmail("reset_test_user")
+      .submitUsernameOrEmail("reset_test_user")
 
     resetPasswordLinkSentPage.isAtPage()
     val resetLink = resetPasswordLinkSentPage.getResetLink()
@@ -180,22 +180,22 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2")
+      .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
     goTo(loginPage)
-        .loginAs("reset_test_user", "helloworld2")
+      .loginAs("reset_test_user", "helloworld2")
     homePage.isAt()
   }
 
   @Test
   fun `Attempt reset password without credentials`() {
     goTo(loginPage)
-        .forgottenPasswordLink()
+      .forgottenPasswordLink()
 
     resetPasswordRequestPage
-        .submitUsernameOrEmail("RESET_TEST_USER")
+      .submitUsernameOrEmail("RESET_TEST_USER")
 
     resetPasswordLinkSentPage.isAtPage()
     val resetLink = resetPasswordLinkSentPage.getResetLink()
@@ -203,14 +203,18 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("", "")
+      .inputAndConfirmNewPassword("", "")
     setNewPasswordPage
-        .checkError("Enter your new password\n" +
-            "Enter your new password again")
-        .inputAndConfirmNewPassword("somepass", "d")
-        .checkError("Your password must have both letters and numbers\n" +
-            "Your password must have at least 9 characters\n" +
-            "Your passwords do not match. Enter matching passwords.")
+      .checkError(
+        "Enter your new password\n" +
+          "Enter your new password again"
+      )
+      .inputAndConfirmNewPassword("somepass", "d")
+      .checkError(
+        "Your password must have both letters and numbers\n" +
+          "Your password must have at least 9 characters\n" +
+          "Your passwords do not match. Enter matching passwords."
+      )
   }
 
   @Test
@@ -223,10 +227,10 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
   @Test
   fun `A NOMIS user who has never logged into DPS can reset password`() {
     goTo(loginPage)
-        .forgottenPasswordLink()
+      .forgottenPasswordLink()
 
     resetPasswordRequestPage
-        .submitUsernameOrEmail("NOMIS_NEVER_LOGGED_IN")
+      .submitUsernameOrEmail("NOMIS_NEVER_LOGGED_IN")
 
     resetPasswordLinkSentPage.isAtPage()
     val resetLink = resetPasswordLinkSentPage.getResetLink()
@@ -234,22 +238,22 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2")
+      .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
     goTo(loginPage)
-        .loginAs("NOMIS_NEVER_LOGGED_IN", "helloworld2")
+      .loginAs("NOMIS_NEVER_LOGGED_IN", "helloworld2")
     homePage.isAt()
   }
 
   @Test
   fun `A Delius user who has never logged into DPS can reset password`() {
     goTo(loginPage)
-        .forgottenPasswordLink()
+      .forgottenPasswordLink()
 
     resetPasswordRequestPage
-        .submitUsernameOrEmail("DELIUS_PASSWORD_NEW")
+      .submitUsernameOrEmail("DELIUS_PASSWORD_NEW")
 
     resetPasswordLinkSentPage.isAtPage()
     val resetLink = resetPasswordLinkSentPage.getResetLink()
@@ -257,20 +261,19 @@ class ResetPasswordSpecification : AbstractAuthSpecification() {
     goTo(resetLink)
 
     resetPasswordPage
-        .inputAndConfirmNewPassword("helloworld2")
+      .inputAndConfirmNewPassword("helloworld2")
 
     resetPasswordSuccessPage.isAtPage()
 
     goTo(loginPage)
-        .loginAs("DELIUS_PASSWORD_NEW", "helloworld2")
+      .loginAs("DELIUS_PASSWORD_NEW", "helloworld2")
     homePage.isAt()
   }
-
-
 }
 
 @PageUrl("/reset-password")
-open class ResetPasswordRequestPage : AuthPage<ResetPasswordRequestPage>("HMPPS Digital Services - Reset Password", "Create a new password") {
+open class ResetPasswordRequestPage :
+  AuthPage<ResetPasswordRequestPage>("HMPPS Digital Services - Reset Password", "Create a new password") {
   @FindBy(css = "input[type='submit']")
   private lateinit var continueButton: FluentWebElement
   private lateinit var usernameOrEmail: FluentWebElement
@@ -292,13 +295,15 @@ open class ResetPasswordRequestPage : AuthPage<ResetPasswordRequestPage>("HMPPS 
 }
 
 @PageUrl("/reset-password")
-open class ResetPasswordLinkSentPage : AuthPage<ResetPasswordLinkSentPage>("HMPPS Digital Services - Reset Password Email Sent", "Check your email") {
+open class ResetPasswordLinkSentPage :
+  AuthPage<ResetPasswordLinkSentPage>("HMPPS Digital Services - Reset Password Email Sent", "Check your email") {
 
   fun getResetLink(): String = el("#resetLink").attribute("href")
 }
 
 @PageUrl("/reset-password-select")
-open class ResetPasswordUsernamePage : AuthPage<ResetPasswordUsernamePage>("HMPPS Digital Services - Set Password Select", "Enter your username") {
+open class ResetPasswordUsernamePage :
+  AuthPage<ResetPasswordUsernamePage>("HMPPS Digital Services - Set Password Select", "Enter your username") {
   @FindBy(css = "input[id='username']")
   private lateinit var username: FluentWebElement
 
@@ -313,7 +318,8 @@ open class ResetPasswordUsernamePage : AuthPage<ResetPasswordUsernamePage>("HMPP
 }
 
 @PageUrl("/reset-password-confirm")
-open class ResetPasswordPage : AuthPage<ResetPasswordPage>("HMPPS Digital Services - Create a password", "Create a new password") {
+open class ResetPasswordPage :
+  AuthPage<ResetPasswordPage>("HMPPS Digital Services - Create a password", "Create a new password") {
   @FindBy(css = "input[id='new-password']")
   private lateinit var newPassword: FluentWebElement
 
@@ -331,9 +337,10 @@ open class ResetPasswordPage : AuthPage<ResetPasswordPage>("HMPPS Digital Servic
   }
 }
 
-//Duplicate of ResetPasswordPage as resetPasswordChosen method needs redirects implementing to update the url
+// Duplicate of ResetPasswordPage as resetPasswordChosen method needs redirects implementing to update the url
 @PageUrl("/reset-password-select")
-open class UsernameResetPasswordPage : AuthPage<UsernameResetPasswordPage>("HMPPS Digital Services - Create a password", "Create a new password") {
+open class UsernameResetPasswordPage :
+  AuthPage<UsernameResetPasswordPage>("HMPPS Digital Services - Create a password", "Create a new password") {
   @FindBy(css = "input[id='new-password']")
   private lateinit var newPassword: FluentWebElement
 
@@ -352,9 +359,9 @@ open class UsernameResetPasswordPage : AuthPage<UsernameResetPasswordPage>("HMPP
 }
 
 @PageUrl("/reset-password-confirm")
-open class ResetPasswordPageInvalidToken : AuthPage<ResetPasswordPageInvalidToken>("HMPPS Digital Services - Reset Password", "Create a new password")
+open class ResetPasswordPageInvalidToken :
+  AuthPage<ResetPasswordPageInvalidToken>("HMPPS Digital Services - Reset Password", "Create a new password")
 
 @PageUrl("/reset-password-success")
-open class ResetPasswordSuccessPage : AuthPage<ResetPasswordSuccessPage>("HMPPS Digital Services - Reset Password Success", "Reset password successful")
-
-
+open class ResetPasswordSuccessPage :
+  AuthPage<ResetPasswordSuccessPage>("HMPPS Digital Services - Reset Password Success", "Reset password successful")

@@ -56,9 +56,9 @@ class ReferenceCodeRepositoryTest {
   }
 
   private fun transientEntity() = ReferenceCode
-      .builder()
-      .domainCodeIdentifier(DomainCodeIdentifier(EMAIL_DOMAIN, "JOE"))
-      .active(true)
-      .description("some description")
-      .build()
+    .builder()
+    .domainCodeIdentifier(DomainCodeIdentifier(EMAIL_DOMAIN, "JOE"))
+    .active(true)
+    .description("some description")
+    .build()
 }

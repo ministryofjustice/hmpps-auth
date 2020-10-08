@@ -9,22 +9,23 @@ class AuthAllRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth Roles endpoint returns all possible auth roles`() {
     webTestClient
-        .get().uri("/auth/api/authroles")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus().isOk
-        .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBody()
-        .jsonPath(".[?(@.roleCode == 'GLOBAL_SEARCH')]").isEqualTo(mapOf("roleCode" to "GLOBAL_SEARCH", "roleName" to "Global Search"))
-        .jsonPath(".[*].roleCode").value<List<String>> {
-          assertThat(it).hasSizeGreaterThan(2)
-        }
+      .get().uri("/auth/api/authroles")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath(".[?(@.roleCode == 'GLOBAL_SEARCH')]")
+      .isEqualTo(mapOf("roleCode" to "GLOBAL_SEARCH", "roleName" to "Global Search"))
+      .jsonPath(".[*].roleCode").value<List<String>> {
+        assertThat(it).hasSizeGreaterThan(2)
+      }
   }
 
   @Test
   fun `Auth Roles endpoint not accessible without valid token`() {
     webTestClient.get().uri("/auth/api/authroles")
-        .exchange()
-        .expectStatus().isUnauthorized
+      .exchange()
+      .expectStatus().isUnauthorized
   }
 }

@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationP
 import uk.gov.justice.digital.hmpps.oauth2server.security.NomisAuthenticationProvider
 import uk.gov.justice.digital.hmpps.oauth2server.security.OidcJwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler
-import java.util.*
+import java.util.Optional
 
 class AuthenticationManagerConfigurationTest {
   private val nomisUserDetailsService: AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> = mock()
@@ -44,9 +44,25 @@ class AuthenticationManagerConfigurationTest {
   private val authenticationManagerBuilder: AuthenticationManagerBuilder = mock()
   private val clearAllSessionsLogoutHandler: ClearAllSessionsLogoutHandler = mock()
   private val clientRegistrationRepository: Optional<InMemoryClientRegistrationRepository> = Optional.empty()
-  private var authenticationManagerConfiguration = AuthenticationManagerConfiguration(nomisUserDetailsService, authUserDetailsService,
-      deliusUserDetailsService, azureUserDetailsService, accessDeniedHandler, logoutSuccessHandler, oidcJwtAuthenticationSuccessHandler, jwtAuthenticationSuccessHandler, jwtCookieAuthenticationFilter,
-      jwtCookieName, cookieRequestCache, authAuthenticationProvider, nomisAuthenticationProvider, deliusAuthenticationProvider, userStateAuthenticationFailureHandle, clearAllSessionsLogoutHandler, clientRegistrationRepository)
+  private var authenticationManagerConfiguration = AuthenticationManagerConfiguration(
+    nomisUserDetailsService,
+    authUserDetailsService,
+    deliusUserDetailsService,
+    azureUserDetailsService,
+    accessDeniedHandler,
+    logoutSuccessHandler,
+    oidcJwtAuthenticationSuccessHandler,
+    jwtAuthenticationSuccessHandler,
+    jwtCookieAuthenticationFilter,
+    jwtCookieName,
+    cookieRequestCache,
+    authAuthenticationProvider,
+    nomisAuthenticationProvider,
+    deliusAuthenticationProvider,
+    userStateAuthenticationFailureHandle,
+    clearAllSessionsLogoutHandler,
+    clientRegistrationRepository
+  )
 
   @Test
   fun configure_deliusProviderIsLast() {

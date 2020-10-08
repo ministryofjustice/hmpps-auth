@@ -19,7 +19,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository
-import java.util.*
+import java.util.Optional
+import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class DeleteDisabledUsersServiceTest {
@@ -29,13 +30,14 @@ class DeleteDisabledUsersServiceTest {
 
   @Captor
   private lateinit var mapCaptor: ArgumentCaptor<Map<String, String>>
-  private val service: DeleteDisabledUsersService = DeleteDisabledUsersService(userRepository, userRetriesRepository, telemetryClient)
+  private val service: DeleteDisabledUsersService =
+    DeleteDisabledUsersService(userRepository, userRetriesRepository, telemetryClient)
 
   @Test
   fun findAndDeleteDisabledUsers_Processed() {
     val users = listOf(User.of("user"), User.of("joe"))
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
-        .thenReturn(users)
+      .thenReturn(users)
     assertThat(service.processInBatches()).isEqualTo(2)
   }
 
@@ -45,7 +47,7 @@ class DeleteDisabledUsersServiceTest {
     val joe = User.builder().username("joe").id(UUID.randomUUID()).build()
     val users = listOf(user, joe)
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
-        .thenReturn(users)
+      .thenReturn(users)
     service.processInBatches()
     verify(userRepository).delete(user)
     verify(userRepository).delete(joe)
@@ -58,7 +60,7 @@ class DeleteDisabledUsersServiceTest {
     val retry = UserRetries("user", 3)
     whenever(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(retry))
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
-        .thenReturn(listOf(user))
+      .thenReturn(listOf(user))
     service.processInBatches()
     verify(userRetriesRepository).delete(retry)
   }
@@ -67,9 +69,13 @@ class DeleteDisabledUsersServiceTest {
   fun findAndDeleteDisabledUsers_Telemetry() {
     val users = listOf(User.of("user"), User.of("joe"))
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
-        .thenReturn(users)
+      .thenReturn(users)
     service.processInBatches()
-    verify(telemetryClient, times(2)).trackEvent(ArgumentMatchers.eq("DeleteDisabledUsersProcessed"), mapCaptor.capture(), ArgumentMatchers.isNull())
+    verify(telemetryClient, times(2)).trackEvent(
+      ArgumentMatchers.eq("DeleteDisabledUsersProcessed"),
+      mapCaptor.capture(),
+      ArgumentMatchers.isNull()
+    )
     assertThat(mapCaptor.allValues.map { it["username"] }).containsExactly("user", "joe")
   }
 }

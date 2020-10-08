@@ -18,10 +18,12 @@ import javax.servlet.http.HttpServletResponse
 
 @Controller
 @RequestMapping("/change-name")
-class ChangeNameController(private val authUserService: AuthUserService,
-                           private val telemetryClient: TelemetryClient,
-                           private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler,
-                           private val userService: UserService) {
+class ChangeNameController(
+  private val authUserService: AuthUserService,
+  private val telemetryClient: TelemetryClient,
+  private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler,
+  private val userService: UserService
+) {
   @GetMapping
   fun changeNameRequest(authentication: Authentication): ModelAndView {
     val user = authUserService.getAuthUserByUsername(authentication.name).orElseThrow()
@@ -31,10 +33,13 @@ class ChangeNameController(private val authUserService: AuthUserService,
   }
 
   @PostMapping
-  fun changeName(@RequestParam firstName: String?,
-                 @RequestParam lastName: String?,
-                 authentication: Authentication,
-                 request: HttpServletRequest, response: HttpServletResponse): ModelAndView {
+  fun changeName(
+    @RequestParam firstName: String?,
+    @RequestParam lastName: String?,
+    authentication: Authentication,
+    request: HttpServletRequest,
+    response: HttpServletResponse
+  ): ModelAndView {
 
     return try {
       val username = authentication.name
@@ -49,12 +54,12 @@ class ChangeNameController(private val authUserService: AuthUserService,
       ModelAndView("redirect:/account-details")
     } catch (e: CreateUserException) {
       ModelAndView("account/changeName")
-          .addObject("error_${e.field}", e.errorCode)
-          .addObject("error", true)
-          .addFirstAndLastName(firstName, lastName)
+        .addObject("error_${e.field}", e.errorCode)
+        .addObject("error", true)
+        .addFirstAndLastName(firstName, lastName)
     }
   }
 
   private fun ModelAndView.addFirstAndLastName(firstName: String?, lastName: String?): ModelAndView =
-      addObject("firstName", firstName).addObject("lastName", lastName)
+    addObject("firstName", firstName).addObject("lastName", lastName)
 }

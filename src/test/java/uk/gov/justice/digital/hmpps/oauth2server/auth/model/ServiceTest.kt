@@ -10,7 +10,8 @@ class ServiceTest {
   inner class GetRoles {
     @Test
     fun roles() {
-      val service = Service("CODE", "NAME", "Description", "SOME_ROLE, SOME_OTHER_ROLE", "http://some.url", true, "a@b.com")
+      val service =
+        Service("CODE", "NAME", "Description", "SOME_ROLE, SOME_OTHER_ROLE", "http://some.url", true, "a@b.com")
       assertThat(service.roles).containsExactly("SOME_ROLE", "SOME_OTHER_ROLE")
     }
 
@@ -52,4 +53,3 @@ class ServiceTest {
     }
   }
 }
-

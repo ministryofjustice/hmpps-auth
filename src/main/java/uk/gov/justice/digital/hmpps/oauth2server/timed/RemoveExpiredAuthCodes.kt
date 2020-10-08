@@ -16,8 +16,9 @@ import java.time.LocalDateTime
 class RemoveExpiredAuthCodes(private val service: RemoveExpiredAuthCodesService) {
 
   @Scheduled(
-      fixedDelayString = "\${application.authentication.remove-codes.frequency}",
-      initialDelayString = "\${random.int[600000,\${application.authentication.remove-codes.frequency}]}")
+    fixedDelayString = "\${application.authentication.remove-codes.frequency}",
+    initialDelayString = "\${random.int[600000,\${application.authentication.remove-codes.frequency}]}"
+  )
   fun removeExpiredAuthCodes() {
     try {
       service.removeExpiredAuthCodes()
