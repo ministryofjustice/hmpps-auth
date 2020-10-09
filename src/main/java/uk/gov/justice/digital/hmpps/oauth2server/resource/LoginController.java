@@ -46,15 +46,15 @@ public class LoginController {
         final var savedRequest = cookieRequestCache.getRequest(request, response);
         if (savedRequest != null && !clientRegistrations.isEmpty()) {
             final var redirectUrl = UriComponentsBuilder.fromUriString(savedRequest.getRedirectUrl()).build();
-            final String clientId = redirectUrl.getQueryParams().getFirst("client_id");
+            final var clientId = redirectUrl.getQueryParams().getFirst("client_id");
             final var isOAuthLogin = redirectUrl.getPath().endsWith("/oauth/authorize") && clientId != null;
 
-            if(isOAuthLogin) {
+            if (isOAuthLogin) {
                 final var clientDetails = clientDetailsService.loadClientByClientId(clientId);
-                final Boolean skipToAzure = (Boolean) clientDetails.getAdditionalInformation().getOrDefault("skipToAzureField", false);
+                final var skipToAzure = (Boolean) clientDetails.getAdditionalInformation().getOrDefault("skipToAzureField", false);
 
                 if (skipToAzure) {
-                    var azureADClient = clientRegistrations.get(0).getClientName();
+                    final var azureADClient = clientRegistrations.get(0).getClientName();
                     return new ModelAndView("redirect:/oauth2/authorization/" + azureADClient,
                             Collections.singletonMap("oauth2Clients", clientRegistrations));
                 }
