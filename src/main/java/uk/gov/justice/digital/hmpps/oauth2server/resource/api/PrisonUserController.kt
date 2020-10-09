@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import lombok.AllArgsConstructor
 import lombok.extern.slf4j.Slf4j
+import org.apache.commons.text.WordUtils
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -47,18 +48,34 @@ class PrisonUserController(private val userService: UserService) {
       .map {
         PrisonUser(
           username = it.username,
-          emailAddress = it.email,
-          verified = it.isVerified
+          staffId = it.userId.toLongOrNull(),
+          email = it.email,
+          verified = it.verified,
+          firstName = WordUtils.capitalizeFully(it.firstName),
+          lastName = WordUtils.capitalizeFully(it.lastName),
+          name = WordUtils.capitalizeFully("${it.firstName} ${it.lastName}")
         )
       }
   }
 }
 
+/**
+ * copy of PrisonUserDto with added Swagger annotations.
+ * Done to keep presentation layer detail out of the service layer.
+ */
 data class PrisonUser(
   @ApiModelProperty(required = true, example = "RO_USER_TEST")
   val username: String,
+  @ApiModelProperty(required = true, example = "1234564789")
+  val staffId: Long?,
   @ApiModelProperty(required = false, example = "ryanorton@justice.gov.uk")
-  val emailAddress: String?,
+  val email: String?,
   @ApiModelProperty(required = true, example = "true")
   val verified: Boolean,
+  @ApiModelProperty(required = true, example = "Ryan")
+  val firstName: String,
+  @ApiModelProperty(required = true, example = "Orton")
+  val lastName: String,
+  @ApiModelProperty(required = true, example = "Ryan Orton")
+  val name: String
 )
