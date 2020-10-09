@@ -25,7 +25,7 @@ class InitialPasswordController(
   userService: UserService,
   telemetryClient: TelemetryClient,
   @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?,
-  @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean
+  @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
 ) :
   AbstractPasswordController(
     resetPasswordService,

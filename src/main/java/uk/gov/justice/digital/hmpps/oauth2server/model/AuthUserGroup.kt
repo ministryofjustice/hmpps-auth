@@ -10,7 +10,7 @@ data class AuthUserGroup(
   val groupCode: String,
 
   @ApiModelProperty(required = true, value = "Group Name", example = "HDC NPS North East")
-  val groupName: String
+  val groupName: String,
 ) {
 
   constructor(g: Group) : this(g.groupCode, g.groupName)

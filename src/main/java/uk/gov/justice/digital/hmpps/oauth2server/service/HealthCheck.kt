@@ -23,7 +23,7 @@ abstract class HealthCheck(private val restTemplate: RestTemplate) : HealthIndic
 @Component
 class TokenVerificationApiHealth(
   @Qualifier("tokenVerificationApiHealthRestTemplate") restTemplate: RestTemplate,
-  @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean
+  @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean,
 ) :
   HealthCheck(restTemplate) {
   override fun health(): Health {

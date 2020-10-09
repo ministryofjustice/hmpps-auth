@@ -18,7 +18,7 @@ import javax.persistence.EntityNotFoundException
 class TokenService(
   private val userTokenRepository: UserTokenRepository,
   private val userService: UserService,
-  private val telemetryClient: TelemetryClient
+  private val telemetryClient: TelemetryClient,
 ) {
 
   companion object {

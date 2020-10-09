@@ -40,7 +40,7 @@ class UserContactsController(private val userService: UserService) {
     @ApiParam(
       value = "The username of the user.",
       required = true
-    ) @PathVariable username: String
+    ) @PathVariable username: String,
   ): List<ContactDto> {
     val user = userService.getUserWithContacts(username)
     return user.contacts.filter { it.verified }.map { ContactDto(it.value!!, it.type.name, it.type.description) }
@@ -53,5 +53,5 @@ data class ContactDto(
   @ApiModelProperty(required = true, example = "SECONDARY_EMAIL")
   val type: String,
   @ApiModelProperty(required = true, example = "Mobile Phone")
-  val typeDescription: String
+  val typeDescription: String,
 )

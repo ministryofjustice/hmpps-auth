@@ -24,7 +24,7 @@ class UserService(
   private val deliusUserService: DeliusUserService,
   private val azureUserService: AzureUserService,
   private val userRepository: UserRepository,
-  private val verifyEmailService: VerifyEmailService
+  private val verifyEmailService: VerifyEmailService,
 ) {
 
   companion object {

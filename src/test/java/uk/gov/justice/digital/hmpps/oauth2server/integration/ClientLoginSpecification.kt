@@ -214,7 +214,7 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
   private fun clientSignIn(
     username: String,
     password: String = "password123456",
-    clientId: String = "elite2apiclient"
+    clientId: String = "elite2apiclient",
   ) =
     clientAccess({ loginPage.isAtPage().submitLogin(username, password) }, clientId)
 

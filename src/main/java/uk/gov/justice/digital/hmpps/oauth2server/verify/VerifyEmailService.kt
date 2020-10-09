@@ -33,7 +33,7 @@ class VerifyEmailService(
   private val telemetryClient: TelemetryClient,
   private val notificationClient: NotificationClientApi,
   private val referenceCodesService: ReferenceCodesService,
-  @Value("\${application.notify.verify.template}") private val notifyTemplateId: String
+  @Value("\${application.notify.verify.template}") private val notifyTemplateId: String,
 ) {
 
   fun getEmail(username: String): Optional<User> {
@@ -74,7 +74,7 @@ class VerifyEmailService(
     firstName: String?,
     fullname: String?,
     url: String,
-    emailType: EmailType
+    emailType: EmailType,
   ): String {
     val user = userRepository.findByUsername(username).orElseThrow()
     val verifyLink =

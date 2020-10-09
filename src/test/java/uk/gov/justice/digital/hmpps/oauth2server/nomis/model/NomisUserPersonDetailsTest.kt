@@ -62,7 +62,7 @@ class NomisUserPersonDetailsTest {
 
   private fun createStaffUserAccount(
     status: String = "STATUS",
-    passwordExpiry: LocalDateTime? = null
+    passwordExpiry: LocalDateTime? = null,
   ): NomisUserPersonDetails {
     val account = NomisUserPersonDetails()
     val detail = AccountDetail()

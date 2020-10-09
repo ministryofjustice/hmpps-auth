@@ -29,7 +29,7 @@ class MfaService(
   private val tokenService: TokenService,
   private val userService: UserService,
   private val notificationClient: NotificationClientApi,
-  private val userRetriesService: UserRetriesService
+  private val userRetriesService: UserRetriesService,
 ) {
 
   private val ipMatchers: List<IpAddressMatcher>

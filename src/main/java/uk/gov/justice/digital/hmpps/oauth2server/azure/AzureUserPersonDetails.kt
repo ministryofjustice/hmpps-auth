@@ -15,7 +15,7 @@ data class AzureUserPersonDetails(
   val email: String,
   private val credentialsNonExpired: Boolean,
   private val accountNonExpired: Boolean,
-  private val accountNonLocked: Boolean
+  private val accountNonLocked: Boolean,
 ) : UserPersonDetails {
   override fun getAuthorities(): Collection<GrantedAuthority?> = authorities
 

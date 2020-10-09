@@ -10,7 +10,7 @@ import javax.persistence.Table
 data class UserRetries(
   @Id
   @Column(name = "username", nullable = false)
-  val username: String? = null
+  val username: String? = null,
 ) {
 
   @Column(name = "retry_count")

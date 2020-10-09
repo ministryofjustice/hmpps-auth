@@ -10,7 +10,7 @@ data class AuthUserRole(
   val roleCode: String,
 
   @ApiModelProperty(required = true, value = "Role Name", example = "Licence Responsible Officer")
-  val roleName: String
+  val roleName: String,
 ) {
 
   constructor(a: Authority) : this(a.roleCode, a.roleName)

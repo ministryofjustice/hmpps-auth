@@ -19,7 +19,7 @@ import java.util.UUID
 class JwtAuthHelper(
   @Value("\${jwt.signing.key.pair}") privateKeyPair: String? = null,
   @Value("\${jwt.keystore.password}") keystorePassword: String? = null,
-  @Value("\${jwt.keystore.alias:elite2api}") keystoreAlias: String? = null
+  @Value("\${jwt.keystore.alias:elite2api}") keystoreAlias: String? = null,
 ) {
   private val keyPair: KeyPair
 
@@ -42,7 +42,7 @@ class JwtAuthHelper(
     val scope: List<String>? = listOf(),
     val roles: List<String>? = listOf(),
     val expiryTime: Duration = Duration.ofHours(1),
-    val additionalClaims: Map<String, Any>? = mapOf()
+    val additionalClaims: Map<String, Any>? = mapOf(),
   )
 
   init {

@@ -18,7 +18,7 @@ open class UserRetriesService(
   private val userRetriesRepository: UserRetriesRepository,
   private val userRepository: UserRepository,
   private val delegatingUserService: DelegatingUserService,
-  @Value("\${application.authentication.lockout-count}") private val accountLockoutCount: Int
+  @Value("\${application.authentication.lockout-count}") private val accountLockoutCount: Int,
 ) {
 
   open fun resetRetriesAndRecordLogin(userPersonDetails: UserPersonDetails) {
