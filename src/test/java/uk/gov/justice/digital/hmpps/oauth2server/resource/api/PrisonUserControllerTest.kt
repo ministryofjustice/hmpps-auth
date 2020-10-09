@@ -5,8 +5,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.security.PrisonUserDto
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 
 class PrisonUserControllerTest {
@@ -21,13 +20,7 @@ class PrisonUserControllerTest {
 
   @Test
   fun `User mapped to PrisonUser`() {
-    val user = User
-      .builder()
-      .verified(true)
-      .username("username")
-      .email("user@justice.gov.uk")
-      .person(Person("first", "last"))
-      .build()
+    val user = PrisonUserDto(verified = true, username = "username", email = "user@justice.gov.uk", firstName = "first", lastName = "last", userId = "123456789")
 
     whenever(userService.findPrisonUsersByFirstAndLastNames(anyString(), anyString())).thenReturn(listOf(user))
 
@@ -35,19 +28,19 @@ class PrisonUserControllerTest {
       .containsExactly(
         PrisonUser(
           username = "username",
+          staffId = 123456789,
           verified = true,
-          emailAddress = "user@justice.gov.uk",
+          email = "user@justice.gov.uk",
+          firstName = "First",
+          lastName = "Last",
+          name = "First Last"
         )
       )
   }
 
   @Test
-  fun `User mapped to PrisonUser handlign missing values`() {
-    val user = User
-      .builder()
-      .verified(false)
-      .username("username")
-      .build()
+  fun `User mapped to PrisonUser handling missing values`() {
+    val user = PrisonUserDto(verified = false, username = "username", firstName = "first", lastName = "last", userId = "123456789", email = null)
 
     whenever(userService.findPrisonUsersByFirstAndLastNames(anyString(), anyString())).thenReturn(listOf(user))
 
@@ -55,8 +48,12 @@ class PrisonUserControllerTest {
       .containsExactly(
         PrisonUser(
           username = "username",
+          staffId = 123456789,
           verified = false,
-          emailAddress = null
+          firstName = "First",
+          lastName = "Last",
+          name = "First Last",
+          email = null
         )
       )
   }

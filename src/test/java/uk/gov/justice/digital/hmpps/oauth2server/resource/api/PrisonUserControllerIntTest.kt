@@ -17,10 +17,14 @@ class PrisonUserControllerIntTest : IntegrationTest() {
       .expectBody()
       .json(
         """
-          [{
-            "username":"RO_USER_TEST",
-            "emailAddress":"ro_user_test@digital.justice.gov.uk",
-            "verified":true
+        [{
+          "username":"RO_USER_TEST",
+          "staffId":11,
+          "email":"ro_user_test@digital.justice.gov.uk",
+          "verified":true,
+          "firstName":"Ryan",
+          "lastName":"Orton",
+          "name":"Ryan Orton"
         }]
         """.trimIndent()
       )

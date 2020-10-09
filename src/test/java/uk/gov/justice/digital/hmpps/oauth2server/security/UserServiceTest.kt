@@ -5,7 +5,6 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
@@ -326,9 +325,9 @@ class UserServiceTest {
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
-          NomisUserPersonDetails.builder().username("U1").build(),
-          NomisUserPersonDetails.builder().username("U2").build(),
-          NomisUserPersonDetails.builder().username("U3").build(),
+          NomisUserPersonDetails.builder().username("U1").staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
+          NomisUserPersonDetails.builder().username("U2").staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
+          NomisUserPersonDetails.builder().username("U3").staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
         )
       )
 
@@ -343,11 +342,11 @@ class UserServiceTest {
         )
 
       assertThat(userService.findPrisonUsersByFirstAndLastNames("first", "last"))
-        .extracting("username", "email", "verified")
+
         .containsExactlyInAnyOrder(
-          tuple("U1", "u1@justice.gov.uk", true),
-          tuple("U2", null, false),
-          tuple("U3", null, false)
+          PrisonUserDto(username = "U1", email = "u1@justice.gov.uk", verified = true, userId = "1", firstName = "F1", lastName = "l1"),
+          PrisonUserDto(username = "U2", email = null, verified = false, userId = "2", firstName = "F2", lastName = "l2"),
+          PrisonUserDto(username = "U3", email = null, verified = false, userId = "3", firstName = "F3", lastName = "l3"),
         )
       verify(verifyEmailService).getExistingEmailAddressesForUsernames(listOf("U1", "U2", "U3"))
     }
@@ -357,9 +356,9 @@ class UserServiceTest {
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
-          NomisUserPersonDetails.builder().username("U1").build(),
-          NomisUserPersonDetails.builder().username("U2").build(),
-          NomisUserPersonDetails.builder().username("U3").build(),
+          NomisUserPersonDetails.builder().username("U1").staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
+          NomisUserPersonDetails.builder().username("U2").staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
+          NomisUserPersonDetails.builder().username("U3").staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
         )
       )
 
@@ -374,11 +373,10 @@ class UserServiceTest {
       )
 
       assertThat(userService.findPrisonUsersByFirstAndLastNames("first", "last"))
-        .extracting("username", "email", "verified")
         .containsExactlyInAnyOrder(
-          tuple("U1", "u1@b.com", true),
-          tuple("U2", "u2@b.com", true),
-          tuple("U3", "u3@b.com", false)
+          PrisonUserDto(username = "U1", email = "u1@b.com", verified = true, userId = "1", firstName = "F1", lastName = "l1"),
+          PrisonUserDto(username = "U2", email = "u2@b.com", verified = true, userId = "2", firstName = "F2", lastName = "l2"),
+          PrisonUserDto(username = "U3", email = "u3@b.com", verified = false, userId = "3", firstName = "F3", lastName = "l3"),
         )
 
       verify(verifyEmailService).getExistingEmailAddressesForUsernames(listOf())
@@ -389,10 +387,10 @@ class UserServiceTest {
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
-          NomisUserPersonDetails.builder().username("U1").build(),
-          NomisUserPersonDetails.builder().username("U2").build(),
-          NomisUserPersonDetails.builder().username("U3").build(),
-          NomisUserPersonDetails.builder().username("U4").build(),
+          NomisUserPersonDetails.builder().username("U1").staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
+          NomisUserPersonDetails.builder().username("U2").staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
+          NomisUserPersonDetails.builder().username("U3").staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
+          NomisUserPersonDetails.builder().username("U4").staff(Staff.builder().firstName("f4").lastName("l4").staffId(4).build()).build(),
         )
       )
 
@@ -417,18 +415,11 @@ class UserServiceTest {
         )
 
       assertThat(userService.findPrisonUsersByFirstAndLastNames("first", "last"))
-        .extracting("username", "email", "verified")
         .containsExactlyInAnyOrder(
-          // e-mail from auth service user
-          tuple("U1", "u1@b.com", true),
-
-          // U2 found in auth has correct auth source but no email.  Therefore take email from NOMIS. Is this right?
-          tuple("U2", "u2@justice.gov.uk", true),
-
-          // U3 from NOMIS - matching auth user has wrong auth source.  Is this right?
-          tuple("U3", "u3@justice.gov.uk", true),
-
-          tuple("U4", null, false)
+          PrisonUserDto(username = "U1", email = "u1@b.com", verified = true, userId = "1", firstName = "F1", lastName = "l1"),
+          PrisonUserDto(username = "U2", email = "u2@justice.gov.uk", verified = true, userId = "2", firstName = "F2", lastName = "l2"),
+          PrisonUserDto(username = "U3", email = "u3@justice.gov.uk", verified = true, userId = "3", firstName = "F3", lastName = "l3"),
+          PrisonUserDto(username = "U4", email = null, verified = false, userId = "4", firstName = "F4", lastName = "l4"),
         )
 
       verify(verifyEmailService).getExistingEmailAddressesForUsernames(listOf("U2", "U3", "U4"))

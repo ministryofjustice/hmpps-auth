@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.azure.service.AzureUserService
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.util.Optional
 
@@ -93,36 +94,50 @@ class UserService(
     return user.isVerified && email == user.email
   }
 
-  fun findPrisonUsersByFirstAndLastNames(firstName: String, lastName: String): List<User> {
+  fun findPrisonUsersByFirstAndLastNames(firstName: String, lastName: String): List<PrisonUserDto> {
     val nomisUsers: List<NomisUserPersonDetails> =
       nomisUserService.findPrisonUsersByFirstAndLastNames(firstName, lastName)
     val nomisUsernames = nomisUsers.map { it.username }
 
-    val authUsers: List<User> = authUserService
+    val authUsersByUsername = authUserService
       .findAuthUsersByUsernames(nomisUsernames)
       .filter {
-        !it.email.isNullOrBlank() && it.source == AuthSource.nomis
-      }
+        !it.email.isNullOrBlank() && it.source == nomis
+      }.map { it.username to it }
+      .toMap()
 
-    val authUsernames = authUsers.map { it.username }
-
-    val missingUsernames = nomisUsernames.minus(authUsernames)
+    val missingUsernames = nomisUsernames.minus(authUsersByUsername.keys)
 
     val emailsByUsername = verifyEmailService.getExistingEmailAddressesForUsernames(missingUsernames)
 
-    val validEmailByUsername = emailsByUsername
+    val validNomisEmailByUsername = emailsByUsername
       .mapValues { (_, emails) -> emails.filter(UserService::isHmppsEmail) }
       .filter { (_, emails) -> emails.size == 1 }
       .mapValues { (_, emails) -> emails.first() }
 
-    val usersFromNomisUsers = nomisUsers
-      .filter { user -> missingUsernames.contains(user.username) }
-      .map { upd ->
-        val user = upd.toUser()
-        user.email = validEmailByUsername[user.username]
-        user.isVerified = validEmailByUsername.containsKey(user.username)
-        user
+    return nomisUsers
+      .map { nomisUser ->
+        PrisonUserDto(
+          username = nomisUser.username,
+          userId = nomisUser.userId,
+          email = authUsersByUsername[nomisUser.username]?.email ?: validNomisEmailByUsername[nomisUser.username],
+          verified = if (authUsersByUsername[nomisUser.username] == null) {
+            validNomisEmailByUsername.containsKey(nomisUser.username)
+          } else {
+            authUsersByUsername[nomisUser.username]?.isVerified ?: false
+          },
+          firstName = nomisUser.firstName,
+          lastName = nomisUser.lastName
+        )
       }
-    return authUsers.plus(usersFromNomisUsers)
   }
 }
+
+data class PrisonUserDto(
+  val username: String,
+  val userId: String,
+  val email: String?,
+  val verified: Boolean,
+  val firstName: String,
+  val lastName: String
+)
