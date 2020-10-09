@@ -113,25 +113,25 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
         // @formatter:off
         http
-            .sessionManagement()
+                .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
-            // Can't have CSRF protection as requires session
-            .and().csrf().disable()
+                // Can't have CSRF protection as requires session
+                .and().csrf().disable()
 
-            .authorizeRequests()
+                .authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/login").permitAll()
                 .antMatchers(HttpMethod.POST, "/login").permitAll()
                 .antMatchers("/ui/**").access("isAuthenticated() and @authIpSecurity.check(request)")
                 .anyRequest().authenticated()
-            .and()
+                .and()
                 .formLogin()
                 .loginPage("/login")
                 .successHandler(jwtAuthenticationSuccessHandler)
                 .failureHandler(userStateAuthenticationFailureHandler)
                 .permitAll()
 
-            .and()
+                .and()
                 .logout()
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
@@ -141,11 +141,11 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                 .logoutSuccessHandler(logoutSuccessHandler)
                 .permitAll()
 
-            .and()
+                .and()
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler)
 
-            .and()
+                .and()
                 .addFilterAfter(jwtCookieAuthenticationFilter, BasicAuthenticationFilter.class)
 
                 .requestCache().requestCache(cookieRequestCache);
@@ -165,21 +165,21 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
      * Custom User Service for the Azure OIDC integration. Spring expects to get the username from the userinfo endpoint,
      * unfortunately the Azure endpoint doesn't return the field we need - i.e. oid. Therefore the username field is set
      * to sub in the configuration, and modified here once the token and userinfo attributes are merged.
-     *
+     * <p>
      * Also capitalises the username as other code expects all usernames to be uppercase.
      */
     @Bean
     public OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
-        final OidcUserService delegate = new OidcUserService();
+        final var delegate = new OidcUserService();
 
         return (userRequest) -> {
             // Delegate to the default implementation for loading a user
-            OidcUser oidcUser = delegate.loadUser(userRequest);
+            final var oidcUser = delegate.loadUser(userRequest);
 
             // Now we have the claims from the id token and the userinfo response combined, we can set the preferred_username field to be the name source
-            var idToken = oidcUser.getIdToken();
+            final var idToken = oidcUser.getIdToken();
 
-            var oidcIdToken = new OidcIdToken(idToken.getTokenValue(),idToken.getIssuedAt(), idToken.getExpiresAt(), idToken.getClaims());
+            final var oidcIdToken = new OidcIdToken(idToken.getTokenValue(), idToken.getIssuedAt(), idToken.getExpiresAt(), idToken.getClaims());
 
             return new DefaultOidcUser(oidcUser.getAuthorities(), oidcIdToken, oidcUser.getUserInfo(), "oid");
         };
@@ -209,7 +209,6 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
     /**
      * An assumption is made in DeliusUserService that the delius auth provider is checked last and if Delius is down
      * then we do not check with any further providers.
-     *
      */
     @Override
     protected void configure(final AuthenticationManagerBuilder auth) {
@@ -251,9 +250,9 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
 
     @Bean
     @Conditional(ClientsConfiguredCondition.class)
-    WebClient webClient(ClientRegistrationRepository clientRegistrationRepository,
-                        OAuth2AuthorizedClientRepository authorizedClientRepository) {
-        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 =
+    WebClient webClient(final ClientRegistrationRepository clientRegistrationRepository,
+                        final OAuth2AuthorizedClientRepository authorizedClientRepository) {
+        final var oauth2 =
                 new ServletOAuth2AuthorizedClientExchangeFilterFunction(clientRegistrationRepository,
                         authorizedClientRepository);
         oauth2.setDefaultOAuth2AuthorizedClient(true);
