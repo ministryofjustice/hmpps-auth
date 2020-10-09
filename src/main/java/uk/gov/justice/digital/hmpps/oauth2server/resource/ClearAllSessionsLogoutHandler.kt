@@ -17,7 +17,7 @@ class ClearAllSessionsLogoutHandler(
   private val jwtCookieHelper: JwtCookieHelper,
   private val jwtAuthenticationHelper: JwtAuthenticationHelper,
   @Qualifier("tokenVerificationApiRestTemplate") private val restTemplate: RestTemplate,
-  @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean
+  @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean,
 ) : LogoutHandler {
   override fun logout(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication?) {
     val optionalAuth =

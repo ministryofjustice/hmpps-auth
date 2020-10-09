@@ -32,7 +32,7 @@ public class JwtKeyIdHeaderAccessTokenConverter extends JwtAccessTokenConverter 
         final String content;
         try {
             content = this.jsonParser.formatMap(getAccessTokenConverter().convertAccessToken(accessToken, authentication));
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             throw new IllegalStateException("Cannot convert access token to JSON", ex);
         }
         return JwtHelper.encode(content, this.signer, headers).getEncoded();

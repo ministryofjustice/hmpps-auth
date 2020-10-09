@@ -9,7 +9,7 @@ class UserDetailsImpl(
   authorities: Collection<GrantedAuthority>,
   private val authSource: String,
   private val userId: String,
-  val jwtId: String
+  val jwtId: String,
 ) :
   User(username, "", authorities), UserPersonDetails {
   override fun getName(): String = name

@@ -117,7 +117,7 @@ class ServicesSummaryPage :
       https://moic.service.justice.gov.uk / https://moic.service.justice.gov.uk/help 
       true 
       Edit
- """
+ """,
   ): ServicesSummaryPage {
     assertThat(rows).hasSizeGreaterThan(10)
     assertThat(el("tr[data-qa='$service']").text()).isEqualTo(text.replaceIndent().replace("\n", ""))

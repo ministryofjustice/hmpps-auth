@@ -22,7 +22,7 @@ class ChangeNameController(
   private val authUserService: AuthUserService,
   private val telemetryClient: TelemetryClient,
   private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler,
-  private val userService: UserService
+  private val userService: UserService,
 ) {
   @GetMapping
   fun changeNameRequest(authentication: Authentication): ModelAndView {
@@ -38,7 +38,7 @@ class ChangeNameController(
     @RequestParam lastName: String?,
     authentication: Authentication,
     request: HttpServletRequest,
-    response: HttpServletResponse
+    response: HttpServletResponse,
   ): ModelAndView {
 
     return try {

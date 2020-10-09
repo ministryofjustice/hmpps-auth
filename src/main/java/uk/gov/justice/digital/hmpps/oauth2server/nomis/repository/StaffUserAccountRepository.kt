@@ -17,6 +17,6 @@ interface StaffUserAccountRepository : CrudRepository<NomisUserPersonDetails, St
 
   fun findByStaffFirstNameIgnoreCaseAndStaffLastNameIgnoreCase(
     firstName: String,
-    lastName: String
+    lastName: String,
   ): List<NomisUserPersonDetails>
 }

@@ -20,7 +20,7 @@ class FlywayConfig {
   @FlywayDataSource
   fun authFlyway(
     @Qualifier("authDataSource") authDataSource: DataSource,
-    @Value("\${auth.flyway.locations}") flywayLocations: List<String>
+    @Value("\${auth.flyway.locations}") flywayLocations: List<String>,
   ): Flyway {
     val flyway = Flyway.configure()
       .dataSource(authDataSource)
@@ -57,7 +57,7 @@ class FlywayConfig {
   @Profile("nomis-seed")
   fun nomisFlyway(
     @Qualifier("dataSource") dataSource: DataSource,
-    @Value("\${nomis.flyway.locations}") flywayLocations: List<String>
+    @Value("\${nomis.flyway.locations}") flywayLocations: List<String>,
   ): Flyway {
     val flyway = Flyway.configure()
       .dataSource(dataSource)

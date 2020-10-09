@@ -45,6 +45,6 @@ open class AuthAuthenticationProvider(
   userRetriesService: UserRetriesService,
   mfaService: MfaService,
   userService: UserService,
-  telemetryClient: TelemetryClient
+  telemetryClient: TelemetryClient,
 ) :
   LockingAuthenticationProvider(authUserDetailsService, userRetriesService, mfaService, userService, telemetryClient)

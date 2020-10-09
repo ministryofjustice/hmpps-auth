@@ -108,7 +108,7 @@ public class ClientsController {
             return (Boolean) getAdditionalInformation().get("skipToAzureField");
         }
 
-        public void setSkipToAzureField(Boolean skipToAzure) {
+        public void setSkipToAzureField(final Boolean skipToAzure) {
             addAdditionalInformation("skipToAzureField", skipToAzure);
         }
     }

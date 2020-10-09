@@ -24,7 +24,7 @@ class UserStateAuthenticationFailureHandler(
   private val tokenService: TokenService,
   private val mfaService: MfaService,
   @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
-  private val telemetryClient: TelemetryClient
+  private val telemetryClient: TelemetryClient,
 ) : SimpleUrlAuthenticationFailureHandler(FAILURE_URL) {
   companion object {
     private const val FAILURE_URL = "/login"
@@ -38,7 +38,7 @@ class UserStateAuthenticationFailureHandler(
   override fun onAuthenticationFailure(
     request: HttpServletRequest,
     response: HttpServletResponse,
-    exception: AuthenticationException
+    exception: AuthenticationException,
   ) {
     val username = request.getParameter("username")?.trim()?.toUpperCase()
     return onAuthenticationFailureForUsername(request, response, exception, username)
@@ -49,7 +49,7 @@ class UserStateAuthenticationFailureHandler(
     request: HttpServletRequest,
     response: HttpServletResponse,
     exception: AuthenticationException,
-    username: String?
+    username: String?,
   ) {
 
     val failures = when (exception) {

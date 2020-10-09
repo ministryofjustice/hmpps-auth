@@ -30,12 +30,12 @@ class MfaController(
   private val userService: UserService,
   private val telemetryClient: TelemetryClient,
   private val mfaService: MfaService,
-  @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean
+  @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
 ) {
   @GetMapping("/mfa-challenge")
   fun mfaChallengeRequest(
     @RequestParam(required = false) token: String?,
-    @RequestParam mfaPreference: MfaPreferenceType
+    @RequestParam mfaPreference: MfaPreferenceType,
   ): ModelAndView {
 
     if (token.isNullOrBlank()) return ModelAndView("redirect:/login?error=mfainvalid")
@@ -58,7 +58,7 @@ class MfaController(
     @RequestParam mfaPreference: MfaPreferenceType,
     @RequestParam code: String,
     request: HttpServletRequest,
-    response: HttpServletResponse
+    response: HttpServletResponse,
   ): ModelAndView? {
     val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
     if (optionalErrorForToken.isPresent) {
@@ -102,7 +102,7 @@ class MfaController(
     @RequestParam token: String,
     @RequestParam mfaResendPreference: MfaPreferenceType,
     request: HttpServletRequest,
-    response: HttpServletResponse
+    response: HttpServletResponse,
   ): ModelAndView {
     val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
     if (optionalErrorForToken.isPresent) {

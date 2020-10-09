@@ -28,7 +28,7 @@ class ChangePasswordController(
   private val tokenService: TokenService,
   userService: UserService,
   private val telemetryClient: TelemetryClient,
-  @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String>
+  @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String>,
 ) :
   AbstractPasswordController(
     changePasswordService,
@@ -58,7 +58,7 @@ class ChangePasswordController(
     @RequestParam confirmPassword: String?,
     request: HttpServletRequest,
     response: HttpServletResponse,
-    @RequestParam expired: Boolean?
+    @RequestParam expired: Boolean?,
   ): ModelAndView? {
 
     val userToken = tokenService.getToken(TokenType.CHANGE, token)

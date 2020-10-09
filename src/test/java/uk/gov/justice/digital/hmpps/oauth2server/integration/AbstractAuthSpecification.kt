@@ -43,7 +43,7 @@ open class AbstractAuthSpecification : FluentTest() {
 open class AuthPage<T>(
   private val title: String,
   private val heading: String,
-  private val headingStartsWith: Boolean = false
+  private val headingStartsWith: Boolean = false,
 ) : FluentPage() {
   @FindBy(css = "#main-content h1")
   private lateinit var headingText: FluentWebElement

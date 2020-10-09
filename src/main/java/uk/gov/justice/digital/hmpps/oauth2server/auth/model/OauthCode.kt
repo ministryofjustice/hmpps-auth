@@ -12,7 +12,7 @@ import javax.persistence.Table
 data class OauthCode(
   @Id
   @Column(nullable = false)
-  val code: String
+  val code: String,
 ) {
 
   @Lob

@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.service.AuthServicesService
 @RequestMapping("ui/services")
 class ServicesController(
   private val authServicesService: AuthServicesService,
-  private val telemetryClient: TelemetryClient
+  private val telemetryClient: TelemetryClient,
 ) {
 
   @GetMapping
@@ -41,7 +41,7 @@ class ServicesController(
   fun editService(
     authentication: Authentication,
     @ModelAttribute service: Service,
-    @RequestParam(value = "newService", required = false) newService: Boolean = false
+    @RequestParam(value = "newService", required = false) newService: Boolean = false,
   ): String? {
     val userDetails = authentication.principal as UserPersonDetails
     val telemetryMap = mapOf("username" to userDetails.username, "code" to service.code)

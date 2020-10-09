@@ -19,7 +19,7 @@ class UserMappingException(message: String) : Exception(message)
 class UserContextService(
   private val deliusUserService: DeliusUserService,
   private val authUserService: AuthUserService,
-  private val nomisUserService: NomisUserService
+  private val nomisUserService: NomisUserService,
 ) {
 
   @Throws(UserMappingException::class)

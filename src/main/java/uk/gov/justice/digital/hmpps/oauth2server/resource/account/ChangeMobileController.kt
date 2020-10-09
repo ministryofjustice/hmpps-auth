@@ -19,7 +19,7 @@ class ChangeMobileController(
   private val userService: UserService,
   private val verifyMobileService: VerifyMobileService,
   private val telemetryClient: TelemetryClient,
-  @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean
+  @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
 ) {
 
   @GetMapping("/change-mobile")
@@ -63,7 +63,7 @@ class ChangeMobileController(
   private fun createChangeOrVerifyMobileError(
     reason: String,
     currentMobile: String?,
-    requestType: String
+    requestType: String,
   ): ModelAndView =
     ModelAndView("account/changeMobile")
       .addObject("error", reason)

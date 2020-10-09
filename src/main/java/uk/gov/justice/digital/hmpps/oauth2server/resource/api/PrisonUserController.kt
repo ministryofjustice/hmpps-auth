@@ -41,7 +41,7 @@ class PrisonUserController(private val userService: UserService) {
     @ApiParam(
       value = "The last name to match. Case insensitive",
       required = true
-    ) @RequestParam @NotEmpty lastName: String
+    ) @RequestParam @NotEmpty lastName: String,
   ): List<PrisonUser> {
     return userService.findPrisonUsersByFirstAndLastNames(firstName, lastName)
       .map {

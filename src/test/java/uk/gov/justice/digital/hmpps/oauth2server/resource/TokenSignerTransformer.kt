@@ -37,7 +37,7 @@ class TokenSignerTransformer : ResponseDefinitionTransformer() {
     request: Request,
     responseDefinition: ResponseDefinition,
     files: FileSource,
-    parameters: Parameters
+    parameters: Parameters,
   ): ResponseDefinition {
 
     val accessToken = mapper.readValue(parameters.readJson("accessToken"), typeRef)

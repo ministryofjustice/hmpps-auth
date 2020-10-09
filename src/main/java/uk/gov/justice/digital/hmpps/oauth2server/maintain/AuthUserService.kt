@@ -49,7 +49,7 @@ class AuthUserService(
   private val oauthServiceRepository: OauthServiceRepository,
   @Value("\${application.notify.create-initial-password.template}") private val initialPasswordTemplateId: String,
   @Value("\${application.authentication.disable.login-days}") private val loginDaysTrigger: Int,
-  @Value("\${application.authentication.password-age}") private val passwordAge: Long
+  @Value("\${application.authentication.password-age}") private val passwordAge: Long,
 ) {
 
   @Transactional(transactionManager = "authTransactionManager")
@@ -62,7 +62,7 @@ class AuthUserService(
     groupCode: String?,
     url: String,
     creator: String,
-    authorities: Collection<GrantedAuthority>
+    authorities: Collection<GrantedAuthority>,
   ): String {
     // ensure username always uppercase
     val username = StringUtils.upperCase(usernameInput)
@@ -118,7 +118,7 @@ class AuthUserService(
     user: User,
     creator: String,
     eventPrefix: String,
-    groups: Collection<Group>
+    groups: Collection<Group>,
   ): String { // then the reset token
     val userToken = user.createToken(UserToken.TokenType.RESET)
     // give users more time to do the reset
@@ -166,7 +166,7 @@ class AuthUserService(
     url: String,
     admin: String,
     authorities: Collection<GrantedAuthority?>?,
-    emailType: EmailType
+    emailType: EmailType,
   ): String {
     val username = StringUtils.upperCase(usernameInput)
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
@@ -211,7 +211,7 @@ class AuthUserService(
     username: String,
     enabled: Boolean,
     admin: String,
-    authorities: Collection<GrantedAuthority>
+    authorities: Collection<GrantedAuthority>,
   ) {
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
       .orElseThrow { EntityNotFoundException("User not found with username $username") }

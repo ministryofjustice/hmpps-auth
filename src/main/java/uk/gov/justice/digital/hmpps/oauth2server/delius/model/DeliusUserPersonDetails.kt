@@ -14,7 +14,7 @@ data class DeliusUserPersonDetails(
   val email: String,
   private val enabled: Boolean = false,
   private val locked: Boolean = false,
-  private val roles: Collection<GrantedAuthority?> = emptySet()
+  private val roles: Collection<GrantedAuthority?> = emptySet(),
 ) : UserPersonDetails {
 
   override fun getUsername(): String = username

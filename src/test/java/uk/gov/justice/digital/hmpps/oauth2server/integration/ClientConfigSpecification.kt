@@ -109,7 +109,7 @@ class ClientSummaryPage : AuthPage<ClientSummaryPage>(
       [client_credentials] 
       [ROLE_REPORTING] 
       3600 
-      Edit"""
+      Edit""",
   ): ClientSummaryPage {
     assertThat(rows).hasSizeGreaterThan(10)
     assertThat(el("tr[data-qa='$client']").text()).isEqualTo(text.replaceIndent().replace("\n", ""))

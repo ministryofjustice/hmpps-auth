@@ -23,7 +23,7 @@ class OidcJwtAuthenticationSuccessHandler(
   verifyEmailService: VerifyEmailService?,
   @Qualifier("tokenVerificationApiRestTemplate") restTemplate: RestTemplate?,
   @Value("\${tokenverification.enabled:false}") tokenVerificationEnabled: Boolean,
-  private val userRetriesService: UserRetriesService
+  private val userRetriesService: UserRetriesService,
 ) : JwtAuthenticationSuccessHandler(
   jwtCookieHelper,
   jwtAuthenticationHelper,
@@ -36,7 +36,7 @@ class OidcJwtAuthenticationSuccessHandler(
   override fun onAuthenticationSuccess(
     request: HttpServletRequest,
     response: HttpServletResponse,
-    authentication: Authentication
+    authentication: Authentication,
   ) {
     val oidcUser = authentication.principal
     if (oidcUser is DefaultOidcUser) {

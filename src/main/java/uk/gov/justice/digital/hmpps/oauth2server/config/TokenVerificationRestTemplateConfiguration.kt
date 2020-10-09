@@ -23,7 +23,7 @@ class TokenVerificationRestTemplateConfiguration(
   private val apiDetails: TokenVerificationClientCredentials,
   @Value("\${tokenverification.endpoint.url}") private val tokenVerificationEndpointUrl: @URL String,
   @Value("\${tokenverification.health.timeout:1s}") private val healthTimeout: Duration,
-  @Value("\${tokenverification.endpoint.timeout:5s}") private val apiTimeout: Duration
+  @Value("\${tokenverification.endpoint.timeout:5s}") private val apiTimeout: Duration,
 ) {
 
   @Bean(name = ["tokenVerificationApiRestTemplate"])

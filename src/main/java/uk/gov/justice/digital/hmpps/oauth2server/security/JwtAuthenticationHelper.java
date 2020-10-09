@@ -50,7 +50,7 @@ public class JwtAuthenticationHelper {
 
     String createJwt(final Authentication authentication) {
         return authentication instanceof OAuth2AuthenticationToken ?
-                createJwtWithIdFromOidcAuthentication((OAuth2AuthenticationToken)authentication, UUID.randomUUID().toString())
+                createJwtWithIdFromOidcAuthentication((OAuth2AuthenticationToken) authentication, UUID.randomUUID().toString())
                 : createJwtWithId(authentication, UUID.randomUUID().toString());
     }
 

@@ -26,7 +26,7 @@ class InitialPasswordService(
   private val userService: UserService,
   private val notificationClient: NotificationClientApi,
   @Value("\${application.notify.create-initial-password-resend.template}") private val initialPasswordResendTemplateId: String,
-  private val telemetryClient: TelemetryClient
+  private val telemetryClient: TelemetryClient,
 ) {
 
   companion object {

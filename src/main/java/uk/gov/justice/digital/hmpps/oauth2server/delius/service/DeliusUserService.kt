@@ -25,7 +25,7 @@ class DeliusUserList : MutableList<UserDetails> by ArrayList()
 class DeliusUserService(
   @Qualifier("deliusApiRestTemplate") private val restTemplate: RestTemplate,
   @Value("\${delius.enabled:false}") private val deliusEnabled: Boolean,
-  deliusRoleMappings: DeliusRoleMappings
+  deliusRoleMappings: DeliusRoleMappings,
 ) {
   private val mappings: Map<String, List<String>> =
     deliusRoleMappings.mappings.mapKeys { it.key.toUpperCase().replace('.', '_') }

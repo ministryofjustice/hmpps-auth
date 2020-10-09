@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 @Service("deliusUserDetailsService")
 class DeliusUserDetailsService(
   private val deliusUserService: DeliusUserService,
-  private val userService: UserService
+  private val userService: UserService,
 ) :
   UserDetailsService, AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
 
@@ -37,7 +37,7 @@ class DeliusAuthenticationProvider(
   userRetriesService: UserRetriesService,
   mfaService: MfaService,
   userService: UserService,
-  telemetryClient: TelemetryClient
+  telemetryClient: TelemetryClient,
 ) :
   LockingAuthenticationProvider(
     deliusUserDetailsService,
