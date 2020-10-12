@@ -21,14 +21,16 @@ import uk.gov.service.notify.NotificationClientApi
 
 @Service
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
-class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelist: Set<String>,
-                 @Value("\${application.authentication.mfa.roles}") private val mfaRoles: Set<String>,
-                 @Value("\${application.notify.mfa.template}") private val mfaEmailTemplateId: String,
-                 @Value("\${application.notify.mfa-text.template}") private val mfaTextTemplateId: String,
-                 private val tokenService: TokenService,
-                 private val userService: UserService,
-                 private val notificationClient: NotificationClientApi,
-                 private val userRetriesService: UserRetriesService) {
+class MfaService(
+  @Value("\${application.authentication.mfa.whitelist}") whitelist: Set<String>,
+  @Value("\${application.authentication.mfa.roles}") private val mfaRoles: Set<String>,
+  @Value("\${application.notify.mfa.template}") private val mfaEmailTemplateId: String,
+  @Value("\${application.notify.mfa-text.template}") private val mfaTextTemplateId: String,
+  private val tokenService: TokenService,
+  private val userService: UserService,
+  private val notificationClient: NotificationClientApi,
+  private val userRetriesService: UserRetriesService,
+) {
 
   private val ipMatchers: List<IpAddressMatcher>
 
@@ -71,7 +73,10 @@ class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelis
     return MfaData(token, code, mfaType)
   }
 
-  @Transactional(transactionManager = "authTransactionManager", noRollbackFor = [LoginFlowException::class, MfaFlowException::class])
+  @Transactional(
+    transactionManager = "authTransactionManager",
+    noRollbackFor = [LoginFlowException::class, MfaFlowException::class]
+  )
   fun validateAndRemoveMfaCode(token: String, code: String?) {
     if (code.isNullOrBlank()) throw MfaFlowException("missingcode")
 
@@ -122,7 +127,7 @@ class MfaService(@Value("\${application.authentication.mfa.whitelist}") whitelis
   fun buildModelAndViewWithMfaResendOptions(token: String, mfaPreference: MfaPreferenceType): ModelAndView {
     val user = tokenService.getUserFromToken(TokenType.MFA, token)
     val modelAndView = ModelAndView("mfaResend", "token", token)
-        .addObject("mfaPreference", mfaPreference)
+      .addObject("mfaPreference", mfaPreference)
 
     if (user.isVerified) {
       modelAndView.addObject("email", user.maskedEmail)

@@ -13,12 +13,15 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-class ClearAllSessionsLogoutHandler(private val jwtCookieHelper: JwtCookieHelper,
-                                    private val jwtAuthenticationHelper: JwtAuthenticationHelper,
-                                    @Qualifier("tokenVerificationApiRestTemplate") private val restTemplate: RestTemplate,
-                                    @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean) : LogoutHandler {
+class ClearAllSessionsLogoutHandler(
+  private val jwtCookieHelper: JwtCookieHelper,
+  private val jwtAuthenticationHelper: JwtAuthenticationHelper,
+  @Qualifier("tokenVerificationApiRestTemplate") private val restTemplate: RestTemplate,
+  @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean,
+) : LogoutHandler {
   override fun logout(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication?) {
-    val optionalAuth = jwtCookieHelper.readValueFromCookie(request).flatMap { jwtAuthenticationHelper.readUserDetailsFromJwt(it) }
+    val optionalAuth =
+      jwtCookieHelper.readValueFromCookie(request).flatMap { jwtAuthenticationHelper.readUserDetailsFromJwt(it) }
     optionalAuth.ifPresent {
       log.info("Logging out user {} with jwt of {}", it.username, it.jwtId)
       if (tokenVerificationEnabled) restTemplate.delete("/token?authJwtId={authJwtId}", it.jwtId)

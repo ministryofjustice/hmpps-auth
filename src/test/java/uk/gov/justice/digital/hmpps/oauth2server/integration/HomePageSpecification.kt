@@ -7,7 +7,6 @@ import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
 
-
 class HomePageSpecification : AbstractAuthSpecification() {
   @Page
   private lateinit var homePage: HomePage
@@ -18,7 +17,7 @@ class HomePageSpecification : AbstractAuthSpecification() {
     homePage.isAt()
 
     homePage.checkNomisLink()
-        .checkHdcLink()
+      .checkHdcLink()
   }
 
   @Test
@@ -27,7 +26,7 @@ class HomePageSpecification : AbstractAuthSpecification() {
     homePage.isAt()
 
     homePage.checkNomisLink()
-        .checkHdcLinkNotPresent()
+      .checkHdcLinkNotPresent()
   }
 }
 

@@ -10,9 +10,9 @@ class JwkSetIntTest : IntegrationTest() {
   @Test
   fun `Jwk set page returns JwkSet`() {
     webTestClient.get().uri("/auth/.well-known/jwks.json")
-        .exchange()
-        .expectStatus().isOk
-        .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBody().jsonPath("keys[0].kid").isEqualTo("some-key-id")
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody().jsonPath("keys[0].kid").isEqualTo("some-key-id")
   }
 }

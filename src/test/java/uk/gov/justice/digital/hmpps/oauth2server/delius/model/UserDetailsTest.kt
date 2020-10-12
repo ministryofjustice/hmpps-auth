@@ -11,13 +11,16 @@ class UserDetailsTest {
     val stream = UserDetailsTest::class.java.getResourceAsStream("user_details.json")
     val userDetails = ObjectMapper().readValue(stream, UserDetails::class.java)
     assertThat(userDetails).isEqualTo(
-        UserDetails(userId = "2500077027",
-            username = "JohnSmith",
-            surname = "Smith",
-            firstName = "John",
-            email = "test@digital.justice.gov.uk",
-            enabled = true,
-            roles = listOf(UserRole(name = "TEST_ROLE"))))
+      UserDetails(
+        userId = "2500077027",
+        username = "JohnSmith",
+        surname = "Smith",
+        firstName = "John",
+        email = "test@digital.justice.gov.uk",
+        enabled = true,
+        roles = listOf(UserRole(name = "TEST_ROLE"))
+      )
+    )
   }
 
   @Test
@@ -25,12 +28,15 @@ class UserDetailsTest {
     val stream = UserDetailsTest::class.java.getResourceAsStream("user_details_no_roles.json")
     val userDetails = ObjectMapper().readValue(stream, UserDetails::class.java)
     assertThat(userDetails).isEqualTo(
-        UserDetails(userId = "2500077027",
-            username = "JohnSmith",
-            surname = "Smith",
-            firstName = "John",
-            email = "test@digital.justice.gov.uk",
-            enabled = false,
-            roles = listOf()))
+      UserDetails(
+        userId = "2500077027",
+        username = "JohnSmith",
+        surname = "Smith",
+        firstName = "John",
+        email = "test@digital.justice.gov.uk",
+        enabled = false,
+        roles = listOf()
+      )
+    )
   }
 }

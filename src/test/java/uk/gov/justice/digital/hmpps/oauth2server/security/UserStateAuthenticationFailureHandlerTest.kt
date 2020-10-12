@@ -34,7 +34,11 @@ class UserStateAuthenticationFailureHandlerTest {
   fun onAuthenticationFailure_locked() {
     handler.onAuthenticationFailure(request, response, LockedException("msg"))
     verify(redirectStrategy).sendRedirect(request, response, "/login?error=locked")
-    verify(telemetryClient).trackEvent("AuthenticateFailure", mapOf("username" to "missinguser", "type" to "locked"), null)
+    verify(telemetryClient).trackEvent(
+      "AuthenticateFailure",
+      mapOf("username" to "missinguser", "type" to "locked"),
+      null
+    )
   }
 
   @Test
@@ -69,28 +73,44 @@ class UserStateAuthenticationFailureHandlerTest {
     whenever(request.getParameter("password")).thenReturn("bob")
     handler.onAuthenticationFailure(request, response, MissingCredentialsException())
     verify(redirectStrategy).sendRedirect(request, response, "/login?error=missinguser")
-    verify(telemetryClient).trackEvent("AuthenticateFailure", mapOf("username" to "missinguser", "type" to "missinguser"), null)
+    verify(telemetryClient).trackEvent(
+      "AuthenticateFailure",
+      mapOf("username" to "missinguser", "type" to "missinguser"),
+      null
+    )
   }
 
   @Test
   fun onAuthenticationFailure_missingboth() {
     handler.onAuthenticationFailure(request, response, MissingCredentialsException())
     verify(redirectStrategy).sendRedirect(request, response, "/login?error=missinguser&error=missingpass")
-    verify(telemetryClient).trackEvent("AuthenticateFailure", mapOf("username" to "missinguser", "type" to "missinguser"), null)
+    verify(telemetryClient).trackEvent(
+      "AuthenticateFailure",
+      mapOf("username" to "missinguser", "type" to "missinguser"),
+      null
+    )
   }
 
   @Test
   fun onAuthenticationFailure_deliusDown() {
     handler.onAuthenticationFailure(request, response, DeliusAuthenticationServiceException("joe"))
     verify(redirectStrategy).sendRedirect(request, response, "/login?error=invalid&error=deliusdown")
-    verify(telemetryClient).trackEvent("AuthenticateFailure", mapOf("username" to "missinguser", "type" to "invalid"), null)
+    verify(telemetryClient).trackEvent(
+      "AuthenticateFailure",
+      mapOf("username" to "missinguser", "type" to "invalid"),
+      null
+    )
   }
 
   @Test
   fun onAuthenticationFailure_other() {
     handler.onAuthenticationFailure(request, response, BadCredentialsException("msg"))
     verify(redirectStrategy).sendRedirect(request, response, "/login?error=invalid")
-    verify(telemetryClient).trackEvent("AuthenticateFailure", mapOf("username" to "missinguser", "type" to "invalid"), null)
+    verify(telemetryClient).trackEvent(
+      "AuthenticateFailure",
+      mapOf("username" to "missinguser", "type" to "invalid"),
+      null
+    )
   }
 
   @Test
@@ -108,7 +128,11 @@ class UserStateAuthenticationFailureHandlerTest {
     whenever(mfaService.createTokenAndSendMfaCode(anyString())).thenThrow(MfaUnavailableException("msg"))
     handler.onAuthenticationFailure(request, response, MfaRequiredException("msg"))
     verify(redirectStrategy).sendRedirect(request, response, "/login?error=mfaunavailable")
-    verify(telemetryClient).trackEvent("AuthenticateFailure", mapOf("username" to "BOB", "type" to "mfaunavailable"), null)
+    verify(telemetryClient).trackEvent(
+      "AuthenticateFailure",
+      mapOf("username" to "BOB", "type" to "mfaunavailable"),
+      null
+    )
   }
 
   @Test
@@ -116,7 +140,11 @@ class UserStateAuthenticationFailureHandlerTest {
     whenever(request.getParameter("username")).thenReturn("bob")
     whenever(mfaService.createTokenAndSendMfaCode(anyString())).thenReturn(MfaData("sometoken", "somecode", TEXT))
     setupHandler(true).onAuthenticationFailure(request, response, MfaRequiredException("msg"))
-    verify(redirectStrategy).sendRedirect(request, response, "/mfa-challenge?token=sometoken&mfaPreference=TEXT&smokeCode=somecode")
+    verify(redirectStrategy).sendRedirect(
+      request,
+      response,
+      "/mfa-challenge?token=sometoken&mfaPreference=TEXT&smokeCode=somecode"
+    )
     verify(mfaService).createTokenAndSendMfaCode("BOB")
   }
 
@@ -124,11 +152,16 @@ class UserStateAuthenticationFailureHandlerTest {
   fun onAuthenticationFailure_mfaUnavailable() {
     handler.onAuthenticationFailure(request, response, MfaUnavailableException("msg"))
     verify(redirectStrategy).sendRedirect(request, response, "/login?error=mfaunavailable")
-    verify(telemetryClient).trackEvent("AuthenticateFailure", mapOf("username" to "missinguser", "type" to "mfaunavailable"), null)
+    verify(telemetryClient).trackEvent(
+      "AuthenticateFailure",
+      mapOf("username" to "missinguser", "type" to "mfaunavailable"),
+      null
+    )
   }
 
   private fun setupHandler(smokeTestEnabled: Boolean): UserStateAuthenticationFailureHandler {
-    val setupHandler = UserStateAuthenticationFailureHandler(tokenService, mfaService, smokeTestEnabled, telemetryClient)
+    val setupHandler =
+      UserStateAuthenticationFailureHandler(tokenService, mfaService, smokeTestEnabled, telemetryClient)
     setupHandler.setRedirectStrategy(redirectStrategy)
     return setupHandler
   }

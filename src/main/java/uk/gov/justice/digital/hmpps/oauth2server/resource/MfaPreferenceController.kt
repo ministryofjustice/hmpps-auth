@@ -17,9 +17,9 @@ class MfaPreferenceController(private val userService: UserService, private val 
   fun mfaPreferenceRequest(authentication: Authentication): ModelAndView {
     val user = userService.getUserWithContacts(authentication.name)
     return ModelAndView("mfaPreference", "text", user.mobile)
-        .addObject("email", user.email)
-        .addObject("secondaryemail", user.secondaryEmail)
-        .addObject("current", user.mfaPreference)
+      .addObject("email", user.email)
+      .addObject("secondaryemail", user.secondaryEmail)
+      .addObject("current", user.mfaPreference)
   }
 
   @PostMapping("/mfa-preference")
@@ -28,4 +28,3 @@ class MfaPreferenceController(private val userService: UserService, private val 
     return "redirect:/account-details"
   }
 }
-

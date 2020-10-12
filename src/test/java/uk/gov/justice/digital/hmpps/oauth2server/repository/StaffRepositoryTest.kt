@@ -40,10 +40,10 @@ class StaffRepositoryTest {
   }
 
   private fun transientEntity() = Staff
-      .builder()
-      .firstName("TEST-FIRSTNAME")
-      .lastName("TEST-LASTNAME")
-      .status("ACTIVE")
-      .staffId(-2L)
-      .build()
+    .builder()
+    .firstName("TEST-FIRSTNAME")
+    .lastName("TEST-LASTNAME")
+    .status("ACTIVE")
+    .staffId(-2L)
+    .build()
 }

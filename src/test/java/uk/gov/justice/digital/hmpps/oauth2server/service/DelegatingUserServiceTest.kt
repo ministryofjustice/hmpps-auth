@@ -40,7 +40,15 @@ class DelegatingUserServiceTest {
 
   @Test
   fun `lock account delius user`() {
-    service.lockAccount(DeliusUserPersonDetails(username = "bob", userId = "12345", firstName = "F", surname = "L", email = "a@b.com"))
+    service.lockAccount(
+      DeliusUserPersonDetails(
+        username = "bob",
+        userId = "12345",
+        firstName = "F",
+        surname = "L",
+        email = "a@b.com"
+      )
+    )
 
     verify(authUserService).lockUser(any())
     verify(nomisUserService, never()).lockAccount(anyString())
@@ -71,7 +79,16 @@ class DelegatingUserServiceTest {
 
   @Test
   fun `change password with unlock delius user`() {
-    service.changePasswordWithUnlock(DeliusUserPersonDetails(username = "bob", userId = "12345", firstName = "F", surname = "L", email = "a@b.com"), "pass")
+    service.changePasswordWithUnlock(
+      DeliusUserPersonDetails(
+        username = "bob",
+        userId = "12345",
+        firstName = "F",
+        surname = "L",
+        email = "a@b.com"
+      ),
+      "pass"
+    )
 
     verify(authUserService).unlockUser(any())
     verify(authUserService, never()).changePassword(any(), anyString())
@@ -102,7 +119,16 @@ class DelegatingUserServiceTest {
 
   @Test
   fun `change password delius user`() {
-    service.changePassword(DeliusUserPersonDetails(username = "bob", userId = "12345", firstName = "F", surname = "L", email = "a@b.com"), "pass")
+    service.changePassword(
+      DeliusUserPersonDetails(
+        username = "bob",
+        userId = "12345",
+        firstName = "F",
+        surname = "L",
+        email = "a@b.com"
+      ),
+      "pass"
+    )
 
     verify(authUserService, never()).changePassword(any(), anyString())
     verify(nomisUserService, never()).changePassword(anyString(), anyString())

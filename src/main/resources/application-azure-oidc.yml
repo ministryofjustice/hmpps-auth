@@ -20,4 +20,4 @@ spring:
 application:
   authentication:
     microsoft:
-      linktext: Log in with a justice.gov.uk email
+      linktext: Sign in with a justice.gov.uk email

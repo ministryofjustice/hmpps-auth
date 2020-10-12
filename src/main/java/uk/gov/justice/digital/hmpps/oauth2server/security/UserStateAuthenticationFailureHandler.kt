@@ -15,15 +15,17 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationP
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import java.io.IOException
-import java.util.*
+import java.util.StringJoiner
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-class UserStateAuthenticationFailureHandler(private val tokenService: TokenService,
-                                            private val mfaService: MfaService,
-                                            @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
-                                            private val telemetryClient: TelemetryClient) : SimpleUrlAuthenticationFailureHandler(FAILURE_URL) {
+class UserStateAuthenticationFailureHandler(
+  private val tokenService: TokenService,
+  private val mfaService: MfaService,
+  @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
+  private val telemetryClient: TelemetryClient,
+) : SimpleUrlAuthenticationFailureHandler(FAILURE_URL) {
   companion object {
     private const val FAILURE_URL = "/login"
   }
@@ -33,15 +35,22 @@ class UserStateAuthenticationFailureHandler(private val tokenService: TokenServi
   }
 
   @Throws(IOException::class)
-  override fun onAuthenticationFailure(request: HttpServletRequest, response: HttpServletResponse,
-                                       exception: AuthenticationException) {
+  override fun onAuthenticationFailure(
+    request: HttpServletRequest,
+    response: HttpServletResponse,
+    exception: AuthenticationException,
+  ) {
     val username = request.getParameter("username")?.trim()?.toUpperCase()
     return onAuthenticationFailureForUsername(request, response, exception, username)
   }
 
   @Throws(IOException::class)
-  fun onAuthenticationFailureForUsername(request: HttpServletRequest, response: HttpServletResponse,
-                                         exception: AuthenticationException, username: String?) {
+  fun onAuthenticationFailureForUsername(
+    request: HttpServletRequest,
+    response: HttpServletResponse,
+    exception: AuthenticationException,
+    username: String?,
+  ) {
 
     val failures = when (exception) {
       is LockedException -> Pair("locked", null)
@@ -57,8 +66,8 @@ class UserStateAuthenticationFailureHandler(private val tokenService: TokenServi
         try {
           val (token, code, mfaType) = mfaService.createTokenAndSendMfaCode(username!!)
           val urlBuilder = UriComponentsBuilder.fromPath("/mfa-challenge")
-              .queryParam("token", token)
-              .queryParam("mfaPreference", mfaType)
+            .queryParam("token", token)
+            .queryParam("mfaPreference", mfaType)
           if (smokeTestEnabled) urlBuilder.queryParam("smokeCode", code)
           val url = urlBuilder.build().toString()
 
@@ -98,7 +107,10 @@ class UserStateAuthenticationFailureHandler(private val tokenService: TokenServi
   }
 
   private fun trackFailure(usernameParam: String?, type: String) {
-    telemetryClient.trackEvent("AuthenticateFailure",
-        mapOf("username" to (usernameParam ?: "missinguser"), "type" to type), null)
+    telemetryClient.trackEvent(
+      "AuthenticateFailure",
+      mapOf("username" to (usernameParam ?: "missinguser"), "type" to type),
+      null
+    )
   }
 }

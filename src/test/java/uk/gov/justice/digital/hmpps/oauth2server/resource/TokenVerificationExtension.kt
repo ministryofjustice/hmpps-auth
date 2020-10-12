@@ -26,4 +26,5 @@ class TokenVerificationExtension : BeforeAllCallback, AfterAllCallback, BeforeEa
   }
 }
 
-class TokenVerificationMockServer : WireMockServer(wireMockConfig().port(8100).usingFilesUnderClasspath("tokenverification"))
+class TokenVerificationMockServer :
+  WireMockServer(wireMockConfig().port(8100).usingFilesUnderClasspath("tokenverification"))

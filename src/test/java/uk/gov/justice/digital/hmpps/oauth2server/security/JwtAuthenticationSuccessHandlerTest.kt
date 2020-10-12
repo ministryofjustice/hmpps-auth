@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
-import java.util.*
+import java.util.Optional
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -27,10 +27,22 @@ class JwtAuthenticationSuccessHandlerTest {
   private val response: HttpServletResponse = mock()
   private val redirectStrategy: RedirectStrategy = mock()
   private val restTemplate: RestTemplate = mock()
-  private val handler = JwtAuthenticationSuccessHandler(jwtCookieHelper, jwtAuthenticationHelper, cookieRequestCache,
-      verifyEmailService, restTemplate, true)
-  private val handlerTokenVerificationDisabled = JwtAuthenticationSuccessHandler(jwtCookieHelper,
-      jwtAuthenticationHelper, cookieRequestCache, verifyEmailService, restTemplate, false)
+  private val handler = JwtAuthenticationSuccessHandler(
+    jwtCookieHelper,
+    jwtAuthenticationHelper,
+    cookieRequestCache,
+    verifyEmailService,
+    restTemplate,
+    true
+  )
+  private val handlerTokenVerificationDisabled = JwtAuthenticationSuccessHandler(
+    jwtCookieHelper,
+    jwtAuthenticationHelper,
+    cookieRequestCache,
+    verifyEmailService,
+    restTemplate,
+    false
+  )
   private val user = UserDetailsImpl("user", "name", setOf(), auth.name, "userid", "jwtId")
 
   @Test
@@ -71,7 +83,11 @@ class JwtAuthenticationSuccessHandlerTest {
   fun `onAuthenticationSuccess existing cookie verification disabled`() {
     whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
     whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
-    handlerTokenVerificationDisabled.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
+    handlerTokenVerificationDisabled.onAuthenticationSuccess(
+      request,
+      response,
+      UsernamePasswordAuthenticationToken("user", "pass")
+    )
     verifyZeroInteractions(restTemplate)
   }
 

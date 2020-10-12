@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.repository
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -26,6 +27,15 @@ class NomisUserPersonDetailsRepositoryTest {
   private lateinit var repository: StaffUserAccountRepository
 
   @Test
+  fun findByFirstAndLastName() {
+    val results = repository.findByStaffFirstNameIgnoreCaseAndStaffLastNameIgnoreCase("rYaN", "OrtON")
+
+    assertThat(results)
+      .extracting("username", "staff.firstName", "staff.lastName")
+      .containsExactly(tuple("RO_USER_TEST", "Ryan", "Orton"))
+  }
+
+  @Test
   fun givenATransientEntityItCanBePeristed() {
     val transientEntity = transientEntity()
     val entity = transientEntity.toBuilder().build()
@@ -47,11 +57,26 @@ class NomisUserPersonDetailsRepositoryTest {
     val retrievedEntity = repository.findById("ITAG_USER").orElseThrow()
     assertThat(retrievedEntity.username).isEqualTo("ITAG_USER")
     assertThat(retrievedEntity.roles.stream().map { r: UserCaseloadRole -> r.role.name })
-        .containsExactly("Some Old Role", "Omic Administrator", "KW Migration", "Maintain Access Roles Admin", "Global Search",
-            "Create Category assessments", "Approve Category assessments", "Security Cat tool role")
+      .containsExactly(
+        "Some Old Role",
+        "Omic Administrator",
+        "KW Migration",
+        "Maintain Access Roles Admin",
+        "Global Search",
+        "Create Category assessments",
+        "Approve Category assessments",
+        "Security Cat tool role"
+      )
     assertThat(retrievedEntity.filterRolesByCaseload("NWEB").stream().map { r: UserCaseloadRole -> r.role.name })
-        .containsExactly("Omic Administrator", "KW Migration", "Maintain Access Roles Admin", "Global Search",
-            "Create Category assessments", "Approve Category assessments", "Security Cat tool role")
+      .containsExactly(
+        "Omic Administrator",
+        "KW Migration",
+        "Maintain Access Roles Admin",
+        "Global Search",
+        "Create Category assessments",
+        "Approve Category assessments",
+        "Security Cat tool role"
+      )
   }
 
   @Test
@@ -67,11 +92,11 @@ class NomisUserPersonDetailsRepositoryTest {
   }
 
   private fun transientEntity() = NomisUserPersonDetails
-      .builder()
-      .username("TEST_USER")
-      .type("ADMIN")
-      .staff(DEFAULT_STAFF)
-      .build()
+    .builder()
+    .username("TEST_USER")
+    .type("ADMIN")
+    .staff(DEFAULT_STAFF)
+    .build()
 
   companion object {
     private val DEFAULT_STAFF = Staff.builder().staffId(5L).build()

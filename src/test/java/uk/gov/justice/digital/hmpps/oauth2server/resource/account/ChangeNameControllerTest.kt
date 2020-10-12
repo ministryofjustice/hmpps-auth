@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
-import java.util.*
+import java.util.Optional
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -30,24 +30,43 @@ class ChangeNameControllerTest {
   private val request: HttpServletRequest = mock()
   private val response: HttpServletResponse = mock()
   private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler = mock()
-  private val token = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"), "pass")
+  private val token = TestingAuthenticationToken(
+    UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"),
+    "pass"
+  )
 
-  private val controller: ChangeNameController = ChangeNameController(authUserService, telemetryClient, jwtAuthenticationSuccessHandler, userService)
+  private val controller: ChangeNameController =
+    ChangeNameController(authUserService, telemetryClient, jwtAuthenticationSuccessHandler, userService)
 
   @Test
   fun changeNameRequest() {
-    whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(User.builder().person(Person("first", "last")).build()))
+    whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(
+      Optional.of(
+        User.builder().person(Person("first", "last")).build()
+      )
+    )
     val modelAndView = controller.changeNameRequest(token)
-    assertThat(modelAndView.modelMap).containsExactlyInAnyOrderEntriesOf(mapOf("firstName" to "first", "lastName" to "last"))
+    assertThat(modelAndView.modelMap).containsExactlyInAnyOrderEntriesOf(
+      mapOf(
+        "firstName" to "first",
+        "lastName" to "last"
+      )
+    )
     assertThat(modelAndView.viewName).isEqualTo("account/changeName")
   }
 
   @Test
   fun `changeName exception`() {
-    whenever(authUserService.amendUser(anyString(), anyString(), anyString())).thenThrow(CreateUserException("lastName", "someerror"))
+    whenever(authUserService.amendUser(anyString(), anyString(), anyString())).thenThrow(
+      CreateUserException(
+        "lastName",
+        "someerror"
+      )
+    )
     val modelAndView = controller.changeName("joe", "bloggs", token, request, response)
     assertThat(modelAndView.modelMap).containsExactlyInAnyOrderEntriesOf(
-        mapOf("error_lastName" to "someerror", "error" to true, "firstName" to "joe", "lastName" to "bloggs"))
+      mapOf("error_lastName" to "someerror", "error" to true, "firstName" to "joe", "lastName" to "bloggs")
+    )
     assertThat(modelAndView.viewName).isEqualTo("account/changeName")
   }
 
@@ -75,9 +94,13 @@ class ChangeNameControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
 
     controller.changeName("joe", "bloggs", token, request, response)
-    verify(jwtAuthenticationSuccessHandler).updateAuthenticationInRequest(eq(request), eq(response), check {
-      assertThat(it.authorities).containsExactlyInAnyOrderElementsOf(authorities)
-      assertThat(it.principal).isEqualTo(user)
-    })
+    verify(jwtAuthenticationSuccessHandler).updateAuthenticationInRequest(
+      eq(request),
+      eq(response),
+      check {
+        assertThat(it.authorities).containsExactlyInAnyOrderElementsOf(authorities)
+        assertThat(it.principal).isEqualTo(user)
+      }
+    )
   }
 }

@@ -19,7 +19,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDeta
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
-import java.util.*
+import java.util.Optional
+import java.util.UUID
 
 class UserControllerTest {
   private val userService: UserService = mock()
@@ -29,7 +30,13 @@ class UserControllerTest {
   fun user_userNotFound() {
     val responseEntity = userController.user("bob")
     assertThat(responseEntity.statusCodeValue).isEqualTo(404)
-    assertThat(responseEntity.body).isEqualTo(ErrorDetail("Not Found", "Account for username bob not found", "username"))
+    assertThat(responseEntity.body).isEqualTo(
+      ErrorDetail(
+        "Not Found",
+        "Account for username bob not found",
+        "username"
+      )
+    )
   }
 
   @Test
@@ -37,7 +44,17 @@ class UserControllerTest {
     setupFindUserCallForNomis()
     val responseEntity = userController.user("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, null, "5"))
+    assertThat(responseEntity.body).isEqualTo(
+      UserDetail(
+        "principal",
+        false,
+        "Joe Bloggs",
+        AuthSource.nomis,
+        5L,
+        null,
+        "5"
+      )
+    )
   }
 
   @Test
@@ -46,7 +63,17 @@ class UserControllerTest {
     staffUserAccount.activeCaseLoadId = "somecase"
     val responseEntity = userController.user("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, "somecase", "5"))
+    assertThat(responseEntity.body).isEqualTo(
+      UserDetail(
+        "principal",
+        false,
+        "Joe Bloggs",
+        AuthSource.nomis,
+        5L,
+        "somecase",
+        "5"
+      )
+    )
   }
 
   @Test
@@ -54,7 +81,17 @@ class UserControllerTest {
     setupFindUserCallForAuth()
     val responseEntity = userController.user("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body).isEqualTo(UserDetail("principal", true, "Joe Bloggs", AuthSource.auth, null, null, USER_ID))
+    assertThat(responseEntity.body).isEqualTo(
+      UserDetail(
+        "principal",
+        true,
+        "Joe Bloggs",
+        AuthSource.auth,
+        null,
+        null,
+        USER_ID
+      )
+    )
   }
 
   @Test
@@ -67,7 +104,17 @@ class UserControllerTest {
   fun me_nomisUserNoCaseload() {
     setupFindUserCallForNomis()
     val principal = TestingAuthenticationToken("principal", "credentials")
-    assertThat(userController.me(principal)).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, null, "5"))
+    assertThat(userController.me(principal)).isEqualTo(
+      UserDetail(
+        "principal",
+        false,
+        "Joe Bloggs",
+        AuthSource.nomis,
+        5L,
+        null,
+        "5"
+      )
+    )
   }
 
   @Test
@@ -75,14 +122,34 @@ class UserControllerTest {
     val staffUserAccount = setupFindUserCallForNomis()
     staffUserAccount.activeCaseLoadId = "somecase"
     val principal = TestingAuthenticationToken("principal", "credentials")
-    assertThat(userController.me(principal)).isEqualTo(UserDetail("principal", false, "Joe Bloggs", AuthSource.nomis, 5L, "somecase", "5"))
+    assertThat(userController.me(principal)).isEqualTo(
+      UserDetail(
+        "principal",
+        false,
+        "Joe Bloggs",
+        AuthSource.nomis,
+        5L,
+        "somecase",
+        "5"
+      )
+    )
   }
 
   @Test
   fun me_authUser() {
     setupFindUserCallForAuth()
     val principal = TestingAuthenticationToken("principal", "credentials")
-    assertThat(userController.me(principal)).isEqualTo(UserDetail("principal", true, "Joe Bloggs", AuthSource.auth, null, null, USER_ID))
+    assertThat(userController.me(principal)).isEqualTo(
+      UserDetail(
+        "principal",
+        true,
+        "Joe Bloggs",
+        AuthSource.auth,
+        null,
+        null,
+        USER_ID
+      )
+    )
   }
 
   @Test
@@ -100,7 +167,11 @@ class UserControllerTest {
 
   @Test
   fun userEmail_found() {
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(User.builder().username("JOE").verified(true).email("someemail").build()))
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(
+      Optional.of(
+        User.builder().username("JOE").verified(true).email("someemail").build()
+      )
+    )
     val responseEntity = userController.getUserEmail("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(200)
     assertThat(responseEntity.body).isEqualTo(EmailAddress("JOE", "someemail"))
@@ -111,7 +182,13 @@ class UserControllerTest {
     whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.empty())
     val responseEntity = userController.getUserEmail("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(404)
-    assertThat(responseEntity.body).isEqualTo(ErrorDetail("Not Found", "Account for username joe not found", "username"))
+    assertThat(responseEntity.body).isEqualTo(
+      ErrorDetail(
+        "Not Found",
+        "Account for username joe not found",
+        "username"
+      )
+    )
   }
 
   @Test
@@ -137,13 +214,13 @@ class UserControllerTest {
 
   private fun setupFindUserCallForAuth() {
     val user = User.builder().id(UUID.fromString(USER_ID))
-        .username("principal")
-        .email("email")
-        .verified(true)
-        .person(Person("Joe", "Bloggs"))
-        .enabled(true)
-        .source(AuthSource.auth)
-        .build()
+      .username("principal")
+      .email("email")
+      .verified(true)
+      .person(Person("Joe", "Bloggs"))
+      .enabled(true)
+      .source(AuthSource.auth)
+      .build()
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
   }
 

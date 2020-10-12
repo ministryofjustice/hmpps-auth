@@ -25,7 +25,10 @@ class ClientControllerTest {
   private val clientDetailsService: JdbcClientDetailsService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val controller = ClientsController(clientDetailsService, telemetryClient)
-  private val authentication = TestingAuthenticationToken(UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"), "pass")
+  private val authentication = TestingAuthenticationToken(
+    UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"),
+    "pass"
+  )
 
   @Nested
   inner class EditFormRequest {
@@ -47,8 +50,16 @@ class ClientControllerTest {
       authClientDetails.clientSecret = "bob"
       val view = controller.editClient(authentication, authClientDetails, "true")
       verify(clientDetailsService).addClientDetails(authClientDetails)
-      verify(telemetryClient).trackEvent("AuthClientDetailsAdd", mapOf("username" to "user", "clientId" to "client"), null)
-      verify(telemetryClient).trackEvent("AuthClientSecretUpdated", mapOf("username" to "user", "clientId" to "client"), null)
+      verify(telemetryClient).trackEvent(
+        "AuthClientDetailsAdd",
+        mapOf("username" to "user", "clientId" to "client"),
+        null
+      )
+      verify(telemetryClient).trackEvent(
+        "AuthClientSecretUpdated",
+        mapOf("username" to "user", "clientId" to "client"),
+        null
+      )
 
       assertThat(view).isEqualTo("redirect:/ui")
     }
@@ -62,7 +73,7 @@ class ClientControllerTest {
 
       assertThatThrownBy { controller.editClient(authentication, authClientDetails, "true") }.isEqualTo(exception)
 
-      verifyZeroInteractions(telemetryClient);
+      verifyZeroInteractions(telemetryClient)
     }
 
     @Test
@@ -70,8 +81,16 @@ class ClientControllerTest {
       val authClientDetails: ClientsController.AuthClientDetails = createAuthClientDetails()
       val view = controller.editClient(authentication, authClientDetails, null)
       verify(clientDetailsService).updateClientDetails(authClientDetails)
-      verify(telemetryClient).trackEvent("AuthClientDetailsUpdate", mapOf("username" to "user", "clientId" to "client"), null)
-      verify(telemetryClient, times(0)).trackEvent("AuthClientSecretUpdated", mapOf("username" to "user", "clientId" to "client"), null)
+      verify(telemetryClient).trackEvent(
+        "AuthClientDetailsUpdate",
+        mapOf("username" to "user", "clientId" to "client"),
+        null
+      )
+      verify(telemetryClient, times(0)).trackEvent(
+        "AuthClientSecretUpdated",
+        mapOf("username" to "user", "clientId" to "client"),
+        null
+      )
       assertThat(view).isEqualTo("redirect:/ui")
     }
 
@@ -83,7 +102,7 @@ class ClientControllerTest {
 
       assertThatThrownBy { controller.editClient(authentication, authClientDetails, null) }.isEqualTo(exception)
 
-      verifyZeroInteractions(telemetryClient);
+      verifyZeroInteractions(telemetryClient)
     }
 
     @Test
@@ -92,8 +111,16 @@ class ClientControllerTest {
       authClientDetails.clientSecret = "bob"
       val view = controller.editClient(authentication, authClientDetails, null)
       verify(clientDetailsService).updateClientDetails(authClientDetails)
-      verify(telemetryClient).trackEvent("AuthClientDetailsUpdate", mapOf("username" to "user", "clientId" to "client"), null)
-      verify(telemetryClient).trackEvent("AuthClientSecretUpdated", mapOf("username" to "user", "clientId" to "client"), null)
+      verify(telemetryClient).trackEvent(
+        "AuthClientDetailsUpdate",
+        mapOf("username" to "user", "clientId" to "client"),
+        null
+      )
+      verify(telemetryClient).trackEvent(
+        "AuthClientSecretUpdated",
+        mapOf("username" to "user", "clientId" to "client"),
+        null
+      )
       assertThat(view).isEqualTo("redirect:/ui")
     }
 
@@ -113,7 +140,11 @@ class ClientControllerTest {
     @Test
     fun `delete Client Request view`() {
       val view = controller.deleteClient(authentication, "client")
-      verify(telemetryClient).trackEvent("AuthClientDetailsDeleted", mapOf("username" to "user", "clientId" to "client"), null)
+      verify(telemetryClient).trackEvent(
+        "AuthClientDetailsDeleted",
+        mapOf("username" to "user", "clientId" to "client"),
+        null
+      )
       assertThat(view).isEqualTo("redirect:/ui")
     }
 
@@ -125,8 +156,7 @@ class ClientControllerTest {
 
       assertThatThrownBy { controller.deleteClient(authentication, "client") }.isEqualTo(exception)
 
-      verifyZeroInteractions(telemetryClient);
+      verifyZeroInteractions(telemetryClient)
     }
-
   }
 }

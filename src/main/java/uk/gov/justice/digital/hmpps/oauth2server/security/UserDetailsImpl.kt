@@ -3,9 +3,15 @@ package uk.gov.justice.digital.hmpps.oauth2server.security
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.User
 
-class UserDetailsImpl(username: String, private val name: String, authorities: Collection<GrantedAuthority>,
-                      private val authSource: String, private val userId: String, val jwtId: String) :
-    User(username, "", authorities), UserPersonDetails {
+class UserDetailsImpl(
+  username: String,
+  private val name: String,
+  authorities: Collection<GrantedAuthority>,
+  private val authSource: String,
+  private val userId: String,
+  val jwtId: String,
+) :
+  User(username, "", authorities), UserPersonDetails {
   override fun getName(): String = name
   override fun getAuthSource(): String = authSource
   override fun getFirstName(): String = name

@@ -12,10 +12,12 @@ import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 
-open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
-                                 private val restTemplate: RestTemplate,
-                                 private val tokenVerificationClientCredentials: TokenVerificationClientCredentials,
-                                 private val tokenVerificationEnabled: Boolean) : DefaultTokenServices() {
+open class TrackingTokenServices(
+  private val telemetryClient: TelemetryClient,
+  private val restTemplate: RestTemplate,
+  private val tokenVerificationClientCredentials: TokenVerificationClientCredentials,
+  private val tokenVerificationEnabled: Boolean,
+) : DefaultTokenServices() {
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -59,7 +61,10 @@ open class TrackingTokenServices(private val telemetryClient: TelemetryClient,
     return accessTokenId
   }
 
-  private fun sendAuthJwtIdToTokenVerification(authentication: OAuth2Authentication, token: OAuth2AccessToken): String? {
+  private fun sendAuthJwtIdToTokenVerification(
+    authentication: OAuth2Authentication,
+    token: OAuth2AccessToken,
+  ): String? {
     val jwtId = if (authentication.principal is UserDetailsImpl) {
       (authentication.principal as UserDetailsImpl).jwtId
     } else {

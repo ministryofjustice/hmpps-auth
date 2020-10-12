@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
-import java.util.*
+import java.util.Optional
 
 class DeliusUserDetailsServiceTest {
   private val deliusUserService: DeliusUserService = mock()
@@ -51,5 +51,11 @@ class DeliusUserDetailsServiceTest {
   }
 
   private fun buildStandardUser(): DeliusUserPersonDetails =
-      DeliusUserPersonDetails(username = "ITAG_USER", userId = "12345", firstName = "Itag", surname = "User", email = "a@b.com")
+    DeliusUserPersonDetails(
+      username = "ITAG_USER",
+      userId = "12345",
+      firstName = "Itag",
+      surname = "User",
+      email = "a@b.com"
+    )
 }

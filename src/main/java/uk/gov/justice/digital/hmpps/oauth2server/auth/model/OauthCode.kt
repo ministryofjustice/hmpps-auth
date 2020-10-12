@@ -10,9 +10,10 @@ import javax.persistence.Table
 @Entity
 @Table(name = "OAUTH_CODE")
 data class OauthCode(
-    @Id
-    @Column(nullable = false)
-    val code: String) {
+  @Id
+  @Column(nullable = false)
+  val code: String,
+) {
 
   @Lob
   @Column(nullable = false)

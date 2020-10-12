@@ -10,22 +10,34 @@ import uk.gov.justice.digital.hmpps.oauth2server.azure.AzureUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.io.IOException
-import java.util.*
+import java.util.ArrayList
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-class OidcJwtAuthenticationSuccessHandler(jwtCookieHelper: JwtCookieHelper?,
-                                          jwtAuthenticationHelper: JwtAuthenticationHelper?,
-                                          cookieRequestCache: CookieRequestCache?,
-                                          verifyEmailService: VerifyEmailService?,
-                                          @Qualifier("tokenVerificationApiRestTemplate") restTemplate: RestTemplate?,
-                                          @Value("\${tokenverification.enabled:false}") tokenVerificationEnabled: Boolean,
-                                          private val userRetriesService: UserRetriesService) : JwtAuthenticationSuccessHandler(jwtCookieHelper, jwtAuthenticationHelper, cookieRequestCache, verifyEmailService, restTemplate, tokenVerificationEnabled) {
+class OidcJwtAuthenticationSuccessHandler(
+  jwtCookieHelper: JwtCookieHelper?,
+  jwtAuthenticationHelper: JwtAuthenticationHelper?,
+  cookieRequestCache: CookieRequestCache?,
+  verifyEmailService: VerifyEmailService?,
+  @Qualifier("tokenVerificationApiRestTemplate") restTemplate: RestTemplate?,
+  @Value("\${tokenverification.enabled:false}") tokenVerificationEnabled: Boolean,
+  private val userRetriesService: UserRetriesService,
+) : JwtAuthenticationSuccessHandler(
+  jwtCookieHelper,
+  jwtAuthenticationHelper,
+  cookieRequestCache,
+  verifyEmailService,
+  restTemplate,
+  tokenVerificationEnabled
+) {
   @Throws(IOException::class, ServletException::class)
-  override fun onAuthenticationSuccess(request: HttpServletRequest, response: HttpServletResponse,
-                                       authentication: Authentication) {
+  override fun onAuthenticationSuccess(
+    request: HttpServletRequest,
+    response: HttpServletResponse,
+    authentication: Authentication,
+  ) {
     val oidcUser = authentication.principal
     if (oidcUser is DefaultOidcUser) {
       userRetriesService.resetRetriesAndRecordLogin(constructAzureUserPersonDetails(oidcUser))
@@ -50,14 +62,15 @@ class OidcJwtAuthenticationSuccessHandler(jwtCookieHelper: JwtCookieHelper?,
     }
 
     return AzureUserPersonDetails(
-        ArrayList(),
-        true,
-        principal.getClaim<String>("oid").toUpperCase(),
-        givenName,
-        familyName,
-        principal.preferredUsername,
-        true,
-        accountNonExpired = true,
-        accountNonLocked = true)
+      ArrayList(),
+      true,
+      principal.getClaim<String>("oid").toUpperCase(),
+      givenName,
+      familyName,
+      principal.preferredUsername.toLowerCase(),
+      true,
+      accountNonExpired = true,
+      accountNonLocked = true
+    )
   }
 }

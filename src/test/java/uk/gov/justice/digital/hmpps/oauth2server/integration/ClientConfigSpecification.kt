@@ -8,7 +8,6 @@ import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
 
-
 class ClientConfigSpecification : AbstractAuthSpecification() {
   @Page
   private lateinit var clientSummaryPage: ClientSummaryPage
@@ -25,7 +24,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     loginPage.isAtPage().submitLogin("ITAG_USER_ADM", "password123456")
 
     clientSummaryPage.isAtPage()
-        .checkClientSummary()
+      .checkClientSummary()
   }
 
   @Test
@@ -61,46 +60,56 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
 
     goTo(clientSummaryPage).editClient(client = "client")
     clientMaintenanceAddPage.isAtPage()
-        .edit("clientId", "new-client")
-        .edit("clientSecret", "a-new-secret")
-        .edit("registeredRedirectUri", "http://a_url:3003")
-        .edit("accessTokenValiditySeconds", "1200")
-        .edit("scopes", "read")
-        .edit("autoApproveScopes", "read")
-        .edit("authorities", "ROLE_BOB,ROLE_FRED")
-        .editGrantType("client_credentials")
-        .edit("jwtFields", "-name")
-        .save()
+      .edit("clientId", "new-client")
+      .edit("clientSecret", "a-new-secret")
+      .edit("registeredRedirectUri", "http://a_url:3003")
+      .edit("accessTokenValiditySeconds", "1200")
+      .edit("scopes", "read")
+      .edit("autoApproveScopes", "read")
+      .edit("authorities", "ROLE_BOB,ROLE_FRED")
+      .editGrantType("client_credentials")
+      .edit("jwtFields", "-name")
+      .save()
     clientSummaryPage.isAtPage()
-        .checkClientSummary(client = "new-client", text = """
+      .checkClientSummary(
+        client = "new-client",
+        text =
+          """
           new-client 
           [read] 
           [client_credentials] 
           [ROLE_BOB, ROLE_FRED] 
           1200 
           Edit
-      """)
+      """
+      )
 
     // now remove so test is re-runnable
     goTo("/ui/clients/new-client/delete")
     clientSummaryPage.isAtPage()
-        .checkClientDoesntExist("new-client")
+      .checkClientDoesntExist("new-client")
   }
 }
 
 @PageUrl("/ui")
-class ClientSummaryPage : AuthPage<ClientSummaryPage>("HMPPS Digital Services - Administration Dashboard", "OAuth server administration dashboard") {
+class ClientSummaryPage : AuthPage<ClientSummaryPage>(
+  "HMPPS Digital Services - Administration Dashboard",
+  "OAuth server administration dashboard"
+) {
   @FindBy(css = "table tbody tr")
   private lateinit var rows: FluentList<FluentWebElement>
 
   @Suppress("UsePropertyAccessSyntax")
-  fun checkClientSummary(client: String = "apireporting", text: String = """
+  fun checkClientSummary(
+    client: String = "apireporting",
+    text: String =
+      """
       apireporting 
       [reporting] 
       [client_credentials] 
       [ROLE_REPORTING] 
       3600 
-      Edit"""
+      Edit""",
   ): ClientSummaryPage {
     assertThat(rows).hasSizeGreaterThan(10)
     assertThat(el("tr[data-qa='$client']").text()).isEqualTo(text.replaceIndent().replace("\n", ""))
@@ -117,8 +126,12 @@ class ClientSummaryPage : AuthPage<ClientSummaryPage>("HMPPS Digital Services - 
 }
 
 @PageUrl("/ui/clients/form")
-open class ClientMaintenancePage(heading: String = "Edit client", headingStartsWith: Boolean = true)
-  : AuthPage<ClientMaintenancePage>("HMPPS Digital Services - Maintain Client Configuration", heading, headingStartsWith) {
+open class ClientMaintenancePage(heading: String = "Edit client", headingStartsWith: Boolean = true) :
+  AuthPage<ClientMaintenancePage>(
+    "HMPPS Digital Services - Maintain Client Configuration",
+    heading,
+    headingStartsWith
+  ) {
 
   fun checkDetails(): ClientMaintenancePage {
     assertThat(el("#clientId").value()).isEqualTo("apireporting")

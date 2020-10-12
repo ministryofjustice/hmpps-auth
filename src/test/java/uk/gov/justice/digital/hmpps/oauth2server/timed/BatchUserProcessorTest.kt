@@ -29,24 +29,32 @@ class BatchUserProcessorTest {
     whenever(service.processInBatches()).thenReturn(10).thenReturn(3)
     disableInactiveAuthUsers.findAndProcessInBatches()
     verify(service, times(2)).processInBatches()
-    verify(telemetryClient).trackEvent(eq("DisableInactiveAuthUsersFinished"), check {
-      assertThat(it).contains(entry("errors", "0"), entry("total", "13"))
-    }, isNull())
+    verify(telemetryClient).trackEvent(
+      eq("DisableInactiveAuthUsersFinished"),
+      check {
+        assertThat(it).contains(entry("errors", "0"), entry("total", "13"))
+      },
+      isNull()
+    )
   }
 
   @Test
   fun findAndProcessInBatches_manyProcessed() {
     whenever(service.processInBatches())
-        .thenReturn(10)
-        .thenReturn(10)
-        .thenReturn(10)
-        .thenReturn(10)
-        .thenReturn(3)
+      .thenReturn(10)
+      .thenReturn(10)
+      .thenReturn(10)
+      .thenReturn(10)
+      .thenReturn(3)
     disableInactiveAuthUsers.findAndProcessInBatches()
     verify(service, times(5)).processInBatches()
-    verify(telemetryClient).trackEvent(eq("DisableInactiveAuthUsersFinished"), check {
-      assertThat(it).contains(entry("errors", "0"), entry("total", "43"))
-    }, isNull())
+    verify(telemetryClient).trackEvent(
+      eq("DisableInactiveAuthUsersFinished"),
+      check {
+        assertThat(it).contains(entry("errors", "0"), entry("total", "43"))
+      },
+      isNull()
+    )
   }
 
   @Test
@@ -54,9 +62,13 @@ class BatchUserProcessorTest {
     whenever(service.processInBatches()).thenThrow(RuntimeException("bob")).thenReturn(5)
     disableInactiveAuthUsers.findAndProcessInBatches()
     verify(service, times(2)).processInBatches()
-    verify(telemetryClient).trackEvent(eq("DisableInactiveAuthUsersFinished"), check {
-      assertThat(it).contains(entry("errors", "1"), entry("total", "5"))
-    }, isNull())
+    verify(telemetryClient).trackEvent(
+      eq("DisableInactiveAuthUsersFinished"),
+      check {
+        assertThat(it).contains(entry("errors", "1"), entry("total", "5"))
+      },
+      isNull()
+    )
   }
 
   @Test
@@ -69,13 +81,17 @@ class BatchUserProcessorTest {
   @Test
   fun findAndProcessInBatches_manyFailures() {
     whenever(service.processInBatches())
-        .thenThrow(RuntimeException("bob"))
-        .thenThrow(RuntimeException("bob"))
-        .thenThrow(RuntimeException("bob"))
+      .thenThrow(RuntimeException("bob"))
+      .thenThrow(RuntimeException("bob"))
+      .thenThrow(RuntimeException("bob"))
     disableInactiveAuthUsers.findAndProcessInBatches()
     verify(service, times(3)).processInBatches()
-    verify(telemetryClient).trackEvent(eq("DisableInactiveAuthUsersFinished"), check {
-      assertThat(it).contains(entry("errors", "3"), entry("total", "0"))
-    }, isNull())
+    verify(telemetryClient).trackEvent(
+      eq("DisableInactiveAuthUsersFinished"),
+      check {
+        assertThat(it).contains(entry("errors", "3"), entry("total", "0"))
+      },
+      isNull()
+    )
   }
 }

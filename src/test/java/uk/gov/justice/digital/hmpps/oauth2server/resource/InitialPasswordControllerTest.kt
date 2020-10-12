@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.InitialPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
-import java.util.*
+import java.util.Optional
 import javax.servlet.http.HttpServletRequest
 
 class InitialPasswordControllerTest {
@@ -28,7 +28,15 @@ class InitialPasswordControllerTest {
   private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val request: HttpServletRequest = mock()
-  private val controller = InitialPasswordController(resetPasswordService, initialPasswordService, tokenService, userService, telemetryClient, setOf("password1"), true)
+  private val controller = InitialPasswordController(
+    resetPasswordService,
+    initialPasswordService,
+    tokenService,
+    userService,
+    telemetryClient,
+    setOf("password1"),
+    true
+  )
 
   @Nested
   inner class InitialPasswordSuccess {
@@ -61,7 +69,14 @@ class InitialPasswordControllerTest {
       setupCheckAndGetTokenValid()
       setupGetUserCallForProfile()
       val modelAndView = controller.initialPassword("sometoken", request)
-      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken", "isAdmin" to false, "initial" to true, "username" to "someuser"))
+      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "token" to "sometoken",
+          "isAdmin" to false,
+          "initial" to true,
+          "username" to "someuser"
+        )
+      )
     }
 
     @Test
@@ -70,7 +85,14 @@ class InitialPasswordControllerTest {
       user.accountDetail.profile = "TAG_ADMIN"
       setupCheckAndGetTokenValid()
       val modelAndView = controller.initialPassword("sometoken", request)
-      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "sometoken", "isAdmin" to true, "initial" to true, "username" to "someuser"))
+      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "token" to "sometoken",
+          "isAdmin" to true,
+          "initial" to true,
+          "username" to "someuser"
+        )
+      )
     }
 
     @Test
@@ -123,7 +145,11 @@ class InitialPasswordControllerTest {
 
   private fun setupCheckAndGetTokenValid() {
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
-    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(User.of("someuser").createToken(UserToken.TokenType.RESET)))
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(
+      Optional.of(
+        User.of("someuser").createToken(UserToken.TokenType.RESET)
+      )
+    )
   }
 
   private fun setupGetUserCallForProfile(): NomisUserPersonDetails {

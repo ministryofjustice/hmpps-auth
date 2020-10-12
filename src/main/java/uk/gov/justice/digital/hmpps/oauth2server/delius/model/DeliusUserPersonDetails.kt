@@ -6,14 +6,16 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 
-data class DeliusUserPersonDetails(private val username: String,
-                                   private val userId: String,
-                                   private val firstName: String,
-                                   private val surname: String,
-                                   val email: String,
-                                   private val enabled: Boolean = false,
-                                   private val locked: Boolean = false,
-                                   private val roles: Collection<GrantedAuthority?> = emptySet()) : UserPersonDetails {
+data class DeliusUserPersonDetails(
+  private val username: String,
+  private val userId: String,
+  private val firstName: String,
+  private val surname: String,
+  val email: String,
+  private val enabled: Boolean = false,
+  private val locked: Boolean = false,
+  private val roles: Collection<GrantedAuthority?> = emptySet(),
+) : UserPersonDetails {
 
   override fun getUsername(): String = username
 
@@ -28,7 +30,7 @@ data class DeliusUserPersonDetails(private val username: String,
   override fun getAuthSource(): String = "delius"
 
   override fun toUser(): User =
-      User.builder().username(username).source(AuthSource.delius).email(email).verified(true).enabled(enabled).build()
+    User.builder().username(username).source(AuthSource.delius).email(email).verified(true).enabled(enabled).build()
 
   override fun eraseCredentials() {}
 

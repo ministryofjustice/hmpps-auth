@@ -51,7 +51,12 @@ class RedirectingLogoutSuccessHandlerTest {
   fun onLogoutSuccess_RedirectUriMatched() {
     whenever(request.getParameter("client_id")).thenReturn("joe")
     whenever(request.getParameter("redirect_uri")).thenReturn("http://some.where")
-    whenever(clientDetailsService.loadClientByClientId("joe")).thenReturn(createClientDetails("http://tim.buk.tu", "http://some.where"))
+    whenever(clientDetailsService.loadClientByClientId("joe")).thenReturn(
+      createClientDetails(
+        "http://tim.buk.tu",
+        "http://some.where"
+      )
+    )
     redirectingLogoutSuccessHandler.onLogoutSuccess(request, response, null)
     verify(response).sendRedirect("http://some.where")
   }
@@ -61,7 +66,12 @@ class RedirectingLogoutSuccessHandlerTest {
     val subdomainHandler = RedirectingLogoutSuccessHandler(clientDetailsService, "/path", false)
     whenever(request.getParameter("client_id")).thenReturn("joe")
     whenever(request.getParameter("redirect_uri")).thenReturn("http://some.where")
-    whenever(clientDetailsService.loadClientByClientId("joe")).thenReturn(createClientDetails("http://tim.buk.tu", "http://where"))
+    whenever(clientDetailsService.loadClientByClientId("joe")).thenReturn(
+      createClientDetails(
+        "http://tim.buk.tu",
+        "http://where"
+      )
+    )
     subdomainHandler.onLogoutSuccess(request, response, null)
     verify(response).sendRedirect("/path/login?logout")
   }
@@ -80,7 +90,12 @@ class RedirectingLogoutSuccessHandlerTest {
     val subdomainHandler = RedirectingLogoutSuccessHandler(clientDetailsService, "/path", true)
     whenever(request.getParameter("client_id")).thenReturn("joe")
     whenever(request.getParameter("redirect_uri")).thenReturn("http://some.where")
-    whenever(clientDetailsService.loadClientByClientId("joe")).thenReturn(createClientDetails("http://tim.buk.tu", "http://where"))
+    whenever(clientDetailsService.loadClientByClientId("joe")).thenReturn(
+      createClientDetails(
+        "http://tim.buk.tu",
+        "http://where"
+      )
+    )
     subdomainHandler.onLogoutSuccess(request, response, null)
     verify(response).sendRedirect("http://some.where")
   }
@@ -89,7 +104,12 @@ class RedirectingLogoutSuccessHandlerTest {
   fun onLogoutSuccess_RedirectUriMatchedWithSlash() {
     whenever(request.getParameter("client_id")).thenReturn("joe")
     whenever(request.getParameter("redirect_uri")).thenReturn("http://some.where/")
-    whenever(clientDetailsService.loadClientByClientId("joe")).thenReturn(createClientDetails("http://tim.buk.tu", "http://some.where"))
+    whenever(clientDetailsService.loadClientByClientId("joe")).thenReturn(
+      createClientDetails(
+        "http://tim.buk.tu",
+        "http://some.where"
+      )
+    )
     redirectingLogoutSuccessHandler.onLogoutSuccess(request, response, null)
     verify(response).sendRedirect("http://some.where")
   }
@@ -98,7 +118,12 @@ class RedirectingLogoutSuccessHandlerTest {
   fun onLogoutSuccess_RedirectUriMatchedWithoutSlash() {
     whenever(request.getParameter("client_id")).thenReturn("joe")
     whenever(request.getParameter("redirect_uri")).thenReturn("http://some.where")
-    whenever(clientDetailsService.loadClientByClientId("joe")).thenReturn(createClientDetails("http://tim.buk.tu", "http://some.where/"))
+    whenever(clientDetailsService.loadClientByClientId("joe")).thenReturn(
+      createClientDetails(
+        "http://tim.buk.tu",
+        "http://some.where/"
+      )
+    )
     redirectingLogoutSuccessHandler.onLogoutSuccess(request, response, null)
     verify(response).sendRedirect("http://some.where/")
   }

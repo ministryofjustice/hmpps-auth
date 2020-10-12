@@ -103,5 +103,13 @@ public class ClientsController {
         public void setJwtFields(final String jwtFields) {
             addAdditionalInformation("jwtFields", jwtFields);
         }
+
+        public Boolean getSkipToAzureField() {
+            return (Boolean) getAdditionalInformation().get("skipToAzureField");
+        }
+
+        public void setSkipToAzureField(final Boolean skipToAzure) {
+            addAdditionalInformation("skipToAzureField", skipToAzure);
+        }
     }
 }

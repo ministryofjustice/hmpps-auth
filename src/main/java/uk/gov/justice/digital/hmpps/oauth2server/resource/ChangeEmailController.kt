@@ -28,8 +28,8 @@ class ChangeEmailController(private val tokenService: TokenService, private val 
     val currentEmail = userToken.user.email
     val source = user.authSource
     modelAndView.addObject("isAdmin", isAdmin)
-        .addObject("source", source)
-        .addObject("email", currentEmail)
+      .addObject("source", source)
+      .addObject("email", currentEmail)
   }
 
   @GetMapping("/new-backup-email")
@@ -38,4 +38,3 @@ class ChangeEmailController(private val tokenService: TokenService, private val 
     return ModelAndView("account/changeBackupEmail", "secondaryEmail", currentSecondaryEmail)
   }
 }
-

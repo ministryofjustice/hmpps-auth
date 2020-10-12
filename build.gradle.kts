@@ -3,6 +3,7 @@ plugins {
   id("groovy")
   kotlin("plugin.spring") version "1.4.10"
   kotlin("plugin.jpa") version "1.4.10"
+  id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
 }
 
 repositories {
@@ -98,4 +99,8 @@ tasks {
     include("uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*")
     setMaxHeapSize("256m")
   }
+}
+
+tasks.named("check") {
+  dependsOn(":ktlintCheck")
 }

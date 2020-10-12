@@ -3,7 +3,11 @@ package uk.gov.justice.digital.hmpps.oauth2server.config;
 import org.springframework.security.web.savedrequest.SavedRequest;
 
 import javax.servlet.http.Cookie;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Simple implementation of saved request that just uses the redirect url.

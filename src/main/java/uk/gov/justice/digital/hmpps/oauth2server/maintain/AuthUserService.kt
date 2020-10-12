@@ -32,28 +32,38 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.Verif
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
 @Service
 @Slf4j
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
-class AuthUserService(private val userRepository: UserRepository,
-                      private val notificationClient: NotificationClientApi,
-                      private val telemetryClient: TelemetryClient,
-                      private val verifyEmailService: VerifyEmailService,
-                      private val authUserGroupService: AuthUserGroupService,
-                      private val maintainUserCheck: MaintainUserCheck,
-                      private val passwordEncoder: PasswordEncoder,
-                      private val oauthServiceRepository: OauthServiceRepository,
-                      @Value("\${application.notify.create-initial-password.template}") private val initialPasswordTemplateId: String,
-                      @Value("\${application.authentication.disable.login-days}") private val loginDaysTrigger: Int,
-                      @Value("\${application.authentication.password-age}") private val passwordAge: Long) {
+class AuthUserService(
+  private val userRepository: UserRepository,
+  private val notificationClient: NotificationClientApi,
+  private val telemetryClient: TelemetryClient,
+  private val verifyEmailService: VerifyEmailService,
+  private val authUserGroupService: AuthUserGroupService,
+  private val maintainUserCheck: MaintainUserCheck,
+  private val passwordEncoder: PasswordEncoder,
+  private val oauthServiceRepository: OauthServiceRepository,
+  @Value("\${application.notify.create-initial-password.template}") private val initialPasswordTemplateId: String,
+  @Value("\${application.authentication.disable.login-days}") private val loginDaysTrigger: Int,
+  @Value("\${application.authentication.password-age}") private val passwordAge: Long,
+) {
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(CreateUserException::class, NotificationClientException::class, VerifyEmailException::class)
-  fun createUser(usernameInput: String?, emailInput: String?, firstName: String?, lastName: String?,
-                 groupCode: String?, url: String, creator: String, authorities: Collection<GrantedAuthority>): String {
+  fun createUser(
+    usernameInput: String?,
+    emailInput: String?,
+    firstName: String?,
+    lastName: String?,
+    groupCode: String?,
+    url: String,
+    creator: String,
+    authorities: Collection<GrantedAuthority>,
+  ): String {
     // ensure username always uppercase
     val username = StringUtils.upperCase(usernameInput)
     // and use email helper to format input email
@@ -68,13 +78,13 @@ class AuthUserService(private val userRepository: UserRepository,
     val roles = group?.assignableRoles?.filter { it.isAutomatic }?.map { it.role }?.toSet() ?: emptySet()
     val groups: Set<Group> = group?.let { setOf(it) } ?: emptySet()
     val user = builder()
-        .username(username)
-        .email(email)
-        .enabled(true)
-        .source(AuthSource.auth)
-        .person(person)
-        .authorities(roles)
-        .groups(groups).build()
+      .username(username)
+      .email(email)
+      .enabled(true)
+      .source(AuthSource.auth)
+      .person(person)
+      .authorities(roles)
+      .groups(groups).build()
     return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate", groups)
   }
 
@@ -88,6 +98,8 @@ class AuthUserService(private val userRepository: UserRepository,
     return userRepository.findAll(userFilter, pageable)
   }
 
+  fun findAuthUsersByUsernames(usernames: List<String>): List<User> = userRepository.findByUsernameIn(usernames)
+
   @Throws(CreateUserException::class)
   private fun getInitialGroup(groupCode: String?, creator: String, authorities: Collection<GrantedAuthority>): Group? {
     if (groupCode.isNullOrEmpty()) {
@@ -97,11 +109,17 @@ class AuthUserService(private val userRepository: UserRepository,
     }
     val authUserGroups = authUserGroupService.getAssignableGroups(creator, authorities)
     return authUserGroups.firstOrNull { it.groupCode == groupCode }
-        ?: throw CreateUserException("groupCode", "notfound")
+      ?: throw CreateUserException("groupCode", "notfound")
   }
 
   @Throws(NotificationClientException::class)
-  private fun saveAndSendInitialEmail(url: String, user: User, creator: String, eventPrefix: String, groups: Collection<Group>): String { // then the reset token
+  private fun saveAndSendInitialEmail(
+    url: String,
+    user: User,
+    creator: String,
+    eventPrefix: String,
+    groups: Collection<Group>,
+  ): String { // then the reset token
     val userToken = user.createToken(UserToken.TokenType.RESET)
     // give users more time to do the reset
     userToken.tokenExpiry = LocalDateTime.now().plusDays(7)
@@ -111,7 +129,12 @@ class AuthUserService(private val userRepository: UserRepository,
     val setPasswordLink = url + userToken.token
     val username = user.username
     val email = user.email
-    val parameters = mapOf("firstName" to user.name, "fullName" to user.name, "resetLink" to setPasswordLink, "supportLink" to supportLink)
+    val parameters = mapOf(
+      "firstName" to user.name,
+      "fullName" to user.name,
+      "resetLink" to setPasswordLink,
+      "supportLink" to supportLink
+    )
     // send the email
     try {
       log.info("Sending initial set password to notify for user {}", username)
@@ -120,7 +143,11 @@ class AuthUserService(private val userRepository: UserRepository,
     } catch (e: NotificationClientException) {
       val reason = (e.cause?.let { e.cause } ?: e).javaClass.simpleName
       log.warn("Failed to send create user notify for user {}", username, e)
-      telemetryClient.trackEvent("${eventPrefix}Failure", mapOf("username" to username, "reason" to reason, "admin" to creator), null)
+      telemetryClient.trackEvent(
+        "${eventPrefix}Failure",
+        mapOf("username" to username, "reason" to reason, "admin" to creator),
+        null
+      )
       if (e.httpResult >= 500) { // second time lucky
         notificationClient.sendEmail(initialPasswordTemplateId, email, parameters, null, null)
         telemetryClient.trackEvent("${eventPrefix}Success", mapOf("username" to username, "admin" to creator), null)
@@ -133,21 +160,29 @@ class AuthUserService(private val userRepository: UserRepository,
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(VerifyEmailException::class, NotificationClientException::class, AuthUserGroupRelationshipException::class)
-  fun amendUserEmail(usernameInput: String?, emailAddressInput: String?, url: String, admin: String, authorities: Collection<GrantedAuthority?>?, emailType: EmailType): String {
+  fun amendUserEmail(
+    usernameInput: String,
+    emailAddressInput: String?,
+    url: String,
+    admin: String,
+    authorities: Collection<GrantedAuthority?>?,
+    emailType: EmailType,
+  ): String {
     val username = StringUtils.upperCase(usernameInput)
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
-        .orElseThrow { EntityNotFoundException("User not found with username $username") }
+      .orElseThrow { EntityNotFoundException("User not found with username $username") }
     maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
     if (user.isVerified) {
       user.isVerified = false
       userRepository.save(user)
       return verifyEmailService.requestVerification(
-          usernameInput,
-          emailAddressInput,
-          user.firstName,
-          user.name,
-          url.replace("initial-password", "verify-email-confirm"),
-          emailType)
+        usernameInput,
+        emailAddressInput,
+        user.firstName,
+        user.name,
+        url.replace("initial-password", "verify-email-confirm"),
+        emailType
+      )
     }
     val email = EmailHelper.format(emailAddressInput)
     verifyEmailService.validateEmailAddress(email, emailType)
@@ -156,25 +191,30 @@ class AuthUserService(private val userRepository: UserRepository,
   }
 
   fun findAuthUsersByEmail(email: String?): List<User> =
-      userRepository.findByEmailAndMasterIsTrueOrderByUsername(EmailHelper.format(email))
+    userRepository.findByEmailAndMasterIsTrueOrderByUsername(EmailHelper.format(email))
 
   fun getAuthUserByUsername(username: String?): Optional<User> =
-      userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)))
+    userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)))
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(AuthUserGroupRelationshipException::class)
   fun enableUser(usernameInDb: String, admin: String, authorities: Collection<GrantedAuthority>) =
-      changeUserEnabled(usernameInDb, true, admin, authorities)
+    changeUserEnabled(usernameInDb, true, admin, authorities)
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(AuthUserGroupRelationshipException::class)
   fun disableUser(usernameInDb: String, admin: String, authorities: Collection<GrantedAuthority>) =
-      changeUserEnabled(usernameInDb, false, admin, authorities)
+    changeUserEnabled(usernameInDb, false, admin, authorities)
 
   @Throws(AuthUserGroupRelationshipException::class)
-  private fun changeUserEnabled(username: String, enabled: Boolean, admin: String, authorities: Collection<GrantedAuthority>) {
+  private fun changeUserEnabled(
+    username: String,
+    enabled: Boolean,
+    admin: String,
+    authorities: Collection<GrantedAuthority>,
+  ) {
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
-        .orElseThrow { EntityNotFoundException("User not found with username $username") }
+      .orElseThrow { EntityNotFoundException("User not found with username $username") }
     maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
     user.isEnabled = enabled
     // give user 7 days grace if last logged in more than x days ago
@@ -182,13 +222,19 @@ class AuthUserService(private val userRepository: UserRepository,
       user.lastLoggedIn = LocalDateTime.now().minusDays(loginDaysTrigger - 7L)
     }
     userRepository.save(user)
-    telemetryClient.trackEvent("AuthUserChangeEnabled",
-        mapOf("username" to user.username, "enabled" to enabled.toString(), "admin" to admin), null)
+    telemetryClient.trackEvent(
+      "AuthUserChangeEnabled",
+      mapOf("username" to user.username, "enabled" to enabled.toString(), "admin" to admin),
+      null
+    )
   }
 
   @Throws(CreateUserException::class, VerifyEmailException::class)
   private fun validate(username: String?, email: String?, firstName: String?, lastName: String?, emailType: EmailType) {
-    if (username.isNullOrBlank() || username.length < MIN_LENGTH_USERNAME) throw CreateUserException("username", "length")
+    if (username.isNullOrBlank() || username.length < MIN_LENGTH_USERNAME) throw CreateUserException(
+      "username",
+      "length"
+    )
 
     if (username.length > MAX_LENGTH_USERNAME) throw CreateUserException("username", "maxlength")
     if (!username.matches("^[A-Z0-9_]*\$".toRegex())) throw CreateUserException("username", "format")
@@ -255,10 +301,11 @@ class AuthUserService(private val userRepository: UserRepository,
   }
 
   class CreateUserException(val field: String, val errorCode: String) :
-      Exception("Create user failed for field $field with reason: $errorCode")
+    Exception("Create user failed for field $field with reason: $errorCode")
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
+
     // Data item field size validation checks
     private const val MAX_LENGTH_USERNAME = 30
     private const val MAX_LENGTH_FIRST_NAME = 50
@@ -267,5 +314,4 @@ class AuthUserService(private val userRepository: UserRepository,
     private const val MIN_LENGTH_FIRST_NAME = 2
     private const val MIN_LENGTH_LAST_NAME = 2
   }
-
 }

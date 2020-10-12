@@ -63,7 +63,9 @@ class UserRepositoryTest {
 
   @Test
   fun givenATransientEntityItCanBePersisted() {
-    val transientEntity = User.builder().username("transiententity").email("transient@b.com").mobile("07700900321").source(delius).mfaPreference(TEXT).build()
+    val transientEntity =
+      User.builder().username("transiententity").email("transient@b.com").mobile("07700900321").source(delius)
+        .mfaPreference(TEXT).build()
     val persistedEntity = repository.save(transientEntity)
     TestTransaction.flagForCommit()
     TestTransaction.end()
@@ -99,7 +101,8 @@ class UserRepositoryTest {
     assertThat(retrievedEntity.username).isEqualTo(transientEntity.username)
     assertThat(retrievedEntity.email).isEqualTo(transientEntity.email)
     assertThat(retrievedEntity.name).isEqualTo("first last")
-    assertThat(retrievedEntity.authorities).extracting<String> { obj: Authority -> obj.authority }.containsOnly("ROLE_LICENCE_VARY", "ROLE_GLOBAL_SEARCH")
+    assertThat(retrievedEntity.authorities).extracting<String> { obj: Authority -> obj.authority }
+      .containsOnly("ROLE_LICENCE_VARY", "ROLE_GLOBAL_SEARCH")
     assertThat(retrievedEntity.mfaPreference).isEqualTo(EMAIL)
   }
 
@@ -133,7 +136,8 @@ class UserRepositoryTest {
     val retrievedEntity = repository.findByUsername("AUTH_ADM").orElseThrow()
     assertThat(retrievedEntity.username).isEqualTo("AUTH_ADM")
     assertThat(retrievedEntity.person.firstName).isEqualTo("Auth")
-    assertThat(retrievedEntity.authorities).extracting<String> { obj: Authority -> obj.authority }.containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS")
+    assertThat(retrievedEntity.authorities).extracting<String> { obj: Authority -> obj.authority }
+      .containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS")
     assertThat(retrievedEntity.email).isEqualTo("auth_test2@digital.justice.gov.uk")
     assertThat(retrievedEntity.isVerified).isTrue()
     assertThat(retrievedEntity.mfaPreference).isEqualTo(EMAIL)
@@ -155,7 +159,8 @@ class UserRepositoryTest {
     TestTransaction.start()
     val retrievedEntity = repository.findByUsername("AUTH_TEST").orElseThrow()
     val authorities = retrievedEntity.authorities
-    assertThat(authorities).extracting<String> { obj: Authority -> obj.authority }.containsOnly("ROLE_LICENCE_VARY", "ROLE_GLOBAL_SEARCH")
+    assertThat(authorities).extracting<String> { obj: Authority -> obj.authority }
+      .containsOnly("ROLE_LICENCE_VARY", "ROLE_GLOBAL_SEARCH")
     authorities.removeIf { a: Authority -> "ROLE_LICENCE_VARY" == a.authority }
     assertThat(authorities).extracting<String> { obj: Authority -> obj.authority }.containsOnly("ROLE_GLOBAL_SEARCH")
     repository.save(retrievedEntity)
@@ -163,7 +168,8 @@ class UserRepositoryTest {
     TestTransaction.end()
     TestTransaction.start()
     val retrievedEntity2 = repository.findByUsername("AUTH_TEST").orElseThrow()
-    assertThat(retrievedEntity2.authorities).extracting<String> { obj: Authority -> obj.authority }.containsOnly("ROLE_GLOBAL_SEARCH")
+    assertThat(retrievedEntity2.authorities).extracting<String> { obj: Authority -> obj.authority }
+      .containsOnly("ROLE_GLOBAL_SEARCH")
   }
 
   @Test
@@ -183,7 +189,8 @@ class UserRepositoryTest {
     TestTransaction.start()
     val retrievedEntity = repository.findByUsername("AUTH_TEST").orElseThrow()
     val groups = retrievedEntity.groups
-    assertThat(groups).extracting<String> { obj: Group -> obj.groupCode }.containsOnly("SITE_1_GROUP_1", "SITE_3_GROUP_1")
+    assertThat(groups).extracting<String> { obj: Group -> obj.groupCode }
+      .containsOnly("SITE_1_GROUP_1", "SITE_3_GROUP_1")
     groups.removeIf { a: Group -> "SITE_3_GROUP_1" == a.groupCode }
     assertThat(groups).extracting<String> { obj: Group -> obj.groupCode }.containsOnly("SITE_1_GROUP_1")
     repository.save(retrievedEntity)
@@ -191,7 +198,8 @@ class UserRepositoryTest {
     TestTransaction.end()
     TestTransaction.start()
     val retrievedEntity2 = repository.findByUsername("AUTH_TEST").orElseThrow()
-    assertThat(retrievedEntity2.groups).extracting<String> { obj: Group -> obj.groupCode }.containsOnly("SITE_1_GROUP_1")
+    assertThat(retrievedEntity2.groups).extracting<String> { obj: Group -> obj.groupCode }
+      .containsOnly("SITE_1_GROUP_1")
   }
 
   @Test
@@ -220,16 +228,18 @@ class UserRepositoryTest {
     val retrievedEntity = repository.findByUsername(transientEntity.username).orElseThrow()
     retrievedEntity.findContact(SECONDARY_EMAIL).ifPresent { it.verified = true }
     assertThat(retrievedEntity.contacts).containsExactlyInAnyOrder(
-        Contact(SECONDARY_EMAIL, "some value", true),
-        Contact(MOBILE_PHONE, "some mobile", false))
+      Contact(SECONDARY_EMAIL, "some value", true),
+      Contact(MOBILE_PHONE, "some mobile", false)
+    )
     repository.save(retrievedEntity)
     TestTransaction.flagForCommit()
     TestTransaction.end()
     TestTransaction.start()
     val retrievedEntity2 = repository.findByUsername(transientEntity.username).orElseThrow()
     assertThat(retrievedEntity2.contacts).containsExactlyInAnyOrder(
-        Contact(SECONDARY_EMAIL, "some value", true),
-        Contact(MOBILE_PHONE, "some mobile", false))
+      Contact(SECONDARY_EMAIL, "some value", true),
+      Contact(MOBILE_PHONE, "some mobile", false)
+    )
   }
 
   @Test
@@ -251,7 +261,8 @@ class UserRepositoryTest {
 
   @Test
   fun findByEmail() {
-    assertThat(repository.findByEmail("auth_test2@digital.justice.gov.uk")).extracting<String> { it.username }.contains("AUTH_ADM", "AUTH_EXPIRED")
+    assertThat(repository.findByEmail("auth_test2@digital.justice.gov.uk")).extracting<String> { it.username }
+      .contains("AUTH_ADM", "AUTH_EXPIRED")
   }
 
   @Test
@@ -262,8 +273,8 @@ class UserRepositoryTest {
   @Test
   fun findByEmailAndMasterIsTrue() {
     assertThat(repository.findByEmailAndMasterIsTrueOrderByUsername("auth_test2@digital.justice.gov.uk"))
-        .extracting<String> { it.username }
-        .contains("AUTH_ADM", "AUTH_EXPIRED")
+      .extracting<String> { it.username }
+      .contains("AUTH_ADM", "AUTH_EXPIRED")
   }
 
   @Test
@@ -274,108 +285,136 @@ class UserRepositoryTest {
   @Test
   fun findAll_UserFilter_ByRole() {
     assertThat(repository.findAll(UserFilter.builder().roleCode("LICENCE_VARY").build()))
-        .extracting<String> { it.username }
-        .containsExactly("AUTH_RO_VARY_USER")
+      .extracting<String> { it.username }
+      .containsExactly("AUTH_RO_VARY_USER")
   }
 
   @Test
   fun findAll_UserFilter_ByGroup() {
     assertThat(repository.findAll(UserFilter.builder().groupCode("SITE_1_GROUP_2").build()))
-        .extracting<String> { it.username }
-        .containsExactly("AUTH_RO_VARY_USER", "AUTH_GROUP_MANAGER")
+      .extracting<String> { it.username }
+      .containsExactly("AUTH_RO_VARY_USER", "AUTH_GROUP_MANAGER")
   }
 
   @Test
   fun findAll_UserFilter_ByUsername() {
     assertThat(repository.findAll(UserFilter.builder().name("_expired").build()))
-        .extracting<String> { it.username }
-        .contains("AUTH_EXPIRED", "AUTH_MFA_EXPIRED_USER")
+      .extracting<String> { it.username }
+      .contains("AUTH_EXPIRED", "AUTH_MFA_EXPIRED_USER")
   }
 
   @Test
   fun findAll_UserFilter_ByEmail() {
     assertThat(repository.findAll(UserFilter.builder().name("test@digital").build()))
-        .extracting<String> { it.username }
-        .containsOnly("AUTH_TEST", "AUTH_RO_USER_TEST", "AUTH_CHANGE_TEST", "AUTH_CHANGE2_TEST", "AUTH_CHANGE_EMAIL")
+      .extracting<String> { it.username }
+      .containsOnly("AUTH_TEST", "AUTH_RO_USER_TEST", "AUTH_CHANGE_TEST", "AUTH_CHANGE2_TEST", "AUTH_CHANGE_EMAIL")
   }
 
   @Test
   fun findAll_UserFilter_ByFirstNameLastName() {
     assertThat(repository.findAll(UserFilter.builder().name("a no").build()))
-        .extracting<String> { it.username }
-        .containsExactly("AUTH_NO_EMAIL", "AUTH_MFA_NOEMAIL_USER", "NOMIS_ENABLED_AUTH_DISABLED", "NOMIS_LOCKED_AUTH_DISABLED"
-            , "DELIUS_ENABLED_AUTH_DISABLED", "AUTH_MFA_NOTEXT_USER", "AUTH_MFA_PREF_TEXT_EMAIL"
-        )
+      .extracting<String> { it.username }
+      .containsExactly(
+        "AUTH_NO_EMAIL",
+        "AUTH_MFA_NOEMAIL_USER",
+        "NOMIS_ENABLED_AUTH_DISABLED",
+        "NOMIS_LOCKED_AUTH_DISABLED",
+        "DELIUS_ENABLED_AUTH_DISABLED",
+        "AUTH_MFA_NOTEXT_USER",
+        "AUTH_MFA_PREF_TEXT_EMAIL"
+      )
   }
 
   @Test
   fun findAll_UserFilter_ByLastNameFirstName() {
     assertThat(repository.findAll(UserFilter.builder().name("orton, r").build()))
-        .extracting<String> { it.username }
-        .containsOnly("AUTH_RO_USER", "AUTH_RO_VARY_USER", "AUTH_RO_USER_TEST", "AUTH_RO_USER_TEST2")
+      .extracting<String> { it.username }
+      .containsOnly("AUTH_RO_USER", "AUTH_RO_VARY_USER", "AUTH_RO_USER_TEST", "AUTH_RO_USER_TEST2")
   }
 
   @Test
   fun findAll_UserFilter_all() {
-    assertThat(repository.findAll(UserFilter.builder().roleCode("LICENCE_VARY").groupCode("SITE_1_GROUP_2").name("vary").build()))
-        .extracting<String> { it.username }
-        .containsExactly("AUTH_RO_VARY_USER")
+    assertThat(
+      repository.findAll(
+        UserFilter.builder().roleCode("LICENCE_VARY").groupCode("SITE_1_GROUP_2").name("vary").build()
+      )
+    )
+      .extracting<String> { it.username }
+      .containsExactly("AUTH_RO_VARY_USER")
   }
 
   @Suppress("UNCHECKED_CAST")
   @Test
   fun findInactiveUsers_First10() {
-    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1))
-    val abstractListAssert = assertThat(inactive).extracting<String> { it.username }.contains("AUTH_INACTIVE") as AbstractListAssert<*, MutableList<out String>, String, ObjectAssert<String>>
+    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(
+      LocalDateTime.now().plusMinutes(1)
+    )
+    val abstractListAssert = assertThat(inactive).extracting<String> { it.username }
+      .contains("AUTH_INACTIVE") as AbstractListAssert<*, MutableList<out String>, String, ObjectAssert<String>>
     abstractListAssert.doesNotContain("AUTH_DISABLED", "ITAG_USER")
     assertThat(inactive).hasSize(10)
   }
 
   @Test
   fun findInactiveUsers_OrderByLastLoggedInOldestFirst() {
-    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1))
+    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(
+      LocalDateTime.now().plusMinutes(1)
+    )
     assertThat(inactive).extracting<String> { it.username }.first().isEqualTo("AUTH_USER_LAST_LOGIN")
   }
 
   @Test
   fun findInactiveUsers_NoRows() {
-    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.parse("2019-01-01T12:00:00").minusSeconds(1))
+    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(
+      LocalDateTime.parse("2019-01-01T12:00:00").minusSeconds(1)
+    )
     assertThat(inactive).isEmpty()
   }
 
   @Test
   fun findInactiveUsers_SingleRow() {
-    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(LocalDateTime.parse("2019-02-03T13:23:19").plusSeconds(1))
+    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(
+      LocalDateTime.parse("2019-02-03T13:23:19").plusSeconds(1)
+    )
     assertThat(inactive).extracting<String> { it.username }.containsExactly("AUTH_USER_LAST_LOGIN", "AUTH_INACTIVE")
   }
 
   @Suppress("UNCHECKED_CAST")
   @Test
   fun findDisabledUsers_First10() {
-    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1))
-    val abstractListAssert = assertThat(inactive).extracting<String>(User::getUsername).contains("AUTH_DELETE", "AUTH_DELETEALL", "NOMIS_DELETE") as AbstractListAssert<*, MutableList<out String>, String, ObjectAssert<String>>
+    val inactive =
+      repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1))
+    val abstractListAssert = assertThat(inactive).extracting<String>(User::getUsername).contains(
+      "AUTH_DELETE",
+      "AUTH_DELETEALL",
+      "NOMIS_DELETE"
+    ) as AbstractListAssert<*, MutableList<out String>, String, ObjectAssert<String>>
     abstractListAssert.doesNotContain("AUTH_DISABLED", "AUTH_USER")
     assertThat(inactive).hasSize(10)
   }
 
   @Test
   fun findDisabledUsers_OrderByLastLoggedInOldestFirst() {
-    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1))
+    val inactive =
+      repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1))
     assertThat(inactive).extracting<String> { it.username }.first().isEqualTo("AUTH_DELETE")
   }
 
   @Test
   fun findDisabledUsers_NoRows() {
-    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2018-01-02T13:23:19").minusSeconds(1))
+    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(
+      LocalDateTime.parse("2018-01-02T13:23:19").minusSeconds(1)
+    )
     assertThat(inactive).isEmpty()
   }
 
   @Test
   fun findDisabledUsers_SingleRow() {
-    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.parse("2018-01-02T13:23:19").plusSeconds(1))
+    val inactive = repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(
+      LocalDateTime.parse("2018-01-02T13:23:19").plusSeconds(1)
+    )
     assertThat(inactive).extracting<String> { it.username }.containsExactly("AUTH_DELETE")
   }
-
 
   private fun transientEntity() = User.builder().username("user").source(nomis).email("a@b.com").build()
 

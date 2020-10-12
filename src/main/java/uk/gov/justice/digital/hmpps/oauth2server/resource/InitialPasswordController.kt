@@ -18,14 +18,24 @@ import javax.servlet.http.HttpServletRequest
 @Slf4j
 @Controller
 @Validated
-class InitialPasswordController(resetPasswordService: ResetPasswordService,
-                                private val initialPasswordService: InitialPasswordService,
-                                private val tokenService: TokenService, userService: UserService,
-                                telemetryClient: TelemetryClient,
-                                @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?,
-                                @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean) :
-    AbstractPasswordController(resetPasswordService, tokenService, userService, telemetryClient, "resetPassword", "setPassword", passwordBlacklist) {
-
+class InitialPasswordController(
+  resetPasswordService: ResetPasswordService,
+  private val initialPasswordService: InitialPasswordService,
+  private val tokenService: TokenService,
+  userService: UserService,
+  telemetryClient: TelemetryClient,
+  @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?,
+  @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
+) :
+  AbstractPasswordController(
+    resetPasswordService,
+    tokenService,
+    userService,
+    telemetryClient,
+    "resetPassword",
+    "setPassword",
+    passwordBlacklist
+  ) {
 
   @GetMapping("/initial-password-success")
   fun initialPasswordSuccess(): String = "initialPasswordSuccess"
@@ -44,10 +54,10 @@ class InitialPasswordController(resetPasswordService: ResetPasswordService,
         ModelAndView("redirect:/reset-password")
       }
     }
-        .orElseGet {
-          createModelWithTokenUsernameAndIsAdmin(UserToken.TokenType.RESET, token, "setPassword")
-              .addObject("initial", true)
-        }
+      .orElseGet {
+        createModelWithTokenUsernameAndIsAdmin(UserToken.TokenType.RESET, token, "setPassword")
+          .addObject("initial", true)
+      }
   }
 
   @GetMapping("/initial-password-expired")
@@ -59,4 +69,3 @@ class InitialPasswordController(resetPasswordService: ResetPasswordService,
     return modelAndView
   }
 }
-

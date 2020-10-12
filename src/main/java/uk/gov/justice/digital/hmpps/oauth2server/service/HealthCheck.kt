@@ -21,9 +21,11 @@ abstract class HealthCheck(private val restTemplate: RestTemplate) : HealthIndic
 }
 
 @Component
-class TokenVerificationApiHealth(@Qualifier("tokenVerificationApiHealthRestTemplate") restTemplate: RestTemplate,
-                                 @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean) :
-    HealthCheck(restTemplate) {
+class TokenVerificationApiHealth(
+  @Qualifier("tokenVerificationApiHealthRestTemplate") restTemplate: RestTemplate,
+  @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean,
+) :
+  HealthCheck(restTemplate) {
   override fun health(): Health {
     return if (tokenVerificationEnabled) super.health() else {
       Health.up().withDetail("VerificationDisabled", "token verification is disabled").build()
@@ -32,7 +34,8 @@ class TokenVerificationApiHealth(@Qualifier("tokenVerificationApiHealthRestTempl
 }
 
 @Component
-class DeliusApiHealth(@Qualifier("deliusApiHealthRestTemplate") private val restTemplate: RestTemplate) : HealthCheck(restTemplate) {
+class DeliusApiHealth(@Qualifier("deliusApiHealthRestTemplate") private val restTemplate: RestTemplate) :
+  HealthCheck(restTemplate) {
   override fun health(): Health {
     val health = super.health()
     if (health.status != Status.DOWN) return health

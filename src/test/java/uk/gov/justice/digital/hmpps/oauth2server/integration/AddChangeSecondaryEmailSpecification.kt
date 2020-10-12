@@ -33,7 +33,7 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
   @Test
   fun `Add Secondary email flow but not verify`() {
     goTo(loginPage)
-        .loginAs("AUTH_SECOND_EMAIL_ADD")
+      .loginAs("AUTH_SECOND_EMAIL_ADD")
 
     homePage.navigateToAccountDetails()
 
@@ -42,15 +42,14 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
     newSecondaryEmailPage.addSecondaryEmailAs("bob@gmail.com")
 
     goTo(accountDetailsPage)
-        .isAtPage()
-        .checkSecondaryEmailAndIsNotVerified()
-
+      .isAtPage()
+      .checkSecondaryEmailAndIsNotVerified()
   }
 
   @Test
   fun `Add Secondary email flow and verify`() {
     goTo(loginPage)
-        .loginAs("AUTH_SECOND_EMAIL_UPDATE")
+      .loginAs("AUTH_SECOND_EMAIL_UPDATE")
 
     homePage.navigateToAccountDetails()
 
@@ -65,22 +64,22 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage
-        .isAtPage()
-        .checkSecondaryEmailAndIsNotVerified()
+      .isAtPage()
+      .checkSecondaryEmailAndIsNotVerified()
 
     goTo(verifyLink)
 
     verifySecondaryEmailConfirmPage.isAt()
 
     goTo(accountDetailsPage)
-        .isAtPage()
-        .checkSecondaryEmailAndIsVerified()
+      .isAtPage()
+      .checkSecondaryEmailAndIsVerified()
   }
 
   @Test
   fun `As  delius user add Secondary email flow and verify`() {
     goTo(loginPage)
-        .loginAs("DELIUS_SECOND_EMAIL_UPDATE")
+      .loginAs("DELIUS_SECOND_EMAIL_UPDATE")
 
     homePage.navigateToAccountDetails()
 
@@ -95,25 +94,25 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage
-        .isAtPage()
-        .checkSecondaryEmailAndIsNotVerified()
+      .isAtPage()
+      .checkSecondaryEmailAndIsNotVerified()
 
     goTo(verifyLink)
 
     verifySecondaryEmailConfirmPage.isAt()
 
     goTo(accountDetailsPage)
-        .isAtPage()
-        .checkSecondaryEmailAndIsVerified()
+      .isAtPage()
+      .checkSecondaryEmailAndIsVerified()
   }
 
   @Test
   fun `A user is not allowed to add a secondary email address which is a gsi email address`() {
     goTo(loginPage)
-        .loginAs("AUTH_SECOND_EMAIL_UPDATE")
+      .loginAs("AUTH_SECOND_EMAIL_UPDATE")
 
     goTo(changeSecondaryEmailPage)
-        .updateSecondaryEmailAs("bob@justice.gsi.gov.uk")
+      .updateSecondaryEmailAs("bob@justice.gsi.gov.uk")
 
     changeSecondaryEmailPage.checkError("All gsi.gov.uk have now been migrated to a justice.gov.uk domain. Enter your justice.gov.uk address instead.")
   }
@@ -121,10 +120,10 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
   @Test
   fun `A user is not allowed to add an invalid secondary email address`() {
     goTo(loginPage)
-        .loginAs("AUTH_SECOND_EMAIL_UPDATE")
+      .loginAs("AUTH_SECOND_EMAIL_UPDATE")
 
     goTo(changeSecondaryEmailPage)
-        .updateSecondaryEmailAs("bob@justice")
+      .updateSecondaryEmailAs("bob@justice")
 
     changeSecondaryEmailPage.checkError("Enter an email address in the correct format")
   }
@@ -132,7 +131,7 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
   @Test
   fun `Change secondary email flow current verified email re-entered`() {
     goTo(loginPage)
-        .loginAs("AUTH_SECOND_EMAIL_ALREADY")
+      .loginAs("AUTH_SECOND_EMAIL_ALREADY")
 
     homePage.navigateToAccountDetails()
 
@@ -145,7 +144,10 @@ class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
 }
 
 @PageUrl("/new-backup-email")
-open class ChangeSecondaryEmailPage : AuthPage<ChangeSecondaryEmailPage>("HMPPS Digital Services - Change Backup Email", "What is your new backup email address?") {
+open class ChangeSecondaryEmailPage : AuthPage<ChangeSecondaryEmailPage>(
+  "HMPPS Digital Services - Change Backup Email",
+  "What is your new backup email address?"
+) {
   @FindBy(css = "input[type='submit']")
   private lateinit var changeSecondaryEmailButton: FluentWebElement
   private lateinit var email: FluentWebElement
@@ -158,7 +160,10 @@ open class ChangeSecondaryEmailPage : AuthPage<ChangeSecondaryEmailPage>("HMPPS 
 }
 
 @PageUrl("/new-backup-email")
-open class NewSecondaryEmailPage : AuthPage<NewSecondaryEmailPage>("HMPPS Digital Services - Change Backup Email", "What is your backup email address?") {
+open class NewSecondaryEmailPage : AuthPage<NewSecondaryEmailPage>(
+  "HMPPS Digital Services - Change Backup Email",
+  "What is your backup email address?"
+) {
   @FindBy(css = "input[type='submit']")
   private lateinit var changeSecondaryEmailButton: FluentWebElement
   private lateinit var email: FluentWebElement

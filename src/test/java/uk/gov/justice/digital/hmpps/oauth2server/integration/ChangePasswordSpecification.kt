@@ -27,70 +27,70 @@ class ChangePasswordSpecification : AbstractAuthSpecification() {
   @Test
   fun `Change password no current password entered`() {
     goTo(loginPage)
-        .loginAs("CA_USER")
+      .loginAs("CA_USER")
 
     homePage.navigateToAccountDetails()
 
     accountDetailsPage
-        .isAtPage()
-        .navigateToChangePassword()
+      .isAtPage()
+      .navigateToChangePassword()
 
     passwordPromptPage
-        .isAtPage()
-        .enterCurrentPassword("")
-        .checkError("Enter your current password")
+      .isAtPage()
+      .enterCurrentPassword("")
+      .checkError("Enter your current password")
   }
 
   @Test
   fun `Change password wrong current locks account`() {
     goTo(loginPage)
-        .loginAs("AUTH_CHANGE_TEST")
+      .loginAs("AUTH_CHANGE_TEST")
 
     homePage.navigateToAccountDetails()
 
     accountDetailsPage
-        .isAtPage()
-        .navigateToChangePassword()
+      .isAtPage()
+      .navigateToChangePassword()
 
     passwordPromptPage
-        .isAtPage()
-        .enterCurrentPassword("wrongpass")
-        .checkError("Your password is incorrect. You will be locked out if you enter the wrong details 3 times.")
-        .enterCurrentPassword("wrongpass")
-        .checkError("Your password is incorrect. You will be locked out if you enter the wrong details 3 times.")
-        .enterCurrentPassword("wrongpass")
+      .isAtPage()
+      .enterCurrentPassword("wrongpass")
+      .checkError("Your password is incorrect. You will be locked out if you enter the wrong details 3 times.")
+      .enterCurrentPassword("wrongpass")
+      .checkError("Your password is incorrect. You will be locked out if you enter the wrong details 3 times.")
+      .enterCurrentPassword("wrongpass")
 
     loginPage
-        .checkLoginAccountLockedError()
-        .loginError("AUTH_CHANGE_TEST")
-        .checkLoginAccountLockedError()
+      .checkLoginAccountLockedError()
+      .loginError("AUTH_CHANGE_TEST")
+      .checkLoginAccountLockedError()
   }
 
   @Test
   fun `Change password flow`() {
     goTo(loginPage)
-        .loginAs("AUTH_CHANGE2_TEST")
+      .loginAs("AUTH_CHANGE2_TEST")
 
     homePage.navigateToAccountDetails()
 
     accountDetailsPage
-        .isAtPage()
-        .navigateToChangePassword()
+      .isAtPage()
+      .navigateToChangePassword()
 
     passwordPromptPage
-        .isAtPage()
-        .enterCurrentPassword("password123456")
+      .isAtPage()
+      .enterCurrentPassword("password123456")
 
     newPasswordPage
-        .isAtPage()
-        .inputAndConfirmNewPassword("newpass123", "differentpass")
-        .checkError("Your passwords do not match. Enter matching passwords.")
-        .inputAndConfirmNewPassword("newpass123", "newpass123")
+      .isAtPage()
+      .inputAndConfirmNewPassword("newpass123", "differentpass")
+      .checkError("Your passwords do not match. Enter matching passwords.")
+      .inputAndConfirmNewPassword("newpass123", "newpass123")
 
     changePasswordSuccessPage
-        .isAtPage()
-        .continueToAccountDetailsPage()
-        .logOut()
+      .isAtPage()
+      .continueToAccountDetailsPage()
+      .logOut()
 
     goTo(loginPage).loginAs("AUTH_CHANGE2_TEST", "newpass123")
     homePage.isAt()
@@ -99,36 +99,37 @@ class ChangePasswordSpecification : AbstractAuthSpecification() {
   @Test
   fun `Change password MFA user`() {
     goTo(loginPage)
-        .loginWithMfaEmail("AUTH_MFA_CHANGE")
-        .submitCode()
+      .loginWithMfaEmail("AUTH_MFA_CHANGE")
+      .submitCode()
 
     homePage.navigateToAccountDetails()
 
     accountDetailsPage
-        .isAtPage()
-        .navigateToChangePassword()
+      .isAtPage()
+      .navigateToChangePassword()
 
     passwordPromptPage
-        .isAtPage()
-        .enterCurrentPassword("password123456")
+      .isAtPage()
+      .enterCurrentPassword("password123456")
 
     newPasswordPage
-        .isAtPage()
-        .inputAndConfirmNewPassword("helloworld2", "helloworld2")
+      .isAtPage()
+      .inputAndConfirmNewPassword("helloworld2", "helloworld2")
 
     changePasswordSuccessPage
-        .continueToAccountDetailsPage()
-        .logOut()
+      .continueToAccountDetailsPage()
+      .logOut()
 
     goTo(loginPage)
-        .loginWithMfaEmail("AUTH_MFA_CHANGE", "helloworld2")
-        .submitCode()
+      .loginWithMfaEmail("AUTH_MFA_CHANGE", "helloworld2")
+      .submitCode()
     homePage.isAt()
   }
 }
 
 @PageUrl("/existing-password")
-open class PasswordPromptPage : AuthPage<PasswordPromptPage>("HMPPS Digital Services - Change Password Request", "What is your current password?") {
+open class PasswordPromptPage :
+  AuthPage<PasswordPromptPage>("HMPPS Digital Services - Change Password Request", "What is your current password?") {
   @FindBy(css = "input[type='submit']")
   private lateinit var continueButton: FluentWebElement
 
@@ -144,7 +145,8 @@ open class PasswordPromptPage : AuthPage<PasswordPromptPage>("HMPPS Digital Serv
 }
 
 @PageUrl("/new-password")
-open class NewPasswordPage : AuthPage<NewPasswordPage>("HMPPS Digital Services - Change Password", "Create a new password") {
+open class NewPasswordPage :
+  AuthPage<NewPasswordPage>("HMPPS Digital Services - Change Password", "Create a new password") {
   @FindBy(css = "input[id='new-password']")
   private lateinit var newPassword: FluentWebElement
 
@@ -163,7 +165,10 @@ open class NewPasswordPage : AuthPage<NewPasswordPage>("HMPPS Digital Services -
 }
 
 @PageUrl("/change-password-success")
-open class ChangePasswordSuccessPage : AuthPage<ChangePasswordSuccessPage>("HMPPS Digital Services - Password Changed Confirmation", "Your password has been changed") {
+open class ChangePasswordSuccessPage : AuthPage<ChangePasswordSuccessPage>(
+  "HMPPS Digital Services - Password Changed Confirmation",
+  "Your password has been changed"
+) {
   @FindBy(css = "#continue")
   private lateinit var continueButton: FluentWebElement
 

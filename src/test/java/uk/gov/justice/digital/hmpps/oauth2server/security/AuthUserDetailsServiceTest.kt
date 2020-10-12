@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Optional
 import javax.persistence.EntityManager
 
 class AuthUserDetailsServiceTest {

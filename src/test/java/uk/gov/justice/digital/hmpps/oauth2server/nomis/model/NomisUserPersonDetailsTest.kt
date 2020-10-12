@@ -60,7 +60,10 @@ class NomisUserPersonDetailsTest {
     assertThat(user.source).isEqualTo(AuthSource.nomis)
   }
 
-  private fun createStaffUserAccount(status: String = "STATUS", passwordExpiry: LocalDateTime? = null): NomisUserPersonDetails {
+  private fun createStaffUserAccount(
+    status: String = "STATUS",
+    passwordExpiry: LocalDateTime? = null,
+  ): NomisUserPersonDetails {
     val account = NomisUserPersonDetails()
     val detail = AccountDetail()
     account.accountDetail = detail

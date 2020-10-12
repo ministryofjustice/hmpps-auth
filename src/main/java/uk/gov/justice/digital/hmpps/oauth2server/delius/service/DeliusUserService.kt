@@ -16,17 +16,19 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDe
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole
 import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Optional
 
 class DeliusUserList : MutableList<UserDetails> by ArrayList()
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Service
-class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemplate: RestTemplate,
-                        @Value("\${delius.enabled:false}") private val deliusEnabled: Boolean,
-                        deliusRoleMappings: DeliusRoleMappings) {
-  private val mappings: Map<String, List<String>> = deliusRoleMappings.mappings.mapKeys { it.key.toUpperCase().replace('.', '_') }
+class DeliusUserService(
+  @Qualifier("deliusApiRestTemplate") private val restTemplate: RestTemplate,
+  @Value("\${delius.enabled:false}") private val deliusEnabled: Boolean,
+  deliusRoleMappings: DeliusRoleMappings,
+) {
+  private val mappings: Map<String, List<String>> =
+    deliusRoleMappings.mappings.mapKeys { it.key.toUpperCase().replace('.', '_') }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -48,7 +50,12 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
           throw DeliusAuthenticationServiceException(email)
         }
         is HttpClientErrorException -> {
-          log.warn("Unable to retrieve details from delius for user with email {} due to http error [{}]", email, e.statusCode, e)
+          log.warn(
+            "Unable to retrieve details from delius for user with email {} due to http error [{}]",
+            email,
+            e.statusCode,
+            e
+          )
           emptyList()
         }
         else -> {
@@ -107,19 +114,20 @@ class DeliusUserService(@Qualifier("deliusApiRestTemplate") private val restTemp
   }
 
   private fun mapUserDetailsToDeliusUser(userDetails: UserDetails): DeliusUserPersonDetails =
-      DeliusUserPersonDetails(
-          username = userDetails.username.toUpperCase(),
-          userId = userDetails.userId,
-          firstName = userDetails.firstName,
-          surname = userDetails.surname,
-          email = userDetails.email.toLowerCase(),
-          enabled = userDetails.enabled,
-          roles = mapUserRolesToAuthorities(userDetails.roles))
+    DeliusUserPersonDetails(
+      username = userDetails.username.toUpperCase(),
+      userId = userDetails.userId,
+      firstName = userDetails.firstName,
+      surname = userDetails.surname,
+      email = userDetails.email.toLowerCase(),
+      enabled = userDetails.enabled,
+      roles = mapUserRolesToAuthorities(userDetails.roles)
+    )
 
   private fun mapUserRolesToAuthorities(userRoles: List<UserRole>): Collection<GrantedAuthority> =
-      userRoles.mapNotNull { (name) -> mappings[name] }
-          .flatMap { r -> r.map(::SimpleGrantedAuthority) }
-          .toSet()
+    userRoles.mapNotNull { (name) -> mappings[name] }
+      .flatMap { r -> r.map(::SimpleGrantedAuthority) }
+      .toSet()
 
   fun changePassword(username: String, password: String) {
     if (!deliusEnabled) {

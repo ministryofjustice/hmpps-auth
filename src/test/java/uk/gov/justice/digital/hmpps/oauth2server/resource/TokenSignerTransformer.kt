@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils
 import java.net.URL
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import java.util.*
+import java.util.HashMap
 
 /**
  * Takes the static token responses, incorporates the nonce from the client request into the ID token, and then signs them
@@ -33,7 +33,12 @@ class TokenSignerTransformer : ResponseDefinitionTransformer() {
 
   override fun applyGlobally(): Boolean = false
 
-  override fun transform(request: Request, responseDefinition: ResponseDefinition, files: FileSource, parameters: Parameters): ResponseDefinition {
+  override fun transform(
+    request: Request,
+    responseDefinition: ResponseDefinition,
+    files: FileSource,
+    parameters: Parameters,
+  ): ResponseDefinition {
 
     val accessToken = mapper.readValue(parameters.readJson("accessToken"), typeRef)
     val idToken = mapper.readValue(parameters.readJson("idToken"), typeRef)
@@ -47,16 +52,16 @@ class TokenSignerTransformer : ResponseDefinitionTransformer() {
     val rsaJWK = RSAKey.parse(parameters.readJson("privateKey").readText())
 
     val jsonResponse = mapOf(
-        "token_type" to "bearer",
-        "access_token" to getSignedToken(rsaJWK, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(accessToken)),
-        "id_token" to getSignedToken(rsaJWK, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(idToken)),
+      "token_type" to "bearer",
+      "access_token" to getSignedToken(rsaJWK, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(accessToken)),
+      "id_token" to getSignedToken(rsaJWK, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(idToken)),
     )
 
     return ResponseDefinitionBuilder()
-        .withHeader("Content-Type", "application/json")
-        .withStatus(200)
-        .withBody(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonResponse))
-        .build()
+      .withHeader("Content-Type", "application/json")
+      .withStatus(200)
+      .withBody(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonResponse))
+      .build()
   }
 
   @Throws(JOSEException::class)
@@ -64,8 +69,9 @@ class TokenSignerTransformer : ResponseDefinitionTransformer() {
     val signer: JWSSigner = RSASSASigner(rsaJWK)
 
     val jwsObject = JWSObject(
-        JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaJWK.keyID).build(),
-        Payload(token))
+      JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaJWK.keyID).build(),
+      Payload(token)
+    )
 
     jwsObject.sign(signer)
     return jwsObject.serialize()
@@ -75,12 +81,12 @@ class TokenSignerTransformer : ResponseDefinitionTransformer() {
     val valueMap = HashMap<String, String>()
     if (StringUtils.isNotEmpty(requestBody) && (requestBody.contains("&") || requestBody.contains("="))) {
       requestBody.split("&")
-          .map { it.split("=") }
-          .forEach { valueMap[it[0]] = if (it.size > 1) URLDecoder.decode(it[1], StandardCharsets.UTF_8.name()) else "" }
+        .map { it.split("=") }
+        .forEach { valueMap[it[0]] = if (it.size > 1) URLDecoder.decode(it[1], StandardCharsets.UTF_8.name()) else "" }
     }
     return valueMap
   }
 
   internal fun Parameters.readJson(parameterName: String): URL =
-      this@TokenSignerTransformer::class.java.getResource(this.get(parameterName) as String)
+    this@TokenSignerTransformer::class.java.getResource(this.get(parameterName) as String)
 }

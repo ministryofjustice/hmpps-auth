@@ -77,7 +77,7 @@ public class VerifyEmailController {
         }
 
         // retrieve email addresses that are currently in use
-        final var existingEmailAddresses = verifyEmailService.getExistingEmailAddresses(username);
+        final var existingEmailAddresses = verifyEmailService.getExistingEmailAddressesForUsername(username);
 
         modelAndView.addObject("candidates", existingEmailAddresses);
 
@@ -231,7 +231,7 @@ public class VerifyEmailController {
     }
 
     @GetMapping("/verify-email-expired")
-    public ModelAndView verifyEmailLinkExpired(@RequestParam String token, HttpServletRequest request) throws VerifyEmailException, NotificationClientException {
+    public ModelAndView verifyEmailLinkExpired(@RequestParam final String token, final HttpServletRequest request) throws VerifyEmailException, NotificationClientException {
         final var user = tokenService.getUserFromToken(TokenType.VERIFIED, token);
         final var originalUrl = request.getRequestURL().toString();
         final var url = originalUrl.replace("expired", "confirm?token=");
@@ -257,7 +257,7 @@ public class VerifyEmailController {
     }
 
     @GetMapping("/verify-email-secondary-expired")
-    public ModelAndView verifySecondaryEmailLinkExpired(@RequestParam String token, HttpServletRequest request) throws VerifyEmailException, NotificationClientException {
+    public ModelAndView verifySecondaryEmailLinkExpired(@RequestParam final String token, final HttpServletRequest request) throws VerifyEmailException, NotificationClientException {
         final var user = tokenService.getUserFromToken(TokenType.SECONDARY, token);
         final var originalUrl = request.getRequestURL().toString();
         final var url = originalUrl.replace("expired", "confirm?token=");

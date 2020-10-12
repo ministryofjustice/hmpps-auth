@@ -20,7 +20,8 @@ class LockingAuthenticationProviderTest {
   private val telemetryClient: TelemetryClient = mock()
   private val mfaService: MfaService = mock()
 
-  private val lockingAuthenticationProvider = AuthAuthenticationProvider(userDetailsService, userRetriesService, mfaService, userService, telemetryClient)
+  private val lockingAuthenticationProvider =
+    AuthAuthenticationProvider(userDetailsService, userRetriesService, mfaService, userService, telemetryClient)
 
   @Test
   fun `authenticate nomisUser`() { // test that oracle passwords are authenticated okay

@@ -29,8 +29,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFail
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserStateAuthenticationFailureHandler
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
-import java.util.*
 import java.util.Map.entry
+import java.util.Optional
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -44,8 +44,16 @@ class ChangePasswordControllerTest {
   private val telemetryClient: TelemetryClient = mock()
   private val request: HttpServletRequest = mock()
   private val response: HttpServletResponse = mock()
-  private val controller = ChangePasswordController(jwtAuthenticationSuccessHandler, userStateAuthenticationFailureHandler,
-      authenticationManager, changePasswordService, tokenService, userService, telemetryClient, setOf("password1"))
+  private val controller = ChangePasswordController(
+    jwtAuthenticationSuccessHandler,
+    userStateAuthenticationFailureHandler,
+    authenticationManager,
+    changePasswordService,
+    tokenService,
+    userService,
+    telemetryClient,
+    setOf("password1")
+  )
 
   @Nested
   inner class NewPasswordRequest {
@@ -133,7 +141,16 @@ class ChangePasswordControllerTest {
       setupGetUserCallForProfile()
       val modelAndView = controller.changePassword("d", "@fewfewfew1", "@fewfewfew1", request, response, true)
       assertThat(modelAndView!!.viewName).isEqualTo("changePassword")
-      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "d", "isAdmin" to false, "error" to true, "errornew" to listOf("alphanumeric"), "expired" to true, "username" to "someuser"))
+      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "token" to "d",
+          "isAdmin" to false,
+          "error" to true,
+          "errornew" to listOf("alphanumeric"),
+          "expired" to true,
+          "username" to "someuser"
+        )
+      )
     }
 
     @Test
@@ -156,10 +173,20 @@ class ChangePasswordControllerTest {
     fun changePassword_ValidationFailure() {
       setupCheckAndGetTokenValid()
       setupGetUserCallForProfile()
-      doThrow(PasswordValidationFailureException()).whenever(changePasswordService).setPassword(anyString(), anyString())
+      doThrow(PasswordValidationFailureException()).whenever(changePasswordService)
+        .setPassword(anyString(), anyString())
       val redirect = controller.changePassword("user", "password2", "password2", request, response, true)
       assertThat(redirect!!.viewName).isEqualTo("changePassword")
-      assertThat(redirect.model).containsExactlyInAnyOrderEntriesOf(mapOf("token" to "user", "isAdmin" to false, "error" to true, "errornew" to "validation", "expired" to true, "username" to "someuser"))
+      assertThat(redirect.model).containsExactlyInAnyOrderEntriesOf(
+        mapOf(
+          "token" to "user",
+          "isAdmin" to false,
+          "error" to true,
+          "errornew" to "validation",
+          "expired" to true,
+          "username" to "someuser"
+        )
+      )
     }
 
     @Test
@@ -168,7 +195,16 @@ class ChangePasswordControllerTest {
       setupGetUserCallForProfile()
       val exception = RuntimeException()
       doThrow(exception).whenever(changePasswordService).setPassword(anyString(), anyString())
-      assertThatThrownBy { controller.changePassword("user", "password2", "password2", request, response, true) }.isEqualTo(exception)
+      assertThatThrownBy {
+        controller.changePassword(
+          "user",
+          "password2",
+          "password2",
+          request,
+          response,
+          true
+        )
+      }.isEqualTo(exception)
     }
 
     @Test
@@ -179,10 +215,12 @@ class ChangePasswordControllerTest {
       whenever(authenticationManager.authenticate(any())).thenReturn(token)
       val redirect = controller.changePassword("user", "password2", "password2", request, response, true)
       assertThat(redirect).isNull()
-      verify(authenticationManager).authenticate(check {
-        assertThat(it.principal).isEqualTo("SOMEUSER")
-        assertThat(it.credentials).isEqualTo("password2")
-      })
+      verify(authenticationManager).authenticate(
+        check {
+          assertThat(it.principal).isEqualTo("SOMEUSER")
+          assertThat(it.credentials).isEqualTo("password2")
+        }
+      )
       verify(changePasswordService).setPassword("user", "password2")
       verify(jwtAuthenticationSuccessHandler).onAuthenticationSuccess(request, response, token)
     }
@@ -194,9 +232,13 @@ class ChangePasswordControllerTest {
       setupGetUserCallForProfile()
       whenever(authenticationManager.authenticate(any())).thenReturn(token)
       controller.changePassword("user", "password2", "password2", request, response, true)
-      verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), check {
-        assertThat(it).containsExactly(entry("username", "someuser"))
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("ChangePasswordSuccess"),
+        check {
+          assertThat(it).containsExactly(entry("username", "someuser"))
+        },
+        isNull()
+      )
     }
 
     @Test
@@ -206,9 +248,13 @@ class ChangePasswordControllerTest {
       setupGetUserCallForProfile()
       whenever(authenticationManager.authenticate(any())).thenReturn(token)
       controller.changePassword("user", "password2", "password2", request, response, true)
-      verify(telemetryClient).trackEvent(eq("ChangePasswordAuthenticateSuccess"), check {
-        assertThat(it).containsExactly(entry("username", "someuser"))
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("ChangePasswordAuthenticateSuccess"),
+        check {
+          assertThat(it).containsExactly(entry("username", "someuser"))
+        },
+        isNull()
+      )
     }
 
     @Test
@@ -220,13 +266,14 @@ class ChangePasswordControllerTest {
       val redirect = controller.changePassword("user", "password2", "password2", request, response, true)
       assertThat(redirect).isNull()
       verify(userStateAuthenticationFailureHandler).onAuthenticationFailureForUsername(request, response, e, "someuser")
-      verify(authenticationManager).authenticate(check {
-        assertThat(it.principal).isEqualTo("SOMEUSER")
-        assertThat(it.credentials).isEqualTo("password2")
-      })
+      verify(authenticationManager).authenticate(
+        check {
+          assertThat(it.principal).isEqualTo("SOMEUSER")
+          assertThat(it.credentials).isEqualTo("password2")
+        }
+      )
       verify(changePasswordService).setPassword("user", "password2")
     }
-
 
     @Test
     fun changePassword_SuccessAccountNotExpired() {
@@ -244,9 +291,13 @@ class ChangePasswordControllerTest {
       setupGetUserCallForProfile()
       whenever(authenticationManager.authenticate(any())).thenThrow(AccountExpiredException("msg"))
       controller.changePassword("user", "password2", "password2", request, response, true)
-      verify(telemetryClient).trackEvent(eq("ChangePasswordSuccess"), check {
-        assertThat(it).containsExactly(entry("username", "someuser"))
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("ChangePasswordSuccess"),
+        check {
+          assertThat(it).containsExactly(entry("username", "someuser"))
+        },
+        isNull()
+      )
     }
   }
 
@@ -269,10 +320,18 @@ class ChangePasswordControllerTest {
 
   private fun setupCheckAndGetTokenValid() {
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
-    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(User.of("someuser").createToken(UserToken.TokenType.RESET)))
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(
+      Optional.of(
+        User.of("someuser").createToken(UserToken.TokenType.RESET)
+      )
+    )
   }
 
   private fun setupGetToken() {
-    whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(User.of("someuser").createToken(UserToken.TokenType.RESET)))
+    whenever(tokenService.getToken(any(), anyString())).thenReturn(
+      Optional.of(
+        User.of("someuser").createToken(UserToken.TokenType.RESET)
+      )
+    )
   }
 }

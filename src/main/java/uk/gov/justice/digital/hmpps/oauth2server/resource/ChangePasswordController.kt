@@ -20,31 +20,46 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Controller
-class ChangePasswordController(private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler,
-                               private val userStateAuthenticationFailureHandler: UserStateAuthenticationFailureHandler,
-                               private val authenticationManager: AuthenticationManager,
-                               changePasswordService: ChangePasswordService?,
-                               private val tokenService: TokenService, userService: UserService,
-                               private val telemetryClient: TelemetryClient,
-                               @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String>) :
-    AbstractPasswordController(changePasswordService, tokenService, userService, telemetryClient, "redirect:/login?error=%s", "changePassword", passwordBlacklist) {
+class ChangePasswordController(
+  private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler,
+  private val userStateAuthenticationFailureHandler: UserStateAuthenticationFailureHandler,
+  private val authenticationManager: AuthenticationManager,
+  changePasswordService: ChangePasswordService?,
+  private val tokenService: TokenService,
+  userService: UserService,
+  private val telemetryClient: TelemetryClient,
+  @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String>,
+) :
+  AbstractPasswordController(
+    changePasswordService,
+    tokenService,
+    userService,
+    telemetryClient,
+    "redirect:/login?error=%s",
+    "changePassword",
+    passwordBlacklist
+  ) {
 
   @GetMapping("/change-password")
   fun changePasswordRequest(@RequestParam token: String?): ModelAndView =
-      if (token.isNullOrBlank()) ModelAndView("redirect:/") // cope with token not supplied
-      else createModelWithTokenUsernameAndIsAdmin(TokenType.CHANGE, token, "changePassword")
-          .addObject("expired", true)
+    if (token.isNullOrBlank()) ModelAndView("redirect:/") // cope with token not supplied
+    else createModelWithTokenUsernameAndIsAdmin(TokenType.CHANGE, token, "changePassword")
+      .addObject("expired", true)
 
   @GetMapping("/new-password")
   fun newPasswordRequest(@RequestParam token: String?): ModelAndView =
-      if (token.isNullOrBlank()) ModelAndView("redirect:/") // cope with token not supplied
-      else createModelWithTokenUsernameAndIsAdmin(TokenType.CHANGE, token, "changePassword")
+    if (token.isNullOrBlank()) ModelAndView("redirect:/") // cope with token not supplied
+    else createModelWithTokenUsernameAndIsAdmin(TokenType.CHANGE, token, "changePassword")
 
   @PostMapping("/change-password", "/new-password")
-  fun changePassword(@RequestParam token: String,
-                     @RequestParam newPassword: String?, @RequestParam confirmPassword: String?,
-                     request: HttpServletRequest, response: HttpServletResponse,
-                     @RequestParam expired: Boolean?): ModelAndView? {
+  fun changePassword(
+    @RequestParam token: String,
+    @RequestParam newPassword: String?,
+    @RequestParam confirmPassword: String?,
+    request: HttpServletRequest,
+    response: HttpServletResponse,
+    @RequestParam expired: Boolean?,
+  ): ModelAndView? {
 
     val userToken = tokenService.getToken(TokenType.CHANGE, token)
     val modelAndView = processSetPassword(TokenType.CHANGE, "Change", token, newPassword, confirmPassword)
@@ -72,8 +87,8 @@ class ChangePasswordController(private val jwtAuthenticationSuccessHandler: JwtA
 
   @GetMapping("/change-password-success")
   fun changePasswordSuccess(): String =
-      "changePasswordSuccess"
+    "changePasswordSuccess"
 
   private fun authenticate(username: String, password: String) =
-      authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username.toUpperCase(), password))
+    authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username.toUpperCase(), password))
 }

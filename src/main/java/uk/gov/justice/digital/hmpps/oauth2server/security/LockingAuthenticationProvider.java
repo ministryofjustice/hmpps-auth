@@ -47,7 +47,7 @@ public abstract class LockingAuthenticationProvider extends DaoAuthenticationPro
     }
 
     private class PreAuthenticationChecks implements UserDetailsChecker {
-        public void check(UserDetails user) {
+        public void check(final UserDetails user) {
             if (!user.isAccountNonLocked()) {
                 throw new LockedException(messages.getMessage(
                         "AbstractUserDetailsAuthenticationProvider.locked",

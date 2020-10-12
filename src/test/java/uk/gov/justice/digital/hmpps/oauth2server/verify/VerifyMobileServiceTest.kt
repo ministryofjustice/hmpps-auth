@@ -22,14 +22,15 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenReposi
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService.VerifyMobileException
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
-import java.util.*
+import java.util.Optional
 
 class VerifyMobileServiceTest {
   private val userRepository: UserRepository = mock()
   private val userTokenRepository: UserTokenRepository = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val notificationClient: NotificationClientApi = mock()
-  private val verifyMobileService = VerifyMobileService(userRepository, userTokenRepository, telemetryClient, notificationClient, "templateId")
+  private val verifyMobileService =
+    VerifyMobileService(userRepository, userTokenRepository, telemetryClient, notificationClient, "templateId")
 
   @Test
   fun mobile() {
@@ -101,8 +102,15 @@ class VerifyMobileServiceTest {
   fun requestVerification_sendFailure() {
     val user = User.of("someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-    whenever(notificationClient.sendSms(anyString(), anyString(), anyMap<String, Any?>(), isNull())).thenThrow(NotificationClientException("message"))
-    assertThatThrownBy { verifyMobileService.changeMobileAndRequestVerification("user", "07700900321") }.hasMessage("message")
+    whenever(notificationClient.sendSms(anyString(), anyString(), anyMap<String, Any?>(), isNull())).thenThrow(
+      NotificationClientException("message")
+    )
+    assertThatThrownBy {
+      verifyMobileService.changeMobileAndRequestVerification(
+        "user",
+        "07700900321"
+      )
+    }.hasMessage("message")
   }
 
   @Test
@@ -115,7 +123,8 @@ class VerifyMobileServiceTest {
 
   @Test
   fun `resendVerificationCode send code`() {
-    val user = User.builder().person(Person("bob", "last")).contacts(setOf(Contact(ContactType.MOBILE_PHONE, "07700900321", false))).build()
+    val user = User.builder().person(Person("bob", "last"))
+      .contacts(setOf(Contact(ContactType.MOBILE_PHONE, "07700900321", false))).build()
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
 
     val verifyCode = verifyMobileService.resendVerificationCode("bob")
@@ -129,7 +138,7 @@ class VerifyMobileServiceTest {
   fun `resendVerificationCodeSecondaryEmail no second email`() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User()))
     assertThatThrownBy { verifyMobileService.resendVerificationCode("bob") }
-        .isInstanceOf(VerifyMobileException::class.java).extracting("reason").isEqualTo("nomobile")
+      .isInstanceOf(VerifyMobileException::class.java).extracting("reason").isEqualTo("nomobile")
   }
 
   @Test
@@ -150,6 +159,7 @@ class VerifyMobileServiceTest {
   }
 
   private fun verifyMobileFailure(mobile: String, reason: String) {
-    assertThatThrownBy { verifyMobileService.validateMobileNumber(mobile) }.isInstanceOf(VerifyMobileException::class.java).extracting("reason").isEqualTo(reason)
+    assertThatThrownBy { verifyMobileService.validateMobileNumber(mobile) }.isInstanceOf(VerifyMobileException::class.java)
+      .extracting("reason").isEqualTo(reason)
   }
 }

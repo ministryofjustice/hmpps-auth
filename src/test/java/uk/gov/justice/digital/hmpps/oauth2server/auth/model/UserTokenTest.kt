@@ -2,7 +2,11 @@ package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.*
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.CHANGE
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.MFA
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.MFA_CODE
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.VERIFIED
 import java.time.LocalDateTime
 
 class UserTokenTest {

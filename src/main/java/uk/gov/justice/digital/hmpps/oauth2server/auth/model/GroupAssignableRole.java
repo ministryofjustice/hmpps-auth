@@ -6,7 +6,12 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.GroupAssignableRole.GroupAssignableRoleId;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.UUID;
 

@@ -1,6 +1,11 @@
 package uk.gov.justice.digital.hmpps.oauth2server.nomis.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -8,13 +13,32 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SecondaryTable;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.*;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.EXPIRED;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.EXPIRED_GRACE;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.EXPIRED_LOCKED;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.EXPIRED_LOCKED_TIMED;
+import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus.OPEN;
 
 @Entity
 @Table(name = "STAFF_USER_ACCOUNTS")
@@ -66,6 +90,10 @@ public class NomisUserPersonDetails implements UserPersonDetails {
     @Override
     public String getFirstName() {
         return getStaff().getFirstName();
+    }
+
+    public String getLastName() {
+        return getStaff().getLastName();
     }
 
     @Override

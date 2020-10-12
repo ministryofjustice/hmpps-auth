@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
-import java.util.*
+import java.util.Optional
 
 class AuthUserRolesControllerTest {
   private val principal: Authentication = UsernamePasswordAuthenticationToken("bob", "pass")
@@ -27,7 +27,7 @@ class AuthUserRolesControllerTest {
   @Test
   fun roles_userNotFound() {
     assertThatThrownBy { authUserRolesController.roles("bob") }
-        .isInstanceOf(UsernameNotFoundException::class.java).withFailMessage("Account for username bob not found")
+      .isInstanceOf(UsernameNotFoundException::class.java).withFailMessage("Account for username bob not found")
   }
 
   @Test
@@ -35,14 +35,15 @@ class AuthUserRolesControllerTest {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
     val responseEntity = authUserRolesController.roles("joe")
     assertThat(responseEntity).containsOnly(
-        AuthUserRole(Authority("FRED", "FRED")),
-        AuthUserRole(Authority("GLOBAL_SEARCH", "Global Search")))
+      AuthUserRole(Authority("FRED", "FRED")),
+      AuthUserRole(Authority("GLOBAL_SEARCH", "Global Search"))
+    )
   }
 
   @Test
   fun addRole_userNotFound() {
     assertThatThrownBy { authUserRolesController.addRole("bob", "role", principal) }
-        .isInstanceOf(UsernameNotFoundException::class.java).withFailMessage("Account for username bob not found")
+      .isInstanceOf(UsernameNotFoundException::class.java).withFailMessage("Account for username bob not found")
   }
 
   @Test
@@ -55,7 +56,7 @@ class AuthUserRolesControllerTest {
   @Test
   fun removeRole_userNotFound() {
     assertThatThrownBy { authUserRolesController.removeRole("bob", "role", principal) }
-        .isInstanceOf(UsernameNotFoundException::class.java).withFailMessage("Account for username bob not found")
+      .isInstanceOf(UsernameNotFoundException::class.java).withFailMessage("Account for username bob not found")
   }
 
   @Test
@@ -65,14 +66,19 @@ class AuthUserRolesControllerTest {
     verify(authUserRoleService).removeRole("USER", "joe", "bob", principal.authorities)
   }
 
-
   @Test
   fun assignableRoles() {
-    whenever(authUserRoleService.getAssignableRoles(anyString(), any())).thenReturn(listOf(Authority("FRED", "FRED"), Authority("GLOBAL_SEARCH", "Global Search")))
+    whenever(authUserRoleService.getAssignableRoles(anyString(), any())).thenReturn(
+      listOf(
+        Authority("FRED", "FRED"),
+        Authority("GLOBAL_SEARCH", "Global Search")
+      )
+    )
     val response = authUserRolesController.assignableRoles("someuser", principal)
     assertThat(response).containsOnly(
-        AuthUserRole(Authority("FRED", "FRED")),
-        AuthUserRole(Authority("GLOBAL_SEARCH", "Global Search")))
+      AuthUserRole(Authority("FRED", "FRED")),
+      AuthUserRole(Authority("GLOBAL_SEARCH", "Global Search"))
+    )
   }
 
   private val authUser: User

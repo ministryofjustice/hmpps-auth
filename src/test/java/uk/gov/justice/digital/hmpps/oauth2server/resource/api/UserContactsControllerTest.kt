@@ -17,23 +17,32 @@ class UserContactsControllerTest {
 
   @Test
   fun `no verified contact`() {
-    whenever(userService.getUserWithContacts(anyString())).thenReturn(User.builder().contacts(setOf(
-        Contact(SECONDARY_EMAIL, "email not verified"),
-        Contact(MOBILE_PHONE, "mobile not verified")
-    )).build())
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(
+      User.builder().contacts(
+        setOf(
+          Contact(SECONDARY_EMAIL, "email not verified"),
+          Contact(MOBILE_PHONE, "mobile not verified")
+        )
+      ).build()
+    )
     val response = userContactsController.contacts("bob")
     assertThat(response).isEmpty()
   }
 
   @Test
   fun `verified contacts`() {
-    whenever(userService.getUserWithContacts(anyString())).thenReturn(User.builder().contacts(setOf(
-        Contact(SECONDARY_EMAIL, "email verified", true),
-        Contact(MOBILE_PHONE, "mobile verified", true)
-    )).build())
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(
+      User.builder().contacts(
+        setOf(
+          Contact(SECONDARY_EMAIL, "email verified", true),
+          Contact(MOBILE_PHONE, "mobile verified", true)
+        )
+      ).build()
+    )
     val response = userContactsController.contacts("bob")
     assertThat(response).containsExactlyInAnyOrder(
-        ContactDto("email verified", "SECONDARY_EMAIL", "Secondary email"),
-        ContactDto("mobile verified", "MOBILE_PHONE", "Mobile phone"))
+      ContactDto("email verified", "SECONDARY_EMAIL", "Secondary email"),
+      ContactDto("mobile verified", "MOBILE_PHONE", "Mobile phone")
+    )
   }
 }

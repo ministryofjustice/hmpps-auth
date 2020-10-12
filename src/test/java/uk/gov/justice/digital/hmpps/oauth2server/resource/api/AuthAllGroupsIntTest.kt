@@ -9,22 +9,23 @@ class AuthAllGroupsIntTest : IntegrationTest() {
   @Test
   fun `Auth Groups endpoint returns all possible auth groups`() {
     webTestClient
-        .get().uri("/auth/api/authgroups")
-        .headers(setAuthorisation("AUTH_ADM"))
-        .exchange()
-        .expectStatus().isOk
-        .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBody()
-        .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_1')]").isEqualTo(mapOf("groupCode" to "SITE_1_GROUP_1", "groupName" to "Site 1 - Group 1"))
-        .jsonPath(".[*].groupCode").value<List<String>> {
-          assertThat(it).hasSizeGreaterThan(2)
-        }
+      .get().uri("/auth/api/authgroups")
+      .headers(setAuthorisation("AUTH_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_1')]")
+      .isEqualTo(mapOf("groupCode" to "SITE_1_GROUP_1", "groupName" to "Site 1 - Group 1"))
+      .jsonPath(".[*].groupCode").value<List<String>> {
+        assertThat(it).hasSizeGreaterThan(2)
+      }
   }
 
   @Test
   fun `Auth Groups endpoint not accessible without valid token`() {
     webTestClient.get().uri("/auth/api/authgroups")
-        .exchange()
-        .expectStatus().isUnauthorized
+      .exchange()
+      .expectStatus().isUnauthorized
   }
 }

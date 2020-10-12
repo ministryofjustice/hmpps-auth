@@ -8,57 +8,57 @@ class HealthIntTest : IntegrationTest() {
   @Test
   fun `Health page reports ok`() {
     webTestClient.get().uri("/auth/health")
-        .exchange()
-        .expectStatus().isOk
-        .expectBody().jsonPath("status").isEqualTo("UP")
+      .exchange()
+      .expectStatus().isOk
+      .expectBody().jsonPath("status").isEqualTo("UP")
   }
 
   @Test
   fun `Health reports delius info`() {
     webTestClient.get().uri("/auth/health/deliusApiHealth")
-        .exchange()
-        .expectBody().jsonPath("status").isEqualTo("UP")
-        .jsonPath("details.HttpStatus").isEqualTo("OK")
+      .exchange()
+      .expectBody().jsonPath("status").isEqualTo("UP")
+      .jsonPath("details.HttpStatus").isEqualTo("OK")
   }
 
   @Test
   fun `Health reports token verification info`() {
     webTestClient.get().uri("/auth/health/tokenVerificationApiHealth")
-        .exchange()
-        .expectBody().jsonPath("status").isEqualTo("UP")
-        .jsonPath("details.HttpStatus").isEqualTo("OK")
+      .exchange()
+      .expectBody().jsonPath("status").isEqualTo("UP")
+      .jsonPath("details.HttpStatus").isEqualTo("OK")
   }
 
   @Test
   fun `Health ping reports ok`() {
     webTestClient.get().uri("/auth/health/ping")
-        .exchange()
-        .expectStatus().isOk
-        .expectBody().jsonPath("status").isEqualTo("UP")
+      .exchange()
+      .expectStatus().isOk
+      .expectBody().jsonPath("status").isEqualTo("UP")
   }
 
   @Test
   fun `Health reports db info`() {
     webTestClient.get().uri("/auth/health/db")
-        .exchange()
-        .expectStatus().isOk
-        .expectBody().jsonPath("components.authDataSource.details.database").isEqualTo("H2")
-        .jsonPath("components.authDataSource.details.validationQuery").isEqualTo("isValid()")
+      .exchange()
+      .expectStatus().isOk
+      .expectBody().jsonPath("components.authDataSource.details.database").isEqualTo("H2")
+      .jsonPath("components.authDataSource.details.validationQuery").isEqualTo("isValid()")
   }
 
   @Test
   fun `Health liveness page is accessible`() {
     webTestClient.get().uri("/auth/health/liveness")
-        .exchange()
-        .expectStatus().isOk
-        .expectBody().jsonPath("status").isEqualTo("UP")
+      .exchange()
+      .expectStatus().isOk
+      .expectBody().jsonPath("status").isEqualTo("UP")
   }
 
   @Test
   fun `Health readiness page is accessible`() {
     webTestClient.get().uri("/auth/health/readiness")
-        .exchange()
-        .expectStatus().isOk
-        .expectBody().jsonPath("status").isEqualTo("UP")
+      .exchange()
+      .expectStatus().isOk
+      .expectBody().jsonPath("status").isEqualTo("UP")
   }
 }

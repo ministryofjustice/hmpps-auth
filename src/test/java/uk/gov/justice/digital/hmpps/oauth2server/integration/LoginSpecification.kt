@@ -82,8 +82,10 @@ class LoginSpecification : AbstractAuthSpecification() {
 
     homePage.logOut()
 
-    tokenVerificationApi.verify(deleteRequestedFor(urlPathEqualTo("/token"))
-        .withQueryParam("authJwtId", equalTo(authJwtId)))
+    tokenVerificationApi.verify(
+      deleteRequestedFor(urlPathEqualTo("/token"))
+        .withQueryParam("authJwtId", equalTo(authJwtId))
+    )
   }
 
   @Test
@@ -96,8 +98,10 @@ class LoginSpecification : AbstractAuthSpecification() {
     assertThat(jwt.getStringClaim("sub")).isEqualTo("ITAG_USER_ADM")
     assertThat(jwt.jwtid).isNotEqualTo(oldJwtId)
 
-    tokenVerificationApi.verify(deleteRequestedFor(urlPathEqualTo("/token"))
-        .withQueryParam("authJwtId", equalTo(oldJwtId)))
+    tokenVerificationApi.verify(
+      deleteRequestedFor(urlPathEqualTo("/token"))
+        .withQueryParam("authJwtId", equalTo(oldJwtId))
+    )
   }
 
   @Test
@@ -115,7 +119,7 @@ class LoginSpecification : AbstractAuthSpecification() {
   @Test
   fun `Log in fails with valid credentials same user name in Auth and Nomis but both accounts disabled`() {
     goTo(loginPage).loginError("NOMIS_LOCKED_AUTH_DISABLED", "password123456")
-        .checkError("Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below.")
+      .checkError("Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below.")
   }
 
   @Test
@@ -143,19 +147,19 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
   private lateinit var azureOIDCLink: FluentWebElement
 
   fun loginAsWithUnverifiedEmail(username: String, password: String = "password123456"): VerifyEmailPage =
-      loginWith(username, password, VerifyEmailPage::class.java)
+    loginWith(username, password, VerifyEmailPage::class.java)
 
   fun loginAs(username: String, password: String = "password123456"): HomePage =
-      loginWith(username, password, HomePage::class.java)
+    loginWith(username, password, HomePage::class.java)
 
   fun loginWithMfaEmail(username: String, password: String = "password123456"): MfaEmailPage =
-      loginWith(username, password, MfaEmailPage::class.java)
+    loginWith(username, password, MfaEmailPage::class.java)
 
   fun loginWithMfaText(username: String, password: String = "password123456"): MfaTextPage =
-      loginWith(username, password, MfaTextPage::class.java)
+    loginWith(username, password, MfaTextPage::class.java)
 
   fun loginError(username: String, password: String = "password123456"): LoginPage =
-      errorLoginWith(username, password, LoginPage::class.java)
+    errorLoginWith(username, password, LoginPage::class.java)
 
   private fun <T : AuthPage<T>> loginWith(username: String, password: String = "password123456", t: Class<T>): T {
     submitLogin(username, password)

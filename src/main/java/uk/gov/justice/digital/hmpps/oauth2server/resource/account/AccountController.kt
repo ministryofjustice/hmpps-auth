@@ -14,8 +14,8 @@ class AccountController(private val userService: UserService) {
     val user = userService.findMasterUserPersonDetails(username).orElseThrow()
     val authUser = userService.getUserWithContacts(username)
     return ModelAndView("account/accountDetails")
-        .addObject("user", user)
-        .addObject("authUser", authUser)
-        .addObject("mfaPreferenceVerified", authUser.mfaPreferenceVerified())
+      .addObject("user", user)
+      .addObject("authUser", authUser)
+      .addObject("mfaPreferenceVerified", authUser.mfaPreferenceVerified())
   }
 }

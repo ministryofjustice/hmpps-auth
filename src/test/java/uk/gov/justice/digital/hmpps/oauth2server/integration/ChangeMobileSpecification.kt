@@ -31,13 +31,13 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE")
 
     goTo(changeMobilePage)
-        .addMobileAs("07987654321")
+      .addMobileAs("07987654321")
 
     verifyMobileSentPage.isAtPage()
-        .submitCode()
+      .submitCode()
 
     verifyMobileConfirmPage.isAtPage()
-        .continueToAccountDetailsPage()
+      .continueToAccountDetailsPage()
 
     accountDetailsPage.isAtPage()
   }
@@ -47,10 +47,10 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE2")
 
     goTo(addMobilePage)
-        .setMobileAs("07")
-        .checkError("Enter a mobile number in the correct format")
-        .updateMobileAs("", "07")
-        .checkError("Enter a mobile number")
+      .setMobileAs("07")
+      .checkError("Enter a mobile number in the correct format")
+      .updateMobileAs("", "07")
+      .checkError("Enter a mobile number")
   }
 
   @Test
@@ -58,11 +58,11 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE")
 
     goTo(changeMobilePage)
-        .setMobileAs("07700900322")
+      .setMobileAs("07700900322")
 
     verifyMobileSentPage.isAtPage()
-        .submitCode("123456")
-        .checkError("Enter the code received in the text message")
+      .submitCode("123456")
+      .checkError("Enter the code received in the text message")
   }
 
   @Test
@@ -71,17 +71,18 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE_VERIFIED")
 
     goTo(changeMobilePage)
-        .updateMobileAs("07700900321", "07700900321")
+      .updateMobileAs("07700900321", "07700900321")
 
     verifyMobileAlreadyPage.isAtPage()
-        .continueToAccountDetailsPage()
+      .continueToAccountDetailsPage()
 
     accountDetailsPage.isAt()
   }
 }
 
 @PageUrl("/change-mobile")
-open class ChangeMobilePage : AuthPage<ChangeMobilePage>("HMPPS Digital Services - Change Mobile Number", "What is your new mobile number?") {
+open class ChangeMobilePage :
+  AuthPage<ChangeMobilePage>("HMPPS Digital Services - Change Mobile Number", "What is your new mobile number?") {
   @FindBy(css = "input[type='submit']")
   private lateinit var changeMobileButton: FluentWebElement
   private lateinit var mobile: FluentWebElement
@@ -108,7 +109,8 @@ open class ChangeMobilePage : AuthPage<ChangeMobilePage>("HMPPS Digital Services
 }
 
 @PageUrl("/change-mobile")
-open class AddMobilePage : AuthPage<AddMobilePage>("HMPPS Digital Services - Change Mobile Number", "What is your mobile number?") {
+open class AddMobilePage :
+  AuthPage<AddMobilePage>("HMPPS Digital Services - Change Mobile Number", "What is your mobile number?") {
   @FindBy(css = "input[type='submit']")
   private lateinit var changeMobileButton: FluentWebElement
   private lateinit var mobile: FluentWebElement
@@ -135,7 +137,8 @@ open class AddMobilePage : AuthPage<AddMobilePage>("HMPPS Digital Services - Cha
 }
 
 @PageUrl("/verify-mobile")
-open class VerifyMobileSentPage : AuthPage<VerifyMobileSentPage>("HMPPS Digital Services - Verify Mobile Code Sent", "Check your phone") {
+open class VerifyMobileSentPage :
+  AuthPage<VerifyMobileSentPage>("HMPPS Digital Services - Verify Mobile Code Sent", "Check your phone") {
   @FindBy(css = "input[type='submit']")
   private lateinit var continueButton: FluentWebElement
   private lateinit var code: FluentWebElement
@@ -155,7 +158,10 @@ open class VerifyMobileSentPage : AuthPage<VerifyMobileSentPage>("HMPPS Digital 
 }
 
 @PageUrl("/verify-mobile")
-open class VerifyMobileConfirmPage : AuthPage<VerifyMobileConfirmPage>("HMPPS Digital Services - Verify Mobile Confirmation", "Your mobile number has been verified") {
+open class VerifyMobileConfirmPage : AuthPage<VerifyMobileConfirmPage>(
+  "HMPPS Digital Services - Verify Mobile Confirmation",
+  "Your mobile number has been verified"
+) {
   @FindBy(css = "#continue")
   private lateinit var continueButton: FluentWebElement
 
@@ -166,7 +172,8 @@ open class VerifyMobileConfirmPage : AuthPage<VerifyMobileConfirmPage>("HMPPS Di
 }
 
 @PageUrl("/verify-mobile-already")
-open class VerifyMobileAlreadyPage : AuthPage<VerifyMobileAlreadyPage>("HMPPS Digital Services - Verify Mobile Confirmation", "Mobile already verified") {
+open class VerifyMobileAlreadyPage :
+  AuthPage<VerifyMobileAlreadyPage>("HMPPS Digital Services - Verify Mobile Confirmation", "Mobile already verified") {
   @FindBy(css = "#continue")
   private lateinit var continueButton: FluentWebElement
 

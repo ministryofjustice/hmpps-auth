@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
 import java.time.Duration
 
-
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -49,26 +48,33 @@ abstract class IntegrationTest {
 
   @BeforeEach
   internal fun setupPort() {
-    baseUrl = "http://localhost:${localServerPort}/auth"
+    baseUrl = "http://localhost:$localServerPort/auth"
     // need to override port as random port only assigned on server startup
     (deliusApiRestTemplate.resource as DeliusClientCredentials).accessTokenUri = "$baseUrl/oauth/token"
-    (tokenVerificationApiRestTemplate.resource as TokenVerificationClientCredentials).accessTokenUri = "http://localhost:${localServerPort}/auth/oauth/token"
+    (tokenVerificationApiRestTemplate.resource as TokenVerificationClientCredentials).accessTokenUri =
+      "http://localhost:$localServerPort/auth/oauth/token"
   }
 
-  internal fun setAuthorisation(user: String, roles: List<String> = listOf()): (org.springframework.http.HttpHeaders) -> Unit {
+  internal fun setAuthorisation(
+    user: String,
+    roles: List<String> = listOf(),
+  ): (org.springframework.http.HttpHeaders) -> Unit {
     val token = createJwt(user, roles)
     return { it.set(HttpHeaders.AUTHORIZATION, "Bearer $token") }
   }
 
   internal fun setBasicAuthorisation(token: String): (HttpHeaders) -> Unit =
-      { it.set(HttpHeaders.AUTHORIZATION, "Basic $token") }
+    { it.set(HttpHeaders.AUTHORIZATION, "Basic $token") }
 
   private fun createJwt(user: String, roles: List<String> = listOf()) =
-      jwtAuthHelper.createJwt(
-          JwtParameters(username = user,
-              scope = listOf("read", "write"),
-              expiryTime = Duration.ofHours(1L),
-              roles = roles))
+    jwtAuthHelper.createJwt(
+      JwtParameters(
+        username = user,
+        scope = listOf("read", "write"),
+        expiryTime = Duration.ofHours(1L),
+        roles = roles
+      )
+    )
 
   internal fun String.readFile(): String = this@IntegrationTest::class.java.getResource(this).readText()
 }

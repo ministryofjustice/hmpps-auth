@@ -16,7 +16,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
-import java.util.*
+import java.util.Optional
 
 class DeliusAuthenticationProviderTest {
   private val deliusUserService: DeliusUserService = mock()
@@ -24,12 +24,20 @@ class DeliusAuthenticationProviderTest {
   private val userRetriesService: UserRetriesService = mock()
   private val mfaService: MfaService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val provider = DeliusAuthenticationProvider(deliusUserService, DeliusUserDetailsService(deliusUserService, userService), userRetriesService, mfaService, userService, telemetryClient)
+  private val provider = DeliusAuthenticationProvider(
+    deliusUserService,
+    DeliusUserDetailsService(deliusUserService, userService),
+    userRetriesService,
+    mfaService,
+    userService,
+    telemetryClient
+  )
 
   @Test
   fun authenticate_Success() {
     whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(
-        Optional.of(DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, false, emptySet())))
+      Optional.of(DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, false, emptySet()))
+    )
     whenever(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(true)
     val auth = provider.authenticate(UsernamePasswordAuthenticationToken("DELIUS_USER", "password"))
     assertThat(auth).isNotNull()
@@ -37,35 +45,62 @@ class DeliusAuthenticationProviderTest {
 
   @Test
   fun authenticate_SuccessWithAuthorities() {
-    whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(
-        DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, false, listOf(SimpleGrantedAuthority("ROLE_BOB")))))
+    whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(
+      Optional.of(
+        DeliusUserPersonDetails(
+          "bob",
+          "12345",
+          "Delius",
+          "Smith",
+          "a@b.com",
+          true,
+          false,
+          listOf(SimpleGrantedAuthority("ROLE_BOB"))
+        )
+      )
+    )
     whenever(deliusUserService.authenticateUser(anyString(), anyString())).thenReturn(true)
     val auth = provider.authenticate(UsernamePasswordAuthenticationToken("ITAG_USER_ADM", "password123456"))
     assertThat(auth).isNotNull()
-    assertThat(auth.authorities).extracting<String> { obj: GrantedAuthority -> obj.authority }.containsOnly("ROLE_PROBATION", "ROLE_BOB")
+    assertThat(auth.authorities).extracting<String> { obj: GrantedAuthority -> obj.authority }
+      .containsOnly("ROLE_PROBATION", "ROLE_BOB")
   }
 
   @Test
   fun authenticate_NullUsername() {
-    assertThatThrownBy { provider.authenticate(UsernamePasswordAuthenticationToken(null, "password")) }.isInstanceOf(MissingCredentialsException::class.java)
+    assertThatThrownBy { provider.authenticate(UsernamePasswordAuthenticationToken(null, "password")) }.isInstanceOf(
+      MissingCredentialsException::class.java
+    )
   }
 
   @Test
   fun authenticate_MissingUsername() {
-    assertThatThrownBy { provider.authenticate(UsernamePasswordAuthenticationToken("      ", "password")) }.isInstanceOf(MissingCredentialsException::class.java)
+    assertThatThrownBy {
+      provider.authenticate(
+        UsernamePasswordAuthenticationToken(
+          "      ",
+          "password"
+        )
+      )
+    }.isInstanceOf(MissingCredentialsException::class.java)
   }
 
   @Test
   fun authenticate_MissingPassword() {
-    assertThatThrownBy { provider.authenticate(UsernamePasswordAuthenticationToken("ITAG_USER", "   ")) }.isInstanceOf(MissingCredentialsException::class.java)
+    assertThatThrownBy { provider.authenticate(UsernamePasswordAuthenticationToken("ITAG_USER", "   ")) }.isInstanceOf(
+      MissingCredentialsException::class.java
+    )
   }
 
   @Test
   fun authenticate_LockAfterThreeFailures() {
-    val deliusUserPersonDetails = DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, false, emptySet())
+    val deliusUserPersonDetails =
+      DeliusUserPersonDetails("bob", "12345", "Delius", "Smith", "a@b.com", true, false, emptySet())
     whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(deliusUserPersonDetails))
     whenever(userRetriesService.incrementRetriesAndLockAccountIfNecessary(any())).thenReturn(true)
-    assertThatThrownBy { provider.authenticate(UsernamePasswordAuthenticationToken("CA_USER", "wrong")) }.isInstanceOf(LockedException::class.java)
+    assertThatThrownBy { provider.authenticate(UsernamePasswordAuthenticationToken("CA_USER", "wrong")) }.isInstanceOf(
+      LockedException::class.java
+    )
   }
 
   @Test

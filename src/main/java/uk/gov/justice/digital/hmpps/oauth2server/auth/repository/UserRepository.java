@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.CrudRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
@@ -34,4 +35,6 @@ public interface UserRepository extends CrudRepository<User, UUID>, JpaSpecifica
     }
 
     List<User> findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime lastLoggedIn);
+
+    List<User> findByUsernameIn(@NotNull List<String> usernames);
 }

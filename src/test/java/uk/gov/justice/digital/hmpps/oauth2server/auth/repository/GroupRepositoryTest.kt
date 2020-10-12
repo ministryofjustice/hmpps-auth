@@ -63,7 +63,8 @@ class GroupRepositoryTest {
     TestTransaction.start()
     val retrievedEntity = repository.findByGroupCode("SITE_3_GROUP_1").orElseThrow()
     val assignableRoles = retrievedEntity.assignableRoles
-    assertThat(assignableRoles).extracting<Authority> { obj: GroupAssignableRole -> obj.role }.extracting<String> { obj: Authority -> obj.roleCode }.containsOnly("GLOBAL_SEARCH", "LICENCE_RO")
+    assertThat(assignableRoles).extracting<Authority> { obj: GroupAssignableRole -> obj.role }
+      .extracting<String> { obj: Authority -> obj.roleCode }.containsOnly("GLOBAL_SEARCH", "LICENCE_RO")
     assignableRoles.remove(gar1)
     assertThat(assignableRoles).containsExactly(gar2)
     repository.save(retrievedEntity)
@@ -79,12 +80,14 @@ class GroupRepositoryTest {
     val group = repository.findByGroupCode("SITE_1_GROUP_2").orElseThrow()
     assertThat(group.groupCode).isEqualTo("SITE_1_GROUP_2")
     assertThat(group.groupName).isEqualTo("Site 1 - Group 2")
-    assertThat(group.assignableRoles).extracting<Authority> { it.role }.extracting<String> { obj: Authority -> obj.roleCode }.containsOnly("GLOBAL_SEARCH", "LICENCE_RO")
+    assertThat(group.assignableRoles).extracting<Authority> { it.role }
+      .extracting<String> { obj: Authority -> obj.roleCode }.containsOnly("GLOBAL_SEARCH", "LICENCE_RO")
   }
 
   @Test
   fun findAllByOrderByGroupName() {
-    assertThat(repository.findAllByOrderByGroupName()).extracting<String> { it.groupCode }.containsSequence("SITE_1_GROUP_1", "SITE_1_GROUP_2", "SITE_2_GROUP_1", "SITE_3_GROUP_1")
+    assertThat(repository.findAllByOrderByGroupName()).extracting<String> { it.groupCode }
+      .containsSequence("SITE_1_GROUP_1", "SITE_1_GROUP_2", "SITE_2_GROUP_1", "SITE_3_GROUP_1")
   }
 
   private fun transientEntity(): Group = Group("hdc", "Licences")
