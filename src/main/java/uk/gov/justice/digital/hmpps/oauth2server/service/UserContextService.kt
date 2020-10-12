@@ -21,20 +21,9 @@ class UserContextService(
   private val authUserService: AuthUserService,
   private val nomisUserService: NomisUserService,
 ) {
-
-  @Throws(UserMappingException::class)
-  fun resolveUser(loginUser: UserPersonDetails, scopes: Set<String>): UserPersonDetails {
-    val users = discoverUsers(loginUser, scopes)
-    return when (users.size) {
-      1 -> users[0]
-      0 -> loginUser
-      else -> throw UserMappingException("Multiple users found with scopes $scopes")
-    }
-  }
-
   fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String>): List<UserPersonDetails> {
     val loginUserAuthSource = fromNullableString(loginUser.authSource)
-    if (loginUserAuthSource != azuread) return listOf(loginUser)
+    if (loginUserAuthSource != azuread) return emptyList()
 
     val sourcesFromScopes = scopes.map {
       try {
