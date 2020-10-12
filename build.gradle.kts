@@ -88,7 +88,10 @@ tasks {
   }
 
   val testFluentIntegration by registering(Test::class) {
-    systemProperty("fluentlenium.capabilities", """{"chromeOptions": {"args": ["headless","disable-gpu","disable-extensions","no-sandbox","disable-application-cache"]}}""")
+    systemProperty(
+      "fluentlenium.capabilities",
+      """{"chromeOptions": {"args": ["headless","disable-gpu","disable-extensions","no-sandbox","disable-application-cache"]}}"""
+    )
     useJUnitPlatform()
     include("uk/gov/justice/digital/hmpps/oauth2server/integration/*")
     setMaxHeapSize("256m")
