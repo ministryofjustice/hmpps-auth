@@ -95,6 +95,8 @@ class UserSelectorAuthorizationEndpoint(
 
       val user = userService.getMasterUserPersonDetails(username, AuthSource.fromNullableString(source))
       user.map {
+        // TODO: ensure that the email address matches for the user
+
         // if we're successful with the replace then change the approval parameter to true
         approvalParameters[USER_OAUTH_APPROVAL] = "true"
 

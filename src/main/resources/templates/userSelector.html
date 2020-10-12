@@ -10,33 +10,18 @@
   <h1 class="govuk-heading-l">Select user</h1>
 
   <p class="govuk-body">
-    Select the user account.
+    We have found multiple user accounts that match your email address.
+    Please select the one you would like to use to access the service.
   </p>
 
   <form id="confirmationForm" name="confirmationForm" th:action="@{/oauth/authorize}" method="POST">
     <div class="govuk-radios">
-      <div class="govuk-radios__item">
-        <input class="govuk-radios__input" id="approval1" name="user_oauth_approval" type="radio"
-               value="nomis/ITAG_USER"
-               aria-describedby="mfa-pref-email-item-hint"/>
-        <label class="govuk-label govuk-radios__label govuk-label--s" for="approval1">
+      <div class="govuk-radios__item" th:each="user, iter: ${users}">
+        <input class="govuk-radios__input" th:id="${user.userId}" name="user_oauth_approval" type="radio"
+               th:value="${user.authSource + '/' + user.username}" aria-describedby="mfa-pref-email-item-hint"/>
+        <label class="govuk-label govuk-radios__label govuk-label--s" th:for="${user.userId}"
+               th:text="${#strings.capitalize(user.authSource) + ': ' + user.username}">
           NOMIS: Itag User (ITAG_USER)
-        </label>
-      </div>
-      <div class="govuk-radios__item">
-        <input class="govuk-radios__input" id="approval2" name="user_oauth_approval" type="radio"
-               value="nomis/ITAG_USER_ADM"
-               aria-describedby="mfa-pref-email-item-hint"/>
-        <label class="govuk-label govuk-radios__label govuk-label--s" for="approval2">
-          NOMIS: Itag User (ITAG_USER_ADM)
-        </label>
-      </div>
-      <div class="govuk-radios__item">
-        <input class="govuk-radios__input" id="approval3" name="user_oauth_approval" type="radio"
-               value="delius/ITAGUSER"
-               aria-describedby="mfa-pref-email-item-hint"/>
-        <label class="govuk-label govuk-radios__label govuk-label--s" for="approval3">
-          DELIUS: Itag User (ITAGUSER)
         </label>
       </div>
     </div>
