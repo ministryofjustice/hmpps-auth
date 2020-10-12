@@ -61,13 +61,20 @@ class OidcJwtAuthenticationSuccessHandler(
       else -> ""
     }
 
+    val principalName = if (principal.preferredUsername != null)
+      principal.preferredUsername.toLowerCase()
+    else if (principal.getClaimAsStringList("emails") != null && principal.getClaimAsStringList("emails").size > 0)
+      principal.getClaimAsStringList("emails")[0]
+    else
+      principal.getClaim<String>("oid").toUpperCase()
+
     return AzureUserPersonDetails(
       ArrayList(),
       true,
       principal.getClaim<String>("oid").toUpperCase(),
       givenName,
       familyName,
-      principal.preferredUsername.toLowerCase(),
+      principalName,
       true,
       accountNonExpired = true,
       accountNonLocked = true

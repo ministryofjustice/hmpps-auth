@@ -62,7 +62,7 @@ public class JwtAuthenticationHelper {
         return Jwts.builder()
                 .setId(jwtId)
                 .setSubject(username)
-                .addClaims(Map.of("authorities", authoritiesAsString, "name", userDetails.getFullName(), "auth_source", AuthSource.azuread.getSource(), "user_id", userDetails.getPreferredUsername()))
+                .addClaims(Map.of("authorities", authoritiesAsString, "name", userDetails.getFullName(), "auth_source", AuthSource.azuread.getSource(), "user_id", username))
                 .setExpiration(new Date(System.currentTimeMillis() + expiryTime.toMillis()))
                 .signWith(SignatureAlgorithm.RS256, keyPair.getPrivate())
                 .compact();
