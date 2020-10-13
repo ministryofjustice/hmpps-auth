@@ -7,7 +7,8 @@ import javax.persistence.EntityNotFoundException
 
 @org.springframework.stereotype.Service
 class AuthServicesService(private val oauthServiceRepository: OauthServiceRepository) {
-  fun list(): MutableIterable<Service> = oauthServiceRepository.findAllByOrderByName()
+  fun list(): List<Service> = oauthServiceRepository.findAllByOrderByName()
+
   fun getService(code: String): Service = oauthServiceRepository.findById(code)
     .orElseThrow { EntityNotFoundException("Entity $code not found") }
 
