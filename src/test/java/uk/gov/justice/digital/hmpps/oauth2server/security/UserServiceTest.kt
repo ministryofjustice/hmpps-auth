@@ -23,6 +23,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.none
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.util.Optional
 
@@ -166,7 +171,7 @@ class UserServiceTest {
         assertThat(it.username).isEqualTo("joe")
         assertThat(it.email).isEqualTo("a@b.justice.gov.uk")
         assertThat(it.isVerified).isTrue()
-        assertThat(it.authSource).isEqualTo(AuthSource.nomis.name)
+        assertThat(it.authSource).isEqualTo(nomis.name)
       }
     }
   }
@@ -399,7 +404,7 @@ class UserServiceTest {
         )
       )
 
-      val userBuilder = User.builder().verified(true).source(AuthSource.nomis)
+      val userBuilder = User.builder().verified(true).source(nomis)
 
       whenever(authUserService.findAuthUsersByUsernames(anyList())).thenReturn(
         listOf(
@@ -456,7 +461,7 @@ class UserServiceTest {
         )
       )
 
-      val userBuilder = User.builder().verified(true).source(AuthSource.nomis)
+      val userBuilder = User.builder().verified(true).source(nomis)
 
       whenever(authUserService.findAuthUsersByUsernames(anyList())).thenReturn(
         listOf(
@@ -464,7 +469,7 @@ class UserServiceTest {
           // User U2 in auth, but no email - so search NOMIS for e-mail for this user
           userBuilder.username("U2").email(null).build(),
           // User U3 found in auth, but source is not nomis
-          userBuilder.username("U3").email("u3@b.com").source(AuthSource.auth).build()
+          userBuilder.username("U3").email("u3@b.com").source(auth).build()
         )
       )
 
@@ -517,39 +522,73 @@ class UserServiceTest {
   }
 
   @Nested
-  inner class GetMasterUserPersonDetails {
+  inner class GetMasterUserPersonDetailsWithEmailCheck {
     @Test
-    fun `test getMasterUserPersonDetails - auth user`() {
-      val authUser = createUser()
+    fun `test getMasterUserPersonDetailsWithEmailCheck - auth user`() {
+      val authUser =
+        Optional.of(User.builder().username("bob").verified(true).email("joe@fred.com").source(auth).build())
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(authUser)
-      val details = userService.getMasterUserPersonDetails("user", AuthSource.auth)
+      val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", auth, "joe@fred.com")
       assertThat(details).isEqualTo(authUser)
     }
 
     @Test
-    fun `test getMasterUserPersonDetails - nomis user`() {
+    fun `test getMasterUserPersonDetailsWithEmailCheck - auth user email not verified`() {
+      val authUser =
+        Optional.of(User.builder().username("bob").verified(false).email("joe@fred.com").source(auth).build())
+      whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(authUser)
+      val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", auth, "joe@fred.com")
+      assertThat(details).isEmpty()
+    }
+
+    @Test
+    fun `test getMasterUserPersonDetailsWithEmailCheck - auth user not matched`() {
+      val authUser =
+        Optional.of(User.builder().username("bob").verified(true).email("harold@henry.com").source(auth).build())
+      whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(authUser)
+      val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", auth, "joe@fred.com")
+      assertThat(details).isEmpty()
+    }
+
+    @Test
+    fun `test getMasterUserPersonDetailsWithEmailCheck - nomis user`() {
       whenever(nomisUserService.getNomisUserByUsername(anyString())).thenReturn(staffUserAccountForBob)
-      val details = userService.getMasterUserPersonDetails("user", AuthSource.nomis)
+      whenever(nomisUserService.getNomisUsersByEmail(anyString())).thenReturn(listOf(staffUserAccountForBob.get()))
+      val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", nomis, "joe@fred.com")
       assertThat(details).isEqualTo(staffUserAccountForBob)
     }
 
     @Test
-    fun `test getMasterUserPersonDetails - delius user`() {
+    fun `test getMasterUserPersonDetailsWithEmailCheck - nomis user not matched`() {
+      whenever(nomisUserService.getNomisUserByUsername(anyString())).thenReturn(staffUserAccountForBob)
+      val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", nomis, "joe@fred.com")
+      assertThat(details).isEmpty()
+    }
+
+    @Test
+    fun `test getMasterUserPersonDetailsWithEmailCheck - delius user`() {
       whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(deliusUserAccountForBob)
-      val details = userService.getMasterUserPersonDetails("user", AuthSource.delius)
+      val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", delius, "a@b.com")
       assertThat(details).isEqualTo(deliusUserAccountForBob)
     }
 
     @Test
-    fun `test getMasterUserPersonDetails - azuread user`() {
+    fun `test getMasterUserPersonDetailsWithEmailCheck - delius user not matched`() {
+      whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(deliusUserAccountForBob)
+      val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", delius, "joe@fred.com")
+      assertThat(details).isEmpty()
+    }
+
+    @Test
+    fun `test getMasterUserPersonDetailsWithEmailCheck - azuread user`() {
       whenever(azureUserService.getAzureUserByUsername(anyString())).thenReturn(azureUserAccount)
-      val details = userService.getMasterUserPersonDetails("user", AuthSource.azuread)
+      val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", azuread, "joe.bloggs@justice.gov.uk")
       assertThat(details).isEqualTo(azureUserAccount)
     }
 
     @Test
-    fun `test getMasterUserPersonDetails - none`() {
-      val details = userService.getMasterUserPersonDetails("user", AuthSource.none)
+    fun `test getMasterUserPersonDetailsWithEmailCheck - none`() {
+      val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", none, "joe@fred.com")
       assertThat(details).isEmpty
     }
   }

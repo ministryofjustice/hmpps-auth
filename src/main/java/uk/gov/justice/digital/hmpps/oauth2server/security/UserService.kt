@@ -13,7 +13,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.azure.service.AzureUserService
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.none
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.util.Optional
 
@@ -39,14 +43,35 @@ class UserService(
       .or { azureUserService.getAzureUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
       .or { deliusUserService.getDeliusUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
 
-  fun getMasterUserPersonDetails(username: String, authSource: AuthSource): Optional<UserPersonDetails> =
+  fun getMasterUserPersonDetailsWithEmailCheck(
+    username: String,
+    authSource: AuthSource,
+    email: String,
+  ): Optional<UserPersonDetails> =
+    getMasterUserPersonDetails(username, authSource).filter { emailMatchesUser(email, it) }
+
+  private fun getMasterUserPersonDetails(username: String, authSource: AuthSource): Optional<UserPersonDetails> =
     when (authSource) {
-      AuthSource.auth -> authUserService.getAuthUserByUsername(username)
-      AuthSource.nomis -> nomisUserService.getNomisUserByUsername(username)
-      AuthSource.azuread -> azureUserService.getAzureUserByUsername(username)
-      AuthSource.delius -> deliusUserService.getDeliusUserByUsername(username)
-      AuthSource.none -> Optional.empty()
+      auth -> authUserService.getAuthUserByUsername(username)
+      nomis -> nomisUserService.getNomisUserByUsername(username)
+      azuread -> azureUserService.getAzureUserByUsername(username)
+      delius -> deliusUserService.getDeliusUserByUsername(username)
+      none -> Optional.empty()
     }.map { UserPersonDetails::class.java.cast(it) }
+
+  private fun emailMatchesUser(email: String, userPersonDetails: UserPersonDetails): Boolean {
+    val user = userPersonDetails.toUser()
+    return when (AuthSource.fromNullableString(user.authSource)) {
+      auth -> user.isVerified && email == user.email
+      delius -> email == user.email
+      azuread -> email == user.email
+      nomis -> {
+        val usersByEmail = nomisUserService.getNomisUsersByEmail(email)
+        usersByEmail.contains(userPersonDetails)
+      }
+      else -> false
+    }
+  }
 
   fun findUser(username: String): Optional<User> = userRepository.findByUsername(StringUtils.upperCase(username))
 
@@ -66,7 +91,7 @@ class UserService(
     findUser(username).or {
       findMasterUserPersonDetails(username).map {
         val user = it.toUser()
-        if (AuthSource.valueOf(user.authSource) == AuthSource.nomis) {
+        if (AuthSource.valueOf(user.authSource) == nomis) {
           getEmailAddressFromNomis(username).ifPresent { email ->
             user.email = email
             user.isVerified = true
@@ -148,5 +173,5 @@ data class PrisonUserDto(
   val email: String?,
   val verified: Boolean,
   val firstName: String,
-  val lastName: String
+  val lastName: String,
 )

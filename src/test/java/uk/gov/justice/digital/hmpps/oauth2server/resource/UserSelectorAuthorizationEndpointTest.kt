@@ -136,7 +136,7 @@ internal class UserSelectorAuthorizationEndpointTest {
       val approveView = endpoint.approveOrDeny(approvalParameters, model, sessionStatus, authentication)
 
       assertThat(approveView).isSameAs(view)
-      verify(userService).getMasterUserPersonDetails("bloggs", AuthSource.none)
+      verify(userService).getMasterUserPersonDetailsWithEmailCheck("bloggs", AuthSource.none, "userid")
       verify(authorizationEndpoint).approveOrDeny(approvalParameters, model, sessionStatus, authentication)
     }
 
@@ -150,15 +150,17 @@ internal class UserSelectorAuthorizationEndpointTest {
       whenever(authentication.credentials).thenReturn(credentials)
       val authorities = setOf(Authority("ROLE_COMMUNITY", "Role Community"))
       val user = User.builder().username("authuser").id(UUID.randomUUID()).person(Person("joe", "bloggs"))
-        .authorities(authorities).build()
-      whenever(userService.getMasterUserPersonDetails(anyString(), any())).thenReturn(Optional.of(user))
+        .authorities(authorities).source(AuthSource.auth).build()
+      whenever(userService.getMasterUserPersonDetailsWithEmailCheck(anyString(), any(), anyString())).thenReturn(
+        Optional.of(user)
+      )
 
       val approvalParameters = mutableMapOf("user_oauth_approval" to "none/bloggs")
       val model = mutableMapOf<String, String>()
       val approveView = endpoint.approveOrDeny(approvalParameters, model, sessionStatus, authentication)
 
       assertThat(approveView).isSameAs(view)
-      verify(userService).getMasterUserPersonDetails("bloggs", AuthSource.none)
+      verify(userService).getMasterUserPersonDetailsWithEmailCheck("bloggs", AuthSource.none, "userid")
       verify(authorizationEndpoint).approveOrDeny(
         eq(mutableMapOf("user_oauth_approval" to "true")),
         eq(model),
