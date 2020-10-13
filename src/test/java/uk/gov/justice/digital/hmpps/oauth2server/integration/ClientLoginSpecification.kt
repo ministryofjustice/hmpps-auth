@@ -122,6 +122,12 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
       .jsonPath(".user_id").isEqualTo("4")
       .jsonPath(".sub").isEqualTo("RO_USER")
       .jsonPath(".auth_source").isEqualTo("nomis")
+      .jsonPath(".access_token").value<JSONArray> {
+        val claims = JWTParser.parse(it[0].toString()).jwtClaimsSet
+        assertThat(claims.getClaim("user_name")).isEqualTo("RO_USER")
+        assertThat(claims.getClaim("authorities") as List<*>)
+          .containsExactly("ROLE_GLOBAL_SEARCH", "ROLE_PRISON", "ROLE_INACTIVE_BOOKINGS", "ROLE_LICENCE_RO")
+      }
   }
 
   @Test
@@ -142,6 +148,12 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
       .jsonPath(".user_id").isEqualTo("1f650f15-0993-4db7-9a32-5b930ff86035")
       .jsonPath(".sub").isEqualTo("AUTH_GROUP_MANAGER")
       .jsonPath(".auth_source").isEqualTo("auth")
+      .jsonPath(".access_token").value<JSONArray> {
+        val claims = JWTParser.parse(it[0].toString()).jwtClaimsSet
+        assertThat(claims.getClaim("user_name")).isEqualTo("AUTH_GROUP_MANAGER")
+        assertThat(claims.getClaim("authorities") as List<*>)
+          .containsExactly("ROLE_AUTH_GROUP_MANAGER")
+      }
   }
 
   @Test
@@ -152,6 +164,12 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
       .jsonPath(".user_id").isEqualTo("auth_disabled@digital.justice.gov.uk")
       .jsonPath(".sub").isEqualTo("FE016DC1-83A6-4B39-9ACC-7CE82D2921D9")
       .jsonPath(".auth_source").isEqualTo("azuread")
+      .jsonPath(".access_token").value<JSONArray> {
+        val claims = JWTParser.parse(it[0].toString()).jwtClaimsSet
+        assertThat(claims.getClaim("user_name")).isEqualTo("FE016DC1-83A6-4B39-9ACC-7CE82D2921D9")
+        assertThat(claims.getClaim("authorities") as List<*>)
+          .containsExactly("SCOPE_openid", "ROLE_USER", "SCOPE_email", "SCOPE_profile")
+      }
   }
 
   @Test

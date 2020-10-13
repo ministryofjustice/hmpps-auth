@@ -32,7 +32,7 @@ class UserContextService(
     }
   }
 
-  private fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String>): List<UserPersonDetails> {
+  fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String>): List<UserPersonDetails> {
     val loginUserAuthSource = fromNullableString(loginUser.authSource)
     if (loginUserAuthSource != azuread) return listOf(loginUser)
 

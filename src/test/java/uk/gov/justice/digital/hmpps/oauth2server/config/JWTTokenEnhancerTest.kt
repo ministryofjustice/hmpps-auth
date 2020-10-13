@@ -22,20 +22,16 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
-import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
-import uk.gov.justice.digital.hmpps.oauth2server.service.UserMappingException
 import java.util.UUID
 
 internal class JWTTokenEnhancerTest {
   private val authentication: OAuth2Authentication = mock()
   private val clientDetailsService: JdbcClientDetailsService = mock()
   private val jwtTokenEnhancer = JWTTokenEnhancer()
-  private val userContextService: UserContextService = mock()
 
   @BeforeEach
   internal fun setUp() {
     ReflectionTestUtils.setField(jwtTokenEnhancer, "clientsDetailsService", clientDetailsService)
-    ReflectionTestUtils.setField(jwtTokenEnhancer, "userContextService", userContextService)
   }
 
   @Test
@@ -45,7 +41,6 @@ internal class JWTTokenEnhancerTest {
     val uuid = UUID.randomUUID()
     val user = User.builder().id(uuid).username("user").source(AuthSource.auth).build()
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
-    whenever(userContextService.resolveUser(any(), any())).thenReturn(user)
     whenever(authentication.oAuth2Request).thenReturn(
       OAuth2Request(
         mapOf(),
@@ -76,7 +71,6 @@ internal class JWTTokenEnhancerTest {
     val uuid = UUID.randomUUID()
     val user = User.builder().id(uuid).username("user").person(Person("Joe", "bloggs")).source(AuthSource.auth).build()
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
-    whenever(userContextService.resolveUser(any(), any())).thenReturn(user)
     whenever(authentication.oAuth2Request).thenReturn(
       OAuth2Request(
         mapOf(),
@@ -107,7 +101,6 @@ internal class JWTTokenEnhancerTest {
     val uuid = UUID.randomUUID()
     val user = User.builder().id(uuid).username("user").person(Person("Joe", "bloggs")).source(AuthSource.auth).build()
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
-    whenever(userContextService.resolveUser(any(), any())).thenReturn(user)
     whenever(authentication.oAuth2Request).thenReturn(
       OAuth2Request(
         mapOf(),
@@ -142,9 +135,19 @@ internal class JWTTokenEnhancerTest {
   fun testEnhance_MissingAuthSource() {
     val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
     whenever(authentication.isClientOnly).thenReturn(false)
-    val user = UserDetailsImpl("user", "name", emptyList(), "none", "userID", "jwtId")
-    whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
-    whenever(userContextService.resolveUser(any(), any())).thenReturn(user)
+    whenever(authentication.userAuthentication).thenReturn(
+      UsernamePasswordAuthenticationToken(
+        UserDetailsImpl(
+          "user",
+          "name",
+          emptyList(),
+          "none",
+          "userID",
+          "jwtId"
+        ),
+        "pass"
+      )
+    )
     whenever(authentication.oAuth2Request).thenReturn(
       OAuth2Request(
         mapOf(),
@@ -165,72 +168,6 @@ internal class JWTTokenEnhancerTest {
       entry("user_name", "user"),
       entry("auth_source", "none"),
       entry("user_id", "userID")
-    )
-  }
-
-  @Test
-  fun `enhance modifies user info based on output from UserContextService`() {
-    val uuid = UUID.randomUUID()
-    val loginUser = User.builder().id(uuid).username("user").source(AuthSource.auth).build()
-    val deliusuuid = UUID.randomUUID()
-    val deliusUser = User.builder().id(deliusuuid).username("deliusUser").source(AuthSource.delius).build()
-    val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
-
-    whenever(userContextService.resolveUser(any(), any())).thenReturn(deliusUser)
-    whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(loginUser, "pass"))
-    whenever(authentication.oAuth2Request).thenReturn(
-      OAuth2Request(
-        mapOf(),
-        "client_id",
-        listOf(),
-        true,
-        setOf(),
-        setOf(),
-        "redirect",
-        setOf(),
-        mapOf()
-      )
-    )
-    whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createBaseClientDetails("+user_name,-name"))
-
-    jwtTokenEnhancer.enhance(token, authentication)
-    assertThat(token.additionalInformation).containsOnly(
-      entry("sub", "deliusUser"),
-      entry("user_name", "deliusUser"),
-      entry("auth_source", "delius"),
-      entry("user_id", deliusuuid.toString())
-    )
-  }
-
-  @Test
-  fun `getUser handles 'UserMappingException' and returns login user`() {
-    val uuid = UUID.randomUUID()
-    val user = User.builder().id(uuid).username("user").source(AuthSource.auth).build()
-    val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
-
-    whenever(userContextService.resolveUser(any(), any())).thenThrow(UserMappingException::class.java)
-    whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
-    whenever(authentication.oAuth2Request).thenReturn(
-      OAuth2Request(
-        mapOf(),
-        "client_id",
-        listOf(),
-        true,
-        setOf(),
-        setOf(),
-        "redirect",
-        setOf(),
-        mapOf()
-      )
-    )
-    whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createBaseClientDetails("+user_name,-name"))
-
-    jwtTokenEnhancer.enhance(token, authentication)
-    assertThat(token.additionalInformation).containsOnly(
-      entry("sub", "user"),
-      entry("user_name", "user"),
-      entry("auth_source", "auth"),
-      entry("user_id", uuid.toString())
     )
   }
 

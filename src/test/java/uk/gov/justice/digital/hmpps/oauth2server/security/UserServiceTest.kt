@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.azure.AzureUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.azure.service.AzureUserService
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
@@ -63,6 +64,13 @@ class UserServiceTest {
       whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(deliusUserAccountForBob)
       val user = userService.findMasterUserPersonDetails("bob")
       assertThat(user).isPresent.get().extracting { it.username }.isEqualTo("deliusUser")
+    }
+
+    @Test
+    fun `findMasterUserPersonDetails azure user`() {
+      whenever(azureUserService.getAzureUserByUsername(anyString())).thenReturn(azureUserAccount)
+      val user = userService.findMasterUserPersonDetails("bob")
+      assertThat(user).isPresent.get().extracting { it.username }.isEqualTo("D6165AD0-AED3-4146-9EF7-222876B57549")
     }
   }
 
@@ -148,7 +156,9 @@ class UserServiceTest {
           NomisUserPersonDetails.builder().username("joe").build()
         )
       )
-      whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(listOf("a@b.justice.gov.uk"))
+      whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(
+        listOf("a@b.justice.gov.uk")
+      )
       whenever(userRepository.save<User>(any())).thenAnswer { it.getArguments()[0] }
 
       val newUser = userService.getOrCreateUser("joe")
@@ -325,9 +335,12 @@ class UserServiceTest {
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
-          NomisUserPersonDetails.builder().username("U1").staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
-          NomisUserPersonDetails.builder().username("U2").staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
-          NomisUserPersonDetails.builder().username("U3").staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
+          NomisUserPersonDetails.builder().username("U1")
+            .staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
+          NomisUserPersonDetails.builder().username("U2")
+            .staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
+          NomisUserPersonDetails.builder().username("U3")
+            .staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
         )
       )
 
@@ -344,9 +357,30 @@ class UserServiceTest {
       assertThat(userService.findPrisonUsersByFirstAndLastNames("first", "last"))
 
         .containsExactlyInAnyOrder(
-          PrisonUserDto(username = "U1", email = "u1@justice.gov.uk", verified = true, userId = "1", firstName = "F1", lastName = "l1"),
-          PrisonUserDto(username = "U2", email = null, verified = false, userId = "2", firstName = "F2", lastName = "l2"),
-          PrisonUserDto(username = "U3", email = null, verified = false, userId = "3", firstName = "F3", lastName = "l3"),
+          PrisonUserDto(
+            username = "U1",
+            email = "u1@justice.gov.uk",
+            verified = true,
+            userId = "1",
+            firstName = "F1",
+            lastName = "l1"
+          ),
+          PrisonUserDto(
+            username = "U2",
+            email = null,
+            verified = false,
+            userId = "2",
+            firstName = "F2",
+            lastName = "l2"
+          ),
+          PrisonUserDto(
+            username = "U3",
+            email = null,
+            verified = false,
+            userId = "3",
+            firstName = "F3",
+            lastName = "l3"
+          ),
         )
       verify(verifyEmailService).getExistingEmailAddressesForUsernames(listOf("U1", "U2", "U3"))
     }
@@ -356,9 +390,12 @@ class UserServiceTest {
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
-          NomisUserPersonDetails.builder().username("U1").staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
-          NomisUserPersonDetails.builder().username("U2").staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
-          NomisUserPersonDetails.builder().username("U3").staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
+          NomisUserPersonDetails.builder().username("U1")
+            .staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
+          NomisUserPersonDetails.builder().username("U2")
+            .staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
+          NomisUserPersonDetails.builder().username("U3")
+            .staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
         )
       )
 
@@ -374,9 +411,30 @@ class UserServiceTest {
 
       assertThat(userService.findPrisonUsersByFirstAndLastNames("first", "last"))
         .containsExactlyInAnyOrder(
-          PrisonUserDto(username = "U1", email = "u1@b.com", verified = true, userId = "1", firstName = "F1", lastName = "l1"),
-          PrisonUserDto(username = "U2", email = "u2@b.com", verified = true, userId = "2", firstName = "F2", lastName = "l2"),
-          PrisonUserDto(username = "U3", email = "u3@b.com", verified = false, userId = "3", firstName = "F3", lastName = "l3"),
+          PrisonUserDto(
+            username = "U1",
+            email = "u1@b.com",
+            verified = true,
+            userId = "1",
+            firstName = "F1",
+            lastName = "l1"
+          ),
+          PrisonUserDto(
+            username = "U2",
+            email = "u2@b.com",
+            verified = true,
+            userId = "2",
+            firstName = "F2",
+            lastName = "l2"
+          ),
+          PrisonUserDto(
+            username = "U3",
+            email = "u3@b.com",
+            verified = false,
+            userId = "3",
+            firstName = "F3",
+            lastName = "l3"
+          ),
         )
 
       verify(verifyEmailService).getExistingEmailAddressesForUsernames(listOf())
@@ -387,10 +445,14 @@ class UserServiceTest {
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
-          NomisUserPersonDetails.builder().username("U1").staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
-          NomisUserPersonDetails.builder().username("U2").staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
-          NomisUserPersonDetails.builder().username("U3").staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
-          NomisUserPersonDetails.builder().username("U4").staff(Staff.builder().firstName("f4").lastName("l4").staffId(4).build()).build(),
+          NomisUserPersonDetails.builder().username("U1")
+            .staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
+          NomisUserPersonDetails.builder().username("U2")
+            .staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
+          NomisUserPersonDetails.builder().username("U3")
+            .staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
+          NomisUserPersonDetails.builder().username("U4")
+            .staff(Staff.builder().firstName("f4").lastName("l4").staffId(4).build()).build(),
         )
       )
 
@@ -416,13 +478,79 @@ class UserServiceTest {
 
       assertThat(userService.findPrisonUsersByFirstAndLastNames("first", "last"))
         .containsExactlyInAnyOrder(
-          PrisonUserDto(username = "U1", email = "u1@b.com", verified = true, userId = "1", firstName = "F1", lastName = "l1"),
-          PrisonUserDto(username = "U2", email = "u2@justice.gov.uk", verified = true, userId = "2", firstName = "F2", lastName = "l2"),
-          PrisonUserDto(username = "U3", email = "u3@justice.gov.uk", verified = true, userId = "3", firstName = "F3", lastName = "l3"),
-          PrisonUserDto(username = "U4", email = null, verified = false, userId = "4", firstName = "F4", lastName = "l4"),
+          PrisonUserDto(
+            username = "U1",
+            email = "u1@b.com",
+            verified = true,
+            userId = "1",
+            firstName = "F1",
+            lastName = "l1"
+          ),
+          PrisonUserDto(
+            username = "U2",
+            email = "u2@justice.gov.uk",
+            verified = true,
+            userId = "2",
+            firstName = "F2",
+            lastName = "l2"
+          ),
+          PrisonUserDto(
+            username = "U3",
+            email = "u3@justice.gov.uk",
+            verified = true,
+            userId = "3",
+            firstName = "F3",
+            lastName = "l3"
+          ),
+          PrisonUserDto(
+            username = "U4",
+            email = null,
+            verified = false,
+            userId = "4",
+            firstName = "F4",
+            lastName = "l4"
+          ),
         )
 
       verify(verifyEmailService).getExistingEmailAddressesForUsernames(listOf("U2", "U3", "U4"))
+    }
+  }
+
+  @Nested
+  inner class GetMasterUserPersonDetails {
+    @Test
+    fun `test getMasterUserPersonDetails - auth user`() {
+      val authUser = createUser()
+      whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(authUser)
+      val details = userService.getMasterUserPersonDetails("user", AuthSource.auth)
+      assertThat(details).isEqualTo(authUser)
+    }
+
+    @Test
+    fun `test getMasterUserPersonDetails - nomis user`() {
+      whenever(nomisUserService.getNomisUserByUsername(anyString())).thenReturn(staffUserAccountForBob)
+      val details = userService.getMasterUserPersonDetails("user", AuthSource.nomis)
+      assertThat(details).isEqualTo(staffUserAccountForBob)
+    }
+
+    @Test
+    fun `test getMasterUserPersonDetails - delius user`() {
+      whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(deliusUserAccountForBob)
+      val details = userService.getMasterUserPersonDetails("user", AuthSource.delius)
+      assertThat(details).isEqualTo(deliusUserAccountForBob)
+    }
+
+    @Test
+    fun `test getMasterUserPersonDetails - azuread user`() {
+      whenever(azureUserService.getAzureUserByUsername(anyString())).thenReturn(azureUserAccount)
+      val details = userService.getMasterUserPersonDetails("user", AuthSource.azuread)
+      assertThat(details).isEqualTo(azureUserAccount)
+    }
+
+    @Test
+    fun `test getMasterUserPersonDetails - none`() {
+      val details = userService.getMasterUserPersonDetails("user", AuthSource.none)
+      assertThat(details).isEmpty
     }
   }
 
@@ -443,4 +571,19 @@ class UserServiceTest {
 
   private val deliusUserAccountForBob =
     Optional.of(DeliusUserPersonDetails("deliusUser", "12345", "Delius", "Smith", "a@b.com", true, false, setOf()))
+
+  private val azureUserAccount =
+    Optional.of(
+      AzureUserPersonDetails(
+        ArrayList(),
+        true,
+        "D6165AD0-AED3-4146-9EF7-222876B57549",
+        "Joe",
+        "Bloggs",
+        "joe.bloggs@justice.gov.uk",
+        true,
+        accountNonExpired = true,
+        accountNonLocked = true
+      )
+    )
 }
