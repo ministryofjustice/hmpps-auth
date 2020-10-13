@@ -197,7 +197,8 @@ public class AuthenticationManagerConfiguration extends WebSecurityConfigurerAda
                         "/verify-email-expired", "/verify-email-secondary-expired", "/verify-email-failure",
                         "/mfa-resend", "/h2-console/**", "/v2/api-docs", "/jwt-public-key",
                         "/swagger-ui.html", "/swagger-resources", "/swagger-resources/configuration/ui",
-                        "/swagger-resources/configuration/security", "/.well-known/jwks.json", "/issuer/.well-known/**");
+                        "/swagger-resources/configuration/security", "/.well-known/jwks.json", "/issuer/.well-known/**",
+                        "/api/services");
     }
 
     @Bean
