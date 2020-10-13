@@ -1,10 +1,8 @@
 [*.kt]
 indent_size = 2
-max_line_length = none
 
 [*.kts]
 indent_size = 2
-max_line_length = none
 
 [*.java]
 ij_java_class_count_to_use_import_on_demand = 99
