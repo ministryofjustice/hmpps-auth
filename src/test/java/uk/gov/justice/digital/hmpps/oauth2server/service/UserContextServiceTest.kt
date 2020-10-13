@@ -12,9 +12,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserServic
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
+import java.util.UUID
 
 internal class UserContextServiceTest {
   private val deliusUserService: DeliusUserService = mock()
@@ -32,7 +34,7 @@ internal class UserContextServiceTest {
 
   @Test
   fun `discoverUsers returns empty list when not azuread from mapping`() {
-    val loginUser = User.builder().username("username").source(auth).build()
+    val loginUser = User.builder().username("username").source(auth).id(UUID.randomUUID()).build()
     val scopes = setOf("read", "delius")
 
     val users = userContextService.discoverUsers(loginUser, scopes)
@@ -145,5 +147,17 @@ internal class UserContextServiceTest {
 
     val users = userContextService.discoverUsers(loginUser, scopes)
     assertThat(users).containsExactly(authUser)
+  }
+
+  @Test
+  fun `discoverUsers accepts source and email address`() {
+    val deliusUser = DeliusUserPersonDetails("username", "id", "user", "name", "email@email.com", true)
+    val authUser = User.builder().username("username").source(auth).enabled(true).build()
+    val scopes = setOf("delius", "auth")
+    whenever(deliusUserService.getDeliusUsersByEmail(anyString())).thenReturn(listOf(deliusUser))
+    whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser))
+
+    val users = userContextService.discoverUsers(AuthSource.azuread, "joe@bloggs.com", scopes)
+    assertThat(users).containsExactly(deliusUser, authUser)
   }
 }

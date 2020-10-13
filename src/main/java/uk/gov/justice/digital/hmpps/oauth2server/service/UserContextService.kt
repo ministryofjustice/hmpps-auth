@@ -21,9 +21,13 @@ class UserContextService(
   private val authUserService: AuthUserService,
   private val nomisUserService: NomisUserService,
 ) {
-  fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String>): List<UserPersonDetails> {
-    val loginUserAuthSource = fromNullableString(loginUser.authSource)
-    if (loginUserAuthSource != azuread) return emptyList()
+
+  fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String>): List<UserPersonDetails> =
+    discoverUsers(fromNullableString(loginUser.authSource), loginUser.userId, scopes)
+
+  fun discoverUsers(authSource: AuthSource, email: String, scopes: Set<String>): List<UserPersonDetails> {
+
+    if (authSource != azuread) return emptyList()
 
     val sourcesFromScopes = scopes.map {
       try {
@@ -36,7 +40,7 @@ class UserContextService(
     val desiredSources = if (sourcesFromScopes.isEmpty()) listOf(nomis, auth, delius) else sourcesFromScopes
 
     return desiredSources
-      .map { mapFromAzureAD(loginUser.userId, it).filter { it.isEnabled } }
+      .map { mapFromAzureAD(email, it).filter { it.isEnabled } }
       .filter { it.isNotEmpty() }
       .flatten()
   }

@@ -1,46 +1,80 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.landing.LandingService
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
+import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 
-@Suppress("UNCHECKED_CAST")
 class HomeControllerTest {
   private val landingService: LandingService = mock()
+  private val userContextService: UserContextService = mock()
+  private val homeController = HomeController(landingService, userContextService)
+  private val authentication: Authentication = mock()
 
   @Test
-  fun home() {
-    val homeController = HomeController(landingService)
-    val modelAndView = homeController.home(authenticationWithRole())
+  fun `home view`() {
+    setUpAuthentication()
+    val modelAndView = homeController.home(authentication)
     assertThat(modelAndView.viewName).isEqualTo("landing")
   }
 
   @Test
-  fun home_model() {
-    whenever(landingService.findAllServices()).thenReturn(ALL_SERVICES)
-    val homeController = HomeController(landingService)
-    val modelAndView = homeController.home(authenticationWithRole("ROLE_LICENCE_DM"))
-    val allocatedServices = modelAndView.model["services"] as List<Service>?
-    assertThat(allocatedServices).extracting<String> { it.code }.containsExactly("DM", "LIC", "NOMIS")
+  fun `terms view`() {
+    setUpAuthentication()
+    val modelAndView = homeController.terms()
+    assertThat(modelAndView).isEqualTo("terms")
   }
 
   @Test
-  fun home_view() {
+  fun `home model`() {
     whenever(landingService.findAllServices()).thenReturn(ALL_SERVICES)
-    val homeController = HomeController(landingService)
-    val modelAndView = homeController.home(authenticationWithRole("ROLE_LICENCE_DM"))
-    assertThat(modelAndView.viewName).isEqualTo("landing")
+    setUpAuthentication(AuthSource.nomis, "ROLE_LICENCE_DM")
+    val modelAndView = homeController.home(authentication)
+    val allocatedServices = modelAndView.model["services"] as List<*>?
+    assertThat(allocatedServices).extracting<String> { (it as Service).code }.containsExactly("DM", "LIC", "NOMIS")
   }
 
-  private fun authenticationWithRole(vararg roles: String): Authentication {
+  @Test
+  fun `home azuread user`() {
+    whenever(landingService.findAllServices()).thenReturn(ALL_SERVICES)
+    setUpAuthentication(AuthSource.azuread, "ROLE_BOB")
+    whenever(userContextService.discoverUsers(any(), anyString(), any())).thenReturn(
+      listOf(
+        DeliusUserPersonDetails(
+          username = "user",
+          userId = "12345",
+          firstName = "F",
+          surname = "L",
+          email = "a@b.com",
+          roles = setOf(SimpleGrantedAuthority("ROLE_LICENCE_DM"))
+        ),
+        User.builder().authorities(setOf(Authority("ROLE_OTHER", "Role Other"))).build(),
+      )
+    )
+    val modelAndView = homeController.home(authentication)
+    val allocatedServices = modelAndView.model["services"] as List<*>?
+    assertThat(allocatedServices)
+      .extracting<String> { (it as Service).code }.containsExactly("DM", "LIC", "NOMIS", "OTHER")
+  }
+
+  private fun setUpAuthentication(authSource: AuthSource = AuthSource.auth, vararg roles: String = arrayOf()) {
     val authorities = roles.map { SimpleGrantedAuthority(it) }.toList()
-    return UsernamePasswordAuthenticationToken("user", "pass", authorities)
+    whenever(authentication.authorities).thenReturn(authorities)
+    whenever(authentication.principal).thenReturn(
+      UserDetailsImpl("username", "name", authorities, authSource.source, "userId", "jwtId")
+    )
   }
 
   companion object {
