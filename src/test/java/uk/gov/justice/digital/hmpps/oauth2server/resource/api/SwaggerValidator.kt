@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 class SwaggerValidator : IntegrationTest() {
   @Test
   fun `validate swagger json`() {
-    val result = SwaggerConverter().readLocation("$baseUrl/v2/api-docs", null, null)
+    val result = SwaggerConverter().readLocation("$baseUrl/v3/api-docs", null, null)
     assertThat(result.messages).isEmpty()
   }
 }

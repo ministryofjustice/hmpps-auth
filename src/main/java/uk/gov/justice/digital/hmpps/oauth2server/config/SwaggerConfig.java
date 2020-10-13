@@ -1,39 +1,33 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config;
 
-import com.google.common.base.Predicates;
 import io.swagger.util.ReferenceSerializationConfigurer;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.json.JacksonModuleRegistrar;
 import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
-import static springfox.documentation.builders.PathSelectors.regex;
-
 @Configuration
-@EnableSwagger2
 public class SwaggerConfig {
 
     @Bean
     public Docket offenderApi(final BuildProperties buildProperties) {
-        final var docket = new Docket(DocumentationType.SWAGGER_2)
+        final var docket = new Docket(DocumentationType.OAS_30)
                 .useDefaultResponseMessages(false)
                 .apiInfo(apiInfo(buildProperties))
                 .select()
                 .apis(RequestHandlerSelectors.any())
-                .paths(Predicates.or(regex("(\\/info.*)"),
-                        regex("(\\/api.*)"),
-                        regex("(\\/health)")))
+                .paths(PathSelectors.any())
                 .build();
 
         docket.genericModelSubstitutes(Optional.class);
@@ -57,9 +51,9 @@ public class SwaggerConfig {
                 "",
                 "feedback@digital.justice.gov.uk");
     }
-
-    @Bean
-    public JacksonModuleRegistrar swaggerJacksonModuleRegistrar() {
-        return ReferenceSerializationConfigurer::serializeAsComputedRef;
-    }
+//
+//    @Bean
+//    public JacksonModuleRegistrar swaggerJacksonModuleRegistrar() {
+//        return ReferenceSerializationConfigurer::serializeAsComputedRef;
+//    }
 }
