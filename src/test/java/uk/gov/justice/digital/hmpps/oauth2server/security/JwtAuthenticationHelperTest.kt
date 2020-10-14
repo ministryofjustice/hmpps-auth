@@ -5,14 +5,25 @@ import io.jsonwebtoken.SignatureAlgorithm.RS256
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
+import org.springframework.security.oauth2.core.oidc.OidcIdToken
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser
+import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority
 import org.springframework.test.util.ReflectionTestUtils
 import java.security.KeyPair
 import java.time.Duration
+import java.time.Instant
 import java.util.Date
 import java.util.UUID
 
 class JwtAuthenticationHelperTest {
   private val helper: JwtAuthenticationHelper
+
+  init {
+    val properties = JwtCookieConfigurationProperties()
+    properties.expiryTime = Duration.ofHours(1)
+    helper = JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties)
+  }
 
   @Test
   fun testReadAndWriteWithoutAuthorities() {
@@ -23,6 +34,22 @@ class JwtAuthenticationHelperTest {
     assertThat(auth).isPresent
     assertThat(auth.get().principal).extracting("username", "name", "authSource", "userId")
       .containsExactly("user", "name", "none", "user id")
+    assertThat(auth.get().authorities).isEmpty()
+  }
+
+  @Test
+  fun `test read and write oidc token`() {
+    val token = createOAuth2AuthenticationToken()
+    val jwt = helper.createJwt(token)
+    val auth = helper.readAuthenticationFromJwt(jwt)
+    assertThat(auth).isPresent
+    assertThat(auth.get().principal).extracting("username", "name", "authSource", "userId")
+      .containsExactly(
+        "6C2X9VSOM3FGI9QMEYZGUT4HDYME3DW1566TP8YC1VE",
+        "Joe Bloggs",
+        "azuread",
+        "joe.bloggs@justice.gov.uk"
+      )
     assertThat(auth.get().authorities).isEmpty()
   }
 
@@ -114,9 +141,21 @@ class JwtAuthenticationHelperTest {
       "eyJhbGciOiJSUzI1NiJ9.eyJqdGkiOiI1NTgwMzIzOS1kOWVhLTRhYTAtOGQxMC0yMDUxOWQ5M2VhMGEiLCJzdWIiOiJST19VU0VSX01VTFRJIiwiYXV0aG9yaXRpZXMiOiJST0xFX0xJQ0VOQ0VfUk8iLCJleHAiOjE1NDcyMDg5NDl9.D5ro1Wy3a8jQpoWmCn-YrEda4qaNQm2LmpsyQbTl76HmOox0avabTT87zdr1WmsheydrQugyn6PswlReNIlJaEa7b8XsEiwuS1SxwlZLXRdkm9qmMUU5A2avVQqDaN-ryAyMDAtk3Ihd2vzNI249HuGBQxcFt7UpwgCQpZhh6qkG-JnyXbF-HUe5vSLXBtXV1eO6KOYw_pAtoLnYy5O4x3C8fmVfSb6Vb2GluaMbREa9NtwAIYb1o7OOpK9UmqvoSMYk-QqDXZ89hL0sCZ5y0skpQlWvP4ZXvF22iDmiKVLyWfjDde7wfo2ZTTx10nzxwhxnaTxTv97m62YG4NqU4w"
   }
 
-  init {
-    val properties = JwtCookieConfigurationProperties()
-    properties.expiryTime = Duration.ofHours(1)
-    helper = JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties)
+  private fun createOAuth2AuthenticationToken(): OAuth2AuthenticationToken {
+    val oidcToken = OidcIdToken(
+      "tokenValue",
+      Instant.now(),
+      Instant.now().plusSeconds(1000),
+      // id claims
+      mapOf(
+        "sub" to "6C2x9vsoM3Fgi9QmeYZGUT4hdYme3Dw1566tp8yc1vE",
+        "given_name" to "Joe",
+        "family_name" to "Bloggs",
+        "oid" to "d6165ad0-aed3-4146-9ef7-222876b57549",
+        "preferred_username" to "Joe.Bloggs@justice.gov.uk",
+        "name" to "Joe Bloggs",
+      )
+    )
+    return OAuth2AuthenticationToken(DefaultOidcUser(listOf(OidcUserAuthority(oidcToken)), oidcToken), null, "jwtId")
   }
 }
