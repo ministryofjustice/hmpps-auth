@@ -181,7 +181,7 @@ class ClientLoginSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `Sign in as azure ad user with multiple accounts`() {
-    azureClientSignInChooseUser("auth_test@digital.justice.gov.uk", "AUTH_CHANGE_TEST")
+    azureClientSignInChooseUser("Auth_Test@digital.Justice.gov.UK", "AUTH_CHANGE_TEST")
       .jsonPath(".user_name").isEqualTo("AUTH_CHANGE_TEST")
       .jsonPath(".user_id").isEqualTo("2e285ccd-dcfd-4497-9e22-d6e8e10a2b3f")
       .jsonPath(".sub").isEqualTo("AUTH_CHANGE_TEST")
