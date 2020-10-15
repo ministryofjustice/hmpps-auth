@@ -36,10 +36,10 @@ data class AuthService(
 
   @ApiModelProperty(
     required = false,
-    value = "Comma separated list of roles",
-    example = "ROLE_PRISON,ROLE_GLOBAL_SEARCH"
+    value = "Contact information, can be blank",
+    example = "feedback@digital.justice.gov.uk"
   )
-  val roles: String?,
+  val contact: String?,
 
   @ApiModelProperty(
     required = false,
@@ -48,5 +48,5 @@ data class AuthService(
   )
   val url: String?,
 ) {
-  constructor(s: Service) : this(s.code, s.name, s.description, s.authorisedRoles, s.url)
+  constructor(s: Service) : this(s.code, s.name, s.description, s.email, s.url)
 }

@@ -21,7 +21,7 @@ class AuthServicesIntTest : IntegrationTest() {
           "code" to "NOMIS",
           "name" to "Digital Prison Service",
           "description" to "View and Manage Offenders in Prison (Old name was NEW NOMIS)",
-          "roles" to "ROLE_PRISON",
+          "contact" to "feedback@digital.justice.gov.uk",
           "url" to "http://localhost:3000"
         )
       )
