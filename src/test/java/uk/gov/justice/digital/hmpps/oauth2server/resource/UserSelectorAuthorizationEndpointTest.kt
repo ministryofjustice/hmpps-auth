@@ -2,6 +2,7 @@
 
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
+import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.eq
@@ -24,6 +25,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import java.util.Optional
 import java.util.UUID
@@ -31,7 +33,10 @@ import java.util.UUID
 internal class UserSelectorAuthorizationEndpointTest {
   private val authorizationEndpoint: AuthorizationEndpoint = mock()
   private val userService: UserService = mock()
-  private val endpoint = UserSelectorAuthorizationEndpoint(authorizationEndpoint, userService)
+  private val telemetryClient: TelemetryClient = mock()
+  private val userRetriesService: UserRetriesService = mock()
+  private val endpoint =
+    UserSelectorAuthorizationEndpoint(authorizationEndpoint, userService, userRetriesService, telemetryClient)
   private val authentication: OAuth2Authentication = mock()
   private val sessionStatus: SessionStatus = mock()
   private val view: View = mock()
@@ -181,6 +186,56 @@ internal class UserSelectorAuthorizationEndpointTest {
           )
         }
       )
+    }
+
+    @Test
+    fun `test approveOrDeny create event`() {
+      whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), any())).thenReturn(view)
+      whenever(authentication.principal).thenReturn(
+        UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId")
+      )
+      whenever(authentication.credentials).thenReturn("some credentials")
+      val user = User.builder().username("authuser").id(UUID.randomUUID()).person(Person("joe", "bloggs"))
+        .authorities(setOf(Authority("ROLE_COMMUNITY", "Role Community"))).source(AuthSource.auth).build()
+      whenever(userService.getMasterUserPersonDetailsWithEmailCheck(anyString(), any(), anyString())).thenReturn(
+        Optional.of(user)
+      )
+
+      endpoint.approveOrDeny(
+        mutableMapOf("user_oauth_approval" to "none/bloggs"),
+        mutableMapOf<String, String>(),
+        sessionStatus,
+        authentication
+      )
+
+      verify(telemetryClient).trackEvent(
+        "UserForAccessToken",
+        mapOf("azureuser" to "userid", "username" to "authuser", "auth_source" to "auth"),
+        null
+      )
+    }
+
+    @Test
+    fun `test approveOrDeny record login`() {
+      whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), any())).thenReturn(view)
+      whenever(authentication.principal).thenReturn(
+        UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId")
+      )
+      whenever(authentication.credentials).thenReturn("some credentials")
+      val user = User.builder().username("authuser").id(UUID.randomUUID()).person(Person("joe", "bloggs"))
+        .authorities(setOf(Authority("ROLE_COMMUNITY", "Role Community"))).source(AuthSource.auth).build()
+      whenever(userService.getMasterUserPersonDetailsWithEmailCheck(anyString(), any(), anyString())).thenReturn(
+        Optional.of(user)
+      )
+
+      endpoint.approveOrDeny(
+        mutableMapOf("user_oauth_approval" to "none/bloggs"),
+        mutableMapOf<String, String>(),
+        sessionStatus,
+        authentication
+      )
+
+      verify(userRetriesService).resetRetriesAndRecordLogin(user)
     }
   }
 }

@@ -14,14 +14,14 @@ import java.time.LocalDateTime
 @Service
 @Slf4j
 @Transactional(transactionManager = "authTransactionManager")
-open class UserRetriesService(
+class UserRetriesService(
   private val userRetriesRepository: UserRetriesRepository,
   private val userRepository: UserRepository,
   private val delegatingUserService: DelegatingUserService,
   @Value("\${application.authentication.lockout-count}") private val accountLockoutCount: Int,
 ) {
 
-  open fun resetRetriesAndRecordLogin(userPersonDetails: UserPersonDetails) {
+  fun resetRetriesAndRecordLogin(userPersonDetails: UserPersonDetails) {
     val username = userPersonDetails.username
     resetRetries(username)
     // and record last logged in as now too (doing for all users to prevent confusion)
@@ -36,7 +36,7 @@ open class UserRetriesService(
     userRepository.save(user)
   }
 
-  open fun incrementRetriesAndLockAccountIfNecessary(userPersonDetails: UserPersonDetails): Boolean {
+  fun incrementRetriesAndLockAccountIfNecessary(userPersonDetails: UserPersonDetails): Boolean {
     val username = userPersonDetails.username
     val retriesOptional = userRetriesRepository.findById(username)
     val userRetries = retriesOptional.orElse(UserRetries(username, 0))
@@ -54,7 +54,7 @@ open class UserRetriesService(
     return true
   }
 
-  open fun resetRetries(username: String) { // reset their retry count
+  fun resetRetries(username: String) { // reset their retry count
     userRetriesRepository.save(UserRetries(username, 0))
   }
 }

@@ -2,7 +2,7 @@
 
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
-import org.slf4j.LoggerFactory
+import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.common.util.OAuth2Utils.USER_OAUTH_APPROVAL
@@ -18,6 +18,7 @@ import org.springframework.web.servlet.View
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 
 @Controller
@@ -28,11 +29,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 class UserSelectorAuthorizationEndpoint(
   private val authorizationEndpoint: AuthorizationEndpoint,
   private val userService: UserService,
+  private val userRetriesService: UserRetriesService,
+  private val telemetryClient: TelemetryClient,
 ) {
-  companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
-  }
-
   @GetMapping(value = ["/oauth/authorize"])
   fun authorize(
     model: MutableMap<String, *>?,
@@ -85,8 +84,6 @@ class UserSelectorAuthorizationEndpoint(
   ): View {
     val account = approvalParameters[USER_OAUTH_APPROVAL]
 
-    log.info("Found username of $account, need to replace principal and then carry on")
-
     val replacedAuthentication = if (!account.isNullOrBlank() && authentication != null) {
       val source = account.substringBefore("/")
       val username = account.substringAfter("/")
@@ -98,23 +95,33 @@ class UserSelectorAuthorizationEndpoint(
         AuthSource.fromNullableString(source),
         azureUser.userId
       )
-      user.map {
+      user.map { upd ->
         // if we're successful with the replace then change the approval parameter to true
         approvalParameters[USER_OAUTH_APPROVAL] = "true"
 
         // now replace the principal
-        UsernamePasswordAuthenticationToken(
+        val newAuth: Authentication = UsernamePasswordAuthenticationToken(
           UserDetailsImpl(
-            it.username,
-            it.name,
-            it.authorities,
+            upd.username,
+            upd.name,
+            upd.authorities,
             source,
-            it.userId,
+            upd.userId,
             azureUser.jwtId
           ),
           authentication.credentials,
-          it.authorities
-        ) as Authentication
+          upd.authorities
+        )
+
+        userRetriesService.resetRetriesAndRecordLogin(upd)
+
+        telemetryClient.trackEvent(
+          "UserForAccessToken",
+          mapOf("azureuser" to azureUser.userId, "username" to upd.username, "auth_source" to upd.authSource),
+          null
+        )
+
+        newAuth
       }.orElse(authentication)
     } else {
       authentication
