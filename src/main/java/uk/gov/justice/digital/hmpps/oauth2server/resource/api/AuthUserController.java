@@ -134,22 +134,25 @@ public class AuthUserController {
     @ApiOperation(value = "Create user.", notes = "Create user.", nickname = "createUser",
             consumes = "application/json", produces = "application/json")
     @ApiResponses(value = {
-            @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 400, message = "Validation failed.", response = ErrorDetail.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail.class),
-            @ApiResponse(code = 409, message = "User already exists.", response = ErrorDetail.class),
+            @ApiResponse(code = 409, message = "User or email already exists.", response = ErrorDetail.class),
             @ApiResponse(code = 500, message = "Server exception e.g. failed to call notify.", response = ErrorDetail.class)})
     public ResponseEntity<Object> createUser(
             @ApiParam(value = "The username of the user.", required = true) @PathVariable final String username,
             @ApiParam(value = "Details of the user to be created.", required = true) @RequestBody final CreateUser createUser,
+            @ApiParam(value = "Details of the user to be created.") @RequestParam(required = false) final boolean enforceUniqueEmail,
             @ApiIgnore final HttpServletRequest request,
             @ApiIgnore final Authentication authentication) throws NotificationClientException {
 
         final var user = StringUtils.isNotBlank(username) ? userService.findMasterUserPersonDetails(StringUtils.trim(username)) : Optional.empty();
 
-        // check that we're not asked to create a user that is already in nomis or auth
+        // check that we're not asked to create a user that is already in nomis, auth or delius
         if (user.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorDetail("username.exists", String.format("Username %s already exists", username), "username"));
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorDetail("username.exists", String.format("User %s already exists", username), "username"));
+        }
+        if (enforceUniqueEmail && !authUserService.findAuthUsersByEmail(createUser.getEmail()).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorDetail("email.exists", String.format("User %s already exists", createUser.getEmail()), "email"));
         }
 
         // new user

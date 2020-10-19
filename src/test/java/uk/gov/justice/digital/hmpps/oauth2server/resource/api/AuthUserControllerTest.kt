@@ -108,28 +108,27 @@ class AuthUserControllerTest {
   }
 
   @Test
-  fun createUser_AlreadyExists() {
+  fun `createUser username already exists`() {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(
-      Optional.of(
-        UserDetailsImpl(
-          "name",
-          "bob",
-          setOf(),
-          "none",
-          "userid",
-          "jwtId"
-        )
-      )
+      Optional.of(UserDetailsImpl("name", "bob", setOf(), "none", "userid", "jwtId"))
     )
     val responseEntity =
-      authUserController.createUser("user", CreateUser("email", "first", "last", null), request, authentication)
+      authUserController.createUser("user", CreateUser("email", "first", "last", null), true, request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(409)
     assertThat(responseEntity.body).isEqualTo(
-      ErrorDetail(
-        "username.exists",
-        "Username user already exists",
-        "username"
-      )
+      ErrorDetail("username.exists", "User user already exists", "username")
+    )
+  }
+
+  @Test
+  fun `createUser email already exists`() {
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
+    whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(User.of("joe")))
+    val responseEntity =
+      authUserController.createUser("user", CreateUser("email", "first", "last", null), true, request, authentication)
+    assertThat(responseEntity.statusCodeValue).isEqualTo(409)
+    assertThat(responseEntity.body).isEqualTo(
+      ErrorDetail("email.exists", "User email already exists", "email")
     )
   }
 
@@ -137,7 +136,7 @@ class AuthUserControllerTest {
   fun createUser_BlankDoesntCallUserService() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     val responseEntity =
-      authUserController.createUser("  ", CreateUser("email", "first", "last", null), request, authentication)
+      authUserController.createUser("  ", CreateUser("email", "first", "last", null), true, request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
     verify(userService, never()).findMasterUserPersonDetails(anyString())
   }
@@ -146,9 +145,30 @@ class AuthUserControllerTest {
   fun createUser_Success() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     val responseEntity =
-      authUserController.createUser("newusername", CreateUser("email", "first", "last", null), request, authentication)
+      authUserController.createUser(
+        "newusername",
+        CreateUser("email", "first", "last", null),
+        false,
+        request,
+        authentication
+      )
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
     assertThat(responseEntity.body).isNull()
+  }
+
+  @Test
+  fun `createUser enforce unique email not called if parameter false`() {
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
+    val responseEntity =
+      authUserController.createUser(
+        "newusername",
+        CreateUser("email", "first", "last", null),
+        false,
+        request,
+        authentication
+      )
+    assertThat(responseEntity.statusCodeValue).isEqualTo(204)
+    verify(authUserService, never()).findAuthUsersByEmail(anyString())
   }
 
   @Test
@@ -157,6 +177,7 @@ class AuthUserControllerTest {
     authUserController.createUser(
       "   newusername   ",
       CreateUser("email", "first", "last", null),
+      true,
       request,
       authentication
     )
@@ -189,7 +210,13 @@ class AuthUserControllerTest {
       )
     ).thenThrow(CreateUserException("username", "errorcode"))
     val responseEntity =
-      authUserController.createUser("newusername", CreateUser("email", "first", "last", null), request, authentication)
+      authUserController.createUser(
+        "newusername",
+        CreateUser("email", "first", "last", null),
+        true,
+        request,
+        authentication
+      )
     assertThat(responseEntity.statusCodeValue).isEqualTo(400)
     assertThat(responseEntity.body).isEqualTo(
       ErrorDetail(
@@ -216,7 +243,13 @@ class AuthUserControllerTest {
       )
     ).thenThrow(VerifyEmailException("reason"))
     val responseEntity =
-      authUserController.createUser("newusername", CreateUser("email", "first", "last", null), request, authentication)
+      authUserController.createUser(
+        "newusername",
+        CreateUser("email", "first", "last", null),
+        true,
+        request,
+        authentication
+      )
     assertThat(responseEntity.statusCodeValue).isEqualTo(400)
     assertThat(responseEntity.body).isEqualTo(ErrorDetail("email.reason", "Email address failed validation", "email"))
   }
@@ -224,7 +257,13 @@ class AuthUserControllerTest {
   @Test
   fun createUser_InitialPasswordUrl() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
-    authUserController.createUser("newusername", CreateUser("email", "first", "last", null), request, authentication)
+    authUserController.createUser(
+      "newusername",
+      CreateUser("email", "first", "last", null),
+      true,
+      request,
+      authentication
+    )
     verify(authUserService).createUser(
       "newusername",
       "email",
@@ -240,7 +279,13 @@ class AuthUserControllerTest {
   @Test
   fun createUser_NoAdditionalRoles() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
-    authUserController.createUser("newusername", CreateUser("email", "first", "last", null), request, authentication)
+    authUserController.createUser(
+      "newusername",
+      CreateUser("email", "first", "last", null),
+      true,
+      request,
+      authentication
+    )
     verify(authUserService).createUser(
       "newusername",
       "email",
@@ -257,7 +302,13 @@ class AuthUserControllerTest {
   fun createUser() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/api/authuser/newusername"))
     val responseEntity =
-      authUserController.createUser("newusername", CreateUser("email", "first", "last", null), request, authentication)
+      authUserController.createUser(
+        "newusername",
+        CreateUser("email", "first", "last", null),
+        true,
+        request,
+        authentication
+      )
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
     assertThat(responseEntity.body).isNull()
   }
