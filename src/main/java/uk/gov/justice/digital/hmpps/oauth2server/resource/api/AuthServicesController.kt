@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import io.swagger.annotations.ApiOperation
 import lombok.extern.slf4j.Slf4j
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service
@@ -16,7 +17,12 @@ import uk.gov.justice.digital.hmpps.oauth2server.service.AuthServicesService
 class AuthServicesController(private val authServicesService: AuthServicesService) {
   @GetMapping("/api/services")
   @ApiOperation(value = "Get all enabled services.", nickname = "services", produces = "application/json")
-  fun services(): List<AuthService> = authServicesService.list().filter { it.isEnabled }.map { AuthService(it) }
+  fun services(): List<AuthService> = authServicesService.listEnabled().map { AuthService(it) }
+
+  @GetMapping("/api/services/me")
+  @ApiOperation(value = "Get my services.", nickname = "my services", produces = "application/json")
+  fun myServices(authentication: Authentication): List<AuthService> =
+    authServicesService.listEnabled(authentication.authorities).map { AuthService(it) }
 }
 
 @ApiModel(description = "Digital Services")
