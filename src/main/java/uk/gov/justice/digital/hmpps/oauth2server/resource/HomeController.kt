@@ -4,18 +4,19 @@ import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.servlet.ModelAndView
-import uk.gov.justice.digital.hmpps.oauth2server.landing.LandingService
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
+import uk.gov.justice.digital.hmpps.oauth2server.service.AuthServicesService
 import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 
 @Controller
-class HomeController(private val landingService: LandingService, private val userContextService: UserContextService) {
+class HomeController(
+  private val authServicesService: AuthServicesService,
+  private val userContextService: UserContextService,
+) {
   @GetMapping("/")
   fun home(authentication: Authentication): ModelAndView {
-    val services = landingService.findAllServices()
-
     // special case for azure users - grab all their accounts and combine roles from them too
     val azureUserDetails = authentication.principal as UserDetailsImpl
     val authSource = AuthSource.fromNullableString(azureUserDetails.authSource)
@@ -24,11 +25,9 @@ class HomeController(private val landingService: LandingService, private val use
       users.flatMap { it.authorities }
     } else authentication.authorities
 
-    // create a list of services that the user can see
-    val allowedServices = services.filter { s ->
-      s.roles.isEmpty() || authorities.any { a -> s.roles.contains(a.authority) }
-    }
-    return ModelAndView("landing", "services", allowedServices)
+    val services = authServicesService.listEnabled(authorities)
+
+    return ModelAndView("landing", "services", services)
   }
 
   @GetMapping("/terms")
