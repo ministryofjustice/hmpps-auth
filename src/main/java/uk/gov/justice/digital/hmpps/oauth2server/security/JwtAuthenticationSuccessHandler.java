@@ -47,14 +47,15 @@ public class JwtAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 
         addAuthenticationToRequest(request, response, authentication);
 
-        // we have successfully authenticated and added the cookie.  Now need to check that they have a validated email address
-        final var userDetails = (UserPersonDetails) authentication.getPrincipal();
+           // we have successfully authenticated and added the cookie.  Now need to check that they have a validated email address
+       if (authentication.getPrincipal() instanceof UserPersonDetails) {
+           final var userDetails = (UserPersonDetails) authentication.getPrincipal();
 
-        if (verifyEmailService.isNotVerified(authentication.getName(), AuthSource.fromNullableString(userDetails.getAuthSource()))) {
-            getRedirectStrategy().sendRedirect(request, response, "/verify-email");
-            return;
-        }
-
+           if (verifyEmailService.isNotVerified(authentication.getName(), AuthSource.fromNullableString(userDetails.getAuthSource()))) {
+               getRedirectStrategy().sendRedirect(request, response, "/verify-email");
+               return;
+           }
+       }
         proceed(request, response, authentication);
     }
 

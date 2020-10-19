@@ -49,14 +49,14 @@ class JwtAuthenticationSuccessHandlerTest {
   @Test
   fun onAuthenticationSuccess_verifyEnabledAlreadyVerified() {
     whenever(verifyEmailService.isNotVerified(anyString(), eq(AuthSource.fromNullableString("nomis")))).thenReturn(false)
-    handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
+    handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken(user, "pass"))
     verify(redirectStrategy).sendRedirect(request, response, "/")
   }
 
   @Test
   fun onAuthenticationSuccess_verifyEnabledNotVerified() {
     whenever(verifyEmailService.isNotVerified(anyString(), any())).thenReturn(true)
-    handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
+    handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken(user, "pass"))
     verify(redirectStrategy).sendRedirect(request, response, "/verify-email")
   }
 
@@ -64,7 +64,7 @@ class JwtAuthenticationSuccessHandlerTest {
   fun `onAuthenticationSuccess existing cookie`() {
     whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
     whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
-    handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
+    handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken(user, "pass"))
     verify(restTemplate).delete("/token?authJwtId={authJwtId}", "jwtId")
   }
 
@@ -73,7 +73,7 @@ class JwtAuthenticationSuccessHandlerTest {
     whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
     whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
     whenever(jwtAuthenticationHelper.createJwt(any())).thenReturn("newJwt")
-    val token = UsernamePasswordAuthenticationToken("user", "pass")
+    val token = UsernamePasswordAuthenticationToken(user, "pass")
     handler.onAuthenticationSuccess(request, response, token)
 
     verify(jwtCookieHelper).addCookieToResponse(request, response, "newJwt")
@@ -87,7 +87,7 @@ class JwtAuthenticationSuccessHandlerTest {
     handlerTokenVerificationDisabled.onAuthenticationSuccess(
       request,
       response,
-      UsernamePasswordAuthenticationToken("user", "pass")
+      UsernamePasswordAuthenticationToken(user, "pass")
     )
     verifyZeroInteractions(restTemplate)
   }
@@ -95,7 +95,7 @@ class JwtAuthenticationSuccessHandlerTest {
   @Test
   fun `updateAuthenticationInRequest no existing cookie`() {
     whenever(jwtAuthenticationHelper.createJwt(any())).thenReturn("newJwt")
-    val token = UsernamePasswordAuthenticationToken("user", "pass")
+    val token = UsernamePasswordAuthenticationToken(user, "pass")
     handler.updateAuthenticationInRequest(request, response, token)
 
     verify(jwtCookieHelper).addCookieToResponse(request, response, "newJwt")
@@ -107,7 +107,7 @@ class JwtAuthenticationSuccessHandlerTest {
     whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
     whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
     whenever(jwtAuthenticationHelper.createJwt(any())).thenReturn("newJwt")
-    val token = UsernamePasswordAuthenticationToken("user", "pass")
+    val token = UsernamePasswordAuthenticationToken(user, "pass")
     handler.updateAuthenticationInRequest(request, response, token)
 
     verify(jwtCookieHelper).addCookieToResponse(request, response, "newJwt")
