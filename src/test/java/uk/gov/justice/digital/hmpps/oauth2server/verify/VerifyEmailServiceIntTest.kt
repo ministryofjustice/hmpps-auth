@@ -52,6 +52,18 @@ open class VerifyEmailServiceIntTest {
   }
 
   @Test
+  fun getSingleHmppsEmailAddressFromNomis_multipleEmailsReturnsEmptyList() {
+    val email = verifyEmailService.getSingleHmppsEmailAddressFromNomis("RO_USER")
+    assertThat(email).isEmpty
+  }
+
+  @Test
+  fun getSingleHmppsEmailAddressFromNomis_singleEmailReturnedInList() {
+    val email = verifyEmailService.getSingleHmppsEmailAddressFromNomis("NOMIS_EMAIL")
+    assertThat(email).contains("fred@some.justice.gov.uk")
+  }
+
+  @Test
   fun existingEmailAddressesForUsernames() {
     val emailAddressesByUsername =
       verifyEmailService.getExistingEmailAddressesForUsernames(listOf("RO_USER", "RO_DEMO", "CA_USER", "UNKNOWN_USER"))

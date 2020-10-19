@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
@@ -60,25 +61,72 @@ class VerifyEmailServiceTest {
   }
 
   @Test
-  fun isNotVerified_userMissing() {
+  fun isNotVerified_userMissing_AuthUser() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
-    assertThat(verifyEmailService.isNotVerified("user")).isTrue()
+    assertThat(verifyEmailService.isNotVerified("user", AuthSource.auth)).isTrue
     verify(userRepository).findByUsername("user")
   }
 
   @Test
-  fun isNotVerified_userFoundNotVerified() {
-    val user = User.of("bob")
-    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-    assertThat(verifyEmailService.isNotVerified("user")).isTrue()
+  fun isNotVerified_userMissing_NomisUser() {
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
+    assertThat(verifyEmailService.isNotVerified("user", AuthSource.nomis)).isTrue
+    verify(userRepository).findByUsername("user")
   }
 
   @Test
-  fun isNotVerified_userFoundVerified() {
+  fun isNotVerified_userFoundNotVerified_AuthUser() {
+    val user = User.of("bob")
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    assertThat(verifyEmailService.isNotVerified("user", AuthSource.auth)).isTrue
+  }
+
+  @Test
+  fun isNotVerified_userFoundNotVerified_NomisUser_noEmail() {
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
+    val userMap = mapOf("username" to "user")
+    whenever(jdbcTemplate.queryForList(anyString(), eq(userMap), eq(String::class.java))).thenReturn(listOf())
+    assertThat(verifyEmailService.isNotVerified("user", AuthSource.nomis)).isTrue
+  }
+
+  @Test
+  fun isNotVerified_userFoundNotVerified_NomisUser_singleEmail() {
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
+    val userMap = mapOf("username" to "user")
+    whenever(jdbcTemplate.queryForList(anyString(), eq(userMap), eq(String::class.java))).thenReturn(listOf("bob@justice.gov.uk"))
+    assertThat(verifyEmailService.isNotVerified("user", AuthSource.nomis)).isFalse
+  }
+
+  @Test
+  fun isNotVerified_userFoundNotVerified_NomisUser_multiEmail() {
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
+    val userMap = mapOf("username" to "user")
+    whenever(jdbcTemplate.queryForList(anyString(), eq(userMap), eq(String::class.java))).thenReturn(listOf("bob@justice.gov.uk", "fred@justice.gov.uk"))
+    assertThat(verifyEmailService.isNotVerified("user", AuthSource.nomis)).isTrue
+  }
+
+  @Test
+  fun isNotVerified_userFoundVerified_AuthUser() {
     val user = User.builder().username("bob").email("joe@bob.com").build()
     user.isVerified = true
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-    assertThat(verifyEmailService.isNotVerified("user")).isFalse()
+    assertThat(verifyEmailService.isNotVerified("user", AuthSource.auth)).isFalse
+  }
+
+  @Test
+  fun isNotVerified_userFoundVerified_NomisUser() {
+    val user = User.builder().username("bob").email("joe@bob.com").build()
+    user.isVerified = true
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    assertThat(verifyEmailService.isNotVerified("user", AuthSource.nomis)).isFalse
+  }
+
+  @Test
+  fun isNotVerified_userFoundVerified_DeliusUser() {
+    val user = User.builder().username("bob").email("joe@bob.com").build()
+    user.isVerified = true
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+    assertThat(verifyEmailService.isNotVerified("user", AuthSource.delius)).isFalse
   }
 
   @Test

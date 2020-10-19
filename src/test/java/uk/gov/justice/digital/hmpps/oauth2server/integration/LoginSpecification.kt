@@ -37,6 +37,12 @@ class LoginSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `Log in with valid nomis credentials unverified email`() {
+    val homePage = goTo(loginPage).loginAs("NOMIS_EMAIL")
+    homePage.assertNameDisplayedCorrectly("Nomis Email")
+  }
+
+  @Test
   fun `Log in with valid nomis credentials sets jwt cookie`() {
     val homePage = goTo(loginPage).loginAs("ITAG_USER", "password")
     val jwt = homePage.parseJwt()

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
@@ -47,14 +48,14 @@ class JwtAuthenticationSuccessHandlerTest {
 
   @Test
   fun onAuthenticationSuccess_verifyEnabledAlreadyVerified() {
-    whenever(verifyEmailService.isNotVerified(anyString())).thenReturn(false)
+    whenever(verifyEmailService.isNotVerified(anyString(), eq(AuthSource.fromNullableString("nomis")))).thenReturn(false)
     handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
     verify(redirectStrategy).sendRedirect(request, response, "/")
   }
 
   @Test
   fun onAuthenticationSuccess_verifyEnabledNotVerified() {
-    whenever(verifyEmailService.isNotVerified(anyString())).thenReturn(true)
+    whenever(verifyEmailService.isNotVerified(anyString(), any())).thenReturn(true)
     handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
     verify(redirectStrategy).sendRedirect(request, response, "/verify-email")
   }

@@ -72,20 +72,20 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
     verifyEmailConfirmPage.isAt()
   }
 
-  @Test
-  fun `A user can verify an email that exists in pnomis where the user has changed password in auth`() {
-    goTo(loginPage).loginAsWithUnverifiedEmail("RO_DEMO")
-      .selectExistingEmailAs("ro_user@some.justice.gov.uk")
-
-    verifyEmailSentPage.isAt()
-    val verifyLink = verifyEmailSentPage.getVerifyLink()
-    verifyEmailSentPage.continueProcess()
-
-    newInstance(HomePage::class.java).isAt()
-
-    goTo(verifyLink)
-    verifyEmailConfirmPage.isAt()
-  }
+  // @Test
+  // fun `A user can verify an email that exists in pnomis where the user has changed password in auth`() {
+  //   goTo(loginPage).loginAsWithUnverifiedEmail("RO_DEMO")
+  //     .selectExistingEmailAs("ro_user@some.justice.gov.uk")
+  //
+  //   verifyEmailSentPage.isAt()
+  //   val verifyLink = verifyEmailSentPage.getVerifyLink()
+  //   verifyEmailSentPage.continueProcess()
+  //
+  //   newInstance(HomePage::class.java).isAt()
+  //
+  //   goTo(verifyLink)
+  //   verifyEmailConfirmPage.isAt()
+  // }
 
   @Test
   fun `An auth only user can verify their email address`() {

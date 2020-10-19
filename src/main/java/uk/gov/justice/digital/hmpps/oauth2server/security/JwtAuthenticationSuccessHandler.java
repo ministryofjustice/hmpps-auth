@@ -48,7 +48,9 @@ public class JwtAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
         addAuthenticationToRequest(request, response, authentication);
 
         // we have successfully authenticated and added the cookie.  Now need to check that they have a validated email address
-        if (verifyEmailService.isNotVerified(authentication.getName())) {
+        final var userDetails = (UserPersonDetails) authentication.getPrincipal();
+
+        if (verifyEmailService.isNotVerified(authentication.getName(), AuthSource.fromNullableString(userDetails.getAuthSource()))) {
             getRedirectStrategy().sendRedirect(request, response, "/verify-email");
             return;
         }
