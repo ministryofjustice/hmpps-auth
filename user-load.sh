@@ -55,13 +55,13 @@ if [[ ! -f "$FILE" ]]; then
 fi
 
 # Get token for the client name / secret and store it in the environment variable TOKEN
-echo | base64 -w0 > /dev/null 2>&1
+echo | base64 -w0 >/dev/null 2>&1
 if [[ $? -eq 0 ]]; then
   AUTH=$(echo -n "$CLIENT" | base64 -w0)
 else
   AUTH=$(echo -n "$CLIENT" | base64)
 fi
- 
+
 TOKEN_RESPONSE=$(curl -s -k -d "" -X POST "$HOST/auth/oauth/token?grant_type=client_credentials&username=$USER" -H "Authorization: Basic $AUTH")
 TOKEN=$(echo "$TOKEN_RESPONSE" | jq -er .access_token)
 if [[ $? -ne 0 ]]; then
@@ -76,8 +76,8 @@ addGroup() {
   local user=$1
   local group=$2
   if [[ "$group" != "" && ! "$group" =~ ^[,]*$ ]]; then
-    curl -X PUT $HOST/auth/api/authuser/$user/groups/$group -H "Content-Length: 0" -H "Authorization: $AUTH_TOKEN" -H "accept: */*" -H "Content-Type: application/text"
-    if [[ $? -ne 0 ]]; then 
+    curl -X PUT $HOST/auth/api/authuser/$user/groups/$group -H "Content-Length: 0" -H "Authorization: $AUTH_TOKEN"
+    if [[ $? -ne 0 ]]; then
       echo "Failed to add $user to group $group"
     fi
   fi
@@ -86,8 +86,7 @@ addGroup() {
 cnt=0
 
 # user email first last group group2 group3 group4 group5 group6 group7 group8 group9
-while IFS=, read -r -a row
-do
+while IFS=, read -r -a row; do
   user="${row[0]}"
   if [[ "$user" == "User Name" ]]; then
     continue
@@ -96,12 +95,12 @@ do
   echo "Processing ${row[*]}"
 
   # Create the user
-  curl -X PUT "$HOST/auth/api/authuser/$user" -H "Authorization: $AUTH_TOKEN" -H "accept: */*" -H "Content-Type: application/json" -d "{ \"groupCode\": \"${row[4]}\", \"email\": \"${row[1]}\", \"firstName\": \"${row[2]}\", \"lastName\": \"${row[3]}\"}"
+  curl -X PUT "$HOST/auth/api/authuser/$user" -H "Authorization: $AUTH_TOKEN" -H "Content-Type: application/json" -d "{ \"groupCode\": \"${row[4]}\", \"email\": \"${row[1]}\", \"firstName\": \"${row[2]}\", \"lastName\": \"${row[3]}\"}"
 
   if [[ $? -ne 0 ]]; then
     echo "\033[0;31mFailure to create user ${user}\033[0m"
 
-  else 
+  else
     if [[ "$DEBUG_CREATION" == "true" ]]; then
       # Output the user details to confirm it was created
       curl -s "$HOST/auth/api/authuser/$user" -H "Authorization: $AUTH_TOKEN" | jq .
@@ -109,9 +108,9 @@ do
 
     if [[ "$VARY_ROLE" == "true" ]]; then
       echo "Adding the ROLE_LICENCE_VARY role for $user"
-   
-      curl -X PUT $HOST/auth/api/authuser/$user/roles/ROLE_LICENCE_VARY -H "Content-Length: 0" -H "Authorization: $AUTH_TOKEN" -H "accept: */*" -H "Content-Type: application/text"
-   
+
+      curl -X PUT $HOST/auth/api/authuser/$user/roles/ROLE_LICENCE_VARY -H "Content-Length: 0" -H "Authorization: $AUTH_TOKEN"
+
       # Output the roles for the user to confirm
       curl -s $HOST/auth/api/authuser/$user/roles -H "Authorization: $AUTH_TOKEN" | jq .
     fi
@@ -122,14 +121,13 @@ do
   fi
 
   # Pause for 5 seconds every BATCH number of records
-  cnt=$(($cnt+1))
-  n=$(($cnt%$BATCH))
-  if [ $n -eq 0 ]
-  then
+  cnt=$(($cnt + 1))
+  n=$(($cnt % $BATCH))
+  if [ $n -eq 0 ]; then
     echo "Record count $cnt - paused for 5 seconds"
     sleep 5
   fi
 
-done < "$FILE"
+done <"$FILE"
 
 # End
