@@ -328,7 +328,7 @@ class AuthUserServiceTest {
       "eMail",
       "first",
       "last",
-      "SITE_1_GROUP_1",
+      setOf("SITE_1_GROUP_1"),
       "url?token=",
       "bob",
       GRANTED_AUTHORITY_SUPER_USER
@@ -355,7 +355,7 @@ class AuthUserServiceTest {
       "eMail",
       "first",
       "last",
-      "SITE_1_GROUP_1",
+      setOf("SITE_1_GROUP_1"),
       "url?token=",
       "bob",
       GRANTED_AUTHORITY_SUPER_USER
@@ -380,7 +380,7 @@ class AuthUserServiceTest {
       "eMail",
       "first",
       "last",
-      "SITE_1_GROUP_1",
+      setOf("SITE_1_GROUP_1"),
       "url?token=",
       "bob",
       GRANTED_AUTHORITY_SUPER_USER
@@ -408,7 +408,7 @@ class AuthUserServiceTest {
         "eMail",
         "first",
         "last",
-        "SITE_2_GROUP_1",
+        setOf("SITE_2_GROUP_1"),
         "url?token=",
         "bob",
         GRANTED_AUTHORITY_SUPER_USER
@@ -426,7 +426,7 @@ class AuthUserServiceTest {
         "eMail",
         "first",
         "last",
-        "",
+        emptySet(),
         "url?token=",
         "bob",
         setOf()
@@ -477,7 +477,7 @@ class AuthUserServiceTest {
       "eMail",
       "first",
       "last",
-      "PECS_GROUP",
+      setOf("PECS_GROUP"),
       "url?token=",
       "bob",
       GRANTED_AUTHORITY_SUPER_USER
@@ -493,35 +493,13 @@ class AuthUserServiceTest {
   }
 
   @Test
-  fun createUser_nonPecsUserGroupSupportLink() {
-    authUserService.createUser(
-      "userMe",
-      "eMail",
-      "first",
-      "last",
-      "",
-      "url?token=",
-      "bob",
-      GRANTED_AUTHORITY_SUPER_USER
-    )
-    verify(notificationClient).sendEmail(
-      anyString(),
-      anyString(),
-      check {
-        assertThat(it["supportLink"]).isEqualTo("nomis_support_link")
-      },
-      isNull()
-    )
-  }
-
-  @Test
   fun createUser_noGroupsSupportLink() {
     authUserService.createUser(
       "userMe",
       "eMail",
       "first",
       "last",
-      "",
+      emptySet(),
       "url?token=",
       "bob",
       GRANTED_AUTHORITY_SUPER_USER

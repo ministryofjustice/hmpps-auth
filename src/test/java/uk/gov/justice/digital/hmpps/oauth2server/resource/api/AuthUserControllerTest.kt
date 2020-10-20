@@ -113,7 +113,7 @@ class AuthUserControllerTest {
       Optional.of(UserDetailsImpl("name", "bob", setOf(), "none", "userid", "jwtId"))
     )
     val responseEntity =
-      authUserController.createUser("user", CreateUser("email", "first", "last", null), true, request, authentication)
+      authUserController.createUser("user", CreateUser("email", "first", "last", null, emptySet()), true, request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(409)
     assertThat(responseEntity.body).isEqualTo(
       ErrorDetail("username.exists", "User user already exists", "username")
@@ -125,7 +125,7 @@ class AuthUserControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
     whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(User.of("joe")))
     val responseEntity =
-      authUserController.createUser("user", CreateUser("email", "first", "last", null), true, request, authentication)
+      authUserController.createUser("user", CreateUser("email", "first", "last", null, null), true, request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(409)
     assertThat(responseEntity.body).isEqualTo(
       ErrorDetail("email.exists", "User email already exists", "email")
@@ -136,7 +136,7 @@ class AuthUserControllerTest {
   fun createUser_BlankDoesntCallUserService() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     val responseEntity =
-      authUserController.createUser("  ", CreateUser("email", "first", "last", null), true, request, authentication)
+      authUserController.createUser("  ", CreateUser("email", "first", "last", null, null), true, request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
     verify(userService, never()).findMasterUserPersonDetails(anyString())
   }
@@ -147,7 +147,7 @@ class AuthUserControllerTest {
     val responseEntity =
       authUserController.createUser(
         "newusername",
-        CreateUser("email", "first", "last", null),
+        CreateUser("email", "first", "last", null, null),
         false,
         request,
         authentication
@@ -162,7 +162,7 @@ class AuthUserControllerTest {
     val responseEntity =
       authUserController.createUser(
         "newusername",
-        CreateUser("email", "first", "last", null),
+        CreateUser("email", "first", "last", null, null),
         false,
         request,
         authentication
@@ -176,7 +176,7 @@ class AuthUserControllerTest {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     authUserController.createUser(
       "   newusername   ",
-      CreateUser("email", "first", "last", null),
+      CreateUser("email", "first", "last", null, null),
       true,
       request,
       authentication
@@ -187,7 +187,7 @@ class AuthUserControllerTest {
       "email",
       "first",
       "last",
-      null,
+      emptySet(),
       "http://some.url/auth/initial-password?token=",
       "bob",
       authentication.authorities
@@ -203,7 +203,7 @@ class AuthUserControllerTest {
         anyString(),
         anyString(),
         anyString(),
-        isNull(),
+        any(),
         anyString(),
         anyString(),
         any()
@@ -212,7 +212,7 @@ class AuthUserControllerTest {
     val responseEntity =
       authUserController.createUser(
         "newusername",
-        CreateUser("email", "first", "last", null),
+        CreateUser("email", "first", "last", null, null),
         true,
         request,
         authentication
@@ -236,7 +236,7 @@ class AuthUserControllerTest {
         anyString(),
         anyString(),
         anyString(),
-        isNull(),
+        any(),
         anyString(),
         anyString(),
         any()
@@ -245,7 +245,7 @@ class AuthUserControllerTest {
     val responseEntity =
       authUserController.createUser(
         "newusername",
-        CreateUser("email", "first", "last", null),
+        CreateUser("email", "first", "last", null, null),
         true,
         request,
         authentication
@@ -259,7 +259,7 @@ class AuthUserControllerTest {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     authUserController.createUser(
       "newusername",
-      CreateUser("email", "first", "last", null),
+      CreateUser("email", "first", "last", null, null),
       true,
       request,
       authentication
@@ -269,7 +269,7 @@ class AuthUserControllerTest {
       "email",
       "first",
       "last",
-      null,
+      emptySet(),
       "http://some.url/auth/initial-password?token=",
       "bob",
       authentication.authorities
@@ -281,7 +281,7 @@ class AuthUserControllerTest {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     authUserController.createUser(
       "newusername",
-      CreateUser("email", "first", "last", null),
+      CreateUser("email", "first", "last", null, null),
       true,
       request,
       authentication
@@ -291,7 +291,7 @@ class AuthUserControllerTest {
       "email",
       "first",
       "last",
-      null,
+      emptySet(),
       "http://some.url/auth/initial-password?token=",
       "bob",
       authentication.authorities
@@ -304,7 +304,7 @@ class AuthUserControllerTest {
     val responseEntity =
       authUserController.createUser(
         "newusername",
-        CreateUser("email", "first", "last", null),
+        CreateUser("email", "first", "last", null, null),
         true,
         request,
         authentication
