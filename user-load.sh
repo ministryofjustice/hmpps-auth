@@ -95,7 +95,7 @@ while IFS=, read -r -a row; do
   echo "Processing ${row[*]}"
 
   # Create the user
-  if ! output=$(curl -X PUT "$HOST/auth/api/authuser/$user" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
+  if ! output=$(curl -X PUT "$HOST/auth/api/authuser/$user?enforceUniqueEmail=true" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
     -d "{ \"groupCode\": \"${row[4]}\", \"email\": \"${row[1]}\", \"firstName\": \"${row[2]}\", \"lastName\": \"${row[3]}\"}"); then
 
     echo "\033[0;31mFailure to create user ${user}\033[0m"
