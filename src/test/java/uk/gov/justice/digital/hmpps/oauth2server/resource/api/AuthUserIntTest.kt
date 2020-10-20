@@ -4,6 +4,7 @@ import org.apache.commons.lang3.RandomStringUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.oauth2server.resource.DeliusExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
@@ -35,6 +36,18 @@ class AuthUserIntTest : IntegrationTest() {
           mapOf("username" to username.toUpperCase(), "active" to true, "name" to "Bob Smith", "authSource" to "auth")
         )
       }
+  }
+
+  @Test
+  fun `Create User endpoint fails if user with email already exists and unique is enabled`() {
+    val username = RandomStringUtils.randomAlphanumeric(10)
+    val user = NewUser("auth_test@digital.justice.gov.uk", "Bob", "Smith")
+
+    webTestClient
+      .put().uri("/auth/api/authuser/$username?enforceUniqueEmail=true").bodyValue(user)
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.CONFLICT)
   }
 
   @Test
