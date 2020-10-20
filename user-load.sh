@@ -72,17 +72,6 @@ TOKEN=$(echo "$TOKEN_RESPONSE" | jq -er .access_token)
 
 AUTH_TOKEN_HEADER="Authorization: Bearer $TOKEN"
 
-addGroup() {
-  local user=$1
-  local group=$2
-  if [[ "$group" != "" && ! "$group" =~ ^[,]*$ ]]; then
-    curl -s -X PUT "$HOST/auth/api/authuser/$user/groups/$group" -H "Content-Length: 0" -H "$AUTH_TOKEN_HEADER"
-    if [[ $? -ne 0 ]]; then
-      echo "Failed to add $user to group $group"
-    fi
-  fi
-}
-
 cnt=0
 
 # user email first last group group2 group3 group4 group5 group6 group7 group8 group9
@@ -94,9 +83,15 @@ while IFS=, read -r -a row; do
 
   echo "Processing ${row[*]}"
 
+  groups=""
+
+  for group in "${row[@]:4}"; do
+    groups+="\"${group}\","
+  done
+
   # Create the user
   if ! output=$(curl -X PUT "$HOST/auth/api/authuser/$user?enforceUniqueEmail=true" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
-    -d "{ \"groupCode\": \"${row[4]}\", \"email\": \"${row[1]}\", \"firstName\": \"${row[2]}\", \"lastName\": \"${row[3]}\"}"); then
+    -d "{ \"groupCodes\": [${groups::-1}], \"email\": \"${row[1]}\", \"firstName\": \"${row[2]}\", \"lastName\": \"${row[3]}\"}"); then
 
     echo "\033[0;31mFailure to create user ${user}\033[0m"
   else
@@ -116,10 +111,6 @@ while IFS=, read -r -a row; do
         # Output the roles for the user to confirm
         curl -s "$HOST/auth/api/authuser/$user/roles" -H "$AUTH_TOKEN_HEADER" | jq .
       fi
-
-      for group in "${row[@]:5}"; do
-        addGroup "$user" "$group"
-      done
     fi
   fi
 
