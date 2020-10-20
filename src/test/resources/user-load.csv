@@ -1,0 +1,10 @@
+User Name,Email,First Name,Last Name,Group 1,Group 2,Group 3,Group 4,Group 5,Group 6,Group 7,Group 8,Group 9,Group 10,
+,User with email that isn't in allow list
+emailnotallowed,john.james@someforce.pnn.police.uk,John,James,PECS_DP1,PECS_DP2,PECS_DP3,PECS_DP4,PECS_DP5,PECS_DP6,PECS_DP7,PECS_DP8,,,,,,,,,,,,,,,,,,,,,,,,,,
+,User that already exists in NOMIS
+itag_user,john.james@someforce.police.uk,John,James,PECS_DP1,PECS_DP2,PECS_DP3,PECS_DP4,PECS_DP5,PECS_DP6,PECS_DP7,PECS_DP8,,,,,,,,,,,,,,,,,,,,,,,,,,
+,Email that already exists in auth
+emailexists,auth_auth_test@digital.justice.gov.uk,John,James,PECS_DP1,PECS_DP2,PECS_DP3,PECS_DP4,PECS_DP5,PECS_DP6,PECS_DP7,PECS_DP8,,,,,,,,,,,,,,,,,,,,,,,,,,
+,User that should be loaded
+loadsuccess,load_success@digital.justice.gov.uk,Load,Success,PECS_DORKMC,PECS_GLDFMC,PECS_RDHLMC,PECS_RCHTMC,PECS_SUTTMC,PECS_DP1,,,,,,,,,,,,,,,,,,,,,,,,,
+
