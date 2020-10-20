@@ -320,7 +320,11 @@ class AuthUserServiceTest {
         Group(
           "SITE_1_GROUP_1",
           "desc"
-        )
+        ),
+        Group(
+          "SITE_1_GROUP_2",
+          "desc"
+        ),
       )
     )
     authUserService.createUser(
@@ -328,14 +332,14 @@ class AuthUserServiceTest {
       "eMail",
       "first",
       "last",
-      setOf("SITE_1_GROUP_1"),
+      setOf("SITE_1_GROUP_1", "SITE_1_GROUP_2", "SITE_1_GROUP_3"),
       "url?token=",
       "bob",
       GRANTED_AUTHORITY_SUPER_USER
     )
     verify(userRepository).save<User>(
       check {
-        assertThat(it.groups).extracting<String> { it.groupCode }.containsOnly("SITE_1_GROUP_1")
+        assertThat(it.groups).extracting<String> { it.groupCode }.containsOnly("SITE_1_GROUP_1", "SITE_1_GROUP_2")
       }
     )
   }

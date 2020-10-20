@@ -8,7 +8,6 @@ import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Mockito.doThrow
 import org.mockito.Mockito.never
 import org.springframework.data.domain.PageImpl
@@ -113,7 +112,7 @@ class AuthUserControllerTest {
       Optional.of(UserDetailsImpl("name", "bob", setOf(), "none", "userid", "jwtId"))
     )
     val responseEntity =
-      authUserController.createUser("user", CreateUser("email", "first", "last", null, emptySet()), true, request, authentication)
+      authUserController.createUser("user", CreateUser("email", "first", "last", null, null), true, request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(409)
     assertThat(responseEntity.body).isEqualTo(
       ErrorDetail("username.exists", "User user already exists", "username")
@@ -292,6 +291,38 @@ class AuthUserControllerTest {
       "first",
       "last",
       emptySet(),
+      "http://some.url/auth/initial-password?token=",
+      "bob",
+      authentication.authorities
+    )
+  }
+
+  @Test
+  fun createUser_MultipleAdditionalRoles() {
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
+    authUserController.createUser("newusername", CreateUser("email", "first", "last", null, setOf("ROLE1", "ROLE2")), true, request, authentication)
+    verify(authUserService).createUser(
+      "newusername",
+      "email",
+      "first",
+      "last",
+      setOf("ROLE1", "ROLE2"),
+      "http://some.url/auth/initial-password?token=",
+      "bob",
+      authentication.authorities
+    )
+  }
+
+  @Test
+  fun createUser_SingleAdditionalRole() {
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
+    authUserController.createUser("newusername", CreateUser("email", "first", "last", "ROLE1", null), true, request, authentication)
+    verify(authUserService).createUser(
+      "newusername",
+      "email",
+      "first",
+      "last",
+      setOf("ROLE1"),
       "http://some.url/auth/initial-password?token=",
       "bob",
       authentication.authorities

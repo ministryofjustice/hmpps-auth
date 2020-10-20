@@ -13,7 +13,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
@@ -158,7 +157,7 @@ public class AuthUserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorDetail("email.exists", String.format("User %s already exists", createUser.getEmail()), "email"));
         }
 
-        val mergedGroups = new HashSet<String>();
+        var mergedGroups = new HashSet<String>();
         if (createUser.getGroupCodes() != null) {
             mergedGroups.addAll(createUser.getGroupCodes());
         }
@@ -296,7 +295,7 @@ public class AuthUserController {
         private String lastName;
         @ApiModelProperty(value = "Initial group, required for group managers", example = "SITE_1_GROUP_1", position = 4)
         private String groupCode;
-        @ApiModelProperty(value = "Initial groups, can be used if multiple initial groups required", example = "['SITE_1_GROUP_1', 'SITE_1_GROUP_2']", position = 5)
+        @ApiModelProperty(value = "Initial groups, can be used if multiple initial groups required", example = "[\"SITE_1_GROUP_1\", \"SITE_1_GROUP_2\"]", position = 5)
         private Set<String> groupCodes;
     }
 
