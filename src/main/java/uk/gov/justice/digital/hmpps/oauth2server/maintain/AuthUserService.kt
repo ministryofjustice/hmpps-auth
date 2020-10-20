@@ -59,7 +59,7 @@ class AuthUserService(
     emailInput: String?,
     firstName: String?,
     lastName: String?,
-    groupCode: String?,
+    groupCodes: Set<String>?,
     url: String,
     creator: String,
     authorities: Collection<GrantedAuthority>,
@@ -70,13 +70,13 @@ class AuthUserService(
     val email = EmailHelper.format(emailInput)
     // validate
     validate(username, email, firstName, lastName, EmailType.PRIMARY)
-    // get the initial group to assign to - only allowed to be empty if super user
-    val group = getInitialGroup(groupCode, creator, authorities)
+    // get the initial groups to assign to - only allowed to be empty if super user
+    val groups = getInitialGroups(groupCodes, creator, authorities)
     // create the user
     val person = Person(firstName?.trim(), lastName?.trim())
     // obtain list of authorities that should be assigned for group
-    val roles = group?.assignableRoles?.filter { it.isAutomatic }?.map { it.role }?.toSet() ?: emptySet()
-    val groups: Set<Group> = group?.let { setOf(it) } ?: emptySet()
+    val roles = groups.flatMap { it.assignableRoles }.filter { it.isAutomatic }.map { it.role }.toSet()
+
     val user = builder()
       .username(username)
       .email(email)
@@ -101,15 +101,19 @@ class AuthUserService(
   fun findAuthUsersByUsernames(usernames: List<String>): List<User> = userRepository.findByUsernameIn(usernames)
 
   @Throws(CreateUserException::class)
-  private fun getInitialGroup(groupCode: String?, creator: String, authorities: Collection<GrantedAuthority>): Group? {
-    if (groupCode.isNullOrEmpty()) {
+  private fun getInitialGroups(groupCodes: Set<String>?, creator: String, authorities: Collection<GrantedAuthority>): Set<Group> {
+    if (groupCodes.isNullOrEmpty()) {
       return if (authorities.any { it.authority == "ROLE_MAINTAIN_OAUTH_USERS" }) {
-        null
+        emptySet()
       } else throw CreateUserException("groupCode", "missing")
     }
     val authUserGroups = authUserGroupService.getAssignableGroups(creator, authorities)
-    return authUserGroups.firstOrNull { it.groupCode == groupCode }
-      ?: throw CreateUserException("groupCode", "notfound")
+    val groups = authUserGroups.filter { it.groupCode in groupCodes }.toSet()
+
+    if (groups.isEmpty()) {
+      throw CreateUserException("groupCode", "notfound")
+    }
+    return groups
   }
 
   @Throws(NotificationClientException::class)
