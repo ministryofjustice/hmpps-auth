@@ -25,10 +25,12 @@ class UserRetriesServiceTest {
   private val userRetriesRepository: UserRetriesRepository = mock()
   private val userRepository: UserRepository = mock()
   private val delegatingUserService: DelegatingUserService = mock()
-  private val service = UserRetriesService(userRetriesRepository, userRepository, delegatingUserService, 3)
+  private val userService: UserService = mock()
+  private val service = UserRetriesService(userRetriesRepository, userRepository, delegatingUserService, userService, 3)
 
   @Test
   fun resetRetriesAndRecordLogin() {
+    whenever(userService.getEmailAddressFromNomis(anyString())).thenReturn(Optional.of("bob@bob.justice.gov.uk"))
     service.resetRetriesAndRecordLogin(userPersonDetailsForBob)
     verify(userRetriesRepository).save<UserRetries>(
       check {
@@ -66,11 +68,27 @@ class UserRetriesServiceTest {
   }
 
   @Test
-  fun resetRetriesAndRecordLogin_SaveNewUser() {
+  fun resetRetriesAndRecordLogin_SaveNewUserWithNomisEmailVerified() {
+    whenever(userService.getEmailAddressFromNomis(anyString())).thenReturn(Optional.of("bob@bob.justice.gov.uk"))
     service.resetRetriesAndRecordLogin(userPersonDetailsForBob)
     verify(userRepository).save<User>(
       check {
         assertThat(it.username).isEqualTo("bob")
+        assertThat(it.email).isEqualTo("bob@bob.justice.gov.uk")
+        assertThat(it.isVerified).isTrue()
+        assertThat(it.lastLoggedIn).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now())
+      }
+    )
+  }
+
+  @Test
+  fun resetRetriesAndRecordLogin_SaveNewNomisUserNoEmailAsNotJusticeEmail() {
+    whenever(userService.getEmailAddressFromNomis(anyString())).thenReturn(Optional.empty())
+    service.resetRetriesAndRecordLogin(userPersonDetailsForBob)
+    verify(userRepository).save<User>(
+      check {
+        assertThat(it.username).isEqualTo("bob")
+        assertThat(it.isVerified).isFalse()
         assertThat(it.lastLoggedIn).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now())
       }
     )

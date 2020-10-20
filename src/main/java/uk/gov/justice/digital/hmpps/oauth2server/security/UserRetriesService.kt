@@ -4,10 +4,12 @@ import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService
 import java.time.LocalDateTime
 
@@ -18,6 +20,7 @@ class UserRetriesService(
   private val userRetriesRepository: UserRetriesRepository,
   private val userRepository: UserRepository,
   private val delegatingUserService: DelegatingUserService,
+  private val userService: UserService,
   @Value("\${application.authentication.lockout-count}") private val accountLockoutCount: Int,
 ) {
 
@@ -26,7 +29,9 @@ class UserRetriesService(
     resetRetries(username)
     // and record last logged in as now too (doing for all users to prevent confusion)
     val userOptional = userRepository.findByUsername(username)
-    val user = userOptional.orElseGet { userPersonDetails.toUser() }
+    val user = userOptional.orElseGet {
+      (userPersonDetails as? NomisUserPersonDetails)?.let { addNomisEmail(it, username) } ?: userPersonDetails.toUser()
+    }
     user.lastLoggedIn = LocalDateTime.now()
     // copy across email address on each successful login
     if (userPersonDetails is DeliusUserPersonDetails) {
@@ -34,6 +39,15 @@ class UserRetriesService(
       user.isVerified = true
     }
     userRepository.save(user)
+  }
+
+  private fun addNomisEmail(userPersonDetails: UserPersonDetails, username: String): User? {
+    val nomisUser = userPersonDetails.toUser()
+    userService.getEmailAddressFromNomis(username).ifPresent {
+      nomisUser.email = it
+      nomisUser.isVerified = true
+    }
+    return nomisUser
   }
 
   fun incrementRetriesAndLockAccountIfNecessary(userPersonDetails: UserPersonDetails): Boolean {
