@@ -6,5 +6,5 @@ itag_user,john.james@someforce.police.uk,John,James,PECS_DP1,PECS_DP2,PECS_DP3,P
 ,Email that already exists in auth
 emailexists,auth_auth_test@digital.justice.gov.uk,John,James,PECS_DP1,PECS_DP2,PECS_DP3,PECS_DP4,PECS_DP5,PECS_DP6,PECS_DP7,PECS_DP8,,,,,,,,,,,,,,,,,,,,,,,,,,
 ,User that should be loaded
-loadsuccess,load_success@digital.justice.gov.uk,Load,Success,PECS_DORKMC,PECS_GLDFMC,PECS_RDHLMC,PECS_RCHTMC,PECS_SUTTMC,PECS_DP1,,,,,,,,,,,,,,,,,,,,,,,,,
+loadsuccess,load_success@digital.justice.gov.uk,Load,Success,PECS_DORKMC,PECS_GLDFMC,PECS_RDHLMC,PECS_RCHTMC,PECS_SUTTMC,,,,,,,,,,,,,,,,,,,,,,,,,
 

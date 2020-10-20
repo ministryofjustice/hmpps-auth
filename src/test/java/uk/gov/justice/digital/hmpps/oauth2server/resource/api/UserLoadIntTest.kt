@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.oauth2server.resource.DeliusExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 import java.io.File
@@ -40,44 +41,29 @@ class UserLoadIntTest : IntegrationTest() {
       )
 
     // check user now loaded successfully
-//   webTestClient
-//     .get().uri("/auth/api/user/loadsuccess")
-//     .headers(setAuthorisation("ITAG_USER_ADM"))
-//     .exchange()
-//     .expectStatus().isOk
-//     .expectHeader().contentType(MediaType.APPLICATION_JSON)
-//     .expectBody()
-//     .jsonPath("$").value<Map<String, Any>> {
-//       assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
-//         mapOf("username" to "LOADSUCCESS", "active" to true, "name" to "Load Success", "authSource" to "auth")
-//       )
-//     }
-//
-//   webTestClient
-//     .get().uri("/auth/api/user/loadsuccess/groups")
-//     .headers(setAuthorisation("ITAG_USER_ADM"))
-//     .exchange()
-//     .expectStatus().isOk
-//     .expectHeader().contentType(MediaType.APPLICATION_JSON)
-//     .expectBody()
-//     .jsonPath("$").value<Map<String, Any>> {
-//       assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
-//         mapOf("username" to "LOADSUCCESS", "active" to true, "name" to "Load Success", "authSource" to "auth")
-//       )
-//     }
-//
-//   webTestClient
-//     .get().uri("/auth/api/user/loadsuccess/roles")
-//     .headers(setAuthorisation("ITAG_USER_ADM"))
-//     .exchange()
-//     .expectStatus().isOk
-//     .expectHeader().contentType(MediaType.APPLICATION_JSON)
-//     .expectBody()
-//     .jsonPath("$").value<Map<String, Any>> {
-//       assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
-//         mapOf("username" to "LOADSUCCESS", "active" to true, "name" to "Load Success", "authSource" to "auth")
-//       )
-//     }
+    webTestClient
+      .get().uri("/auth/api/user/loadsuccess")
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
+          mapOf("username" to "LOADSUCCESS", "active" to true, "name" to "Load Success", "authSource" to "auth")
+        )
+      }
+
+    webTestClient
+      .get().uri("/auth/api/authuser/loadsuccess/groups")
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$.[*].groupCode").value<List<String>> {
+        assertThat(it).containsExactlyInAnyOrder("PECS_RCHTMC", "PECS_GLDFMC", "PECS_DORKMC", "PECS_SUTTMC", "PECS_RDHLMC")
+      }
   }
 
   private fun String.runCommand(
