@@ -44,8 +44,10 @@ import uk.gov.service.notify.NotificationClientException;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.springframework.data.domain.Sort.Direction.ASC;
@@ -155,11 +157,20 @@ public class AuthUserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorDetail("email.exists", String.format("User %s already exists", createUser.getEmail()), "email"));
         }
 
+        var mergedGroups = new HashSet<String>();
+        if (createUser.getGroupCodes() != null) {
+            mergedGroups.addAll(createUser.getGroupCodes());
+        }
+
+        if (createUser.getGroupCode() != null) {
+            mergedGroups.add(createUser.getGroupCode());
+        }
+
         // new user
         try {
             final var setPasswordUrl = createInitialPasswordUrl(request);
             final var resetLink = authUserService.createUser(StringUtils.trim(username), createUser.getEmail(),
-                    createUser.getFirstName(), createUser.getLastName(), createUser.getGroupCode(),
+                    createUser.getFirstName(), createUser.getLastName(), mergedGroups,
                     setPasswordUrl, authentication.getName(), authentication.getAuthorities());
 
             log.info("Create user succeeded for user {}", username);
@@ -284,6 +295,8 @@ public class AuthUserController {
         private String lastName;
         @ApiModelProperty(value = "Initial group, required for group managers", example = "SITE_1_GROUP_1", position = 4)
         private String groupCode;
+        @ApiModelProperty(value = "Initial groups, can be used if multiple initial groups required", example = "[\"SITE_1_GROUP_1\", \"SITE_1_GROUP_2\"]", position = 5)
+        private Set<String> groupCodes;
     }
 
     @Data
