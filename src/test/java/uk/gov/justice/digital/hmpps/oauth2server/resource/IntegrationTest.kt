@@ -37,7 +37,7 @@ abstract class IntegrationTest {
   private lateinit var tokenVerificationApiRestTemplate: OAuth2RestTemplate
 
   @LocalServerPort
-  private var localServerPort: Int = 0
+  internal var localServerPort: Int = 0
 
   internal lateinit var baseUrl: String
 
