@@ -15,6 +15,9 @@ class LoginSpecification : AbstractAuthSpecification() {
   @Page
   internal lateinit var homePage: HomePage
 
+  @Page
+  lateinit var changeExpiredPasswordPage: ChangeExpiredPasswordPage
+
   @Test
   fun `Log in with valid auth credentials`() {
     val homePage = goTo(loginPage).loginAs("AUTH_USER")
@@ -133,6 +136,93 @@ class LoginSpecification : AbstractAuthSpecification() {
     goTo(loginPage).clickAzureOIDCLink()
     homePage.isAt()
   }
+
+  @Test
+  fun `Attempt login with unknown user`() {
+    goTo(loginPage).loginError("NOT_KNOWN", "password123456")
+      .checkError("Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.")
+  }
+
+  @Test
+  fun `Attempt login without credentials`() {
+    goTo(loginPage).loginError("ITAG_USER", "")
+      .checkError("Enter your password")
+  }
+
+  @Test
+  fun `Attempt login with invalid credentials`() {
+    goTo(loginPage).loginError("ITAG_USER", "wrong")
+      .checkError("Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.")
+  }
+
+  @Test
+  fun `Attempt login with locked user`() {
+    goTo(loginPage).loginError("LOCKED_USER", "password123456")
+      .checkError("Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below.")
+  }
+
+  @Test
+  fun `Attempt login with locked auth user`() {
+    goTo(loginPage).loginError("AUTH_LOCKED", "password123456")
+      .checkError("Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below.")
+  }
+
+  @Test
+  fun `Delius user gets locked after 3 invalid login attempts`() {
+    goTo(loginPage).loginError("DELIUS_LOCKED_IN_AUTH", "wrongpassword")
+      .checkError("Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.")
+
+    goTo(loginPage).loginError("DELIUS_LOCKED_IN_AUTH", "wrongpassword")
+      .checkError("Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.")
+
+    goTo(loginPage).loginError("DELIUS_LOCKED_IN_AUTH", "wrongpassword")
+      .checkError("Your account is locked. If you have verified your email address then you can use 'I have forgotten my password' below.")
+  }
+
+  @Test
+  fun `Attempt login with disabled delius user`() {
+    goTo(loginPage).loginError("DELIUS_ERROR_LOCKED", "password123456")
+      .checkError("Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.")
+  }
+
+  @Test
+  fun `Attempt login with disabled auth user`() {
+    goTo(loginPage).loginError("AUTH_DISABLED", "password123456")
+      .checkError("Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.")
+  }
+
+  @Test
+  fun `Attempt login with expired user wrong password`() {
+    goTo(loginPage).loginError("EXPIRED_USER", "wrong")
+      .checkError("Enter a valid username and password. You will be locked out if you enter the wrong details 3 times.")
+  }
+
+  @Test
+  fun `Attempt login with expired user`() {
+    goTo(loginPage).loginExpiredUser("EXPIRED_USER", "password123456")
+    changeExpiredPasswordPage.isAtPage()
+  }
+
+  @Test
+  fun `Attempt login when delius connections time out`() {
+    // dev-config defines timeout to delius as 2 seconds.  The DELIUS_ERROR_TIMEOUT user has a success mapping,
+    // but with fixed delay of 2 seconds which should therefore cause the timeout.
+    // If timeout not working then login will succeed instead and test will fail.
+    goTo(loginPage).loginError("DELIUS_ERROR_TIMEOUT", "password123456")
+      .checkError(
+        "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times." +
+          "\nDelius is experiencing issues. Please try later if you are attempting to login using your Delius credentials."
+      )
+  }
+
+  @Test
+  fun `Attempt login with Delius unavailable (gateway returns 503)`() {
+    goTo(loginPage).loginError("DELIUS_ERROR_SERVER", "password")
+      .checkError(
+        "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times." +
+          "\nDelius is experiencing issues. Please try later if you are attempting to login using your Delius credentials."
+      )
+  }
 }
 
 @PageUrl("/login")
@@ -166,6 +256,9 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
 
   fun loginError(username: String, password: String = "password123456"): LoginPage =
     errorLoginWith(username, password, LoginPage::class.java)
+
+  fun loginExpiredUser(username: String, password: String = "password123456"): ChangeExpiredPasswordPage =
+    errorLoginWith(username, password, ChangeExpiredPasswordPage::class.java)
 
   private fun <T : AuthPage<T>> loginWith(username: String, password: String = "password123456", t: Class<T>): T {
     submitLogin(username, password)

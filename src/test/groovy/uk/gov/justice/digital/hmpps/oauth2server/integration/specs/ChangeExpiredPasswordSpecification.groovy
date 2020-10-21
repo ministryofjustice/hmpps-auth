@@ -9,23 +9,23 @@ import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.
 class ChangeExpiredPasswordSpecification extends BrowserReportingSpec {
   public static final String clientBaseUrl = 'http://localhost:8081/login'
 
-  def "Attempt change password without credentials"() {
-    given: 'I try to login with an expired user'
-    to LoginPage
-    loginAs EXPIRED_TEST_USER, 'password123456'
-
-    and: 'I am redirected to the change password page'
-    at ChangeExpiredPasswordPage
-
-    when: "I change password without credentials"
-    changePasswordAs EXPIRED_TEST_USER, '', ''
-
-    then: 'My credentials are rejected and I am still on the Change Password page'
-    at ChangeExpiredPasswordErrorPage
-    errorText == 'Enter your new password\nEnter your new password again'
-    errorNewText == 'Enter your new password'
-    errorConfirmText == 'Enter your new password again'
-  }
+//  def "Attempt change password without credentials"() {
+//    given: 'I try to login with an expired user'
+//    to LoginPage
+//    loginAs EXPIRED_TEST_USER, 'password123456'
+//
+//    and: 'I am redirected to the change password page'
+//    at ChangeExpiredPasswordPage
+//
+//    when: "I change password without credentials"
+//    changePasswordAs EXPIRED_TEST_USER, '', ''
+//
+//    then: 'My credentials are rejected and I am still on the Change Password page'
+//    at ChangeExpiredPasswordErrorPage
+//    errorText == 'Enter your new password\nEnter your new password again'
+//    errorNewText == 'Enter your new password'
+//    errorConfirmText == 'Enter your new password again'
+//  }
 
   def "Attempt change password with invalid new password"() {
     given: 'I try to login with an expired user'
