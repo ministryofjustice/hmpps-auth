@@ -16,7 +16,7 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 @Order(1)
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @EnableResourceServer
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor
 public class ResourceConfiguration extends ResourceServerConfigurerAdapter {
 
     private final ResourceServerTokenServices tokenServices;
