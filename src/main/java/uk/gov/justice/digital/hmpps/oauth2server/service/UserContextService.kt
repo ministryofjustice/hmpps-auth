@@ -21,27 +21,22 @@ class UserContextService(
   private val nomisUserService: NomisUserService,
 ) {
 
-  fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String>): List<UserPersonDetails> =
-    discoverUsers(AuthSource.fromNullableString(loginUser.authSource), loginUser.userId, scopes)
+  fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String>): List<UserPersonDetails> {
+    // if specific accounts are requested via scopes, attempt to find just those.
+    // otherwise, attempt to find all accounts.
+    val requestedSources = AuthSource.values()
+      .filter { it.name in scopes }
+      .let { if (it.isEmpty()) setOf(auth, nomis, delius) else it }
 
-  fun discoverUsers(authSource: AuthSource, email: String, scopes: Set<String>): List<UserPersonDetails> {
-
-    if (authSource != azuread) return emptyList()
-
-    val sourcesFromScopes = scopes.map {
-      try {
-        AuthSource.fromNullableString(it)
-      } catch (iae: IllegalArgumentException) {
-        none
+    return when (AuthSource.fromNullableString(loginUser.authSource)) {
+      azuread -> {
+        requestedSources
+          .map { mapFromAzureAD(loginUser.userId, it).filter { it.isEnabled } }
+          .filter { it.isNotEmpty() }
+          .flatten()
       }
-    }.filter { it != none }
-
-    val desiredSources = if (sourcesFromScopes.isEmpty()) listOf(nomis, auth, delius) else sourcesFromScopes
-
-    return desiredSources
-      .map { mapFromAzureAD(email, it).filter { it.isEnabled } }
-      .filter { it.isNotEmpty() }
-      .flatten()
+      else -> emptyList()
+    }
   }
 
   private fun mapFromAzureAD(email: String, to: AuthSource): List<UserPersonDetails> = when (to) {

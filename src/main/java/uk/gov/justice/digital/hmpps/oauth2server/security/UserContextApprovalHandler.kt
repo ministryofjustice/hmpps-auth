@@ -14,13 +14,17 @@ class UserContextApprovalHandler(private val userContextService: UserContextServ
     userAuthentication: Authentication,
   ): AuthorizationRequest {
 
-    val approvalRequest = super.checkForPreApproval(authorizationRequest, userAuthentication)
-    if (approvalRequest.isApproved && isAzureAdUser(userAuthentication)) {
-      // force all azure users down the approval route, the controller will work out what accounts are found etc.
-      approvalRequest.isApproved = false
+    // we have hijacked the UserContextApprovalHandler for our account selection process.
+    // we are purposefully not calling the super method, because if we deny the request
+    // based on unapproved scopes we do not currently have a way to explicitly approve it.
+
+    // for now, all Azure AD users are sent down this route.
+    // the controller will work out what accounts are found etc.
+    if (isAzureAdUser(userAuthentication)) {
+      authorizationRequest.isApproved = false
     }
 
-    return approvalRequest
+    return authorizationRequest
   }
 
   private fun isAzureAdUser(userAuthentication: Authentication) =
