@@ -11,17 +11,20 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 @Configuration
 @Order(1)
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @EnableResourceServer
-class ResourceConfiguration(private val tokenServices: ResourceServerTokenServices) : ResourceServerConfigurerAdapter() {
+class ResourceConfiguration(private val tokenServices: ResourceServerTokenServices) :
+  ResourceServerConfigurerAdapter() {
   @Throws(Exception::class)
   override fun configure(http: HttpSecurity) {
     http {
+      securityMatcher(AntPathRequestMatcher("/api/**"))
       authorizeRequests {
-        authorize("/api/**", authenticated)
+        authorize(access = authenticated)
       }
     }
   }
