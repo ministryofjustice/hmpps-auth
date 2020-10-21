@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "DBA_USERS")
-@Data()
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
@@ -44,4 +44,19 @@ public class AccountDetail {
         return AccountProfile.get(profile);
     }
 
+    public String getUsername() {
+        return this.username;
+    }
+
+    public String getAccountStatus() {
+        return this.accountStatus;
+    }
+
+    public String getProfile() {
+        return this.profile;
+    }
+
+    public LocalDateTime getPasswordExpiry() {
+        return this.passwordExpiry;
+    }
 }

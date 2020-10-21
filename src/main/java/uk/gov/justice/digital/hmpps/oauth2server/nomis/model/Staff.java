@@ -15,7 +15,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "STAFF_MEMBERS")
-@Data()
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
@@ -48,5 +48,17 @@ public class Staff {
 
     public boolean isActive() {
         return STAFF_STATUS_ACTIVE.equals(status);
+    }
+
+    public Long getStaffId() {
+        return this.staffId;
+    }
+
+    public String getLastName() {
+        return this.lastName;
+    }
+
+    public String getStatus() {
+        return this.status;
     }
 }
