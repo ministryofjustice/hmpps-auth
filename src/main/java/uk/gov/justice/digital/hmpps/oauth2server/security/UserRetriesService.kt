@@ -41,7 +41,7 @@ class UserRetriesService(
     userRepository.save(user)
   }
 
-  private fun addNomisEmail(userPersonDetails: UserPersonDetails, username: String): User? {
+  private fun addNomisEmail(userPersonDetails: UserPersonDetails, username: String): User {
     val nomisUser = userPersonDetails.toUser()
     userService.getEmailAddressFromNomis(username).ifPresent {
       nomisUser.email = it

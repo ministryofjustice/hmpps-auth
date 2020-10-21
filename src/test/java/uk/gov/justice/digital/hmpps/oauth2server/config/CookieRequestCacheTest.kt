@@ -73,7 +73,7 @@ class CookieRequestCacheTest {
       Optional.of(Base64Utils.encodeToString("https://some.com/where?param=value".toByteArray()))
     )
     val savedRequest = cache.getRequest(request, response)
-    assertThat(savedRequest.redirectUrl).isEqualTo("https://some.com/where?param=value")
+    assertThat(savedRequest?.redirectUrl).isEqualTo("https://some.com/where?param=value")
   }
 
   @Test
