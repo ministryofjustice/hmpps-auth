@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.fromNullableString
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.none
 import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService
@@ -23,7 +22,7 @@ class UserContextService(
 ) {
 
   fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String>): List<UserPersonDetails> =
-    discoverUsers(fromNullableString(loginUser.authSource), loginUser.userId, scopes)
+    discoverUsers(AuthSource.fromNullableString(loginUser.authSource), loginUser.userId, scopes)
 
   fun discoverUsers(authSource: AuthSource, email: String, scopes: Set<String>): List<UserPersonDetails> {
 
@@ -31,7 +30,7 @@ class UserContextService(
 
     val sourcesFromScopes = scopes.map {
       try {
-        fromNullableString(it)
+        AuthSource.fromNullableString(it)
       } catch (iae: IllegalArgumentException) {
         none
       }

@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository;
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService;
@@ -23,9 +24,6 @@ import uk.gov.service.notify.NotificationClientException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-
-import static uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis;
-import static uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.valueOf;
 
 @Service
 @Slf4j
@@ -85,7 +83,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
             optionalUser = userRepository.findByUsername(usernameOrEmailAddress.toUpperCase())
                     .or(() -> userService.findMasterUserPersonDetails(usernameOrEmailAddress.toUpperCase()).flatMap(userPersonDetails -> {
 
-                        switch (valueOf(userPersonDetails.getAuthSource())) {
+                        switch (AuthSource.fromNullableString(userPersonDetails.getAuthSource())) {
                             case nomis:
                                 return saveNomisUser(userPersonDetails);
                             case delius:
@@ -179,7 +177,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService, PasswordS
     }
 
     private boolean passwordAllowedToBeReset(final User user, final UserPersonDetails userPersonDetails) {
-        if (user.getSource() != nomis) {
+        if (user.getSource() != AuthSource.nomis) {
             // for non nomis users they must be enabled (so can be locked)
             return userPersonDetails.isEnabled();
         }

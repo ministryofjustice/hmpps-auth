@@ -69,7 +69,7 @@ class UserService(
         val usersByEmail = nomisUserService.getNomisUsersByEmail(email)
         usersByEmail.contains(userPersonDetails)
       }
-      else -> false
+      none -> false
     }
   }
 
@@ -91,7 +91,7 @@ class UserService(
     findUser(username).or {
       findMasterUserPersonDetails(username).map {
         val user = it.toUser()
-        if (AuthSource.valueOf(user.authSource) == nomis) {
+        if (AuthSource.fromNullableString(user.authSource) == nomis) {
           getEmailAddressFromNomis(username).ifPresent { email ->
             user.email = email
             user.isVerified = true
