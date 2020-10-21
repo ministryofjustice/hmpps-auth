@@ -29,7 +29,7 @@ class RemoveExpiredAuthCodes(private val service: RemoveExpiredAuthCodesService)
   }
 
   companion object {
-    private val log = LoggerFactory.getLogger(RemoveExpiredAuthCodes::class.java)
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
 
