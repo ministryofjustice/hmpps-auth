@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.nhaarman.mockitokotlin2.any
@@ -5,7 +7,6 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
 import org.springframework.http.HttpStatus
 import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
@@ -15,11 +16,15 @@ import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.web.savedrequest.SimpleSavedRequest
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
 import java.util.Optional
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 class LoginControllerTest {
   private val clientRegistrationRepository: Optional<InMemoryClientRegistrationRepository> = Optional.empty()
   private val cookieRequestCacheMock: CookieRequestCache = mock()
   private val clientDetailsService: ClientDetailsService = mock()
+  private val request: HttpServletRequest = mock()
+  private val response: HttpServletResponse = mock()
 
   private val controller = LoginController(clientRegistrationRepository, cookieRequestCacheMock, clientDetailsService)
 
@@ -57,7 +62,7 @@ class LoginControllerTest {
 
     val controller = LoginController(clientRegistrationRepository, cookieRequestCacheMock, clientDetailsService)
 
-    val modelAndView = controller.loginPage(null, null, null)
+    val modelAndView = controller.loginPage(null, request, response)
     assertThat(modelAndView.viewName).isEqualTo("login")
     assertThat(modelAndView.status).isNull()
     assertThat(modelAndView.modelMap["oauth2Clients"]).asList().hasSize(1)
@@ -79,16 +84,16 @@ class LoginControllerTest {
 
     val clientRegistrationRepository = Optional.of(InMemoryClientRegistrationRepository(clients))
     val controller = LoginController(clientRegistrationRepository, cookieRequestCacheMock, clientDetailsService)
-    var returnRequest = SimpleSavedRequest("test.com/oauth/authorize?client_id=test_id")
-    var clientDetailsMock: BaseClientDetails = BaseClientDetails()
+    val returnRequest = SimpleSavedRequest("test.com/oauth/authorize?client_id=test_id")
+    val clientDetailsMock: BaseClientDetails = BaseClientDetails()
 
     clientDetailsMock.addAdditionalInformation("skipToAzureField", true)
 
-    whenever(cookieRequestCacheMock.getRequest(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    whenever(cookieRequestCacheMock.getRequest(any(), any()))
       .thenReturn(returnRequest)
     whenever(clientDetailsService.loadClientByClientId(any()))
       .thenReturn(clientDetailsMock)
-    val modelAndView = controller.loginPage(null, null, null)
+    val modelAndView = controller.loginPage(null, request, response)
 
     assertThat(modelAndView.viewName).isEqualTo("redirect:/oauth2/authorization/test")
     assertThat(modelAndView.status).isNull()
@@ -97,14 +102,14 @@ class LoginControllerTest {
 
   @Test
   fun `load login page as skip to azure not set`() {
-    var returnRequest = SimpleSavedRequest("test.com/oauth/authorize?client_id=test_id")
-    var clientDetailsMock: BaseClientDetails = BaseClientDetails()
+    val returnRequest = SimpleSavedRequest("test.com/oauth/authorize?client_id=test_id")
+    val clientDetailsMock = BaseClientDetails()
 
-    whenever(cookieRequestCacheMock.getRequest(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    whenever(cookieRequestCacheMock.getRequest(any(), any()))
       .thenReturn(returnRequest)
     whenever(clientDetailsService.loadClientByClientId(any()))
       .thenReturn(clientDetailsMock)
-    val modelAndView = controller.loginPage(null, null, null)
+    val modelAndView = controller.loginPage(null, request, response)
 
     assertThat(modelAndView.viewName).isEqualTo("login")
     assertThat(modelAndView.status).isNull()
@@ -112,11 +117,11 @@ class LoginControllerTest {
 
   @Test
   fun `show login page as not an OAuth Login`() {
-    var returnRequest = SimpleSavedRequest("test.com/test?client_id=test_id")
+    val returnRequest = SimpleSavedRequest("test.com/test?client_id=test_id")
 
-    whenever(cookieRequestCacheMock.getRequest(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    whenever(cookieRequestCacheMock.getRequest(any(), any()))
       .thenReturn(returnRequest)
-    val modelAndView = controller.loginPage(null, null, null)
+    val modelAndView = controller.loginPage(null, request, response)
 
     assertThat(modelAndView.viewName).isEqualTo("login")
   }
