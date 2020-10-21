@@ -32,12 +32,9 @@ class UserContextApprovalHandler(private val userContextService: UserContextServ
   ): MutableMap<String, Any> {
 
     val userApprovalRequest = super.getUserApprovalRequest(authorizationRequest, userAuthentication)
-
-    if (isAzureAdUser(userAuthentication)) {
-      val userDetails = userAuthentication.principal as UserPersonDetails
-      val users = userContextService.discoverUsers(userDetails, authorizationRequest.scope)
-      userApprovalRequest["users"] = users
-    }
+    val userDetails = userAuthentication.principal as UserPersonDetails
+    val users = userContextService.discoverUsers(userDetails, authorizationRequest.scope)
+    userApprovalRequest["users"] = users
 
     return userApprovalRequest
   }
