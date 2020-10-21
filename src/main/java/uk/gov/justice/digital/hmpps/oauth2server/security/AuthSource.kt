@@ -5,15 +5,13 @@ import com.fasterxml.jackson.annotation.JsonValue
 enum class AuthSource {
   auth, azuread, delius, nomis, none;
 
+  @JsonValue
+  val source: String = name
+
   companion object {
     @JvmStatic
     fun fromNullableString(source: String?): AuthSource {
-      return source?.let { valueOf(source.toLowerCase() ) } ?: none
+      return source?.let { valueOf(source.toLowerCase()) } ?: none
     }
-  }
-
-  @JsonValue
-  fun getSource(): String {
-    return name
   }
 }
