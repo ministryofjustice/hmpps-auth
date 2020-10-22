@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.none
 import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 

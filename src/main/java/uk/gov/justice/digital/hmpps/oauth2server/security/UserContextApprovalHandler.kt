@@ -20,9 +20,7 @@ class UserContextApprovalHandler(private val userContextService: UserContextServ
 
     // for now, all Azure AD users are sent down this route.
     // the controller will work out what accounts are found etc.
-    if (isAzureAdUser(userAuthentication)) {
-      authorizationRequest.isApproved = false
-    }
+    authorizationRequest.isApproved = !isAzureAdUser(userAuthentication)
 
     return authorizationRequest
   }

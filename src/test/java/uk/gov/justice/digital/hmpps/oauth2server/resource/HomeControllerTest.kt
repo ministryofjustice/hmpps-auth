@@ -7,7 +7,6 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
@@ -52,7 +51,7 @@ class HomeControllerTest {
     whenever(authServicesService.listEnabled(any())).thenReturn(ALL_SERVICES)
     setUpAuthentication(AuthSource.azuread, "ROLE_BOB")
     val authorities = setOf(Authority("ROLE_OTHER", "Role Other"))
-    whenever(userContextService.discoverUsers(any(), anyString(), any())).thenReturn(
+    whenever(userContextService.discoverUsers(any(), any())).thenReturn(
       listOf(
         DeliusUserPersonDetails(
           username = "user",
