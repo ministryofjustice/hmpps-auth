@@ -44,9 +44,11 @@ class ChangeExpiredPasswordSpecification : AbstractAuthSpecification() {
     changeExpiredPasswordPage
       .isAtPage()
       .inputAndConfirmNewPassword("sompass", "d")
-      .checkError("Your password must have both letters and numbers\n" +
-        "Your password must have at least 9 characters\n" +
-        "Your passwords do not match. Enter matching passwords.")
+      .checkError(
+        "Your password must have both letters and numbers\n" +
+          "Your password must have at least 9 characters\n" +
+          "Your passwords do not match. Enter matching passwords."
+      )
   }
 
   @Test
@@ -91,7 +93,7 @@ class ChangeExpiredPasswordSpecification : AbstractAuthSpecification() {
       .isAtPage()
       .logOut()
     loginPage
-      .loginWithMfaEmail("AUTH_MFA_EXPIRED","helloworld2")
+      .loginWithMfaEmail("AUTH_MFA_EXPIRED", "helloworld2")
     mfaEmailPage
       .isAtPage()
       .submitCode(mfaEmailPage.getCode())
