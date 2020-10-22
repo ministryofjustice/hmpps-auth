@@ -83,15 +83,11 @@ while IFS=, read -r -a row; do
 
   echo "Processing ${row[*]}"
 
-  groups=""
-
-  for group in "${row[@]:4}"; do
-    groups+="\"${group}\","
-  done
+  printf -v groups '\"%s\",' "${row[@]:4}"
 
   # Create the user
   if ! output=$(curl -X PUT "$HOST/auth/api/authuser/$user?enforceUniqueEmail=true" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
-    -d "{ \"groupCodes\": [${groups::-1}], \"email\": \"${row[1]}\", \"firstName\": \"${row[2]}\", \"lastName\": \"${row[3]}\"}"); then
+    -d "{ \"groupCodes\": [${groups%,}], \"email\": \"${row[1]}\", \"firstName\": \"${row[2]}\", \"lastName\": \"${row[3]}\"}"); then
 
     echo "\033[0;31mFailure to create user ${user}\033[0m"
   else
