@@ -43,7 +43,7 @@ import static uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatu
 @Entity
 @Table(name = "STAFF_USER_ACCOUNTS")
 @SecondaryTable(name = "SYS.USER$", pkJoinColumns = @PrimaryKeyJoinColumn(name = "NAME"))
-@Data()
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
@@ -150,5 +150,33 @@ public class NomisUserPersonDetails implements UserPersonDetails {
     @Override
     public void eraseCredentials() {
         password = null;
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    public Staff getStaff() {
+        return this.staff;
+    }
+
+    public String getType() {
+        return this.type;
+    }
+
+    public String getActiveCaseLoadId() {
+        return this.activeCaseLoadId;
+    }
+
+    public List<UserCaseloadRole> getRoles() {
+        return this.roles;
+    }
+
+    public AccountDetail getAccountDetail() {
+        return this.accountDetail;
     }
 }

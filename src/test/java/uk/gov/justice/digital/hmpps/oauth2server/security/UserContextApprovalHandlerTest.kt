@@ -56,15 +56,6 @@ internal class UserContextApprovalHandlerTest {
       val approval = handler.checkForPreApproval(authorizationRequest, authentication)
       assertThat(approval.isApproved).isTrue
     }
-
-    @Test
-    fun `test checkForPreApproval not approved`() {
-      whenever(authentication.principal).thenReturn(
-        UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId")
-      )
-      val approval = handler.checkForPreApproval(authorizationRequest, authentication)
-      assertThat(approval.isApproved).isFalse
-    }
   }
 
   @Nested
@@ -75,8 +66,10 @@ internal class UserContextApprovalHandlerTest {
       whenever(authentication.principal).thenReturn(
         UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId")
       )
+      val users = emptyList<User>()
+      whenever(userContextService.discoverUsers(any(), any())).thenReturn(users)
       val map = handler.getUserApprovalRequest(authorizationRequest, authentication)
-      assertThat(map).containsExactly(entry("bob", "joe"))
+      assertThat(map).containsExactly(entry("bob", "joe"), entry("users", users))
     }
 
     @Test

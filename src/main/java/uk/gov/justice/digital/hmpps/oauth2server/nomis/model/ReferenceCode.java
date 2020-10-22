@@ -36,5 +36,21 @@ public class ReferenceCode {
 
     @Column(name = "EXPIRED_DATE")
     private Date expiredDate;
+
+    public DomainCodeIdentifier getDomainCodeIdentifier() {
+        return this.domainCodeIdentifier;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public boolean isActive() {
+        return this.active;
+    }
+
+    public Date getExpiredDate() {
+        return this.expiredDate;
+    }
 }
 
