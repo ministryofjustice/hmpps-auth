@@ -44,7 +44,7 @@ class UserSelectorAuthorizationEndpoint(
     potentialUsers?.let {
       val users = it as List<*>
       when (users.size) {
-        // TODO: no match, so carry on for now as the azuread user
+        // no discovered users, continue by explicitly approving the request
         0 -> return ModelAndView(
           authorizationEndpoint.approveOrDeny(
             hashMapOf(USER_OAUTH_APPROVAL to "true"),
@@ -54,6 +54,7 @@ class UserSelectorAuthorizationEndpoint(
           ),
           model
         )
+        // only one discovered user, pass on to approveOrDeny for further verification
         1 -> {
           with(users[0] as UserPersonDetails) {
             val account = "$authSource/$username"

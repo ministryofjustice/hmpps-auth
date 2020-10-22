@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserServic
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
@@ -109,24 +108,24 @@ internal class UserContextServiceTest {
   fun `discoverUsers returns all users when multiple users matched`() {
     val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "email@email.com", "jwtId")
     val deliusUser = DeliusUserPersonDetails("username", "id", "user", "name", "email@email.com", true)
-    val authUser = User.builder().username("username").source(auth).enabled(true).build()
+    val authUser = User.builder().username("username").source(auth).enabled(true).verified(true).build()
     val scopes = setOf("delius", "auth")
     whenever(deliusUserService.getDeliusUsersByEmail(anyString())).thenReturn(listOf(deliusUser))
     whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser))
 
     val users = userContextService.discoverUsers(loginUser, scopes)
-    assertThat(users).containsExactly(deliusUser, authUser)
+    assertThat(users).containsExactlyInAnyOrder(deliusUser, authUser)
   }
 
   @Test
   fun `discoverUsers returns all users when multiple users matched from same source`() {
     val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "email@email.com", "jwtId")
-    val authUser = User.builder().username("username").source(auth).enabled(true).build()
+    val authUser = User.builder().username("username").source(auth).enabled(true).verified(true).build()
     val scopes = setOf("delius", "auth")
     whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser, authUser))
 
     val users = userContextService.discoverUsers(loginUser, scopes)
-    assertThat(users).hasSize(2).containsExactly(authUser, authUser)
+    assertThat(users).hasSize(2).containsExactlyInAnyOrder(authUser, authUser)
   }
 
   @Test
@@ -140,7 +139,7 @@ internal class UserContextServiceTest {
       "email@email.com",
       enabled = false
     )
-    val authUser = User.builder().username("username").source(auth).enabled(true).build()
+    val authUser = User.builder().username("username").source(auth).enabled(true).verified(true).build()
     val scopes = setOf("delius", "auth")
     whenever(deliusUserService.getDeliusUsersByEmail(anyString())).thenReturn(listOf(deliusUser))
     whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser))
@@ -150,14 +149,14 @@ internal class UserContextServiceTest {
   }
 
   @Test
-  fun `discoverUsers accepts source and email address`() {
-    val deliusUser = DeliusUserPersonDetails("username", "id", "user", "name", "email@email.com", true)
-    val authUser = User.builder().username("username").source(auth).enabled(true).build()
-    val scopes = setOf("delius", "auth")
-    whenever(deliusUserService.getDeliusUsersByEmail(anyString())).thenReturn(listOf(deliusUser))
-    whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser))
+  fun `discoverUsers ignores unverified users`() {
+    val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "email@email.com", "jwtId")
+    val authUser = User.builder().username("username").source(auth).enabled(true).verified(true).build()
+    val unverifiedAuthUser = User.builder().username("username1").source(auth).enabled(true).build()
+    val scopes = setOf("auth")
+    whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser, unverifiedAuthUser))
 
-    val users = userContextService.discoverUsers(AuthSource.azuread, "joe@bloggs.com", scopes)
-    assertThat(users).containsExactly(deliusUser, authUser)
+    val users = userContextService.discoverUsers(loginUser, scopes)
+    assertThat(users).containsExactly(authUser)
   }
 }
