@@ -21,6 +21,7 @@ class ReferenceCodesService(referenceCodeRepository: ReferenceCodeRepository) {
   }
 
   private val referenceCodesCache: LoadingCache<ReferenceDomain, List<String>>
+
   fun isValidEmailDomain(domain: String): Boolean {
     if (StringUtils.isBlank(domain)) {
       return false
