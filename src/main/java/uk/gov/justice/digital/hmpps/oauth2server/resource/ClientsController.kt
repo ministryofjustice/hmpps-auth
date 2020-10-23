@@ -85,6 +85,12 @@ class ClientsController(
   // Unfortunately the getAdditionalInformation getter creates an unmodifiable map, so can't be used with web binder.
   // Have to therefore extend and create our own accessor instead.
   class AuthClientDetails : BaseClientDetails() {
+    override fun setScope(scope: Collection<String>) {
+      // always keep scopes and auto-approve scopes in sync.
+      super.setScope(scope)
+      super.setAutoApproveScopes(scope)
+    }
+
     var jwtFields: String?
       get() = additionalInformation["jwtFields"] as String?
       set(jwtFields) {
