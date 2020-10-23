@@ -1,15 +1,12 @@
-package uk.gov.justice.digital.hmpps.oauth2server.security;
+package uk.gov.justice.digital.hmpps.oauth2server.security
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.ConstructorBinding
+import java.time.Duration
 
-import java.time.Duration;
-
-@Configuration
+@ConstructorBinding
 @ConfigurationProperties(prefix = "jwt.cookie")
-@Data
-public class JwtCookieConfigurationProperties {
-    private String name;
-    private Duration expiryTime;
-}
+data class JwtCookieConfigurationProperties(
+  val name: String,
+  val expiryTime: Duration,
+)
