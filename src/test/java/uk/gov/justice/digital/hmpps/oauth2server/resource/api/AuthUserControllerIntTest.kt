@@ -74,7 +74,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
   }
 
   @Test
-  fun `Group manager Enable endpoint fails user not in group manager group conflict`() {
+  fun `Group manager Enable endpoint fails user not in group manager group - forbidden`() {
     webTestClient
       .put().uri("/auth/api/authuser/AUTH_STATUS/enable")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
@@ -176,7 +176,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
   }
 
   @Test
-  fun `Group manager Disable endpoint fails user not in group manager group conflict`() {
+  fun `Group manager Disable endpoint fails user not in group manager group - forbidden`() {
     webTestClient
       .put().uri("/auth/api/authuser/AUTH_STATUS/disable")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
