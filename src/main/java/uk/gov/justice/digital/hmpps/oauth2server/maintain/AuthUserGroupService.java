@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.maintain;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
@@ -101,7 +100,6 @@ public class AuthUserGroupService {
         }
     }
 
-    @Getter
     public static class AuthUserGroupException extends Exception {
         private final String errorCode;
         private final String field;
@@ -111,6 +109,14 @@ public class AuthUserGroupService {
 
             this.field = field;
             this.errorCode = errorCode;
+        }
+
+        public String getErrorCode() {
+            return this.errorCode;
+        }
+
+        public String getField() {
+            return this.field;
         }
     }
 }
