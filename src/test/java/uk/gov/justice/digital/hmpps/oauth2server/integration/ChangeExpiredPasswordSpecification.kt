@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration
 
 import com.microsoft.applicationinsights.boot.dependencies.apachecommons.lang3.RandomStringUtils
 import groovy.json.JsonSlurper
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.core.annotation.Page
 import org.fluentlenium.core.annotation.PageUrl
 import org.fluentlenium.core.domain.FluentWebElement
@@ -128,14 +128,14 @@ class ChangeExpiredPasswordSpecification : AbstractAuthSpecification() {
       .inputAndConfirmNewPassword("dodgypass1", "dodgypass1")
 
     val url = driver.currentUrl
-    Assertions.assertThat(url).startsWith("$clientBaseUrl?code")
-    Assertions.assertThat(url).contains("state=$state")
+    assertThat(url).startsWith("$clientBaseUrl?code")
+    assertThat(url).contains("state=$state")
 
     val authCode = splitQuery(url)["code"]?.first()
-    Assertions.assertThat(authCode).isNotNull()
+    assertThat(authCode).isNotNull()
 
     val response = getAccessToken(authCode!!)
-    Assertions.assertThat(response["user_name"]).isEqualTo("EXPIRED_TEST3_USER")
+    assertThat(response["user_name"]).isEqualTo("EXPIRED_TEST3_USER")
   }
 
   private fun splitQuery(url: String): MultiValueMap<String, String> {
