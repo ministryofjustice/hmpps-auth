@@ -17,11 +17,11 @@ import javax.servlet.http.HttpServletResponse
 
 @Component
 class OidcJwtAuthenticationSuccessHandler(
-  jwtCookieHelper: JwtCookieHelper?,
-  jwtAuthenticationHelper: JwtAuthenticationHelper?,
-  cookieRequestCache: CookieRequestCache?,
-  verifyEmailService: VerifyEmailService?,
-  @Qualifier("tokenVerificationApiRestTemplate") restTemplate: RestTemplate?,
+  jwtCookieHelper: JwtCookieHelper,
+  jwtAuthenticationHelper: JwtAuthenticationHelper,
+  cookieRequestCache: CookieRequestCache,
+  verifyEmailService: VerifyEmailService,
+  @Qualifier("tokenVerificationApiRestTemplate") restTemplate: RestTemplate,
   @Value("\${tokenverification.enabled:false}") tokenVerificationEnabled: Boolean,
   private val userRetriesService: UserRetriesService,
 ) : JwtAuthenticationSuccessHandler(
