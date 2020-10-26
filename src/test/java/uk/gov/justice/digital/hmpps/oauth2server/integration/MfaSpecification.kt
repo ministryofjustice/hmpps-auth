@@ -463,7 +463,7 @@ class MfaSpecification : AbstractAuthSpecification() {
     assertThat(url).contains("state=$state")
 
     val authCode = splitQuery(url)["code"]?.first()
-    assertThat(authCode).isNotNull()
+    assertThat(authCode).isNotNull
 
     val response = getAccessToken(authCode!!)
     assertThat(response["user_name"]).isEqualTo("AUTH_MFA_PREF_2ND_EMAIL4")

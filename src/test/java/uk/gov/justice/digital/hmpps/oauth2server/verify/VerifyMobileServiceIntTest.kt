@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
 import uk.gov.service.notify.NotificationClientApi
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -18,13 +19,15 @@ import uk.gov.service.notify.NotificationClientApi
 class VerifyMobileServiceIntTest {
   @Autowired
   private lateinit var userRepository: UserRepository
+  @Autowired
+  private lateinit var userTokenRepository: UserTokenRepository
   private val telemetryClient: TelemetryClient = mock()
   private val notificationClient: NotificationClientApi = mock()
   private lateinit var verifyMobileService: VerifyMobileService
 
   @BeforeEach
   fun setUp() {
-    verifyMobileService = VerifyMobileService(userRepository, null, telemetryClient, notificationClient, "templateId")
+    verifyMobileService = VerifyMobileService(userRepository, userTokenRepository, telemetryClient, notificationClient, "templateId")
   }
 
   @Test
