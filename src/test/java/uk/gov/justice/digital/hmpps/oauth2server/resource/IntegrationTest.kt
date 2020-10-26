@@ -58,7 +58,7 @@ abstract class IntegrationTest {
   internal fun setAuthorisation(
     user: String,
     roles: List<String> = listOf(),
-  ): (org.springframework.http.HttpHeaders) -> Unit {
+  ): (HttpHeaders) -> Unit {
     val token = createJwt(user, roles)
     return { it.set(HttpHeaders.AUTHORIZATION, "Bearer $token") }
   }
