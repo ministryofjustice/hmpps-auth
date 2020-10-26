@@ -24,6 +24,11 @@ open class JwtAuthenticationSuccessHandler(
   @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean
 ) : SavedRequestAwareAuthenticationSuccessHandler() {
 
+  init {
+    @Suppress("LeakingThis")
+    setRequestCache(cookieRequestCache)
+    defaultTargetUrl = "/"
+  }
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
@@ -83,11 +88,5 @@ open class JwtAuthenticationSuccessHandler(
     authentication: Authentication
   ) {
     super.onAuthenticationSuccess(request, response, authentication)
-  }
-
-  init {
-    @Suppress("LeakingThis")
-    setRequestCache(cookieRequestCache)
-    defaultTargetUrl = "/"
   }
 }
