@@ -6,43 +6,43 @@ import static uk.gov.justice.digital.hmpps.oauth2server.integration.specs.model.
 
 class ChangeEmailSpecification extends DeliusIntegrationSpec {
 
-  def "Change email flow"() {
-    given: 'I try to change my Email address'
-    to LoginPage
-    loginAs AUTH_CHANGE_EMAIL, 'password123456'
-
-    and: 'I am redirected to the existing password page'
-    to ExistingPasswordChangeEmailPage
-
-    when: "I enter password with correct credentials"
-    existingPasswordAs AUTH_CHANGE_EMAIL, 'password123456'
-
-    then: 'My credentials are accepted and I am on the Change Email page'
-    at ChangeEmailPage
-
-    when: "I enter new email"
-    changeEmailAs 'dm_user@digital.justice.gov.uk', 'auth_test@digital.justice.gov.uk'
-
-    and: 'The Verify Email sent page is displayed'
-    at VerifyEmailSentPage
-    String verifyLink = $('#verifyLink').@href
-    continueProcess()
-
-    and: 'The Home page is displayed'
-    at HomePage
-
-    and: 'I can then verify my email address'
-    browser.go verifyLink
-
-    then: 'I am shown the success page'
-    at VerifyEmailConfirmPage
-
-    and: 'I can then verify my email address again'
-    browser.go verifyLink
-
-    then: 'I am shown the success page'
-    at VerifyEmailConfirmPage
-  }
+//  def "Change email flow"() {
+//    given: 'I try to change my Email address'
+//    to LoginPage
+//    loginAs AUTH_CHANGE_EMAIL, 'password123456'
+//
+//    and: 'I am redirected to the existing password page'
+//    to ExistingPasswordChangeEmailPage
+//
+//    when: "I enter password with correct credentials"
+//    existingPasswordAs AUTH_CHANGE_EMAIL, 'password123456'
+//
+//    then: 'My credentials are accepted and I am on the Change Email page'
+//    at ChangeEmailPage
+//
+//    when: "I enter new email"
+//    changeEmailAs 'dm_user@digital.justice.gov.uk', 'auth_test@digital.justice.gov.uk'
+//
+//    and: 'The Verify Email sent page is displayed'
+//    at VerifyEmailSentPage
+//    String verifyLink = $('#verifyLink').@href
+//    continueProcess()
+//
+//    and: 'The Home page is displayed'
+//    at HomePage
+//
+//    and: 'I can then verify my email address'
+//    browser.go verifyLink
+//
+//    then: 'I am shown the success page'
+//    at VerifyEmailConfirmPage
+//
+//    and: 'I can then verify my email address again'
+//    browser.go verifyLink
+//
+//    then: 'I am shown the success page'
+//    at VerifyEmailConfirmPage
+//  }
 
   def "Change email flow incorrect password"() {
     given: 'I try to change my Email address'
