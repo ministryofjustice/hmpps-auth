@@ -65,7 +65,6 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .edit("registeredRedirectUri", "http://a_url:3003")
       .edit("accessTokenValiditySeconds", "1200")
       .edit("scopes", "read")
-      .edit("autoApproveScopes", "read")
       .edit("authorities", "ROLE_BOB,ROLE_FRED")
       .editGrantType("client_credentials")
       .edit("jwtFields", "-name")
