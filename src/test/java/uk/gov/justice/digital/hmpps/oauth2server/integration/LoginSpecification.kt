@@ -263,6 +263,9 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
   fun loginExistingPasswordChangeEmail(username: String, password: String = "password123456"): PasswordPromptForEmailPage =
     errorLoginWith(username, password, PasswordPromptForEmailPage::class.java)
 
+  fun loginPageNotFound(username: String, password: String = "password123456"): PageNotFoundPage =
+    errorLoginWith(username, password, PageNotFoundPage::class.java)
+
   private fun <T : AuthPage<T>> loginWith(username: String, password: String = "password123456", t: Class<T>): T {
     submitLogin(username, password)
     return newInstance(t).isAtPage()
