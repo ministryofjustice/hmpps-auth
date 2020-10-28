@@ -51,14 +51,9 @@
                th:value="${#strings.setJoin(clientDetails.resourceIds, ',')}"/>
       </div>
       <div class="govuk-form-group">
-        <label class="govuk-label" for="scopes">Scopes</label>
+        <label class="govuk-label" for="scopes">Approved Scopes</label>
         <input class="govuk-input" id="scopes" type="text" name="scope"
                th:value="${#strings.setJoin(clientDetails.scope, ',')}"/>
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="autoApproveScopes">Auto Approve Scopes</label>
-        <input class="govuk-input" id="autoApproveScopes" type="text" name="autoApproveScopes"
-               th:value="${#strings.setJoin(clientDetails.autoApproveScopes, ',')}"/>
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="authorities">Authorities</label>

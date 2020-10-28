@@ -58,7 +58,7 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
 
     whenever(authentication.principal)
       .thenReturn(DefaultOidcUser(listOf(OidcUserAuthority(oidcToken)), oidcToken))
-
+    whenever(authentication.name).thenReturn("Bob")
     oidcJwtAuthenticationSuccessHandler.onAuthenticationSuccess(mockRequest, response, authentication)
 
     verify(userRetriesService).resetRetriesAndRecordLogin(
@@ -93,6 +93,7 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
 
     whenever(authentication.principal)
       .thenReturn(DefaultOidcUser(listOf(OidcUserAuthority(oidcToken)), oidcToken))
+    whenever(authentication.name).thenReturn("Bob")
 
     oidcJwtAuthenticationSuccessHandler.onAuthenticationSuccess(mockRequest, response, authentication)
 

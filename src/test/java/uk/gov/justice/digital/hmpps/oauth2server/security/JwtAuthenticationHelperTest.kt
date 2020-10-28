@@ -20,8 +20,7 @@ class JwtAuthenticationHelperTest {
   private val helper: JwtAuthenticationHelper
 
   init {
-    val properties = JwtCookieConfigurationProperties()
-    properties.expiryTime = Duration.ofHours(1)
+    val properties = JwtCookieConfigurationProperties(name = "Bob", expiryTime = Duration.ofHours(1))
     helper = JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties)
   }
 
@@ -60,9 +59,6 @@ class JwtAuthenticationHelperTest {
 
   @Test
   fun testReadCookieWithoutNameField() {
-    val properties = JwtCookieConfigurationProperties()
-    properties.expiryTime = Duration.ofHours(1)
-    val helper = JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties)
     val expiryTime = ReflectionTestUtils.getField(helper, "expiryTime") as Duration
     val keyPair = ReflectionTestUtils.getField(helper, "keyPair") as KeyPair
     val cookie = Jwts.builder()
@@ -78,9 +74,6 @@ class JwtAuthenticationHelperTest {
 
   @Test
   fun testReadCookieWithoutAuthSourceField() {
-    val properties = JwtCookieConfigurationProperties()
-    properties.expiryTime = Duration.ofHours(1)
-    val helper = JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties)
     val expiryTime = ReflectionTestUtils.getField(helper, "expiryTime") as Duration
     val keyPair = ReflectionTestUtils.getField(helper, "keyPair") as KeyPair
     val cookie = Jwts.builder()
@@ -96,9 +89,6 @@ class JwtAuthenticationHelperTest {
 
   @Test
   fun testReadCookieWithoutUserIdField() {
-    val properties = JwtCookieConfigurationProperties()
-    properties.expiryTime = Duration.ofHours(1)
-    val helper = JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties)
     val expiryTime = ReflectionTestUtils.getField(helper, "expiryTime") as Duration
     val keyPair = ReflectionTestUtils.getField(helper, "keyPair") as KeyPair
     val cookie = Jwts.builder()
@@ -113,10 +103,7 @@ class JwtAuthenticationHelperTest {
   }
 
   @Test
-  fun testReadCookie() {
-    val properties = JwtCookieConfigurationProperties()
-    properties.expiryTime = Duration.ofHours(1)
-    val helper = JwtAuthenticationHelper(PAIR, PASSWORD, ALIAS, properties)
+  fun `test read cookie`() {
     val expiryTime = ReflectionTestUtils.getField(helper, "expiryTime") as Duration
     val keyPair = ReflectionTestUtils.getField(helper, "keyPair") as KeyPair
     val jwtId = UUID.randomUUID().toString()
