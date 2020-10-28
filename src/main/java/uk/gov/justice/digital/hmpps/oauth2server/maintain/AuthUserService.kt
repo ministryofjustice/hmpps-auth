@@ -175,7 +175,7 @@ class AuthUserService(
     val username = StringUtils.upperCase(usernameInput)
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
       .orElseThrow { EntityNotFoundException("User not found with username $username") }
-    maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
+    maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities as Collection<out GrantedAuthority>, user)
     if (user.isVerified) {
       user.isVerified = false
       userRepository.save(user)
