@@ -12,14 +12,16 @@ class DeliusDownLoginSpecification : AbstractAuthSpecification() {
   @Page
   private lateinit var accountDetailsPage: AccountDetailsPage
 
-  // @Test
-  // fun `Delius unavailable shows in error`() {
-  //
-  //   goTo(loginPage)
-  //     .loginError("DELIUS_USER", "password")
-  //     .checkError("Enter a valid username and password. You will be locked out if you enter the wrong details 3 times." +
-  //       "\nDelius is experiencing issues. Please try later if you are attempting to login using your Delius credentials.")
-  // }
+  @Test
+  fun `Delius unavailable shows in error`() {
+
+    goTo(loginPage)
+      .loginError("DELIUS_USER", "password")
+      .checkError(
+        "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times." +
+          "\nDelius is experiencing issues. Please try later if you are attempting to login using your Delius credentials."
+      )
+  }
 
   @Test
   fun `Delius unavailable doesn't prevent logging in as auth user`() {
@@ -31,7 +33,7 @@ class DeliusDownLoginSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun`Delius unavailable doesn't prevent logging in as nomis user`() {
+  fun `Delius unavailable doesn't prevent logging in as nomis user`() {
     goTo(loginPage)
       .loginAs("ITAG_USER", "password")
     homePage

@@ -12,10 +12,9 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.openqa.selenium.logging.LogType
 import org.openqa.selenium.support.FindBy
 import uk.gov.justice.digital.hmpps.oauth2server.resource.AzureOIDCExtension
-import uk.gov.justice.digital.hmpps.oauth2server.resource.DeliusExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension
 
-@ExtendWith(DeliusExtension::class, TokenVerificationExtension::class, AzureOIDCExtension::class)
+@ExtendWith(TokenVerificationExtension::class, AzureOIDCExtension::class)
 open class AbstractAuthSpecification : FluentTest() {
   init {
     // Resolves an issue where Wiremock keeps previous sockets open from other tests causing connection resets
