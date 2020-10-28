@@ -8,7 +8,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doThrow
 import org.springframework.security.core.GrantedAuthority
@@ -66,10 +65,11 @@ internal class AuthUserRolesServiceTest {
         .thenReturn(Optional.of(groupManager))
       doThrow(AuthUserGroupRelationshipException("user", "User not with your groups")).whenever(maintainUserCheck)
         .ensureUserLoggedInUserRelationship(
-          anyString(),
-          ArgumentMatchers.anyCollection(),
-          ArgumentMatchers.any(User::class.java)
+          "admin",
+          GROUP_MANAGER,
+          User.of("user")
         )
+
       assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", GROUP_MANAGER) }.isInstanceOf(
         AuthUserGroupRelationshipException::class.java
       ).hasMessage("Unable to maintain user: user with reason: User not with your groups")
@@ -248,10 +248,11 @@ internal class AuthUserRolesServiceTest {
       user.authorities = HashSet(listOf(role, role2))
       doThrow(AuthUserGroupRelationshipException("user", "User not with your groups")).whenever(maintainUserCheck)
         .ensureUserLoggedInUserRelationship(
-          anyString(),
-          ArgumentMatchers.anyCollection(),
-          ArgumentMatchers.any(User::class.java)
+          "admin",
+          GROUP_MANAGER,
+          User.of("user")
         )
+
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
         .thenReturn(Optional.of(groupManager))
