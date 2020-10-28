@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 
-class LoginSpecification : AbstractAuthSpecification() {
+class LoginSpecification : AbstractDeliusAuthSpecification() {
   @Page
   internal lateinit var homePage: HomePage
 

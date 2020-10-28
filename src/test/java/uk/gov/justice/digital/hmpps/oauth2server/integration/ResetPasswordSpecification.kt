@@ -7,7 +7,7 @@ import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
 
-class ResetPasswordSpecification : AbstractAuthSpecification() {
+class ResetPasswordSpecification : AbstractDeliusAuthSpecification() {
 
   @Page
   private lateinit var resetPasswordRequestPage: ResetPasswordRequestPage
