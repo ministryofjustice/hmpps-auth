@@ -12,14 +12,14 @@ class MaintainUserCheck(
 ) {
 
   companion object {
-    fun canMaintainAuthUsers(authorities: Collection<out GrantedAuthority>): Boolean {
+    fun canMaintainAuthUsers(authorities: Collection<GrantedAuthority>): Boolean {
       return authorities.stream().map { obj: GrantedAuthority -> obj.authority }
-        .anyMatch { "ROLE_MAINTAIN_OAUTH_USERS".equals(it) }
+        .anyMatch { "ROLE_MAINTAIN_OAUTH_USERS" == it }
     }
   }
 
   @Throws(AuthUserGroupRelationshipException::class)
-  fun ensureUserLoggedInUserRelationship(loggedInUser: String, authorities: Collection<out GrantedAuthority>, user: User) {
+  fun ensureUserLoggedInUserRelationship(loggedInUser: String, authorities: Collection<GrantedAuthority>, user: User) {
     // if they have maintain privileges then all good
     if (canMaintainAuthUsers(authorities)) {
       return

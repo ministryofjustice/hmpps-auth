@@ -169,13 +169,13 @@ class AuthUserService(
     emailAddressInput: String?,
     url: String,
     admin: String,
-    authorities: Collection<GrantedAuthority?>?,
+    authorities: Collection<GrantedAuthority>,
     emailType: EmailType,
   ): String {
     val username = StringUtils.upperCase(usernameInput)
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
       .orElseThrow { EntityNotFoundException("User not found with username $username") }
-    maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities as Collection<out GrantedAuthority>, user)
+    maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
     if (user.isVerified) {
       user.isVerified = false
       userRepository.save(user)

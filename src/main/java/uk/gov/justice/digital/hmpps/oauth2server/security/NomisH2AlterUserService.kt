@@ -14,13 +14,12 @@ import javax.sql.DataSource
 @Profile("!oracle")
 class NomisH2AlterUserService(
   @Qualifier("dataSource") dataSource: DataSource,
-  passwordEncoder: PasswordEncoder,
+  private val passwordEncoder: PasswordEncoder,
   staffUserAccountRepository: StaffUserAccountRepository,
   userRepository: UserRepository
 ) : NomisUserService(staffUserAccountRepository, userRepository) {
 
   private val jdbcTemplate: JdbcTemplate = JdbcTemplate(dataSource)
-  private val encoder: PasswordEncoder = passwordEncoder
 
   companion object {
     private const val UPDATE_STATUS = "UPDATE dba_users SET account_status = ? WHERE username = ?"
@@ -29,7 +28,7 @@ class NomisH2AlterUserService(
   @Transactional
   override fun changePassword(username: String?, password: String?) {
     jdbcTemplate.update(String.format("ALTER USER %s SET PASSWORD ?", username), password)
-    val hashedPassword = encoder.encode(password)
+    val hashedPassword = passwordEncoder.encode(password)
     jdbcTemplate.update(UPDATE_STATUS, "OPEN", username)
     // also update h2 password table so that we have access to the hash.
     jdbcTemplate.update("UPDATE sys.user$ SET spare4 = ? WHERE name = ?", hashedPassword, username)
