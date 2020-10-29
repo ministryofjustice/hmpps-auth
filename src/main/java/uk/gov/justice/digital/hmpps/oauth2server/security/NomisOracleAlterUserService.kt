@@ -1,72 +1,70 @@
-package uk.gov.justice.digital.hmpps.oauth2server.security;
+package uk.gov.justice.digital.hmpps.oauth2server.security
 
-import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Profile;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository;
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.context.annotation.Profile
+import org.springframework.dao.DataAccessException
+import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository
+import java.sql.SQLException
+import javax.sql.DataSource
 
-import javax.sql.DataSource;
-import java.sql.SQLException;
-
-@Log4j2
 @Service
 @Profile("oracle")
-public class NomisOracleAlterUserService extends NomisUserService {
-    private static final String CHANGE_PASSWORD_SQL = "ALTER USER %s IDENTIFIED BY \"%s\"";
-    private static final String CHANGE_PASSWORD_UNLOCK_SQL = CHANGE_PASSWORD_SQL + " ACCOUNT UNLOCK";
-    private static final String UPDATE_STATUS = "ALTER USER %s ACCOUNT LOCK";
+class NomisOracleAlterUserService(
+  @Qualifier("dataSource") dataSource: DataSource,
+  staffUserAccountRepository: StaffUserAccountRepository,
+  userRepository: UserRepository
+) : NomisUserService(staffUserAccountRepository, userRepository) {
 
-    private final JdbcTemplate jdbcTemplate;
+  companion object {
+    private const val CHANGE_PASSWORD_SQL = "ALTER USER %s IDENTIFIED BY \"%s\""
+    private const val CHANGE_PASSWORD_UNLOCK_SQL = "$CHANGE_PASSWORD_SQL ACCOUNT UNLOCK"
+    private const val UPDATE_STATUS = "ALTER USER %s ACCOUNT LOCK"
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
 
-    public NomisOracleAlterUserService(@Qualifier("dataSource") final DataSource dataSource,
-                                       final StaffUserAccountRepository staffUserAccountRepository,
-                                       final UserRepository userRepository) {
-        super(staffUserAccountRepository, userRepository);
-        jdbcTemplate = new JdbcTemplate(dataSource);
-    }
+  private val jdbcTemplate: JdbcTemplate = JdbcTemplate(dataSource)
 
-    @Transactional
-    @Override
-    public void changePassword(final String username, final String password) {
-        changePassword(username, password, CHANGE_PASSWORD_SQL);
-    }
+  @Transactional
+  override fun changePassword(username: String?, password: String?) {
+    changePassword(username, password, CHANGE_PASSWORD_SQL)
+  }
 
-    @Transactional
-    @Override
-    public void changePasswordWithUnlock(final String username, final String password) {
-        changePassword(username, password, CHANGE_PASSWORD_UNLOCK_SQL);
-    }
+  @Transactional
+  override fun changePasswordWithUnlock(username: String?, password: String?) {
+    changePassword(username, password, CHANGE_PASSWORD_UNLOCK_SQL)
+  }
 
-    @Override
-    public void lockAccount(final String username) {
-        jdbcTemplate.update(String.format(UPDATE_STATUS, username));
-    }
+  override fun lockAccount(username: String?) {
+    jdbcTemplate.update(String.format(UPDATE_STATUS, username))
+  }
 
-    private void changePassword(final String username, final String password, final String template) {
-        try {
-            jdbcTemplate.update(String.format(template, username, password));
-        } catch (final DataAccessException e) {
-            if (e.getCause() instanceof SQLException) {
-                final var sqlException = (SQLException) e.getCause();
-                if (sqlException.getErrorCode() == 28007) {
-                    // password cannot be reused
-                    log.info("Password cannot be reused exception caught: {}", sqlException.getMessage());
-                    throw new ReusedPasswordException();
-                }
-                if (sqlException.getErrorCode() == 28003) {
-                    // password validation failure - should be caught by the front end first
-                    log.error("Password passed controller validation but failed oracle validation: {}",
-                            sqlException.getMessage());
-                    throw new PasswordValidationFailureException();
-                }
-            }
-            log.error("Found error during changing password", e);
-            throw e;
+  private fun changePassword(username: String?, password: String?, template: String) {
+    try {
+      jdbcTemplate.update(String.format(template, username, password))
+    } catch (e: DataAccessException) {
+      if (e.cause is SQLException) {
+        val sqlException = e.cause as SQLException?
+        if (sqlException!!.errorCode == 28007) {
+          // password cannot be reused
+          log.info("Password cannot be reused exception caught: {}", sqlException.message)
+          throw ReusedPasswordException()
         }
+        if (sqlException.errorCode == 28003) {
+          // password validation failure - should be caught by the front end first
+          log.error(
+            "Password passed controller validation but failed oracle validation: {}",
+            sqlException.message
+          )
+          throw PasswordValidationFailureException()
+        }
+      }
+      log.error("Found error during changing password", e)
+      throw e
     }
+  }
 }

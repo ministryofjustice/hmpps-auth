@@ -1,9 +1,5 @@
-package uk.gov.justice.digital.hmpps.oauth2server.security;
+package uk.gov.justice.digital.hmpps.oauth2server.security
 
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.AuthenticationException
 
-public class PasswordValidationFailureException extends AuthenticationException {
-    public PasswordValidationFailureException() {
-        super("Password cannot be reused");
-    }
-}
+class PasswordValidationFailureException : AuthenticationException("Password cannot be reused")

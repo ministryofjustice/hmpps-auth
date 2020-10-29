@@ -13,47 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.gov.justice.digital.hmpps.oauth2server.security;
+package uk.gov.justice.digital.hmpps.oauth2server.security
 
-import org.springframework.security.crypto.codec.Utf8;
+import org.springframework.security.crypto.codec.Utf8
+import kotlin.experimental.xor
 
 /**
  * Utility for constant time comparison to prevent against timing attacks.
  *
  * @author Rob Winch
  */
-class PasswordEncoderUtils {
+internal object PasswordEncoderUtils {
+  /**
+   * Constant time comparison to prevent against timing attacks.
+   *
+   * @param expected String
+   * @param actual   String
+   * @return true if matches, false otherwise
+   */
+  fun equals(expected: String?, actual: String?): Boolean {
+    val expectedBytes = bytesUtf8(expected)
+    val actualBytes = bytesUtf8(actual)
+    val expectedLength = expectedBytes?.size ?: -1
+    val actualLength = actualBytes?.size ?: -1
+    var result = if (expectedLength == actualLength) 0 else 1
 
-    /**
-     * Constant time comparison to prevent against timing attacks.
-     *
-     * @param expected String
-     * @param actual   String
-     * @return true if matches, false otherwise
-     */
-    static boolean equals(final String expected, final String actual) {
-        final var expectedBytes = bytesUtf8(expected);
-        final var actualBytes = bytesUtf8(actual);
-        final var expectedLength = expectedBytes == null ? -1 : expectedBytes.length;
-        final var actualLength = actualBytes == null ? -1 : actualBytes.length;
-
-        var result = expectedLength == actualLength ? 0 : 1;
-        for (var i = 0; i < actualLength; i++) {
-            final var expectedByte = expectedLength <= 0 ? 0 : expectedBytes[i % expectedLength];
-            final var actualByte = actualBytes[i % actualLength];
-            result |= expectedByte ^ actualByte;
-        }
-        return result == 0;
+    for (i in 0 until actualLength) {
+      val expectedByte = if (expectedLength <= 0) 0 else expectedBytes!![i % expectedLength]
+      val actualByte = if (actualLength <= 0) 0 else actualBytes!![i % actualLength]
+      result = result or expectedByte.xor(actualByte).toInt()
     }
+    return result == 0
+  }
 
-    private static byte[] bytesUtf8(final String s) {
-        if (s == null) {
-            return null;
-        }
-
-        return Utf8.encode(s); // need to check if Utf8.encode() runs in constant time (probably not). This may leak length of string.
-    }
-
-    private PasswordEncoderUtils() {
-    }
+  private fun bytesUtf8(s: String?): ByteArray? {
+    return if (s == null) {
+      null
+    } else Utf8.encode(s)
+    // need to check if Utf8.encode() runs in constant time (probably not). This may leak length of string.
+  }
 }
