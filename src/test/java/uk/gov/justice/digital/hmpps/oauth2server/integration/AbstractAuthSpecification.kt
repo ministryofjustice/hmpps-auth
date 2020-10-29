@@ -40,12 +40,12 @@ open class AbstractAuthSpecification : FluentTest() {
 
 @Suppress("UNCHECKED_CAST")
 open class AuthPage<T>(
-  private val title: String,
-  private val heading: String,
-  private val headingStartsWith: Boolean = false,
+  protected val title: String,
+  protected val heading: String,
+  protected val headingStartsWith: Boolean = false,
 ) : FluentPage() {
   @FindBy(css = "#main-content h1")
-  private lateinit var headingText: FluentWebElement
+  protected lateinit var headingText: FluentWebElement
 
   @FindBy(css = "#error-detail")
   private lateinit var errorDetail: FluentWebElement

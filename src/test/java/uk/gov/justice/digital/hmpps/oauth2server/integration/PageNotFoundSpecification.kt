@@ -29,17 +29,25 @@ class PageNotFoundSpecification : AbstractAuthSpecification() {
   }
 }
 
-@PageUrl("/pagethatdoesntexist")
+@PageUrl("/error/404")
 class PageNotFoundPage : AuthPage<PageNotFoundPage>(
   "Error: HMPPS Digital Services - Page Not Found",
   "Page not found"
 ) {
-
   @FindBy(css = "#continue")
   private lateinit var continueButton: FluentWebElement
 
   fun accept() {
     Assertions.assertThat(continueButton.text()).isEqualTo("OK, continue")
     continueButton.click()
+  }
+
+  override fun isAt() {
+    Assertions.assertThat(window().title()).isEqualTo(title)
+    if (headingStartsWith) {
+      Assertions.assertThat(headingText.text()).startsWith(heading)
+    } else {
+      Assertions.assertThat(headingText.text()).isEqualTo(heading)
+    }
   }
 }
