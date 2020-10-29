@@ -169,7 +169,7 @@ class AuthUserService(
     emailAddressInput: String?,
     url: String,
     admin: String,
-    authorities: Collection<GrantedAuthority?>?,
+    authorities: Collection<GrantedAuthority>,
     emailType: EmailType,
   ): String {
     val username = StringUtils.upperCase(usernameInput)

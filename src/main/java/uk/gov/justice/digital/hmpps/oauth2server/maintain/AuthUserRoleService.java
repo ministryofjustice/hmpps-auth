@@ -94,7 +94,7 @@ public class AuthUserRoleService {
     }
 
     private Set<Authority> getAllAssignableRoles(final String username, final Collection<? extends GrantedAuthority> authorities) {
-        if (MaintainUserCheck.canMaintainAuthUsers(authorities)) {
+        if (MaintainUserCheck.Companion.canMaintainAuthUsers(authorities)) {
             // only allow oauth admins to see that role
             return getAllRoles().stream().filter(r -> !"OAUTH_ADMIN".equals(r.getRoleCode()) || canAddAuthClients(authorities)).collect(Collectors.toSet());
         }

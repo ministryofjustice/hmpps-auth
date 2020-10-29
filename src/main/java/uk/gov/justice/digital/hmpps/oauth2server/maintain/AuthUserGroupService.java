@@ -87,7 +87,7 @@ public class AuthUserGroupService {
     }
 
     public List<Group> getAssignableGroups(final String username, final Collection<? extends GrantedAuthority> authorities) {
-        return MaintainUserCheck.canMaintainAuthUsers(authorities) ?
+        return MaintainUserCheck.Companion.canMaintainAuthUsers(authorities) ?
                 List.copyOf(getAllGroups()) :
                 getAuthUserGroups(username)
                         .map(groups -> groups.stream().sorted(Comparator.comparing(Group::getGroupName)).collect(Collectors.toList()))
