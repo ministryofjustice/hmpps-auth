@@ -1,96 +1,93 @@
-package uk.gov.justice.digital.hmpps.oauth2server.resource;
+package uk.gov.justice.digital.hmpps.oauth2server.resource
 
-import com.microsoft.applicationinsights.TelemetryClient;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService;
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService.VerifyMobileException;
-import uk.gov.service.notify.NotificationClientException;
+import com.microsoft.applicationinsights.TelemetryClient
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Controller
+import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.servlet.ModelAndView
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService.VerifyMobileException
+import uk.gov.service.notify.NotificationClientException
+import java.security.Principal
+import java.util.Optional
 
-import java.security.Principal;
-import java.util.Map;
-
-@Slf4j
 @Controller
 @Validated
-public class VerifyMobileController {
-    private final VerifyMobileService verifyMobileService;
-    private final TelemetryClient telemetryClient;
-    private final boolean smokeTestEnabled;
+class VerifyMobileController(
+  private val verifyMobileService: VerifyMobileService,
+  private val telemetryClient: TelemetryClient,
+  @param:Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean
+) {
 
-    public VerifyMobileController(final VerifyMobileService verifyMobileService,
-                                  final TelemetryClient telemetryClient,
-                                  final UserService userService,
-                                  @Value("${application.smoketest.enabled}") final boolean smokeTestEnabled) {
-        this.verifyMobileService = verifyMobileService;
-        this.telemetryClient = telemetryClient;
-        this.smokeTestEnabled = smokeTestEnabled;
+  companion object {
+    private val log = LoggerFactory.getLogger(VerifyMobileController::class.java)
+  }
+  @GetMapping("/verify-mobile")
+  fun verifyMobile(): String {
+    return "verifyMobileSent"
+  }
+
+  @GetMapping("/verify-mobile-already")
+  fun verifyMobileAlready(): String {
+    return "verifyMobileAlready"
+  }
+
+  @PostMapping("/verify-mobile")
+  @Throws(NotificationClientException::class)
+  fun verifyMobileConfirm(@RequestParam code: String?): ModelAndView {
+    val errorOptional: Optional<Map<String, String>> = verifyMobileService.confirmMobile(
+      code!!
+    )
+    return errorOptional.map { error: Map<String, String> ->
+      log.info("Failed to verify mobile phone number due to: {}", error)
+      val modelAndView = ModelAndView("verifyMobileSent", "error", error["error"])
+      if (smokeTestEnabled) {
+        modelAndView.addObject("verifyCode", error["verifyCode"])
+      }
+      modelAndView
+    }.orElse(ModelAndView("verifyMobileSuccess"))
+  }
+
+  @GetMapping("/mobile-resend")
+  fun mobileResendRequest(principal: Principal): String {
+    val mobileVerified = verifyMobileService.mobileVerified(principal.name)
+    return if (mobileVerified) "redirect:/verify-mobile-already" else "verifyMobileResend"
+  }
+
+  @PostMapping("/verify-mobile-resend")
+  fun mobileResend(principal: Principal): ModelAndView {
+    val username = principal.name
+    return try {
+      val verifyCode = verifyMobileService.resendVerificationCode(username)
+      redirectToVerifyMobileWithVerifyCode(verifyCode.orElseThrow())
+    } catch (e: VerifyMobileException) {
+      log.info("Validation failed for mobile phone number due to {}", e.reason)
+      telemetryClient.trackEvent(
+        "VerifyMobileRequestFailure",
+        java.util.Map.of("username", username, "reason", e.reason),
+        null
+      )
+      createChangeOrVerifyMobileError(e.reason)
+    } catch (e: NotificationClientException) {
+      log.error("Failed to send sms due to", e)
+      createChangeOrVerifyMobileError("other")
     }
+  }
 
-    @GetMapping("/verify-mobile")
-    public String verifyMobile() {
-        return "verifyMobileSent";
+  private fun createChangeOrVerifyMobileError(reason: String): ModelAndView {
+    return ModelAndView("redirect:/change-mobile")
+      .addObject("error", reason)
+  }
+
+  private fun redirectToVerifyMobileWithVerifyCode(verifyCode: String): ModelAndView {
+    val modelAndView = ModelAndView("redirect:/verify-mobile")
+    if (smokeTestEnabled) {
+      modelAndView.addObject("verifyCode", verifyCode)
     }
-
-    @GetMapping("/verify-mobile-already")
-    public String verifyMobileAlready() {
-        return "verifyMobileAlready";
-    }
-
-    @PostMapping("/verify-mobile")
-    public ModelAndView verifyMobileConfirm(@RequestParam final String code) throws NotificationClientException {
-        final var errorOptional = verifyMobileService.confirmMobile(code);
-        return errorOptional.map(error -> {
-            log.info("Failed to verify mobile phone number due to: {}", error);
-            final var modelAndView = new ModelAndView("verifyMobileSent", "error", error.get("error"));
-            if (smokeTestEnabled) {
-                modelAndView.addObject("verifyCode", error.get("verifyCode"));
-            }
-            return modelAndView;
-        }).orElse(new ModelAndView("verifyMobileSuccess"));
-    }
-
-    @GetMapping("/mobile-resend")
-    public String mobileResendRequest(final Principal principal) {
-        final var mobileVerified = verifyMobileService.mobileVerified(principal.getName());
-        return mobileVerified ? "redirect:/verify-mobile-already" : "verifyMobileResend";
-    }
-
-    @PostMapping("/verify-mobile-resend")
-    public ModelAndView mobileResend(final Principal principal) {
-        final var username = principal.getName();
-        try {
-            final var verifyCode = verifyMobileService.resendVerificationCode(username);
-
-            return redirectToVerifyMobileWithVerifyCode(verifyCode.orElseThrow());
-
-        } catch (final VerifyMobileException e) {
-            log.info("Validation failed for mobile phone number due to {}", e.getReason());
-            telemetryClient.trackEvent("VerifyMobileRequestFailure", Map.of("username", username, "reason", e.getReason()), null);
-            return createChangeOrVerifyMobileError(e.getReason());
-        } catch (final NotificationClientException e) {
-            log.error("Failed to send sms due to", e);
-            return createChangeOrVerifyMobileError("other");
-        }
-    }
-
-    private ModelAndView createChangeOrVerifyMobileError(final String reason) {
-        return new ModelAndView("redirect:/change-mobile")
-                .addObject("error", reason);
-    }
-
-    private ModelAndView redirectToVerifyMobileWithVerifyCode(final String verifyCode) {
-        final var modelAndView = new ModelAndView("redirect:/verify-mobile");
-        if (smokeTestEnabled) {
-            modelAndView.addObject("verifyCode", verifyCode);
-        }
-        return modelAndView;
-    }
+    return modelAndView
+  }
 }
