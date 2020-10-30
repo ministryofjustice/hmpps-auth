@@ -128,7 +128,7 @@ class VerifyEmailController(
   }
 
   @GetMapping("/verify-email-already")
-  fun EmailAlreadyVerified(): String {
+  fun emailAlreadyVerified(): String {
     return "verifyEmailAlready"
   }
 
