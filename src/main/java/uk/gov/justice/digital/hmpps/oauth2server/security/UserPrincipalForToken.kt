@@ -1,18 +1,6 @@
-package uk.gov.justice.digital.hmpps.oauth2server.security;
+package uk.gov.justice.digital.hmpps.oauth2server.security
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 
-public class UserPrincipalForToken {
-
-    private final String username;
-
-    @JsonCreator
-    public UserPrincipalForToken(@JsonProperty("username") final String username) {
-        this.username = username;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-}
+class UserPrincipalForToken @JsonCreator constructor(@param:JsonProperty("username") val username: String)

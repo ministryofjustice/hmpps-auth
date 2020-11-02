@@ -1,9 +1,5 @@
-package uk.gov.justice.digital.hmpps.oauth2server.security;
+package uk.gov.justice.digital.hmpps.oauth2server.security
 
-import org.springframework.security.authentication.AccountStatusException;
+import org.springframework.security.authentication.AccountStatusException
 
-class MissingCredentialsException extends AccountStatusException {
-    MissingCredentialsException() {
-        super("No credentials provided");
-    }
-}
+internal class MissingCredentialsException : AccountStatusException("No credentials provided")
