@@ -1,146 +1,130 @@
-package uk.gov.justice.digital.hmpps.oauth2server.maintain;
+package uk.gov.justice.digital.hmpps.oauth2server.maintain
 
-import com.google.common.collect.Sets;
-import com.microsoft.applicationinsights.TelemetryClient;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.RoleRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck;
-
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.Sets
+import com.microsoft.applicationinsights.TelemetryClient
+import org.apache.commons.lang3.StringUtils
+import org.slf4j.LoggerFactory
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.RoleRepository
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Companion.canMaintainAuthUsers
+import java.util.function.Consumer
 
 @Service
-@Slf4j
+
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
-@AllArgsConstructor
-public class AuthUserRoleService {
 
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final TelemetryClient telemetryClient;
-    private final MaintainUserCheck maintainUserCheck;
+class AuthUserRoleService(
+  private val userRepository: UserRepository,
+  private val roleRepository: RoleRepository,
+  private val telemetryClient: TelemetryClient,
+  private val maintainUserCheck: MaintainUserCheck
+) {
 
-    @Transactional(transactionManager = "authTransactionManager")
-    public void addRoles(final String username, final List<String> roleCodes, final String loggedInUser, final Collection<? extends GrantedAuthority> authorities) throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
-        // already checked that user exists
-        final var user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
-        maintainUserCheck.ensureUserLoggedInUserRelationship(loggedInUser, authorities, user);
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
 
-        final var formattedRoles = roleCodes.stream().map(this::formatRole).collect(Collectors.toList());
-        final var allAssignableRoles = getAllAssignableRoles(username, authorities);
+    private fun canAddAuthClients(authorities: Collection<GrantedAuthority>) = authorities.map { it.authority }
+      .any { "ROLE_OAUTH_ADMIN" == it }
+  }
 
-        for (final var roleCode : formattedRoles) {
-            // check that role exists
-            final var role = roleRepository.findByRoleCode(roleCode).orElseThrow(() -> new AuthUserRoleException("role", "role.notfound"));
-
-            if (user.getAuthorities().contains(role)) {
-                throw new AuthUserRoleExistsException();
-            }
-
-            if (!allAssignableRoles.contains(role)) {
-                throw new AuthUserRoleException("role", "invalid");
-            }
-            user.getAuthorities().add(role);
-        }
-        // now that roles have all been added, then audit the role additions
-        formattedRoles.forEach((roleCode) -> {
-            telemetryClient.trackEvent("AuthUserRoleAddSuccess", Map.of("username", username, "role", roleCode, "admin", loggedInUser), null);
-            log.info("Adding role {} to user {}", roleCode, username);
-        });
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(
+    AuthUserRoleException::class,
+    AuthUserGroupRelationshipException::class
+  )
+  fun addRoles(
+    username: String,
+    roleCodes: List<String>,
+    loggedInUser: String,
+    authorities: Collection<GrantedAuthority>
+  ) {
+    // already checked that user exists
+    val user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow()
+    maintainUserCheck.ensureUserLoggedInUserRelationship(loggedInUser, authorities, user)
+    val formattedRoles = roleCodes.map { formatRole(it) }
+    val allAssignableRoles = getAllAssignableRoles(username, authorities)
+    for (roleCode in formattedRoles) {
+      // check that role exists
+      val role =
+        roleRepository.findByRoleCode(roleCode).orElseThrow { AuthUserRoleException("role", "role.notfound") }
+      if (user.authorities.contains(role)) {
+        throw AuthUserRoleExistsException()
+      }
+      if (!allAssignableRoles.contains(role)) {
+        throw AuthUserRoleException("role", "invalid")
+      }
+      user.authorities.add(role)
     }
+    // now that roles have all been added, then audit the role additions
+    formattedRoles.forEach(
+      Consumer { roleCode: String ->
+        telemetryClient.trackEvent(
+          "AuthUserRoleAddSuccess",
+          mapOf("username" to username, "role" to roleCode, "admin" to loggedInUser),
+          null
+        )
+        log.info("Adding role {} to user {}", roleCode, username)
+      }
+    )
+  }
 
-    @Transactional(transactionManager = "authTransactionManager")
-    public void removeRole(final String username, final String roleCode, final String loggedInUser, final Collection<? extends GrantedAuthority> authorities) throws AuthUserRoleException, MaintainUserCheck.AuthUserGroupRelationshipException {
-        // already checked that user exists
-        final var user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow();
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(
+    AuthUserRoleException::class,
+    AuthUserGroupRelationshipException::class
+  )
+  fun removeRole(username: String, roleCode: String, loggedInUser: String, authorities: Collection<GrantedAuthority>) {
+    // already checked that user exists
+    val user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow()
 
-        // check that the logged in user has permission to modify user
-        maintainUserCheck.ensureUserLoggedInUserRelationship(loggedInUser, authorities, user);
-
-        final var roleFormatted = formatRole(roleCode);
-        final var role = roleRepository.findByRoleCode(roleFormatted).orElseThrow(() -> new AuthUserRoleException("role", "role.notfound"));
-
-        if (!user.getAuthorities().contains(role)) {
-            throw new AuthUserRoleException("role", "role.missing");
-        }
-
-        if (!getAllAssignableRoles(username, authorities).contains(role)) {
-            throw new AuthUserRoleException("role", "invalid");
-        }
-
-        log.info("Removing role {} from user {}", roleFormatted, username);
-        user.getAuthorities().removeIf(role::equals);
-        telemetryClient.trackEvent("AuthUserRoleRemoveSuccess", Map.of("username", username, "role", roleFormatted, "admin", loggedInUser), null);
+    // check that the logged in user has permission to modify user
+    maintainUserCheck.ensureUserLoggedInUserRelationship(loggedInUser, authorities, user)
+    val roleFormatted = formatRole(roleCode)
+    val role =
+      roleRepository.findByRoleCode(roleFormatted).orElseThrow { AuthUserRoleException("role", "role.notfound") }
+    if (!user.authorities.contains(role)) {
+      throw AuthUserRoleException("role", "role.missing")
     }
-
-    private String formatRole(final String role) {
-        return Authority.removeRolePrefixIfNecessary(StringUtils.upperCase(StringUtils.trim(role)));
+    if (!getAllAssignableRoles(username, authorities).contains(role)) {
+      throw AuthUserRoleException("role", "invalid")
     }
+    log.info("Removing role {} from user {}", roleFormatted, username)
+    user.authorities.removeIf { role == it }
+    telemetryClient.trackEvent(
+      "AuthUserRoleRemoveSuccess",
+      mapOf("username" to username, "role" to roleFormatted, "admin" to loggedInUser),
+      null
+    )
+  }
 
-    public List<Authority> getAllRoles() {
-        return roleRepository.findAllByOrderByRoleName();
-    }
+  private fun formatRole(role: String) =
+    Authority.removeRolePrefixIfNecessary(StringUtils.upperCase(StringUtils.trim(role)))
 
-    private Set<Authority> getAllAssignableRoles(final String username, final Collection<? extends GrantedAuthority> authorities) {
-        if (MaintainUserCheck.Companion.canMaintainAuthUsers(authorities)) {
-            // only allow oauth admins to see that role
-            return getAllRoles().stream().filter(r -> !"OAUTH_ADMIN".equals(r.getRoleCode()) || canAddAuthClients(authorities)).collect(Collectors.toSet());
-        }
-        // otherwise they can assign all roles that can be assigned to any of their groups
-        return roleRepository.findByGroupAssignableRolesForUsername(username);
-    }
+  val allRoles: List<Authority>
+    get() = roleRepository.findAllByOrderByRoleName()
 
-    public List<Authority> getAssignableRoles(final String username, final Collection<? extends GrantedAuthority> authorities) {
-        final var user = userRepository.findByUsernameAndMasterIsTrue(username.toUpperCase()).orElseThrow();
-        final var userRoles = user.getAuthorities();
+  private fun getAllAssignableRoles(username: String, authorities: Collection<GrantedAuthority>) =
+    if (canMaintainAuthUsers(authorities)) {
+      // only allow oauth admins to see that role
+      allRoles.filter { r: Authority -> "OAUTH_ADMIN" != r.roleCode || canAddAuthClients(authorities) }.toSet()
+    } else roleRepository.findByGroupAssignableRolesForUsername(username)
+  // otherwise they can assign all roles that can be assigned to any of their groups
 
-        final var allAssignableRoles = getAllAssignableRoles(username, authorities);
+  fun getAssignableRoles(username: String, authorities: Collection<GrantedAuthority>): List<Authority> {
+    val user = userRepository.findByUsernameAndMasterIsTrue(username.toUpperCase()).orElseThrow()
+    val userRoles = user.authorities
+    val allAssignableRoles = getAllAssignableRoles(username, authorities)
+    return Sets.difference(allAssignableRoles, userRoles)
+      .sortedBy { it.roleName }
+  }
 
-        return Sets.difference(allAssignableRoles, userRoles)
-                .stream()
-                .sorted(Comparator.comparing(Authority::getRoleName))
-                .collect(Collectors.toList());
-    }
-
-    public static class AuthUserRoleExistsException extends AuthUserRoleException {
-        public AuthUserRoleExistsException() {
-            super("role", "role.exists");
-        }
-    }
-
-    private static boolean canAddAuthClients(final Collection<? extends GrantedAuthority> authorities) {
-        return authorities.stream().map(GrantedAuthority::getAuthority).anyMatch("ROLE_OAUTH_ADMIN"::equals);
-    }
-
-    public static class AuthUserRoleException extends Exception {
-        private final String errorCode;
-        private final String field;
-
-        public AuthUserRoleException(final String field, final String errorCode) {
-            super(String.format("Modify role failed for field %s with reason: %s", field, errorCode));
-
-            this.field = field;
-            this.errorCode = errorCode;
-        }
-
-        public String getErrorCode() {
-            return this.errorCode;
-        }
-
-        public String getField() {
-            return this.field;
-        }
-    }
+  class AuthUserRoleExistsException : AuthUserRoleException("role", "role.exists")
+  open class AuthUserRoleException(val field: String, val errorCode: String) :
+    Exception("Modify role failed for field $field with reason: $errorCode")
 }
