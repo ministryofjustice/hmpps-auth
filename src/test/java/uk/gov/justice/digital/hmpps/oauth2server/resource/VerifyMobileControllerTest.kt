@@ -13,8 +13,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyMobileService.VerifyMobileException
 import uk.gov.service.notify.NotificationClientException
@@ -23,9 +21,8 @@ import java.util.Optional
 class VerifyMobileControllerTest {
   private val verifyMobileService: VerifyMobileService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val userService: UserService = mock()
-  private val controller = VerifyMobileController(verifyMobileService, telemetryClient, userService, false)
-  private val controllerSmokeEnabled = VerifyMobileController(verifyMobileService, telemetryClient, userService, true)
+  private val controller = VerifyMobileController(verifyMobileService, telemetryClient, false)
+  private val controllerSmokeEnabled = VerifyMobileController(verifyMobileService, telemetryClient, true)
   private val principal = UsernamePasswordAuthenticationToken("user", "pass")
 
   @Nested
@@ -132,7 +129,6 @@ class VerifyMobileControllerTest {
   inner class MobileResend {
     @Test
     fun mobileResend_sendCode() {
-      whenever(userService.getUser(anyString())).thenReturn(User.builder().mobile("077009000000").build())
       whenever(verifyMobileService.resendVerificationCode(anyString())).thenReturn(Optional.of("123456"))
       val modelAndView = controller.mobileResend(principal)
       assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile")
@@ -141,7 +137,6 @@ class VerifyMobileControllerTest {
 
     @Test
     fun `mobileResend send code smoke enabled`() {
-      whenever(userService.getUser(anyString())).thenReturn(User.builder().mobile("077009000000").build())
       whenever(verifyMobileService.resendVerificationCode(anyString())).thenReturn(Optional.of("123456"))
       val modelAndView = controllerSmokeEnabled.mobileResend(principal)
       assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile")
@@ -150,7 +145,6 @@ class VerifyMobileControllerTest {
 
     @Test
     fun mobileResend_verifyMobileException() {
-      whenever(userService.getUser(anyString())).thenReturn(User.builder().mobile("077009000000").build())
       whenever(verifyMobileService.resendVerificationCode(anyString())).thenThrow(VerifyMobileException("reason"))
       val modelAndView = controller.mobileResend(principal)
       assertThat(modelAndView.viewName).isEqualTo("redirect:/change-mobile")
@@ -166,7 +160,6 @@ class VerifyMobileControllerTest {
 
     @Test
     fun mobileResend_notificationClientException() {
-      whenever(userService.getUser(anyString())).thenReturn(User.builder().mobile("077009000000").build())
       whenever(verifyMobileService.resendVerificationCode(anyString())).thenThrow(NotificationClientException("something went wrong"))
       val modelAndView = controller.mobileResend(principal)
       assertThat(modelAndView.viewName).isEqualTo("redirect:/change-mobile")

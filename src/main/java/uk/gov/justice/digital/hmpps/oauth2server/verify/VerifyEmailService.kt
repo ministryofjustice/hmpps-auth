@@ -94,11 +94,11 @@ class VerifyEmailService(
       notificationClient.sendEmail(notifyTemplateId, email, parameters, null)
       telemetryClient.trackEvent("VerifyEmailRequestSuccess", java.util.Map.of("username", username), null)
     } catch (e: NotificationClientException) {
-      val reason = (if (e.cause != null) e.cause else e)!!.javaClass.simpleName
+      val reason = (if (e.cause != null) e.cause else e)?.javaClass?.simpleName
       log.warn("Failed to send email verification to notify for user {}", username, e)
       telemetryClient.trackEvent(
         "VerifyEmailRequestFailure",
-        java.util.Map.of("username", username, "reason", reason),
+        mapOf("username" to username, "reason" to reason),
         null
       )
       if (e.httpResult >= 500) {
