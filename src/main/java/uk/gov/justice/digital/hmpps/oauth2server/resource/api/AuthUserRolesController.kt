@@ -5,8 +5,6 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import lombok.AllArgsConstructor
-import lombok.extern.slf4j.Slf4j
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -27,10 +25,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import javax.validation.constraints.NotEmpty
 
-@Slf4j
 @RestController
 @Api(tags = ["/api/authuser/{username}/roles"])
-@AllArgsConstructor
 class AuthUserRolesController(
   private val authUserService: AuthUserService,
   private val authUserRoleService: AuthUserRoleService,
@@ -54,7 +50,7 @@ class AuthUserRolesController(
     @ApiParam(
       value = "The username of the user.",
       required = true
-    ) @PathVariable username: String?,
+    ) @PathVariable username: String,
   ): Set<AuthUserRole> {
     val user = authUserService.getAuthUserByUsername(username)
       .orElseThrow { UsernameNotFoundException("Account for username $username not found") }
@@ -76,7 +72,7 @@ class AuthUserRolesController(
     ]
   )
   fun assignableRoles(
-    @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String?,
+    @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
     @ApiIgnore authentication: Authentication,
   ): List<AuthUserRole> {
     val roles = authUserRoleService.getAssignableRoles(username, authentication.authorities)
@@ -134,8 +130,8 @@ class AuthUserRolesController(
     ]
   )
   fun removeRole(
-    @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String?,
-    @ApiParam(value = "The role to be delete from the user.", required = true) @PathVariable role: String?,
+    @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
+    @ApiParam(value = "The role to be delete from the user.", required = true) @PathVariable role: String,
     @ApiIgnore authentication: Authentication,
   ) {
     val user = authUserService.getAuthUserByUsername(username)
