@@ -30,7 +30,7 @@ class LoginControllerTest {
 
   @Test
   fun loginPage_NoError() {
-    val modelAndView = controller.loginPage(null, null, null)
+    val modelAndView = controller.loginPage(null, request, response)
     assertThat(modelAndView.viewName).isEqualTo("login")
     assertThat(modelAndView.status).isNull()
     assertThat(modelAndView.modelMap["oauth2Clients"]).asList().isEmpty()
@@ -38,7 +38,7 @@ class LoginControllerTest {
 
   @Test
   fun loginPage_CurrentError() {
-    val modelAndView = controller.loginPage("bad", null, null)
+    val modelAndView = controller.loginPage("bad", request, response)
     assertThat(modelAndView.viewName).isEqualTo("login")
     assertThat(modelAndView.status).isEqualTo(HttpStatus.BAD_REQUEST)
     assertThat(modelAndView.modelMap["oauth2Clients"]).asList().isEmpty()
@@ -85,7 +85,7 @@ class LoginControllerTest {
     val clientRegistrationRepository = Optional.of(InMemoryClientRegistrationRepository(clients))
     val controller = LoginController(clientRegistrationRepository, cookieRequestCacheMock, clientDetailsService)
     val returnRequest = SimpleSavedRequest("test.com/oauth/authorize?client_id=test_id")
-    val clientDetailsMock: BaseClientDetails = BaseClientDetails()
+    val clientDetailsMock = BaseClientDetails()
 
     clientDetailsMock.addAdditionalInformation("skipToAzureField", true)
 
