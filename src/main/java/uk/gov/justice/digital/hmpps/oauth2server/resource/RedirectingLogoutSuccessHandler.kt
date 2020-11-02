@@ -12,7 +12,6 @@ import org.springframework.security.oauth2.provider.endpoint.RedirectResolver
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler
 import org.springframework.stereotype.Component
 import org.springframework.util.CollectionUtils
-import java.io.IOException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -37,7 +36,6 @@ class RedirectingLogoutSuccessHandler(
     private val log = LoggerFactory.getLogger(RedirectingLogoutSuccessHandler::class.java)
   }
 
-  @Throws(IOException::class)
   override fun onLogoutSuccess(
     request: HttpServletRequest,
     response: HttpServletResponse,
@@ -64,7 +62,6 @@ class RedirectingLogoutSuccessHandler(
     response.sendRedirect(servletContextPath + "/login?logout" + if (StringUtils.isNotBlank(error)) "&error=$error" else "")
   }
 
-  @Throws(IOException::class)
   private fun responseRedirectedOnValidRedirect(
     response: HttpServletResponse,
     redirect: String,

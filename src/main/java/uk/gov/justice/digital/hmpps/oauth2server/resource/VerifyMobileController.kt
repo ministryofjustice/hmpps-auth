@@ -37,7 +37,6 @@ class VerifyMobileController(
   }
 
   @PostMapping("/verify-mobile")
-  @Throws(NotificationClientException::class)
   fun verifyMobileConfirm(@RequestParam code: String?): ModelAndView {
     val errorOptional: Optional<Map<String, String>> = verifyMobileService.confirmMobile(
       code!!

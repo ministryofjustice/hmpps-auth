@@ -19,9 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
-import java.io.IOException
 import java.security.Principal
-import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -41,7 +39,7 @@ class VerifyEmailController(
   }
 
   @GetMapping("/verify-email")
-  @Throws(IOException::class, ServletException::class)
+
   fun verifyEmailRequest(
     principal: Principal,
     request: HttpServletRequest,
@@ -75,20 +73,17 @@ class VerifyEmailController(
   }
 
   @GetMapping("/verify-email-continue")
-  @Throws(ServletException::class, IOException::class)
   fun verifyEmailContinue(request: HttpServletRequest, response: HttpServletResponse) {
     proceedToOriginalUrl(request, response)
   }
 
   @GetMapping("/verify-email-skip")
-  @Throws(ServletException::class, IOException::class)
   fun verifyEmailSkip(request: HttpServletRequest, response: HttpServletResponse) {
     telemetryClient.trackEvent("VerifyEmailRequestSkip", emptyMap(), null)
     proceedToOriginalUrl(request, response)
   }
 
   @PostMapping("/verify-email")
-  @Throws(IOException::class, ServletException::class)
   fun verifyEmail(
     @RequestParam(required = false) candidate: String,
     @RequestParam email: String?,
@@ -179,7 +174,6 @@ class VerifyEmailController(
     return modelAndView
   }
 
-  @Throws(NotificationClientException::class, VerifyEmailException::class)
   private fun requestVerificationForUser(
     username: String,
     emailInput: String,
@@ -212,7 +206,6 @@ class VerifyEmailController(
     }
   }
 
-  @Throws(ServletException::class, IOException::class)
   private fun proceedToOriginalUrl(request: HttpServletRequest, response: HttpServletResponse) {
     jwtAuthenticationSuccessHandler.proceed(request, response, SecurityContextHolder.getContext().authentication)
   }
@@ -233,7 +226,6 @@ class VerifyEmailController(
   }
 
   @GetMapping("/verify-email-expired")
-  @Throws(VerifyEmailException::class, NotificationClientException::class)
   fun verifyEmailLinkExpired(@RequestParam token: String?, request: HttpServletRequest): ModelAndView {
     val user = tokenService.getUserFromToken(UserToken.TokenType.VERIFIED, token!!)
     val originalUrl = request.requestURL.toString()
@@ -261,7 +253,6 @@ class VerifyEmailController(
   }
 
   @GetMapping("/verify-email-secondary-expired")
-  @Throws(VerifyEmailException::class, NotificationClientException::class)
   fun verifySecondaryEmailLinkExpired(@RequestParam token: String?, request: HttpServletRequest): ModelAndView {
     val user = tokenService.getUserFromToken(UserToken.TokenType.SECONDARY, token!!)
     val originalUrl = request.requestURL.toString()

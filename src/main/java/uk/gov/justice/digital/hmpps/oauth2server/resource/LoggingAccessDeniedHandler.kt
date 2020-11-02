@@ -5,7 +5,6 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.stereotype.Component
-import java.io.IOException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -16,7 +15,6 @@ class LoggingAccessDeniedHandler : AccessDeniedHandler {
     private val log = LoggerFactory.getLogger(LoggingAccessDeniedHandler::class.java)
   }
 
-  @Throws(IOException::class)
   override fun handle(
     request: HttpServletRequest,
     response: HttpServletResponse,
