@@ -82,12 +82,12 @@ class AuthUserGroupsController(
   )
   fun addGroup(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
-    @ApiParam(value = "The group to be added to the user.", required = true) @PathVariable group: String?,
+    @ApiParam(value = "The group to be added to the user.", required = true) @PathVariable group: String,
     @ApiIgnore principal: Principal,
   ): ResponseEntity<Any> {
     val userOptional = authUserService.getAuthUserByUsername(username)
-    return userOptional.map { obj: User -> obj.username }
-      .map { usernameInDb: String? ->
+    return userOptional.map { it.username }
+      .map { usernameInDb: String ->
         try {
           authUserGroupService.addGroup(usernameInDb, group, principal.name)
           log.info("Add group succeeded for user {} and group {}", usernameInDb, group)
@@ -145,7 +145,7 @@ class AuthUserGroupsController(
   )
   fun removeGroup(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
-    @ApiParam(value = "The group to be delete from the user.", required = true) @PathVariable group: String?,
+    @ApiParam(value = "The group to be delete from the user.", required = true) @PathVariable group: String,
     @ApiIgnore principal: Principal,
   ): ResponseEntity<Any> {
     val userOptional = authUserService.getAuthUserByUsername(username)
