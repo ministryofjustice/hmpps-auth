@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 
-class LoginSpecification : AbstractAuthSpecification() {
+class LoginSpecification : AbstractDeliusAuthSpecification() {
   @Page
   internal lateinit var homePage: HomePage
 
@@ -259,6 +259,12 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
 
   fun loginExpiredUser(username: String, password: String = "password123456"): ChangeExpiredPasswordPage =
     errorLoginWith(username, password, ChangeExpiredPasswordPage::class.java)
+
+  fun loginExistingPasswordChangeEmail(username: String, password: String = "password123456"): PasswordPromptForEmailPage =
+    errorLoginWith(username, password, PasswordPromptForEmailPage::class.java)
+
+  fun loginPageNotFound(username: String, password: String = "password123456"): PageNotFoundPage =
+    errorLoginWith(username, password, PageNotFoundPage::class.java)
 
   private fun <T : AuthPage<T>> loginWith(username: String, password: String = "password123456", t: Class<T>): T {
     submitLogin(username, password)

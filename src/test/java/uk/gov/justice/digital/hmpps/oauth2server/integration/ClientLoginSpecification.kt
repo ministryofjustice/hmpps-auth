@@ -34,7 +34,7 @@ import java.util.Base64
  * default the dev profile doesn't have it enabled so that other clients can use this project without issues.
  */
 @ExtendWith(RemoteClientExtension::class)
-class ClientLoginSpecification : AbstractAuthSpecification() {
+class ClientLoginSpecification : AbstractDeliusAuthSpecification() {
   private val clientBaseUrl = "http://localhost:8081/login"
   private val webTestClient = WebTestClient.bindToServer().baseUrl(baseUrl).build()
 

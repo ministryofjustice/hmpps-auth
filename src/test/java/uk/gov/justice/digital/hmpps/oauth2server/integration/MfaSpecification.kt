@@ -14,7 +14,7 @@ import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 
-class MfaSpecification : AbstractAuthSpecification() {
+class MfaSpecification : AbstractDeliusAuthSpecification() {
 
   @Page
   private lateinit var mfaEmailPage: MfaEmailPage

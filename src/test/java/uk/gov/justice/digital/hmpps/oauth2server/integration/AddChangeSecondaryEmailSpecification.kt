@@ -7,7 +7,7 @@ import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
 
-class AddChangeSecondaryEmailSpecification : AbstractAuthSpecification() {
+class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
 
   @Page
   private lateinit var accountDetailsPage: AccountDetailsPage

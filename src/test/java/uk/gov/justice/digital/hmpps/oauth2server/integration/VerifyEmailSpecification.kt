@@ -179,6 +179,20 @@ open class VerifyEmailConfirmPage : AuthPage<VerifyEmailConfirmPage>(
 )
 
 @PageUrl("/verify-email-already")
+open class EmailAlreadyVerifiedPage : AuthPage<EmailAlreadyVerifiedPage>(
+  "HMPPS Digital Services - Verify Email Confirmation",
+  "Email already verified"
+) {
+  @FindBy(css = "#continue")
+  private lateinit var continueButton: FluentWebElement
+
+  fun continueToAccountDetailsPage() {
+    assertThat(continueButton.text()).isEqualTo("OK, continue")
+    continueButton.click()
+  }
+}
+
+@PageUrl("/verify-email-already")
 open class SecondaryEmailAlreadyVerifiedPage : AuthPage<SecondaryEmailAlreadyVerifiedPage>(
   "HMPPS Digital Services - Verify Backup Email Confirmation",
   "Backup email already verified"
