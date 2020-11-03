@@ -24,7 +24,7 @@ data class Service(
   val url: String,
 
   @Column(nullable = false)
-  val enabled: Boolean = true,
+  val enabled: Boolean = false,
 
   @Column
   val email: String? = null,

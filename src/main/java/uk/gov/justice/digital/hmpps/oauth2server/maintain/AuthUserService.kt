@@ -94,7 +94,7 @@ class AuthUserService(
   }
 
   fun findAuthUsers(name: String?, roleCode: String?, groupCode: String?, pageable: Pageable): Page<User> {
-    val userFilter = UserFilter.builder().name(name).roleCode(roleCode).groupCode(groupCode).build()
+    val userFilter = UserFilter(name = name, roleCode = roleCode, groupCode = groupCode)
     return userRepository.findAll(userFilter, pageable)
   }
 
