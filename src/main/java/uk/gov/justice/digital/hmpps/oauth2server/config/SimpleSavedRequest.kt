@@ -1,28 +1,62 @@
-package uk.gov.justice.digital.hmpps.oauth2server.config
+package uk.gov.justice.digital.hmpps.oauth2server.config;
 
-import org.springframework.security.web.savedrequest.SavedRequest
-import java.util.Locale
-import javax.servlet.http.Cookie
+import org.springframework.security.web.savedrequest.SavedRequest;
+
+import javax.servlet.http.Cookie;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Simple implementation of saved request that just uses the redirect url.
  * Taken from https://github.com/AusDTO/spring-security-stateless/blob/master/src/main/java/au/gov/dto/springframework/security/web/savedrequest/SimpleSavedRequest.java
  */
-class SimpleSavedRequest internal constructor(private val redirectUrl: String) : SavedRequest {
+public class SimpleSavedRequest implements SavedRequest {
+    private final String redirectUrl;
 
-  override fun getRedirectUrl(): String = redirectUrl
+    SimpleSavedRequest(final String redirectUrl) {
+        this.redirectUrl = redirectUrl;
+    }
 
-  override fun getCookies(): List<Cookie> = emptyList()
+    @Override
+    public String getRedirectUrl() {
+        return redirectUrl;
+    }
 
-  override fun getMethod(): String = "GET"
+    @Override
+    public List<Cookie> getCookies() {
+        return Collections.emptyList();
+    }
 
-  override fun getHeaderValues(name: String): List<String> = emptyList()
+    @Override
+    public String getMethod() {
+        return "GET";
+    }
 
-  override fun getHeaderNames(): Collection<String> = emptyList()
+    @Override
+    public List<String> getHeaderValues(final String name) {
+        return Collections.emptyList();
+    }
 
-  override fun getLocales(): List<Locale> = emptyList()
+    @Override
+    public Collection<String> getHeaderNames() {
+        return Collections.emptyList();
+    }
 
-  override fun getParameterValues(name: String): Array<String> = emptyArray()
+    @Override
+    public List<Locale> getLocales() {
+        return Collections.emptyList();
+    }
 
-  override fun getParameterMap(): Map<String, Array<String>> = emptyMap()
+    @Override
+    public String[] getParameterValues(final String name) {
+        return new String[0];
+    }
+
+    @Override
+    public Map<String, String[]> getParameterMap() {
+        return Collections.emptyMap();
+    }
 }
