@@ -74,7 +74,7 @@ open class JwtAuthenticationSuccessHandler(
     authentication: Authentication,
   ) {
     val optionalAuth = jwtCookieHelper.readValueFromCookie(request)
-      .flatMap { jwt: String? -> jwtAuthenticationHelper.readUserDetailsFromJwt(jwt) }
+      .flatMap { jwtAuthenticationHelper.readUserDetailsFromJwt(it) }
     val jwt =
       optionalAuth.map { udi: UserDetailsImpl -> jwtAuthenticationHelper.createJwtWithId(authentication, udi.jwtId) }
         .orElseGet { jwtAuthenticationHelper.createJwt(authentication) }
