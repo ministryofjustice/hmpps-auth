@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.6"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.7"
   id("groovy")
   kotlin("plugin.spring") version "1.4.10"
   kotlin("plugin.jpa") version "1.4.10"
@@ -12,7 +12,7 @@ repositories {
 
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-  annotationProcessor("org.projectlombok:lombok:1.18.12")
+  annotationProcessor("org.projectlombok:lombok:1.18.16")
 
   implementation(files("lib/ojdbc10-19.3.jar"))
 
@@ -52,8 +52,8 @@ dependencies {
 
   compileOnly("org.projectlombok:lombok:1.18.12")
 
-  testAnnotationProcessor("org.projectlombok:lombok:1.18.12")
-  testCompileOnly("org.projectlombok:lombok:1.18.12")
+  testAnnotationProcessor("org.projectlombok:lombok:1.18.16")
+  testCompileOnly("org.projectlombok:lombok:1.18.16")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 
@@ -63,8 +63,8 @@ dependencies {
     exclude(mapOf("group" to "org.codehaus.groovy"))
   }
 
-  testImplementation("org.gebish:geb-core:3.4")
-  testImplementation("org.gebish:geb-spock:3.4")
+  testImplementation("org.gebish:geb-core:3.4.1")
+  testImplementation("org.gebish:geb-spock:3.4.1")
   testImplementation("org.seleniumhq.selenium:selenium-support:3.141.59")
   testImplementation("org.seleniumhq.selenium:selenium-chrome-driver:3.141.59")
   testImplementation("org.seleniumhq.selenium:selenium-firefox-driver:3.141.59")
@@ -78,7 +78,7 @@ dependencies {
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.19.0")
   testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.5.1")
   testImplementation("org.fluentlenium:fluentlenium-assertj:4.5.1")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.21")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.23")
 }
 
 tasks {
@@ -87,19 +87,13 @@ tasks {
     exclude("**/integration/*")
   }
 
-  val testFluentIntegration by registering(Test::class) {
+  val testIntegration by registering(Test::class) {
     systemProperty(
       "fluentlenium.capabilities",
       """{"chromeOptions": {"args": ["headless","disable-gpu","disable-extensions","no-sandbox","disable-application-cache"]}}"""
     )
     useJUnitPlatform()
     include("uk/gov/justice/digital/hmpps/oauth2server/integration/*")
-    setMaxHeapSize("256m")
-  }
-
-  val testIntegration by registering(Test::class) {
-    systemProperty("geb.env", "chromeHeadless")
-    include("uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*")
     setMaxHeapSize("256m")
   }
 }
