@@ -1,89 +1,44 @@
-package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
+package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
-import com.google.common.base.Splitter;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.util.Collections;
-import java.util.List;
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
 @Table(name = "OAUTH_SERVICE")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(of = {"code"})
-public class Service {
-    @Id
-    @Column(nullable = false)
-    private String code;
+data class Service(
+  @Id
+  @Column(nullable = false)
+  val code: String,
+  @Column(nullable = false)
+  val name: String,
 
-    @Column(nullable = false)
-    private String name;
+  @Column(nullable = false)
+  val description: String,
 
-    @Column(nullable = false)
-    private String description;
+  @Column(name = "authorised_roles")
+  var authorisedRoles: String? = null,
 
-    @Column(name = "authorised_roles")
-    private String authorisedRoles;
+  @Column(nullable = false)
+  val url: String,
 
-    @Column(nullable = false)
-    private String url;
+  @Column(nullable = false)
+  val enabled: Boolean = true,
 
-    @Column(nullable = false)
-    private boolean enabled;
+  @Column
+  val email: String? = null,
+) {
 
-    @Column
-    private String email;
+  val roles: List<String>
+    get() = authorisedRoles?.split(',')?.map { it.trim() } ?: emptyList()
 
-    public List<String> getRoles() {
-        return StringUtils.isBlank(authorisedRoles) ? Collections.emptyList() : Splitter.on(',').trimResults().splitToList(authorisedRoles);
-    }
+  val isUrlInsteadOfEmail: Boolean
+    get() = email?.startsWith("http") ?: false
 
-    public boolean isUrlInsteadOfEmail() {
-        return StringUtils.startsWith(email, "http");
-    }
-
-    public String getCode() {
-        return this.code;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public String getDescription() {
-        return this.description;
-    }
-
-    public String getAuthorisedRoles() {
-        return authorisedRoles;
-    }
-
-    public String getAuthorisedRolesWithNewlines() {
-        return StringUtils.defaultIfBlank(authorisedRoles, "").replaceAll(",", "\n");
-    }
-
-    public void setAuthorisedRolesWithNewlines(final String authorisedRolesWithNewlines) {
-        authorisedRoles = StringUtils.defaultIfBlank(authorisedRolesWithNewlines, "").replaceAll("\n", ",");
-    }
-
-    public String getUrl() {
-        return this.url;
-    }
-
-    public boolean isEnabled() {
-        return this.enabled;
-    }
-
-    public String getEmail() {
-        return this.email;
+  var authorisedRolesWithNewlines: String
+    get() = authorisedRoles?.replace(",".toRegex(), "\n") ?: ""
+    set(authorisedRolesWithNewlines) {
+      authorisedRoles = authorisedRolesWithNewlines.replace("\n".toRegex(), ",")
     }
 }

@@ -26,7 +26,7 @@ class ServicesControllerTest {
   inner class ListRequest {
     @Test
     fun `calls service list`() {
-      val services = mutableListOf(Service())
+      val services = mutableListOf(Service(code = "", name = "", description = "", url = ""))
       whenever(authServicesService.list()).thenReturn(services)
       val userIndex = controller.userIndex()
       assertThat(userIndex.viewName).isEqualTo("ui/services")
@@ -42,15 +42,14 @@ class ServicesControllerTest {
       val view = controller.showEditForm(null)
 
       assertThat(view.viewName).isEqualTo("ui/service")
-      assertThat(view.model).containsExactlyEntriesOf(mapOf("service" to Service()))
+      assertThat(view.model).containsExactlyEntriesOf(mapOf("service" to Service(code = "", name = "", description = "", url = "")))
 
       verifyZeroInteractions(authServicesService)
     }
 
     @Test
     fun `show edit form request view edit service`() {
-      val service = Service()
-      service.code = "somecode"
+      val service = Service(code = "somecode", name = "", description = "", url = "")
       whenever(authServicesService.getService(anyString())).thenReturn(service)
       val view = controller.showEditForm("code")
 
@@ -65,8 +64,7 @@ class ServicesControllerTest {
   inner class EditService {
     @Test
     fun `edit service - add service`() {
-      val service = Service()
-      service.code = "newcode"
+      val service = Service(code = "newcode", name = "", description = "", url = "")
       val url = controller.editService(authentication, service, true)
       assertThat(url).isEqualTo("redirect:/ui/services")
       verify(authServicesService).addService(service)
@@ -79,8 +77,7 @@ class ServicesControllerTest {
 
     @Test
     fun `edit service - edit service`() {
-      val service = Service()
-      service.code = "editcode"
+      val service = Service(code = "editcode", name = "", description = "", url = "")
       val url = controller.editService(authentication, service)
       assertThat(url).isEqualTo("redirect:/ui/services")
       verify(authServicesService).updateService(service)

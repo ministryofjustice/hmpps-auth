@@ -61,7 +61,7 @@ class InitialPasswordService(
 
   private fun getInitialEmailSupportLink(groups: Collection<Group>): String {
     val serviceCode = groups.firstOrNull { it.groupCode.startsWith("PECS") }?.let { "BOOK_MOVE" } ?: "NOMIS"
-    return oauthServiceRepository.findById(serviceCode).map { it.email }.orElseThrow()
+    return oauthServiceRepository.findById(serviceCode).map { it.email!! }.orElseThrow()
   }
 
   private fun sendEmail(username: String, template: String, parameters: Map<String, String>, email: String) {

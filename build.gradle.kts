@@ -82,6 +82,11 @@ dependencies {
 }
 
 tasks {
+  compileKotlin {
+    kotlinOptions {
+      freeCompilerArgs = listOf("-Xjvm-default=all")
+    }
+  }
   test {
     useJUnitPlatform()
     exclude("**/integration/*")

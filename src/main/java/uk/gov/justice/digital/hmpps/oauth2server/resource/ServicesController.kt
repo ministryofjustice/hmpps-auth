@@ -31,7 +31,7 @@ class ServicesController(
     val service = if (code != null) {
       authServicesService.getService(code)
     } else {
-      Service()
+      Service(code = "", name = "", description = "", url = "")
     }
     return ModelAndView("ui/service", "service", service)
   }

@@ -1,40 +1,32 @@
-package uk.gov.justice.digital.hmpps.oauth2server.auth.repository;
+package uk.gov.justice.digital.hmpps.oauth2server.auth.repository
 
-import org.jetbrains.annotations.NotNull;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.repository.CrudRepository;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User;
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import org.springframework.data.repository.CrudRepository
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import java.time.LocalDateTime
+import java.util.Optional
+import java.util.UUID
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+interface UserRepository : CrudRepository<User, UUID>, JpaSpecificationExecutor<User> {
+  fun findByUsername(username: String?): Optional<User>
+  fun findByUsernameAndSource(username: String?, source: AuthSource): Optional<User>
+  fun findByUsernameAndMasterIsTrue(username: String?): Optional<User> =
+    findByUsernameAndSource(username, AuthSource.auth)
 
-public interface UserRepository extends CrudRepository<User, UUID>, JpaSpecificationExecutor<User> {
-    Optional<User> findByUsername(String username);
+  fun findByEmail(email: String?): List<User>
+  fun findByEmailAndSourceOrderByUsername(email: String?, source: AuthSource): List<User>
+  fun findByEmailAndMasterIsTrueOrderByUsername(username: String?): List<User> =
+    findByEmailAndSourceOrderByUsername(username, AuthSource.auth)
 
-    Optional<User> findByUsernameAndSource(String username, AuthSource source);
+  fun findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndSourceOrderByLastLoggedIn(
+    lastLoggedIn: LocalDateTime,
+    source: AuthSource
+  ): List<User>
 
-    default Optional<User> findByUsernameAndMasterIsTrue(final String username) {
-        return findByUsernameAndSource(username, AuthSource.auth);
-    }
+  fun findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(lastLoggedIn: LocalDateTime): List<User> =
+    findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndSourceOrderByLastLoggedIn(lastLoggedIn, AuthSource.auth)
 
-    List<User> findByEmail(String email);
-
-    List<User> findByEmailAndSourceOrderByUsername(String email, AuthSource source);
-
-    default List<User> findByEmailAndMasterIsTrueOrderByUsername(final String username) {
-        return findByEmailAndSourceOrderByUsername(username, AuthSource.auth);
-    }
-
-    List<User> findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndSourceOrderByLastLoggedIn(LocalDateTime lastLoggedIn, AuthSource source);
-
-    default List<User> findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(final LocalDateTime lastLoggedIn) {
-        return findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndSourceOrderByLastLoggedIn(lastLoggedIn, AuthSource.auth);
-    }
-
-    List<User> findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime lastLoggedIn);
-
-    List<User> findByUsernameIn(@NotNull List<String> usernames);
+  fun findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(lastLoggedIn: LocalDateTime): List<User>
+  fun findByUsernameIn(usernames: List<String>): List<User>
 }
