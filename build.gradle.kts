@@ -1,6 +1,5 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.7"
-  id("groovy")
   kotlin("plugin.spring") version "1.4.10"
   kotlin("plugin.jpa") version "1.4.10"
   id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
@@ -57,12 +56,6 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 
-  testImplementation("org.codehaus.groovy:groovy-all:3.0.6")
-  testImplementation("org.spockframework:spock-spring:1.3-groovy-2.5")
-  testImplementation("org.spockframework:spock-core:1.3-groovy-2.5") {
-    exclude(mapOf("group" to "org.codehaus.groovy"))
-  }
-
   testImplementation("org.gebish:geb-core:3.4.1")
   testImplementation("org.gebish:geb-spock:3.4.1")
   testImplementation("org.seleniumhq.selenium:selenium-support:3.141.59")
@@ -71,7 +64,6 @@ dependencies {
   testImplementation("io.github.http-builder-ng:http-builder-ng-apache:1.0.4")
 
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
-  testImplementation("com.github.tomjankes:wiremock-groovy:0.2.0")
   testImplementation("org.slf4j:slf4j-api:1.7.30")
   testImplementation("com.auth0:java-jwt:3.11.0")
 
