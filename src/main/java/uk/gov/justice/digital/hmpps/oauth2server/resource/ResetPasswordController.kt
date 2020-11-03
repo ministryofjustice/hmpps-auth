@@ -33,7 +33,7 @@ class ResetPasswordController(
   private val verifyEmailService: VerifyEmailService,
   private val telemetryClient: TelemetryClient,
   @param:Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
-  @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String?>?,
+  @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String>,
 ) :
   AbstractPasswordController(
     resetPasswordService,

@@ -24,7 +24,7 @@ class ChangePasswordController(
   private val jwtAuthenticationSuccessHandler: JwtAuthenticationSuccessHandler,
   private val userStateAuthenticationFailureHandler: UserStateAuthenticationFailureHandler,
   private val authenticationManager: AuthenticationManager,
-  changePasswordService: ChangePasswordService?,
+  changePasswordService: ChangePasswordService,
   private val tokenService: TokenService,
   userService: UserService,
   private val telemetryClient: TelemetryClient,

@@ -133,7 +133,7 @@ class ResetPasswordControllerTest {
         verifyEmailService,
         telemetryClient,
         false,
-        null
+        emptySet()
       ).resetPasswordRequest("user", request)
       assertThat(modelAndView.viewName).isEqualTo("resetPasswordSent")
       assertThat(modelAndView.model).isEmpty()
