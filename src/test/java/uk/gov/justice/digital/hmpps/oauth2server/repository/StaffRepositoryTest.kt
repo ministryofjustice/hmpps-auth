@@ -26,7 +26,7 @@ class StaffRepositoryTest {
   @Test
   fun givenATransientEntityItCanBePeristed() {
     val transientEntity = transientEntity()
-    val entity = transientEntity.toBuilder().build()
+    val entity = transientEntity.copy()
     val persistedEntity = repository.save(entity)
     TestTransaction.flagForCommit()
     TestTransaction.end()
@@ -39,11 +39,5 @@ class StaffRepositoryTest {
     assertThat(retrievedEntity.status).isEqualTo(transientEntity.status)
   }
 
-  private fun transientEntity() = Staff
-    .builder()
-    .firstName("TEST-FIRSTNAME")
-    .lastName("TEST-LASTNAME")
-    .status("ACTIVE")
-    .staffId(-2L)
-    .build()
+  private fun transientEntity() = Staff(firstName = "TEST-FIRSTNAME", status = "ACTIVE", lastName = "TEST-LASTNAME", staffId = -2L)
 }

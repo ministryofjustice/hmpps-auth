@@ -202,11 +202,7 @@ class UserControllerTest {
   private fun setupFindUserCallForNomis(): NomisUserPersonDetails {
     val user = NomisUserPersonDetails()
     user.username = "principal"
-    val staff = Staff()
-    staff.staffId = 5L
-    staff.firstName = "JOE"
-    staff.lastName = "bloggs"
-    user.staff = staff
+    user.staff = Staff(firstName = "JOE", status = "INACTIVE", lastName = "bloggs", staffId = 5)
     user.accountDetail = AccountDetail()
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     return user

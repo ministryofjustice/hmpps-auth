@@ -99,6 +99,6 @@ class NomisUserPersonDetailsRepositoryTest {
     .build()
 
   companion object {
-    private val DEFAULT_STAFF = Staff.builder().staffId(5L).build()
+    private val DEFAULT_STAFF = Staff(firstName = "bOb", status = "ACTIVE", lastName = "Smith", staffId = 5)
   }
 }

@@ -98,7 +98,7 @@ public class NomisUserPersonDetails implements UserPersonDetails {
 
     @Override
     public String getUserId() {
-        return getStaff().getStaffId().toString();
+        return Long.toString(getStaff().getStaffId());
     }
 
     @Override

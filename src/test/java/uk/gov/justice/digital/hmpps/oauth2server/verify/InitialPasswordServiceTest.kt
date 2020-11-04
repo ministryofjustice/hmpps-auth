@@ -100,11 +100,7 @@ class InitialPasswordServiceTest {
   private val staffUserAccountForBob: UserPersonDetails
     get() {
       val staffUserAccount = NomisUserPersonDetails()
-      val staff = Staff()
-      staff.firstName = "bOb"
-      staff.lastName = "Smith"
-      staff.status = "ACTIVE"
-      staffUserAccount.staff = staff
+      staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "Smith", staffId = 5)
       val detail = AccountDetail("user", "OPEN", "profile", null)
       staffUserAccount.accountDetail = detail
       return staffUserAccount
