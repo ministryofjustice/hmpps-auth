@@ -125,8 +125,7 @@ class ResetPasswordServiceTest {
   fun requestResetPassword_notAuthLocked() {
     val user = User.builder().username("someuser").email("email").verified(true).build()
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-    val accountOptional = staffUserAccountForBobOptional
-    (accountOptional.orElseThrow() as NomisUserPersonDetails).accountDetail.accountStatus = "LOCKED"
+    val accountOptional = staffUserAccountLockedForBobOptional
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(accountOptional)
     val optional = resetPasswordService.requestResetPassword("user", "url")
     verify(notificationClient).sendEmail(
@@ -144,8 +143,7 @@ class ResetPasswordServiceTest {
   fun requestResetPassword_userLocked() {
     val user = User.builder().username("someuser").email("email").source(AuthSource.nomis).verified(true).build()
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-    val accountOptional = staffUserAccountForBobOptional
-    (accountOptional.orElseThrow() as NomisUserPersonDetails).accountDetail.accountStatus = "EXPIRED & LOCKED(TIMED)"
+    val accountOptional = staffUserAccountExpiredLockedForBobOptional
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(accountOptional)
     val optionalLink = resetPasswordService.requestResetPassword("user", "url")
     verify(notificationClient).sendEmail(
@@ -340,14 +338,27 @@ class ResetPasswordServiceTest {
 
   private val staffUserAccountForBob: NomisUserPersonDetails
     get() {
-      val staffUserAccount = NomisUserPersonDetails()
-      staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "Smith", staffId = 5)
-      val detail = AccountDetail("user", "OPEN", "profile", null)
-      staffUserAccount.accountDetail = detail
-      return staffUserAccount
+      return nomisUserPersonDetails("OPEN")
     }
+  private val staffUserAccountLockedForBob: NomisUserPersonDetails
+    get() {
+      return nomisUserPersonDetails("LOCKED")
+    }
+  private val staffUserAccountExpiredLockedForBob: NomisUserPersonDetails
+    get() {
+      return nomisUserPersonDetails("EXPIRED & LOCKED(TIMED)")
+    }
+  private fun nomisUserPersonDetails(accountStatus: String): NomisUserPersonDetails {
+    val staffUserAccount = NomisUserPersonDetails()
+    staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "Smith", staffId = 5)
+    val detail = AccountDetail("user", accountStatus, "profile", null)
+    staffUserAccount.accountDetail = detail
+    return staffUserAccount
+  }
 
   private val staffUserAccountForBobOptional: Optional<UserPersonDetails> = Optional.of(staffUserAccountForBob)
+  private val staffUserAccountLockedForBobOptional: Optional<UserPersonDetails> = Optional.of(staffUserAccountLockedForBob)
+  private val staffUserAccountExpiredLockedForBobOptional: Optional<UserPersonDetails> = Optional.of(staffUserAccountExpiredLockedForBob)
 
   @Test
   fun resetPassword() {
@@ -587,11 +598,11 @@ class ResetPasswordServiceTest {
 
   private fun buildStaff(): Staff = Staff(firstName = "Bob", status = "ACTIVE", lastName = "Smith", staffId = 1)
 
-  private fun buildAccountDetail(username: String, status: AccountStatus): AccountDetail = AccountDetail.builder()
-    .username(username)
-    .accountStatus(status.desc)
-    .profile("TAG_GENERAL")
-    .build()
+  private fun buildAccountDetail(username: String, status: AccountStatus): AccountDetail = AccountDetail(
+    username = username,
+    accountStatus = status.desc,
+    profile = "TAG_GENERAL"
+  )
 
   companion object {
     const val ROLE_ID = 1L

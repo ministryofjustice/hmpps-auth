@@ -22,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
@@ -95,8 +96,7 @@ class ChangePasswordControllerTest {
     fun changePasswordRequest_adminUser() {
       setupCheckAndGetTokenValid()
       setupGetUserCallForProfile()
-      val user = setupGetUserCallForProfile()
-      user.accountDetail.profile = "TAG_ADMIN"
+      setupGetUserCallForProfile("TAG_ADMIN")
       val model = controller.changePasswordRequest("token")
       assertThat(model.model["isAdmin"]).isEqualTo(true)
     }
@@ -312,8 +312,12 @@ class ChangePasswordControllerTest {
   }
 
   private fun setupGetUserCallForProfile(): NomisUserPersonDetails {
+    return setupGetUserCallForProfile(AccountProfile.TAG_GENERAL.name)
+  }
+
+  private fun setupGetUserCallForProfile(profile: String): NomisUserPersonDetails {
     val user = NomisUserPersonDetails()
-    user.accountDetail = AccountDetail()
+    user.accountDetail = AccountDetail(username = "user", profile = profile)
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     return user
   }

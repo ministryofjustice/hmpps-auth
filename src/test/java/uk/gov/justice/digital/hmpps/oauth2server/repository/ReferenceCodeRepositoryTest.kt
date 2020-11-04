@@ -28,7 +28,7 @@ class ReferenceCodeRepositoryTest {
   @Test
   fun givenATransientEntityItCanBePersisted() {
     val transientEntity = transientEntity()
-    val entity = transientEntity.toBuilder().build()
+    val entity = transientEntity.copy()
     val persistedEntity = repository.save(entity)
     TestTransaction.flagForCommit()
     TestTransaction.end()
@@ -39,14 +39,14 @@ class ReferenceCodeRepositoryTest {
     // equals only compares the business key columns
     assertThat(retrievedEntity).isEqualTo(transientEntity)
     assertThat(retrievedEntity.description).isEqualTo(transientEntity.description)
-    assertThat(retrievedEntity.isActive).isEqualTo(transientEntity.isActive)
+    assertThat(retrievedEntity.active).isEqualTo(transientEntity.active)
   }
 
   @Test
   fun givenAnExistingUserTheyCanBeRetrieved() {
     val retrievedEntity = repository.findById(DomainCodeIdentifier(EMAIL_DOMAIN, "PROBATION")).orElseThrow()
     assertThat(retrievedEntity.description).isEqualTo("HMIProbation.gov.uk")
-    assertThat(retrievedEntity.isActive).isTrue()
+    assertThat(retrievedEntity.active).isTrue()
   }
 
   @Test
@@ -55,10 +55,9 @@ class ReferenceCodeRepositoryTest {
     assertThat(codes).extracting("description").contains("%justice.gov.uk", "HMIProbation.gov.uk").hasSize(9)
   }
 
-  private fun transientEntity() = ReferenceCode
-    .builder()
-    .domainCodeIdentifier(DomainCodeIdentifier(EMAIL_DOMAIN, "JOE"))
-    .active(true)
-    .description("some description")
-    .build()
+  private fun transientEntity() = ReferenceCode(
+    domainCodeIdentifier = DomainCodeIdentifier(EMAIL_DOMAIN, "JOE"),
+    active = true,
+    description = "some description"
+  )
 }

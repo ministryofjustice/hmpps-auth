@@ -173,11 +173,11 @@ class NomisUserDetailsServiceTest {
   }
 
   private fun buildAccountDetail(username: String, status: AccountStatus): AccountDetail {
-    return AccountDetail.builder()
-      .username(username)
-      .accountStatus(status.desc)
-      .profile("TAG_GENERAL")
-      .build()
+    return AccountDetail(
+      username = username,
+      accountStatus = status.desc,
+      profile = "TAG_GENERAL"
+    )
   }
 
   private fun buildStaff(): Staff = Staff(firstName = "ITAG", status = "ACTIVE", lastName = "USER", staffId = 1)
