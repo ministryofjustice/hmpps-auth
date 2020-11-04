@@ -70,11 +70,8 @@ internal class NomisUserServiceTest {
 
   private fun getNomisUser(username: String): NomisUserPersonDetails {
     val account = NomisUserPersonDetails()
-    val staff = Staff()
-    account.staff = staff
+    account.staff = Staff(firstName = "bob", status = "INACTIVE", lastName = "last", staffId = 5)
     account.username = username
-    staff.firstName = "bob"
-    staff.lastName = "last"
     return account
   }
 

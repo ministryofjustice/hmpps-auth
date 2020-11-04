@@ -187,10 +187,7 @@ class UserRetriesServiceTest {
   private val userPersonDetailsForBob: UserPersonDetails
     get() {
       val staffUserAccount = NomisUserPersonDetails()
-      val staff = Staff()
-      staff.firstName = "bOb"
-      staff.status = "ACTIVE"
-      staffUserAccount.staff = staff
+      staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "bloggs", staffId = 5)
       val detail = AccountDetail("user", "OPEN", "profile", null)
       staffUserAccount.accountDetail = detail
       staffUserAccount.username = "bob"

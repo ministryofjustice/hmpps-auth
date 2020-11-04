@@ -83,9 +83,9 @@ class ResetPasswordServiceTest {
   fun requestResetPassword_inactive() {
     val user = User.builder().username("someuser").email("email").source(AuthSource.nomis).verified(true).build()
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-    val staffUserAccount = staffUserAccountForBobOptional
-    (staffUserAccount.orElseThrow() as NomisUserPersonDetails).staff.status = "inactive"
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount)
+    val staffUserAccount = staffUserAccountForBob
+    staffUserAccount.staff = staffUserAccount.staff.copy(status = "inactive")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccount))
     val optional = resetPasswordService.requestResetPassword("user", "url")
     verify(notificationClient).sendEmail(
       eq("resetUnavailableTemplate"),
@@ -338,14 +338,10 @@ class ResetPasswordServiceTest {
     assertThat(optionalLink).isPresent
   }
 
-  private val staffUserAccountForBob: UserPersonDetails
+  private val staffUserAccountForBob: NomisUserPersonDetails
     get() {
       val staffUserAccount = NomisUserPersonDetails()
-      val staff = Staff()
-      staff.firstName = "bOb"
-      staff.lastName = "Smith"
-      staff.status = "ACTIVE"
-      staffUserAccount.staff = staff
+      staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "Smith", staffId = 5)
       val detail = AccountDetail("user", "OPEN", "profile", null)
       staffUserAccount.accountDetail = detail
       return staffUserAccount
@@ -414,9 +410,9 @@ class ResetPasswordServiceTest {
 
   @Test
   fun resetPasswordLockedAccount() {
-    val staffUserAccount = staffUserAccountForBobOptional
-    (staffUserAccount.orElseThrow() as NomisUserPersonDetails).staff.status = "inactive"
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount)
+    val staffUserAccount = staffUserAccountForBob
+    staffUserAccount.staff = staffUserAccount.staff.copy(status = "inactive")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccount))
     val user = User.builder().username("user").source(AuthSource.nomis).build()
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
@@ -579,22 +575,17 @@ class ResetPasswordServiceTest {
       .staff(staff)
       .roles(
         listOf(
-          UserCaseloadRole.builder()
-            .id(UserCaseloadRoleIdentity.builder().caseload("NWEB").roleId(ROLE_ID).username(username).build())
-            .role(Role.builder().code("ROLE1").id(ROLE_ID).build())
-            .build()
+          UserCaseloadRole(
+            id = UserCaseloadRoleIdentity(caseload = "NWEB", roleId = ROLE_ID, username = username),
+            role = Role(code = "ROLE1", id = ROLE_ID),
+          )
         )
       )
       .accountDetail(buildAccountDetail(username, AccountStatus.OPEN))
       .build()
   }
 
-  private fun buildStaff(): Staff = Staff.builder()
-    .staffId(1L)
-    .firstName("Bob")
-    .lastName("Smith")
-    .status("ACTIVE")
-    .build()
+  private fun buildStaff(): Staff = Staff(firstName = "Bob", status = "ACTIVE", lastName = "Smith", staffId = 1)
 
   private fun buildAccountDetail(username: String, status: AccountStatus): AccountDetail = AccountDetail.builder()
     .username(username)

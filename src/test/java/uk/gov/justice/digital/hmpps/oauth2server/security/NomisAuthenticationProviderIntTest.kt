@@ -78,11 +78,11 @@ class NomisAuthenticationProviderIntTest {
   }
 
   @Test
-  fun authenticate_ResetAfterSuccess() {
+  fun `authenticate ResetAfterSuccess`() {
     assertThatThrownBy {
       provider.authenticate(
         UsernamePasswordAuthenticationToken(
-          "ITAG_USER",
+          "RESET_USER",
           "wrong"
         )
       )
@@ -90,19 +90,19 @@ class NomisAuthenticationProviderIntTest {
     assertThatThrownBy {
       provider.authenticate(
         UsernamePasswordAuthenticationToken(
-          "ITAG_USER",
+          "RESET_USER",
           "wrong"
         )
       )
     }.isInstanceOf(BadCredentialsException::class.java)
 
     // success in middle should cause reset of count
-    val auth = provider.authenticate(UsernamePasswordAuthenticationToken("ITAG_USER", "password"))
+    val auth = provider.authenticate(UsernamePasswordAuthenticationToken("RESET_USER", "password"))
     assertThat(auth).isNotNull()
     assertThatThrownBy {
       provider.authenticate(
         UsernamePasswordAuthenticationToken(
-          "ITAG_USER",
+          "RESET_USER",
           "wrong"
         )
       )

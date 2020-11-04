@@ -295,11 +295,8 @@ class VerifyEmailControllerTest {
 
   private fun getUserPersonalDetails(): NomisUserPersonDetails {
     val account = NomisUserPersonDetails()
-    val staff = Staff()
-    account.staff = staff
+    account.staff = Staff(firstName = "bob", status = "INACTIVE", lastName = "last", staffId = 1)
     account.username = "user"
-    staff.firstName = "bob"
-    staff.lastName = "last"
     return account
   }
 

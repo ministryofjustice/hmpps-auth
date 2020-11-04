@@ -341,21 +341,21 @@ class UserServiceTest {
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
           NomisUserPersonDetails.builder().username("U1")
-            .staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
+            .staff(Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE")).build(),
           NomisUserPersonDetails.builder().username("U2")
-            .staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
+            .staff(Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE")).build(),
           NomisUserPersonDetails.builder().username("U3")
-            .staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
+            .staff(Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE")).build(),
         )
       )
 
       whenever(verifyEmailService.getExistingEmailAddressesForUsernames(anyList()))
         .thenReturn(
           mapOf(
-            Pair("U1", mutableSetOf("u1@justice.gov.uk", "u1@somethingelse.gov.uk")),
+            "U1" to mutableSetOf("u1@justice.gov.uk", "u1@somethingelse.gov.uk"),
 
             // Two matching e-mail suffixes results in no e-mail address.
-            Pair("U3", mutableSetOf("u3@justice.gov.uk", "another-u3@justice.gov.uk"))
+            "U3" to mutableSetOf("u3@justice.gov.uk", "another-u3@justice.gov.uk")
           )
         )
 
@@ -396,11 +396,11 @@ class UserServiceTest {
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
           NomisUserPersonDetails.builder().username("U1")
-            .staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
+            .staff(Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE")).build(),
           NomisUserPersonDetails.builder().username("U2")
-            .staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
+            .staff(Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE")).build(),
           NomisUserPersonDetails.builder().username("U3")
-            .staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
+            .staff(Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE")).build(),
         )
       )
 
@@ -451,13 +451,13 @@ class UserServiceTest {
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
           NomisUserPersonDetails.builder().username("U1")
-            .staff(Staff.builder().firstName("f1").lastName("l1").staffId(1).build()).build(),
+            .staff(Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE")).build(),
           NomisUserPersonDetails.builder().username("U2")
-            .staff(Staff.builder().firstName("f2").lastName("l2").staffId(2).build()).build(),
+            .staff(Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE")).build(),
           NomisUserPersonDetails.builder().username("U3")
-            .staff(Staff.builder().firstName("f3").lastName("l3").staffId(3).build()).build(),
+            .staff(Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE")).build(),
           NomisUserPersonDetails.builder().username("U4")
-            .staff(Staff.builder().firstName("f4").lastName("l4").staffId(4).build()).build(),
+            .staff(Staff(firstName = "f4", lastName = "l4", staffId = 4, status = "INACTIVE")).build(),
         )
       )
 
@@ -599,10 +599,7 @@ class UserServiceTest {
     get() {
       val staffUserAccount = NomisUserPersonDetails()
       staffUserAccount.username = "nomisuser"
-      val staff = Staff()
-      staff.firstName = "bOb"
-      staff.status = "ACTIVE"
-      staffUserAccount.staff = staff
+      staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "bloggs", staffId = 5)
       val detail = AccountDetail("user", "OPEN", "profile", null)
       staffUserAccount.accountDetail = detail
       return Optional.of(staffUserAccount)
