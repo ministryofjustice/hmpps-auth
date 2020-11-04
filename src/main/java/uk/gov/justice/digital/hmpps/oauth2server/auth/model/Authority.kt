@@ -1,62 +1,52 @@
-package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
+package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.GenericGenerator;
-import org.springframework.security.core.GrantedAuthority;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.util.UUID;
+import org.apache.commons.lang3.StringUtils
+import org.hibernate.annotations.GenericGenerator
+import org.springframework.security.core.GrantedAuthority
+import java.util.UUID
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
 @Table(name = "ROLES")
-@Data
-@NoArgsConstructor
-@EqualsAndHashCode(of = {"roleCode"})
-public class Authority implements GrantedAuthority {
-    public static final String ROLE_PREFIX = "ROLE_";
+class Authority(roleCode: String, roleName: String) : GrantedAuthority {
+  @Id
+  @GeneratedValue(generator = "UUID")
+  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+  @Column(name = "role_id", updatable = false, nullable = false)
+  val id: UUID? = null
 
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "role_id", updatable = false, nullable = false)
-    private UUID id;
+  @Column(name = "role_code", nullable = false)
+  val roleCode: String
 
-    @Column(name = "role_code", nullable = false)
-    private String roleCode;
+  @Column(name = "role_name", nullable = false)
+  val roleName: String
+  override fun getAuthority(): String = "$ROLE_PREFIX$roleCode"
 
-    @Column(name = "role_name", nullable = false)
-    private String roleName;
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
 
-    public Authority(final String roleCode, final String roleName) {
-        this.roleCode = removeRolePrefixIfNecessary(roleCode);
-        this.roleName = roleName;
-    }
+    other as Authority
 
-    public static String removeRolePrefixIfNecessary(final String role) {
-        return StringUtils.startsWith(role, ROLE_PREFIX) ? StringUtils.substring(role, ROLE_PREFIX.length()) : role;
-    }
+    if (roleCode != other.roleCode) return false
 
-    @Override
-    public String getAuthority() {
-        return ROLE_PREFIX + roleCode;
-    }
+    return true
+  }
 
-    public UUID getId() {
-        return this.id;
-    }
+  override fun hashCode(): Int = roleCode.hashCode()
 
-    public String getRoleCode() {
-        return this.roleCode;
-    }
+  companion object {
+    const val ROLE_PREFIX = "ROLE_"
+    fun removeRolePrefixIfNecessary(role: String): String =
+      if (StringUtils.startsWith(role, ROLE_PREFIX)) StringUtils.substring(role, ROLE_PREFIX.length) else role
+  }
 
-    public String getRoleName() {
-        return this.roleName;
-    }
+  init {
+    this.roleCode = removeRolePrefixIfNecessary(roleCode)
+    this.roleName = roleName
+  }
 }
