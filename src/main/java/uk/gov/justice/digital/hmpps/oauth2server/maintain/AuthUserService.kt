@@ -90,11 +90,11 @@ class AuthUserService(
 
   private fun getInitialEmailSupportLink(groups: Collection<Group>): String {
     val serviceCode = groups.firstOrNull { it.groupCode.startsWith("PECS") }?.let { "BOOK_MOVE" } ?: "NOMIS"
-    return oauthServiceRepository.findById(serviceCode).map { it.email }.orElseThrow()
+    return oauthServiceRepository.findById(serviceCode).map { it.email!! }.orElseThrow()
   }
 
   fun findAuthUsers(name: String?, roleCode: String?, groupCode: String?, pageable: Pageable): Page<User> {
-    val userFilter = UserFilter.builder().name(name).roleCode(roleCode).groupCode(groupCode).build()
+    val userFilter = UserFilter(name = name, roleCode = roleCode, groupCode = groupCode)
     return userRepository.findAll(userFilter, pageable)
   }
 

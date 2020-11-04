@@ -26,7 +26,7 @@ class AuthServicesServiceTest {
   inner class list {
     @Test
     fun `list calls repository find all`() {
-      val services = mutableListOf(Service())
+      val services = mutableListOf(Service(code = "", name = "", description = "", url = ""))
       whenever(oauthServiceRepository.findAllByOrderByName()).thenReturn(services)
       assertThat(authServicesService.list()).isSameAs(services)
       verify(oauthServiceRepository).findAllByOrderByName()
@@ -37,7 +37,7 @@ class AuthServicesServiceTest {
   inner class listEnabled {
     @Test
     fun `listEnabled calls repository find all by enabled`() {
-      val services = mutableListOf(Service())
+      val services = mutableListOf(Service(code = "", name = "", description = "", url = ""))
       whenever(oauthServiceRepository.findAllByEnabledTrueOrderByName()).thenReturn(services)
       assertThat(authServicesService.listEnabled()).isSameAs(services)
       verify(oauthServiceRepository).findAllByEnabledTrueOrderByName()
@@ -60,7 +60,7 @@ class AuthServicesServiceTest {
   inner class getService {
     @Test
     fun `get service finds service`() {
-      val service = Service()
+      val service = Service(code = "", name = "", description = "", url = "")
       whenever(oauthServiceRepository.findById(anyString())).thenReturn(Optional.of(service))
       assertThat(authServicesService.getService("code")).isSameAs(service)
       verify(oauthServiceRepository).findById("code")
@@ -78,7 +78,7 @@ class AuthServicesServiceTest {
   inner class updateService {
     @Test
     fun `update calls save`() {
-      val service = Service()
+      val service = Service(code = "", name = "", description = "", url = "")
       authServicesService.updateService(service)
       verify(oauthServiceRepository).save<Service>(
         check {
@@ -92,7 +92,7 @@ class AuthServicesServiceTest {
   inner class addService {
     @Test
     fun `add calls save`() {
-      val service = Service()
+      val service = Service(code = "", name = "", description = "", url = "")
       authServicesService.addService(service)
       verify(oauthServiceRepository).save<Service>(
         check {
@@ -103,9 +103,8 @@ class AuthServicesServiceTest {
 
     @Test
     fun `add checks service doesn't already exist`() {
-      val service = Service()
-      service.code = "newcode"
-      whenever(oauthServiceRepository.findById(anyString())).thenReturn(Optional.of(Service()))
+      val service = Service(code = "newcode", name = "", description = "", url = "")
+      whenever(oauthServiceRepository.findById(anyString())).thenReturn(Optional.of(Service(code = "", name = "", description = "", url = "")))
       assertThatThrownBy { authServicesService.addService(service) }
         .isInstanceOf(EntityExistsException::class.java).hasMessage("Entity newcode already exists")
 

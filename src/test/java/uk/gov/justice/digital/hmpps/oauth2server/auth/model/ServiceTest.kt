@@ -41,14 +41,14 @@ class ServiceTest {
   inner class AuthorisedRolesWithNewlines {
     @Test
     fun authorisedRolesWithNewlines() {
-      val service = Service()
+      val service = Service(code = "code", name = "", description = "", url = "")
       service.authorisedRoles = "joe,bloggs,"
       assertThat(service.authorisedRolesWithNewlines).isEqualTo("joe\nbloggs\n")
     }
 
     @Test
     fun `authorisedRolesWithNewlines no roles`() {
-      val service = Service()
+      val service = Service(code = "code", name = "", description = "", url = "")
       assertThat(service.authorisedRolesWithNewlines).isEqualTo("")
     }
   }

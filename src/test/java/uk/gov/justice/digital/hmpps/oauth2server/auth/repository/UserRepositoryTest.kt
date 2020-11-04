@@ -284,35 +284,35 @@ class UserRepositoryTest {
 
   @Test
   fun findAll_UserFilter_ByRole() {
-    assertThat(repository.findAll(UserFilter.builder().roleCode("LICENCE_VARY").build()))
+    assertThat(repository.findAll(UserFilter(roleCode = "LICENCE_VARY")))
       .extracting<String> { it.username }
       .containsExactly("AUTH_RO_VARY_USER")
   }
 
   @Test
   fun findAll_UserFilter_ByGroup() {
-    assertThat(repository.findAll(UserFilter.builder().groupCode("SITE_1_GROUP_2").build()))
+    assertThat(repository.findAll(UserFilter(groupCode = "SITE_1_GROUP_2")))
       .extracting<String> { it.username }
       .containsExactly("AUTH_RO_VARY_USER", "AUTH_GROUP_MANAGER")
   }
 
   @Test
   fun findAll_UserFilter_ByUsername() {
-    assertThat(repository.findAll(UserFilter.builder().name("_expired").build()))
+    assertThat(repository.findAll(UserFilter(name = "_expired")))
       .extracting<String> { it.username }
       .contains("AUTH_EXPIRED", "AUTH_MFA_EXPIRED_USER")
   }
 
   @Test
   fun findAll_UserFilter_ByEmail() {
-    assertThat(repository.findAll(UserFilter.builder().name("test@digital").build()))
+    assertThat(repository.findAll(UserFilter(name = "test@digital")))
       .extracting<String> { it.username }
       .containsOnly("AUTH_TEST", "AUTH_RO_USER_TEST", "AUTH_CHANGE_TEST", "AUTH_CHANGE2_TEST", "AUTH_CHANGE_EMAIL")
   }
 
   @Test
   fun findAll_UserFilter_ByFirstNameLastName() {
-    assertThat(repository.findAll(UserFilter.builder().name("a no").build()))
+    assertThat(repository.findAll(UserFilter(name = "a no")))
       .extracting<String> { it.username }
       .containsExactly(
         "AUTH_NO_EMAIL",
@@ -327,7 +327,7 @@ class UserRepositoryTest {
 
   @Test
   fun findAll_UserFilter_ByLastNameFirstName() {
-    assertThat(repository.findAll(UserFilter.builder().name("orton, r").build()))
+    assertThat(repository.findAll(UserFilter(name = "orton, r")))
       .extracting<String> { it.username }
       .containsOnly("AUTH_RO_USER", "AUTH_RO_VARY_USER", "AUTH_RO_USER_TEST", "AUTH_RO_USER_TEST2")
   }
@@ -336,7 +336,7 @@ class UserRepositoryTest {
   fun findAll_UserFilter_all() {
     assertThat(
       repository.findAll(
-        UserFilter.builder().roleCode("LICENCE_VARY").groupCode("SITE_1_GROUP_2").name("vary").build()
+        UserFilter(roleCode = "LICENCE_VARY", groupCode = "SITE_1_GROUP_2", name = "vary")
       )
     )
       .extracting<String> { it.username }
