@@ -1,6 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.6"
-  id("groovy")
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.7"
   kotlin("plugin.spring") version "1.4.10"
   kotlin("plugin.jpa") version "1.4.10"
   id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
@@ -12,7 +11,7 @@ repositories {
 
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-  annotationProcessor("org.projectlombok:lombok:1.18.12")
+  annotationProcessor("org.projectlombok:lombok:1.18.16")
 
   implementation(files("lib/ojdbc10-19.3.jar"))
 
@@ -52,33 +51,26 @@ dependencies {
 
   compileOnly("org.projectlombok:lombok:1.18.12")
 
-  testAnnotationProcessor("org.projectlombok:lombok:1.18.12")
-  testCompileOnly("org.projectlombok:lombok:1.18.12")
+  testAnnotationProcessor("org.projectlombok:lombok:1.18.16")
+  testCompileOnly("org.projectlombok:lombok:1.18.16")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 
-  testImplementation("org.codehaus.groovy:groovy-all:3.0.6")
-  testImplementation("org.spockframework:spock-spring:1.3-groovy-2.5")
-  testImplementation("org.spockframework:spock-core:1.3-groovy-2.5") {
-    exclude(mapOf("group" to "org.codehaus.groovy"))
-  }
-
-  testImplementation("org.gebish:geb-core:3.4")
-  testImplementation("org.gebish:geb-spock:3.4")
+  testImplementation("org.gebish:geb-core:3.4.1")
+  testImplementation("org.gebish:geb-spock:3.4.1")
   testImplementation("org.seleniumhq.selenium:selenium-support:3.141.59")
   testImplementation("org.seleniumhq.selenium:selenium-chrome-driver:3.141.59")
   testImplementation("org.seleniumhq.selenium:selenium-firefox-driver:3.141.59")
   testImplementation("io.github.http-builder-ng:http-builder-ng-apache:1.0.4")
 
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
-  testImplementation("com.github.tomjankes:wiremock-groovy:0.2.0")
   testImplementation("org.slf4j:slf4j-api:1.7.30")
   testImplementation("com.auth0:java-jwt:3.11.0")
 
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.19.0")
   testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.5.1")
   testImplementation("org.fluentlenium:fluentlenium-assertj:4.5.1")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.21")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.23")
 }
 
 tasks {
@@ -92,19 +84,13 @@ tasks {
     exclude("**/integration/*")
   }
 
-  val testFluentIntegration by registering(Test::class) {
+  val testIntegration by registering(Test::class) {
     systemProperty(
       "fluentlenium.capabilities",
       """{"chromeOptions": {"args": ["headless","disable-gpu","disable-extensions","no-sandbox","disable-application-cache"]}}"""
     )
     useJUnitPlatform()
     include("uk/gov/justice/digital/hmpps/oauth2server/integration/*")
-    setMaxHeapSize("256m")
-  }
-
-  val testIntegration by registering(Test::class) {
-    systemProperty("geb.env", "chromeHeadless")
-    include("uk/gov/justice/digital/hmpps/oauth2server/integration/specs/*")
     setMaxHeapSize("256m")
   }
 }
