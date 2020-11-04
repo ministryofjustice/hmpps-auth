@@ -203,6 +203,47 @@ class UserControllerIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `User Roles endpoint returns principal user data`() {
+    webTestClient
+      .get().uri("/auth/api/user/me/roles")
+      .headers(setAuthorisation("ITAG_USER", listOf("ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS", "ROLE_OAUTH_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath(".[*].roleCode").value<List<String>> {
+        assertThat(it).contains("MAINTAIN_ACCESS_ROLES")
+        assertThat(it).contains("MAINTAIN_OAUTH_USERS")
+        assertThat(it).contains("OAUTH_ADMIN")
+      }
+  }
+
+  @Test
+  fun `User Roles endpoint returns principal user data for auth user`() {
+    webTestClient
+      .get().uri("/auth/api/user/me/roles")
+      .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_GLOBAL_SEARCH")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath(".[*].roleCode").value<List<String>> {
+        assertThat(it).contains("GLOBAL_SEARCH")
+      }
+  }
+
+  @Test
+  fun `User Roles endpoint returns principal user data for delius user`() {
+    webTestClient
+      .get().uri("/auth/api/user/me/roles")
+      .headers(setAuthorisation("DELIUS", listOf("ROLE_PROBATION")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath(".[*].roleCode").value<List<String>> {
+        assertThat(it).contains("PROBATION")
+      }
+  }
+
+  @Test
   fun `User Me endpoint not accessible without valid token`() {
     webTestClient
       .get().uri("/auth/api/user/me")

@@ -53,12 +53,12 @@ jobs:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - restore_cache:
           key: gradle-cache-{{ checksum "build.gradle.kts" }}
-      - run:
-          name: Run Integration Tests
-          command: ./gradlew testIntegration
+#      - run:
+#          name: Run Integration Tests
+#          command: ./gradlew testIntegration
       - run:
           name: Run Fluent Integration Tests
-          command: ./gradlew testFluentIntegration
+          command: ./gradlew testIntegration
       - save_cache:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
@@ -67,11 +67,11 @@ jobs:
           key: gradle-cache-{{ checksum "build.gradle.kts" }}
           paths:
             - /home/circleci/.gradle/caches
+#      - store_artifacts:
+#          path: build/reports/tests/testIntegration
+#          destination: integration/spock
       - store_artifacts:
           path: build/reports/tests/testIntegration
-          destination: integration/spock
-      - store_artifacts:
-          path: build/reports/tests/testFluentIntegration
           destination: integration/fluent
       - store_test_results:
           path: build/test-results
