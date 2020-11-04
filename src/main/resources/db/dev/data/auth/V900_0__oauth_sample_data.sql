@@ -80,6 +80,7 @@ VALUES ('LOCKED_USER', 5),
 -- nomis users
 INSERT INTO users (user_id, username, email, verified, source)
  VALUES ('A04C70EE-51C9-4852-8D0D-130DA5C85C42', 'ITAG_USER', 'itag_user@digital.justice.gov.uk', 1, 'nomis'),
+        ('A04C70EE-51C9-4852-8D0D-130DA5C85C43', 'RESET_USER', 'reset_user@digital.justice.gov.uk', 1, 'nomis'),
         ('0181F647-C7D4-41E7-9271-288EC7C01F90', 'DM_USER', 'dm_user@digital.justice.gov.uk', 0, 'nomis'),
         ('151DD6BC-88EE-4246-AA18-45924819C9F5', 'EXPIRED_TEST_USER', 'expired_test_user@digital.justice.gov.uk', 1, 'nomis'),
         ('86192295-8652-40BB-B03F-4D56BB93C1D7', 'RESET_TEST_USER', 'reset_test@digital.justice.gov.uk', 1, 'nomis'),
