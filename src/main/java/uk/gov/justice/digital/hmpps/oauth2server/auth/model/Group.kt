@@ -1,62 +1,41 @@
-package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
+package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
-import static javax.persistence.CascadeType.ALL;
+import org.hibernate.annotations.GenericGenerator
+import java.io.Serializable
+import java.util.UUID
+import javax.persistence.CascadeType
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.OneToMany
+import javax.persistence.Table
 
 @Entity
 @Table(name = "GROUPS")
-@Data
-@NoArgsConstructor
-@EqualsAndHashCode(of = {"groupCode"})
-public class Group implements Serializable {
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "group_id", updatable = false, nullable = false)
-    private UUID id;
+class Group(
+  @Column(name = "group_code", nullable = false) val groupCode: String,
+  @Column(name = "group_name", nullable = false) val groupName: String,
+) : Serializable {
+  @Id
+  @GeneratedValue(generator = "UUID")
+  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+  @Column(name = "group_id", updatable = false, nullable = false)
+  val id: UUID? = null
 
-    @Column(name = "group_code", nullable = false)
-    private String groupCode;
+  @OneToMany(mappedBy = "group", cascade = [CascadeType.ALL], orphanRemoval = true)
+  val assignableRoles: MutableSet<GroupAssignableRole> = mutableSetOf()
 
-    @Column(name = "group_name", nullable = false)
-    private String groupName;
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
 
-    @OneToMany(mappedBy = "group", cascade = ALL, orphanRemoval = true)
-    private Set<GroupAssignableRole> assignableRoles = new HashSet<>();
+    other as Group
 
-    public Group(final String groupCode, final String groupName) {
-        this.groupCode = groupCode;
-        this.groupName = groupName;
-    }
+    if (groupCode != other.groupCode) return false
 
-    public UUID getId() {
-        return this.id;
-    }
+    return true
+  }
 
-    public String getGroupCode() {
-        return this.groupCode;
-    }
-
-    public String getGroupName() {
-        return this.groupName;
-    }
-
-    public Set<GroupAssignableRole> getAssignableRoles() {
-        return this.assignableRoles;
-    }
+  override fun hashCode(): Int = groupCode.hashCode()
 }

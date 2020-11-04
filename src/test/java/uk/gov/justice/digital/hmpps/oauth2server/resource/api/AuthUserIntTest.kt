@@ -81,7 +81,7 @@ class AuthUserIntTest : IntegrationTest() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.[*].roleCode").value<List<String>> {
-        assertThat(it).isEqualTo(listOf("GLOBAL_SEARCH", "LICENCE_RO"))
+        assertThat(it).isEqualTo(listOf("LICENCE_RO", "GLOBAL_SEARCH"))
       }
   }
 

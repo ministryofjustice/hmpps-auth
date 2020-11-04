@@ -374,10 +374,9 @@ class AuthUserServiceTest {
   @Test
   fun createUser_setRoles() {
     val group = Group("SITE_1_GROUP_1", "desc")
-    group.assignableRoles = setOf(
-      GroupAssignableRole(Authority("AUTH_AUTO", "Auth Name"), group, true),
-      GroupAssignableRole(Authority("AUTH_MANUAL", "Auth Name"), group, false)
-    )
+    group.assignableRoles.add(GroupAssignableRole(Authority("AUTH_AUTO", "Auth Name"), group, true))
+    group.assignableRoles.add(GroupAssignableRole(Authority("AUTH_MANUAL", "Auth Name"), group, false))
+
     whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(listOf(group))
     authUserService.createUser(
       "userMe",
