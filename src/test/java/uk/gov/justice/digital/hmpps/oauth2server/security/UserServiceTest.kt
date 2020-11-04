@@ -20,8 +20,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.azure.service.AzureUserService
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
@@ -139,9 +139,7 @@ class UserServiceTest {
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.empty())
       whenever(nomisUserService.getNomisUserByUsername("joe")).thenReturn(
-        Optional.of(
-          NomisUserPersonDetails.builder().username("joe").build()
-        )
+        Optional.of(createSampleNomisUser(username = "joe"))
       )
       whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(listOf())
       whenever(userRepository.save<User>(any())).thenAnswer { it.getArguments()[0] }
@@ -157,9 +155,7 @@ class UserServiceTest {
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.empty())
       whenever(nomisUserService.getNomisUserByUsername("joe")).thenReturn(
-        Optional.of(
-          NomisUserPersonDetails.builder().username("joe").build()
-        )
+        Optional.of(createSampleNomisUser(username = "joe"))
       )
       whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(
         listOf("a@b.justice.gov.uk")
@@ -340,12 +336,18 @@ class UserServiceTest {
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
-          NomisUserPersonDetails.builder().username("U1")
-            .staff(Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE")).build(),
-          NomisUserPersonDetails.builder().username("U2")
-            .staff(Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE")).build(),
-          NomisUserPersonDetails.builder().username("U3")
-            .staff(Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE")).build(),
+          createSampleNomisUser(
+            staff = Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE"),
+            username = "U1"
+          ),
+          createSampleNomisUser(
+            staff = Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE"),
+            username = "U2"
+          ),
+          createSampleNomisUser(
+            staff = Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE"),
+            username = "U3"
+          ),
         )
       )
 
@@ -395,12 +397,18 @@ class UserServiceTest {
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
-          NomisUserPersonDetails.builder().username("U1")
-            .staff(Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE")).build(),
-          NomisUserPersonDetails.builder().username("U2")
-            .staff(Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE")).build(),
-          NomisUserPersonDetails.builder().username("U3")
-            .staff(Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE")).build(),
+          createSampleNomisUser(
+            staff = Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE"),
+            username = "U1"
+          ),
+          createSampleNomisUser(
+            staff = Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE"),
+            username = "U2"
+          ),
+          createSampleNomisUser(
+            staff = Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE"),
+            username = "U3"
+          )
         )
       )
 
@@ -450,14 +458,23 @@ class UserServiceTest {
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
-          NomisUserPersonDetails.builder().username("U1")
-            .staff(Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE")).build(),
-          NomisUserPersonDetails.builder().username("U2")
-            .staff(Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE")).build(),
-          NomisUserPersonDetails.builder().username("U3")
-            .staff(Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE")).build(),
-          NomisUserPersonDetails.builder().username("U4")
-            .staff(Staff(firstName = "f4", lastName = "l4", staffId = 4, status = "INACTIVE")).build(),
+
+          createSampleNomisUser(
+            staff = Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE"),
+            username = "U1"
+          ),
+          createSampleNomisUser(
+            staff = Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE"),
+            username = "U2"
+          ),
+          createSampleNomisUser(
+            staff = Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE"),
+            username = "U3"
+          ),
+          createSampleNomisUser(
+            staff = Staff(firstName = "f4", lastName = "l4", staffId = 4, status = "INACTIVE"),
+            username = "U4"
+          )
         )
       )
 
@@ -596,14 +613,8 @@ class UserServiceTest {
   private fun createUser() = Optional.of(User.of("someuser"))
 
   private val staffUserAccountForBob: Optional<NomisUserPersonDetails>
-    get() {
-      val staffUserAccount = NomisUserPersonDetails()
-      staffUserAccount.username = "nomisuser"
-      staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "bloggs", staffId = 5)
-      val detail = AccountDetail("user", "OPEN", "profile", null)
-      staffUserAccount.accountDetail = detail
-      return Optional.of(staffUserAccount)
-    }
+    get() =
+      Optional.of(createSampleNomisUser(staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "bloggs", staffId = 5), username = "nomisuser"))
 
   private val deliusUserAccountForBob =
     Optional.of(DeliusUserPersonDetails("deliusUser", "12345", "Delius", "Smith", "a@b.com", true, false, setOf()))

@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
@@ -68,12 +69,8 @@ internal class NomisUserServiceTest {
     verifyNoMoreInteractions(staffUserAccountRepository)
   }
 
-  private fun getNomisUser(username: String): NomisUserPersonDetails {
-    val account = NomisUserPersonDetails()
-    account.staff = Staff(firstName = "bob", status = "INACTIVE", lastName = "last", staffId = 5)
-    account.username = username
-    return account
-  }
+  private fun getNomisUser(username: String): NomisUserPersonDetails =
+    createSampleNomisUser(staff = Staff(firstName = "bob", status = "INACTIVE", lastName = "last", staffId = 5), username = username)
 
   private fun getUserFromAuth(username: String) = User.builder().username(username).source(nomis).verified(true).build()
 }

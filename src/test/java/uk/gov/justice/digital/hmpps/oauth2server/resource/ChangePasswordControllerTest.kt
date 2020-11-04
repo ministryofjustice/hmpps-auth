@@ -21,9 +21,9 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper
 import uk.gov.justice.digital.hmpps.oauth2server.security.ChangePasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException
@@ -316,8 +316,7 @@ class ChangePasswordControllerTest {
   }
 
   private fun setupGetUserCallForProfile(profile: String): NomisUserPersonDetails {
-    val user = NomisUserPersonDetails()
-    user.accountDetail = AccountDetail(username = "user", profile = profile)
+    val user = NomisUserPersonDetailsHelper.createSampleNomisUser(profile)
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     return user
   }

@@ -16,8 +16,7 @@ import org.mockito.Mockito.doThrow
 import org.springframework.security.authentication.LockedException
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordValidationFailureException
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -398,9 +397,7 @@ class AbstractPasswordControllerTest {
   }
 
   private fun setupGetUserCallForProfile(profile: String?) {
-    val user = NomisUserPersonDetails()
-    val detail = if (profile.isNullOrBlank()) AccountDetail(username = "user") else AccountDetail(username = "user", profile = profile)
-    user.accountDetail = detail
+    val user = if (profile.isNullOrBlank()) createSampleNomisUser() else createSampleNomisUser(profile)
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
   }
 }

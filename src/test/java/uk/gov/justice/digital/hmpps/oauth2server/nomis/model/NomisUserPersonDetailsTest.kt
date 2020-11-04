@@ -64,10 +64,9 @@ class NomisUserPersonDetailsTest {
     status: String = "STATUS",
     passwordExpiry: LocalDateTime? = null,
   ): NomisUserPersonDetails {
-    val account = NomisUserPersonDetails()
-    val detail = AccountDetail(username = "user", accountStatus = status, passwordExpiry = passwordExpiry)
-    account.accountDetail = detail
-    account.username = "user"
-    return account
+
+    val staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "Smith", staffId = 1)
+    val detail = AccountDetail("user", status, "TAG_GENERAL", passwordExpiry)
+    return NomisUserPersonDetails(username = "bob", staff = staff, accountDetail = detail)
   }
 }

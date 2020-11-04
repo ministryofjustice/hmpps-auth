@@ -123,54 +123,31 @@ class NomisUserDetailsServiceTest {
     assertThat(itagUser.isCredentialsNonExpired).isTrue()
   }
 
-  private fun buildStandardUser(username: String): NomisUserPersonDetails {
+  private fun buildStandardUser(username: String, accountDetail: AccountDetail = buildAccountDetail(username, OPEN)): NomisUserPersonDetails {
     val staff = buildStaff()
-    return NomisUserPersonDetails.builder()
-      .username(username)
-      .password("pass")
-      .type("GENERAL")
-      .staff(staff)
-      .roles(
-        listOf(
-          UserCaseloadRole(
-            id = UserCaseloadRoleIdentity(caseload = "NWEB", roleId = ROLE_ID, username = username),
-            role = Role(code = "ROLE1", id = ROLE_ID)
-          )
-        )
+    val roles = listOf(
+      UserCaseloadRole(
+        id = UserCaseloadRoleIdentity(caseload = "NWEB", roleId = ROLE_ID, username = username),
+        role = Role(code = "ROLE1", id = ROLE_ID)
       )
-      .accountDetail(buildAccountDetail(username, OPEN))
-      .build()
+    )
+    return NomisUserPersonDetails(username = username, password = "pass", type = "GENERAL", staff = staff, roles = roles, accountDetail = accountDetail, activeCaseLoadId = null)
   }
 
-  private fun buildExpiredUser(): NomisUserPersonDetails {
-    val userAccount = buildStandardUser("EXPIRED_USER")
-    userAccount.accountDetail = buildAccountDetail("EXPIRED_USER", EXPIRED)
-    return userAccount
-  }
+  private fun buildExpiredUser(): NomisUserPersonDetails =
+    buildStandardUser("EXPIRED_USER", buildAccountDetail("EXPIRED_USER", EXPIRED))
 
-  private fun buildLockedUser(): NomisUserPersonDetails {
-    val userAccount = buildStandardUser("LOCKED_USER")
-    userAccount.accountDetail = buildAccountDetail("LOCKED_USER", LOCKED)
-    return userAccount
-  }
+  private fun buildLockedUser(): NomisUserPersonDetails =
+    buildStandardUser("LOCKED_USER", buildAccountDetail("LOCKED_USER", LOCKED))
 
-  private fun buildExpiredLockedUser(): NomisUserPersonDetails {
-    val userAccount = buildStandardUser("EXPIRED_USER")
-    userAccount.accountDetail = buildAccountDetail("EXPIRED_USER", EXPIRED_LOCKED)
-    return userAccount
-  }
+  private fun buildExpiredLockedUser(): NomisUserPersonDetails =
+    buildStandardUser("EXPIRED_USER", buildAccountDetail("EXPIRED_USER", EXPIRED_LOCKED))
 
-  private fun buildLockedTimedUser(): NomisUserPersonDetails {
-    val userAccount = buildStandardUser("LOCKED_USER")
-    userAccount.accountDetail = buildAccountDetail("LOCKED_USER", LOCKED_TIMED)
-    return userAccount
-  }
+  private fun buildLockedTimedUser(): NomisUserPersonDetails =
+    buildStandardUser("LOCKED_USER", buildAccountDetail("LOCKED_USER", LOCKED_TIMED))
 
-  private fun buildExpiredGraceUser(): NomisUserPersonDetails {
-    val userAccount = buildStandardUser("EXPIRED_USER")
-    userAccount.accountDetail = buildAccountDetail("EXPIRED_USER", EXPIRED_GRACE)
-    return userAccount
-  }
+  private fun buildExpiredGraceUser(): NomisUserPersonDetails =
+    buildStandardUser("EXPIRED_USER", buildAccountDetail("EXPIRED_USER", EXPIRED_GRACE))
 
   private fun buildAccountDetail(username: String, status: AccountStatus): AccountDetail {
     return AccountDetail(

@@ -34,9 +34,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
@@ -1210,14 +1208,7 @@ class AuthUserServiceTest {
   }
 
   private val staffUserAccountForBob: UserPersonDetails
-    get() {
-      val staffUserAccount = NomisUserPersonDetails()
-      staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "Smith", staffId = 1)
-      val detail = AccountDetail("user", "OPEN", "profile", null)
-      staffUserAccount.accountDetail = detail
-      staffUserAccount.username = "bob"
-      return staffUserAccount
-    }
+    get() = createSampleNomisUser()
 
   companion object {
     private val PRINCIPAL: Authentication = UsernamePasswordAuthenticationToken("bob", "pass")

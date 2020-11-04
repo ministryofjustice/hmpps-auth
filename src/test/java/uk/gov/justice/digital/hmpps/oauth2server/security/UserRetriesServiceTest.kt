@@ -15,8 +15,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService
 import java.time.LocalDateTime
@@ -185,12 +184,5 @@ class UserRetriesServiceTest {
   }
 
   private val userPersonDetailsForBob: UserPersonDetails
-    get() {
-      val staffUserAccount = NomisUserPersonDetails()
-      staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "bloggs", staffId = 5)
-      val detail = AccountDetail("user", "OPEN", "profile", null)
-      staffUserAccount.accountDetail = detail
-      staffUserAccount.username = "bob"
-      return staffUserAccount
-    }
+    get() = createSampleNomisUser(staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "bloggs", staffId = 5))
 }

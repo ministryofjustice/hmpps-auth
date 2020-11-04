@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserServic
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
@@ -70,7 +71,7 @@ internal class UserContextServiceTest {
     val nomisUser = NomisUserPersonDetails(
       "username",
       "",
-      null,
+      Staff(firstName = "bob", status = "ACTIVE", lastName = "Smith", staffId = 1),
       "GEN",
       "MDI",
       listOf(),
