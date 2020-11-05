@@ -86,7 +86,7 @@ class UserRetriesServiceTest {
       verify(userRepository).save(
         check { user ->
           assertThat(user.email).isEqualTo("newemail@bob.com")
-          assertThat(user.isVerified).isTrue()
+          assertThat(user.verified).isTrue()
         }
       )
     }
@@ -99,7 +99,7 @@ class UserRetriesServiceTest {
         check {
           assertThat(it.username).isEqualTo("bob")
           assertThat(it.email).isEqualTo("bob@bob.justice.gov.uk")
-          assertThat(it.isVerified).isTrue()
+          assertThat(it.verified).isTrue()
           assertThat(it.lastLoggedIn).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now())
         }
       )
@@ -112,7 +112,7 @@ class UserRetriesServiceTest {
       verify(userRepository).save<User>(
         check {
           assertThat(it.username).isEqualTo("bob")
-          assertThat(it.isVerified).isFalse()
+          assertThat(it.verified).isFalse()
           assertThat(it.lastLoggedIn).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now())
         }
       )

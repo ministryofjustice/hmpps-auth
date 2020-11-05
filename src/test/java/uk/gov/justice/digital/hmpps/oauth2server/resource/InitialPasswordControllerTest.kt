@@ -147,7 +147,7 @@ class InitialPasswordControllerTest {
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
     whenever(tokenService.getToken(any(), anyString())).thenReturn(
       Optional.of(
-        User.of("someuser").createToken(UserToken.TokenType.RESET)
+        createSampleUser(username = "someuser").createToken(UserToken.TokenType.RESET)
       )
     )
   }

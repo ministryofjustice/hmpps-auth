@@ -73,7 +73,7 @@ class ChangePasswordServiceTest {
   fun setPassword_LockedAccount() {
     val staffUserAccount = staffUserAccountLockedForBobOptional
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount)
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThatThrownBy { changePasswordService.setPassword("bob", "pass") }.isInstanceOf(LockedException::class.java)
@@ -84,7 +84,7 @@ class ChangePasswordServiceTest {
     val optionalUser = buildAuthUser()
     optionalUser.map { User::class.java.cast(it) }.get().isEnabled = false
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(optionalUser)
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThatThrownBy { changePasswordService.setPassword("bob", "pass") }.isInstanceOf(LockedException::class.java)

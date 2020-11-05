@@ -15,7 +15,7 @@ import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Captor
 import org.mockito.Mockito.verify
 import org.mockito.junit.jupiter.MockitoExtension
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import java.time.LocalDateTime
 
@@ -31,7 +31,7 @@ class DisableInactiveAuthUsersServiceTest {
 
   @Test
   fun findAndDisableInactiveAuthUsers_Processed() {
-    val users = listOf(User.of("user"), User.of("joe"))
+    val users = listOf(createSampleUser(username = "user"), createSampleUser(username = "joe"))
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
       .thenReturn(users)
     assertThat(service.processInBatches()).isEqualTo(2)
@@ -39,7 +39,7 @@ class DisableInactiveAuthUsersServiceTest {
 
   @Test
   fun findAndDisableInactiveAuthUsers_CheckAge() {
-    val users = listOf(User.of("user"), User.of("joe"))
+    val users = listOf(createSampleUser(username = "user"), createSampleUser(username = "joe"))
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
       .thenReturn(users)
     assertThat(service.processInBatches()).isEqualTo(2)
@@ -53,8 +53,8 @@ class DisableInactiveAuthUsersServiceTest {
   @Test
   fun findAndDisableInactiveAuthUsers_Disabled() {
     val users = listOf(
-      User.builder().username("user").enabled(true).build(),
-      User.builder().username("joe").enabled(true).build()
+      createSampleUser(username = "user", enabled = true),
+      createSampleUser(username = "joe", enabled = true),
     )
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
       .thenReturn(users)
@@ -65,8 +65,8 @@ class DisableInactiveAuthUsersServiceTest {
   @Test
   fun findAndDisableInactiveAuthUsers_Telemetry() {
     val users = listOf(
-      User.builder().username("user").enabled(true).build(),
-      User.builder().username("joe").enabled(true).build()
+      createSampleUser(username = "user", enabled = true),
+      createSampleUser(username = "joe", enabled = true),
     )
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndMasterIsTrueOrderByLastLoggedIn(any()))
       .thenReturn(users)

@@ -14,7 +14,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.ArgumentMatchers.isNull
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.CHANGE
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.VERIFIED
@@ -38,14 +38,14 @@ class TokenServiceTest {
 
   @Test
   fun `get token WrongType`() {
-    val userToken = User.of("user").createToken(VERIFIED)
+    val userToken = createSampleUser(username = "user").createToken(VERIFIED)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThat(tokenService.getToken(RESET, "token")).isEmpty
   }
 
   @Test
   fun `get token`() {
-    val userToken = User.of("user").createToken(RESET)
+    val userToken = createSampleUser(username = "user").createToken(RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThat(tokenService.getToken(RESET, "token")).get().isSameAs(userToken)
   }
@@ -63,7 +63,7 @@ class TokenServiceTest {
 
   @Test
   fun `get user from token WrongType`() {
-    val userToken = User.of("user").createToken(VERIFIED)
+    val userToken = createSampleUser(username = "user").createToken(VERIFIED)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThatThrownBy {
       tokenService.getUserFromToken(
@@ -75,7 +75,7 @@ class TokenServiceTest {
 
   @Test
   fun `get user from token token`() {
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     val userToken = user.createToken(RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThat(tokenService.getUserFromToken(RESET, "token")).isSameAs(user)
@@ -83,21 +83,21 @@ class TokenServiceTest {
 
   @Test
   fun checkToken() {
-    val userToken = User.of("user").createToken(RESET)
+    val userToken = createSampleUser(username = "user").createToken(RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThat(tokenService.checkToken(RESET, "token")).isEmpty
   }
 
   @Test
   fun `checkToken invalid`() {
-    val userToken = User.of("user").createToken(CHANGE)
+    val userToken = createSampleUser(username = "user").createToken(CHANGE)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThat(tokenService.checkToken(RESET, "token")).get().isEqualTo("invalid")
   }
 
   @Test
   fun `checkToken expiredTelemetryUsername`() {
-    val userToken = User.of("user").createToken(RESET)
+    val userToken = createSampleUser(username = "user").createToken(RESET)
     userToken.tokenExpiry = LocalDateTime.now().minusHours(1)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     tokenService.checkToken(RESET, "token")
@@ -112,7 +112,7 @@ class TokenServiceTest {
 
   @Test
   fun `checkToken expired`() {
-    val userToken = User.of("joe").createToken(RESET)
+    val userToken = createSampleUser(username = "joe").createToken(RESET)
     userToken.tokenExpiry = LocalDateTime.now().minusHours(1)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThat(tokenService.checkToken(RESET, "token")).get().isEqualTo("expired")
@@ -120,7 +120,7 @@ class TokenServiceTest {
 
   @Test
   fun createToken() {
-    val user = User.of("joe")
+    val user = createSampleUser(username = "joe")
     whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     val token = tokenService.createToken(RESET, "token")
     assertThat(token).isNotNull()
@@ -129,7 +129,7 @@ class TokenServiceTest {
 
   @Test
   fun `createToken check telemetry`() {
-    val user = User.of("joe")
+    val user = createSampleUser(username = "joe")
     whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(user))
     tokenService.createToken(RESET, "token")
     verify(telemetryClient).trackEvent(
@@ -150,7 +150,7 @@ class TokenServiceTest {
 
   @Test
   fun `remove token WrongType`() {
-    val userToken = User.of("user").createToken(VERIFIED)
+    val userToken = createSampleUser(username = "user").createToken(VERIFIED)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     tokenService.removeToken(RESET, "token")
     verify(userTokenRepository, never()).delete(any())
@@ -158,7 +158,7 @@ class TokenServiceTest {
 
   @Test
   fun `remove token`() {
-    val userToken = User.of("user").createToken(RESET)
+    val userToken = createSampleUser(username = "user").createToken(RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     tokenService.removeToken(RESET, "token")
     verify(userTokenRepository).delete(userToken)

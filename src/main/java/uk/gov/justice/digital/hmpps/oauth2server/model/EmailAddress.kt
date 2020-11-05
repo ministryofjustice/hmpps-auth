@@ -16,5 +16,5 @@ data class EmailAddress(
   val email: String,
 ) {
 
-  constructor(u: User) : this(u.username, u.email)
+  constructor(u: User) : this(u.username, u.email!!)
 }

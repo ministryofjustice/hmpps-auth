@@ -75,7 +75,7 @@ class ResetPasswordServiceImpl(
     }
     val user = optionalUser.get()
     val templateAndParameters = getTemplateAndParameters(url, multipleMatchesAndCanBeReset, user)
-    sendEmail(user.username, templateAndParameters, user.email)
+    sendEmail(user.username, templateAndParameters, user.email!!)
     return Optional.ofNullable(templateAndParameters.resetLink)
   }
 
@@ -94,7 +94,7 @@ class ResetPasswordServiceImpl(
       Optional.empty()
     } else userService.getEmailAddressFromNomis(user.username).map { e: String? ->
       user.email = e
-      user.isVerified = true
+      user.verified = true
       userRepository.save(user)
       user
     }
@@ -164,7 +164,7 @@ class ResetPasswordServiceImpl(
     // otherwise must be nomis user so will have a staff account instead.
     val staffUserAccount = userPersonDetails as NomisUserPersonDetails
     val status = staffUserAccount.accountDetail.status
-    return staffUserAccount.staff.isActive && (!status.isLocked || status.isUserLocked || user.isLocked)
+    return staffUserAccount.staff.isActive && (!status.isLocked || status.isUserLocked || user.locked)
   }
 
   @Transactional(transactionManager = "authTransactionManager")

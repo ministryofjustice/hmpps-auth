@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.builder
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository
@@ -75,16 +74,17 @@ class AuthUserService(
     // create the user
     val person = Person(firstName!!.trim(), lastName!!.trim())
     // obtain list of authorities that should be assigned for group
-    val roles = groups.flatMap { it.assignableRoles }.filter { it.automatic }.map { it.role }.toSet()
+    val roles = groups.flatMap { it.assignableRoles }.filter { it.automatic }.mapNotNull { it.role }.toSet()
 
-    val user = builder()
-      .username(username)
-      .email(email)
-      .enabled(true)
-      .source(AuthSource.auth)
-      .person(person)
-      .authorities(roles)
-      .groups(groups).build()
+    val user = User(
+      username = username,
+      email = email,
+      enabled = true,
+      source = AuthSource.auth,
+      person = person,
+      authorities = roles,
+      groups = groups,
+    )
     return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate", groups)
   }
 
@@ -176,8 +176,8 @@ class AuthUserService(
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
       .orElseThrow { EntityNotFoundException("User not found with username $username") }
     maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
-    if (user.isVerified) {
-      user.isVerified = false
+    if (user.verified) {
+      user.verified = false
       userRepository.save(user)
       return verifyEmailService.requestVerification(
         usernameInput,
@@ -268,7 +268,7 @@ class AuthUserService(
     val username = userPersonDetails.username
     val userOptional = userRepository.findByUsername(username)
     val user = userOptional.orElseGet { userPersonDetails.toUser() }
-    user.isLocked = true
+    user.locked = true
     userRepository.save(user)
   }
 
@@ -277,9 +277,9 @@ class AuthUserService(
     val username = userPersonDetails.username
     val userOptional = userRepository.findByUsername(username)
     val user = userOptional.orElseGet { userPersonDetails.toUser() }
-    user.isLocked = false
+    user.locked = false
     // TODO: This isn't quite right - shouldn't always verify a user when unlocking...
-    user.isVerified = true
+    user.verified = true
     userRepository.save(user)
   }
 
@@ -289,7 +289,7 @@ class AuthUserService(
     if (passwordEncoder.matches(password, user.password)) {
       throw ReusedPasswordException()
     }
-    user.password = passwordEncoder.encode(password)
+    user.setPassword(passwordEncoder.encode(password))
     user.passwordExpiry = LocalDateTime.now().plusDays(passwordAge)
   }
 
@@ -299,7 +299,7 @@ class AuthUserService(
     validate(firstName, lastName)
     // will always be a user at this stage since we're retrieved it from the authentication
     val user = userRepository.findByUsernameAndSource(username, AuthSource.auth).orElseThrow()
-    user.person.firstName = firstName!!.trim()
+    user.person!!.firstName = firstName!!.trim()
     user.person.lastName = lastName!!.trim()
     userRepository.save(user)
   }

@@ -90,9 +90,9 @@ class MfaServiceTest {
 
   @Test
   fun `validateAndRemoveMfaCode token error`() {
-    val userToken = User.of("user").createToken(TokenType.MFA)
+    val userToken = createSampleUser(username = "user").createToken(TokenType.MFA)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createSampleUser(username = "bob")))
 
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("someproblem"))
     assertThatThrownBy { service.validateAndRemoveMfaCode("", "somecode") }.isInstanceOf(MfaFlowException::class.java)
@@ -101,17 +101,17 @@ class MfaServiceTest {
 
   @Test
   fun `validateAndRemoveMfaCode success`() {
-    val userToken = User.of("user").createToken(TokenType.MFA)
+    val userToken = createSampleUser(username = "user").createToken(TokenType.MFA)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createSampleUser(username = "bob")))
     service.validateAndRemoveMfaCode("sometoken", "somecode")
   }
 
   @Test
   fun `validateAndRemoveMfaCode success get token call`() {
-    val userToken = User.of("user").createToken(TokenType.MFA)
+    val userToken = createSampleUser(username = "user").createToken(TokenType.MFA)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createSampleUser(username = "bob")))
     service.validateAndRemoveMfaCode("sometoken", "somecode")
 
     verify(tokenService).getToken(TokenType.MFA, "sometoken")
@@ -119,9 +119,9 @@ class MfaServiceTest {
 
   @Test
   fun `validateAndRemoveMfaCode success check token call`() {
-    val userToken = User.of("user").createToken(TokenType.MFA)
+    val userToken = createSampleUser(username = "user").createToken(TokenType.MFA)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createSampleUser(username = "bob")))
     service.validateAndRemoveMfaCode("sometoken", "somecode")
 
     verify(tokenService).checkToken(TokenType.MFA_CODE, "somecode")
@@ -129,9 +129,9 @@ class MfaServiceTest {
 
   @Test
   fun `validateAndRemoveMfaCode success find master details`() {
-    val userToken = User.of("user").createToken(TokenType.MFA)
+    val userToken = createSampleUser(username = "user").createToken(TokenType.MFA)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createSampleUser(username = "bob")))
     service.validateAndRemoveMfaCode("sometoken", "somecode")
 
     verify(userService).findMasterUserPersonDetails("user")
@@ -139,9 +139,9 @@ class MfaServiceTest {
 
   @Test
   fun `validateAndRemoveMfaCode success remove tokens`() {
-    val userToken = User.of("user").createToken(TokenType.MFA)
+    val userToken = createSampleUser(username = "user").createToken(TokenType.MFA)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createSampleUser(username = "bob")))
     service.validateAndRemoveMfaCode("sometoken", "somecode")
 
     verify(tokenService).removeToken(TokenType.MFA, "sometoken")
@@ -150,9 +150,9 @@ class MfaServiceTest {
 
   @Test
   fun `validateAndRemoveMfaCode success reset retries `() {
-    val userToken = User.of("user").createToken(TokenType.MFA)
+    val userToken = createSampleUser(username = "user").createToken(TokenType.MFA)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("bob")))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createSampleUser(username = "bob")))
     service.validateAndRemoveMfaCode("sometoken", "somecode")
 
     verify(userRetriesService).resetRetries("bob")
@@ -160,7 +160,7 @@ class MfaServiceTest {
 
   @Test
   fun `validateAndRemoveMfaCode account locked`() {
-    val userToken = User.of("user").createToken(TokenType.MFA)
+    val userToken = createSampleUser(username = "user").createToken(TokenType.MFA)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(
       Optional.of(
@@ -329,7 +329,7 @@ class MfaServiceTest {
 
   @Test
   fun `resendMfaCode no code`() {
-    val userToken = User.of("user").createToken(TokenType.MFA)
+    val userToken = createSampleUser(username = "user").createToken(TokenType.MFA)
     whenever(tokenService.getToken(any(), anyString())).thenReturn(Optional.of(userToken))
 
     val code = service.resendMfaCode("sometoken", MfaPreferenceType.EMAIL)
@@ -399,7 +399,7 @@ class MfaServiceTest {
 
   @Test
   fun `Update User Mfa Preference to text`() {
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(user))
     service.updateUserMfaPreference(MfaPreferenceType.TEXT, "user")
     assertThat(user.mfaPreference).isEqualTo(MfaPreferenceType.TEXT)

@@ -58,7 +58,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_noEmail() {
-    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User.of("user")))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(createSampleUser(username = "user")))
     val optional = resetPasswordService.requestResetPassword("user", "url")
     assertThat(optional).isEmpty
   }
@@ -362,7 +362,7 @@ class ResetPasswordServiceTest {
   fun resetPassword() {
     val staffUserAccountForBob = staffUserAccountForBob
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccountForBob))
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     user.person = Person("First", "Last")
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
@@ -429,7 +429,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun resetPasswordLockedAccount_authUser() {
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     user.source = AuthSource.auth
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
@@ -523,7 +523,7 @@ class ResetPasswordServiceTest {
       check<User> { user ->
         assertThat(user.username).isEqualTo("user")
         assertThat(user.email).isEqualTo("Bob.smith@justice.gov.uk")
-        assertThat(user.isVerified).isTrue()
+        assertThat(user.verified).isTrue()
         assertThat(user.source).isEqualTo(AuthSource.nomis)
       }
     )

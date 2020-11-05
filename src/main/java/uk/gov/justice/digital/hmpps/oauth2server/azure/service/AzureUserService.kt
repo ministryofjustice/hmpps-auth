@@ -22,12 +22,12 @@ class AzureUserService(private val userRepository: UserRepository) {
           mutableListOf(),
           true,
           it.username,
-          it.person.firstName,
+          it.person!!.firstName,
           it.person.lastName,
-          it.email,
+          it.email!!,
           credentialsNonExpired = true,
           accountNonExpired = true,
-          accountNonLocked = true
+          accountNonLocked = true,
         )
       }
 }

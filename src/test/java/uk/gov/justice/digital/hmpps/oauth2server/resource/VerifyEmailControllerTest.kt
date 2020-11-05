@@ -68,7 +68,7 @@ class VerifyEmailControllerTest {
 
   @Test
   fun verifyEmailRequest_existingUserEmail() {
-    val user = User.of("bob")
+    val user = createSampleUser(username = "bob")
     user.email = "email"
     whenever(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(user))
     val modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null)
@@ -78,7 +78,7 @@ class VerifyEmailControllerTest {
 
   @Test
   fun verifyEmailRequest_existingUserEmailVerified() {
-    val user = User.of("bob")
+    val user = createSampleUser(username = "bob")
     user.isVerified = true
     whenever(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(user))
     SecurityContextHolder.getContext().authentication = principal
@@ -418,7 +418,7 @@ class VerifyEmailControllerTest {
   @Test
   fun `verify secondary email link expired link resend`() {
     whenever(tokenService.getUserFromToken(UserToken.TokenType.SECONDARY, "token"))
-      .thenReturn(User.of("bob"))
+      .thenReturn(createSampleUser(username = "bob"))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/expired"))
     whenever(
       verifyEmailService.resendVerificationCodeSecondaryEmail(
@@ -435,7 +435,7 @@ class VerifyEmailControllerTest {
   @Test
   fun `verify secondary email link expired link resend smoke test enabled`() {
     whenever(tokenService.getUserFromToken(UserToken.TokenType.SECONDARY, "token"))
-      .thenReturn(User.of("bob"))
+      .thenReturn(createSampleUser(username = "bob"))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/expired"))
     whenever(
       verifyEmailService.resendVerificationCodeSecondaryEmail(
