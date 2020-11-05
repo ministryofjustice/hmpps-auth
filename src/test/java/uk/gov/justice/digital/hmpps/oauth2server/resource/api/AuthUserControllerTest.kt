@@ -474,9 +474,7 @@ class AuthUserControllerTest {
     get() {
       val user = User.builder().id(UUID.fromString(USER_ID)).username("authentication").email("email").verified(true)
         .enabled(true).lastLoggedIn(LocalDateTime.of(2019, 1, 1, 12, 0)).build()
-      user.person = Person()
-      user.person.firstName = "Joe"
-      user.person.lastName = "Bloggs"
+      user.person = Person("Joe", "Bloggs")
       return user
     }
 

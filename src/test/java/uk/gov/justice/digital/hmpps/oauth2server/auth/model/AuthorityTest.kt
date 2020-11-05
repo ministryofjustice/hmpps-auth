@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority.removeRolePrefixIfNecessary
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority.Companion.removeRolePrefixIfNecessary
 
 internal class AuthorityTest {
   @Test
@@ -28,10 +28,5 @@ internal class AuthorityTest {
   @Test
   fun removeRolePrefixIfNecessary_unnecessary() {
     assertThat(removeRolePrefixIfNecessary("BOB")).isEqualTo("BOB")
-  }
-
-  @Test
-  fun removeRolePrefixIfNecessary_null() {
-    assertThat(removeRolePrefixIfNecessary(null)).isEqualTo(null)
   }
 }

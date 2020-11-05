@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.service.LoginFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
+import java.time.LocalDateTime
 import java.util.Optional
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -52,7 +53,7 @@ class MfaControllerTest {
           UserToken(
             "token",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -70,7 +71,7 @@ class MfaControllerTest {
           UserToken(
             "token",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -93,7 +94,7 @@ class MfaControllerTest {
           UserToken(
             "token",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -116,7 +117,7 @@ class MfaControllerTest {
           UserToken(
             "token",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -140,7 +141,7 @@ class MfaControllerTest {
           UserToken(
             "token",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -167,7 +168,7 @@ class MfaControllerTest {
           UserToken(
             "otken",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -191,7 +192,7 @@ class MfaControllerTest {
           UserToken(
             "otken",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -215,7 +216,7 @@ class MfaControllerTest {
           UserToken(
             "token",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -234,7 +235,7 @@ class MfaControllerTest {
           UserToken(
             "otken",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -253,7 +254,7 @@ class MfaControllerTest {
           UserToken(
             "otken",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -271,7 +272,7 @@ class MfaControllerTest {
           UserToken(
             "otken",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -289,7 +290,7 @@ class MfaControllerTest {
           UserToken(
             "otken",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
@@ -308,7 +309,7 @@ class MfaControllerTest {
           UserToken(
             "otken",
             TokenType.MFA,
-            null,
+            LocalDateTime.now().plusHours(1L),
             user
           )
         )
