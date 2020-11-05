@@ -75,7 +75,7 @@ class AuthUserService(
     // create the user
     val person = Person(firstName!!.trim(), lastName!!.trim())
     // obtain list of authorities that should be assigned for group
-    val roles = groups.flatMap { it.assignableRoles }.filter { it.isAutomatic }.map { it.role }.toSet()
+    val roles = groups.flatMap { it.assignableRoles }.filter { it.automatic }.map { it.role }.toSet()
 
     val user = builder()
       .username(username)

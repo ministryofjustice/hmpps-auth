@@ -1,54 +1,39 @@
-package uk.gov.justice.digital.hmpps.oauth2server.auth.model;
+package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.GroupAssignableRole.GroupAssignableRoleId;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import java.io.Serializable;
-import java.util.UUID;
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.GroupAssignableRole.GroupAssignableRoleId
+import java.io.Serializable
+import java.util.UUID
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.IdClass
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import javax.persistence.Table
 
 @Entity
 @Table(name = "GROUP_ASSIGNABLE_ROLE")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString(of = {"role", "automatic"})
-@IdClass(GroupAssignableRoleId.class)
-public class GroupAssignableRole implements Serializable {
-    @Id
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Authority role;
+@IdClass(GroupAssignableRoleId::class)
+data class GroupAssignableRole(
 
-    @Id
-    @ManyToOne
-    @JoinColumn(name = "group_id")
-    private Group group;
+  @Id
+  @ManyToOne
+  @JoinColumn(name = "role_id")
+  val role: Authority? = null,
 
-    private boolean automatic;
+  @Id
+  @ManyToOne
+  @JoinColumn(name = "group_id")
+  val group: Group? = null,
 
-    public Authority getRole() {
-        return this.role;
-    }
+  val automatic: Boolean = false,
+) : Serializable {
 
-    public Group getGroup() {
-        return this.group;
-    }
+  class GroupAssignableRoleId : Serializable {
+    private val group: UUID? = null
+    private val role: UUID? = null
+  }
 
-    public boolean isAutomatic() {
-        return this.automatic;
-    }
-
-    public static class GroupAssignableRoleId implements Serializable {
-        private UUID group;
-        private UUID role;
-    }
+  override fun toString(): String {
+    return "GroupAssignableRole(role=$role, automatic=$automatic)"
+  }
 }
