@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthorityPropertyEditor
 import uk.gov.justice.digital.hmpps.oauth2server.config.SplitCollectionEditor
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
-import java.util.Map
 
 @Controller
 @RequestMapping("ui/clients")
@@ -39,8 +38,7 @@ class ClientsController(
   @GetMapping("/form")
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
   fun showEditForm(@RequestParam(value = "client", required = false) clientId: String?, model: Model): String {
-    val clientDetails: ClientDetails
-    clientDetails = if (clientId != null) {
+    val clientDetails: ClientDetails = if (clientId != null) {
       clientsDetailsService.loadClientByClientId(clientId)
     } else {
       BaseClientDetails()
@@ -57,7 +55,7 @@ class ClientsController(
     @RequestParam(value = "newClient", required = false) newClient: String?
   ): String {
     val userDetails = authentication.principal as UserPersonDetails
-    val telemetryMap = Map.of("username", userDetails.username, "clientId", clientDetails.clientId)
+    val telemetryMap = mapOf("username" to userDetails.username, "clientId" to clientDetails.clientId)
     if (newClient == null) {
       clientsDetailsService.updateClientDetails(clientDetails)
       telemetryClient.trackEvent("AuthClientDetailsUpdate", telemetryMap, null)

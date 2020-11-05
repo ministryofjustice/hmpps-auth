@@ -27,14 +27,10 @@ class VerifyMobileController(
     private val log = LoggerFactory.getLogger(VerifyMobileController::class.java)
   }
   @GetMapping("/verify-mobile")
-  fun verifyMobile(): String {
-    return "verifyMobileSent"
-  }
+  fun verifyMobile(): String = "verifyMobileSent"
 
   @GetMapping("/verify-mobile-already")
-  fun verifyMobileAlready(): String {
-    return "verifyMobileAlready"
-  }
+  fun verifyMobileAlready(): String = "verifyMobileAlready"
 
   @PostMapping("/verify-mobile")
   fun verifyMobileConfirm(@RequestParam code: String?): ModelAndView {
@@ -67,7 +63,7 @@ class VerifyMobileController(
       log.info("Validation failed for mobile phone number due to {}", e.reason)
       telemetryClient.trackEvent(
         "VerifyMobileRequestFailure",
-        java.util.Map.of("username", username, "reason", e.reason),
+        mapOf("username" to username, "reason" to e.reason),
         null
       )
       createChangeOrVerifyMobileError(e.reason)
@@ -77,10 +73,9 @@ class VerifyMobileController(
     }
   }
 
-  private fun createChangeOrVerifyMobileError(reason: String): ModelAndView {
-    return ModelAndView("redirect:/change-mobile")
+  private fun createChangeOrVerifyMobileError(reason: String): ModelAndView =
+    ModelAndView("redirect:/change-mobile")
       .addObject("error", reason)
-  }
 
   private fun redirectToVerifyMobileWithVerifyCode(verifyCode: String): ModelAndView {
     val modelAndView = ModelAndView("redirect:/verify-mobile")

@@ -73,9 +73,9 @@ class AuthUserService(
     // get the initial groups to assign to - only allowed to be empty if super user
     val groups = getInitialGroups(groupCodes, creator, authorities)
     // create the user
-    val person = Person(firstName?.trim(), lastName?.trim())
+    val person = Person(firstName!!.trim(), lastName!!.trim())
     // obtain list of authorities that should be assigned for group
-    val roles = groups.flatMap { it.assignableRoles }.filter { it.isAutomatic }.map { it.role }.toSet()
+    val roles = groups.flatMap { it.assignableRoles }.filter { it.automatic }.map { it.role }.toSet()
 
     val user = builder()
       .username(username)
@@ -299,8 +299,8 @@ class AuthUserService(
     validate(firstName, lastName)
     // will always be a user at this stage since we're retrieved it from the authentication
     val user = userRepository.findByUsernameAndSource(username, AuthSource.auth).orElseThrow()
-    user.person.firstName = firstName?.trim()
-    user.person.lastName = lastName?.trim()
+    user.person.firstName = firstName!!.trim()
+    user.person.lastName = lastName!!.trim()
     userRepository.save(user)
   }
 
