@@ -15,9 +15,9 @@ import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doThrow
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException
@@ -397,8 +397,7 @@ class ResetPasswordControllerTest {
   }
 
   private fun setupGetUserCallForProfile(profile: String): NomisUserPersonDetails {
-    val user = NomisUserPersonDetails()
-    user.accountDetail = AccountDetail(username = "user", profile = profile)
+    val user = createSampleNomisUser(profile)
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     return user
   }

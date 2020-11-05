@@ -14,8 +14,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.EmailAddress
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserRole
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -200,10 +200,7 @@ class UserControllerTest {
   }
 
   private fun setupFindUserCallForNomis(): NomisUserPersonDetails {
-    val user = NomisUserPersonDetails()
-    user.username = "principal"
-    user.staff = Staff(firstName = "JOE", status = "INACTIVE", lastName = "bloggs", staffId = 5)
-    user.accountDetail = AccountDetail(username = "user")
+    val user = createSampleNomisUser(staff = Staff(firstName = "JOE", status = "INACTIVE", lastName = "bloggs", staffId = 5), username = "principal", accountStatus = "EXPIRED & LOCKED")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     return user
   }

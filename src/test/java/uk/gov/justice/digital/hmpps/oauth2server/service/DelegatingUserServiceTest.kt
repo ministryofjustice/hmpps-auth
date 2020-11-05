@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService
 
@@ -30,9 +30,7 @@ class DelegatingUserServiceTest {
 
   @Test
   fun `lock account nomis user`() {
-    val userPersonDetails = NomisUserPersonDetails()
-    userPersonDetails.username = "bob"
-    service.lockAccount(userPersonDetails)
+    service.lockAccount(createSampleNomisUser())
 
     verify(authUserService).lockUser(any())
     verify(nomisUserService).lockAccount("bob")
@@ -67,9 +65,7 @@ class DelegatingUserServiceTest {
 
   @Test
   fun `change password with unlock nomis user`() {
-    val userPersonDetails = NomisUserPersonDetails()
-    userPersonDetails.username = "bob"
-    service.changePasswordWithUnlock(userPersonDetails, "pass")
+    service.changePasswordWithUnlock(createSampleNomisUser(), "pass")
 
     verify(authUserService).unlockUser(any())
     verify(authUserService, never()).changePassword(any(), anyString())
@@ -108,9 +104,7 @@ class DelegatingUserServiceTest {
 
   @Test
   fun `change password nomis user`() {
-    val userPersonDetails = NomisUserPersonDetails()
-    userPersonDetails.username = "bob"
-    service.changePassword(userPersonDetails, "pass")
+    service.changePassword(createSampleNomisUser(), "pass")
 
     verify(authUserService, never()).changePassword(any(), anyString())
     verify(nomisUserService).changePassword("bob", "pass")

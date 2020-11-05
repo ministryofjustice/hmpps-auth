@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -293,12 +294,8 @@ class VerifyEmailControllerTest {
     assertThat(modelAndView?.viewName).isEqualTo("redirect:/verify-email-already")
   }
 
-  private fun getUserPersonalDetails(): NomisUserPersonDetails {
-    val account = NomisUserPersonDetails()
-    account.staff = Staff(firstName = "bob", status = "INACTIVE", lastName = "last", staffId = 1)
-    account.username = "user"
-    return account
-  }
+  private fun getUserPersonalDetails(): NomisUserPersonDetails =
+    NomisUserPersonDetailsHelper.createSampleNomisUser(staff = Staff(firstName = "bob", status = "INACTIVE", lastName = "last", staffId = 1))
 
   @Test
   fun secondaryEmailResendRequest_notVerified() {

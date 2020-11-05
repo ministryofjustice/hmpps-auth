@@ -13,6 +13,8 @@ import org.springframework.test.context.transaction.TestTransaction
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.UserCaseloadRole
@@ -37,8 +39,7 @@ class NomisUserPersonDetailsRepositoryTest {
 
   @Test
   fun givenATransientEntityItCanBePeristed() {
-    val transientEntity = transientEntity()
-    val entity = transientEntity.toBuilder().build()
+    val entity = transientEntity()
     val persistedEntity = repository.save(entity)
     TestTransaction.flagForCommit()
     TestTransaction.end()
@@ -47,9 +48,9 @@ class NomisUserPersonDetailsRepositoryTest {
     val retrievedEntity = repository.findById(entity.username).orElseThrow()
 
     // equals only compares the business key columns
-    assertThat(retrievedEntity).isEqualTo(transientEntity)
-    assertThat(retrievedEntity.username).isEqualTo(transientEntity.username)
-    assertThat(retrievedEntity.type).isEqualTo(transientEntity.type)
+    assertThat(retrievedEntity).isEqualTo(entity)
+    assertThat(retrievedEntity.username).isEqualTo(entity.username)
+    assertThat(retrievedEntity.type).isEqualTo(entity.type)
   }
 
   @Test
@@ -91,13 +92,15 @@ class NomisUserPersonDetailsRepositoryTest {
     assertThat(users).extracting<String> { it.username }.containsExactly("RO_USER")
   }
 
-  private fun transientEntity() = NomisUserPersonDetails
-    .builder()
-    .username("TEST_USER")
-    .type("ADMIN")
-    .staff(DEFAULT_STAFF)
-    .build()
-
+  private fun transientEntity() = NomisUserPersonDetails(
+    username = "TEST_USER",
+    password = null,
+    type = "ADMIN",
+    staff = DEFAULT_STAFF,
+    accountDetail = AccountDetail(username = "user", accountStatus = "OPEN", profile = AccountProfile.TAG_GENERAL.name, passwordExpiry = null),
+    activeCaseLoadId = null,
+    roles = emptyList()
+  )
   companion object {
     private val DEFAULT_STAFF = Staff(firstName = "bOb", status = "ACTIVE", lastName = "Smith", staffId = 5)
   }

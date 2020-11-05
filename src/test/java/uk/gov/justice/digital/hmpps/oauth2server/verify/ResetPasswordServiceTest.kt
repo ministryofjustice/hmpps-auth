@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDe
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountDetail
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Role
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.UserCaseloadRole
@@ -83,8 +84,7 @@ class ResetPasswordServiceTest {
   fun requestResetPassword_inactive() {
     val user = User.builder().username("someuser").email("email").source(AuthSource.nomis).verified(true).build()
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-    val staffUserAccount = staffUserAccountForBob
-    staffUserAccount.staff = staffUserAccount.staff.copy(status = "inactive")
+    val staffUserAccount = nomisUserPersonDetails("OPEN", Staff(firstName = "bOb", status = "inactive", lastName = "Smith", staffId = 5))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccount))
     val optional = resetPasswordService.requestResetPassword("user", "url")
     verify(notificationClient).sendEmail(
@@ -348,17 +348,15 @@ class ResetPasswordServiceTest {
     get() {
       return nomisUserPersonDetails("EXPIRED & LOCKED(TIMED)")
     }
-  private fun nomisUserPersonDetails(accountStatus: String): NomisUserPersonDetails {
-    val staffUserAccount = NomisUserPersonDetails()
-    staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "Smith", staffId = 5)
-    val detail = AccountDetail("user", accountStatus, "profile", null)
-    staffUserAccount.accountDetail = detail
-    return staffUserAccount
-  }
+
+  private fun nomisUserPersonDetails(accountStatus: String, staff: Staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "Smith", staffId = 5)): NomisUserPersonDetails =
+    createSampleNomisUser(staff = staff, accountStatus = accountStatus)
 
   private val staffUserAccountForBobOptional: Optional<UserPersonDetails> = Optional.of(staffUserAccountForBob)
-  private val staffUserAccountLockedForBobOptional: Optional<UserPersonDetails> = Optional.of(staffUserAccountLockedForBob)
-  private val staffUserAccountExpiredLockedForBobOptional: Optional<UserPersonDetails> = Optional.of(staffUserAccountExpiredLockedForBob)
+  private val staffUserAccountLockedForBobOptional: Optional<UserPersonDetails> =
+    Optional.of(staffUserAccountLockedForBob)
+  private val staffUserAccountExpiredLockedForBobOptional: Optional<UserPersonDetails> =
+    Optional.of(staffUserAccountExpiredLockedForBob)
 
   @Test
   fun resetPassword() {
@@ -421,8 +419,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun resetPasswordLockedAccount() {
-    val staffUserAccount = staffUserAccountForBob
-    staffUserAccount.staff = staffUserAccount.staff.copy(status = "inactive")
+    val staffUserAccount = nomisUserPersonDetails("OPEN", Staff(firstName = "bOb", status = "inactive", lastName = "Smith", staffId = 5))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccount))
     val user = User.builder().username("user").source(AuthSource.nomis).build()
     val userToken = user.createToken(UserToken.TokenType.RESET)
@@ -579,21 +576,21 @@ class ResetPasswordServiceTest {
 
   private fun buildStandardUser(username: String): NomisUserPersonDetails {
     val staff = buildStaff()
-    return NomisUserPersonDetails.builder()
-      .username(username)
-      .password("pass")
-      .type("GENERAL")
-      .staff(staff)
-      .roles(
-        listOf(
-          UserCaseloadRole(
-            id = UserCaseloadRoleIdentity(caseload = "NWEB", roleId = ROLE_ID, username = username),
-            role = Role(code = "ROLE1", id = ROLE_ID),
-          )
-        )
+    val roles = listOf(
+      UserCaseloadRole(
+        id = UserCaseloadRoleIdentity(caseload = "NWEB", roleId = ROLE_ID, username = username),
+        role = Role(code = "ROLE1", id = ROLE_ID),
       )
-      .accountDetail(buildAccountDetail(username, AccountStatus.OPEN))
-      .build()
+    )
+    return NomisUserPersonDetails(
+      username = username,
+      password = "pass",
+      type = "GENERAL",
+      staff = staff,
+      roles = roles,
+      accountDetail = buildAccountDetail(username, AccountStatus.OPEN),
+      activeCaseLoadId = null
+    )
   }
 
   private fun buildStaff(): Staff = Staff(firstName = "Bob", status = "ACTIVE", lastName = "Smith", staffId = 1)
