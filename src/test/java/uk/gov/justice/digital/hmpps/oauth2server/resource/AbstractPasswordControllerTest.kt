@@ -399,8 +399,7 @@ class AbstractPasswordControllerTest {
 
   private fun setupGetUserCallForProfile(profile: String?) {
     val user = NomisUserPersonDetails()
-    val detail = AccountDetail()
-    detail.profile = profile
+    val detail = if (profile.isNullOrBlank()) AccountDetail(username = "user") else AccountDetail(username = "user", profile = profile)
     user.accountDetail = detail
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
   }
