@@ -14,14 +14,14 @@ class NomisUserPersonDetailsTest {
 
   @Test
   fun `isCredentialsNonExpired status expired Locked`() {
-    val account = createStaffUserAccount("EXPIRED(LOCKED)")
-    assertThat(account.isCredentialsNonExpired).isTrue()
+    val account = createStaffUserAccount("EXPIRED & LOCKED")
+    assertThat(account.isCredentialsNonExpired).isFalse()
   }
 
   @Test
   fun `isCredentialsNonExpired status expired Timed`() {
-    val account = createStaffUserAccount("EXPIRED(TIMED)")
-    assertThat(account.isCredentialsNonExpired).isTrue()
+    val account = createStaffUserAccount("EXPIRED & LOCKED(TIMED)")
+    assertThat(account.isCredentialsNonExpired).isFalse()
   }
 
   @Test
@@ -65,11 +65,9 @@ class NomisUserPersonDetailsTest {
     passwordExpiry: LocalDateTime? = null,
   ): NomisUserPersonDetails {
     val account = NomisUserPersonDetails()
-    val detail = AccountDetail()
+    val detail = AccountDetail(username = "user", accountStatus = status, passwordExpiry = passwordExpiry)
     account.accountDetail = detail
     account.username = "user"
-    detail.accountStatus = status
-    detail.passwordExpiry = passwordExpiry
     return account
   }
 }

@@ -71,8 +71,7 @@ class ChangePasswordServiceTest {
 
   @Test
   fun setPassword_LockedAccount() {
-    val staffUserAccount = staffUserAccountForBobOptional
-    staffUserAccount.map { NomisUserPersonDetails::class.java.cast(it) }.get().accountDetail.accountStatus = "LOCKED"
+    val staffUserAccount = staffUserAccountLockedForBobOptional
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount)
     val user = User.of("user")
     val userToken = user.createToken(UserToken.TokenType.RESET)
@@ -109,13 +108,22 @@ class ChangePasswordServiceTest {
 
   private val staffUserAccountForBob: UserPersonDetails
     get() {
-      val staffUserAccount = NomisUserPersonDetails()
-      staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "bloggs", staffId = 5)
-      val detail = AccountDetail("user", "OPEN", "profile", null)
-      staffUserAccount.accountDetail = detail
-      staffUserAccount.username = "bob"
-      return staffUserAccount
+      return nomisUserPersonDetails("OPEN")
     }
 
+  private val staffUserAccountLockedForBob: UserPersonDetails
+    get() {
+      return nomisUserPersonDetails("LOCKED")
+    }
+  private fun nomisUserPersonDetails(accountStatus: String): NomisUserPersonDetails {
+    val staffUserAccount = NomisUserPersonDetails()
+    staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "bloggs", staffId = 5)
+    val detail = AccountDetail("user", accountStatus, "profile", null)
+    staffUserAccount.accountDetail = detail
+    staffUserAccount.username = "bob"
+    return staffUserAccount
+  }
+
   private val staffUserAccountForBobOptional = Optional.of(staffUserAccountForBob)
+  private val staffUserAccountLockedForBobOptional = Optional.of(staffUserAccountLockedForBob)
 }

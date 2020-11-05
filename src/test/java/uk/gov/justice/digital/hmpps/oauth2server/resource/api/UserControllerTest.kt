@@ -203,7 +203,7 @@ class UserControllerTest {
     val user = NomisUserPersonDetails()
     user.username = "principal"
     user.staff = Staff(firstName = "JOE", status = "INACTIVE", lastName = "bloggs", staffId = 5)
-    user.accountDetail = AccountDetail()
+    user.accountDetail = AccountDetail(username = "user")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     return user
   }

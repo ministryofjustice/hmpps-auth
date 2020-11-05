@@ -55,7 +55,7 @@ class ChangeEmailControllerTest {
 
   private fun setupGetUserCallForProfile(): NomisUserPersonDetails {
     val user = NomisUserPersonDetails()
-    user.accountDetail = AccountDetail()
+    user.accountDetail = AccountDetail(username = "user")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     return user
   }
