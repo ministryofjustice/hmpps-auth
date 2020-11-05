@@ -116,7 +116,7 @@ class ChangePasswordServiceTest {
       return nomisUserPersonDetails("LOCKED")
     }
   private fun nomisUserPersonDetails(accountStatus: String): NomisUserPersonDetails =
-    createSampleNomisUser(staff = Staff(firstName = "bOb", status = accountStatus, lastName = "bloggs", staffId = 5))
+    createSampleNomisUser(staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "bloggs", staffId = 5), accountStatus = accountStatus)
 
   private val staffUserAccountForBobOptional = Optional.of(staffUserAccountForBob)
   private val staffUserAccountLockedForBobOptional = Optional.of(staffUserAccountLockedForBob)

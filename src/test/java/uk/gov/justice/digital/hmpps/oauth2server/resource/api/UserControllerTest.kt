@@ -200,7 +200,7 @@ class UserControllerTest {
   }
 
   private fun setupFindUserCallForNomis(): NomisUserPersonDetails {
-    val user = createSampleNomisUser(staff = Staff(firstName = "JOE", status = "INACTIVE", lastName = "bloggs", staffId = 5), username = "principal")
+    val user = createSampleNomisUser(staff = Staff(firstName = "JOE", status = "INACTIVE", lastName = "bloggs", staffId = 5), username = "principal", accountStatus = "EXPIRED & LOCKED")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     return user
   }

@@ -45,7 +45,7 @@ class NomisUserPersonDetailsTest {
   @Test
   fun `to user copy username`() {
     val user = createStaffUserAccount().toUser()
-    assertThat(user.username).isEqualTo("user")
+    assertThat(user.username).isEqualTo("bob")
   }
 
   @Test
