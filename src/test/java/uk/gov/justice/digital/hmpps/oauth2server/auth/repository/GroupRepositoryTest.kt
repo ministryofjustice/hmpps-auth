@@ -80,8 +80,10 @@ class GroupRepositoryTest {
     val group = repository.findByGroupCode("SITE_1_GROUP_2").orElseThrow()
     assertThat(group.groupCode).isEqualTo("SITE_1_GROUP_2")
     assertThat(group.groupName).isEqualTo("Site 1 - Group 2")
-    assertThat(group.assignableRoles).extracting<Authority> { it.role }
-      .extracting<String> { obj: Authority -> obj.roleCode }.containsOnly("GLOBAL_SEARCH", "LICENCE_RO")
+    assertThat(group.assignableRoles).extracting<String> { it.role?.roleCode }
+      .containsOnly("GLOBAL_SEARCH", "LICENCE_RO")
+    assertThat(group.children).extracting<String> { it.groupCode }
+      .containsOnly("CHILD_1")
   }
 
   @Test

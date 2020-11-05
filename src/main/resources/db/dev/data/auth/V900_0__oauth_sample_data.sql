@@ -313,6 +313,8 @@ INSERT INTO groups (group_id, group_code, group_name) VALUES (newid(), 'SITE_1_G
        (newid(), 'SITE_2_GROUP_1', 'Site 2 - Group 1'),
        (newid(), 'SITE_3_GROUP_1', 'Site 3 - Group 1');
 
+INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'CHILD_1', 'Child - Site 1 - Group 2', (select group_id from groups where group_code = 'SITE_1_GROUP_2'));
+
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_VARY_USER' and group_code = 'SITE_1_GROUP_1';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_VARY_USER' and group_code = 'SITE_1_GROUP_2';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_USER' and group_code = 'SITE_1_GROUP_1';
