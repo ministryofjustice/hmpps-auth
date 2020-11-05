@@ -18,8 +18,7 @@ import org.springframework.security.oauth2.provider.OAuth2Request
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.test.util.ReflectionTestUtils
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import java.util.UUID
@@ -39,7 +38,7 @@ internal class JWTTokenEnhancerTest {
     val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
     whenever(authentication.isClientOnly).thenReturn(false)
     val uuid = UUID.randomUUID()
-    val user = User.builder().id(uuid).username("user").source(AuthSource.auth).build()
+    val user = createSampleUser(id = uuid, username = "user", source = AuthSource.auth)
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
     whenever(authentication.oAuth2Request).thenReturn(
       OAuth2Request(
@@ -69,7 +68,7 @@ internal class JWTTokenEnhancerTest {
     val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
     whenever(authentication.isClientOnly).thenReturn(false)
     val uuid = UUID.randomUUID()
-    val user = User.builder().id(uuid).username("user").person(Person("Joe", "bloggs")).source(AuthSource.auth).build()
+    val user = createSampleUser(id = uuid, username = "user", firstName = "Joe", lastName = "bloggs", source = AuthSource.auth)
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
     whenever(authentication.oAuth2Request).thenReturn(
       OAuth2Request(
@@ -99,7 +98,7 @@ internal class JWTTokenEnhancerTest {
     val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
     whenever(authentication.isClientOnly).thenReturn(false)
     val uuid = UUID.randomUUID()
-    val user = User.builder().id(uuid).username("user").person(Person("Joe", "bloggs")).source(AuthSource.auth).build()
+    val user = createSampleUser(id = uuid, username = "user", firstName = "Joe", lastName = "bloggs", source = AuthSource.auth)
     whenever(authentication.userAuthentication).thenReturn(UsernamePasswordAuthenticationToken(user, "pass"))
     whenever(authentication.oAuth2Request).thenReturn(
       OAuth2Request(

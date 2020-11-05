@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.transaction.TestTransaction
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig
@@ -80,5 +81,5 @@ class UserTokenRepositoryTest {
   }
 
   private fun transientUser(): User =
-    User.builder().username("userTokenRepository").email("a@b.com").source(auth).build()
+    createSampleUser(username = "userTokenRepository", email = "a@b.com", source = auth)
 }

@@ -63,8 +63,8 @@ class MfaService(
     val mfaType = user.calculateMfaFromPreference().map {
       @Suppress("WHEN_ENUM_CAN_BE_NULL_IN_JAVA")
       when (it) {
-        MfaPreferenceType.EMAIL -> emailCode(user, code, user.email)
-        MfaPreferenceType.SECONDARY_EMAIL -> emailCode(user, code, user.secondaryEmail)
+        MfaPreferenceType.EMAIL -> emailCode(user, code, user.email!!)
+        MfaPreferenceType.SECONDARY_EMAIL -> emailCode(user, code, user.secondaryEmail!!)
         MfaPreferenceType.TEXT -> textCode(user, code)
       }
       it
@@ -113,9 +113,9 @@ class MfaService(
 
     code?.run {
       if (mfaPreference == MfaPreferenceType.EMAIL) {
-        emailCode(userToken.user, code, userToken.user.email)
+        emailCode(userToken.user, code, userToken.user.email!!)
       } else if (mfaPreference == MfaPreferenceType.SECONDARY_EMAIL) {
-        emailCode(userToken.user, code, userToken.user.secondaryEmail)
+        emailCode(userToken.user, code, userToken.user.secondaryEmail!!)
       } else {
         textCode(userToken.user, code)
       }
@@ -129,7 +129,7 @@ class MfaService(
     val modelAndView = ModelAndView("mfaResend", "token", token)
       .addObject("mfaPreference", mfaPreference)
 
-    if (user.isVerified) {
+    if (user.verified) {
       modelAndView.addObject("email", user.maskedEmail)
     }
     if (user.isMobileVerified) {

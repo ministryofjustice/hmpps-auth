@@ -22,7 +22,7 @@ class DelegatingUserServiceTest {
 
   @Test
   fun `lock account auth user`() {
-    service.lockAccount(User.of("bob"))
+    service.lockAccount(createSampleUser(username = "bob"))
 
     verify(authUserService).lockUser(any())
     verify(nomisUserService, never()).lockAccount(anyString())

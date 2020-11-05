@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.resource.account.ChangeMobileController
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
@@ -53,7 +54,7 @@ class ChangeMobileControllerTest {
     @Test
     fun `changeMobile notification exception`() {
       whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.getUserWithContacts(anyString())).thenReturn(User.of("AUTH_MOBILE"))
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(createSampleUser(username = "AUTH_MOBILE"))
       whenever(verifyMobileService.changeMobileAndRequestVerification(anyString(), anyString())).thenThrow(
         NotificationClientException("something went wrong")
       )
@@ -71,7 +72,7 @@ class ChangeMobileControllerTest {
     @Test
     fun `changeMobile verification exception`() {
       whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.getUserWithContacts(anyString())).thenReturn(User.of("AUTH_MOBILE"))
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(createSampleUser(username = "AUTH_MOBILE"))
       whenever(verifyMobileService.changeMobileAndRequestVerification(anyString(), anyString())).thenThrow(
         VerifyMobileException("something went wrong")
       )
@@ -89,7 +90,7 @@ class ChangeMobileControllerTest {
     @Test
     fun `changeMobile success`() {
       whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.getUserWithContacts(anyString())).thenReturn(User.of("AUTH_MOBILE"))
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(createSampleUser(username = "AUTH_MOBILE"))
       whenever(verifyMobileService.changeMobileAndRequestVerification(anyString(), anyString())).thenReturn("123456")
       val mobile = "07700900321"
       val modelAndView = controller.changeMobile(mobile, "change", token)
@@ -101,7 +102,7 @@ class ChangeMobileControllerTest {
     @Test
     fun `changeMobile success smoke test`() {
       whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(false)
-      whenever(userService.getUserWithContacts(anyString())).thenReturn(User.of("AUTH_MOBILE"))
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(createSampleUser(username = "AUTH_MOBILE"))
       whenever(verifyMobileService.changeMobileAndRequestVerification(anyString(), anyString())).thenReturn("123456")
       val mobile = "07700900321"
       val modelAndView = controllerSmokeEnabled.changeMobile(mobile, "change", token)

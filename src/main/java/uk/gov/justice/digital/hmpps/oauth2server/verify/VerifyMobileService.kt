@@ -31,7 +31,7 @@ class VerifyMobileService(
   fun getMobile(username: String?): Optional<User> =
     userRepository.findByUsername(username).filter { StringUtils.isNotBlank(it.mobile) }
 
-  fun isNotVerified(name: String?): Boolean = !getMobile(name).map { it.isVerified }.orElse(false)
+  fun isNotVerified(name: String?): Boolean = !getMobile(name).map { it.verified }.orElse(false)
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(VerifyMobileException::class, NotificationClientException::class)
@@ -130,7 +130,7 @@ class VerifyMobileService(
     val user = userRepository.findByUsername(username).orElseThrow()
     val verifyCode = user.createToken(MOBILE).token
     val parameters = mapOf("verifyCode" to verifyCode)
-    sendNotification(username, user.mobile, parameters)
+    sendNotification(username, user.mobile!!, parameters)
     return Optional.of(mapOf("error" to "expired", "verifyCode" to verifyCode))
   }
 
@@ -152,7 +152,7 @@ class VerifyMobileService(
     }
     val verifyCode = user.createToken(MOBILE).token
     val parameters = mapOf("verifyCode" to verifyCode)
-    sendNotification(username, user.mobile, parameters)
+    sendNotification(username, user.mobile!!, parameters)
     return Optional.of(verifyCode)
   }
 

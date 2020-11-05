@@ -55,7 +55,7 @@ class InitialPasswordService(
         "supportLink" to supportLink,
         "resetLink" to resetLink
       )
-    sendEmail(user.username, initialPasswordResendTemplateId, parameters, user.email)
+    sendEmail(user.username, initialPasswordResendTemplateId, parameters, user.email!!)
     return resetLink
   }
 

@@ -512,10 +512,10 @@ class AuthUserController(
           username = user.username,
           email = user.email,
           firstName = user.firstName,
-          lastName = user.person.lastName,
-          locked = user.isLocked,
+          lastName = user.person!!.lastName,
+          locked = user.locked,
           enabled = user.isEnabled,
-          verified = user.isVerified,
+          verified = user.verified,
           lastLoggedIn = user.lastLoggedIn,
         )
       }

@@ -21,7 +21,7 @@ class MaintainUserCheckTest {
 
   @Test
   fun superUserDoesNotThrowError() {
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     assertThatCode {
       maintainUserCheck.ensureUserLoggedInUserRelationship(
         "SuperUser",
@@ -33,7 +33,7 @@ class MaintainUserCheckTest {
 
   @Test
   fun groupManagerGroupInCommonWithUserDoesNotThrowError() {
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     val group1 = Group("group", "desc")
     user.groups = setOf(group1, Group("group2", "desc"))
     val groupManager = User.of("groupManager")
@@ -52,7 +52,7 @@ class MaintainUserCheckTest {
 
   @Test
   fun groupManagerNoGroupInCommonWithUserThrowsError() {
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     val optionalUserEmail = createUser()
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail)
     assertThatThrownBy {
@@ -66,7 +66,7 @@ class MaintainUserCheckTest {
     verify(userRepository).findByUsernameAndMasterIsTrue(anyString())
   }
 
-  private fun createUser() = Optional.of(User.of("someUser"))
+  private fun createUser() = Optional.of(createSampleUser(username = "someuser"))
 
   companion object {
     private val SUPER_USER: Set<GrantedAuthority> = setOf(SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"))

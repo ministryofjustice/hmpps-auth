@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.CHANGE
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.MFA
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.MFA_CODE
@@ -11,7 +12,7 @@ import java.time.LocalDateTime
 
 class UserTokenTest {
 
-  val user = buildUser()
+  val user = createSampleUser()
   @Test
   fun `test change password token lasts twenty minutes`() {
     val twentyMinutesTime = LocalDateTime.now().plusMinutes(20)

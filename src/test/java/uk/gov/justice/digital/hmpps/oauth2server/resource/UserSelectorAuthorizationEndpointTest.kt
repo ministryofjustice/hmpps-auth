@@ -23,6 +23,7 @@ import org.springframework.web.servlet.View
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
@@ -59,8 +60,8 @@ internal class UserSelectorAuthorizationEndpointTest {
         "view",
         mutableMapOf(
           "users" to listOf(
-            User.of("user1"),
-            User.of("user2"),
+            createSampleUser(username = "user1"),
+            createSampleUser(username = "user2"),
           )
         )
       )

@@ -14,7 +14,7 @@ import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Captor
 import org.mockito.Mockito.verify
 import org.mockito.junit.jupiter.MockitoExtension
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
@@ -35,7 +35,7 @@ class DeleteDisabledUsersServiceTest {
 
   @Test
   fun findAndDeleteDisabledUsers_Processed() {
-    val users = listOf(User.of("user"), User.of("joe"))
+    val users = listOf(createSampleUser(username = "user"), createSampleUser(username = "joe"))
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
       .thenReturn(users)
     assertThat(service.processInBatches()).isEqualTo(2)
@@ -43,8 +43,8 @@ class DeleteDisabledUsersServiceTest {
 
   @Test
   fun findAndDeleteDisabledUsers_Deleted() {
-    val user = User.builder().username("user").id(UUID.randomUUID()).build()
-    val joe = User.builder().username("joe").id(UUID.randomUUID()).build()
+    val user = createSampleUser(username = "user", id = UUID.randomUUID())
+    val joe = createSampleUser(username = "joe", id = UUID.randomUUID())
     val users = listOf(user, joe)
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
       .thenReturn(users)
@@ -55,7 +55,7 @@ class DeleteDisabledUsersServiceTest {
 
   @Test
   fun findAndDeleteDisabledUsers_DeleteAll() {
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     user.createToken(UserToken.TokenType.RESET)
     val retry = UserRetries("user", 3)
     whenever(userRetriesRepository.findById(anyString())).thenReturn(Optional.of(retry))
@@ -67,7 +67,7 @@ class DeleteDisabledUsersServiceTest {
 
   @Test
   fun findAndDeleteDisabledUsers_Telemetry() {
-    val users = listOf(User.of("user"), User.of("joe"))
+    val users = listOf(createSampleUser(username = "user"), createSampleUser(username = "joe"))
     whenever(userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(any()))
       .thenReturn(users)
     service.processInBatches()

@@ -46,7 +46,7 @@ class MfaControllerTest {
   inner class MfaChallengeRequest {
     @Test
     fun `mfaChallengeRequest check view`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
@@ -110,7 +110,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaChallengeRequest check service call`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
@@ -134,7 +134,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaChallengeRequest error`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
@@ -162,7 +162,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaEmailChallenge code invalid`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -186,7 +186,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaTextChallenge code invalid`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -210,7 +210,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaEmailChallenge code locked`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -229,7 +229,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaTextChallenge code locked`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -248,7 +248,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaEmailChallenge success`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -266,7 +266,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaTextChallenge success`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -284,7 +284,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaEmailChallenge success telemetry`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(

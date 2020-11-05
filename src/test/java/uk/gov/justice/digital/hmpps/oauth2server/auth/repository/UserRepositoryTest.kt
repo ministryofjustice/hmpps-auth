@@ -20,11 +20,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.MOBILE_PHONE
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.SECONDARY_EMAIL
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType.EMAIL
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType.TEXT
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig
@@ -64,8 +64,13 @@ class UserRepositoryTest {
   @Test
   fun givenATransientEntityItCanBePersisted() {
     val transientEntity =
-      User.builder().username("transiententity").email("transient@b.com").mobile("07700900321").source(delius)
-        .mfaPreference(TEXT).build()
+      createSampleUser(
+        username = "transiententity",
+        email = "transient@b.com",
+        mobile = "07700900321",
+        source = delius,
+        mfaPreference = TEXT
+      )
     val persistedEntity = repository.save(transientEntity)
     TestTransaction.flagForCommit()
     TestTransaction.end()
@@ -84,11 +89,10 @@ class UserRepositoryTest {
 
   @Test
   fun givenATransientAuthEntityItCanBePersisted() {
-    val transientEntity = transientEntity()
-    transientEntity.person = Person("first", "last")
+    val transientEntity = createSampleUser(username = "user", source = nomis, email = "a@b.com", firstName = "first", lastName = "last")
     val roleLicenceVary = roleRepository.findByRoleCode("LICENCE_VARY").orElseThrow()
     val roleGlobalSearch = roleRepository.findByRoleCode("GLOBAL_SEARCH").orElseThrow()
-    transientEntity.authorities = setOf(roleLicenceVary, roleGlobalSearch)
+    transientEntity.authorities.addAll(setOf(roleLicenceVary, roleGlobalSearch))
     val persistedEntity = repository.save(transientEntity)
     TestTransaction.flagForCommit()
     TestTransaction.end()
@@ -108,7 +112,7 @@ class UserRepositoryTest {
 
   @Test
   fun persistUserWithoutEmail() {
-    val transientEntity = User.builder().username("userb").source(nomis).build()
+    val transientEntity = createSampleUser(username = "userb", source = nomis)
     val persistedEntity = repository.save(transientEntity)
     TestTransaction.flagForCommit()
     TestTransaction.end()
@@ -127,7 +131,7 @@ class UserRepositoryTest {
     val retrievedEntity = repository.findByUsername("LOCKED_USER").orElseThrow()
     assertThat(retrievedEntity.username).isEqualTo("LOCKED_USER")
     assertThat(retrievedEntity.email).isEqualTo("locked@somewhere.com")
-    assertThat(retrievedEntity.isVerified).isTrue()
+    assertThat(retrievedEntity.verified).isTrue()
     assertThat(retrievedEntity.mfaPreference).isEqualTo(EMAIL)
   }
 
@@ -135,11 +139,11 @@ class UserRepositoryTest {
   fun givenAnExistingAuthUserTheyCanBeRetrieved() {
     val retrievedEntity = repository.findByUsername("AUTH_ADM").orElseThrow()
     assertThat(retrievedEntity.username).isEqualTo("AUTH_ADM")
-    assertThat(retrievedEntity.person.firstName).isEqualTo("Auth")
+    assertThat(retrievedEntity.person!!.firstName).isEqualTo("Auth")
     assertThat(retrievedEntity.authorities).extracting<String> { obj: Authority -> obj.authority }
       .containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS")
     assertThat(retrievedEntity.email).isEqualTo("auth_test2@digital.justice.gov.uk")
-    assertThat(retrievedEntity.isVerified).isTrue()
+    assertThat(retrievedEntity.verified).isTrue()
     assertThat(retrievedEntity.mfaPreference).isEqualTo(EMAIL)
   }
 
@@ -204,7 +208,7 @@ class UserRepositoryTest {
 
   @Test
   fun `test persist contact mapping`() {
-    val transientEntity = User.builder().username("contact").source(nomis).build()
+    val transientEntity = createSampleUser(username = "contact", source = nomis)
     transientEntity.addContact(SECONDARY_EMAIL, "some value")
     transientEntity.addContact(SECONDARY_EMAIL, "some replacement value")
     repository.save(transientEntity)
@@ -218,7 +222,7 @@ class UserRepositoryTest {
 
   @Test
   fun `test persist contact mapping 2`() {
-    val transientEntity = User.builder().username("contact2").source(nomis).build()
+    val transientEntity = createSampleUser(username = "contact2", source = nomis)
     transientEntity.addContact(SECONDARY_EMAIL, "some value")
     transientEntity.addContact(MOBILE_PHONE, "some mobile")
     repository.save(transientEntity)
@@ -416,7 +420,7 @@ class UserRepositoryTest {
     assertThat(inactive).extracting<String> { it.username }.containsExactly("AUTH_DELETE")
   }
 
-  private fun transientEntity() = User.builder().username("user").source(nomis).email("a@b.com").build()
+  private fun transientEntity() = createSampleUser(username = "user", source = nomis, email = "a@b.com")
 
   companion object {
     private var initialized = false

@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
@@ -46,7 +47,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.Verif
 import uk.gov.service.notify.NotificationClientApi
 import java.time.LocalDateTime
 import java.util.Arrays
-import java.util.HashSet
 import java.util.Optional
 import java.util.stream.Collectors
 import javax.persistence.EntityNotFoundException
@@ -265,7 +265,7 @@ class AuthUserServiceTest {
           assertThat(username).isEqualTo("USERME")
           assertThat(password).isNull()
           assertThat(isMaster).isTrue()
-          assertThat(isVerified).isFalse()
+          assertThat(verified).isFalse()
           assertThat(isCredentialsNonExpired).isFalse()
           assertThat(authorities).isEmpty()
         }
@@ -702,7 +702,7 @@ class AuthUserServiceTest {
 
   @Test
   fun amendUserEmail_unverifiedEmail_sendsInitialEmail() {
-    val userUnverifiedEmail = User.builder().username("SOME_USER_NAME").verified(false).build()
+    val userUnverifiedEmail = createSampleUser(username = "SOME_USER_NAME", verified = false)
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userUnverifiedEmail))
     authUserService.amendUserEmail(
       "SOME_USER_NAME",
@@ -726,7 +726,7 @@ class AuthUserServiceTest {
   @Test
   fun amendUserEmail_verifiedEmail_requestsVerification() {
     val userVerifiedEmail =
-      User.builder().username("SOME_USER_NAME").person(Person("first", "last")).verified(true).build()
+      createSampleUser(username = "SOME_USER_NAME", firstName = "first", lastName = "last", verified = true)
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail))
     whenever(
       verifyEmailService.requestVerification(
@@ -769,7 +769,7 @@ class AuthUserServiceTest {
         eq(EmailType.PRIMARY)
       )
     ).thenReturn("SOME_VERIFY_LINK")
-    val userVerifiedEmail = User.builder().username("SOME_USER_NAME").verified(true).build()
+    val userVerifiedEmail = createSampleUser(username = "SOME_USER_NAME", verified = true)
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail))
     authUserService.amendUserEmail(
       "SOME_USER_NAME",
@@ -779,13 +779,18 @@ class AuthUserServiceTest {
       GRANTED_AUTHORITY_SUPER_USER,
       EmailType.PRIMARY
     )
-    assertThat(userVerifiedEmail.isVerified).isFalse()
+    assertThat(userVerifiedEmail.verified).isFalse()
   }
 
   private fun userOfGroups(vararg groupList: String): User {
-    val userPerson = Person("ANY_FIRST_NAME", "ANY_LAST_NAME")
     val groups = Arrays.stream(groupList).map { Group(it, "any desc") }.collect(Collectors.toSet())
-    return User.builder().groups(groups).email("ANY_EMAIL").person(userPerson).username("ANY ANY").build()
+    return createSampleUser(
+      username = "ANY ANY",
+      groups = groups,
+      email = "ANY_EMAIL",
+      firstName = "ANY_FIRST_NAME",
+      lastName = "ANY_LAST_NAME"
+    )
   }
 
   private fun mockServiceOfNameWithSupportLink(serviceCode: String, supportLink: String) {
@@ -804,14 +809,26 @@ class AuthUserServiceTest {
 
   @Test
   fun findByEmailAndMasterIsTrue() {
-    whenever(userRepository.findByEmailAndMasterIsTrueOrderByUsername(anyString())).thenReturn(listOf(User.of("someuser")))
+    whenever(userRepository.findByEmailAndMasterIsTrueOrderByUsername(anyString())).thenReturn(
+      listOf(
+        createSampleUser(
+          username = "someuser"
+        )
+      )
+    )
     val user = authUserService.findAuthUsersByEmail("  bob  ")
     assertThat(user).extracting<String> { it.username }.containsOnly("someuser")
   }
 
   @Test
   fun findAuthUsersByEmail_formatEmailAddress() {
-    whenever(userRepository.findByEmailAndMasterIsTrueOrderByUsername(anyString())).thenReturn(listOf(User.of("someuser")))
+    whenever(userRepository.findByEmailAndMasterIsTrueOrderByUsername(anyString())).thenReturn(
+      listOf(
+        createSampleUser(
+          username = "someuser"
+        )
+      )
+    )
     authUserService.findAuthUsersByEmail("  some.u’ser@SOMEwhere  ")
     verify(userRepository).findByEmailAndMasterIsTrueOrderByUsername("some.u'ser@somewhere")
   }
@@ -838,12 +855,11 @@ class AuthUserServiceTest {
 
   @Test
   fun enableUser_validGroup_groupManager() {
-    val user = User.of("user")
-    val group1 = Group("group", "desc")
-    user.groups = setOf(group1, Group("group2", "desc"))
-    user.authorities = HashSet(listOf(Authority("JOE", "bloggs")))
-    val groupManager = User.of("groupManager")
-    groupManager.groups = setOf(Group("group3", "desc"), group1)
+    val user = createSampleUser(
+      username = "user",
+      groups = setOf(Group("group", "desc"), Group("group2", "desc")),
+      authorities = setOf(Authority("JOE", "bloggs"))
+    )
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
       .thenReturn(Optional.of(user))
     authUserService.enableUser("user", "admin", GROUP_MANAGER)
@@ -919,13 +935,14 @@ class AuthUserServiceTest {
 
   @Test
   fun disableUser_validGroup_groupManager() {
-    val user = User.of("user")
     val group1 = Group("group", "desc")
-    user.groups = setOf(group1, Group("group2", "desc"))
-    user.isEnabled = true
-    user.authorities = HashSet(listOf(Authority("JOE", "bloggs")))
-    val groupManager = User.of("groupManager")
-    groupManager.groups = setOf(Group("group3", "desc"), group1)
+    val user = createSampleUser(
+      username = "user",
+      groups = setOf(group1, Group("group2", "desc")),
+      enabled = true,
+      authorities = setOf(Authority("JOE", "bloggs"))
+    )
+    val groupManager = createSampleUser(username = "groupManager", groups = setOf(Group("group3", "desc"), group1))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
       .thenReturn(Optional.of(user))
     authUserService.disableUser("user", "admin", GROUP_MANAGER)
@@ -957,7 +974,7 @@ class AuthUserServiceTest {
     }.isInstanceOf(EntityNotFoundException::class.java).hasMessageContaining("username user")
   }
 
-  private fun createUser() = Optional.of(User.of("someuser"))
+  private fun createUser() = Optional.of(createSampleUser(username = "someuser"))
 
   @Test
   fun findAuthUsers() {
@@ -974,10 +991,10 @@ class AuthUserServiceTest {
 
   @Test
   fun lockUser_alreadyExists() {
-    val user = User.builder().username("user").build()
+    val user = createSampleUser(username = "user")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     authUserService.lockUser(user)
-    assertThat(user.isLocked).isTrue()
+    assertThat(user.locked).isTrue()
     verify(userRepository).save(user)
   }
 
@@ -988,7 +1005,7 @@ class AuthUserServiceTest {
     authUserService.lockUser(user)
     verify(userRepository).save<User>(
       check {
-        assertThat(it.isLocked).isTrue()
+        assertThat(it.locked).isTrue()
         assertThat(it.username).isEqualTo("bob")
         assertThat(it.source).isEqualTo(nomis)
       }
@@ -997,11 +1014,11 @@ class AuthUserServiceTest {
 
   @Test
   fun unlockUser_alreadyExists() {
-    val user = User.builder().username("user").locked(true).build()
+    val user = createSampleUser(username = "user", locked = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     authUserService.unlockUser(user)
-    assertThat(user.isLocked).isFalse()
-    assertThat(user.isVerified).isTrue()
+    assertThat(user.locked).isFalse()
+    assertThat(user.verified).isTrue()
     verify(userRepository).save(user)
   }
 
@@ -1012,8 +1029,8 @@ class AuthUserServiceTest {
     authUserService.unlockUser(user)
     verify(userRepository).save<User>(
       check {
-        assertThat(it.isLocked).isFalse()
-        assertThat(it.isVerified).isTrue()
+        assertThat(it.locked).isFalse()
+        assertThat(it.verified).isTrue()
         assertThat(it.username).isEqualTo("bob")
         assertThat(it.source).isEqualTo(nomis)
       }
@@ -1022,7 +1039,7 @@ class AuthUserServiceTest {
 
   @Test
   fun changePassword() {
-    val user = User.builder().username("user").build()
+    val user = createSampleUser(username = "user")
     whenever(passwordEncoder.encode(anyString())).thenReturn("hashedpassword")
     authUserService.changePassword(user, "pass")
     assertThat(user.password).isEqualTo("hashedpassword")
@@ -1032,7 +1049,7 @@ class AuthUserServiceTest {
 
   @Test
   fun changePassword_PasswordSameAsCurrent() {
-    val user = User.builder().username("user").build()
+    val user = createSampleUser(username = "user")
     user.password = "oldencryptedpassword"
     whenever(passwordEncoder.matches(anyString(), anyString())).thenReturn(true)
     assertThatThrownBy {
@@ -1184,7 +1201,7 @@ class AuthUserServiceTest {
 
   @Test
   fun amendUser_checkPerson() {
-    val user = User.builder().username("me").person(Person("old", "name")).build()
+    val user = createSampleUser(username = "me", firstName = "old", lastName = "name")
     whenever(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user))
     authUserService.amendUser("user", "first", "last")
     assertThat(user.person).isEqualTo(Person("first", "last"))
@@ -1192,7 +1209,7 @@ class AuthUserServiceTest {
 
   @Test
   fun amendUser_trimPerson() {
-    val user = User.builder().username("me").person(Person("old", "name")).build()
+    val user = createSampleUser(username = "me", firstName = "old", lastName = "name")
     whenever(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user))
     authUserService.amendUser("user", "  first  ", "   last ")
     assertThat(user.person).isEqualTo(Person("first", "last"))
@@ -1200,7 +1217,7 @@ class AuthUserServiceTest {
 
   @Test
   fun amendUser_checkRepositoryCall() {
-    val user = User.builder().username("me").person(Person("old", "name")).build()
+    val user = createSampleUser(username = "me", firstName = "old", lastName = "name")
     whenever(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user))
     authUserService.amendUser("user", "first", "last")
     verify(userRepository).findByUsernameAndSource("user", auth)

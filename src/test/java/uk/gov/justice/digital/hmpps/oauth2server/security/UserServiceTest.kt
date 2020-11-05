@@ -166,7 +166,7 @@ class UserServiceTest {
       assertThat(newUser).hasValueSatisfying {
         assertThat(it.username).isEqualTo("joe")
         assertThat(it.email).isEqualTo("a@b.justice.gov.uk")
-        assertThat(it.isVerified).isTrue()
+        assertThat(it.verified).isTrue()
         assertThat(it.authSource).isEqualTo(nomis.name)
       }
     }
@@ -610,7 +610,7 @@ class UserServiceTest {
     }
   }
 
-  private fun createUser() = Optional.of(User.of("someuser"))
+  private fun createUser() = Optional.of(createSampleUser(username = "someuser"))
 
   private val staffUserAccountForBob: Optional<NomisUserPersonDetails>
     get() =

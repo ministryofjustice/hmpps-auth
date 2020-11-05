@@ -9,11 +9,10 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException
-import java.util.HashSet
 import java.util.Optional
 
 class AuthUserGroupServiceTest {
@@ -24,7 +23,7 @@ class AuthUserGroupServiceTest {
 
   @Test
   fun addGroup_blank() {
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")))
+    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(createSampleUser(username = "user")))
     assertThatThrownBy {
       service.addGroup(
         "user",
@@ -37,9 +36,8 @@ class AuthUserGroupServiceTest {
 
   @Test
   fun addGroup_groupAlreadyOnUser() {
-    val user = User.of("user")
     val group = Group("GROUP_LICENCE_VARY", "desc")
-    user.groups = HashSet(listOf(group))
+    val user = createSampleUser(username = "user", groups = setOf(group))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     whenever(groupRepository.findByGroupCode(anyString())).thenReturn(Optional.of(group))
     assertThatThrownBy {
@@ -54,8 +52,7 @@ class AuthUserGroupServiceTest {
 
   @Test
   fun addGroup_success() {
-    val user = User.of("user")
-    user.groups = HashSet(listOf(Group("GROUP_JOE", "desc")))
+    val user = createSampleUser(username = "user", groups = setOf(Group("GROUP_JOE", "desc")))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     val group = Group("GROUP_LICENCE_VARY", "desc")
     whenever(groupRepository.findByGroupCode(anyString())).thenReturn(Optional.of(group))
@@ -65,7 +62,7 @@ class AuthUserGroupServiceTest {
 
   @Test
   fun removeGroup_groupNotOnUser() {
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     assertThatThrownBy { service.removeGroup("user", "BOB", "admin") }.isInstanceOf(AuthUserGroupException::class.java)
       .hasMessage("Add group failed for field group with reason: missing")
@@ -73,8 +70,8 @@ class AuthUserGroupServiceTest {
 
   @Test
   fun removeGroup_success() {
-    val user = User.of("user")
-    user.groups = HashSet(listOf(Group("JOE", "desc"), Group("LICENCE_VARY", "desc2")))
+    val user = createSampleUser(username = "user")
+    user.groups.addAll(setOf(Group("JOE", "desc"), Group("LICENCE_VARY", "desc2")))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     service.removeGroup("user", "  licence_vary   ", "admin")
     assertThat(user.groups).extracting<String> { it.groupCode }.containsOnly("JOE")
@@ -96,8 +93,7 @@ class AuthUserGroupServiceTest {
 
   @Test
   fun authUserGroups_success() {
-    val user = User.of("user")
-    user.groups = HashSet(listOf(Group("JOE", "desc"), Group("LICENCE_VARY", "desc2")))
+    val user = createSampleUser(username = "user", groups = setOf(Group("JOE", "desc"), Group("LICENCE_VARY", "desc2")))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     val groups = service.getAuthUserGroups(" BOB ")
     assertThat(groups.get()).extracting<String> { it.groupCode }.containsOnly("JOE", "LICENCE_VARY")
@@ -105,8 +101,7 @@ class AuthUserGroupServiceTest {
 
   @Test
   fun authUserAssignableGroups_normalUser() {
-    val user = User.of("user")
-    user.groups = HashSet(listOf(Group("JOE", "desc"), Group("LICENCE_VARY", "desc2")))
+    val user = createSampleUser(username = "user", groups = setOf(Group("JOE", "desc"), Group("LICENCE_VARY", "desc2")))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     val groups = service.getAssignableGroups(" BOB ", setOf())
     assertThat(groups).extracting<String> { it.groupCode }.containsOnly("JOE", "LICENCE_VARY")

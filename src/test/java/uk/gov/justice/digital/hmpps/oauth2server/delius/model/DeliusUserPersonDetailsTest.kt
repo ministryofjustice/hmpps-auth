@@ -20,7 +20,7 @@ class DeliusUserPersonDetailsTest {
   @Test
   fun `to user verify email address`() {
     val user = createDeliusUser().toUser()
-    assertThat(user.isVerified).isEqualTo(true)
+    assertThat(user.verified).isEqualTo(true)
   }
 
   @Test

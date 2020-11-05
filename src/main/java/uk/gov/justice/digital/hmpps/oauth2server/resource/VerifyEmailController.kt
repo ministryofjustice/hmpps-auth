@@ -56,7 +56,7 @@ class VerifyEmailController(
     val optionalEmail = verifyEmailService.getEmail(username)
     if (optionalEmail.isPresent) {
       val email = optionalEmail.get()
-      if (email.isVerified) {
+      if (email.verified) {
         // no work to do here, so forward on
         proceedToOriginalUrl(request, response)
         return null

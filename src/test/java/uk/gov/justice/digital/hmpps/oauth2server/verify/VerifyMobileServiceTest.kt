@@ -42,7 +42,7 @@ class VerifyMobileServiceTest {
 
   @Test
   fun mobile_NoMobileSet() {
-    val user = User.of("bob")
+    val user = createSampleUser(username = "bob")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val userOptionalOptional = verifyMobileService.getMobile("user")
     assertThat(userOptionalOptional).isEmpty
@@ -57,7 +57,7 @@ class VerifyMobileServiceTest {
 
   @Test
   fun isNotVerified_userFoundNotVerified() {
-    val user = User.of("bob")
+    val user = createSampleUser(username = "bob")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     assertThat(verifyMobileService.isNotVerified("user")).isTrue()
   }
@@ -72,7 +72,7 @@ class VerifyMobileServiceTest {
 
   @Test
   fun requestVerification_existingToken() {
-    val user = User.of("someuser")
+    val user = createSampleUser(username = "someuser")
     val existingUserToken = user.createToken(TokenType.MOBILE)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     verifyMobileService.changeMobileAndRequestVerification("user", "07700900321")
@@ -81,7 +81,7 @@ class VerifyMobileServiceTest {
 
   @Test
   fun requestVerification_verifyToken() {
-    val user = User.of("someuser")
+    val user = createSampleUser(username = "someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val verification = verifyMobileService.changeMobileAndRequestVerification("user", "07700900321")
     val value = user.tokens.stream().findFirst().orElseThrow()
@@ -90,7 +90,7 @@ class VerifyMobileServiceTest {
 
   @Test
   fun requestVerification_saveMobile() {
-    val user = User.of("someuser")
+    val user = createSampleUser(username = "someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     verifyMobileService.changeMobileAndRequestVerification("user", "07700900321")
     verify(userRepository).save(user)
@@ -100,7 +100,7 @@ class VerifyMobileServiceTest {
 
   @Test
   fun requestVerification_sendFailure() {
-    val user = User.of("someuser")
+    val user = createSampleUser(username = "someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(notificationClient.sendSms(anyString(), anyString(), anyMap<String, Any?>(), isNull())).thenThrow(
       NotificationClientException("message")
@@ -115,7 +115,7 @@ class VerifyMobileServiceTest {
 
   @Test
   fun requestVerification_formatMobileInput() {
-    val user = Optional.of(User.of("someuser"))
+    val user = Optional.of(createSampleUser(username = "someuser"))
     whenever(userRepository.findByUsername(anyString())).thenReturn(user)
     verifyMobileService.changeMobileAndRequestVerification("user", "07700900321")
     verify(notificationClient).sendSms(eq("templateId"), eq("07700900321"), anyMap<String, Any?>(), isNull())
