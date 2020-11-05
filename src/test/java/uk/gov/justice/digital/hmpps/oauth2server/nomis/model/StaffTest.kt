@@ -6,16 +6,13 @@ import org.junit.jupiter.api.Test
 class StaffTest {
   @Test
   fun firstName() {
-    val staff = Staff()
-    staff.firstName = "boB"
-    assertThat(staff.firstName).isEqualTo("Bob")
+    val staff = Staff(firstName = "boB", lastName = "Smith", staffId = 1, status = "INACTIVE")
+    assertThat(staff.getFirstName()).isEqualTo("Bob")
   }
 
   @Test
   fun name() {
-    val staff = Staff()
-    staff.firstName = "boB"
-    staff.lastName = "SMITH"
+    val staff = Staff(firstName = "boB", lastName = "SMITH", staffId = 1, status = "INACTIVE")
     assertThat(staff.name).isEqualTo("Bob Smith")
   }
 }

@@ -132,10 +132,10 @@ class NomisUserDetailsServiceTest {
       .staff(staff)
       .roles(
         listOf(
-          UserCaseloadRole.builder()
-            .id(UserCaseloadRoleIdentity.builder().caseload("NWEB").roleId(ROLE_ID).username(username).build())
-            .role(Role.builder().code("ROLE1").id(ROLE_ID).build())
-            .build()
+          UserCaseloadRole(
+            id = UserCaseloadRoleIdentity(caseload = "NWEB", roleId = ROLE_ID, username = username),
+            role = Role(code = "ROLE1", id = ROLE_ID)
+          )
         )
       )
       .accountDetail(buildAccountDetail(username, OPEN))
@@ -180,14 +180,7 @@ class NomisUserDetailsServiceTest {
       .build()
   }
 
-  private fun buildStaff(): Staff {
-    return Staff.builder()
-      .staffId(1L)
-      .firstName("ITAG")
-      .lastName("USER")
-      .status("ACTIVE")
-      .build()
-  }
+  private fun buildStaff(): Staff = Staff(firstName = "ITAG", status = "ACTIVE", lastName = "USER", staffId = 1)
 
   companion object {
     private const val ROLE_ID = 1L

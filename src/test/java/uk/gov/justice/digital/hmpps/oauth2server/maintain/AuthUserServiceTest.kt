@@ -1211,10 +1211,7 @@ class AuthUserServiceTest {
   private val staffUserAccountForBob: UserPersonDetails
     get() {
       val staffUserAccount = NomisUserPersonDetails()
-      val staff = Staff()
-      staff.firstName = "bOb"
-      staff.status = "ACTIVE"
-      staffUserAccount.staff = staff
+      staffUserAccount.staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "Smith", staffId = 1)
       val detail = AccountDetail("user", "OPEN", "profile", null)
       staffUserAccount.accountDetail = detail
       staffUserAccount.username = "bob"
