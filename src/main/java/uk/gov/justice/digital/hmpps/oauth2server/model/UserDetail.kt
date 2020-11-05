@@ -1,65 +1,123 @@
-package uk.gov.justice.digital.hmpps.oauth2server.model;
+package uk.gov.justice.digital.hmpps.oauth2server.model
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails;
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource;
-import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails;
+import com.fasterxml.jackson.annotation.JsonInclude
+import io.swagger.annotations.ApiModel
+import io.swagger.annotations.ApiModelProperty
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.Companion.fromNullableString
+import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 
+@Suppress("DEPRECATION")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ApiModel(description = "User Details")
-@Data
-@Builder
-@AllArgsConstructor
-public class UserDetail {
-    @ApiModelProperty(required = true, value = "Username", example = "DEMO_USER1", position = 1)
-    private final String username;
+data class UserDetail(
+  @ApiModelProperty(
+    required = true,
+    value = "Username",
+    example = "DEMO_USER1",
+    position = 1
+  ) val username: String,
 
-    @ApiModelProperty(required = true, value = "Active", example = "false", position = 2)
-    private final boolean active;
+) {
 
-    @ApiModelProperty(required = true, value = "Name", example = "John Smith", position = 3)
-    private final String name;
+  @ApiModelProperty(
+    required = true,
+    value = "Active",
+    example = "false",
+    position = 2
+  )
+  var active: Boolean? = null
 
-    @ApiModelProperty(required = true, value = "Authentication Source", notes = "auth for auth users, nomis for nomis authenticated users", example = "nomis", position = 4)
-    private final AuthSource authSource;
+  @ApiModelProperty(
+    required = true,
+    value = "Name",
+    example = "John Smith",
+    position = 3
+  )
+  var name: String? = null
 
-    @ApiModelProperty(value = "Staff Id", notes = "Deprecated, use userId instead", example = "231232", position = 5)
-    @Deprecated
-    private final Long staffId;
+  @ApiModelProperty(
+    required = true,
+    value = "Authentication Source",
+    notes = "auth for auth users, nomis for nomis authenticated users",
+    example = "nomis",
+    position = 4
+  )
+  var authSource: AuthSource? = null
 
-    @ApiModelProperty(value = "Current Active Caseload", notes = "Deprecated, retrieve from elite2 API rather than auth", example = "MDI", position = 6)
-    @Deprecated
-    private final String activeCaseLoadId;
+  @Deprecated("")
+  @ApiModelProperty(
+    value = "Staff Id",
+    notes = "Deprecated, use userId instead",
+    example = "231232",
+    position = 5
+  )
 
-    @ApiModelProperty(value = "User Id", notes = "Unique identifier for user, will be UUID for auth users or staff ID for nomis users", example = "231232", position = 7)
-    private final String userId;
+  var staffId: Long? = null
 
-    public static UserDetail fromPerson(final UserPersonDetails u) {
-        final var authSource = AuthSource.fromNullableString(u.getAuthSource());
-        final var builder = builder()
-                .username(u.getUsername())
-                .active(u.isEnabled())
-                .name(u.getName())
-                .authSource(authSource);
+  @Deprecated("")
+  @ApiModelProperty(
+    value = "Current Active Caseload",
+    notes = "Deprecated, retrieve from elite2 API rather than auth",
+    example = "MDI",
+    position = 6
+  )
 
-        if (authSource == AuthSource.nomis) {
-            final var staffUserAccount = (NomisUserPersonDetails) u;
-            final var staffId = staffUserAccount.getStaff().getStaffId();
-            builder.staffId(staffId);
-            if (staffUserAccount.getActiveCaseLoadId() != null) {
-                builder.activeCaseLoadId(staffUserAccount.getActiveCaseLoadId());
-            }
-        }
-        builder.userId = u.getUserId();
-        return builder.build();
+  var activeCaseLoadId: String? = null
+
+  @ApiModelProperty(
+    value = "User Id",
+    notes = "Unique identifier for user, will be UUID for auth users or staff ID for nomis users",
+    example = "231232",
+    position = 7
+  )
+  var userId: String? = null
+
+  constructor(
+    username: String,
+    active: Boolean?,
+    name: String?,
+    authSource: AuthSource?,
+    staffId: Long?,
+    activeCaseLoadId: String?,
+    userId: String?
+  ) : this(username) {
+    this.active = active
+    this.name = name
+    this.authSource = authSource
+    this.staffId = staffId
+    this.activeCaseLoadId = activeCaseLoadId
+    this.userId = userId
+  }
+
+  companion object {
+    fun fromPerson(u: UserPersonDetails): UserDetail {
+
+      val authSource = fromNullableString(u.authSource)
+      val staffId: Long?
+      val activeCaseLoadId: String?
+      if (authSource === AuthSource.nomis) {
+        val staffUserAccount = u as NomisUserPersonDetails
+        staffId = staffUserAccount.staff.staffId
+        activeCaseLoadId = staffUserAccount.activeCaseLoadId
+      } else {
+        staffId = null
+        activeCaseLoadId = null
+      }
+      return UserDetail(
+        username = u.username,
+        active = u.isEnabled,
+        name = u.name,
+        authSource = authSource,
+        userId = u.userId,
+        staffId = staffId,
+        activeCaseLoadId = activeCaseLoadId
+      )
     }
 
-    public static UserDetail fromUsername(final String username) {
-        return builder().username(username).build();
+    fun fromUsername(username: String): UserDetail {
+      return UserDetail(username = username)
     }
+  }
 }
