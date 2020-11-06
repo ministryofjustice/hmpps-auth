@@ -81,7 +81,7 @@ class AuthUserGroupServiceTest {
   fun authUserGroups_notfound() {
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.empty())
     val groups = service.getAuthUserGroups(" BOB ")
-    assertThat(groups).isNotPresent
+    assertThat(groups).isNull()
   }
 
   @Test
@@ -96,7 +96,7 @@ class AuthUserGroupServiceTest {
     val user = createSampleUser(username = "user", groups = setOf(Group("JOE", "desc"), Group("LICENCE_VARY", "desc2")))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     val groups = service.getAuthUserGroups(" BOB ")
-    assertThat(groups.get()).extracting<String> { it.groupCode }.containsOnly("JOE", "LICENCE_VARY")
+    assertThat(groups).extracting<String> { it.groupCode }.containsOnly("JOE", "LICENCE_VARY")
   }
 
   @Test

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
 import org.junit.jupiter.api.Test
+import org.springframework.test.web.reactive.server.WebTestClient.BodyContentSpec
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 
 class AuthUserGroupsControllerIntTest : IntegrationTest() {
@@ -11,12 +12,7 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Groups add group endpoint adds a group to a user`() {
 
-    webTestClient
-      .get().uri("/auth/api/authuser/AUTH_RO_USER/groups")
-      .headers(setAuthorisation("ITAG_USER_ADM"))
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
+    callGetGroups()
       .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_2')]")
       .doesNotExist()
 
@@ -26,24 +22,14 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
       .exchange()
       .expectStatus().isNoContent
 
-    webTestClient
-      .get().uri("/auth/api/authuser/AUTH_RO_USER/groups")
-      .headers(setAuthorisation("ITAG_USER_ADM"))
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
+    callGetGroups()
       .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_2')]")
       .isEqualTo(mapOf("groupCode" to "SITE_1_GROUP_2", "groupName" to "Site 1 - Group 2"))
   }
 
   @Test
   fun `Auth User Groups remove group endpoint removes a group from a user`() {
-    webTestClient
-      .get().uri("/auth/api/authuser/AUTH_RO_USER/groups")
-      .headers(setAuthorisation("ITAG_USER_ADM"))
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
+    callGetGroups()
       .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_1')]")
       .isEqualTo(mapOf("groupCode" to "SITE_1_GROUP_1", "groupName" to "Site 1 - Group 1"))
 
@@ -53,18 +39,30 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
       .exchange()
       .expectStatus().isNoContent
 
-    webTestClient
-      .get().uri("/auth/api/authuser/AUTH_RO_USER/groups")
-      .headers(setAuthorisation("ITAG_USER_ADM"))
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
+    callGetGroups()
       .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_1')]")
       .doesNotExist()
   }
 
   @Test
-  fun `Auth User Groups endpoint returns user groups`() {
+  fun `Auth User Groups endpoint returns user groups no children`() {
+    webTestClient
+      .get().uri("/auth/api/authuser/auth_ro_vary_user/groups?children=false")
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .json(
+        """[
+          {"groupCode":"SITE_1_GROUP_1","groupName":"Site 1 - Group 1"},
+          {"groupCode":"SITE_1_GROUP_2","groupName":"Site 1 - Group 2"}       
+        ]
+        """.trimIndent()
+      )
+  }
+
+  @Test
+  fun `Auth User Groups endpoint returns user groups with children by default`() {
     webTestClient
       .get().uri("/auth/api/authuser/auth_ro_vary_user/groups")
       .headers(setAuthorisation("ITAG_USER_ADM"))
@@ -72,8 +70,22 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
       .expectStatus().isOk
       .expectBody()
       .json(
-        """
-       [{"groupCode":"SITE_1_GROUP_1","groupName":"Site 1 - Group 1"},{"groupCode":"SITE_1_GROUP_2","groupName":"Site 1 - Group 2"}]
+        """[
+          {"groupCode":"SITE_1_GROUP_1","groupName":"Site 1 - Group 1"},
+          {"groupCode":"CHILD_1","groupName":"Child - Site 1 - Group 2"}
+        ]
+        """.trimIndent()
+      )
+  }
+
+  @Test
+  fun `Auth User Groups endpoint returns user groups with children`() {
+    callGetGroups("auth_ro_vary_user", children = true)
+      .json(
+        """[
+          {"groupCode":"SITE_1_GROUP_1","groupName":"Site 1 - Group 1"},
+          {"groupCode":"CHILD_1","groupName":"Child - Site 1 - Group 2"}
+        ]
         """.trimIndent()
       )
   }
@@ -103,4 +115,11 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
       .exchange()
       .expectStatus().isUnauthorized
   }
+
+  private fun callGetGroups(user: String = "AUTH_RO_USER", children: Boolean = false): BodyContentSpec = webTestClient
+    .get().uri("/auth/api/authuser/$user/groups?children=$children")
+    .headers(setAuthorisation("ITAG_USER_ADM"))
+    .exchange()
+    .expectStatus().isOk
+    .expectBody()
 }

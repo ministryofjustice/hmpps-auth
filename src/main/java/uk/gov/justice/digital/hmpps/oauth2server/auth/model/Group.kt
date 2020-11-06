@@ -27,7 +27,7 @@ class Group(
   val assignableRoles: MutableSet<GroupAssignableRole> = mutableSetOf()
 
   @OneToMany(mappedBy = "group", cascade = [CascadeType.ALL], orphanRemoval = true)
-  val children: Set<ChildGroup> = mutableSetOf()
+  val children: MutableSet<ChildGroup> = mutableSetOf()
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

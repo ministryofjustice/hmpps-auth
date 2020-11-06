@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.apache.commons.lang3.StringUtils
 import org.hibernate.Hibernate
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.GrantedAuthority
@@ -12,7 +11,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Companion.canMaintainAuthUsers
-import java.util.Optional
 import kotlin.jvm.Throws
 
 @Service
@@ -73,23 +71,23 @@ class AuthUserGroupService(
     )
   }
 
-  private fun formatGroup(group: String) = StringUtils.upperCase(StringUtils.trim(group))
+  private fun formatGroup(group: String) = group.trim().toUpperCase()
 
   val allGroups: List<Group>
     get() = groupRepository.findAllByOrderByGroupName()
 
-  fun getAuthUserGroups(username: String): Optional<Set<Group>> {
-    val user = userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)))
+  fun getAuthUserGroups(username: String): Set<Group>? {
+    val user = userRepository.findByUsernameAndMasterIsTrue(username.trim().toUpperCase())
     return user.map { u: User ->
       Hibernate.initialize(u.groups)
+      u.groups.forEach { Hibernate.initialize(it.children) }
       u.groups
-    }
+    }.orElse(null)
   }
 
   fun getAssignableGroups(username: String, authorities: Collection<GrantedAuthority>): List<Group> =
-    if (canMaintainAuthUsers(authorities)) allGroups.toList() else getAuthUserGroups(username)
-      .map { groups: Set<Group> -> groups.sortedBy { it.groupName } }
-      .orElse(listOf())
+    if (canMaintainAuthUsers(authorities)) allGroups.toList()
+    else getAuthUserGroups(username)?.sortedBy { it.groupName } ?: listOf()
 
   class AuthUserGroupExistsException : AuthUserGroupException("group", "exists")
   open class AuthUserGroupException(val field: String, val errorCode: String) :
