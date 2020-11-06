@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.nomis.model
 
-enum class AccountStatus( // 1010
+enum class AccountStatus(
   val code: Int,
   val desc: String,
   val isExpired: Boolean,
@@ -11,14 +11,14 @@ enum class AccountStatus( // 1010
    */
   val isUserLocked: Boolean
 ) {
-  OPEN(0, "OPEN", false, false, false, false), // 0000
-  EXPIRED(1, "EXPIRED", true, false, false, false), // 0001
-  EXPIRED_GRACE(2, "EXPIRED(GRACE)", true, false, true, false), // 0010
-  LOCKED_TIMED(4, "LOCKED(TIMED)", false, true, false, true), // 0100
-  LOCKED(8, "LOCKED", false, true, false, false), // 1000
-  EXPIRED_LOCKED_TIMED(5, "EXPIRED & LOCKED(TIMED)", true, true, false, true), // 0101
-  EXPIRED_GRACE_LOCKED_TIMED(6, "EXPIRED(GRACE) & LOCKED(TIMED)", true, true, true, true), // 0110
-  EXPIRED_LOCKED(9, "EXPIRED & LOCKED", true, true, false, false), // 1001
+  OPEN(0, "OPEN", false, false, false, false),
+  EXPIRED(1, "EXPIRED", true, false, false, false),
+  EXPIRED_GRACE(2, "EXPIRED(GRACE)", true, false, true, false),
+  LOCKED_TIMED(4, "LOCKED(TIMED)", false, true, false, true),
+  LOCKED(8, "LOCKED", false, true, false, false),
+  EXPIRED_LOCKED_TIMED(5, "EXPIRED & LOCKED(TIMED)", true, true, false, true),
+  EXPIRED_GRACE_LOCKED_TIMED(6, "EXPIRED(GRACE) & LOCKED(TIMED)", true, true, true, true),
+  EXPIRED_LOCKED(9, "EXPIRED & LOCKED", true, true, false, false),
   EXPIRED_GRACE_LOCKED(10, "EXPIRED(GRACE) & LOCKED", true, true, true, false);
 
   companion object {
