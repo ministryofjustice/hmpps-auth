@@ -6,8 +6,6 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import lombok.AllArgsConstructor
-import lombok.extern.slf4j.Slf4j
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -15,10 +13,8 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 
-@Slf4j
 @RestController
 @Api(tags = ["/api/user/{username}/contacts"])
-@AllArgsConstructor
 class UserContactsController(private val userService: UserService) {
   @GetMapping("/api/user/{username}/contacts")
   @PreAuthorize("hasRole('ROLE_RETRIEVE_OAUTH_CONTACTS')")

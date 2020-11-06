@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
-import lombok.EqualsAndHashCode
 import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
@@ -29,7 +28,6 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "USERS")
-@EqualsAndHashCode(of = ["id"])
 class User(
   @Column(name = "username", nullable = false)
   private val username: String,
