@@ -480,7 +480,7 @@ class UserServiceTest {
           // User U2 in auth, but no email - so search NOMIS for e-mail for this user
           createSampleUser(verified = true, source = nomis, username = "U2", email = null),
           // User U3 found in auth, but source is not nomis
-          createSampleUser(verified = true, source = nomis, username = "U3", email = "u3@b.com"),
+          createSampleUser(verified = true, source = auth, username = "U3", email = "u3@b.com"),
         )
       )
 
