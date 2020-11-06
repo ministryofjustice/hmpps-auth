@@ -24,7 +24,12 @@ class UserContactsControllerTest {
   @Test
   fun `verified contacts`() {
     whenever(userService.getUserWithContacts(anyString())).thenReturn(
-      createSampleUser(secondaryEmail = "email not verified", secondaryEmailVerified = true, mobile = "mobile not verified", mobileVerified = true)
+      createSampleUser(
+        secondaryEmail = "email verified",
+        secondaryEmailVerified = true,
+        mobile = "mobile verified",
+        mobileVerified = true
+      )
     )
     val response = userContactsController.contacts("bob")
     assertThat(response).containsExactlyInAnyOrder(

@@ -49,8 +49,6 @@ class UserTokenRepositoryTest {
     TestTransaction.start()
     val retrievedEntity = repository.findById(entity.token).orElseThrow()
 
-    // equals only compares the business key columns
-    assertThat(retrievedEntity).isEqualTo(entity)
     assertThat(retrievedEntity.token).isEqualTo(entity.token)
     assertThat(retrievedEntity.tokenType).isEqualTo(entity.tokenType)
     assertThat(retrievedEntity.tokenExpiry).isEqualTo(entity.tokenExpiry)

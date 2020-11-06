@@ -220,7 +220,7 @@ class User(
 
   override fun getUsername(): String = username
 
-  override fun getPassword(): String = password!!
+  override fun getPassword(): String? = password
 
   override fun isEnabled(): Boolean = enabled
 
