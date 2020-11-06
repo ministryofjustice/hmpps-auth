@@ -60,7 +60,7 @@ class MaintainUserCheckTest {
         user
       )
     }.isInstanceOf(AuthUserGroupRelationshipException::class.java)
-      .hasMessage("Unable to maintain user: user with reason: User not with your groups")
+      .hasMessage("Unable to maintain user: first last with reason: User not with your groups")
     verify(userRepository).findByUsernameAndMasterIsTrue(anyString())
   }
 
