@@ -25,6 +25,7 @@ import javax.persistence.JoinColumn
 import javax.persistence.JoinTable
 import javax.persistence.OneToMany
 import javax.persistence.Table
+import javax.persistence.Transient
 
 @Entity
 @Table(name = "USERS")
@@ -105,32 +106,6 @@ class User(
   @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
   val tokens: MutableSet<UserToken> = mutableSetOf()
 
-  private constructor (
-    id: UUID?,
-    username: String,
-    password: String?,
-    email: String?,
-    verified: Boolean,
-    locked: Boolean,
-    enabled: Boolean,
-    source: AuthSource,
-    passwordExpiry: LocalDateTime,
-    lastLoggedIn: LocalDateTime,
-    mfaPreference: MfaPreferenceType,
-    person: Person,
-    contacts: MutableSet<Contact>,
-    authorities: MutableSet<Authority>,
-    groups: MutableSet<Group>,
-    tokens: MutableSet<UserToken>
-  ) : this(username, person, email, verified, enabled, source, authorities, groups) {
-    this.id = id
-    this.password = password
-    this.locked = locked
-    this.passwordExpiry = passwordExpiry
-    this.lastLoggedIn = lastLoggedIn
-    this.mfaPreference = mfaPreference
-  }
-
   override fun eraseCredentials() {
     password = null
   }
@@ -141,17 +116,22 @@ class User(
 
   override fun isCredentialsNonExpired(): Boolean = passwordExpiry.isAfter(LocalDateTime.now())
 
-  override fun getName(): String = person?.name ?: username
+  override val name: String
+    get() = person?.name ?: username
 
-  override fun getFirstName(): String = person?.firstName ?: username
+  override val firstName: String
+    get() = person?.firstName ?: username
 
-  override fun isAdmin(): Boolean = false
+  @Transient
+  override val isAdmin: Boolean = false
 
-  override fun getAuthSource(): String = source.toString()
+  override val authSource: String
+    get() = source.toString()
 
   override fun toUser(): User = this
 
-  override fun getUserId(): String = id.toString()
+  override val userId: String
+    get() = id.toString()
 
   fun createToken(tokenType: UserToken.TokenType): UserToken {
     val optionalToken = tokens.stream().filter { t: UserToken -> t.tokenType === tokenType }.findFirst()
@@ -198,23 +178,6 @@ class User(
 
   fun mfaPreferenceSecondaryEmailVerified(): Boolean =
     mfaPreference == MfaPreferenceType.SECONDARY_EMAIL && isSecondaryEmailVerified
-
-  override fun toString(): String {
-    return "User{" +
-      "id=" + id +
-      ", username='" + username + '\'' +
-      ", password='" + password + '\'' +
-      ", email='" + email + '\'' +
-      ", verified=" + verified +
-      ", locked=" + locked +
-      ", enabled=" + enabled +
-      ", source=" + source +
-      ", passwordExpiry=" + passwordExpiry +
-      ", lastLoggedIn=" + lastLoggedIn +
-      ", person=" + person +
-      ", authorities=" + authorities +
-      '}'
-  }
 
   override fun getUsername(): String = username
 
@@ -272,6 +235,9 @@ class User(
     val preferences = allowedMfaPreferences
     return if (preferences.contains(mfaPreference)) Optional.of(mfaPreference) else preferences.stream().findFirst()
   }
+
+  override fun toString(): String =
+    "User(username='$username', person=$person, email=$email, verified=$verified, enabled=$enabled, source=$source, id=$id, locked=$locked, passwordExpiry=$passwordExpiry, lastLoggedIn=$lastLoggedIn, mfaPreference=$mfaPreference)"
 
   private val allowedMfaPreferences: List<MfaPreferenceType>
     get() {

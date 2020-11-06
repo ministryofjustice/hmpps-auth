@@ -5,19 +5,16 @@ import org.springframework.security.core.userdetails.User
 
 class UserDetailsImpl(
   username: String,
-  private val name: String,
+  override val name: String,
   authorities: Collection<GrantedAuthority>,
-  private val authSource: String,
-  private val userId: String,
+  override val authSource: String,
+  override val userId: String,
   val jwtId: String,
 ) :
   User(username, "", authorities), UserPersonDetails {
-  override fun getName(): String = name
-  override fun getAuthSource(): String = authSource
-  override fun getFirstName(): String = name
-  override fun getUserId(): String = userId
-
-  override fun isAdmin(): Boolean = false
+  override val firstName: String
+    get() = name
+  override val isAdmin: Boolean = false
 
   override fun toUser(): uk.gov.justice.digital.hmpps.oauth2server.auth.model.User {
     throw IllegalStateException("Can't be converted into user")

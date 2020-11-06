@@ -10,7 +10,7 @@ data class AzureUserPersonDetails(
   private val authorities: MutableCollection<GrantedAuthority>,
   private val enabled: Boolean,
   private val username: String,
-  private val firstName: String,
+  override val firstName: String,
   val surname: String,
   val email: String,
   private val credentialsNonExpired: Boolean,
@@ -31,18 +31,19 @@ data class AzureUserPersonDetails(
 
   override fun isAccountNonLocked(): Boolean = accountNonLocked
 
-  override fun getUserId(): String = email
+  override val userId: String
+    get() = email
 
-  override fun getName(): String = "$firstName $surname"
+  override val name: String
+    get() = "$firstName $surname"
 
-  override fun getFirstName(): String = firstName
-
-  override fun getAuthSource(): String? = AuthSource.azuread.name
+  override val authSource: String
+    get() = AuthSource.azuread.name
 
   override fun eraseCredentials() {
   }
 
-  override fun toUser(): User? {
+  override fun toUser(): User {
     return User(
       username = username,
       source = AuthSource.azuread,
@@ -52,5 +53,6 @@ data class AzureUserPersonDetails(
       person = Person(firstName, surname),
     )
   }
-  override fun isAdmin(): Boolean = false
+
+  override val isAdmin: Boolean = false
 }
