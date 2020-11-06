@@ -10,8 +10,8 @@ import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.test.util.ReflectionTestUtils
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import java.time.LocalDateTime
 import java.util.Optional
@@ -54,11 +54,14 @@ class AuthUserDetailsServiceTest {
     assertThatThrownBy { service.loadUserByUsername("user") }.isInstanceOf(UsernameNotFoundException::class.java)
   }
 
-  private fun buildAuthUser(): User {
-    val user = User.builder().username("user").email("email").verified(true).build()
-    user.person = Person("first", "last")
-    user.isEnabled = true
-    user.passwordExpiry = LocalDateTime.now().plusDays(1)
-    return user
-  }
+  private fun buildAuthUser(): User =
+    createSampleUser(
+      username = "user",
+      email = "email",
+      verified = true,
+      firstName = "first",
+      lastName = "last",
+      enabled = true,
+      passwordExpiry = LocalDateTime.now().plusDays(1),
+    )
 }

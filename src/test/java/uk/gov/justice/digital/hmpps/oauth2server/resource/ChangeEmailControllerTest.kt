@@ -8,9 +8,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
@@ -44,7 +42,7 @@ class ChangeEmailControllerTest {
     @Test
     fun newSecondaryEmailRequest() {
       val user =
-        User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someuser@gmail.com", true))).build()
+        UserHelper.createSampleUser(secondaryEmail = "someuser@gmail.com", secondaryEmailVerified = true)
       whenever(userService.getUserWithContacts(token.name)).thenReturn(user)
       val view = controller.newSecondaryEmailRequest(token)
       assertThat(view.viewName).isEqualTo("account/changeBackupEmail")
@@ -63,7 +61,7 @@ class ChangeEmailControllerTest {
     whenever(tokenService.getToken(any(), anyString()))
       .thenReturn(
         Optional.of(
-          User.builder().username("someuser").email("someuser@justice.gov.uk").build()
+          UserHelper.createSampleUser(username = "someuser", email = "someuser@justice.gov.uk")
             .createToken(UserToken.TokenType.RESET)
         )
       )

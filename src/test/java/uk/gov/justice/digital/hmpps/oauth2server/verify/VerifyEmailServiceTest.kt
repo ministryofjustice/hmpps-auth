@@ -12,10 +12,9 @@ import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType.SECONDARY_EMAIL
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
@@ -45,7 +44,7 @@ class VerifyEmailServiceTest {
 
   @Test
   fun email() {
-    val user = User.builder().username("bob").email("joe@bob.com").build()
+    val user = UserHelper.createSampleUser(username = "bob", email = "joe@bob.com")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val userOptional = verifyEmailService.getEmail("user")
     assertThat(userOptional).get().isEqualTo(user)
@@ -53,7 +52,7 @@ class VerifyEmailServiceTest {
 
   @Test
   fun email_NoEmailSet() {
-    val user = User.of("bob")
+    val user = UserHelper.createSampleUser(username = "bob")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val userOptionalOptional = verifyEmailService.getEmail("user")
     assertThat(userOptionalOptional).isEmpty
@@ -68,22 +67,21 @@ class VerifyEmailServiceTest {
 
   @Test
   fun isNotVerified_userFoundNotVerified() {
-    val user = User.of("bob")
+    val user = UserHelper.createSampleUser(username = "bob")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     assertThat(verifyEmailService.isNotVerified("user")).isTrue()
   }
 
   @Test
   fun isNotVerified_userFoundVerified() {
-    val user = User.builder().username("bob").email("joe@bob.com").build()
-    user.isVerified = true
+    val user = UserHelper.createSampleUser(username = "bob", email = "joe@bob.com", verified = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     assertThat(verifyEmailService.isNotVerified("user")).isFalse()
   }
 
   @Test
   fun requestVerification_existingToken() {
-    val user = User.of("someuser")
+    val user = UserHelper.createSampleUser(username = "someuser")
     val existingUserToken = user.createToken(TokenType.VERIFIED)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
@@ -100,7 +98,7 @@ class VerifyEmailServiceTest {
 
   @Test
   fun requestVerificationSecondaryEmail_existingToken() {
-    val user = User.of("someuser")
+    val user = UserHelper.createSampleUser(username = "someuser")
     val existingUserToken = user.createToken(TokenType.SECONDARY)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
@@ -117,7 +115,7 @@ class VerifyEmailServiceTest {
 
   @Test
   fun requestVerification_verifyToken() {
-    val user = User.of("someuser")
+    val user = UserHelper.createSampleUser(username = "someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
     val verification = verifyEmailService.requestVerification(
@@ -134,7 +132,7 @@ class VerifyEmailServiceTest {
 
   @Test
   fun requestVerification_verifyToken_second() {
-    val user = User.of("someuser")
+    val user = UserHelper.createSampleUser(username = "someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
     val verification = verifyEmailService.requestVerification(
@@ -151,7 +149,7 @@ class VerifyEmailServiceTest {
 
   @Test
   fun requestVerification_saveEmail() {
-    val user = User.of("someuser")
+    val user = UserHelper.createSampleUser(username = "someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
     verifyEmailService.requestVerification(
@@ -164,12 +162,12 @@ class VerifyEmailServiceTest {
     )
     verify(userRepository).save(user)
     assertThat(user.email).isEqualTo("email@john.com")
-    assertThat(user.isVerified).isFalse()
+    assertThat(user.verified).isFalse()
   }
 
   @Test
   fun requestVerification_sendFailure() {
-    val user = User.of("someuser")
+    val user = UserHelper.createSampleUser(username = "someuser")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
     whenever(notificationClient.sendEmail(anyString(), anyString(), anyMap<String, Any?>(), isNull())).thenThrow(
@@ -189,7 +187,7 @@ class VerifyEmailServiceTest {
 
   @Test
   fun requestVerification_formatEmailInput() {
-    val user = Optional.of(User.of("someuser"))
+    val user = Optional.of(UserHelper.createSampleUser(username = "someuser"))
     whenever(userRepository.findByUsername(anyString())).thenReturn(user)
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
     verifyEmailService.requestVerification(
@@ -210,7 +208,7 @@ class VerifyEmailServiceTest {
 
   @Test
   fun requestVerification_gsiEmail() {
-    val user = Optional.of(User.of("someuser"))
+    val user = Optional.of(UserHelper.createSampleUser(username = "someuser"))
     whenever(userRepository.findByUsername(anyString())).thenReturn(user)
     whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
     verifyPrimaryEmailFailure("some.u'ser@SOMEwhe.gsi.gov.uk", "gsi")
@@ -302,7 +300,7 @@ class VerifyEmailServiceTest {
 
   @Test
   fun `resendVerificationCodeEmail send code`() {
-    val user = User.builder().person(Person("bob", "last")).email("someemail").build()
+    val user = UserHelper.createSampleUser(firstName = "bob", lastName = "last", email = "someemail")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
 
     val verifyLink = verifyEmailService.resendVerificationCodeEmail("bob", "http://some.url?token=")
@@ -314,14 +312,14 @@ class VerifyEmailServiceTest {
 
   @Test
   fun `resendVerificationCodeEmail no email`() {
-    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User()))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(createSampleUser()))
     assertThatThrownBy { verifyEmailService.resendVerificationCodeEmail("bob", "http://some.url") }
       .isInstanceOf(VerifyEmailException::class.java).extracting("reason").isEqualTo("noemail")
   }
 
   @Test
   fun `resendVerificationCodeEmail already verified`() {
-    val user = User.builder().email("someemail").verified(true).build()
+    val user = UserHelper.createSampleUser(email = "someemail", verified = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     assertThat(
       verifyEmailService.resendVerificationCodeEmail(
@@ -334,7 +332,7 @@ class VerifyEmailServiceTest {
   @Test
   fun `resendVerificationCodeSecondaryEmail send code`() {
     val user =
-      User.builder().person(Person("bob", "last")).contacts(setOf(Contact(SECONDARY_EMAIL, "someemail", false))).build()
+      UserHelper.createSampleUser(firstName = "bob", lastName = "last", secondaryEmail = "someemail")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
 
     val verifyLink = verifyEmailService.resendVerificationCodeSecondaryEmail("bob", "http://some.url?token=")
@@ -346,14 +344,14 @@ class VerifyEmailServiceTest {
 
   @Test
   fun `resendVerificationCodeSecondaryEmail no second email`() {
-    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User()))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(createSampleUser()))
     assertThatThrownBy { verifyEmailService.resendVerificationCodeSecondaryEmail("bob", "http://some.url") }
       .isInstanceOf(VerifyEmailException::class.java).extracting("reason").isEqualTo("nosecondaryemail")
   }
 
   @Test
   fun `resendVerificationCodeSecondaryEmail already verified`() {
-    val user = User.builder().contacts(setOf(Contact(SECONDARY_EMAIL, "someemail", true))).build()
+    val user = UserHelper.createSampleUser(secondaryEmail = "someemail", secondaryEmailVerified = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     assertThat(
       verifyEmailService.resendVerificationCodeSecondaryEmail(
@@ -365,14 +363,14 @@ class VerifyEmailServiceTest {
 
   @Test
   fun `secondaryEmailVerified returns true`() {
-    val user = User.builder().contacts(setOf(Contact(SECONDARY_EMAIL, "someemail", true))).build()
+    val user = UserHelper.createSampleUser(secondaryEmail = "someemail", secondaryEmailVerified = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     assertThat(verifyEmailService.secondaryEmailVerified("bob")).isTrue()
   }
 
   @Test
   fun `secondaryEmailVerified returns false`() {
-    val user = User.builder().contacts(setOf(Contact(SECONDARY_EMAIL, "someemail", false))).build()
+    val user = UserHelper.createSampleUser(secondaryEmail = "someemail")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     assertThat(verifyEmailService.secondaryEmailVerified("bob")).isFalse()
   }
@@ -385,24 +383,24 @@ class VerifyEmailServiceTest {
 
   @Test
   fun confirmEmail_happyPath() {
-    val user = User.of("bob")
+    val user = UserHelper.createSampleUser(username = "bob")
     val userToken = user.createToken(TokenType.VERIFIED)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     val result = verifyEmailService.confirmEmail("token")
     assertThat(result).isEmpty
     verify(userRepository).save(user)
-    assertThat(user.isVerified).isTrue()
+    assertThat(user.verified).isTrue()
   }
 
   @Test
   fun confirmSecondaryEmail_happyPath() {
-    val user = User.of("bob")
+    val user = UserHelper.createSampleUser(username = "bob")
     val userToken = user.createToken(TokenType.SECONDARY)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     val result = verifyEmailService.confirmEmail("token")
     assertThat(result).isEmpty
     verify(userRepository).save(user)
-    assertThat(user.isVerified).isTrue()
+    assertThat(user.verified).isTrue()
   }
 
   @Test
@@ -413,7 +411,7 @@ class VerifyEmailServiceTest {
 
   @Test
   fun confirmEmail_expired() {
-    val user = User.of("bob")
+    val user = UserHelper.createSampleUser(username = "bob")
     val userToken = user.createToken(TokenType.VERIFIED)
     userToken.tokenExpiry = LocalDateTime.now().minusSeconds(1)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
@@ -423,7 +421,7 @@ class VerifyEmailServiceTest {
 
   @Test
   fun confirmSecondaryEmail_expired() {
-    val user = User.of("bob")
+    val user = UserHelper.createSampleUser(username = "bob")
     val userToken = user.createToken(TokenType.SECONDARY)
     userToken.tokenExpiry = LocalDateTime.now().minusSeconds(1)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))

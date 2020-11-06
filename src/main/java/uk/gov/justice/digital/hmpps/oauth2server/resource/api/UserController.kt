@@ -109,7 +109,7 @@ class UserController(private val userService: UserService) {
     return userService
       .getOrCreateUser(username)
       .map { user: User ->
-        if (user.isVerified) ResponseEntity.ok(EmailAddress(user)) else ResponseEntity.noContent().build<Any>()
+        if (user.verified) ResponseEntity.ok(EmailAddress(user)) else ResponseEntity.noContent().build<Any>()
       }
       .orElseGet { notFoundResponse(username) }
   }

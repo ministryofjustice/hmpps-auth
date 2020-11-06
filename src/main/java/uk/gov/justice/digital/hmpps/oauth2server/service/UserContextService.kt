@@ -40,7 +40,7 @@ class UserContextService(
 
   private fun mapFromAzureAD(email: String, to: AuthSource): List<UserPersonDetails> = when (to) {
     delius -> deliusUserService.getDeliusUsersByEmail(email)
-    auth -> authUserService.findAuthUsersByEmail(email).filter { it.isVerified }
+    auth -> authUserService.findAuthUsersByEmail(email).filter { it.verified }
     nomis -> nomisUserService.getNomisUsersByEmail(email)
     else -> emptyList()
   }

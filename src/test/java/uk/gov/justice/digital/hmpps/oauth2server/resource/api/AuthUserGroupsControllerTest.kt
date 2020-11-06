@@ -10,6 +10,7 @@ import org.mockito.Mockito.doThrow
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupExistsException
@@ -120,8 +121,11 @@ class AuthUserGroupsControllerTest {
 
   private val authUser: User
     get() {
-      val user = User.builder().username("USER").email("email").verified(true).build()
-      user.groups = setOf(Group("GLOBAL_SEARCH", "desc2"), Group("FRED", "desc"))
-      return user
+      return createSampleUser(
+        username = "USER",
+        email = "email",
+        verified = true,
+        groups = setOf(Group("GLOBAL_SEARCH", "desc2"), Group("FRED", "desc"))
+      )
     }
 }

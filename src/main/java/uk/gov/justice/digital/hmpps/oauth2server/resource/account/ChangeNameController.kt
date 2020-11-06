@@ -28,7 +28,7 @@ class ChangeNameController(
   fun changeNameRequest(authentication: Authentication): ModelAndView {
     val user = authUserService.getAuthUserByUsername(authentication.name).orElseThrow()
     with(user.person) {
-      return ModelAndView("account/changeName").addFirstAndLastName(firstName, lastName)
+      return ModelAndView("account/changeName").addFirstAndLastName(this!!.firstName, lastName)
     }
   }
 

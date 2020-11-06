@@ -4,8 +4,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.azure.AzureUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
@@ -26,12 +25,12 @@ internal class AzureUserServiceTest {
     )
       .thenReturn(
         Optional.of(
-          User
-            .builder()
-            .username("917D4BDC-F86F-4756-B828-0BED8865EFB3")
-            .person(Person("Test", "User"))
-            .email("test@user.com")
-            .build()
+          createSampleUser(
+            username = "917D4BDC-F86F-4756-B828-0BED8865EFB3",
+            firstName = "Test",
+            lastName = "User",
+            email = "test@user.com",
+          )
         )
       )
 

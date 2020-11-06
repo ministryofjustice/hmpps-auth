@@ -15,6 +15,7 @@ import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.LockedException
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
@@ -27,7 +28,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Role
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.UserCaseloadRole
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.UserCaseloadRoleIdentity
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService
@@ -58,14 +61,14 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_noEmail() {
-    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User.of("user")))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(createSampleUser(username = "user")))
     val optional = resetPasswordService.requestResetPassword("user", "url")
     assertThat(optional).isEmpty
   }
 
   @Test
   fun requestResetPassword_noNomisUser() {
-    val user = User.builder().username("USER").email("email").verified(true).build()
+    val user = createSampleUser(username = "USER", email = "email", verified = true, source = nomis)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
     val optional = resetPasswordService.requestResetPassword("user", "url")
@@ -73,7 +76,7 @@ class ResetPasswordServiceTest {
       eq("resetUnavailableTemplate"),
       eq("email"),
       check {
-        assertThat(it).containsOnly(entry("firstName", "USER"), entry("fullName", "USER"))
+        assertThat(it).containsOnly(entry("firstName", "USER"), entry("fullName", "first last"))
       },
       isNull()
     )
@@ -82,7 +85,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_inactive() {
-    val user = User.builder().username("someuser").email("email").source(AuthSource.nomis).verified(true).build()
+    val user = createSampleUser(username = "someuser", email = "email", source = nomis, verified = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val staffUserAccount = nomisUserPersonDetails("OPEN", Staff(firstName = "bOb", status = "inactive", lastName = "Smith", staffId = 5))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccount))
@@ -100,10 +103,15 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_authLocked() {
-    val user = User.builder().username("someuser").email("email").verified(true).locked(true).build()
-    user.person = Person("Bob", "Smith")
-    user.source = AuthSource.auth
-    user.isEnabled = true
+    val user = createSampleUser(
+      username = "someuser",
+      email = "email",
+      verified = true,
+      locked = true,
+      firstName = "Bob",
+      lastName = "Smith",
+      enabled = true
+    )
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val optionalLink = resetPasswordService.requestResetPassword("user", "url")
     verify(notificationClient).sendEmail(
@@ -123,7 +131,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_notAuthLocked() {
-    val user = User.builder().username("someuser").email("email").verified(true).build()
+    val user = createSampleUser(username = "someuser", email = "email", verified = true, source = nomis)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val accountOptional = staffUserAccountLockedForBobOptional
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(accountOptional)
@@ -141,7 +149,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_userLocked() {
-    val user = User.builder().username("someuser").email("email").source(AuthSource.nomis).verified(true).build()
+    val user = createSampleUser(username = "someuser", email = "email", source = nomis, verified = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val accountOptional = staffUserAccountExpiredLockedForBobOptional
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(accountOptional)
@@ -163,7 +171,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_existingToken() {
-    val user = User.builder().username("someuser").email("email").verified(true).build()
+    val user = createSampleUser(username = "someuser", email = "email", verified = true, locked = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val existingUserToken = user.createToken(UserToken.TokenType.RESET)
@@ -173,7 +181,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_verifyToken() {
-    val user = User.builder().username("someuser").person(Person("Bob", "Smith")).email("email").locked(true).build()
+    val user = createSampleUser(username = "someuser", person = Person("Bob", "Smith"), email = "email", locked = true, source = nomis)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val optionalLink = resetPasswordService.requestResetPassword("user", "url")
@@ -194,7 +202,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_uppercaseUsername() {
-    val user = User.builder().username("SOMEUSER").email("email").locked(true).build()
+    val user = createSampleUser(username = "SOMEUSER", email = "email", locked = true, source = nomis)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     resetPasswordService.requestResetPassword("someuser", "url")
@@ -204,7 +212,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_verifyNotification() {
-    val user = User.builder().username("someuser").email("email").locked(true).build()
+    val user = createSampleUser(username = "someuser", email = "email", locked = true, source = nomis)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val linkOptional = resetPasswordService.requestResetPassword("user", "url")
@@ -216,7 +224,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_sendFailure() {
-    val user = User.builder().username("someuser").email("email").locked(true).build()
+    val user = createSampleUser(username = "someuser", email = "email", locked = true, source = nomis)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     whenever(notificationClient.sendEmail(anyString(), anyString(), anyMap<String, Any?>(), isNull())).thenThrow(
@@ -262,11 +270,12 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_multipleEmailAddresses() {
-    val user = User.builder().username("someuser").email("email")
-      .person(Person("Bob", "Smith"))
-      .source(AuthSource.auth)
-      .enabled(true)
-      .build()
+    val user = createSampleUser(
+      username = "someuser",
+      email = "email",
+      person = Person("Bob", "Smith"),
+      enabled = true
+    )
     whenever(userRepository.findByEmail(any())).thenReturn(listOf(user, user))
     val optional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url")
     verify(notificationClient).sendEmail(
@@ -286,11 +295,12 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_multipleEmailAddresses_verifyToken() {
-    val user = User.builder().username("someuser").email("email")
-      .person(Person("Bob", "Smith"))
-      .source(AuthSource.auth)
-      .enabled(true)
-      .build()
+    val user = createSampleUser(
+      username = "someuser",
+      email = "email",
+      person = Person("Bob", "Smith"),
+      enabled = true
+    )
     whenever(userRepository.findByEmail(any())).thenReturn(listOf(user, user))
     val linkOptional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url")
     val userToken = user.tokens.stream().findFirst().orElseThrow()
@@ -299,9 +309,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_multipleEmailAddresses_noneCanBeReset() {
-    val user = User.builder().username("someuser").email("email").build()
-    user.person = Person("Bob", "Smith")
-    user.source = AuthSource.auth
+    val user = createSampleUser(username = "someuser", email = "email", locked = true, person = Person("Bob", "Smith"))
     whenever(userRepository.findByEmail(any())).thenReturn(listOf(user, user))
     val optional = resetPasswordService.requestResetPassword("someuser@somewhere", "http://url")
     verify(notificationClient).sendEmail(
@@ -317,7 +325,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun requestResetPassword_byEmail() {
-    val user = User.builder().username("someuser").email("email").locked(true).build()
+    val user = createSampleUser(username = "someuser", email = "email", locked = true, source = nomis)
     whenever(userRepository.findByEmail(anyString())).thenReturn(listOf(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val optionalLink = resetPasswordService.requestResetPassword("user@where", "url")
@@ -362,8 +370,7 @@ class ResetPasswordServiceTest {
   fun resetPassword() {
     val staffUserAccountForBob = staffUserAccountForBob
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccountForBob))
-    val user = User.of("user")
-    user.person = Person("First", "Last")
+    val user = createSampleUser(username = "user", person = Person("First", "Last"), source = nomis)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     resetPasswordService.setPassword("bob", "pass")
@@ -381,7 +388,7 @@ class ResetPasswordServiceTest {
   @Test
   fun resetPassword_authUser() {
     val user =
-      User.builder().username("user").person(Person("First", "Last")).enabled(true).source(AuthSource.auth).build()
+      createSampleUser(username = "user", person = Person("First", "Last"), enabled = true, source = auth, locked = true)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     resetPasswordService.setPassword("bob", "pass")
@@ -399,7 +406,7 @@ class ResetPasswordServiceTest {
   @Test
   fun resetPassword_deliusUser() {
     val user =
-      User.builder().username("user").person(Person("First", "Last")).enabled(true).source(AuthSource.delius).build()
+      createSampleUser(username = "user", person = Person("First", "Last"), enabled = true, source = delius, locked = true)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     val deliusUserPersonDetails =
       DeliusUserPersonDetails("user", "12345", "Delius", "Smith", "a@b.com", true, false, setOf())
@@ -421,7 +428,7 @@ class ResetPasswordServiceTest {
   fun resetPasswordLockedAccount() {
     val staffUserAccount = nomisUserPersonDetails("OPEN", Staff(firstName = "bOb", status = "inactive", lastName = "Smith", staffId = 5))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccount))
-    val user = User.builder().username("user").source(AuthSource.nomis).build()
+    val user = createSampleUser(username = "user", source = nomis, locked = true)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThatThrownBy { resetPasswordService.setPassword("bob", "pass") }.isInstanceOf(LockedException::class.java)
@@ -429,8 +436,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun resetPasswordLockedAccount_authUser() {
-    val user = User.of("user")
-    user.source = AuthSource.auth
+    val user = createSampleUser(username = "user")
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThatThrownBy { resetPasswordService.setPassword("bob", "pass") }.isInstanceOf(LockedException::class.java)
@@ -460,10 +466,10 @@ class ResetPasswordServiceTest {
   fun moveTokenToAccount_differentEmail() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(
       Optional.of(
-        User.builder().username("user").email("email").verified(true).build()
+        createSampleUser(username = "user", email = "email", verified = true, locked = true)
       )
     )
-    val builtUser = User.builder().username("other").email("emailother").verified(true).build()
+    val builtUser = createSampleUser(username = "other", email = "emailother", verified = true)
     whenever(userTokenRepository.findById("token")).thenReturn(Optional.of(builtUser.createToken(UserToken.TokenType.RESET)))
     assertThatThrownBy {
       resetPasswordService.moveTokenToAccount(
@@ -476,11 +482,9 @@ class ResetPasswordServiceTest {
   @Test
   fun moveTokenToAccount_disabled() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(
-      Optional.of(
-        User.builder().username("user").email("email").verified(true).build()
-      )
+      Optional.of(createSampleUser(username = "user", email = "email", verified = true))
     )
-    val builtUser = User.builder().username("other").email("email").verified(true).build()
+    val builtUser = createSampleUser(username = "other", email = "email", verified = true)
     whenever(userTokenRepository.findById("token")).thenReturn(Optional.of(builtUser.createToken(UserToken.TokenType.RESET)))
     assertThatThrownBy { resetPasswordService.moveTokenToAccount("token", "noone") }.extracting("reason")
       .isEqualTo("locked")
@@ -488,9 +492,7 @@ class ResetPasswordServiceTest {
 
   @Test
   fun moveTokenToAccount_sameUserAccount() {
-    val user = User.builder().username("USER").email("email").verified(true).build()
-    user.isEnabled = true
-    user.source = AuthSource.auth
+    val user = createSampleUser(username = "USER", email = "email", verified = true, enabled = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userTokenRepository.findById("token")).thenReturn(Optional.of(user.createToken(UserToken.TokenType.RESET)))
     val newToken = resetPasswordService.moveTokenToAccount("token", "USER")
@@ -499,11 +501,9 @@ class ResetPasswordServiceTest {
 
   @Test
   fun moveTokenToAccount_differentAccount() {
-    val user = User.builder().username("USER").email("email").verified(true).build()
-    user.isEnabled = true
-    user.source = AuthSource.auth
+    val user = createSampleUser(username = "USER", email = "email", verified = true, enabled = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-    val builtUser = User.builder().username("other").email("email").verified(true).build()
+    val builtUser = createSampleUser(username = "other", email = "email", verified = true)
     val userToken = builtUser.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById("token")).thenReturn(Optional.of(userToken))
     val newToken = resetPasswordService.moveTokenToAccount("token", "USER")
@@ -523,8 +523,8 @@ class ResetPasswordServiceTest {
       check<User> { user ->
         assertThat(user.username).isEqualTo("user")
         assertThat(user.email).isEqualTo("Bob.smith@justice.gov.uk")
-        assertThat(user.isVerified).isTrue()
-        assertThat(user.source).isEqualTo(AuthSource.nomis)
+        assertThat(user.verified).isTrue()
+        assertThat(user.source).isEqualTo(nomis)
       }
     )
   }

@@ -8,8 +8,7 @@ import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.model.EmailAddress
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.model.UserDetail
@@ -169,7 +168,7 @@ class UserControllerTest {
   fun userEmail_found() {
     whenever(userService.getOrCreateUser(anyString())).thenReturn(
       Optional.of(
-        User.builder().username("JOE").verified(true).email("someemail").build()
+        createSampleUser(username = "JOE", verified = true, email = "someemail")
       )
     )
     val responseEntity = userController.getUserEmail("joe")
@@ -193,7 +192,7 @@ class UserControllerTest {
 
   @Test
   fun userEmail_notVerified() {
-    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(User.of("JOE")))
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(createSampleUser("JOE")))
     val responseEntity = userController.getUserEmail("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
     assertThat(responseEntity.body).isNull()
@@ -206,14 +205,16 @@ class UserControllerTest {
   }
 
   private fun setupFindUserCallForAuth() {
-    val user = User.builder().id(UUID.fromString(USER_ID))
-      .username("principal")
-      .email("email")
-      .verified(true)
-      .person(Person("Joe", "Bloggs"))
-      .enabled(true)
-      .source(AuthSource.auth)
-      .build()
+    val user = createSampleUser(
+      id = UUID.fromString(USER_ID),
+      username = "principal",
+      email = "email",
+      verified = true,
+      firstName = "Joe",
+      lastName = "Bloggs",
+      enabled = true,
+      source = AuthSource.auth,
+    )
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
   }
 

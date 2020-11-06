@@ -30,7 +30,13 @@ data class DeliusUserPersonDetails(
   override fun getAuthSource(): String = "delius"
 
   override fun toUser(): User =
-    User.builder().username(username).source(AuthSource.delius).email(email).verified(true).enabled(enabled).build()
+    User(
+      username = username,
+      source = AuthSource.delius,
+      email = email,
+      verified = true,
+      enabled = enabled,
+    )
 
   override fun eraseCredentials() {}
 

@@ -16,8 +16,8 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
@@ -46,7 +46,7 @@ class MfaControllerTest {
   inner class MfaChallengeRequest {
     @Test
     fun `mfaChallengeRequest check view`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
@@ -64,7 +64,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaChallengeRequest check model email`() {
-      val user = User.builder().mfaPreference(MfaPreferenceType.EMAIL).build()
+      val user = createSampleUser(mfaPreference = MfaPreferenceType.EMAIL)
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
@@ -87,7 +87,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaChallengeRequest check model text`() {
-      val user = User.builder().mfaPreference(MfaPreferenceType.TEXT).build()
+      val user = createSampleUser(mfaPreference = MfaPreferenceType.TEXT)
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
@@ -110,7 +110,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaChallengeRequest check service call`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
@@ -134,7 +134,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaChallengeRequest error`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
@@ -162,7 +162,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaEmailChallenge code invalid`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -186,7 +186,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaTextChallenge code invalid`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -210,7 +210,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaEmailChallenge code locked`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -229,7 +229,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaTextChallenge code locked`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -248,7 +248,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaEmailChallenge success`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -266,7 +266,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaTextChallenge success`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -284,7 +284,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaEmailChallenge success telemetry`() {
-      val user = User.of("someuser")
+      val user = createSampleUser(username = "someuser")
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -302,8 +302,7 @@ class MfaControllerTest {
 
     @Test
     fun `mfaEmailChallenge check success handler`() {
-      val user = User.builder().authorities(setOf("ROLE_BOB", "ROLE_JOE").map { Authority(it, "role name") }.toSet())
-        .username("someuser").build()
+      val user = createSampleUser(username = "someuser", authorities = setOf("ROLE_BOB", "ROLE_JOE").map { Authority(it, "role name") }.toSet())
       whenever(tokenService.getToken(any(), anyString())).thenReturn(
         Optional.of(
           UserToken(
@@ -408,8 +407,7 @@ class MfaControllerTest {
 
   @Test
   fun `mfaResendTextRequest error`() {
-    val user = User.builder().email("auth.user@digital.justice.gov.uk").mobile("07700900321")
-      .mfaPreference(MfaPreferenceType.TEXT).build()
+    val user = createSampleUser(email = "auth.user@digital.justice.gov.uk", mobile = "07700900321", mfaPreference = MfaPreferenceType.TEXT)
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
     whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
     val modelAndView = controller.mfaResendRequest("some token", MfaPreferenceType.TEXT)

@@ -43,15 +43,14 @@ data class AzureUserPersonDetails(
   }
 
   override fun toUser(): User? {
-    return User.builder()
-      .username(username)
-      .source(AuthSource.azuread)
-      .email(email)
-      .verified(true)
-      .enabled(enabled)
-      .person(Person(firstName, surname))
-      .build()
+    return User(
+      username = username,
+      source = AuthSource.azuread,
+      email = email,
+      verified = true,
+      enabled = enabled,
+      person = Person(firstName, surname),
+    )
   }
-
   override fun isAdmin(): Boolean = false
 }

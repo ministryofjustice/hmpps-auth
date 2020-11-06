@@ -51,7 +51,7 @@ class NomisUserPersonDetailsTest {
   @Test
   fun `to user unverified email address`() {
     val user = createStaffUserAccount().toUser()
-    assertThat(user.isVerified).isEqualTo(false)
+    assertThat(user.verified).isEqualTo(false)
   }
 
   @Test

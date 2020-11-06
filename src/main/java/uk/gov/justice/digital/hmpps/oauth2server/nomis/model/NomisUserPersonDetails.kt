@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import java.time.LocalDateTime
 import java.util.EnumSet
 import java.util.Objects
-import java.util.Set
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import javax.persistence.CascadeType
@@ -83,7 +82,7 @@ class NomisUserPersonDetails(
 
   override fun getAuthSource(): String = "nomis"
 
-  override fun toUser(): User = User.builder().username(username).source(AuthSource.nomis).build()
+  override fun toUser(): User = User(username = username, source = AuthSource.nomis)
 
   override fun getAuthorities(): Collection<GrantedAuthority?> {
     val roles = filterRolesByCaseload("NWEB").stream()
@@ -98,12 +97,10 @@ class NomisUserPersonDetails(
           )
         )
       }
-    return Stream.concat(roles, Set.of(SimpleGrantedAuthority("ROLE_PRISON")).stream()).collect(Collectors.toSet())
+    return Stream.concat(roles, setOf(SimpleGrantedAuthority("ROLE_PRISON")).stream()).collect(Collectors.toSet())
   }
 
-  override fun isAccountNonExpired(): Boolean {
-    return true
-  }
+  override fun isAccountNonExpired(): Boolean = true
 
   override fun isAccountNonLocked(): Boolean =
     EnumSet.of(AccountStatus.OPEN, AccountStatus.EXPIRED, AccountStatus.EXPIRED_GRACE)
@@ -127,21 +124,15 @@ class NomisUserPersonDetails(
     password = null
   }
 
-  override fun getUsername(): String {
-    return username
-  }
+  override fun getUsername(): String = username
 
-  override fun getPassword(): String {
-    return password!!
-  }
+  override fun getPassword(): String = password!!
 
   fun setPassword(password: String?) {
     this.password = password
   }
 
-  override fun toString(): String {
-    return "NomisUserPersonDetails(username=" + getUsername() + ", type=" + type + ")"
-  }
+  override fun toString(): String = "NomisUserPersonDetails(username=" + getUsername() + ", type=" + type + ")"
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -154,7 +145,5 @@ class NomisUserPersonDetails(
     return true
   }
 
-  override fun hashCode(): Int {
-    return username.hashCode()
-  }
+  override fun hashCode(): Int = username.hashCode()
 }

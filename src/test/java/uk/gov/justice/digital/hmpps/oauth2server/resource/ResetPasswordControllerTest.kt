@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doThrow
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
@@ -373,7 +374,7 @@ class ResetPasswordControllerTest {
 
   private fun setupCheckAndGetTokenValid() {
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
-    val user = User.builder().username("someuser").email("email@somewhere.com").verified(true).build()
+    val user = UserHelper.createSampleUser(username = "someuser", email = "email@somewhere.com", verified = true)
     whenever(
       tokenService.getToken(
         any(),
@@ -383,7 +384,7 @@ class ResetPasswordControllerTest {
   }
 
   private fun setupGetToken() {
-    val user = User.builder().username("someuser").email("email@somewhere.com").verified(true).build()
+    val user = UserHelper.createSampleUser(username = "someuser", email = "email@somewhere.com", verified = true)
     whenever(
       tokenService.getToken(
         any(),
