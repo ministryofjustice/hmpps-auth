@@ -78,7 +78,7 @@ open class VerifyEmailServiceIntTest {
   @Test
   fun emailAddressSetToNotVerified() {
     val userBefore = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
-    assertThat(userBefore.get().isVerified).isTrue()
+    assertThat(userBefore.get().verified).isTrue()
     verifyEmailService.requestVerification(
       "AUTH_CHANGE_EMAIL",
       "phillips@fredjustice.gov.uk",
@@ -88,7 +88,7 @@ open class VerifyEmailServiceIntTest {
       User.EmailType.PRIMARY
     )
     val userAfter = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
-    assertThat(userAfter.get().isVerified).isFalse()
+    assertThat(userAfter.get().verified).isFalse()
   }
 
   @Test

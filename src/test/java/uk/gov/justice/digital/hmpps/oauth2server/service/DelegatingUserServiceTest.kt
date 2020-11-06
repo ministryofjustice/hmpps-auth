@@ -6,12 +6,11 @@ import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.NomisUserService
 
 class DelegatingUserServiceTest {
@@ -22,7 +21,7 @@ class DelegatingUserServiceTest {
 
   @Test
   fun `lock account auth user`() {
-    service.lockAccount(User.of("bob"))
+    service.lockAccount(createSampleUser(username = "bob"))
 
     verify(authUserService).lockUser(any())
     verify(nomisUserService, never()).lockAccount(anyString())
@@ -54,7 +53,7 @@ class DelegatingUserServiceTest {
 
   @Test
   fun `change password with unlock auth user`() {
-    val user = User.builder().username("bob").source(AuthSource.auth).build()
+    val user = createSampleUser(username = "bob")
     service.changePasswordWithUnlock(user, "pass")
 
     verify(authUserService).unlockUser(any())
@@ -94,7 +93,7 @@ class DelegatingUserServiceTest {
 
   @Test
   fun `change password auth user`() {
-    val user = User.builder().username("bob").source(AuthSource.auth).build()
+    val user = createSampleUser(username = "bob")
     service.changePassword(user, "pass")
 
     verify(authUserService).changePassword(user, "pass")

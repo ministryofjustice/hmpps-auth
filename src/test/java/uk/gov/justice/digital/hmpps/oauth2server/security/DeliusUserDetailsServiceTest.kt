@@ -7,7 +7,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import java.util.Optional
@@ -34,7 +34,7 @@ class DeliusUserDetailsServiceTest {
   fun `user locked in auth`() {
     val user = buildStandardUser()
     whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(Optional.of(user))
-    whenever(userService.findUser(anyString())).thenReturn(Optional.of(User.builder().locked(true).build()))
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(createSampleUser(locked = true)))
     val itagUser = service.loadUserByUsername(user.username)
     assertThat(itagUser).isNotNull()
     assertThat(itagUser.isAccountNonExpired).isTrue()

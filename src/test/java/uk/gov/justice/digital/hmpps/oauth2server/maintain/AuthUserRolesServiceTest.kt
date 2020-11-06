@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain
 
 import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
@@ -14,13 +15,12 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.RoleRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
-import java.util.HashSet
 import java.util.Optional
 
 internal class AuthUserRolesServiceTest {
@@ -34,7 +34,13 @@ internal class AuthUserRolesServiceTest {
   inner class AddRoles {
     @Test
     fun addRoles_notfound() {
-      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")))
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(
+        Optional.of(
+          createSampleUser(
+            username = "user"
+          )
+        )
+      )
       assertThatThrownBy { service.addRoles("user", listOf("        "), "admin", SUPER_USER) }.isInstanceOf(
         AuthUserRoleException::class.java
       ).hasMessage("Modify role failed for field role with reason: role.notfound")
@@ -42,7 +48,13 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun addRoles_invalidRole() {
-      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")))
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(
+        Optional.of(
+          createSampleUser(
+            username = "user"
+          )
+        )
+      )
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(Authority("FRED", "Role Fred")))
@@ -53,35 +65,29 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun addRoles_noaccess() {
-      val user = User.of("user")
-      user.groups = setOf(Group("group", "desc"))
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       val role2 = Authority("BOB", "Bloggs")
-      user.authorities = HashSet(listOf(role, role2))
-      val groupManager = User.of("groupManager")
-      groupManager.groups = setOf(Group("group2", "desc"))
+      val user = createSampleUser(username = "user", groups = setOf(Group("group", "desc")), authorities = setOf(role, role2))
+      val groupManager = createSampleUser(username = "groupManager", groups = setOf(Group("group2", "desc")))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
         .thenReturn(Optional.of(groupManager))
       doThrow(AuthUserGroupRelationshipException("user", "User not with your groups")).whenever(maintainUserCheck)
         .ensureUserLoggedInUserRelationship(
-          "admin",
-          GROUP_MANAGER,
-          User.of("user")
+          anyString(),
+          any(),
+          any()
         )
 
-      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", GROUP_MANAGER) }.isInstanceOf(
+      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", GROUP_MANAGER_ROLE) }.isInstanceOf(
         AuthUserGroupRelationshipException::class.java
       ).hasMessage("Unable to maintain user: user with reason: User not with your groups")
     }
 
     @Test
     fun addRoles_invalidRoleGroupManager() {
-      val user = User.of("user")
-      val group1 = Group("group", "desc")
-      user.groups = setOf(group1)
-      val groupManager = User.of("groupManager")
-      groupManager.groups = setOf(group1)
+      val user = createSampleUser(username = "user", groups = setOf(Group("group", "desc")))
+      val groupManager = createSampleUser(username = "groupManager", groups = setOf(Group("group", "desc")))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
         .thenReturn(Optional.of(groupManager))
@@ -95,14 +101,16 @@ internal class AuthUserRolesServiceTest {
           )
         )
       )
-      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", GROUP_MANAGER) }.isInstanceOf(
+      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", GROUP_MANAGER_ROLE) }.isInstanceOf(
         AuthUserRoleException::class.java
       ).hasMessage("Modify role failed for field role with reason: invalid")
     }
 
     @Test
     fun addRoles_oauthAdminRestricted() {
-      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(User.of("user")))
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(
+        Optional.of(createSampleUser(username = "user"))
+      )
       val role = Authority("ROLE_OAUTH_ADMIN", "Role Licence Vary")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(role))
@@ -113,7 +121,7 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun addRoles_oauthAdminRestricted_success() {
-      val user = User.of("user")
+      val user = createSampleUser(username = "user")
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
       val role = Authority("ROLE_OAUTH_ADMIN", "Role Auth Admin")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
@@ -129,9 +137,9 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun addRoles_roleAlreadyOnUser() {
-      val user = User.of("user")
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
-      user.authorities = HashSet(listOf(role))
+      val user =
+        createSampleUser(username = "user", authorities = setOf(role))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       assertThatThrownBy { service.addRoles("user", listOf("LICENCE_VARY"), "admin", SUPER_USER) }.isInstanceOf(
@@ -141,8 +149,10 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun addRoles_success() {
-      val user = User.of("user")
-      user.authorities = HashSet(listOf(Authority("JOE", "bloggs")))
+      val user = createSampleUser(
+        username = "user",
+        authorities = setOf(Authority("JOE", "bloggs"))
+      )
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
@@ -153,8 +163,10 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun `addRoles success multiple roles`() {
-      val user = User.of("user")
-      user.authorities = HashSet(listOf(Authority("JOE", "bloggs")))
+      val user = createSampleUser(
+        username = "user",
+        authorities = setOf(Authority("JOE", "bloggs"))
+      )
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
       val role1 = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       val role2 = Authority("ROLE_OTHER", "Role Other")
@@ -180,19 +192,22 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun addRoles_successGroupManager() {
-      val user = User.of("user")
-      val group1 = Group("group", "desc")
-      user.groups = setOf(group1, Group("group2", "desc"))
-      user.authorities = HashSet(listOf(Authority("JOE", "bloggs")))
-      val groupManager = User.of("groupManager")
-      groupManager.groups = setOf(Group("group3", "desc"), group1)
+      val user = createSampleUser(
+        username = "user",
+        groups = setOf(Group("group", "desc"), Group("group2", "desc")),
+        authorities = setOf(Authority("JOE", "bloggs"))
+      )
+      val groupManager = createSampleUser(
+        username = "groupManager",
+        groups = setOf(Group("group3", "desc"), Group("group", "desc"))
+      )
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
         .thenReturn(Optional.of(groupManager))
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(setOf(role))
-      service.addRoles("user", listOf("ROLE_LICENCE_VARY"), "admin", GROUP_MANAGER)
+      service.addRoles("user", listOf("ROLE_LICENCE_VARY"), "admin", GROUP_MANAGER_ROLE)
       assertThat(user.authorities).extracting<String> { it.authority }.containsOnly("ROLE_JOE", "ROLE_LICENCE_VARY")
     }
   }
@@ -202,7 +217,7 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun removeRole_roleNotOnUser() {
-      val user = User.of("user")
+      val user = createSampleUser(username = "user")
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
       val role2 = Authority("BOB", "Bloggs")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2))
@@ -219,10 +234,9 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun removeRole_invalid() {
-      val user = User.of("user")
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       val role2 = Authority("BOB", "Bloggs")
-      user.authorities = HashSet(listOf(role, role2))
+      val user = createSampleUser(username = "user", authorities = setOf(role, role2))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2))
       whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(role))
@@ -239,54 +253,51 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun removeRole_noaccess() {
-      val user = User.of("user")
-      user.groups = setOf(Group("group", "desc"))
+      val user = createSampleUser(username = "user", groups = setOf(Group("group", "desc")))
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       val role2 = Authority("BOB", "Bloggs")
-      val groupManager = User.of("groupManager")
-      groupManager.groups = setOf(Group("group2", "desc"))
-      user.authorities = HashSet(listOf(role, role2))
+      val groupManager = createSampleUser(
+        username = "groupManager",
+        groups = setOf(Group("group2", "desc")),
+        authorities = setOf(role, role2)
+      )
       doThrow(AuthUserGroupRelationshipException("user", "User not with your groups")).whenever(maintainUserCheck)
         .ensureUserLoggedInUserRelationship(
-          "admin",
-          GROUP_MANAGER,
-          User.of("user")
+          anyString(),
+          any(),
+          any()
         )
 
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
         .thenReturn(Optional.of(groupManager))
-      assertThatThrownBy { service.removeRole("user", "BOB", "admin", GROUP_MANAGER) }.isInstanceOf(
+      assertThatThrownBy { service.removeRole("user", "BOB", "admin", GROUP_MANAGER_ROLE) }.isInstanceOf(
         AuthUserGroupRelationshipException::class.java
       ).hasMessage("Unable to maintain user: user with reason: User not with your groups")
     }
 
     @Test
     fun removeRole_invalidGroupManager() {
-      val user = User.of("user")
       val group1 = Group("group", "desc")
-      user.groups = setOf(group1)
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       val role2 = Authority("BOB", "Bloggs")
-      val groupManager = User.of("groupManager")
-      groupManager.groups = setOf(group1)
-      user.authorities = HashSet(listOf(role, role2))
+      val groupManager = createSampleUser(username = "groupManager", groups = setOf(group1), authorities = setOf(role, role2))
+      val user = createSampleUser(username = "user", groups = setOf(group1), authorities = setOf(role, role2))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
         .thenReturn(Optional.of(groupManager))
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2))
       whenever(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(setOf(role))
-      assertThatThrownBy { service.removeRole("user", "BOB", "admin", GROUP_MANAGER) }.isInstanceOf(
+      assertThatThrownBy { service.removeRole("user", "BOB", "admin", GROUP_MANAGER_ROLE) }.isInstanceOf(
         AuthUserRoleException::class.java
       ).hasMessage("Modify role failed for field role with reason: invalid")
     }
 
     @Test
     fun removeRole_notfound() {
-      val user = User.of("user")
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       val role2 = Authority("BOB", "Bloggs")
-      user.authorities = HashSet(listOf(role, role2))
+      val user = createSampleUser(username = "user", authorities = setOf(role, role2))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
       assertThatThrownBy {
         service.removeRole(
@@ -301,18 +312,16 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun removeRole_success() {
-      val user = User.of("user")
       val group1 = Group("group", "desc")
-      user.groups = setOf(group1)
-      user.authorities = HashSet(listOf(Authority("JOE", "bloggs")))
-      val groupManager = User.of("groupManager")
-      groupManager.groups = setOf(group1)
+      val user =
+        createSampleUser(username = "user", groups = setOf(group1), authorities = setOf(Authority("JOE", "bloggs")))
+      val groupManager = createSampleUser(username = "groupManager", groups = setOf(group1))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
         .thenReturn(Optional.of(groupManager))
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       val role2 = Authority("JOE", "Bloggs")
-      user.authorities = HashSet(listOf(role, role2))
+      user.authorities.addAll(setOf(role, role2))
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(role, role2))
       service.removeRole("user", "  licence_vary   ", "admin", SUPER_USER)
@@ -321,20 +330,22 @@ internal class AuthUserRolesServiceTest {
 
     @Test
     fun removeRole_successGroupManager() {
-      val user = User.of("user")
       val group1 = Group("group", "desc")
-      user.groups = setOf(group1)
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       val role2 = Authority("JOE", "Bloggs")
-      user.authorities = HashSet(listOf(role, role2))
-      val groupManager = User.of("groupManager")
-      groupManager.groups = setOf(group1)
+      val user = createSampleUser(username = "user", groups = setOf(group1), authorities = setOf(role, role2))
+      val groupManager = createSampleUser(username = " groupManager ", groups = setOf(group1))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
         .thenReturn(Optional.of(groupManager))
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(setOf(role, role2))
-      service.removeRole("user", "  licence_vary   ", "admin", GROUP_MANAGER)
+      service.removeRole(
+        "user",
+        "  licence_vary   ",
+        "admin",
+        GROUP_MANAGER_ROLE
+      )
       assertThat(user.authorities).extracting<String> { it.authority }.containsOnly("ROLE_JOE")
     }
   }
@@ -351,10 +362,10 @@ internal class AuthUserRolesServiceTest {
       whenever(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(setOf(first, fred, second))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(
         Optional.of(
-          User.builder().authorities(setOf(fred, joe)).build()
+          createSampleUser(authorities = setOf(fred, joe))
         )
       )
-      assertThat(service.getAssignableRoles("BOB", GROUP_MANAGER)).containsExactly(first, second)
+      assertThat(service.getAssignableRoles("BOB", GROUP_MANAGER_ROLE)).containsExactly(first, second)
     }
 
     @Test
@@ -367,7 +378,7 @@ internal class AuthUserRolesServiceTest {
       whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(first, fred, second))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(
         Optional.of(
-          User.builder().authorities(setOf(fred, joe)).build()
+          createSampleUser(authorities = setOf(fred, joe))
         )
       )
       assertThat(service.getAssignableRoles("BOB", SUPER_USER)).containsExactly(first, second)
@@ -376,6 +387,6 @@ internal class AuthUserRolesServiceTest {
 
   companion object {
     private val SUPER_USER: Set<GrantedAuthority> = setOf(SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"))
-    private val GROUP_MANAGER: Set<GrantedAuthority> = setOf(SimpleGrantedAuthority("ROLE_AUTH_GROUP_MANAGER"))
+    private val GROUP_MANAGER_ROLE: Set<GrantedAuthority> = setOf(SimpleGrantedAuthority("ROLE_AUTH_GROUP_MANAGER"))
   }
 }

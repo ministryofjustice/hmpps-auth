@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
@@ -42,7 +41,7 @@ class ChangeNameControllerTest {
   fun changeNameRequest() {
     whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(
       Optional.of(
-        User.builder().person(Person("first", "last")).build()
+        createSampleUser(firstName = "first", lastName = "last")
       )
     )
     val modelAndView = controller.changeNameRequest(token)
@@ -72,7 +71,7 @@ class ChangeNameControllerTest {
 
   @Test
   fun `changeName success`() {
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("joe")))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createSampleUser(username = "joe")))
 
     val modelAndView = controller.changeName("joe", "bloggs", token, request, response)
     assertThat(modelAndView.modelMap).isEmpty()
@@ -81,7 +80,7 @@ class ChangeNameControllerTest {
 
   @Test
   fun `changeName pass username from token`() {
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(User.of("joe")))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createSampleUser(username = "joe")))
 
     controller.changeName("joe", "bloggs", token, request, response)
     verify(authUserService).amendUser("user", "joe", "bloggs")
@@ -90,7 +89,7 @@ class ChangeNameControllerTest {
   @Test
   fun `changeName call add authentication to request`() {
     val authorities = setOf(Authority("role", "name"))
-    val user = User.builder().username("joe").authorities(authorities).build()
+    val user = createSampleUser(username = "joe", authorities = authorities)
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
 
     controller.changeName("joe", "bloggs", token, request, response)

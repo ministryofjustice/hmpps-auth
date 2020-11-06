@@ -24,7 +24,7 @@ internal class AzureUserPersonDetailsTest {
 
   @Test
   fun `toUser result is verified`() {
-    assertThat(createAzureUser().toUser()?.isVerified).isTrue
+    assertThat(createAzureUser().toUser()?.verified).isTrue
   }
 
   @Test

@@ -40,7 +40,7 @@ class VerifyEmailService(
     userRepository.findByUsername(username).filter { ue: User -> StringUtils.isNotBlank(ue.email) }
 
   fun isNotVerified(name: String): Boolean =
-    !getEmail(name).map { obj: User -> obj.isVerified }.orElse(false)
+    !getEmail(name).map { obj: User -> obj.verified }.orElse(false)
 
   fun getExistingEmailAddressesForUsername(username: String): List<String> =
     jdbcTemplate.queryForList(EXISTING_EMAIL_SQL, mapOf("username" to username), String::class.java)
@@ -82,7 +82,7 @@ class VerifyEmailService(
     when (emailType) {
       EmailType.PRIMARY -> {
         user.email = email
-        user.isVerified = false
+        user.verified = false
       }
       EmailType.SECONDARY -> user.addContact(ContactType.SECONDARY_EMAIL, email)
     }
@@ -115,7 +115,7 @@ class VerifyEmailService(
     if (user.email == null) {
       throw VerifyEmailException("noemail")
     }
-    if (user.isVerified) {
+    if (user.verified) {
       log.info("Verify email succeeded due to already verified")
       telemetryClient.trackEvent(
         "VerifyEmailConfirmFailure",
@@ -207,7 +207,7 @@ class VerifyEmailService(
     val userToken = userTokenOptional.get()
     val user = userToken.user
     val username = user.username
-    if (user.isVerified) {
+    if (user.verified) {
       log.info("Verify email succeeded due to already verified")
       telemetryClient.trackEvent(
         "VerifyEmailConfirmFailure",
@@ -250,7 +250,7 @@ class VerifyEmailService(
 
   private fun markEmailAsVerified(user: User) {
     // verification token match
-    user.isVerified = true
+    user.verified = true
     userRepository.save(user)
     log.info("Verify email succeeded for {}", user.username)
     telemetryClient.trackEvent("VerifyEmailConfirmSuccess", mapOf("username" to user.username), null)

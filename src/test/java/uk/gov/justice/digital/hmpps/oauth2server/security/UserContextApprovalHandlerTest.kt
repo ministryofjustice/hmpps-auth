@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.provider.AuthorizationRequest
 import org.springframework.security.oauth2.provider.OAuth2RequestFactory
 import org.springframework.security.oauth2.provider.token.TokenStore
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 
 internal class UserContextApprovalHandlerTest {
@@ -78,7 +79,7 @@ internal class UserContextApprovalHandlerTest {
       whenever(authentication.principal).thenReturn(
         UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId")
       )
-      val users = listOf(User.of("harry"))
+      val users = listOf(createSampleUser(username = "harry"))
       whenever(userContextService.discoverUsers(any(), any())).thenReturn(users)
       val map = handler.getUserApprovalRequest(authorizationRequest, authentication)
       assertThat(map).containsExactly(entry("bob", "joe"), entry("users", users))

@@ -8,14 +8,15 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
 import org.springframework.security.authentication.LockedException
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService
 import java.util.Optional
 
@@ -31,7 +32,7 @@ class ChangePasswordServiceTest {
   fun setPassword_AlterUser() {
     val staffUserAccountForBob = staffUserAccountForBob
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccountForBob))
-    val user = User.builder().username("user").locked(true).build()
+    val user = createSampleUser(username = "user", locked = true, source = nomis)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     changePasswordService.setPassword("bob", "pass")
@@ -40,7 +41,7 @@ class ChangePasswordServiceTest {
 
   @Test
   fun setPassword_AuthUser() {
-    val user = User.builder().username("user").email("email").enabled(true).source(AuthSource.auth).build()
+    val user = createSampleUser(username = "user", email = "email", enabled = true)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     changePasswordService.setPassword("bob", "pass")
@@ -50,7 +51,7 @@ class ChangePasswordServiceTest {
   @Test
   fun setPassword_SaveAndDelete() {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
-    val user = User.builder().username("user").locked(true).build()
+    val user = createSampleUser(username = "user", locked = true, source = nomis)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     changePasswordService.setPassword("bob", "pass")
@@ -62,7 +63,7 @@ class ChangePasswordServiceTest {
 
   @Test
   fun setPassword_AuthUserPasswordSet() {
-    val user = User.builder().username("user").enabled(true).source(AuthSource.auth).build()
+    val user = createSampleUser(username = "user", enabled = true, source = AuthSource.auth)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     changePasswordService.setPassword("bob", "pass")
@@ -73,7 +74,7 @@ class ChangePasswordServiceTest {
   fun setPassword_LockedAccount() {
     val staffUserAccount = staffUserAccountLockedForBobOptional
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccount)
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThatThrownBy { changePasswordService.setPassword("bob", "pass") }.isInstanceOf(LockedException::class.java)
@@ -84,7 +85,7 @@ class ChangePasswordServiceTest {
     val optionalUser = buildAuthUser()
     optionalUser.map { User::class.java.cast(it) }.get().isEnabled = false
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(optionalUser)
-    val user = User.of("user")
+    val user = createSampleUser(username = "user")
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThatThrownBy { changePasswordService.setPassword("bob", "pass") }.isInstanceOf(LockedException::class.java)
@@ -92,17 +93,21 @@ class ChangePasswordServiceTest {
 
   @Test
   fun setPassword_LockedAuthAccount() {
-    val user = User.builder().username("user").locked(true).enabled(true).source(AuthSource.auth).build()
-    user.isEnabled = true
-    user.source = AuthSource.auth
+    val user = createSampleUser(username = "user", locked = true, enabled = true, source = AuthSource.auth)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     assertThatThrownBy { changePasswordService.setPassword("bob", "pass") }.isInstanceOf(LockedException::class.java)
   }
 
   private fun buildAuthUser(): Optional<UserPersonDetails> {
-    val user = User.builder().username("user").email("email").verified(true)
-      .person(Person("first", "last")).enabled(true).build()
+    val user = createSampleUser(
+      username = "user",
+      email = "email",
+      verified = true,
+      firstName = "first",
+      lastName = "last",
+      enabled = true
+    )
     return Optional.of(user)
   }
 

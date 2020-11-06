@@ -11,7 +11,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
@@ -61,7 +61,7 @@ class HomeControllerTest {
           email = "a@b.com",
           roles = setOf(SimpleGrantedAuthority("ROLE_LICENCE_DM"))
         ),
-        User.builder().authorities(authorities).build(),
+        UserHelper.createSampleUser(authorities = authorities)
       )
     )
     val modelAndView = homeController.home(authentication)

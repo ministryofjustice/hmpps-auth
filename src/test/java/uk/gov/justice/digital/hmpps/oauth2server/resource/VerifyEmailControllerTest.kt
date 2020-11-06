@@ -13,10 +13,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper
@@ -68,8 +66,7 @@ class VerifyEmailControllerTest {
 
   @Test
   fun verifyEmailRequest_existingUserEmail() {
-    val user = User.of("bob")
-    user.email = "email"
+    val user = createSampleUser(username = "bob", email = "email")
     whenever(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(user))
     val modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null)
     assertThat(modelAndView?.viewName).isEqualTo("verifyEmail")
@@ -78,8 +75,7 @@ class VerifyEmailControllerTest {
 
   @Test
   fun verifyEmailRequest_existingUserEmailVerified() {
-    val user = User.of("bob")
-    user.isVerified = true
+    val user = createSampleUser(username = "bob", verified = true)
     whenever(verifyEmailService.getEmail(anyString())).thenReturn(Optional.of(user))
     SecurityContextHolder.getContext().authentication = principal
     val modelAndView = verifyEmailController.verifyEmailRequest(principal, request, response, null)
@@ -115,7 +111,7 @@ class VerifyEmailControllerTest {
   fun verifyEmail_Exception() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
-    whenever(userService.findUser(anyString())).thenReturn(Optional.of(User()))
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(createSampleUser()))
     whenever(
       verifyEmailService.requestVerification(
         anyString(),
@@ -214,7 +210,7 @@ class VerifyEmailControllerTest {
   fun verifySecondaryEmail_Exception() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
-    whenever(userService.findUser(anyString())).thenReturn(Optional.of(User()))
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(createSampleUser()))
     whenever(
       verifyEmailService.requestVerification(
         anyString(),
@@ -314,7 +310,7 @@ class VerifyEmailControllerTest {
   @Test
   fun `secondaryEmailResend send Code`() {
     whenever(userService.getUser(anyString())).thenReturn(
-      User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", false))).build()
+      createSampleUser(secondaryEmail = "someemail")
     )
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString()))
@@ -328,7 +324,7 @@ class VerifyEmailControllerTest {
   fun `secondaryEmailResend send code smoke enabled`() {
 
     whenever(userService.getUser(anyString())).thenReturn(
-      User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", false))).build()
+      createSampleUser(secondaryEmail = "someemail")
     )
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString()))
@@ -341,7 +337,7 @@ class VerifyEmailControllerTest {
   @Test
   fun secondaryEmailResend_verifyMobileException() {
     whenever(userService.getUser(anyString())).thenReturn(
-      User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", false))).build()
+      createSampleUser(secondaryEmail = "someemail")
     )
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString())).thenThrow(
@@ -362,7 +358,7 @@ class VerifyEmailControllerTest {
   @Test
   fun secondaryEmailResend_notificationClientException() {
     whenever(userService.getUser(anyString())).thenReturn(
-      User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", false))).build()
+      createSampleUser(secondaryEmail = "someemail")
     )
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString())).thenThrow(
@@ -392,7 +388,7 @@ class VerifyEmailControllerTest {
   @Test
   fun `verify email link expired link resend`() {
     whenever(tokenService.getUserFromToken(UserToken.TokenType.VERIFIED, "token"))
-      .thenReturn(User.builder().email("bob@digital.justice.gov.uk").username("bob").build())
+      .thenReturn(createSampleUser(email = "bob@digital.justice.gov.uk", username = "bob"))
     whenever(request.requestURL)
       .thenReturn(StringBuffer("http://some.url/expired"))
     whenever(verifyEmailService.resendVerificationCodeEmail(anyString(), anyString()))
@@ -405,7 +401,7 @@ class VerifyEmailControllerTest {
   @Test
   fun `verify email link expired link resend smoke test enabled`() {
     whenever(tokenService.getUserFromToken(UserToken.TokenType.VERIFIED, "token"))
-      .thenReturn(User.builder().username("bob").email("bob@digital.justice.gov.uk").build())
+      .thenReturn(createSampleUser(username = "bob", email = "bob@digital.justice.gov.uk"))
     whenever(request.requestURL)
       .thenReturn(StringBuffer("http://some.url/expired"))
     whenever(verifyEmailService.resendVerificationCodeEmail(anyString(), anyString()))
@@ -418,7 +414,7 @@ class VerifyEmailControllerTest {
   @Test
   fun `verify secondary email link expired link resend`() {
     whenever(tokenService.getUserFromToken(UserToken.TokenType.SECONDARY, "token"))
-      .thenReturn(User.of("bob"))
+      .thenReturn(createSampleUser(username = "bob"))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/expired"))
     whenever(
       verifyEmailService.resendVerificationCodeSecondaryEmail(
@@ -435,7 +431,7 @@ class VerifyEmailControllerTest {
   @Test
   fun `verify secondary email link expired link resend smoke test enabled`() {
     whenever(tokenService.getUserFromToken(UserToken.TokenType.SECONDARY, "token"))
-      .thenReturn(User.of("bob"))
+      .thenReturn(createSampleUser(username = "bob"))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/expired"))
     whenever(
       verifyEmailService.resendVerificationCodeSecondaryEmail(

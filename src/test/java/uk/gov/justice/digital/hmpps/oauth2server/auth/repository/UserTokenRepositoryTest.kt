@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.transaction.TestTransaction
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig
@@ -48,12 +49,10 @@ class UserTokenRepositoryTest {
     TestTransaction.start()
     val retrievedEntity = repository.findById(entity.token).orElseThrow()
 
-    // equals only compares the business key columns
-    assertThat(retrievedEntity).isEqualTo(entity)
     assertThat(retrievedEntity.token).isEqualTo(entity.token)
     assertThat(retrievedEntity.tokenType).isEqualTo(entity.tokenType)
     assertThat(retrievedEntity.tokenExpiry).isEqualTo(entity.tokenExpiry)
-    assertThat(retrievedEntity.user).isEqualTo(user)
+    assertThat(retrievedEntity.user).isEqualToIgnoringGivenFields(user, "tokens")
   }
 
   @Test
@@ -80,5 +79,5 @@ class UserTokenRepositoryTest {
   }
 
   private fun transientUser(): User =
-    User.builder().username("userTokenRepository").email("a@b.com").source(auth).build()
+    createSampleUser(username = "userTokenRepository", email = "a@b.com", source = auth)
 }

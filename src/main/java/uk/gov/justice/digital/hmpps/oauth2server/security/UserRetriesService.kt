@@ -36,7 +36,7 @@ class UserRetriesService(
     // copy across email address on each successful login
     if (userPersonDetails is DeliusUserPersonDetails) {
       user.email = userPersonDetails.email
-      user.isVerified = true
+      user.verified = true
     }
     userRepository.save(user)
   }
@@ -45,7 +45,7 @@ class UserRetriesService(
     val nomisUser = userPersonDetails.toUser()
     userService.getEmailAddressFromNomis(username).ifPresent {
       nomisUser.email = it
-      nomisUser.isVerified = true
+      nomisUser.verified = true
     }
     return nomisUser
   }

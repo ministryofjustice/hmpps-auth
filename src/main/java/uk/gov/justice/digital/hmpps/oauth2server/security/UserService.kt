@@ -62,7 +62,7 @@ class UserService(
   private fun emailMatchesUser(email: String, userPersonDetails: UserPersonDetails): Boolean {
     val user = userPersonDetails.toUser()
     return when (AuthSource.fromNullableString(user.authSource)) {
-      auth -> user.isVerified && email == user.email
+      auth -> user.verified && email == user.email
       delius -> email == user.email
       azuread -> email == user.email
       nomis -> {
@@ -94,7 +94,7 @@ class UserService(
         if (AuthSource.fromNullableString(user.authSource) == nomis) {
           getEmailAddressFromNomis(username).ifPresent { email ->
             user.email = email
-            user.isVerified = true
+            user.verified = true
           }
         }
         userRepository.save(user)
@@ -125,7 +125,7 @@ class UserService(
     if (emailType == EmailType.SECONDARY) {
       return user.isSecondaryEmailVerified && email == user.secondaryEmail
     }
-    return user.isVerified && email == user.email
+    return user.verified && email == user.email
   }
 
   fun findPrisonUsersByFirstAndLastNames(firstName: String, lastName: String): List<PrisonUserDto> {
@@ -158,7 +158,7 @@ class UserService(
           verified = if (authUsersByUsername[nomisUser.username] == null) {
             validNomisEmailByUsername.containsKey(nomisUser.username)
           } else {
-            authUsersByUsername[nomisUser.username]?.isVerified ?: false
+            authUsersByUsername[nomisUser.username]?.verified ?: false
           },
           firstName = nomisUser.firstName,
           lastName = nomisUser.lastName

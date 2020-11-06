@@ -9,7 +9,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.crypto.password.PasswordEncoder
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
@@ -59,7 +59,7 @@ internal class NomisUserServiceTest {
 
   @Test
   fun `getNomisUsersByEmail ignore unverified auth`() {
-    val user = User.builder().username("joe").source(nomis).verified(false).build()
+    val user = createSampleUser(username = "joe", source = nomis, verified = false)
 
     whenever(userRepository.findByEmailAndSourceOrderByUsername(anyString(), any())).thenReturn(listOf(user))
 
@@ -72,5 +72,5 @@ internal class NomisUserServiceTest {
   private fun getNomisUser(username: String): NomisUserPersonDetails =
     createSampleNomisUser(staff = Staff(firstName = "bob", status = "INACTIVE", lastName = "last", staffId = 5), username = username)
 
-  private fun getUserFromAuth(username: String) = User.builder().username(username).source(nomis).verified(true).build()
+  private fun getUserFromAuth(username: String) = createSampleUser(username = username, source = nomis, verified = true)
 }

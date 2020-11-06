@@ -19,7 +19,7 @@ import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.security.authentication.AccountExpiredException
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
@@ -325,7 +325,7 @@ class ChangePasswordControllerTest {
     whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
     whenever(tokenService.getToken(any(), anyString())).thenReturn(
       Optional.of(
-        User.of("someuser").createToken(UserToken.TokenType.RESET)
+        createSampleUser(username = "someuser").createToken(UserToken.TokenType.RESET)
       )
     )
   }
@@ -333,7 +333,7 @@ class ChangePasswordControllerTest {
   private fun setupGetToken() {
     whenever(tokenService.getToken(any(), anyString())).thenReturn(
       Optional.of(
-        User.of("someuser").createToken(UserToken.TokenType.RESET)
+        createSampleUser(username = "someuser").createToken(UserToken.TokenType.RESET)
       )
     )
   }

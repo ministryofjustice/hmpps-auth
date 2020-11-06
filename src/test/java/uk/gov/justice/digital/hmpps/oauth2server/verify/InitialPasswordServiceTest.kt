@@ -11,9 +11,8 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
@@ -44,7 +43,7 @@ class InitialPasswordServiceTest {
 
   @Test
   fun `resend Initial Password Link`() {
-    val user = User.builder().username("someuser").person(Person("Bob", "Smith")).email("email").build()
+    val user = createSampleUser(username = "someuser", firstName = "Bob", lastName = "Smith", email = "email")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val service = Service("serviceCode", "service", "service", "ANY_ROLES", "ANY_URL", true, "supportLink")
@@ -68,7 +67,7 @@ class InitialPasswordServiceTest {
 
   @Test
   fun `resend Initial Password Link check telemetry`() {
-    val user = User.builder().username("someuser").person(Person("Bob", "Smith")).email("email").build()
+    val user = createSampleUser(username = "someuser", firstName = "Bob", lastName = "Smith", email = "email")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
     val service = Service("serviceCode", "service", "service", "ANY_ROLES", "ANY_URL", true, "supportLink")
@@ -88,7 +87,7 @@ class InitialPasswordServiceTest {
   @Test
   fun `resend Initial Password Link Master User not found`() {
     val user =
-      User.builder().username("someuser").person(Person("Bob", "Smith")).email("email").source(AuthSource.nomis).build()
+      createSampleUser(username = "someuser", firstName = "Bob", lastName = "Smith", email = "email", source = AuthSource.nomis)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
     assertThatThrownBy { initialPasswordService.resendInitialPasswordLink("user", "url-expired") }.isInstanceOf(

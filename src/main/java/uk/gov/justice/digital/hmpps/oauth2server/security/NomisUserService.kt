@@ -21,7 +21,7 @@ abstract class NomisUserService(
     val emailLowered = email.toLowerCase()
 
     val allNomisInAuthUsernames = userRepository.findByEmailAndSourceOrderByUsername(emailLowered, nomis)
-      .filter { it.isVerified }
+      .filter { it.verified }
       .map { it.username }
 
     val allNomisInAuth = if (allNomisInAuthUsernames.size > 0)
