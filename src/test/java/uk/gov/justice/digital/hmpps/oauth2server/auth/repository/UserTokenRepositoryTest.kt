@@ -52,7 +52,7 @@ class UserTokenRepositoryTest {
     assertThat(retrievedEntity.token).isEqualTo(entity.token)
     assertThat(retrievedEntity.tokenType).isEqualTo(entity.tokenType)
     assertThat(retrievedEntity.tokenExpiry).isEqualTo(entity.tokenExpiry)
-    assertThat(retrievedEntity.user).isEqualTo(user)
+    assertThat(retrievedEntity.user).isEqualToIgnoringGivenFields(user, "tokens")
   }
 
   @Test
