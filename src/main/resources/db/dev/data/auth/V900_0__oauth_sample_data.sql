@@ -47,8 +47,8 @@ VALUES ('omicuser','1200','{"jwtFields":"-user_name"}','SYSTEM_READ_ONLY','passw
        ('submit-information-report-client','3600','{}',null,'authorization_code','read,write','$2a$10$WzgtydqXSuhdivpWDR3WXO.yjLBm4yuDqP64Og.7E4XURdrSfhOTi',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000,http://localhost:3001/login/callback,http://localhost:3001'),
        ('submit-information-report-admin','3600','{}','ROLE_GLOBAL_SEARCH,ROLE_SYSTEM_USER,ROLE_COMMUNITY','client_credentials','read,write','$2a$10$ajGimbJNWF1/FmZQMJWvieeQ/OdYaxWHQPgOjYDvvWu/4/744Yw7S',43200,null,'read,write',null),
        ('user-load','3600','{}','ROLE_MAINTAIN_OAUTH_USERS','client_credentials','read,write','{bcrypt}$2a$10$zF0guKjmvHPxmkGdqmPa9ehLM0myWx/KCYNvbpKb6.eEIsDlYc/5S',43200,null,'read,write',null),
-       ('pecs-jpc-client','3600','{}',null,'authorization_code','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write','http://localhost:8080/login/oauth2/code/hmpps');
-       ('smoke-test-client','3600','{}','ROLE_SMOKE_TEST','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read',null),
+       ('pecs-jpc-client','3600','{}',null,'authorization_code','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write','http://localhost:8080/login/oauth2/code/hmpps'),
+       ('smoke-test-client','3600','{}','ROLE_SMOKE_TEST','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read',null);
 
 UPDATE oauth_client_details
 SET additional_information = '{"jwtFields":"-name"}'
