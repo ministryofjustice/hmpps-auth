@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
-import lombok.EqualsAndHashCode
 import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
@@ -29,7 +28,6 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "USERS")
-@EqualsAndHashCode(of = ["id"])
 class User(
   @Column(name = "username", nullable = false)
   private val username: String,
@@ -106,32 +104,6 @@ class User(
 
   @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
   val tokens: MutableSet<UserToken> = mutableSetOf()
-
-  private constructor (
-    id: UUID?,
-    username: String,
-    password: String?,
-    email: String?,
-    verified: Boolean,
-    locked: Boolean,
-    enabled: Boolean,
-    source: AuthSource,
-    passwordExpiry: LocalDateTime,
-    lastLoggedIn: LocalDateTime,
-    mfaPreference: MfaPreferenceType,
-    person: Person,
-    contacts: MutableSet<Contact>,
-    authorities: MutableSet<Authority>,
-    groups: MutableSet<Group>,
-    tokens: MutableSet<UserToken>
-  ) : this(username, person, email, verified, enabled, source, authorities, groups) {
-    this.id = id
-    this.password = password
-    this.locked = locked
-    this.passwordExpiry = passwordExpiry
-    this.lastLoggedIn = lastLoggedIn
-    this.mfaPreference = mfaPreference
-  }
 
   override fun eraseCredentials() {
     password = null

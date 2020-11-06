@@ -11,7 +11,6 @@ repositories {
 
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-  annotationProcessor("org.projectlombok:lombok:1.18.16")
 
   implementation(files("lib/ojdbc10-19.3.jar"))
 
@@ -49,10 +48,6 @@ dependencies {
   runtimeOnly("com.h2database:h2:1.4.200")
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
-  compileOnly("org.projectlombok:lombok:1.18.12")
-
-  testAnnotationProcessor("org.projectlombok:lombok:1.18.16")
-  testCompileOnly("org.projectlombok:lombok:1.18.16")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 

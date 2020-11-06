@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.utils
 
-import lombok.extern.slf4j.Slf4j
 import org.slf4j.MDC
 import org.springframework.core.annotation.Order
 import org.springframework.lang.NonNull
@@ -12,7 +11,6 @@ import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-@Slf4j
 @Component
 @Order(1)
 class UserMdcFilter : OncePerRequestFilter() {

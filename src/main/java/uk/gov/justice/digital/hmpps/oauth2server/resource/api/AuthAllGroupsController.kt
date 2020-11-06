@@ -4,14 +4,12 @@ import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import lombok.extern.slf4j.Slf4j
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 
-@Slf4j
 @RestController
 @Api(tags = ["/api/authgroups"])
 class AuthAllGroupsController(private val authUserGroupService: AuthUserGroupService) {

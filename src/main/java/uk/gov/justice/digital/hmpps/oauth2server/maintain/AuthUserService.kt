@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain
 
 import com.microsoft.applicationinsights.TelemetryClient
-import lombok.extern.slf4j.Slf4j
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -35,7 +34,6 @@ import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
 @Service
-@Slf4j
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
 class AuthUserService(
   private val userRepository: UserRepository,
