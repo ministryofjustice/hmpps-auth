@@ -9,13 +9,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException
@@ -39,27 +40,27 @@ class AuthUserGroupsController(
   @GetMapping("/api/authuser/{username}/groups")
   @ApiOperation(
     value = "Get groups for user.",
-    notes = "Get groups for user.",
     nickname = "groups",
     consumes = "application/json",
     produces = "application/json"
   )
   @ApiResponses(
     value = [
-      ApiResponse(code = 200, message = "OK", response = AuthUserGroup::class, responseContainer = "List"),
       ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
       ApiResponse(code = 404, message = "User not found.", response = ErrorDetail::class)
     ]
   )
   fun groups(
-    @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
-  ): ResponseEntity<Any> {
-    val userOptional = authUserGroupService.getAuthUserGroups(username)
-    return userOptional
-      .map { it.map { g: Group -> AuthUserGroup(g) } }
-      .map { Any::class.java.cast(it) }
-      .map { ResponseEntity.ok(it) }.orElse(notFoundResponse(username))
-  }
+    @ApiParam(value = "The username of the user.", required = true)
+    @PathVariable username: String,
+    @ApiParam(value = "Whether groups are expanded into their children.", required = false)
+    @RequestParam(defaultValue = "true") children: Boolean = true,
+  ): List<AuthUserGroup> = authUserGroupService.getAuthUserGroups(username)
+    ?.flatMap { g ->
+      if (children && g.children.isNotEmpty()) g.children.map { AuthUserGroup(it) }
+      else listOf(AuthUserGroup(g))
+    }
+    ?: throw UsernameNotFoundException("User $username not found")
 
   @PutMapping("/api/authuser/{username}/groups/{group}")
   @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")

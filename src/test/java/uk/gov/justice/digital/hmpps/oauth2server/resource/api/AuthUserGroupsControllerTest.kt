@@ -4,10 +4,14 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doThrow
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.userdetails.UsernameNotFoundException
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
@@ -26,27 +30,45 @@ class AuthUserGroupsControllerTest {
   private val authUserGroupService: AuthUserGroupService = mock()
   private val authUserGroupsController = AuthUserGroupsController(authUserService, authUserGroupService)
 
-  @Test
-  fun groups_userNotFound() {
-    val responseEntity = authUserGroupsController.groups("bob")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(404)
-    assertThat(responseEntity.body).isEqualTo(
-      ErrorDetail(
-        "Not Found",
-        "Account for username bob not found",
-        "username"
-      )
-    )
-  }
+  @Nested
+  inner class Groups {
+    @Test
+    fun `groups userNotFound`() {
+      whenever(authUserGroupService.getAuthUserGroups(anyString())).thenReturn(null)
+      assertThatThrownBy { authUserGroupsController.groups("bob") }
+        .isInstanceOf(UsernameNotFoundException::class.java)
+    }
 
-  @Test
-  fun groups_success() {
-    val group1 = Group("FRED", "desc")
-    val group2 = Group("GLOBAL_SEARCH", "desc2")
-    whenever(authUserGroupService.getAuthUserGroups(anyString())).thenReturn(Optional.of(setOf(group1, group2)))
-    val responseEntity = authUserGroupsController.groups("joe")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body as List<*>).containsOnly(AuthUserGroup(group1), AuthUserGroup(group2))
+    @Test
+    fun `groups no children`() {
+      val group1 = Group("FRED", "desc")
+      val group2 = Group("GLOBAL_SEARCH", "desc2")
+      whenever(authUserGroupService.getAuthUserGroups(anyString())).thenReturn(setOf(group1, group2))
+      val responseEntity = authUserGroupsController.groups(username = "joe", children = false)
+      assertThat(responseEntity).containsOnly(AuthUserGroup(group1), AuthUserGroup(group2))
+    }
+
+    @Test
+    fun `groups default children`() {
+      val group1 = Group("FRED", "desc")
+      val group2 = Group("GLOBAL_SEARCH", "desc2")
+      val childGroup = ChildGroup("CHILD_1", "child 1")
+      group2.children.add(childGroup)
+      whenever(authUserGroupService.getAuthUserGroups(anyString())).thenReturn(setOf(group1, group2))
+      val responseEntity = authUserGroupsController.groups(username = "joe")
+      assertThat(responseEntity).containsOnly(AuthUserGroup("FRED", "desc"), AuthUserGroup("CHILD_1", "child 1"))
+    }
+
+    @Test
+    fun `groups with children requested`() {
+      val group1 = Group("FRED", "desc")
+      val group2 = Group("GLOBAL_SEARCH", "desc2")
+      val childGroup = ChildGroup("CHILD_1", "child 1")
+      group2.children.add(childGroup)
+      whenever(authUserGroupService.getAuthUserGroups(anyString())).thenReturn(setOf(group1, group2))
+      val responseEntity = authUserGroupsController.groups(username = "joe")
+      assertThat(responseEntity).containsOnly(AuthUserGroup("FRED", "desc"), AuthUserGroup("CHILD_1", "child 1"))
+    }
   }
 
   @Test

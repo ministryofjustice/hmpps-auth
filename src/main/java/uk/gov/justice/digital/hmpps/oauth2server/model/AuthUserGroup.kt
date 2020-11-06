@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.model
 
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 
 @ApiModel(description = "User Group")
@@ -14,4 +15,5 @@ data class AuthUserGroup(
 ) {
 
   constructor(g: Group) : this(g.groupCode, g.groupName)
+  constructor(g: ChildGroup) : this(g.groupCode, g.groupName)
 }
