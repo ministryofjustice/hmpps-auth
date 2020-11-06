@@ -4,14 +4,12 @@ import io.swagger.annotations.Api
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import io.swagger.annotations.ApiOperation
-import lombok.extern.slf4j.Slf4j
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service
 import uk.gov.justice.digital.hmpps.oauth2server.service.AuthServicesService
 
-@Slf4j
 @RestController
 @Api(tags = ["/api/services"])
 class AuthServicesController(private val authServicesService: AuthServicesService) {

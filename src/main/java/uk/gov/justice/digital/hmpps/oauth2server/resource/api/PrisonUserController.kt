@@ -6,8 +6,6 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import lombok.AllArgsConstructor
-import lombok.extern.slf4j.Slf4j
 import org.apache.commons.text.WordUtils
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,11 +16,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import javax.validation.constraints.NotEmpty
 
-@Slf4j
 @RestController
 @Api(tags = ["/api/prisonuser"])
 @RequestMapping("/api/prisonuser")
-@AllArgsConstructor
 class PrisonUserController(private val userService: UserService) {
   @GetMapping
   @PreAuthorize("hasRole('ROLE_USE_OF_FORCE')")

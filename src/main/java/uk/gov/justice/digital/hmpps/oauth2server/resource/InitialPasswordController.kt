@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
-import lombok.extern.slf4j.Slf4j
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
@@ -15,7 +14,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import javax.servlet.http.HttpServletRequest
 
-@Slf4j
 @Controller
 @Validated
 class InitialPasswordController(
