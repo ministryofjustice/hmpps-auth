@@ -22,7 +22,7 @@ env:
   APPLICATION_AUTHENTICATION_UI_WHITELIST: "81.134.202.29,217.33.148.210"
   APPLICATION_NON_PROD_WARNING_ENABLED: "true"
   APPLICATION_NON_PROD_WARNING_PROD_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth/"
-  DELIUS_ENDPOINT_URL: "https://community-api-secure.test.delius.probation.hmpps.dsd.io"
+  DELIUS_ENDPOINT_URL: "https://community-api-secure.stage.delius.probation.hmpps.dsd.io"
   JWT_COOKIE_EXPIRY_TIME: "12h"
   JWT_JWK_KEY_ID: "dev-jwk-kid"
   TOKENVERIFICATION_ENDPOINT_URL: ""
