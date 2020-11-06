@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Companion.canMaintainAuthUsers
-import kotlin.jvm.Throws
 
 @Service
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
