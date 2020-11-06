@@ -119,7 +119,7 @@ class VerifyMobileServiceTest {
 
   @Test
   fun `resendVerificationCode send code`() {
-    val user = createSampleUser(firstName = "bob", mobile = "07700900321",)
+    val user = createSampleUser(firstName = "bob", mobile = "07700900321")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
 
     val verifyCode = verifyMobileService.resendVerificationCode("bob")

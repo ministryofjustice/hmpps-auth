@@ -51,7 +51,7 @@ class User(
    */
   @Column(name = "source", nullable = false)
   @Enumerated(EnumType.STRING)
-  var source: AuthSource? = null,
+  val source: AuthSource,
 
   authorities: Set<Authority> = emptySet(),
 
@@ -91,10 +91,10 @@ class User(
    * Used for NOMIS accounts to force change password so that they don't get locked out due to not changing password
    */
   @Column(name = "password_expiry")
-  var passwordExpiry = LocalDateTime.now()
+  var passwordExpiry: LocalDateTime = LocalDateTime.now()
 
   @Column(name = "last_logged_in")
-  var lastLoggedIn = LocalDateTime.now()
+  var lastLoggedIn: LocalDateTime = LocalDateTime.now()
 
   @Column(name = "mfa_preference")
   @Enumerated(EnumType.STRING)
@@ -115,7 +115,7 @@ class User(
     verified: Boolean,
     locked: Boolean,
     enabled: Boolean,
-    source: AuthSource?,
+    source: AuthSource,
     passwordExpiry: LocalDateTime,
     lastLoggedIn: LocalDateTime,
     mfaPreference: MfaPreferenceType,

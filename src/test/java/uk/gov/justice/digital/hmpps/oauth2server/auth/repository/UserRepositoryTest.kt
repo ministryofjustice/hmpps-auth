@@ -79,8 +79,6 @@ class UserRepositoryTest {
     TestTransaction.start()
     val retrievedEntity = repository.findByUsername(transientEntity.username).orElseThrow()
 
-    // equals only compares the business key columns
-    assertThat(retrievedEntity).isEqualTo(transientEntity)
     assertThat(retrievedEntity.username).isEqualTo(transientEntity.username)
     assertThat(retrievedEntity.email).isEqualTo(transientEntity.email)
     assertThat(retrievedEntity.mobile).isEqualTo(transientEntity.mobile)
@@ -101,7 +99,7 @@ class UserRepositoryTest {
     val retrievedEntity = repository.findByUsername(transientEntity.username).orElseThrow()
 
     // equals only compares the business key columns
-    assertThat(retrievedEntity).isEqualTo(transientEntity)
+    assertThat(retrievedEntity).isEqualToIgnoringGivenFields(transientEntity, "authorities")
     assertThat(retrievedEntity.username).isEqualTo(transientEntity.username)
     assertThat(retrievedEntity.email).isEqualTo(transientEntity.email)
     assertThat(retrievedEntity.name).isEqualTo("first last")
@@ -120,8 +118,6 @@ class UserRepositoryTest {
     TestTransaction.start()
     val retrievedEntity = repository.findByUsername(transientEntity.username).orElseThrow()
 
-    // equals only compares the business key columns
-    assertThat(retrievedEntity).isEqualTo(transientEntity)
     assertThat(retrievedEntity.username).isEqualTo(transientEntity.username)
     assertThat(retrievedEntity.email).isNull()
   }

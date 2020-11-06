@@ -942,7 +942,6 @@ class AuthUserServiceTest {
       enabled = true,
       authorities = setOf(Authority("JOE", "bloggs"))
     )
-    val groupManager = createSampleUser(username = "groupManager", groups = setOf(Group("group3", "desc"), group1))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
       .thenReturn(Optional.of(user))
     authUserService.disableUser("user", "admin", GROUP_MANAGER)

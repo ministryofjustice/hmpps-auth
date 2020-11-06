@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain
 
 import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
@@ -73,12 +74,12 @@ internal class AuthUserRolesServiceTest {
         .thenReturn(Optional.of(groupManager))
       doThrow(AuthUserGroupRelationshipException("user", "User not with your groups")).whenever(maintainUserCheck)
         .ensureUserLoggedInUserRelationship(
-          "admin",
-          GROUP_MANAGER,
-          createSampleUser(username = "user")
+          anyString(),
+          any(),
+          any()
         )
 
-      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", GROUP_MANAGER) }.isInstanceOf(
+      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", GROUP_MANAGER_ROLE) }.isInstanceOf(
         AuthUserGroupRelationshipException::class.java
       ).hasMessage("Unable to maintain user: user with reason: User not with your groups")
     }
@@ -100,7 +101,7 @@ internal class AuthUserRolesServiceTest {
           )
         )
       )
-      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", GROUP_MANAGER) }.isInstanceOf(
+      assertThatThrownBy { service.addRoles("user", listOf("BOB"), "admin", GROUP_MANAGER_ROLE) }.isInstanceOf(
         AuthUserRoleException::class.java
       ).hasMessage("Modify role failed for field role with reason: invalid")
     }
@@ -206,7 +207,7 @@ internal class AuthUserRolesServiceTest {
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role))
       whenever(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(setOf(role))
-      service.addRoles("user", listOf("ROLE_LICENCE_VARY"), "admin", GROUP_MANAGER)
+      service.addRoles("user", listOf("ROLE_LICENCE_VARY"), "admin", GROUP_MANAGER_ROLE)
       assertThat(user.authorities).extracting<String> { it.authority }.containsOnly("ROLE_JOE", "ROLE_LICENCE_VARY")
     }
   }
@@ -262,15 +263,15 @@ internal class AuthUserRolesServiceTest {
       )
       doThrow(AuthUserGroupRelationshipException("user", "User not with your groups")).whenever(maintainUserCheck)
         .ensureUserLoggedInUserRelationship(
-          "admin",
-          GROUP_MANAGER,
-          createSampleUser(username = "user")
+          anyString(),
+          any(),
+          any()
         )
 
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
         .thenReturn(Optional.of(groupManager))
-      assertThatThrownBy { service.removeRole("user", "BOB", "admin", GROUP_MANAGER) }.isInstanceOf(
+      assertThatThrownBy { service.removeRole("user", "BOB", "admin", GROUP_MANAGER_ROLE) }.isInstanceOf(
         AuthUserGroupRelationshipException::class.java
       ).hasMessage("Unable to maintain user: user with reason: User not with your groups")
     }
@@ -278,16 +279,16 @@ internal class AuthUserRolesServiceTest {
     @Test
     fun removeRole_invalidGroupManager() {
       val group1 = Group("group", "desc")
-      val user = createSampleUser(username = "user", groups = setOf(group1))
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       val role2 = Authority("BOB", "Bloggs")
       val groupManager = createSampleUser(username = "groupManager", groups = setOf(group1), authorities = setOf(role, role2))
+      val user = createSampleUser(username = "user", groups = setOf(group1), authorities = setOf(role, role2))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
         .thenReturn(Optional.of(groupManager))
       whenever(roleRepository.findByRoleCode(anyString())).thenReturn(Optional.of(role2))
       whenever(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(setOf(role))
-      assertThatThrownBy { service.removeRole("user", "BOB", "admin", GROUP_MANAGER) }.isInstanceOf(
+      assertThatThrownBy { service.removeRole("user", "BOB", "admin", GROUP_MANAGER_ROLE) }.isInstanceOf(
         AuthUserRoleException::class.java
       ).hasMessage("Modify role failed for field role with reason: invalid")
     }
@@ -343,7 +344,7 @@ internal class AuthUserRolesServiceTest {
         "user",
         "  licence_vary   ",
         "admin",
-        GROUP_MANAGER
+        GROUP_MANAGER_ROLE
       )
       assertThat(user.authorities).extracting<String> { it.authority }.containsOnly("ROLE_JOE")
     }
@@ -364,7 +365,7 @@ internal class AuthUserRolesServiceTest {
           createSampleUser(authorities = setOf(fred, joe))
         )
       )
-      assertThat(service.getAssignableRoles("BOB", GROUP_MANAGER)).containsExactly(first, second)
+      assertThat(service.getAssignableRoles("BOB", GROUP_MANAGER_ROLE)).containsExactly(first, second)
     }
 
     @Test
@@ -386,6 +387,6 @@ internal class AuthUserRolesServiceTest {
 
   companion object {
     private val SUPER_USER: Set<GrantedAuthority> = setOf(SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"))
-    private val GROUP_MANAGER: Set<GrantedAuthority> = setOf(SimpleGrantedAuthority("ROLE_AUTH_GROUP_MANAGER"))
+    private val GROUP_MANAGER_ROLE: Set<GrantedAuthority> = setOf(SimpleGrantedAuthority("ROLE_AUTH_GROUP_MANAGER"))
   }
 }

@@ -13,7 +13,7 @@ class UserHelper {
       lastName: String = "last",
       email: String? = null,
       verified: Boolean = false,
-      enabled: Boolean = true,
+      enabled: Boolean = false,
       locked: Boolean = false,
       authorities: Set<Authority> = emptySet(),
       groups: Set<Group> = emptySet(),
@@ -52,9 +52,9 @@ class UserHelper {
 
       user.locked = locked
       user.mfaPreference = mfaPreference
-      user.lastLoggedIn = lastLoggedIn
+      if (lastLoggedIn != null) user.lastLoggedIn = lastLoggedIn
       user.setPassword(password)
-      user.passwordExpiry = passwordExpiry
+      if (passwordExpiry != null) user.passwordExpiry = passwordExpiry
 
       return user
     }
