@@ -8,8 +8,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 
 data class DeliusUserPersonDetails(
   private val username: String,
-  private val userId: String,
-  private val firstName: String,
+  override val userId: String,
+  override val firstName: String,
   private val surname: String,
   val email: String,
   private val enabled: Boolean = false,
@@ -19,15 +19,13 @@ data class DeliusUserPersonDetails(
 
   override fun getUsername(): String = username
 
-  override fun getUserId(): String = userId
+  override val name: String
+    get() = "$firstName $surname"
 
-  override fun getFirstName(): String = firstName
+  override val isAdmin: Boolean = false
 
-  override fun getName(): String = "$firstName $surname"
-
-  override fun isAdmin(): Boolean = false
-
-  override fun getAuthSource(): String = "delius"
+  override val authSource: String
+    get() = "delius"
 
   override fun toUser(): User =
     User(

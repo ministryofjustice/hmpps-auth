@@ -69,18 +69,23 @@ class NomisUserPersonDetails(
     .filter { (id) -> id.caseload == caseload }
     .collect(Collectors.toList())
 
-  override fun getName(): String = staff.name
+  override val name: String
+    get() = staff.name
 
-  override fun getFirstName(): String = staff.getFirstName()
+  override val firstName: String
+    get() = staff.getFirstName()
 
   val lastName: String
     get() = staff.lastName
 
-  override fun getUserId(): String = staff.staffId.toString()
+  override val userId: String
+    get() = staff.staffId.toString()
 
-  override fun isAdmin(): Boolean = accountDetail.accountProfile === AccountProfile.TAG_ADMIN
+  override val isAdmin: Boolean
+    get() = accountDetail.accountProfile === AccountProfile.TAG_ADMIN
 
-  override fun getAuthSource(): String = "nomis"
+  override val authSource: String
+    get() = "nomis"
 
   override fun toUser(): User = User(username = username, source = AuthSource.nomis)
 
