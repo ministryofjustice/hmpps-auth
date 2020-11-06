@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenReposi
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService
 import java.util.Optional
 
@@ -31,7 +32,7 @@ class ChangePasswordServiceTest {
   fun setPassword_AlterUser() {
     val staffUserAccountForBob = staffUserAccountForBob
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(staffUserAccountForBob))
-    val user = createSampleUser(username = "user", locked = true)
+    val user = createSampleUser(username = "user", locked = true, source = nomis)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     changePasswordService.setPassword("bob", "pass")
@@ -40,7 +41,7 @@ class ChangePasswordServiceTest {
 
   @Test
   fun setPassword_AuthUser() {
-    val user = createSampleUser(username = "user", email = "email", enabled = true, source = AuthSource.auth)
+    val user = createSampleUser(username = "user", email = "email", enabled = true)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     changePasswordService.setPassword("bob", "pass")
@@ -50,7 +51,7 @@ class ChangePasswordServiceTest {
   @Test
   fun setPassword_SaveAndDelete() {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBobOptional)
-    val user = createSampleUser(username = "user", locked = true)
+    val user = createSampleUser(username = "user", locked = true, source = nomis)
     val userToken = user.createToken(UserToken.TokenType.RESET)
     whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
     changePasswordService.setPassword("bob", "pass")
