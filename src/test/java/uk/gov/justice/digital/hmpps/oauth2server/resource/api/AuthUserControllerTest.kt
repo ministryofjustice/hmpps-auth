@@ -14,9 +14,9 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
@@ -112,7 +112,13 @@ class AuthUserControllerTest {
       Optional.of(UserDetailsImpl("name", "bob", setOf(), "none", "userid", "jwtId"))
     )
     val responseEntity =
-      authUserController.createUser("user", CreateUser("email", "first", "last", null, null), true, request, authentication)
+      authUserController.createUser(
+        "user",
+        CreateUser("email", "first", "last", null, null),
+        true,
+        request,
+        authentication
+      )
     assertThat(responseEntity.statusCodeValue).isEqualTo(409)
     assertThat(responseEntity.body).isEqualTo(
       ErrorDetail("username.exists", "User user already exists", "username")
@@ -122,9 +128,15 @@ class AuthUserControllerTest {
   @Test
   fun `createUser email already exists`() {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
-    whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(User.of("joe")))
+    whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(createSampleUser("joe")))
     val responseEntity =
-      authUserController.createUser("user", CreateUser("email", "first", "last", null, null), true, request, authentication)
+      authUserController.createUser(
+        "user",
+        CreateUser("email", "first", "last", null, null),
+        true,
+        request,
+        authentication
+      )
     assertThat(responseEntity.statusCodeValue).isEqualTo(409)
     assertThat(responseEntity.body).isEqualTo(
       ErrorDetail("email.exists", "User email already exists", "email")
@@ -135,7 +147,13 @@ class AuthUserControllerTest {
   fun createUser_BlankDoesntCallUserService() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     val responseEntity =
-      authUserController.createUser("  ", CreateUser("email", "first", "last", null, null), true, request, authentication)
+      authUserController.createUser(
+        "  ",
+        CreateUser("email", "first", "last", null, null),
+        true,
+        request,
+        authentication
+      )
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
     verify(userService, never()).findMasterUserPersonDetails(anyString())
   }
@@ -300,7 +318,13 @@ class AuthUserControllerTest {
   @Test
   fun createUser_MultipleAdditionalRoles() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
-    authUserController.createUser("newusername", CreateUser("email", "first", "last", null, setOf("ROLE1", "ROLE2")), true, request, authentication)
+    authUserController.createUser(
+      "newusername",
+      CreateUser("email", "first", "last", null, setOf("ROLE1", "ROLE2")),
+      true,
+      request,
+      authentication
+    )
     verify(authUserService).createUser(
       "newusername",
       "email",
@@ -316,7 +340,13 @@ class AuthUserControllerTest {
   @Test
   fun createUser_SingleAdditionalRole() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
-    authUserController.createUser("newusername", CreateUser("email", "first", "last", "ROLE1", null), true, request, authentication)
+    authUserController.createUser(
+      "newusername",
+      CreateUser("email", "first", "last", "ROLE1", null),
+      true,
+      request,
+      authentication
+    )
     verify(authUserService).createUser(
       "newusername",
       "email",
@@ -346,7 +376,7 @@ class AuthUserControllerTest {
 
   @Test
   fun enableUser() {
-    val user = User.builder().username("USER").email("email").verified(true).build()
+    val user = createSampleUser(username = "USER", email = "email", verified = true)
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     val responseEntity = authUserController.enableUser("user", authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
@@ -355,7 +385,7 @@ class AuthUserControllerTest {
 
   @Test
   fun enableUser_notFound() {
-    val user = User.builder().username("USER").email("email").verified(true).build()
+    val user = createSampleUser(username = "USER", email = "email", verified = true)
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     doThrow(EntityNotFoundException("message")).whenever(authUserService).enableUser(anyString(), anyString(), any())
     val responseEntity = authUserController.enableUser("user", authentication)
@@ -364,7 +394,7 @@ class AuthUserControllerTest {
 
   @Test
   fun disableUser() {
-    val user = User.builder().username("USER").email("email").verified(true).build()
+    val user = createSampleUser(username = "USER", email = "email", verified = true)
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     val responseEntity = authUserController.disableUser("user", authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
@@ -373,7 +403,7 @@ class AuthUserControllerTest {
 
   @Test
   fun disableUser_notFound() {
-    val user = User.builder().username("USER").email("email").verified(true).build()
+    val user = createSampleUser(username = "USER", email = "email", verified = true)
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
     doThrow(EntityNotFoundException("message")).whenever(authUserService).disableUser(anyString(), anyString(), any())
     val responseEntity = authUserController.disableUser("user", authentication)
@@ -472,9 +502,16 @@ class AuthUserControllerTest {
 
   private val authUser: User
     get() {
-      val user = User.builder().id(UUID.fromString(USER_ID)).username("authentication").email("email").verified(true)
-        .enabled(true).lastLoggedIn(LocalDateTime.of(2019, 1, 1, 12, 0)).build()
-      user.person = Person("Joe", "Bloggs")
+      val user = createSampleUser(
+        id = UUID.fromString(USER_ID),
+        username = "authentication",
+        email = "email",
+        verified = true,
+        enabled = true,
+        firstName = "Joe",
+        lastName = "Bloggs",
+        lastLoggedIn = LocalDateTime.of(2019, 1, 1, 12, 0)
+      )
       return user
     }
 

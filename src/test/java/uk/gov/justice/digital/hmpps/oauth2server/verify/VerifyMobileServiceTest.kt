@@ -12,10 +12,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
@@ -34,7 +31,7 @@ class VerifyMobileServiceTest {
 
   @Test
   fun mobile() {
-    val user = User.builder().username("bob").mobile("07700900321").build()
+    val user = createSampleUser(username = "bob", mobile = "07700900321")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     val userOptional = verifyMobileService.getMobile("user")
     assertThat(userOptional).get().isEqualTo(user)
@@ -64,8 +61,7 @@ class VerifyMobileServiceTest {
 
   @Test
   fun isNotVerified_userFoundVerified() {
-    val user = User.builder().username("bob").mobile("07700900321").build()
-    user.isVerified = true
+    val user = createSampleUser(username = "bob", mobile = "07700900321", verified = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     assertThat(verifyMobileService.isNotVerified("user")).isFalse()
   }
@@ -95,7 +91,7 @@ class VerifyMobileServiceTest {
     verifyMobileService.changeMobileAndRequestVerification("user", "07700900321")
     verify(userRepository).save(user)
     assertThat(user.mobile).isEqualTo("07700900321")
-    assertThat(user.isVerified).isFalse()
+    assertThat(user.verified).isFalse()
   }
 
   @Test
@@ -123,8 +119,7 @@ class VerifyMobileServiceTest {
 
   @Test
   fun `resendVerificationCode send code`() {
-    val user = User.builder().person(Person("bob", "last"))
-      .contacts(setOf(Contact(ContactType.MOBILE_PHONE, "07700900321", false))).build()
+    val user = createSampleUser(firstName = "bob", mobile = "07700900321",)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
 
     val verifyCode = verifyMobileService.resendVerificationCode("bob")
@@ -136,14 +131,14 @@ class VerifyMobileServiceTest {
 
   @Test
   fun `resendVerificationCodeSecondaryEmail no second email`() {
-    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(User()))
+    whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(createSampleUser()))
     assertThatThrownBy { verifyMobileService.resendVerificationCode("bob") }
       .isInstanceOf(VerifyMobileException::class.java).extracting("reason").isEqualTo("nomobile")
   }
 
   @Test
   fun `resendVerificationCodeSecondaryEmail already verified`() {
-    val user = User.builder().contacts(setOf(Contact(ContactType.MOBILE_PHONE, "07700900321", true))).build()
+    val user = createSampleUser(mobile = "07700900321", mobileVerified = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     assertThat(verifyMobileService.resendVerificationCode("bob")).isEqualTo(Optional.empty<String>())
   }

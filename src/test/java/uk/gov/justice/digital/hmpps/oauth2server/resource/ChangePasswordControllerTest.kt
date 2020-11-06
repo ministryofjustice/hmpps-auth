@@ -19,6 +19,7 @@ import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.security.authentication.AccountExpiredException
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails

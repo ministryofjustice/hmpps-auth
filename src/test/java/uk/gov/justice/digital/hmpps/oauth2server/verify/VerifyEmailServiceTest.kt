@@ -14,6 +14,7 @@ import org.mockito.Mockito.verify
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
@@ -161,7 +162,7 @@ class VerifyEmailServiceTest {
     )
     verify(userRepository).save(user)
     assertThat(user.email).isEqualTo("email@john.com")
-    assertThat(user.isVerified).isFalse()
+    assertThat(user.verified).isFalse()
   }
 
   @Test
@@ -388,7 +389,7 @@ class VerifyEmailServiceTest {
     val result = verifyEmailService.confirmEmail("token")
     assertThat(result).isEmpty
     verify(userRepository).save(user)
-    assertThat(user.isVerified).isTrue()
+    assertThat(user.verified).isTrue()
   }
 
   @Test
@@ -399,7 +400,7 @@ class VerifyEmailServiceTest {
     val result = verifyEmailService.confirmEmail("token")
     assertThat(result).isEmpty
     verify(userRepository).save(user)
-    assertThat(user.isVerified).isTrue()
+    assertThat(user.verified).isTrue()
   }
 
   @Test

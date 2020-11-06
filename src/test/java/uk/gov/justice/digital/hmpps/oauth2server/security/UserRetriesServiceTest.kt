@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository
@@ -43,7 +44,7 @@ class UserRetriesServiceTest {
 
     @Test
     fun resetRetriesAndRecordLogin_RecordLastLogginIn() {
-      val user = User.builder().username("joe").lastLoggedIn(LocalDateTime.now().minusDays(1)).build()
+      val user = createSampleUser(username = "joe", lastLoggedIn = LocalDateTime.now().minusDays(1))
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       service.resetRetriesAndRecordLogin(userPersonDetailsForBob)
       assertThat(user.lastLoggedIn).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now())
@@ -51,7 +52,7 @@ class UserRetriesServiceTest {
 
     @Test
     fun `resetRetriesAndRecordLogin save delius email address existing user`() {
-      val user = User.builder().username("joe").lastLoggedIn(LocalDateTime.now().minusDays(1)).build()
+      val user = createSampleUser(username = "joe", lastLoggedIn = LocalDateTime.now().minusDays(1))
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       service.resetRetriesAndRecordLogin(
         DeliusUserPersonDetails(
@@ -66,7 +67,7 @@ class UserRetriesServiceTest {
         )
       )
       assertThat(user.email).isEqualTo("newemail@bob.com")
-      assertThat(user.isVerified).isTrue()
+      assertThat(user.verified).isTrue()
     }
 
     @Test

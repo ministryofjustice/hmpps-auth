@@ -1049,8 +1049,7 @@ class AuthUserServiceTest {
 
   @Test
   fun changePassword_PasswordSameAsCurrent() {
-    val user = createSampleUser(username = "user")
-    user.password = "oldencryptedpassword"
+    val user = createSampleUser(username = "user", password = "oldencryptedpassword")
     whenever(passwordEncoder.matches(anyString(), anyString())).thenReturn(true)
     assertThatThrownBy {
       authUserService.changePassword(

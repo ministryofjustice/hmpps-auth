@@ -21,8 +21,6 @@ import org.springframework.web.bind.support.SessionStatus
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.View
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
@@ -90,7 +88,7 @@ internal class UserSelectorAuthorizationEndpointTest {
         "view",
         mutableMapOf(
           "users" to listOf(
-            User.builder().username("user1").source(AuthSource.auth).build()
+            createSampleUser(username = "user1", source = AuthSource.auth)
           )
         )
       )
@@ -155,8 +153,8 @@ internal class UserSelectorAuthorizationEndpointTest {
       val credentials = "some credentials"
       whenever(authentication.credentials).thenReturn(credentials)
       val authorities = setOf(Authority("ROLE_COMMUNITY", "Role Community"))
-      val user = User.builder().username("authuser").id(UUID.randomUUID()).person(Person("joe", "bloggs"))
-        .authorities(authorities).source(AuthSource.auth).build()
+      val user =
+        createSampleUser(username = "authuser", id = UUID.randomUUID(), firstName = "joe", lastName = "bloggs", authorities = authorities, source = AuthSource.auth)
       whenever(userService.getMasterUserPersonDetailsWithEmailCheck(anyString(), any(), anyString())).thenReturn(
         Optional.of(user)
       )
@@ -196,8 +194,15 @@ internal class UserSelectorAuthorizationEndpointTest {
         UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId")
       )
       whenever(authentication.credentials).thenReturn("some credentials")
-      val user = User.builder().username("authuser").id(UUID.randomUUID()).person(Person("joe", "bloggs"))
-        .authorities(setOf(Authority("ROLE_COMMUNITY", "Role Community"))).source(AuthSource.auth).build()
+      createSampleUser(username = "authuser")
+      val user = createSampleUser(
+        username = "authuser",
+        id = UUID.randomUUID(),
+        firstName = "joe",
+        lastName = "bloggs",
+        authorities = setOf(Authority("ROLE_COMMUNITY", "Role Community")),
+        source = AuthSource.auth
+      )
       whenever(userService.getMasterUserPersonDetailsWithEmailCheck(anyString(), any(), anyString())).thenReturn(
         Optional.of(user)
       )
@@ -223,8 +228,14 @@ internal class UserSelectorAuthorizationEndpointTest {
         UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId")
       )
       whenever(authentication.credentials).thenReturn("some credentials")
-      val user = User.builder().username("authuser").id(UUID.randomUUID()).person(Person("joe", "bloggs"))
-        .authorities(setOf(Authority("ROLE_COMMUNITY", "Role Community"))).source(AuthSource.auth).build()
+      val user = createSampleUser(
+        username = "authuser",
+        id = UUID.randomUUID(),
+        firstName = "joe",
+        lastName = "bloggs",
+        authorities = setOf(Authority("ROLE_COMMUNITY", "Role Community")),
+        source = AuthSource.auth
+      )
       whenever(userService.getMasterUserPersonDetailsWithEmailCheck(anyString(), any(), anyString())).thenReturn(
         Optional.of(user)
       )

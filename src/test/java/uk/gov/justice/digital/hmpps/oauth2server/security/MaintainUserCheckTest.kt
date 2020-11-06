@@ -10,7 +10,7 @@ import org.mockito.Mockito.verify
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import java.util.Optional
@@ -21,7 +21,7 @@ class MaintainUserCheckTest {
 
   @Test
   fun superUserDoesNotThrowError() {
-    val user = createSampleUser(username = "user")
+    val user = createSampleUser("user")
     assertThatCode {
       maintainUserCheck.ensureUserLoggedInUserRelationship(
         "SuperUser",
@@ -33,11 +33,9 @@ class MaintainUserCheckTest {
 
   @Test
   fun groupManagerGroupInCommonWithUserDoesNotThrowError() {
-    val user = createSampleUser(username = "user")
     val group1 = Group("group", "desc")
-    user.groups = setOf(group1, Group("group2", "desc"))
-    val groupManager = User.of("groupManager")
-    groupManager.groups = setOf(Group("group3", "desc"), group1)
+    val user = createSampleUser(username = "user", groups = setOf(group1, Group("group2", "desc")))
+    val groupManager = createSampleUser("groupManager", groups = setOf(Group("group3", "desc"), group1))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
       .thenReturn(Optional.of(groupManager))
     assertThatCode {
@@ -52,7 +50,7 @@ class MaintainUserCheckTest {
 
   @Test
   fun groupManagerNoGroupInCommonWithUserThrowsError() {
-    val user = createSampleUser(username = "user")
+    val user = createSampleUser("user")
     val optionalUserEmail = createUser()
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUserEmail)
     assertThatThrownBy {
@@ -66,7 +64,7 @@ class MaintainUserCheckTest {
     verify(userRepository).findByUsernameAndMasterIsTrue(anyString())
   }
 
-  private fun createUser() = Optional.of(createSampleUser(username = "someuser"))
+  private fun createUser() = Optional.of(createSampleUser("someuser"))
 
   companion object {
     private val SUPER_USER: Set<GrantedAuthority> = setOf(SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"))

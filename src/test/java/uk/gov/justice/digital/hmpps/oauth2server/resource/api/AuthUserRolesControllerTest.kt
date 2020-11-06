@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
@@ -83,8 +84,11 @@ class AuthUserRolesControllerTest {
 
   private val authUser: User
     get() {
-      val user = User.builder().username("USER").email("email").verified(true).build()
-      user.authorities = setOf(Authority("FRED", "FRED"), Authority("GLOBAL_SEARCH", "Global Search"))
-      return user
+      return createSampleUser(
+        username = "USER",
+        email = "email",
+        verified = true,
+        authorities = setOf(Authority("FRED", "FRED"), Authority("GLOBAL_SEARCH", "Global Search"))
+      )
     }
 }

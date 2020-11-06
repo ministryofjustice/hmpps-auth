@@ -11,9 +11,8 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Contact
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ContactType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.azure.AzureUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.azure.service.AzureUserService
@@ -126,7 +125,7 @@ class UserServiceTest {
 
     @Test
     fun `getOrCreateUser user exists already`() {
-      val user = User.of("joe")
+      val user = createSampleUser("joe")
       whenever(userRepository.findByUsername("JOE")).thenReturn(Optional.of(user))
       val newUserOpt = userService.getOrCreateUser("joe")
       assertThat(newUserOpt).hasValueSatisfying {
@@ -206,19 +205,19 @@ class UserServiceTest {
   inner class HasVerifiedMfaMethod {
     @Test
     fun `hasVerifiedMfaMethod success`() {
-      val user = User.builder().username("joe").email("someemail").verified(true).build()
+      val user = createSampleUser(username = "joe", email = "someemail", verified = true)
       assertThat(userService.hasVerifiedMfaMethod(user)).isTrue()
     }
 
     @Test
     fun `hasVerifiedMfaMethod no email`() {
-      val user = User.builder().username("joe").verified(true).build()
+      val user = createSampleUser(username = "joe", verified = true)
       assertThat(userService.hasVerifiedMfaMethod(user)).isFalse()
     }
 
     @Test
     fun `hasVerifiedMfaMethod not verified`() {
-      val user = User.builder().username("joe").email("someemail").build()
+      val user = createSampleUser(username = "joe", email = "someemail")
       assertThat(userService.hasVerifiedMfaMethod(user)).isFalse()
     }
   }
@@ -228,7 +227,7 @@ class UserServiceTest {
 
     @Test
     fun `isSameAsCurrentVerifiedMobile not verified`() {
-      val user = User.builder().mobile("07700900001").mobileVerified(false).build()
+      val user = createSampleUser(mobile = "07700900001")
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "")
       assertThat(returnValue).isFalse()
@@ -236,7 +235,7 @@ class UserServiceTest {
 
     @Test
     fun `isSameAsCurrentVerifiedMobile new different mobile number`() {
-      val user = User.builder().mobile("07700900001").mobileVerified(true).build()
+      val user = createSampleUser(mobile = "07700900001", mobileVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "07700900000")
       assertThat(returnValue).isFalse()
@@ -244,7 +243,7 @@ class UserServiceTest {
 
     @Test
     fun `isSameAsCurrentVerifiedMobile new different mobile number with whitespace`() {
-      val user = User.builder().mobile("07700900001").mobileVerified(true).build()
+      val user = createSampleUser(mobile = "07700900001", mobileVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "0770 090 0000")
       assertThat(returnValue).isFalse()
@@ -252,7 +251,7 @@ class UserServiceTest {
 
     @Test
     fun `isSameAsCurrentVerifiedMobile same mobile number`() {
-      val user = User.builder().mobile("07700900000").mobileVerified(true).build()
+      val user = createSampleUser(mobile = "07700900000", mobileVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "07700900000")
       assertThat(returnValue).isTrue()
@@ -260,7 +259,7 @@ class UserServiceTest {
 
     @Test
     fun `isSameAsCurrentVerifiedMobile same mobile number with whitespace`() {
-      val user = User.builder().mobile("07700900000").mobileVerified(true).build()
+      val user = createSampleUser(mobile = "07700900000", mobileVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "0770 090 0000")
       assertThat(returnValue).isTrue()
@@ -271,7 +270,7 @@ class UserServiceTest {
   inner class isSameAsCurrentVerifiedEmail {
     @Test
     fun `isSameAsCurrentVerifiedEmail not verified primary email`() {
-      val user = User.builder().email("someemail").verified(false).build()
+      val user = createSampleUser(email = "someemail", verified = false)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.PRIMARY)
       assertThat(returnValue).isFalse()
@@ -279,7 +278,7 @@ class UserServiceTest {
 
     @Test
     fun `isSameAsCurrentVerifiedEmail new different email address primary email`() {
-      val user = User.builder().email("someemail").verified(true).build()
+      val user = createSampleUser(email = "someemail", verified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "somenewemail", User.EmailType.PRIMARY)
       assertThat(returnValue).isFalse()
@@ -287,7 +286,7 @@ class UserServiceTest {
 
     @Test
     fun `isSameAsCurrentVerifiedEmail same address primary email`() {
-      val user = User.builder().email("someemail").verified(true).build()
+      val user = createSampleUser(email = "someemail", verified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.PRIMARY)
       assertThat(returnValue).isTrue()
@@ -295,7 +294,7 @@ class UserServiceTest {
 
     @Test
     fun `isSameAsCurrentVerifiedEmail not verified secondary email`() {
-      val user = User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", false))).build()
+      val user = createSampleUser(secondaryEmail = "someemail")
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.SECONDARY)
       assertThat(returnValue).isFalse()
@@ -303,7 +302,7 @@ class UserServiceTest {
 
     @Test
     fun `isSameAsCurrentVerifiedEmail new different email address secondary email`() {
-      val user = User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", true))).build()
+      val user = createSampleUser(secondaryEmail = "someemail", secondaryEmailVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "somenewemail", User.EmailType.SECONDARY)
       assertThat(returnValue).isFalse()
@@ -311,7 +310,7 @@ class UserServiceTest {
 
     @Test
     fun `isSameAsCurrentVerifiedEmail same address secondary email`() {
-      val user = User.builder().contacts(setOf(Contact(ContactType.SECONDARY_EMAIL, "someemail", true))).build()
+      val user = createSampleUser(secondaryEmail = "someemail", secondaryEmailVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.SECONDARY)
       assertThat(returnValue).isTrue()
@@ -408,17 +407,15 @@ class UserServiceTest {
           createSampleNomisUser(
             staff = Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE"),
             username = "U3"
-          )
+          ),
         )
       )
 
-      val userBuilder = User.builder().verified(true).source(nomis)
-
       whenever(authUserService.findAuthUsersByUsernames(anyList())).thenReturn(
         listOf(
-          userBuilder.username("U1").email("u1@b.com").build(),
-          userBuilder.username("U2").email("u2@b.com").build(),
-          userBuilder.username("U3").email("u3@b.com").verified(false).build()
+          createSampleUser(verified = true, source = nomis, username = "U1", email = "u1@b.com"),
+          createSampleUser(verified = true, source = nomis, username = "U2", email = "u2@b.com"),
+          createSampleUser(verified = false, source = nomis, username = "U3", email = "u3@b.com"),
         )
       )
 
@@ -458,7 +455,6 @@ class UserServiceTest {
 
       whenever(nomisUserService.findPrisonUsersByFirstAndLastNames("first", "last")).thenReturn(
         listOf(
-
           createSampleNomisUser(
             staff = Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE"),
             username = "U1"
@@ -474,19 +470,17 @@ class UserServiceTest {
           createSampleNomisUser(
             staff = Staff(firstName = "f4", lastName = "l4", staffId = 4, status = "INACTIVE"),
             username = "U4"
-          )
+          ),
         )
       )
 
-      val userBuilder = User.builder().verified(true).source(nomis)
-
       whenever(authUserService.findAuthUsersByUsernames(anyList())).thenReturn(
         listOf(
-          userBuilder.username("U1").email("u1@b.com").build(),
+          createSampleUser(verified = true, source = nomis, username = "U1", email = "u1@b.com"),
           // User U2 in auth, but no email - so search NOMIS for e-mail for this user
-          userBuilder.username("U2").email(null).build(),
+          createSampleUser(verified = true, source = nomis, username = "U2", email = null),
           // User U3 found in auth, but source is not nomis
-          userBuilder.username("U3").email("u3@b.com").source(auth).build()
+          createSampleUser(verified = true, source = nomis, username = "U3", email = "u3@b.com"),
         )
       )
 
@@ -543,7 +537,7 @@ class UserServiceTest {
     @Test
     fun `test getMasterUserPersonDetailsWithEmailCheck - auth user`() {
       val authUser =
-        Optional.of(User.builder().username("bob").verified(true).email("joe@fred.com").source(auth).build())
+        Optional.of(createSampleUser(username = "bob", verified = true, email = "joe@fred.com"))
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(authUser)
       val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", auth, "joe@fred.com")
       assertThat(details).isEqualTo(authUser)
@@ -552,7 +546,7 @@ class UserServiceTest {
     @Test
     fun `test getMasterUserPersonDetailsWithEmailCheck - auth user email not verified`() {
       val authUser =
-        Optional.of(User.builder().username("bob").verified(false).email("joe@fred.com").source(auth).build())
+        Optional.of(createSampleUser(username = "bob", verified = false, email = "joe@fred.com"))
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(authUser)
       val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", auth, "joe@fred.com")
       assertThat(details).isEmpty()
@@ -561,7 +555,7 @@ class UserServiceTest {
     @Test
     fun `test getMasterUserPersonDetailsWithEmailCheck - auth user not matched`() {
       val authUser =
-        Optional.of(User.builder().username("bob").verified(true).email("harold@henry.com").source(auth).build())
+        Optional.of(createSampleUser(username = "bob", verified = true, email = "harold@henry.com"))
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(authUser)
       val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", auth, "joe@fred.com")
       assertThat(details).isEmpty()
@@ -614,7 +608,17 @@ class UserServiceTest {
 
   private val staffUserAccountForBob: Optional<NomisUserPersonDetails>
     get() =
-      Optional.of(createSampleNomisUser(staff = Staff(firstName = "bOb", status = "ACTIVE", lastName = "bloggs", staffId = 5), username = "nomisuser"))
+      Optional.of(
+        createSampleNomisUser(
+          staff = Staff(
+            firstName = "bOb",
+            status = "ACTIVE",
+            lastName = "bloggs",
+            staffId = 5
+          ),
+          username = "nomisuser"
+        )
+      )
 
   private val deliusUserAccountForBob =
     Optional.of(DeliusUserPersonDetails("deliusUser", "12345", "Delius", "Smith", "a@b.com", true, false, setOf()))

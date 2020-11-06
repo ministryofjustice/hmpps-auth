@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.resource.account.ChangeMobileController
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
@@ -34,7 +33,7 @@ class ChangeMobileControllerTest {
   inner class ChangeMobileRequest {
     @Test
     fun addMobileRequest() {
-      whenever(userService.getUserWithContacts(anyString())).thenReturn(User())
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(createSampleUser(username = "user"))
       val view = controller.changeMobileRequest(token)
       assertThat(view.viewName).isEqualTo("account/changeMobile", "mobile", null)
       verify(userService).getUserWithContacts("user")
@@ -42,8 +41,7 @@ class ChangeMobileControllerTest {
 
     @Test
     fun updateMobileRequest() {
-      val user = User.builder().mobile("07700900321").build()
-      whenever(userService.getUserWithContacts(anyString())).thenReturn(user)
+      whenever(userService.getUserWithContacts(anyString())).thenReturn(createSampleUser(mobile = "07700900321"))
       val view = controller.changeMobileRequest(token)
       assertThat(view.viewName).isEqualTo("account/changeMobile", "mobile", "07700900321")
     }

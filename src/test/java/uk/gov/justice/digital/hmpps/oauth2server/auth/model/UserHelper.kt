@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import java.time.LocalDateTime
 import java.util.UUID
 
 class UserHelper {
@@ -23,11 +24,15 @@ class UserHelper {
       source: AuthSource = AuthSource.auth,
       mfaPreference: User.MfaPreferenceType = User.MfaPreferenceType.EMAIL,
       id: UUID? = null,
+      password: String? = null,
+      lastLoggedIn: LocalDateTime? = null,
+      passwordExpiry: LocalDateTime? = null,
+      person: Person? = null,
     ): User {
 
       val user = User(
         username = username,
-        person = Person(firstName = firstName, lastName = lastName),
+        person = person ?: Person(firstName = firstName, lastName = lastName),
         email = email,
         verified = verified,
         enabled = enabled,
@@ -47,24 +52,11 @@ class UserHelper {
 
       user.locked = locked
       user.mfaPreference = mfaPreference
+      user.lastLoggedIn = lastLoggedIn
+      user.setPassword(password)
+      user.passwordExpiry = passwordExpiry
 
       return user
     }
   }
 }
-
-// return User.builder()
-//   .id(UUID.randomUUID())
-//   .username("firstlast")
-//   .email("first.last@.justice.go.uk")
-//   .verified(true)
-//   .locked(false)
-//   .enabled(true)
-//   .source(AuthSource.auth)
-//   .passwordExpiry(LocalDateTime.now().plusHours(1L))
-//   .lastLoggedIn(LocalDateTime.now().minusHours(1L))
-//   .mobile("07700 900322")
-//   .mobileVerified(true)
-//   .mfaPreference(User.MfaPreferenceType.EMAIL)
-//   .person(Person("first", "last"))
-//   .build()

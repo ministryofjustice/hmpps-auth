@@ -10,7 +10,7 @@ import org.assertj.core.api.Assertions.entry
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
@@ -126,7 +126,7 @@ class InitialPasswordControllerTest {
     fun initialPasswordLinkExpired_checkView() {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
-      whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(User.builder().username("bob").build())
+      whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(createSampleUser(username = "bob"))
       whenever(initialPasswordService.resendInitialPasswordLink(anyString(), anyString())).thenReturn("newToken")
       val modelAndView = controller.initialPasswordLinkExpired("sometoken", request)
       assertThat(modelAndView.viewName).isEqualTo("createPasswordExpired")
@@ -136,7 +136,7 @@ class InitialPasswordControllerTest {
     fun initialPasswordLinkExpired_checkModel() {
       whenever(request.requestURL).thenReturn(StringBuffer("someurl"))
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
-      whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(User.builder().username("bob").build())
+      whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(createSampleUser(username = "bob"))
       whenever(initialPasswordService.resendInitialPasswordLink(anyString(), anyString())).thenReturn("newToken")
       val modelAndView = controller.initialPasswordLinkExpired("sometoken", request)
       assertThat(modelAndView.model).containsOnly(entry("link", "newToken"))

@@ -6,7 +6,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
@@ -34,7 +34,7 @@ internal class UserContextServiceTest {
 
   @Test
   fun `discoverUsers returns empty list when not azuread from mapping`() {
-    val loginUser = User.builder().username("username").source(auth).id(UUID.randomUUID()).build()
+    val loginUser = createSampleUser(username = "username", source = auth, id = UUID.randomUUID())
     val scopes = setOf("read", "delius")
 
     val users = userContextService.discoverUsers(loginUser, scopes)
@@ -109,7 +109,7 @@ internal class UserContextServiceTest {
   fun `discoverUsers returns all users when multiple users matched`() {
     val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "email@email.com", "jwtId")
     val deliusUser = DeliusUserPersonDetails("username", "id", "user", "name", "email@email.com", true)
-    val authUser = User.builder().username("username").source(auth).enabled(true).verified(true).build()
+    val authUser = createSampleUser(username = "username", source = auth, enabled = true, verified = true)
     val scopes = setOf("delius", "auth")
     whenever(deliusUserService.getDeliusUsersByEmail(anyString())).thenReturn(listOf(deliusUser))
     whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser))
@@ -121,7 +121,7 @@ internal class UserContextServiceTest {
   @Test
   fun `discoverUsers returns all users when multiple users matched from same source`() {
     val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "email@email.com", "jwtId")
-    val authUser = User.builder().username("username").source(auth).enabled(true).verified(true).build()
+    val authUser = createSampleUser(username = "username", source = auth, enabled = true, verified = true)
     val scopes = setOf("delius", "auth")
     whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser, authUser))
 
@@ -140,7 +140,7 @@ internal class UserContextServiceTest {
       "email@email.com",
       enabled = false
     )
-    val authUser = User.builder().username("username").source(auth).enabled(true).verified(true).build()
+    val authUser = createSampleUser(username = "username", source = auth, enabled = true, verified = true)
     val scopes = setOf("delius", "auth")
     whenever(deliusUserService.getDeliusUsersByEmail(anyString())).thenReturn(listOf(deliusUser))
     whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser))
@@ -152,8 +152,8 @@ internal class UserContextServiceTest {
   @Test
   fun `discoverUsers ignores unverified users`() {
     val loginUser = UserDetailsImpl("username", "name", listOf(), "azuread", "email@email.com", "jwtId")
-    val authUser = User.builder().username("username").source(auth).enabled(true).verified(true).build()
-    val unverifiedAuthUser = User.builder().username("username1").source(auth).enabled(true).build()
+    val authUser = createSampleUser(username = "username", source = auth, enabled = true, verified = true)
+    val unverifiedAuthUser = createSampleUser(username = "username1", source = auth, enabled = true)
     val scopes = setOf("auth")
     whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser, unverifiedAuthUser))
 
