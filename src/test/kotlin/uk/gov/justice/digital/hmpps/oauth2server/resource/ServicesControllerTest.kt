@@ -87,6 +87,19 @@ class ServicesControllerTest {
         null
       )
     }
+    @Test
+    fun `edit service - edit service blank authorised roles`() {
+      val service = Service(code = "editcode", name = "", description = "", url = "", authorisedRoles = "")
+      val url = controller.editService(authentication, service)
+      assertThat(url).isEqualTo("redirect:/ui/services")
+      assertThat(service.authorisedRoles).isNull()
+      verify(authServicesService).updateService(service)
+      verify(telemetryClient).trackEvent(
+        "AuthServiceDetailsUpdate",
+        mapOf("username" to "user", "code" to "editcode"),
+        null
+      )
+    }
   }
 
   @Nested
