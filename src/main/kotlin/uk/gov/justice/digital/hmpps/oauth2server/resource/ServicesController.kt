@@ -46,9 +46,11 @@ class ServicesController(
     val userDetails = authentication.principal as UserPersonDetails
     val telemetryMap = mapOf("username" to userDetails.username, "code" to service.code)
     if (newService) {
+      replaceBlankAuthorisedRolesWithNull(service)
       authServicesService.addService(service)
       telemetryClient.trackEvent("AuthServiceDetailsAdd", telemetryMap, null)
     } else {
+      replaceBlankAuthorisedRolesWithNull(service)
       authServicesService.updateService(service)
       telemetryClient.trackEvent("AuthServiceDetailsUpdate", telemetryMap, null)
     }
@@ -63,5 +65,9 @@ class ServicesController(
     authServicesService.removeService(code)
     telemetryClient.trackEvent("AuthServiceDetailsDeleted", telemetryMap, null)
     return "redirect:/ui/services"
+  }
+
+  private fun replaceBlankAuthorisedRolesWithNull(service: Service) {
+    service.authorisedRoles = if (service.authorisedRoles.isNullOrBlank()) null else service.authorisedRoles
   }
 }
