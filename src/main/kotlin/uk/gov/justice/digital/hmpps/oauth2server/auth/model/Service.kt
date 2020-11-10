@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
+import org.apache.commons.lang3.StringUtils.trimToNull
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
@@ -18,7 +19,7 @@ data class Service(
   val description: String,
 
   @Column(name = "authorised_roles")
-  var authorisedRoles: String? = null,
+  private var authorisedRoles: String? = null,
 
   @Column(nullable = false)
   val url: String,
@@ -31,7 +32,7 @@ data class Service(
 ) {
 
   val roles: List<String>
-    get() = authorisedRoles?.split(',')?.map { it.trim() } ?: emptyList()
+    get() = authorisedRoles?.split(',')?.mapNotNull { trimToNull(it) } ?: emptyList()
 
   val isUrlInsteadOfEmail: Boolean
     get() = email?.startsWith("http") ?: false
@@ -39,6 +40,6 @@ data class Service(
   var authorisedRolesWithNewlines: String
     get() = authorisedRoles?.replace(",".toRegex(), "\n") ?: ""
     set(authorisedRolesWithNewlines) {
-      authorisedRoles = authorisedRolesWithNewlines.replace("\n".toRegex(), ",")
+      authorisedRoles = authorisedRolesWithNewlines.replace("\n".toRegex(), ",").split(',').mapNotNull { trimToNull(it) }.joinToString(",")
     }
 }
