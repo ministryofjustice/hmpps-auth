@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
+import com.microsoft.applicationinsights.TelemetryClient
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
@@ -24,6 +26,7 @@ class OidcJwtAuthenticationSuccessHandler(
   @Qualifier("tokenVerificationApiRestTemplate") restTemplate: RestTemplate,
   @Value("\${tokenverification.enabled:false}") tokenVerificationEnabled: Boolean,
   private val userRetriesService: UserRetriesService,
+  private val telemetryClient: TelemetryClient,
 ) : JwtAuthenticationSuccessHandler(
   jwtCookieHelper,
   jwtAuthenticationHelper,
@@ -32,6 +35,10 @@ class OidcJwtAuthenticationSuccessHandler(
   restTemplate,
   tokenVerificationEnabled
 ) {
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
+
   @Throws(IOException::class, ServletException::class)
   override fun onAuthenticationSuccess(
     request: HttpServletRequest,
@@ -40,7 +47,11 @@ class OidcJwtAuthenticationSuccessHandler(
   ) {
     val oidcUser = authentication.principal
     if (oidcUser is DefaultOidcUser) {
-      userRetriesService.resetRetriesAndRecordLogin(constructAzureUserPersonDetails(oidcUser))
+
+      val azureDetails = constructAzureUserPersonDetails(oidcUser)
+      userRetriesService.resetRetriesAndRecordLogin(azureDetails)
+      log.info("Successful login for user {}", azureDetails.email)
+      telemetryClient.trackEvent("AuthenticateSuccess", mapOf("username" to azureDetails.email), null)
       super.onAuthenticationSuccess(request, response, authentication)
     } else {
       throw RuntimeException("Expected a DefaultOidcUser - is the Azure OIDC configuration correct?")
