@@ -11,13 +11,18 @@ class ServiceTest {
     @Test
     fun roles() {
       val service =
-        Service("CODE", "NAME", "Description", "SOME_ROLE, SOME_OTHER_ROLE", "http://some.url", true, "a@b.com")
+        Service("CODE", "NAME", "Description", "SOME_ROLE, , ,  SOME_OTHER_ROLE", "http://some.url", true, "a@b.com")
       assertThat(service.roles).containsExactly("SOME_ROLE", "SOME_OTHER_ROLE")
     }
 
     @Test
-    fun roles_empty() {
+    fun `authorisation roles is null`() {
       val service = Service("CODE", "NAME", "Description", null, "http://some.url", true, "a@b.com")
+      assertThat(service.roles).isEmpty()
+    }
+    @Test
+    fun `authorisation roles is an empty string`() {
+      val service = Service("CODE", "NAME", "Description", "", "http://some.url", true, "a@b.com")
       assertThat(service.roles).isEmpty()
     }
   }
@@ -41,14 +46,31 @@ class ServiceTest {
   inner class AuthorisedRolesWithNewlines {
     @Test
     fun authorisedRolesWithNewlines() {
-      val service = Service(code = "code", name = "", description = "", url = "")
-      service.authorisedRoles = "joe,bloggs,"
+      val service = Service(code = "code", name = "", description = "", url = "", authorisedRoles = "joe,bloggs,")
       assertThat(service.authorisedRolesWithNewlines).isEqualTo("joe\nbloggs\n")
     }
 
     @Test
     fun `authorisedRolesWithNewlines no roles`() {
       val service = Service(code = "code", name = "", description = "", url = "")
+      assertThat(service.authorisedRolesWithNewlines).isEqualTo("")
+    }
+  }
+
+  @Nested
+  inner class SetAuthorisedRolesWithNewlines {
+
+    @Test
+    fun authorisedRolesWithNewlines() {
+      val service = Service(code = "code", name = "", description = "", url = "")
+      service.authorisedRolesWithNewlines = "ROLE_PRISON_ADMIN \n \n ROLE_PRISON_ORG"
+      assertThat(service.authorisedRolesWithNewlines).isEqualTo("ROLE_PRISON_ADMIN\nROLE_PRISON_ORG")
+    }
+
+    @Test
+    fun `authorisedRolesWithNewlines no roles`() {
+      val service = Service(code = "code", name = "", description = "", url = "")
+      service.authorisedRolesWithNewlines = " \n \n "
       assertThat(service.authorisedRolesWithNewlines).isEqualTo("")
     }
   }
