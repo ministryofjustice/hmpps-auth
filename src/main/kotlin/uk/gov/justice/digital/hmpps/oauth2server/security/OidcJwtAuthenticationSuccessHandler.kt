@@ -47,7 +47,6 @@ class OidcJwtAuthenticationSuccessHandler(
   ) {
     val oidcUser = authentication.principal
     if (oidcUser is DefaultOidcUser) {
-
       val azureDetails = constructAzureUserPersonDetails(oidcUser)
       userRetriesService.resetRetriesAndRecordLogin(azureDetails)
       log.info("Successful login for user {}", azureDetails.email)
