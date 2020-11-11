@@ -44,10 +44,10 @@ dependencies {
   implementation("org.apache.commons:commons-text:1.9")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre11")
   implementation("io.swagger:swagger-core:1.6.2")
-  implementation("com.oracle.jdbc:ojdbc10:19.3.0.0")
 
   runtimeOnly("com.h2database:h2:1.4.200")
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
+  runtimeOnly("com.oracle.ojdbc:ojdbc10:19.3.0.0")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
