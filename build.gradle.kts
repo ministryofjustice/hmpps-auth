@@ -12,8 +12,6 @@ repositories {
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-  implementation(files("lib/ojdbc10-19.3.jar"))
-
   implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
   implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.0.RELEASE")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
@@ -47,6 +45,7 @@ dependencies {
 
   runtimeOnly("com.h2database:h2:1.4.200")
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
+  runtimeOnly("com.oracle.database.jdbc:ojdbc10:19.8.0.0")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
