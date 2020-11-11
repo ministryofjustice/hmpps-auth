@@ -21,3 +21,4 @@
 /out/
 
 dps-gradle-spring-boot-suppressions.xml
+.editorconfig
