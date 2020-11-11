@@ -12,8 +12,6 @@ repositories {
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-  implementation(files("lib/ojdbc10-19.3.jar"))
-
   implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
   implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.0.RELEASE")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
