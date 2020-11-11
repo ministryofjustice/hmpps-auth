@@ -59,6 +59,28 @@ class ResetPasswordSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `A user must include full stop between firstname and lastname for a justice email address`() {
+    goTo(loginPage)
+      .forgottenPasswordLink()
+
+    resetPasswordRequestPage.isAtPage()
+      .submitUsernameOrEmail("firstlast@justice.gov.uk")
+      .checkError("Your justice.gov.uk email address must have a . between your first name and last name")
+      .assertUsernameOrEmailText("firstlast@justice.gov.uk")
+  }
+
+  @Test
+  fun `A user can enter their justice email address to reset their password`() {
+    goTo(loginPage)
+      .forgottenPasswordLink()
+
+    resetPasswordRequestPage.isAtPage()
+      .submitUsernameOrEmail("first.last@justice.gov.uk")
+
+    resetPasswordLinkSentPage.isAtPage()
+  }
+
+  @Test
   fun `A user can enter their gsi email address to reset their password`() {
     goTo(loginPage)
       .forgottenPasswordLink()

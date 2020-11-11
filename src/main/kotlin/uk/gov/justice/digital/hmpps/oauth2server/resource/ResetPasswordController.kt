@@ -60,7 +60,7 @@ class ResetPasswordController(
     }
     if (usernameOrEmail.contains("@")) {
       try {
-        verifyEmailService.validateEmailAddressExcludingGsi(EmailHelper.format(usernameOrEmail)!!, User.EmailType.PRIMARY)
+        verifyEmailService.validateEmailAddressExcludingGsiAndFormatForJustice(EmailHelper.format(usernameOrEmail)!!, User.EmailType.PRIMARY)
       } catch (e: VerifyEmailException) {
         log.info("Validation failed for reset password email address due to {}", e.reason)
         telemetryClient.trackEvent(

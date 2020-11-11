@@ -165,6 +165,19 @@ class VerifyEmailService(
     if (email.matches(Regex(".*@.*\\.gsi\\.gov\\.uk"))) throw VerifyEmailException("gsi")
   }
 
+  @Throws(VerifyEmailException::class)
+  fun validateEmailAddressExcludingGsiAndFormatForJustice(email: String?, emailType: EmailType) {
+    if (email == null) {
+      throw VerifyEmailException("blank")
+    }
+    if (email.endsWith("@justice.gov.uk", true)) {
+      if (!email.matches(Regex(".*\\..*@.*"))) {
+        throw VerifyEmailException("missingdot")
+      }
+    }
+    validateEmailAddressExcludingGsi(email, emailType)
+  }
+
   fun maskedSecondaryEmailFromUsername(username: String): String {
     val user = userRepository.findByUsername(username)
     return user.orElseThrow().maskedSecondaryEmail

@@ -215,6 +215,15 @@ class VerifyEmailServiceTest {
   }
 
   @Test
+  fun requestVerification_justiceEmail() {
+    assertThatThrownBy {
+      verifyEmailService.validateEmailAddressExcludingGsiAndFormatForJustice("someuser@justice.gov.uk", User.EmailType.PRIMARY)
+    }.isInstanceOf(
+      VerifyEmailException::class.java
+    ).extracting("reason").isEqualTo("missingdot")
+  }
+
+  @Test
   fun verifyEmail_NoAtSign() {
     verifyPrimaryEmailFailure("a", "format")
     verifySecondaryEmailFailure("a", "format")

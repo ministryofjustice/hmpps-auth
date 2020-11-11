@@ -155,7 +155,7 @@ class ResetPasswordControllerTest {
     @Test
     fun resetPasswordRequest_emailfailed() {
       doThrow(VerifyEmailException("reason")).whenever(verifyEmailService)
-        .validateEmailAddressExcludingGsi(anyString(), eq(User.EmailType.PRIMARY))
+        .validateEmailAddressExcludingGsiAndFormatForJustice(anyString(), eq(User.EmailType.PRIMARY))
       val modelAndView = controller.resetPasswordRequest("user@somewhere", request)
       assertThat(modelAndView.viewName).isEqualTo("resetPassword")
       assertThat(modelAndView.model).containsOnly(
@@ -167,10 +167,10 @@ class ResetPasswordControllerTest {
     @Test
     fun resetPasswordRequest_emailhelperapostrophe() {
       doThrow(VerifyEmailException("reason")).whenever(verifyEmailService)
-        .validateEmailAddressExcludingGsi(anyString(), eq(User.EmailType.PRIMARY))
+        .validateEmailAddressExcludingGsiAndFormatForJustice(anyString(), eq(User.EmailType.PRIMARY))
       val modelAndView = controller.resetPasswordRequest("us.o’er@someWHERE.com   ", request)
       assertThat(modelAndView.viewName).isEqualTo("resetPassword")
-      verify(verifyEmailService).validateEmailAddressExcludingGsi("us.o'er@somewhere.com", User.EmailType.PRIMARY)
+      verify(verifyEmailService).validateEmailAddressExcludingGsiAndFormatForJustice("us.o'er@somewhere.com", User.EmailType.PRIMARY)
     }
   }
 
