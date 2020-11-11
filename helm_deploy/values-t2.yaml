@@ -16,7 +16,7 @@ mfa_whitelist:
   mojvpn: "81.134.202.29/32"
 
 env:
-  SPRING_PROFILES_ACTIVE: "oracle,delius"
+  SPRING_PROFILES_ACTIVE: "oracle,delius,azure-oidc"
   APPLICATION_SUPPORT_URL: "https://support-dev.hmpps.service.justice.gov.uk/feedback-and-support"
   APPLICATION_AUTHENTICATION_MATCH_SUBDOMAINS: "true"
   APPLICATION_AUTHENTICATION_UI_WHITELIST: "81.134.202.29,217.33.148.210"
