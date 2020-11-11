@@ -11,6 +11,8 @@ import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.oauth2server.config.DeliusRoleMappings
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
@@ -23,7 +25,7 @@ class DeliusUserList : MutableList<UserDetails> by ArrayList()
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Service
 class DeliusUserService(
-  @Qualifier("deliusApiRestTemplate") private val restTemplate: RestTemplate,
+  @Qualifier("deliusWebClient") private val webClient: WebClient,
   @Value("\${delius.enabled:false}") private val deliusEnabled: Boolean,
   deliusRoleMappings: DeliusRoleMappings,
 ) {
@@ -41,7 +43,11 @@ class DeliusUserService(
     }
 
     return try {
-      val users = restTemplate.getForObject("/users/search/email/{email}/details", DeliusUserList::class.java, email)
+      val users = webClient.get().uri("/users/search/email/{email}/details", email)
+        .retrieve()
+        .bodyToMono(DeliusUserList::class.java)
+        .block()
+
       users?.map { mapUserDetailsToDeliusUser(it) } ?: emptyList()
     } catch (e: Exception) {
       when (e) {
@@ -49,7 +55,7 @@ class DeliusUserService(
           log.warn("Unable to retrieve details from delius for user with email {} due to delius error", email, e)
           throw DeliusAuthenticationServiceException(email)
         }
-        is HttpClientErrorException -> {
+        is WebClientResponseException -> {
           log.warn(
             "Unable to retrieve details from delius for user with email {} due to http error [{}]",
             email,
@@ -73,9 +79,13 @@ class DeliusUserService(
     }
 
     return try {
-      val userDetails = restTemplate.getForObject("/users/{username}/details", UserDetails::class.java, username)
+      val userDetails = webClient.get().uri("/users/{username}/details", username)
+        .retrieve()
+        .bodyToMono(UserDetails::class.java)
+        .block()
+
       Optional.ofNullable(userDetails).map { u -> mapUserDetailsToDeliusUser(u) }
-    } catch (e: HttpClientErrorException) {
+    } catch (e: WebClientResponseException) {
       if (e.statusCode == HttpStatus.NOT_FOUND) {
         log.debug("User not found in delius due to {}", e.message)
       } else {
@@ -98,9 +108,14 @@ class DeliusUserService(
     }
 
     return try {
-      restTemplate.postForEntity("/authenticate", AuthUser(username, password), String::class.java)
+      webClient.post().uri("/authenticate")
+        .bodyValue(AuthUser(username, password))
+        .retrieve()
+        .bodyToMono(String::class.java)
+        .block()
+
       true
-    } catch (e: HttpClientErrorException) {
+    } catch (e: WebClientResponseException) {
       if (e.statusCode == HttpStatus.UNAUTHORIZED) {
         log.debug("User not authorised in delius due to {}", e.message)
       } else {
@@ -134,7 +149,11 @@ class DeliusUserService(
       log.debug("Delius integration disabled, returning empty for {}", username)
       return
     }
-    restTemplate.postForEntity("/users/{username}/password", AuthPassword(password), Void::class.java, username)
+    webClient.post().uri("/users/{username}/password", username)
+      .bodyValue(AuthPassword(password))
+      .retrieve()
+      .toBodilessEntity()
+      .block()
   }
 
   data class AuthUser(val username: String, val password: String)
