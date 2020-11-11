@@ -47,6 +47,7 @@ dependencies {
 
   runtimeOnly("com.h2database:h2:1.4.200")
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
+  runtimeOnly("com.oracle.jdbc:ojdbc10:19.3.0.0")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
