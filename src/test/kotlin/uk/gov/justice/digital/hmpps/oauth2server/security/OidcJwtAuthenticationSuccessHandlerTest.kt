@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
+import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
@@ -25,7 +26,7 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
   private val verifyEmailService: VerifyEmailService = mock()
   private val restTemplate: RestTemplate = mock()
   private val userRetriesService: UserRetriesService = mock()
-
+  private val telemetryClient: TelemetryClient = mock()
   private val mockRequest: HttpServletRequest = mock()
   private val response: HttpServletResponse = mock()
   private val authentication: Authentication = mock()
@@ -37,7 +38,8 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
     verifyEmailService,
     restTemplate,
     tokenVerificationEnabled = false,
-    userRetriesService
+    userRetriesService,
+    telemetryClient,
   )
 
   @Test
@@ -109,6 +111,34 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
         accountNonExpired = true,
         accountNonLocked = true
       )
+    )
+  }
+
+  @Test
+  fun `onAuthenticationSuccess generates authentication success event`() {
+    val oidcToken = OidcIdToken(
+      "tokenValue",
+      Instant.now(),
+      Instant.now().plusSeconds(1000),
+      // id claims
+      mapOf(
+        "sub" to "6C2x9vsoM3Fgi9QmeYZGUT4hdYme3Dw1566tp8yc1vE",
+        "name" to "Bloggs, Joe",
+        "oid" to "d6165ad0-aed3-4146-9ef7-222876b57549",
+        "preferred_username" to "joe.bloggs@justice.gov.uk",
+      )
+    )
+
+    whenever(authentication.principal)
+      .thenReturn(DefaultOidcUser(listOf(OidcUserAuthority(oidcToken)), oidcToken))
+    whenever(authentication.name).thenReturn("Bob")
+
+    oidcJwtAuthenticationSuccessHandler.onAuthenticationSuccess(mockRequest, response, authentication)
+
+    verify(telemetryClient).trackEvent(
+      "AuthenticateSuccess",
+      mapOf("username" to "joe.bloggs@justice.gov.uk"),
+      null
     )
   }
 
