@@ -42,6 +42,8 @@ dependencies {
   implementation("org.apache.commons:commons-text:1.9")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre11")
   implementation("io.swagger:swagger-core:1.6.2")
+  implementation ("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j:1.0.4.RELEASE")
+  implementation("io.github.resilience4j:resilience4j-spring-boot2:1.6.1")
 
   runtimeOnly("com.h2database:h2:1.4.200")
   runtimeOnly("org.springframework.boot:spring-boot-devtools")

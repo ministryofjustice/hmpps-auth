@@ -49,7 +49,7 @@ management:
     web:
       base-path: /
       exposure:
-        include: 'info, health, ping'
+        include: 'info, health, ping, circuitbreakers'
   endpoint:
     health:
       cache:
@@ -136,3 +136,24 @@ tokenverification:
 
 logging.uris.exclude.regex: /auth/health|/auth/info|/auth/ping|/auth/swagger.*|/auth/webjars/.*|/auth/v2/api-docs
 
+management.health.circuitbreakers.enabled: true
+management.health.ratelimiters.enabled: true
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      registerHealthIndicator: true
+      slidingWindowSize: 100
+      permittedNumberOfCallsInHalfOpenState: 10
+      waitDurationInOpenState: 10000
+      failureRateThreshold: 50
+      eventConsumerBufferSize: 10
+#    someShared:
+#      slidingWindowSize: 50
+#      permittedNumberOfCallsInHalfOpenState: 10
+  instances:
+    delius:
+      baseConfig: default
+      waitDurationInOpenState: 5000
+#    backendB:
+#      baseConfig: someShared
