@@ -76,7 +76,6 @@ tasks {
   test {
     useJUnitPlatform()
     exclude("**/integration/*")
-    setMaxHeapSize("1000m")
   }
 
   val testIntegration by registering(Test::class) {
@@ -86,7 +85,7 @@ tasks {
     )
     useJUnitPlatform()
     include("uk/gov/justice/digital/hmpps/oauth2server/integration/*")
-    setMaxHeapSize("256m")
+    // Note that java options set here would be overridden by _JAVA_OPTIONS in config.yml
   }
 }
 
