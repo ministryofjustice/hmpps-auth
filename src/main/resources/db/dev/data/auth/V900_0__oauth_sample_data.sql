@@ -251,6 +251,12 @@ VALUES
 
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_INTEL_LOCAL' and role_code = 'ARTEMIS_USER';
 
+-- Auth user for pecs journey price calculation service
+INSERT INTO users (user_id, username, password, email, first_name, last_name, verified, locked, enabled, master, create_datetime, password_expiry, last_logged_in, source, mfa_preference)
+VALUES
+('ABD94E71-0047-43F1-842B-5BEF234AEB10', 'JPC_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'auth.intel@digital.justice.gov.uk', 'JPC', 'User', 1, 0, 1, 0, '2020-05-01 15:07:34.5466667', '2040-04-26 16:17:28.4953990', '2020-05-18 14:16:21.7349800', 'auth', 'EMAIL');
+
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'JPC_USER' and role_code = 'PECS_JPC_USER';
 
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'LOCKED_USER';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset2', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_DELETEALL';
