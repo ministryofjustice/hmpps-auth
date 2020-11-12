@@ -76,6 +76,7 @@ tasks {
   test {
     useJUnitPlatform()
     exclude("**/integration/*")
+    setMaxHeapSize("1000m")
   }
 
   val testIntegration by registering(Test::class) {
