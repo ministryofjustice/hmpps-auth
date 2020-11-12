@@ -1,25 +1,26 @@
 delete from child_group
-    where child_group_code ='DST4';
+    where child_group_code ='PECS_DST4';
 delete from child_group
-    where child_group_code ='DST6';
+    where child_group_code ='PECS_DST6';
 delete from child_group
-    where child_group_code ='MPS28';
+    where child_group_code ='PECS_MPS28';
 
 update child_group
     set child_group_name='PECS Keynsham Police Centre'
-        where child_group_code='AVS1';
+        where child_group_code='PECS_AVS1';
 update child_group
     set child_group_name='PECS Wakefield District Police Station'
-        where child_group_code='WYP19';
+        where child_group_code='PECS_WYP19';
 
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id)
-    VALUES (newid(), 'DRB8', 'PECS Ilkeston Police Station', (select group_id from groups where group_code = 'DRB'));
+    (select newid(), 'PECS_DRB8', 'PECS Ilkeston Police Station', group_id from groups where group_code = 'PECS_DRB');
+
 
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id)
-    VALUES (newid(), 'DRB9', 'PECS St. Marys Wharf Police Station', (select group_id from groups where group_code = 'DRB'));
+    (select newid(), 'PECS_DRB9', 'PECS St. Marys Wharf Police Station', group_id from groups where group_code = 'PECS_DRB');
 
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id)
-    VALUES (newid(), 'DP8', 'PECS Braintree Police Station', (select group_id from groups where group_code = 'DP'));
+    (select newid(), 'PECS_DP8', 'PECS Braintree Police Station', group_id from groups where group_code = 'PECS_DP');
 
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id)
-    VALUES (newid(), 'NFL6',' PECS Norwich City Police Station', (select group_id from groups where group_code = 'NFL'));
+    (select newid(), 'PECS_NFL6',' PECS Norwich City Police Station', group_id from groups where group_code = 'PECS_NFL');
