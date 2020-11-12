@@ -7,10 +7,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpClientErrorException
-import org.springframework.web.client.HttpServerErrorException
-import org.springframework.web.client.ResourceAccessException
-import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.oauth2server.config.DeliusRoleMappings
@@ -51,10 +47,10 @@ class DeliusUserService(
       users?.map { mapUserDetailsToDeliusUser(it) } ?: emptyList()
     } catch (e: Exception) {
       when (e) {
-        is ResourceAccessException, is HttpServerErrorException -> {
-          log.warn("Unable to retrieve details from delius for user with email {} due to delius error", email, e)
-          throw DeliusAuthenticationServiceException(email)
-        }
+//        is ResourceAccessException, is HttpServerErrorException -> {
+//          log.warn("Unable to retrieve details from delius for user with email {} due to delius error", email, e)
+//          throw DeliusAuthenticationServiceException(email)
+//        }
         is WebClientResponseException -> {
           log.warn(
             "Unable to retrieve details from delius for user with email {} due to http error [{}]",
@@ -85,19 +81,21 @@ class DeliusUserService(
         .block()
 
       Optional.ofNullable(userDetails).map { u -> mapUserDetailsToDeliusUser(u) }
-    } catch (e: WebClientResponseException) {
-      if (e.statusCode == HttpStatus.NOT_FOUND) {
-        log.debug("User not found in delius due to {}", e.message)
-      } else {
-        log.warn("Unable to get delius user details for user {} due to {}", username, e.statusCode, e)
-      }
+    } catch (e: WebClientResponseException.NotFound) {
+      log.debug("User not found in delius due to {}", e.message)
       Optional.empty()
-    } catch (e: Exception) {
+    }
+    catch (e: WebClientResponseException) {
+      log.warn("Unable to get delius user details for user {} due to {}", username, e.statusCode, e)
+      Optional.empty()
+    }
+    catch (e: Exception) {
       log.warn("Unable to retrieve details from Delius for user {} due to", username, e)
-      when (e) {
-        is ResourceAccessException, is HttpServerErrorException -> throw DeliusAuthenticationServiceException(username)
-        else -> Optional.empty()
-      }
+//      when (e) {
+//        is ResourceAccessException, is HttpServerErrorException -> throw DeliusAuthenticationServiceException(username)
+//        else ->
+      Optional.empty()
+//      }
     }
   }
 

@@ -5,14 +5,20 @@ import io.netty.handler.timeout.ReadTimeoutHandler
 import org.hibernate.validator.constraints.URL
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.reactive.ClientHttpConnector
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.netty.Connection
@@ -39,19 +45,32 @@ class DeliusWebClientConfiguration {
   }
 
   @Bean("deliusWebClient")
-  fun deliusWebClientWithAuth(builder: WebClient.Builder,
-                              @Value("\${delius.endpoint.url}") deliusEndpointUrl: @URL String,
-                              @Value("\${delius.health.timeout:1s}") healthTimeout: Duration,
-                              @Value("\${delius.endpoint.timeout:5s}") apiTimeout: Duration,
-                              clientRegistrations: ClientRegistrationRepository,
-                              authorizedClients: OAuth2AuthorizedClientRepository): WebClient {
-    val oauth2 = ServletOAuth2AuthorizedClientExchangeFilterFunction(clientRegistrations, authorizedClients)
+  fun deliusWebClient(builder: WebClient.Builder,
+                      @Value("\${delius.endpoint.url}") deliusEndpointUrl: @URL String,
+                      @Value("\${delius.endpoint.timeout:5s}") apiTimeout: Duration,
+                      authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2 = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2.setDefaultClientRegistrationId("delius")
 
     return builder
       .baseUrl("$deliusEndpointUrl/secure")
       .apply(oauth2.oauth2Configuration())
       .clientConnector(getClientConnectorWithTimeouts(apiTimeout, apiTimeout))
+      .build()
+  }
+
+  @Bean("deliusHealthWebClient")
+  fun deliusHealthWebClient(builder: WebClient.Builder,
+                              @Value("\${delius.endpoint.url}") deliusEndpointUrl: @URL String,
+                              @Value("\${delius.health.timeout:1s}") healthTimeout: Duration,
+                              authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2 = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
+    oauth2.setDefaultClientRegistrationId("delius")
+
+    return builder
+      .baseUrl(deliusEndpointUrl)
+      .apply(oauth2.oauth2Configuration())
+      .clientConnector(getClientConnectorWithTimeouts(healthTimeout, healthTimeout))
       .build()
   }
 
@@ -65,3 +84,8 @@ class DeliusWebClientConfiguration {
     return ReactorClientHttpConnector(HttpClient.from(tcpClient))
   }
 }
+
+@Suppress("ConfigurationProperties", "ConfigurationProperties")
+@ConstructorBinding
+@ConfigurationProperties("delius.roles")
+open class DeliusRoleMappings(val mappings: Map<String, List<String>>)

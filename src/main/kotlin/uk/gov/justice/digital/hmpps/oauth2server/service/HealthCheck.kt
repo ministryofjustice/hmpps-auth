@@ -8,12 +8,24 @@ import org.springframework.boot.actuate.health.Status
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.WebClient
 
 abstract class HealthCheck(private val restTemplate: RestTemplate) : HealthIndicator {
   override fun health(): Health {
     return try {
       val responseEntity = restTemplate.getForEntity("/health/ping", String::class.java)
       Health.up().withDetail("HttpStatus", responseEntity.statusCode).build()
+    } catch (e: RestClientException) {
+      Health.down(e).build()
+    }
+  }
+}
+
+abstract class WebClientHealthCheck(private val webClient: WebClient) : HealthIndicator {
+  override fun health(): Health {
+    return try {
+      val responseEntity = webClient.get().uri("/health/ping").retrieve().toEntity(String::class.java).block()
+      Health.up().withDetail("HttpStatus", responseEntity?.statusCode).build()
     } catch (e: RestClientException) {
       Health.down(e).build()
     }
@@ -34,8 +46,8 @@ class TokenVerificationApiHealth(
 }
 
 @Component
-class DeliusApiHealth(@Qualifier("deliusApiHealthRestTemplate") private val restTemplate: RestTemplate) :
-  HealthCheck(restTemplate) {
+class DeliusApiHealth(@Qualifier("deliusHealthWebClient") private val webClient: WebClient) :
+  WebClientHealthCheck(webClient) {
   override fun health(): Health {
     val health = super.health()
     if (health.status != Status.DOWN) return health

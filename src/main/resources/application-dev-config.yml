@@ -19,8 +19,8 @@ application:
 delius:
   enabled: false
   endpoint:
-    url: http://localhost:8099
-    timeout: 1s
+    url: http://localhost:8098
+#    timeout: 1s
 
   client:
     client-id: delius-auth-api-client
