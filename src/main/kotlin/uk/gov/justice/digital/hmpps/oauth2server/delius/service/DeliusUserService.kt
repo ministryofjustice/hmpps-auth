@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.delius.service
 
+import io.netty.channel.ChannelException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -82,12 +83,7 @@ class DeliusUserService(
     return try {
       val userDetails = webClient.get().uri("/users/{username}/details", username)
         .retrieve()
-        // .onStatus({true}) {
-        //   Mono.error(DeliusAuthenticationServiceException(username))
-        // }
         .bodyToMono(UserDetails::class.java)
-        // .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
-        // .map { userDetails -> Optional.ofNullable(userDetails).map { u -> mapUserDetailsToDeliusUser(u)} }
         .block()
 
       Optional.ofNullable(userDetails).map { u -> mapUserDetailsToDeliusUser(u) }
@@ -103,7 +99,10 @@ class DeliusUserService(
       throw DeliusAuthenticationServiceException(username)
     } catch (e: Exception) {
       log.warn("Unable to retrieve details from Delius for user {} due to", username, e)
-      throw DeliusAuthenticationServiceException(username)
+      when (e) {
+        is ChannelException -> throw DeliusAuthenticationServiceException(username)
+        else -> Optional.empty()
+      }
     }
   }
 

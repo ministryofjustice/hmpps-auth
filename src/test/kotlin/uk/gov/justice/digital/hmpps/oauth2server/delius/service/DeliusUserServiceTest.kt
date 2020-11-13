@@ -190,7 +190,7 @@ class DeliusUserServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `getDeliusUserByUsername converts ResourceAccessException and rethrows`() {
+    fun `getDeliusUserByUsername converts ChannelException and rethrows`() {
       assertThatThrownBy { deliusService.getDeliusUserByUsername("DELIUS_SOCKET_ERROR") }.isInstanceOf(
         DeliusAuthenticationServiceException::class.java
       )
