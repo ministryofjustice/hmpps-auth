@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.HealthIndicator
+import org.springframework.boot.actuate.health.ReactiveHealthIndicator
 import org.springframework.boot.actuate.health.Status
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 
 abstract class HealthCheck(private val restTemplate: RestTemplate) : HealthIndicator {
   override fun health(): Health {
@@ -21,15 +23,12 @@ abstract class HealthCheck(private val restTemplate: RestTemplate) : HealthIndic
   }
 }
 
-abstract class WebClientHealthCheck(private val webClient: WebClient) : HealthIndicator {
-  override fun health(): Health {
-    return try {
-      val responseEntity = webClient.get().uri("/health/ping").retrieve().toEntity(String::class.java).block()
-      Health.up().withDetail("HttpStatus", responseEntity?.statusCode).build()
-    } catch (e: RestClientException) {
-      Health.down(e).build()
-    }
-  }
+abstract class WebClientHealthCheck(private val webClient: WebClient) : ReactiveHealthIndicator {
+  override fun health(): Mono<Health> = webClient.get().uri("/health/ping")
+    .retrieve()
+    .toEntity(String::class.java)
+    .map { responseEntity -> Health.Builder().up().withDetail("HttpStatus", responseEntity.statusCode).build() }
+    .onErrorResume { ex -> Mono.just(Health.Builder().down(ex).build()) }
 }
 
 @Component
@@ -48,11 +47,11 @@ class TokenVerificationApiHealth(
 @Component
 class DeliusApiHealth(@Qualifier("deliusHealthWebClient") private val webClient: WebClient) :
   WebClientHealthCheck(webClient) {
-  override fun health(): Health {
-    val health = super.health()
-    if (health.status != Status.DOWN) return health
-
-    // can still run a degraded service with delius down, so mark as healthy with error message
-    return Health.up().withDetails(health.details).build()
+  override fun health(): Mono<Health> = super.health().map { health ->
+    when (health.status) {
+      Status.DOWN ->
+        Health.up().withDetails(health.details).build()
+      else -> health
+    }
   }
 }

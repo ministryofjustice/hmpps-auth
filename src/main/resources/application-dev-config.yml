@@ -19,7 +19,7 @@ application:
 delius:
   enabled: false
   endpoint:
-    url: http://localhost:8098
+    url: http://localhost:8099
 #    timeout: 1s
 
   client:

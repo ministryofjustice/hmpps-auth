@@ -208,7 +208,7 @@ class AuthenticationManagerConfiguration(
       clientRegistrationRepository,
       authorizedClientRepository
     )
-//    oauth2.setDefaultOAuth2AuthorizedClient(true)
+    oauth2.setDefaultOAuth2AuthorizedClient(true)
     return WebClient.builder().apply(oauth2.oauth2Configuration()).build()
   }
 }

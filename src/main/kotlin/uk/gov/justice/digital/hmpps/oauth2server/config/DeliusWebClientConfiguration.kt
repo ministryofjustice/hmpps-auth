@@ -13,12 +13,7 @@ import org.springframework.http.client.reactive.ClientHttpConnector
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.registration.ClientRegistration
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
-import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository
-import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.netty.Connection
@@ -26,15 +21,16 @@ import reactor.netty.http.client.HttpClient
 import reactor.netty.tcp.TcpClient
 import java.time.Duration
 
-
 @Configuration
 class DeliusWebClientConfiguration {
 
   @Bean
   @ConditionalOnProperty(name = ["delius.enabled"], havingValue = "true")
-  fun getDeliusClientRegistration(@Value("\${delius.client.client-id}") deliusClientId: String,
-                                  @Value("\${delius.client.client-secret}") deliusClientSecret: String,
-                                  @Value("\${delius.client.access-token-uri}") deliusTokenUri: String) : ClientRegistration {
+  fun getDeliusClientRegistration(
+    @Value("\${delius.client.client-id}") deliusClientId: String,
+    @Value("\${delius.client.client-secret}") deliusClientSecret: String,
+    @Value("\${delius.client.access-token-uri}") deliusTokenUri: String
+  ): ClientRegistration {
     return ClientRegistration.withRegistrationId("delius")
       .clientName("delius")
       .clientId(deliusClientId)
@@ -45,10 +41,12 @@ class DeliusWebClientConfiguration {
   }
 
   @Bean("deliusWebClient")
-  fun deliusWebClient(builder: WebClient.Builder,
-                      @Value("\${delius.endpoint.url}") deliusEndpointUrl: @URL String,
-                      @Value("\${delius.endpoint.timeout:5s}") apiTimeout: Duration,
-                      authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+  fun deliusWebClient(
+    builder: WebClient.Builder,
+    @Value("\${delius.endpoint.url}") deliusEndpointUrl: @URL String,
+    @Value("\${delius.endpoint.timeout:5s}") apiTimeout: Duration,
+    authorizedClientManager: OAuth2AuthorizedClientManager
+  ): WebClient {
     val oauth2 = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2.setDefaultClientRegistrationId("delius")
 
@@ -60,16 +58,13 @@ class DeliusWebClientConfiguration {
   }
 
   @Bean("deliusHealthWebClient")
-  fun deliusHealthWebClient(builder: WebClient.Builder,
-                              @Value("\${delius.endpoint.url}") deliusEndpointUrl: @URL String,
-                              @Value("\${delius.health.timeout:1s}") healthTimeout: Duration,
-                              authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2 = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
-    oauth2.setDefaultClientRegistrationId("delius")
-
+  fun deliusHealthWebClient(
+    builder: WebClient.Builder,
+    @Value("\${delius.endpoint.url}") deliusEndpointUrl: @URL String,
+    @Value("\${delius.health.timeout:1s}") healthTimeout: Duration
+  ): WebClient {
     return builder
       .baseUrl(deliusEndpointUrl)
-      .apply(oauth2.oauth2Configuration())
       .clientConnector(getClientConnectorWithTimeouts(healthTimeout, healthTimeout))
       .build()
   }

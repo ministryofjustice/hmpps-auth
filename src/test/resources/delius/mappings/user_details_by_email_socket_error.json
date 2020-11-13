@@ -1,0 +1,10 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPattern": "(?i)/secure/users/search/email/delius_socket_error.*/details"
+  },
+  "response": {
+    "fault": "CONNECTION_RESET_BY_PEER"
+  }
+}

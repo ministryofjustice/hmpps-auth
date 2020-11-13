@@ -4,11 +4,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.oauth2server.config.DeliusRoleMappings
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
@@ -45,13 +47,13 @@ class DeliusUserService(
         .block()
 
       users?.map { mapUserDetailsToDeliusUser(it) } ?: emptyList()
-    } catch (e: Exception) {
-      when (e) {
-//        is ResourceAccessException, is HttpServerErrorException -> {
-//          log.warn("Unable to retrieve details from delius for user with email {} due to delius error", email, e)
-//          throw DeliusAuthenticationServiceException(email)
-//        }
-        is WebClientResponseException -> {
+    } catch (e: WebClientResponseException) {
+      when {
+        e.statusCode.is5xxServerError -> {
+          log.warn("Unable to retrieve details from delius for user with email {} due to delius error", email, e)
+          throw DeliusAuthenticationServiceException(email)
+        }
+        e.statusCode.is4xxClientError -> {
           log.warn(
             "Unable to retrieve details from delius for user with email {} due to http error [{}]",
             email,
@@ -65,6 +67,9 @@ class DeliusUserService(
           emptyList()
         }
       }
+    } catch (e: Exception) {
+      log.warn("Unable to retrieve details from Delius for user with email {} due to", email, e)
+      throw DeliusAuthenticationServiceException(email)
     }
   }
 
@@ -77,25 +82,28 @@ class DeliusUserService(
     return try {
       val userDetails = webClient.get().uri("/users/{username}/details", username)
         .retrieve()
+        // .onStatus({true}) {
+        //   Mono.error(DeliusAuthenticationServiceException(username))
+        // }
         .bodyToMono(UserDetails::class.java)
+        // .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
+        // .map { userDetails -> Optional.ofNullable(userDetails).map { u -> mapUserDetailsToDeliusUser(u)} }
         .block()
 
       Optional.ofNullable(userDetails).map { u -> mapUserDetailsToDeliusUser(u) }
-    } catch (e: WebClientResponseException.NotFound) {
-      log.debug("User not found in delius due to {}", e.message)
-      Optional.empty()
-    }
-    catch (e: WebClientResponseException) {
-      log.warn("Unable to get delius user details for user {} due to {}", username, e.statusCode, e)
-      Optional.empty()
-    }
-    catch (e: Exception) {
+    } catch (e: WebClientResponseException) {
+      if (e.statusCode == HttpStatus.NOT_FOUND) {
+        log.debug("User not found in delius due to {}", e.message)
+        return Optional.empty<DeliusUserPersonDetails>()
+      } else if (e.statusCode.is4xxClientError) {
+        log.warn("Unable to get delius user details for user {} due to {}", username, e.statusCode, e)
+        return Optional.empty<DeliusUserPersonDetails>()
+      }
       log.warn("Unable to retrieve details from Delius for user {} due to", username, e)
-//      when (e) {
-//        is ResourceAccessException, is HttpServerErrorException -> throw DeliusAuthenticationServiceException(username)
-//        else ->
-      Optional.empty()
-//      }
+      throw DeliusAuthenticationServiceException(username)
+    } catch (e: Exception) {
+      log.warn("Unable to retrieve details from Delius for user {} due to", username, e)
+      throw DeliusAuthenticationServiceException(username)
     }
   }
 
@@ -125,6 +133,10 @@ class DeliusUserService(
       false
     }
   }
+
+  fun <T> emptyWhenNotFound(exception: WebClientResponseException): Mono<T> = emptyWhen(exception, NOT_FOUND)
+  fun <T> emptyWhen(exception: WebClientResponseException, statusCode: HttpStatus): Mono<T> =
+    if (exception.rawStatusCode == statusCode.value()) Mono.empty() else Mono.error(exception)
 
   private fun mapUserDetailsToDeliusUser(userDetails: UserDetails): DeliusUserPersonDetails =
     DeliusUserPersonDetails(
