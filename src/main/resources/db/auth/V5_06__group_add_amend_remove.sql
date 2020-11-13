@@ -1,4 +1,4 @@
-update groups  set group_name='PECS Court BARROW IN FURNESS COMBINED COURT'
+update groups  set group_name='PECS Court Barrow In Furness Combined Court'
     where group_code='PECS_BARRBC';
 
 update groups  set group_code='PECS_NRTSMC', group_name='PECS Court North Shields Magistrates Court'
