@@ -383,13 +383,13 @@ class OauthIntTest : IntegrationTest() {
       .post().uri("/auth/oauth/token?grant_type=password&username=DELIUS_ERROR_LOCKED&password=password123456")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
-      .expectStatus().isBadRequest
+      .expectStatus().isUnauthorized
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it).containsExactlyInAnyOrderEntriesOf(
           mapOf(
-            "error" to "invalid_grant",
-            "error_description" to "Bad credentials",
+            "error" to "unauthorized",
+            "error_description" to "User is disabled",
           )
         )
       }

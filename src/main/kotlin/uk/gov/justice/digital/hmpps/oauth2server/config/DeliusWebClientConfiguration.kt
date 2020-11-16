@@ -25,7 +25,7 @@ import java.time.Duration
 class DeliusWebClientConfiguration {
 
   @Bean
-  @ConditionalOnProperty(name = ["delius.enabled"], havingValue = "true")
+  @ConditionalOnProperty(name = ["delius.enabled"])
   fun getDeliusClientRegistration(
     @Value("\${delius.client.client-id}") deliusClientId: String,
     @Value("\${delius.client.client-secret}") deliusClientSecret: String,
