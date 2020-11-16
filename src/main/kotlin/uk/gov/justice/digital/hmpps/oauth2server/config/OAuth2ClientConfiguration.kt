@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config
 
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesRegistrationAdapter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager
@@ -9,12 +11,23 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
+import java.util.Optional
 
 @Configuration
 class OAuth2ClientConfiguration {
+
+  /**
+   * Constructs a ClientRegistrationRepository with registrations from beans (Delius) and Spring configuration (Azure OIDC)
+   */
   @Bean
-  fun clientRegistrationRepository(registrations: List<ClientRegistration>): ClientRegistrationRepository? {
-    return InMemoryClientRegistrationRepository(registrations)
+  fun clientRegistrationRepository(properties: Optional<OAuth2ClientProperties>, beanRegistrations: List<ClientRegistration>): ClientRegistrationRepository? {
+    val registrations = if (properties.isPresent) {
+      OAuth2ClientPropertiesRegistrationAdapter.getClientRegistrations(properties.get()).values
+    } else {
+      emptyList()
+    }
+
+    return InMemoryClientRegistrationRepository(registrations + beanRegistrations)
   }
 
   @Bean
