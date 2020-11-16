@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.0.7"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.1.0"
   kotlin("plugin.spring") version "1.4.10"
   kotlin("plugin.jpa") version "1.4.10"
   id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
@@ -11,8 +11,6 @@ repositories {
 
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-
-  implementation(files("lib/ojdbc10-19.3.jar"))
 
   implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
   implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.0.RELEASE")
@@ -47,6 +45,7 @@ dependencies {
 
   runtimeOnly("com.h2database:h2:1.4.200")
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
+  runtimeOnly("com.oracle.database.jdbc:ojdbc10:19.8.0.0")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -62,7 +61,7 @@ dependencies {
   testImplementation("org.slf4j:slf4j-api:1.7.30")
   testImplementation("com.auth0:java-jwt:3.11.0")
 
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.19.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.21.0")
   testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.5.1")
   testImplementation("org.fluentlenium:fluentlenium-assertj:4.5.1")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.23")
@@ -86,7 +85,7 @@ tasks {
     )
     useJUnitPlatform()
     include("uk/gov/justice/digital/hmpps/oauth2server/integration/*")
-    setMaxHeapSize("256m")
+    // Note that java options set here would be overridden by _JAVA_OPTIONS in config.yml
   }
 }
 
