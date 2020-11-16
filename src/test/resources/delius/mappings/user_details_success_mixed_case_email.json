@@ -1,5 +1,5 @@
 {
-  "priority": 2,
+  "priority": 1,
   "request": {
     "method": "GET",
     "urlPattern": "(?i)/secure/users/DELIUS_MIXED_CASE/details"
