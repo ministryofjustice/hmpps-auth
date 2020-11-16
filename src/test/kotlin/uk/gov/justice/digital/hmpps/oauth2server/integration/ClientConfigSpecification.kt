@@ -51,7 +51,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
 
     goTo(clientSummaryPage).editClient("prison-to-probation-update-api-client")
     clientMaintenancePage.isAtPage()
-    assertThat(el("#legacyUsernameField").value()).isEqualTo("DSS_USER")
+    assertThat(el("#databaseUsernameField").value()).isEqualTo("DSS_USER")
   }
 
   @Test
@@ -147,7 +147,7 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
     assertThat(el("#accessTokenValiditySeconds").value()).isEqualTo("3600")
     assertThat(el("#authorities").value()).isEqualTo("ROLE_REPORTING")
     assertThat(el("#jwtFields").value()).isBlank()
-    assertThat(el("#legacyUsernameField").value()).isBlank()
+    assertThat(el("#databaseUsernameField").value()).isBlank()
     return this
   }
 
