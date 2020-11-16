@@ -99,5 +99,10 @@ class ClientsController(
       set(skipToAzure) {
         addAdditionalInformation("skipToAzureField", skipToAzure)
       }
+    var databaseUsernameField: String?
+      get() = additionalInformation["databaseUsernameField"] as String?
+      set(databaseUsername) {
+        addAdditionalInformation("databaseUsernameField", databaseUsername)
+      }
   }
 }
