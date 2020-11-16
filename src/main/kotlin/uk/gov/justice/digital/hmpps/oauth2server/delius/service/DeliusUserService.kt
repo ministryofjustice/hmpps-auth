@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDe
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole
 import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
+import java.io.IOException
 import java.util.Optional
 
 class DeliusUserList : MutableList<UserDetails> by ArrayList()
@@ -88,12 +89,11 @@ class DeliusUserService(
       .retrieve()
       .bodyToMono(UserDetails::class.java)
       .onErrorResume(
-        { it is WebClientResponseException.NotFound },
-        {
-          log.debug("User not found in delius due to {}", it.message)
-          Mono.empty()
-        }
-      )
+        WebClientResponseException.NotFound::class.java
+      ) {
+        log.debug("User not found in delius due to {}", it.message)
+        Mono.empty()
+      }
       .onErrorResume(
         { it is WebClientResponseException && it.statusCode.is4xxClientError },
         {
@@ -114,7 +114,7 @@ class DeliusUserService(
         )
         Mono.error(DeliusAuthenticationServiceException(username))
       }
-      .onErrorResume(ChannelException::class.java) {
+      .onErrorResume({ it is ChannelException || it is IOException }) {
         log.warn("Unable to retrieve details from Delius for user {} due to", username, it)
         Mono.error(DeliusAuthenticationServiceException(username))
       }
