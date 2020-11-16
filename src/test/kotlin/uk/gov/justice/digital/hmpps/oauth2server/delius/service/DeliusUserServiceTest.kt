@@ -190,6 +190,19 @@ class DeliusUserServiceTest : IntegrationTest() {
     }
 
     @Test
+    fun `getDeliusUserByUsername returns empty optional if client error`() {
+      val optionalDetails = deliusService.getDeliusUserByUsername("DELIUS_ERROR_CLIENT")
+      assertThat(optionalDetails).isEmpty
+    }
+
+    @Test
+    fun `getDeliusUserByUsername throws DeliusAuthenticationServiceException if server error`() {
+      assertThatThrownBy { deliusService.getDeliusUserByUsername("DELIUS_ERROR_SERVER") }.isInstanceOf(
+        DeliusAuthenticationServiceException::class.java
+      )
+    }
+
+    @Test
     fun `getDeliusUserByUsername converts ChannelException and rethrows`() {
       assertThatThrownBy { deliusService.getDeliusUserByUsername("DELIUS_SOCKET_ERROR") }.isInstanceOf(
         DeliusAuthenticationServiceException::class.java
@@ -208,11 +221,11 @@ class DeliusUserServiceTest : IntegrationTest() {
 
     @Test
     fun `authenticateUser enabled`() {
-      deliusService.authenticateUser("user", "pass")
+      deliusService.authenticateUser("delius.smith", "pass")
 
       communityApi.verify(
         postRequestedFor(urlEqualTo("/secure/authenticate"))
-          .withRequestBody(equalToJson("""{"username" : "user", "password" : "pass"}"""))
+          .withRequestBody(equalToJson("""{"username" : "delius.smith", "password" : "pass"}"""))
       )
     }
   }
