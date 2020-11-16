@@ -21,7 +21,7 @@ import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
-import java.util.*
+import java.util.UUID
 
 internal class JWTTokenEnhancerTest {
   private val authentication: OAuth2Authentication = mock()
@@ -124,7 +124,7 @@ internal class JWTTokenEnhancerTest {
     )
   }
 
-  private fun createBaseClientDetails(jwtFields: String = "-name", legacyUsername : String? = null): ClientDetails {
+  private fun createBaseClientDetails(jwtFields: String = "-name", legacyUsername: String? = null): ClientDetails {
     val details = BaseClientDetails()
     details.addAdditionalInformation("jwtFields", jwtFields)
     if (legacyUsername != null) details.addAdditionalInformation("legacyUsernameField", legacyUsername)
@@ -295,5 +295,4 @@ internal class JWTTokenEnhancerTest {
 
     )
   }
-
 }

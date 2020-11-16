@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancer
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.Companion.fromNullableString
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
-import java.util.*
+import java.util.Optional
 
 class JWTTokenEnhancer : TokenEnhancer {
   @Autowired
