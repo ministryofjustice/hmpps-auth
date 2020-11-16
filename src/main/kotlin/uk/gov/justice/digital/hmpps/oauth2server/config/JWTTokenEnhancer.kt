@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancer
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.Companion.fromNullableString
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
-import java.util.Optional
+import java.util.*
 
 class JWTTokenEnhancer : TokenEnhancer {
   @Autowired
@@ -27,6 +27,7 @@ class JWTTokenEnhancer : TokenEnhancer {
     const val SUBJECT = "sub"
     private const val REQUEST_PARAM_USER_NAME = "username"
     private const val REQUEST_PARAM_AUTH_SOURCE = "auth_source"
+    private const val LEGACY_USERNAME = "legacy_username"
   }
 
   override fun enhance(accessToken: OAuth2AccessToken, authentication: OAuth2Authentication): OAuth2AccessToken {
@@ -87,6 +88,12 @@ class JWTTokenEnhancer : TokenEnhancer {
       additionalInfo[SUBJECT] = authentication.name
     }
     additionalInfo[ADD_INFO_AUTH_SOURCE] = getAuthSourceFromRequestParam(requestParams)
+
+    val clientDetails = clientsDetailsService.loadClientByClientId(authentication.oAuth2Request.clientId)
+    clientDetails.additionalInformation.get("legacyUsernameField")?.let {
+      additionalInfo[LEGACY_USERNAME] = it as String
+    }
+
     return additionalInfo
   }
 

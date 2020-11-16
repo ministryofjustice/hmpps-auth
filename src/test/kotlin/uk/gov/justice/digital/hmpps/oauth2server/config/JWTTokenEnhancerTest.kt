@@ -21,7 +21,7 @@ import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
-import java.util.UUID
+import java.util.*
 
 internal class JWTTokenEnhancerTest {
   private val authentication: OAuth2Authentication = mock()
@@ -124,9 +124,10 @@ internal class JWTTokenEnhancerTest {
     )
   }
 
-  private fun createBaseClientDetails(jwtFields: String = "-name"): ClientDetails {
+  private fun createBaseClientDetails(jwtFields: String = "-name", legacyUsername : String? = null): ClientDetails {
     val details = BaseClientDetails()
     details.addAdditionalInformation("jwtFields", jwtFields)
+    if (legacyUsername != null) details.addAdditionalInformation("legacyUsernameField", legacyUsername)
     return details
   }
 
@@ -188,6 +189,7 @@ internal class JWTTokenEnhancerTest {
       )
     )
     whenever(authentication.name).thenReturn("principal")
+    whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
       entry("sub", "principal"),
@@ -213,6 +215,7 @@ internal class JWTTokenEnhancerTest {
       )
     )
     whenever(authentication.name).thenReturn("principal")
+    whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
       entry("sub", "JOE"),
@@ -235,6 +238,8 @@ internal class JWTTokenEnhancerTest {
       )
     )
     whenever(authentication.name).thenReturn("principal")
+    whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
+
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
       entry("sub", "JOE"),
@@ -257,6 +262,7 @@ internal class JWTTokenEnhancerTest {
       )
     )
     whenever(authentication.name).thenReturn("principal")
+    whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
     jwtTokenEnhancer.enhance(token, authentication)
     assertThat(token.additionalInformation).containsOnly(
       entry("sub", "JOE"),
@@ -264,4 +270,30 @@ internal class JWTTokenEnhancerTest {
       entry("auth_source", "none")
     )
   }
+
+  @Test
+  fun `enhance client credentials with legacy username`() {
+    val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
+    whenever(authentication.isClientOnly).thenReturn(true)
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf(
+          "username" to "moic",
+          "auth_source" to "none"
+        ),
+        "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()
+      )
+    )
+    whenever(authentication.name).thenReturn("principal")
+    whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createBaseClientDetails("-name", "API_USER"))
+    jwtTokenEnhancer.enhance(token, authentication)
+    assertThat(token.additionalInformation).containsOnly(
+      entry("sub", "MOIC"),
+      entry("user_name", "MOIC"),
+      entry("auth_source", "none"),
+      entry("legacy_username", "API_USER")
+
+    )
+  }
+
 }

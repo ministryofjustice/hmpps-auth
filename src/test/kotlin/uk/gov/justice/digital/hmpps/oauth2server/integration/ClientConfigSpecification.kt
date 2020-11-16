@@ -46,6 +46,15 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `I can edit a client credential with legacy username field`() {
+    goTo(loginPage).loginAs("ITAG_USER_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("prison-to-probation-update-api-client")
+    clientMaintenancePage.isAtPage()
+    assertThat(el("#legacyUsernameField").value()).isEqualTo("DSS_USER")
+  }
+
+  @Test
   fun `I can edit a client credential as an auth user`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
@@ -138,6 +147,7 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
     assertThat(el("#accessTokenValiditySeconds").value()).isEqualTo("3600")
     assertThat(el("#authorities").value()).isEqualTo("ROLE_REPORTING")
     assertThat(el("#jwtFields").value()).isBlank()
+    assertThat(el("#legacyUsernameField").value()).isBlank()
     return this
   }
 

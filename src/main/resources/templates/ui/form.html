@@ -120,6 +120,18 @@
       </div>
     </div>
 
+    <div class="govuk-form-group">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="legacyUsernameField">Legacy Username</label>
+        <span class="govuk-hint">
+          For client credentials only, the username to "alias" in legacy system when changing data e.g. API_USER
+        </span>
+        <input class="govuk-input" id="legacyUsernameField" type="text" name="legacyUsernameField" readonly="readonly"
+               onfocus="this.removeAttribute('readonly');"
+               th:value="${clientDetails.additionalInformation['legacyUsernameField']}"/>
+      </div>
+    </div>
+
     <input type="submit" class="govuk-button" name="client-submit" value="Save">
   </form>
 </div>

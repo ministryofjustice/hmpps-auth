@@ -99,5 +99,10 @@ class ClientsController(
       set(skipToAzure) {
         addAdditionalInformation("skipToAzureField", skipToAzure)
       }
+    var legacyUsernameField: String?
+      get() = additionalInformation["legacyUsernameField"] as String?
+      set(legacyUsername) {
+        addAdditionalInformation("legacyUsernameField", legacyUsername)
+      }
   }
 }
