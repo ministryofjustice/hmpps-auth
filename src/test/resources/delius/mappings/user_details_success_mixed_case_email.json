@@ -2,7 +2,7 @@
   "priority": 2,
   "request": {
     "method": "GET",
-    "urlPattern": "(?i)/secure/users/DELIUS_MIXED_CASE.*/details"
+    "urlPattern": "(?i)/secure/users/DELIUS_MIXED_CASE/details"
   },
   "response": {
     "transformers": ["response-template"],
