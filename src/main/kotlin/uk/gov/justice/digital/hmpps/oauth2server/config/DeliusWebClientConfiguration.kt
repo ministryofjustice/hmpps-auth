@@ -71,10 +71,10 @@ class DeliusWebClientConfiguration {
 
   private fun getClientConnectorWithTimeouts(connectTimeout: Duration, readTimeout: Duration): ClientHttpConnector {
     val tcpClient = TcpClient.create()
-      .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, java.lang.Long.valueOf(connectTimeout.toMillis()).toInt())
+      .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout.toMillis().toInt())
       .doOnConnected { connection: Connection ->
         connection
-          .addHandlerLast(ReadTimeoutHandler(java.lang.Long.valueOf(readTimeout.toSeconds()).toInt()))
+          .addHandlerLast(ReadTimeoutHandler(readTimeout.toSeconds().toInt()))
       }
     return ReactorClientHttpConnector(HttpClient.from(tcpClient))
   }
