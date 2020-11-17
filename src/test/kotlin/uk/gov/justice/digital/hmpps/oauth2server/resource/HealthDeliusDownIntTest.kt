@@ -11,7 +11,7 @@ class HealthDeliusDownIntTest : IntegrationTest() {
       .expectStatus().isOk
       .expectBody().jsonPath("status").isEqualTo("UP")
       .jsonPath("details.error").value<String> {
-        assertThat(it).contains("I/O error on GET request for")
+        assertThat(it).contains("failed: Connection refused")
       }
   }
 }

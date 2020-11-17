@@ -27,6 +27,7 @@ class JWTTokenEnhancer : TokenEnhancer {
     const val SUBJECT = "sub"
     private const val REQUEST_PARAM_USER_NAME = "username"
     private const val REQUEST_PARAM_AUTH_SOURCE = "auth_source"
+    private const val DATABASE_USERNAME = "database_username"
   }
 
   override fun enhance(accessToken: OAuth2AccessToken, authentication: OAuth2Authentication): OAuth2AccessToken {
@@ -87,6 +88,12 @@ class JWTTokenEnhancer : TokenEnhancer {
       additionalInfo[SUBJECT] = authentication.name
     }
     additionalInfo[ADD_INFO_AUTH_SOURCE] = getAuthSourceFromRequestParam(requestParams)
+
+    val clientDetails = clientsDetailsService.loadClientByClientId(authentication.oAuth2Request.clientId)
+    clientDetails.additionalInformation.get("databaseUsernameField")?.let {
+      additionalInfo[DATABASE_USERNAME] = it as String
+    }
+
     return additionalInfo
   }
 

@@ -7,8 +7,9 @@ import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
+import org.junit.jupiter.api.extension.TestInstancePostProcessor
 
-class DeliusExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback {
+class DeliusExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback, TestInstancePostProcessor {
   companion object {
     @JvmField
     val communityApi = CommunityApiMockServer()
@@ -24,6 +25,14 @@ class DeliusExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCallback 
 
   override fun afterAll(context: ExtensionContext) {
     communityApi.stop()
+  }
+
+  override fun postProcessTestInstance(testInstance: Any?, context: ExtensionContext?) {
+    try {
+      val field = testInstance?.javaClass?.getField("communityApi")
+      field?.set(testInstance, communityApi)
+    } catch (e: NoSuchFieldException) {
+    }
   }
 }
 
