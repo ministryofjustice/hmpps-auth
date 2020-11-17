@@ -295,4 +295,27 @@ internal class JWTTokenEnhancerTest {
 
     )
   }
+
+  @Test
+  fun `do not enhance client credentials with legacy username when empty`() {
+    val token: OAuth2AccessToken = DefaultOAuth2AccessToken("value")
+    whenever(authentication.isClientOnly).thenReturn(true)
+    whenever(authentication.oAuth2Request).thenReturn(
+      OAuth2Request(
+        mapOf(
+          "username" to "moic",
+          "auth_source" to "none"
+        ),
+        "client_id", listOf(), true, setOf(), setOf(), "redirect", setOf(), mapOf()
+      )
+    )
+    whenever(authentication.name).thenReturn("principal")
+    whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createBaseClientDetails("-name", ""))
+    jwtTokenEnhancer.enhance(token, authentication)
+    assertThat(token.additionalInformation).containsOnly(
+      entry("sub", "MOIC"),
+      entry("user_name", "MOIC"),
+      entry("auth_source", "none")
+    )
+  }
 }
