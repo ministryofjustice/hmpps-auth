@@ -20,14 +20,18 @@ class OAuth2ClientConfiguration {
    * Constructs a ClientRegistrationRepository with registrations from beans (Delius) and Spring configuration (Azure OIDC)
    */
   @Bean
-  fun clientRegistrationRepository(properties: Optional<OAuth2ClientProperties>, beanRegistrations: List<ClientRegistration>): ClientRegistrationRepository? {
-    val registrations = if (properties.isPresent) {
-      OAuth2ClientPropertiesRegistrationAdapter.getClientRegistrations(properties.get()).values
-    } else {
-      emptyList()
+  fun clientRegistrationRepository(properties: Optional<OAuth2ClientProperties>, registrationBeans: Optional<List<ClientRegistration>>): ClientRegistrationRepository? {
+    val registrations = ArrayList<ClientRegistration>()
+
+    if (properties.isPresent) {
+      registrations.addAll(OAuth2ClientPropertiesRegistrationAdapter.getClientRegistrations(properties.get()).values)
     }
 
-    return InMemoryClientRegistrationRepository(registrations + beanRegistrations)
+    if (registrationBeans.isPresent) {
+      registrations.addAll(registrationBeans.get())
+    }
+
+    return InMemoryClientRegistrationRepository(registrations)
   }
 
   @Bean
