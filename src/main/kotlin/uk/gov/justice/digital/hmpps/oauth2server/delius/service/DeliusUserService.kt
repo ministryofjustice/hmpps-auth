@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.oauth2server.delius.service
 
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
+import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator
 import io.netty.channel.ChannelException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -26,10 +29,20 @@ class DeliusUserList : MutableList<UserDetails> by ArrayList()
 class DeliusUserService(
   @Qualifier("deliusWebClient") private val webClient: WebClient,
   @Value("\${delius.enabled:false}") private val deliusEnabled: Boolean,
+  @Value("\${delius.circuitbreaker.enabled:false}") private val circuitBreakerEnabled: Boolean,
   deliusRoleMappings: DeliusRoleMappings,
+  circuitBreakerRegistry: CircuitBreakerRegistry
 ) {
   private val mappings: Map<String, List<String>> =
     deliusRoleMappings.mappings.mapKeys { it.key.toUpperCase().replace('.', '_') }
+
+  private val circuitBreaker = circuitBreakerRegistry.circuitBreaker("DELIUS")
+
+  init {
+    if (!circuitBreakerEnabled) {
+      circuitBreaker.transitionToMetricsOnlyState()
+    }
+  }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -44,6 +57,7 @@ class DeliusUserService(
     val users = webClient.get().uri("/users/search/email/{email}/details", email)
       .retrieve()
       .bodyToMono(DeliusUserList::class.java)
+      .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
       .onErrorResume(
         { it is WebClientResponseException && it.statusCode.is5xxServerError },
         {
@@ -66,6 +80,9 @@ class DeliusUserService(
       .onErrorResume(WebClientResponseException::class.java) {
         log.warn("Unable to retrieve details from delius for user with email {} due to unknown error", email, it)
         Mono.empty()
+      }.onErrorResume(CallNotPermittedException::class.java) {
+        log.warn("Circuit breaker open. Unable to retrieve details from Delius for user {} due to", email, it)
+        Mono.error(DeliusAuthenticationServiceException(email))
       }
       .onErrorResume(
         { it !is DeliusAuthenticationServiceException },
@@ -88,6 +105,7 @@ class DeliusUserService(
     val userDetails = webClient.get().uri("/users/{username}/details", username)
       .retrieve()
       .bodyToMono(UserDetails::class.java)
+      .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
       .onErrorResume(
         WebClientResponseException.NotFound::class.java
       ) {
@@ -117,6 +135,9 @@ class DeliusUserService(
       .onErrorResume({ it is ChannelException || it is IOException }) {
         log.warn("Unable to retrieve details from Delius for user {} due to", username, it)
         Mono.error(DeliusAuthenticationServiceException(username))
+      }.onErrorResume(CallNotPermittedException::class.java) {
+        log.warn("Circuit breaker open. Unable to retrieve details from Delius for user {} due to", username, it)
+        Mono.error(DeliusAuthenticationServiceException(username))
       }
       .onErrorResume(
         { it !is DeliusAuthenticationServiceException },
@@ -141,6 +162,7 @@ class DeliusUserService(
       .bodyValue(AuthUser(username, password))
       .retrieve()
       .bodyToMono(Boolean::class.java)
+      .transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
       .defaultIfEmpty(true)
       .onErrorResume(WebClientResponseException.Unauthorized::class.java) {
         log.debug("User not found in delius due to {}", it.message)
@@ -149,6 +171,9 @@ class DeliusUserService(
       .onErrorResume(WebClientResponseException::class.java) {
         log.warn("Unable to authenticate user {}", username, it)
         Mono.just(false)
+      }.onErrorResume(CallNotPermittedException::class.java) {
+        log.warn("Circuit breaker open. Unable to retrieve details from Delius for user {} due to", username, it)
+        Mono.error(DeliusAuthenticationServiceException(username))
       }
       .onErrorResume(Exception::class.java) {
         log.warn("Unable to authenticate user for user {}", username, it)

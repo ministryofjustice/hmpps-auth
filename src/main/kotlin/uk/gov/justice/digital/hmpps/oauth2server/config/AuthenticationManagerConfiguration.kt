@@ -146,7 +146,7 @@ class AuthenticationManagerConfiguration(
         "/mfa-resend", "/h2-console/**", "/v2/api-docs", "/jwt-public-key",
         "/swagger-ui.html", "/swagger-resources", "/swagger-resources/configuration/ui",
         "/swagger-resources/configuration/security", "/.well-known/jwks.json", "/issuer/.well-known/**",
-        "/api/services", "/circuitbreakers", "/circuitbreakerevents"
+        "/api/services"
       )
   }
 

@@ -21,7 +21,8 @@ delius:
   endpoint:
     url: http://localhost:8099
     timeout: 1s
-
+  circuitbreaker:
+    enabled: true
   client:
     client-id: delius-auth-api-client
     client-secret: delius-auth-api-client
