@@ -34,6 +34,7 @@ class LoginController(
     clientRegistrations = clientRegistrationRepository.map { registrations: InMemoryClientRegistrationRepository ->
       StreamSupport
         .stream(registrations.spliterator(), false)
+        .filter { reg -> reg.redirectUriTemplate != null }
         .collect(Collectors.toList())
     }
       .orElse(emptyList())

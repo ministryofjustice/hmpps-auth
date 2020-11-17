@@ -4,10 +4,8 @@ package uk.gov.justice.digital.hmpps.oauth2server.config
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Conditional
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpMethod
@@ -21,11 +19,8 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository
-import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.security.oauth2.core.oidc.OidcIdToken
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
@@ -36,7 +31,6 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.session.HttpSessionEventPublisher
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
-import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ClearAllSessionsLogoutHandler
 import uk.gov.justice.digital.hmpps.oauth2server.resource.LoggingAccessDeniedHandler
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RedirectingLogoutSuccessHandler
@@ -196,19 +190,5 @@ class AuthenticationManagerConfiguration(
     val redirectResolver = DefaultRedirectResolver()
     redirectResolver.setMatchSubdomains(matchSubdomains)
     return redirectResolver
-  }
-
-  @Bean
-  @Conditional(ClientsConfiguredCondition::class)
-  fun webClient(
-    clientRegistrationRepository: ClientRegistrationRepository?,
-    authorizedClientRepository: OAuth2AuthorizedClientRepository?,
-  ): WebClient {
-    val oauth2 = ServletOAuth2AuthorizedClientExchangeFilterFunction(
-      clientRegistrationRepository,
-      authorizedClientRepository
-    )
-    oauth2.setDefaultOAuth2AuthorizedClient(true)
-    return WebClient.builder().apply(oauth2.oauth2Configuration()).build()
   }
 }

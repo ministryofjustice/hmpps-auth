@@ -1,0 +1,17 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPattern": "(?i)/secure/users/search/email/delius_client_error.*/details"
+  },
+  "response": {
+    "status": 400,
+    "jsonBody": {
+      "status": 400,
+      "developerMessage": "Bad Request"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

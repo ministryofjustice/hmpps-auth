@@ -2,22 +2,19 @@
   "priority": 1,
   "request": {
     "method": "GET",
-    "urlPattern": "/secure/users/DELIUS_ERROR_LOCKED/details"
+    "urlPattern": "(?i)/secure/users/DELIUS_MIXED_CASE/details"
   },
   "response": {
+    "transformers": ["response-template"],
     "status": 200,
     "jsonBody": {
       "userId": 2500077027,
       "username": "{{request.path.[2]}}",
-      "firstName": "John",
+      "firstName": "Delius",
       "surname": "Smith",
-      "email": "test@digital.justice.gov.uk",
-      "enabled": false,
+      "email": "TEST@digital.justice.gov.uk",
+      "enabled": true,
       "roles": [
-        {
-          "name": "TEST_ROLE",
-          "description": "A Test Role"
-        }
       ]
     },
     "headers": {

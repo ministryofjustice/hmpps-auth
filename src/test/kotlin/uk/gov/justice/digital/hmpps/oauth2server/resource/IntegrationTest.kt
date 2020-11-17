@@ -10,9 +10,10 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.security.oauth2.client.OAuth2RestTemplate
+import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.oauth2server.config.DeliusClientCredentials
 import uk.gov.justice.digital.hmpps.oauth2server.config.TokenVerificationClientCredentials
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
@@ -31,7 +32,7 @@ abstract class IntegrationTest {
   private lateinit var jwtAuthHelper: JwtAuthHelper
 
   @Autowired
-  private lateinit var deliusApiRestTemplate: OAuth2RestTemplate
+  private lateinit var deliusClientReg: ClientRegistration
 
   @Autowired
   private lateinit var tokenVerificationApiRestTemplate: OAuth2RestTemplate
@@ -50,7 +51,8 @@ abstract class IntegrationTest {
   internal fun setupPort() {
     baseUrl = "http://localhost:$localServerPort/auth"
     // need to override port as random port only assigned on server startup
-    (deliusApiRestTemplate.resource as DeliusClientCredentials).accessTokenUri = "$baseUrl/oauth/token"
+    ReflectionTestUtils.setField(deliusClientReg.providerDetails, "tokenUri", "$baseUrl/oauth/token")
+
     (tokenVerificationApiRestTemplate.resource as TokenVerificationClientCredentials).accessTokenUri =
       "http://localhost:$localServerPort/auth/oauth/token"
   }

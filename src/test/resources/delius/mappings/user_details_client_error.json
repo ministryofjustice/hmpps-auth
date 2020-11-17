@@ -1,0 +1,17 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPattern": "/secure/users/DELIUS_ERROR_CLIENT/details"
+  },
+  "response": {
+    "status": 400,
+    "jsonBody": {
+      "status": 400,
+      "developerMessage": "Bad request"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
