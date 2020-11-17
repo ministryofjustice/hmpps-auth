@@ -90,8 +90,11 @@ class JWTTokenEnhancer : TokenEnhancer {
     additionalInfo[ADD_INFO_AUTH_SOURCE] = getAuthSourceFromRequestParam(requestParams)
 
     val clientDetails = clientsDetailsService.loadClientByClientId(authentication.oAuth2Request.clientId)
-    clientDetails.additionalInformation.get("databaseUsernameField")?.let {
-      additionalInfo[DATABASE_USERNAME] = it as String
+    val databaseUsername = clientDetails.additionalInformation.get("databaseUsernameField") as String?
+    when {
+      databaseUsername != null && databaseUsername.isNotBlank() -> {
+        additionalInfo[DATABASE_USERNAME] = databaseUsername
+      }
     }
 
     return additionalInfo
