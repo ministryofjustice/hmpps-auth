@@ -59,11 +59,12 @@ class ResetPasswordServiceImpl(
       multipleMatchesAndCanBeReset = false
       optionalUser = userRepository.findByUsername(usernameOrEmailAddress.toUpperCase())
         .or {
+          // can't find the user in auth, so look in nomis or delius
           userService.findMasterUserPersonDetails(usernameOrEmailAddress.toUpperCase())
             .flatMap { userPersonDetails: UserPersonDetails ->
               when (AuthSource.fromNullableString(userPersonDetails.authSource)) {
-                AuthSource.nomis -> return@flatMap saveNomisUser(userPersonDetails)
-                AuthSource.delius -> return@flatMap saveDeliusUser(userPersonDetails)
+                AuthSource.nomis -> saveNomisUser(userPersonDetails)
+                AuthSource.delius -> saveDeliusUser(userPersonDetails)
                 else -> Optional.empty()
               }
             }
@@ -105,17 +106,11 @@ class ResetPasswordServiceImpl(
     multipleMatchesAndCanBeReset: Boolean,
     user: User,
   ): TemplateAndParameters {
-    val userDetails: UserPersonDetails
-    userDetails = if (user.isMaster) {
-      user
-    } else {
-      val userOptional = userService.findMasterUserPersonDetails(user.username)
-      if (userOptional.isEmpty) {
-        // shouldn't really happen, means that a nomis user exists in auth but not in nomis
-        return TemplateAndParameters(resetUnavailableTemplateId, user.username, user.name)
-      }
-      userOptional.get()
-    }
+
+    val userDetails = userService.findEnabledMasterUserPersonDetails(user.username)
+      // can't find an enabled user in any system, so give up
+      ?: return TemplateAndParameters(resetUnavailableTemplateId, user.username, user.name)
+
     // only allow reset for active accounts that aren't locked
     // or are locked by getting password incorrect (in either c-nomis or auth)
     val firstName = userDetails.firstName
@@ -171,8 +166,10 @@ class ResetPasswordServiceImpl(
   override fun setPassword(token: String, password: String?) {
     val userToken = userTokenRepository.findById(token).orElseThrow()
     val user = userToken.user
-    val userPersonDetails =
-      if (user.isMaster) user else userService.findMasterUserPersonDetails(user.username).orElseThrow()
+
+    val userPersonDetails = userService.findEnabledMasterUserPersonDetails(user.username)
+      ?: throw ResetPasswordException("Can't find an enabled account for the user")
+
     if (!passwordAllowedToBeReset(user, userPersonDetails)) {
       // failed, so let user know
       throw LockedException("locked")

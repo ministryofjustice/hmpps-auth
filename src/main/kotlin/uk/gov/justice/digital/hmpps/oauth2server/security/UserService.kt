@@ -43,6 +43,13 @@ class UserService(
       .or { azureUserService.getAzureUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
       .or { deliusUserService.getDeliusUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
 
+  fun findEnabledMasterUserPersonDetails(username: String): UserPersonDetails? =
+    authUserService.getAuthUserByUsername(username).filter { it.isEnabled }.map { UserPersonDetails::class.java.cast(it) }
+      .or { nomisUserService.getNomisUserByUsername(username).filter { it.isEnabled }.map { UserPersonDetails::class.java.cast(it) } }
+      .or { azureUserService.getAzureUserByUsername(username).filter { it.isEnabled }.map { UserPersonDetails::class.java.cast(it) } }
+      .or { deliusUserService.getDeliusUserByUsername(username).filter { it.isEnabled }.map { UserPersonDetails::class.java.cast(it) } }
+      .orElse(null)
+
   fun getMasterUserPersonDetailsWithEmailCheck(
     username: String,
     authSource: AuthSource,
