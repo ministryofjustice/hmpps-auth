@@ -1,0 +1,20 @@
+{
+  "groupCode": "SITE_1_GROUP_2",
+  "groupName": "Site 1 - Group 2",
+  "assignableRoles": [
+    {
+      "roleCode": "GLOBAL_SEARCH",
+      "roleName": "Global Search"
+    },
+    {
+      "roleCode": "LICENCE_RO",
+      "roleName": "Licence Responsible Officer"
+    }
+  ],
+  "children": [
+    {
+      "groupCode": "CHILD_1",
+      "groupName": "Child - Site 1 - Group 2"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import java.util.Optional
 
@@ -20,7 +21,7 @@ class MaintainUserCheckTest {
   private val maintainUserCheck = MaintainUserCheck(userRepository)
 
   @Test
-  fun superUserDoesNotThrowError() {
+  fun `superUser Does Not Throw Error when ensureUserLoggedInUserRelationship`() {
     val user = createSampleUser("user")
     assertThatCode {
       maintainUserCheck.ensureUserLoggedInUserRelationship(
@@ -61,6 +62,49 @@ class MaintainUserCheckTest {
       )
     }.isInstanceOf(AuthUserGroupRelationshipException::class.java)
       .hasMessage("Unable to maintain user: first last with reason: User not with your groups")
+    verify(userRepository).findByUsernameAndMasterIsTrue(anyString())
+  }
+
+  @Test
+  fun `superUser Does Not Throw Error when ensureMaintainerGroupRelationship`() {
+    val user = createSampleUser("user")
+    assertThatCode {
+      maintainUserCheck.ensureMaintainerGroupRelationship(
+        "SuperUser",
+        "group1",
+        SUPER_USER,
+      )
+    }.doesNotThrowAnyException()
+  }
+
+  @Test
+  fun `Group manager able to maintain group`() {
+    val groupManager = createSampleUser("groupManager", groups = setOf(Group("group1", "desc"), Group("group2", "desc")))
+    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
+      .thenReturn(Optional.of(groupManager))
+    assertThatCode {
+      maintainUserCheck.ensureMaintainerGroupRelationship(
+        "GroupManager",
+        "group1",
+        GROUP_MANAGER,
+      )
+    }.doesNotThrowAnyException()
+    verify(userRepository).findByUsernameAndMasterIsTrue(anyString())
+  }
+
+  @Test
+  fun `Group manager does not have group so cannot maintain`() {
+    val groupManager = createSampleUser("groupManager", groups = setOf(Group("group1", "desc"), Group("group2", "desc")))
+    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
+      .thenReturn(Optional.of(groupManager))
+    assertThatThrownBy {
+      maintainUserCheck.ensureMaintainerGroupRelationship(
+        "GroupManager",
+        "group3",
+        GROUP_MANAGER,
+      )
+    }.isInstanceOf(AuthGroupRelationshipException::class.java)
+      .hasMessage("Unable to maintain group: group3 with reason: Group not with your groups")
     verify(userRepository).findByUsernameAndMasterIsTrue(anyString())
   }
 

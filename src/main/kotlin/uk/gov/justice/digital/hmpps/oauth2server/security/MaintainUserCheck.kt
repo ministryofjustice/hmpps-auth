@@ -12,10 +12,9 @@ class MaintainUserCheck(
 ) {
 
   companion object {
-    fun canMaintainAuthUsers(authorities: Collection<GrantedAuthority>): Boolean {
-      return authorities.stream().map { obj: GrantedAuthority -> obj.authority }
-        .anyMatch { "ROLE_MAINTAIN_OAUTH_USERS" == it }
-    }
+    fun canMaintainAuthUsers(authorities: Collection<GrantedAuthority>): Boolean =
+      authorities.map { it.authority }
+        .any { it == "ROLE_MAINTAIN_OAUTH_USERS" }
   }
 
   @Throws(AuthUserGroupRelationshipException::class)
@@ -32,6 +31,27 @@ class MaintainUserCheck(
     }
   }
 
+  @Throws(AuthGroupRelationshipException::class)
+  fun ensureMaintainerGroupRelationship(
+    maintainerName: String,
+    groupCode: String,
+    authorities: Collection<GrantedAuthority>
+  ) {
+    // if they have maintain privileges then all good
+    if (canMaintainAuthUsers(authorities)) {
+      return
+    }
+    val maintainer = userRepository.findByUsernameAndMasterIsTrue(maintainerName).orElseThrow()
+    // otherwise group managers must have a group in common for maintenance
+    if (maintainer.groups.none { it.groupCode == groupCode }) {
+      // no group in common, so disallow
+      throw AuthGroupRelationshipException(groupCode, "Group not with your groups")
+    }
+  }
+
   class AuthUserGroupRelationshipException(val username: String, val errorCode: String) :
-    Exception(String.format("Unable to maintain user: %s with reason: %s", username, errorCode))
+    Exception("Unable to maintain user: $username with reason: $errorCode")
+
+  class AuthGroupRelationshipException(val group: String, val errorCode: String) :
+    Exception("Unable to maintain group: $group with reason: $errorCode")
 }
