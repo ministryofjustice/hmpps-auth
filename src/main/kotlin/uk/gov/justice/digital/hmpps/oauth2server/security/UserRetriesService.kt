@@ -31,11 +31,13 @@ class UserRetriesService(
       (userPersonDetails as? NomisUserPersonDetails)?.let { addNomisEmail(it, username) } ?: userPersonDetails.toUser()
     }
     user.lastLoggedIn = LocalDateTime.now()
-    // copy across email address on each successful login
+    // copy across email address for delius user on each successful login to keep up to date
     if (userPersonDetails is DeliusUserPersonDetails) {
       user.email = userPersonDetails.email
       user.verified = true
     }
+    // update source of authentication too
+    user.source = AuthSource.fromNullableString(userPersonDetails.authSource)
     userRepository.save(user)
   }
 

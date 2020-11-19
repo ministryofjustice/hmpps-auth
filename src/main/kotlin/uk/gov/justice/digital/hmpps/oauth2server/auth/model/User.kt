@@ -46,11 +46,11 @@ class User(
   private var enabled: Boolean = false,
 
   /**
-   * Whether we are masters of this user record here in auth
+   * Source of last login information
    */
   @Column(name = "source", nullable = false)
   @Enumerated(EnumType.STRING)
-  val source: AuthSource,
+  var source: AuthSource,
 
   authorities: Set<Authority> = emptySet(),
 
