@@ -203,7 +203,7 @@ class DeliusUserServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `getDeliusUserByUsername converts ChannelException and rethrows`() {
+    fun `getDeliusUserByUsername socket error results in DeliusAuthenticationServiceException`() {
       assertThatThrownBy { deliusService.getDeliusUserByUsername("DELIUS_SOCKET_ERROR") }.isInstanceOf(
         DeliusAuthenticationServiceException::class.java
       )
