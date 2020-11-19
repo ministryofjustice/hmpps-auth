@@ -167,6 +167,29 @@ class ResetPasswordSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `A DELIUS user with locked disabled auth account can reset their password`() {
+    goTo(loginPage)
+      .forgottenPasswordLink()
+
+    resetPasswordRequestPage
+      .submitUsernameOrEmail("DELIUS_ENABLED_AUTH_DISABLED_LOCKED")
+
+    resetPasswordLinkSentPage.isAtPage()
+    val resetLink = resetPasswordLinkSentPage.getResetLink()
+
+    goTo(resetLink)
+
+    resetPasswordPage
+      .inputAndConfirmNewPassword("helloworld2")
+
+    resetPasswordSuccessPage.isAtPage()
+
+    goTo(loginPage)
+      .loginAs("DELIUS_ENABLED_AUTH_DISABLED_LOCKED", "helloworld2")
+    homePage.isAt()
+  }
+
+  @Test
   fun `A user can reset their password back with lowercase username`() {
     goTo(loginPage)
       .forgottenPasswordLink()

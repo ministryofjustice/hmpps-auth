@@ -30,7 +30,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.none
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.util.Optional
 
-@Suppress("UsePropertyAccessSyntax")
 class UserServiceTest {
   private val nomisUserService: NomisUserService = mock()
   private val authUserService: AuthUserService = mock()
@@ -75,6 +74,45 @@ class UserServiceTest {
       whenever(azureUserService.getAzureUserByUsername(anyString())).thenReturn(azureUserAccount)
       val user = userService.findMasterUserPersonDetails("bob")
       assertThat(user).isPresent.get().extracting { it.username }.isEqualTo("D6165AD0-AED3-4146-9EF7-222876B57549")
+    }
+  }
+
+  @Nested
+  inner class FindEnabledMasterUserPersonDetails {
+    @Test
+    fun `findEnabledMasterUserPersonDetails auth user`() {
+      whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(createSampleUser("someuser", enabled = true)))
+      val user = userService.findEnabledMasterUserPersonDetails("   bob   ")
+      assertThat(user?.username).isEqualTo("someuser")
+    }
+
+    @Test
+    fun `findEnabledMasterUserPersonDetails nomis user`() {
+      whenever(nomisUserService.getNomisUserByUsername(anyString())).thenReturn(staffUserAccountForBob)
+      val user = userService.findEnabledMasterUserPersonDetails("bob")
+      assertThat(user?.username).isEqualTo("nomisuser")
+    }
+
+    @Test
+    fun `findEnabledMasterUserPersonDetails delius user`() {
+      whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(deliusUserAccountForBob)
+      val user = userService.findEnabledMasterUserPersonDetails("bob")
+      assertThat(user?.username).isEqualTo("deliusUser")
+    }
+
+    @Test
+    fun `findEnabledMasterUserPersonDetails azure user`() {
+      whenever(azureUserService.getAzureUserByUsername(anyString())).thenReturn(azureUserAccount)
+      val user = userService.findEnabledMasterUserPersonDetails("bob")
+      assertThat(user?.username).isEqualTo("D6165AD0-AED3-4146-9EF7-222876B57549")
+    }
+
+    @Test
+    fun `findEnabledMasterUserPersonDetails delius user auth user disabled`() {
+      whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(createUser())
+      whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(deliusUserAccountForBob)
+      val user = userService.findEnabledMasterUserPersonDetails("bob")
+      assertThat(user?.username).isEqualTo("deliusUser")
     }
   }
 
