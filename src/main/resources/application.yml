@@ -30,8 +30,11 @@ spring:
     database: default
 
   thymeleaf.render-hidden-markers-before-checkboxes: true
-
-# SQL Server DB - "auth"
+  config:
+    use-legacy-processing: true
+  mvc:
+    log-request-details: true
+  # SQL Server DB - "auth"
 auth:
   datasource:
     url: 'jdbc:h2:mem:authdb;MODE=MSSQLServer'

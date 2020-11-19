@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.delius.service
 
-import io.netty.channel.ChannelException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -9,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientRequestException
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.oauth2server.config.DeliusRoleMappings
@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDe
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.UserRole
 import uk.gov.justice.digital.hmpps.oauth2server.security.DeliusAuthenticationServiceException
-import java.io.IOException
 import java.util.Optional
 
 class DeliusUserList : MutableList<UserDetails> by ArrayList()
@@ -114,7 +113,7 @@ class DeliusUserService(
         )
         Mono.error(DeliusAuthenticationServiceException(username))
       }
-      .onErrorResume({ it is ChannelException || it is IOException }) {
+      .onErrorResume(WebClientRequestException::class.java) {
         log.warn("Unable to retrieve details from Delius for user {} due to", username, it)
         Mono.error(DeliusAuthenticationServiceException(username))
       }
