@@ -14,6 +14,8 @@ RUN apt-get update && \
     apt-get install -y curl && \
     rm -rf /var/lib/apt/lists/*
 
+ARG BUILD_NUMBER
+ENV BUILD_NUMBER ${BUILD_NUMBER:-1_0_0}
 ENV TZ=Europe/London
 RUN ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
 
@@ -25,7 +27,7 @@ WORKDIR /app
 COPY --from=builder --chown=appuser:appgroup /app/build/libs/hmpps-auth*.jar /app/app.jar
 COPY --from=builder --chown=appuser:appgroup /app/build/libs/applicationinsights-agent*.jar /app/agent.jar
 COPY --from=builder --chown=appuser:appgroup /app/run.sh /app
-COPY --from=builder --chown=appuser:appgroup /app/AI-Agent.xml /app
+COPY --from=builder --chown=appuser:appgroup /app/applicationinsights.json /app
 
 USER 2000
 
