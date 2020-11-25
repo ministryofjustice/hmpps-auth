@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationInsightsAgent>
+  <Instrumentation>
+    <BuiltIn enabled="true">
+      <HTTP enabled="true" W3C="true"/>
+
+      <!-- JDBC disabled as ALTER USER commands appear in the logs -->
+      <JDBC enabled="false" />
+    </BuiltIn>
+  </Instrumentation>
+</ApplicationInsightsAgent>
