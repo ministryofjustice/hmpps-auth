@@ -171,7 +171,6 @@ class AccountDetailsPage :
   }
 
   fun checkAzureDetails(): AccountDetailsPage {
-    takeScreenshot()
     assertThat(el("[data-qa='name']").text()).isEqualTo("Test User")
     assertThat(find("[data-qa='username']")).isEmpty()
     assertThat(find("[data-qa='changeName']")).isEmpty()
