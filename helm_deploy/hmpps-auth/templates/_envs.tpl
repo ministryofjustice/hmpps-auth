@@ -14,10 +14,10 @@ env:
       secretKeyRef:
         key: APPLICATION_GOOGLE_TAG_ID
         name: {{ template "app.name" . }}
-  - name: APPLICATIONINSIGHTS_CONNECTION_STRING
+  - name: APPLICATION_INSIGHTS_IKEY
     valueFrom:
       secretKeyRef:
-        key: APPLICATIONINSIGHTS_CONNECTION_STRING
+        key: APPLICATION_INSIGHTS_IKEY
         name: {{ template "app.name" . }}
 
   - name: APPLICATION_NON_PROD_WARNING_ENABLED

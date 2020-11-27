@@ -21,7 +21,7 @@ class ApplicationInsightsConfiguration {
 
   class AppInsightKeyAbsentCondition : Condition {
     override fun matches(context: ConditionContext, metadata: AnnotatedTypeMetadata): Boolean {
-      val telemetryKey = context.environment.getProperty("applicationinsights.connection.string")
+      val telemetryKey = context.environment.getProperty("application.insights.ikey")
       return StringUtils.isBlank(telemetryKey)
     }
   }
