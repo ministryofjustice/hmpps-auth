@@ -529,6 +529,31 @@ class AuthUserControllerTest {
     verify(authUserService).findAuthUsers("somename", "somerole", "somegroup", unpaged)
   }
 
+  @Test
+  fun `searchForUser map auth user`() {
+    val unpaged = Pageable.unpaged()
+    whenever(authUserService.findAuthUsers(anyString(), anyString(), anyString(), any())).thenReturn(
+      PageImpl(
+        listOf(
+          authUser
+        )
+      )
+    )
+    val page = authUserController.searchForUser("somename", "somerole", "somegroup", unpaged).toList()
+    assertThat(page).hasSize(1).containsExactlyInAnyOrder(
+      AuthUser(
+        userId = USER_ID,
+        username = "authentication",
+        email = "email",
+        verified = true,
+        enabled = true,
+        firstName = "Joe",
+        lastName = "Bloggs",
+        lastLoggedIn = LocalDateTime.parse("2019-01-01T12:00")
+      )
+    )
+  }
+
   companion object {
     private const val USER_ID = "07395ef9-53ec-4d6c-8bb1-0dc96cd4bd2f"
   }
