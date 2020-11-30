@@ -7,6 +7,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyList
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doThrow
 import org.mockito.Mockito.never
@@ -41,7 +42,7 @@ class AuthUserControllerTest {
   private val authUserGroupService: AuthUserGroupService = mock()
   private val request: HttpServletRequest = mock()
   private val authUserController = AuthUserController(userService, authUserService, authUserGroupService, false)
-  private val authentication = UsernamePasswordAuthenticationToken("bob", "pass")
+  private val authentication = UsernamePasswordAuthenticationToken("bob", "pass", listOf())
 
   @Test
   fun user_userNotFound() {
@@ -518,15 +519,40 @@ class AuthUserControllerTest {
   @Test
   fun searchForUser() {
     val unpaged = Pageable.unpaged()
-    whenever(authUserService.findAuthUsers(anyString(), anyString(), anyString(), any())).thenReturn(
+    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any())).thenReturn(
       PageImpl(
         listOf(
           authUser
         )
       )
     )
-    authUserController.searchForUser("somename", "somerole", "somegroup", unpaged)
-    verify(authUserService).findAuthUsers("somename", "somerole", "somegroup", unpaged)
+    authUserController.searchForUser("somename", listOf("somerole"), listOf("somegroup"), unpaged, authentication)
+    verify(authUserService).findAuthUsers("somename", listOf("somerole"), listOf("somegroup"), unpaged, "bob", emptyList())
+  }
+
+  @Test
+  fun `searchForUser map auth user`() {
+    val unpaged = Pageable.unpaged()
+    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any())).thenReturn(
+      PageImpl(
+        listOf(
+          authUser
+        )
+      )
+    )
+    val page = authUserController.searchForUser("somename", listOf("somerole"), listOf("somegroup"), unpaged, authentication).toList()
+    assertThat(page).hasSize(1).containsExactlyInAnyOrder(
+      AuthUser(
+        userId = USER_ID,
+        username = "authentication",
+        email = "email",
+        verified = true,
+        enabled = true,
+        firstName = "Joe",
+        lastName = "Bloggs",
+        lastLoggedIn = LocalDateTime.parse("2019-01-01T12:00")
+      )
+    )
   }
 
   companion object {

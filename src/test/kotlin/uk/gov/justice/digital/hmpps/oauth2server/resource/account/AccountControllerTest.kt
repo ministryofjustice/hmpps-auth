@@ -11,11 +11,13 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 import java.util.Optional
 
 class AccountControllerTest {
   private val userService: UserService = mock()
-  private val accountController = AccountController(userService)
+  private val userContextService: UserContextService = mock()
+  private val accountController = AccountController(userService, userContextService)
   private val token = TestingAuthenticationToken(
     UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"),
     "pass"
@@ -35,7 +37,8 @@ class AccountControllerTest {
       mapOf(
         "user" to user,
         "authUser" to authUser,
-        "mfaPreferenceVerified" to false
+        "mfaPreferenceVerified" to false,
+        "linkedAccounts" to emptyList<String>()
       )
     )
     verify(userService).findMasterUserPersonDetails("user")

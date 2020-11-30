@@ -11,7 +11,7 @@ image:
   livenessProbePath: /auth/health/liveness
   readinessProbePath: /auth/health/readiness
 
-mfa_whitelist:
+mfa_allowlist:
   office: "217.33.148.210/32"
   quantum: "62.25.109.197/32"
   quantum_alt: "212.137.36.230/32"
@@ -23,7 +23,7 @@ mfa_whitelist:
   j5-phones-2: "35.177.137.160/32"
   sodexo-northumberland: "88.98.48.10/32"
   sodexo2: "51.148.9.201"
-  thameside-private-prison: "217.22.14.151/32"
+  serco: "217.22.14.0/24"
   ark-nps-hmcts-ttp1: "195.59.75.0/24"
   ark-nps-hmcts-ttp2: "194.33.192.0/25"
   ark-nps-hmcts-ttp3: "194.33.193.0/25"

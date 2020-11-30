@@ -1,3 +1,5 @@
+@file:Suppress("ClassName")
+
 package uk.gov.justice.digital.hmpps.oauth2server.maintain
 
 import com.microsoft.applicationinsights.TelemetryClient
@@ -10,6 +12,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyCollection
 import org.mockito.ArgumentMatchers.anyString
@@ -51,7 +54,6 @@ import java.util.Optional
 import java.util.stream.Collectors
 import javax.persistence.EntityNotFoundException
 
-@Suppress("UsePropertyAccessSyntax")
 class AuthUserServiceTest {
   private val userRepository: UserRepository = mock()
   private val notificationClient: NotificationClientApi = mock()
@@ -975,17 +977,82 @@ class AuthUserServiceTest {
 
   private fun createUser() = Optional.of(createSampleUser(username = "someuser"))
 
-  @Test
-  fun findAuthUsers() {
-    whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
-    val unpaged = Pageable.unpaged()
-    authUserService.findAuthUsers("somename ", "somerole  ", "  somegroup", unpaged)
-    verify(userRepository).findAll(
-      check {
-        assertThat(it).extracting("name", "roleCode", "groupCode").containsExactly("somename", "somerole", "somegroup")
-      },
-      eq(unpaged)
-    )
+  @Nested
+  inner class findAuthUsers {
+    @Test
+    fun findAuthUsers() {
+      whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
+      val unpaged = Pageable.unpaged()
+      authUserService.findAuthUsers(
+        "somename ",
+        listOf("somerole"),
+        listOf("somegroup"),
+        unpaged,
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER,
+      )
+      verify(userRepository).findAll(
+        check {
+          assertThat(it).extracting("name", "roleCodes", "groupCodes")
+            .containsExactly("somename", listOf("somerole"), listOf("somegroup"))
+        },
+        eq(unpaged)
+      )
+    }
+
+    @Test
+    fun `adds all group manager groups if no group specified`() {
+      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
+        listOf(
+          Group("SITE_1_GROUP_1", "desc"),
+          Group("SITE_1_GROUP_2", "desc"),
+        )
+      )
+      whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
+      val unpaged = Pageable.unpaged()
+      authUserService.findAuthUsers(
+        "somename ",
+        listOf("somerole"),
+        null,
+        unpaged,
+        "bob",
+        GROUP_MANAGER,
+      )
+      verify(userRepository).findAll(
+        check {
+          assertThat(it).extracting("name", "roleCodes", "groupCodes")
+            .containsExactly("somename", listOf("somerole"), listOf("SITE_1_GROUP_1", "SITE_1_GROUP_2"))
+        },
+        eq(unpaged)
+      )
+    }
+
+    @Test
+    fun `filters out groups that group manager isn't a member of`() {
+      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
+        listOf(
+          Group("SITE_1_GROUP_1", "desc"),
+          Group("SITE_1_GROUP_2", "desc"),
+        )
+      )
+      whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
+      val unpaged = Pageable.unpaged()
+      authUserService.findAuthUsers(
+        "somename ",
+        listOf("somerole"),
+        listOf("somegroup", "SITE_1_GROUP_1"),
+        unpaged,
+        "bob",
+        GROUP_MANAGER,
+      )
+      verify(userRepository).findAll(
+        check {
+          assertThat(it).extracting("name", "roleCodes", "groupCodes")
+            .containsExactly("somename", listOf("somerole"), listOf("SITE_1_GROUP_1"))
+        },
+        eq(unpaged)
+      )
+    }
   }
 
   @Test

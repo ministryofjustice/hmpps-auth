@@ -4,8 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.core.annotation.Page
 import org.fluentlenium.core.annotation.PageUrl
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.oauth2server.resource.AzureOIDCExtension
 
-class AccountDetailsSpecification : AbstractAuthSpecification() {
+class AccountDetailsSpecification : AbstractDeliusAuthSpecification() {
   @Page
   private lateinit var accountDetailsPage: AccountDetailsPage
 
@@ -23,6 +24,14 @@ class AccountDetailsSpecification : AbstractAuthSpecification() {
     goTo(loginPage).loginAs("ITAG_USER", "password")
 
     goTo(accountDetailsPage).checkNomisDetails()
+  }
+
+  @Test
+  fun `azure account details`() {
+    AzureOIDCExtension.azureOIDC.stubToken("multiple.user.test@digital.justice.gov.uk")
+    goTo(loginPage).clickAzureOIDCLink()
+
+    goTo(accountDetailsPage).checkAzureDetails()
   }
 
   @Test
@@ -158,6 +167,38 @@ class AccountDetailsPage :
     assertThat(find("[data-qa='verifySecondaryEmail']")).isEmpty()
     assertThat(el("[data-qa='mfaPreference']").text()).isEqualTo("Email")
     assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change 2-step verification preference")
+    return this
+  }
+
+  fun checkAzureDetails(): AccountDetailsPage {
+    assertThat(el("[data-qa='name']").text()).isEqualTo("Test User")
+    assertThat(find("[data-qa='username']")).isEmpty()
+    assertThat(find("[data-qa='changeName']")).isEmpty()
+    assertThat(find("[data-qa='changePassword']")).isEmpty()
+    assertThat(find("[data-qa='changeEmail']")).isEmpty()
+
+    assertThat(el("[data-qa='email']").text()).isEqualTo("multiple.user.test@digital.justice.gov.uk")
+    assertThat(el("[data-qa='secondaryEmail']").text()).isBlank
+    assertThat(el("[data-qa='changeSecondaryEmail']").text()).isEqualToNormalizingWhitespace("Add backup email")
+    assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualTo("No")
+    assertThat(find("[data-qa='verifySecondaryEmail']")).isEmpty()
+    assertThat(el("[data-qa='mfaPreference']").text()).isEqualTo("Email")
+    assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change 2-step verification preference")
+
+    assertThat(el("[data-qa='linkedAccountsHeading']").text()).isEqualTo("Your linked accounts")
+    assertThat(find("[data-qa='linkedAccount']").count()).isEqualTo(4)
+
+    assertThat(el("[data-qa='system-0']").text()).isEqualTo("NOMIS")
+    assertThat(el("[data-qa='username-0']").text()).isEqualTo("ITAG_USER")
+
+    assertThat(el("[data-qa='system-1']").text()).isEqualTo("NOMIS")
+    assertThat(el("[data-qa='username-1']").text()).isEqualTo("ITAG_USER_ADM")
+
+    assertThat(el("[data-qa='system-2']").text()).isEqualTo("DELIUS")
+    assertThat(el("[data-qa='username-2']").text()).isEqualTo("DELIUSSMITH")
+
+    assertThat(el("[data-qa='system-3']").text()).isEqualTo("DELIUS")
+    assertThat(el("[data-qa='username-3']").text()).isEqualTo("DELIUSSMITH2")
     return this
   }
 

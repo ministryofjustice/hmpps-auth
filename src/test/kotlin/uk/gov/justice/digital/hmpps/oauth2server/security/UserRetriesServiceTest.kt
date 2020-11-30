@@ -67,7 +67,27 @@ class UserRetriesServiceTest {
         )
       )
       assertThat(user.email).isEqualTo("newemail@bob.com")
-      assertThat(user.verified).isTrue()
+      assertThat(user.verified).isTrue
+    }
+
+    @Test
+    fun `resetRetriesAndRecordLogin update auth source existing user`() {
+      val user = createSampleUser(username = "joe", lastLoggedIn = LocalDateTime.now().minusDays(1))
+      assertThat(user.source).isEqualTo(AuthSource.auth)
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+      service.resetRetriesAndRecordLogin(
+        DeliusUserPersonDetails(
+          "deliusUser",
+          "12345",
+          "Delius",
+          "Smith",
+          "newemail@bob.com",
+          true,
+          false,
+          emptySet()
+        )
+      )
+      assertThat(user.source).isEqualTo(AuthSource.delius)
     }
 
     @Test
@@ -100,7 +120,7 @@ class UserRetriesServiceTest {
         check {
           assertThat(it.username).isEqualTo("bob")
           assertThat(it.email).isEqualTo("bob@bob.justice.gov.uk")
-          assertThat(it.verified).isTrue()
+          assertThat(it.verified).isTrue
           assertThat(it.lastLoggedIn).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now())
         }
       )
@@ -113,7 +133,7 @@ class UserRetriesServiceTest {
       verify(userRepository).save<User>(
         check {
           assertThat(it.username).isEqualTo("bob")
-          assertThat(it.verified).isFalse()
+          assertThat(it.verified).isFalse
           assertThat(it.lastLoggedIn).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now())
         }
       )

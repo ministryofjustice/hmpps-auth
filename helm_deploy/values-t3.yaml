@@ -11,7 +11,7 @@ image:
   livenessProbePath: /auth/health/liveness
   readinessProbePath: /auth/health/readiness
 
-mfa_whitelist:
+mfa_allowlist:
   office: "217.33.148.210/32"
   mojvpn: "81.134.202.29/32"
 

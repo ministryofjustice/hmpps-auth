@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRetriesRepository
+import uk.gov.justice.digital.hmpps.oauth2server.azure.AzureUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.delius.model.DeliusUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService
@@ -31,11 +32,22 @@ class UserRetriesService(
       (userPersonDetails as? NomisUserPersonDetails)?.let { addNomisEmail(it, username) } ?: userPersonDetails.toUser()
     }
     user.lastLoggedIn = LocalDateTime.now()
-    // copy across email address on each successful login
+    // copy across email address for delius user on each successful login to keep up to date
     if (userPersonDetails is DeliusUserPersonDetails) {
       user.email = userPersonDetails.email
       user.verified = true
     }
+
+    if (userPersonDetails is AzureUserPersonDetails) {
+      user.email = userPersonDetails.email
+      user.verified = true
+    } else if (userPersonDetails is DeliusUserPersonDetails) {
+      user.email = userPersonDetails.email
+      user.verified = true
+    }
+
+    // update source of authentication too
+    user.source = AuthSource.fromNullableString(userPersonDetails.authSource)
     userRepository.save(user)
   }
 
