@@ -21,7 +21,7 @@ class HomeController(
     val azureUserDetails = authentication.principal as UserDetailsImpl
     val authSource = AuthSource.fromNullableString(azureUserDetails.authSource)
     val authorities = if (authSource == azuread) {
-      val users = userContextService.discoverUsers(authentication.principal as UserDetailsImpl, setOf())
+      val users = userContextService.discoverUsers(authentication.principal as UserDetailsImpl)
       users.flatMap { it.authorities }
     } else authentication.authorities
 
