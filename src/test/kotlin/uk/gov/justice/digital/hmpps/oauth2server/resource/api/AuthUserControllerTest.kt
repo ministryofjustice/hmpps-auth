@@ -376,6 +376,21 @@ class AuthUserControllerTest {
   }
 
   @Test
+  fun createUserHandlesGroupCodeAsEmptyString() {
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/api/authuser/newusername"))
+    val responseEntity =
+      authUserController.createUser(
+        "newusername",
+        CreateUser("email", "first", "last", "", null),
+        true,
+        request,
+        authentication
+      )
+    assertThat(responseEntity.statusCodeValue).isEqualTo(204)
+    assertThat(responseEntity.body).isNull()
+  }
+
+  @Test
   fun enableUser() {
     val user = createSampleUser(username = "USER", email = "email", verified = true)
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
