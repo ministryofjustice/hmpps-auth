@@ -134,16 +134,19 @@ class AuthUserController(
       value = "Sort column and direction, eg sort=lastName,desc"
     )
   )
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
   fun searchForUser(
     @ApiParam(
       value = "The username, email or name of the user.",
       example = "j smith"
     ) @RequestParam(required = false) name: String?,
-    @ApiParam(value = "The role of the user.") @RequestParam(required = false) role: String?,
-    @ApiParam(value = "The group of the user.") @RequestParam(required = false) group: String?,
+    @ApiParam(value = "The role codes of the user.") @RequestParam(required = false) roles: List<String>?,
+    @ApiParam(value = "The group codes of the user.") @RequestParam(required = false) groups: List<String>?,
     @PageableDefault(sort = ["username"], direction = Sort.Direction.ASC) pageable: Pageable,
-  ): Page<AuthUser> = authUserService.findAuthUsers(name, role, group, pageable)
-    .map { AuthUser.fromUser(it) }
+    @ApiIgnore authentication: Authentication,
+  ): Page<AuthUser> =
+    authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities)
+      .map { AuthUser.fromUser(it) }
 
   @GetMapping("/api/authuser/me/assignable-groups")
   @ApiOperation(
