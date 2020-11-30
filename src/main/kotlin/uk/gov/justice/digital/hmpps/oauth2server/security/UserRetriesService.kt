@@ -41,6 +41,9 @@ class UserRetriesService(
     if (userPersonDetails is AzureUserPersonDetails) {
       user.email = userPersonDetails.email
       user.verified = true
+    } else if (userPersonDetails is DeliusUserPersonDetails) {
+      user.email = userPersonDetails.email
+      user.verified = true
     }
 
     // update source of authentication too

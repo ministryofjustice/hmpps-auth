@@ -14,7 +14,7 @@ class AccountController(private val userService: UserService, private val userCo
     val username = authentication.name
     val user = userService.findMasterUserPersonDetails(username).orElseThrow()
     val authUser = userService.getUserWithContacts(username)
-    val linkedAccounts = userContextService.discoverUsers(user, emptySet())
+    val linkedAccounts = userContextService.discoverUsers(user)
       .map {
         LinkedAccountModel(it.authSource.toUpperCase(), it.username)
       }
