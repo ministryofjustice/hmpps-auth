@@ -423,6 +423,10 @@ VALUES (138250, 'STF', 4, null, null, 'EMAIL', 'phillips@bobjustice.gov.uk',
     (138255, 'STF', 40, null, null, 'EMAIL', 'fred@some.justice.gov.uk',
     to_timestamp('06-DEC-18 16.08.43.742506000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', null, null,
     to_timestamp('06-DEC-18 16.08.43.742717000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', 'OUMPERSO',
+    'pphillips', '10.102.2.4', 'MGMRW0100', null),
+    (138256, 'STF', 1, null, null, 'EMAIL', 'multiple.user.test@digital.justice.gov.uk',
+    to_timestamp('06-DEC-18 16.08.43.742506000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', null, null,
+    to_timestamp('06-DEC-18 16.08.43.742717000', 'DD-MON-RR HH24.MI.SSXFF'), 'PPHILLIPS_ADM', 'OUMPERSO',
     'pphillips', '10.102.2.4', 'MGMRW0100', null);
 
 

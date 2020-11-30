@@ -99,7 +99,7 @@ class UserRepositoryTest {
     val retrievedEntity = repository.findByUsername(transientEntity.username).orElseThrow()
 
     // equals only compares the business key columns
-    assertThat(retrievedEntity).isEqualToIgnoringGivenFields(transientEntity, "authorities")
+    assertThat(retrievedEntity).usingRecursiveComparison().ignoringFields("authorities").isEqualTo(transientEntity)
     assertThat(retrievedEntity.username).isEqualTo(transientEntity.username)
     assertThat(retrievedEntity.email).isEqualTo(transientEntity.email)
     assertThat(retrievedEntity.name).isEqualTo("first last")
@@ -284,16 +284,30 @@ class UserRepositoryTest {
 
   @Test
   fun findAll_UserFilter_ByRole() {
-    assertThat(repository.findAll(UserFilter(roleCode = "LICENCE_VARY")))
+    assertThat(repository.findAll(UserFilter(roleCodes = listOf("LICENCE_VARY"))))
       .extracting<String> { it.username }
       .containsExactly("AUTH_RO_VARY_USER")
   }
 
   @Test
-  fun findAll_UserFilter_ByGroup() {
-    assertThat(repository.findAll(UserFilter(groupCode = "SITE_1_GROUP_2")))
+  fun findAll_UserFilter_ByRoles() {
+    assertThat(repository.findAll(UserFilter(roleCodes = listOf("  LICENCE_VARY", "  LICENCE_RO"))))
       .extracting<String> { it.username }
-      .containsExactly("AUTH_RO_VARY_USER", "AUTH_GROUP_MANAGER")
+      .containsExactly("AUTH_DELETEALL", "AUTH_RO_USER_TEST", "AUTH_RO_USER", "AUTH_RO_VARY_USER")
+  }
+
+  @Test
+  fun findAll_UserFilter_ByGroup() {
+    assertThat(repository.findAll(UserFilter(groupCodes = listOf("SITE_1_GROUP_2"))))
+      .extracting<String> { it.username }
+      .containsExactly("AUTH_GROUP_MANAGER", "AUTH_RO_VARY_USER")
+  }
+
+  @Test
+  fun findAll_UserFilter_ByGroups() {
+    assertThat(repository.findAll(UserFilter(groupCodes = listOf("SITE_1_GROUP_2  ", "  SITE_1_GROUP_3"))))
+      .extracting<String> { it.username }
+      .containsExactly("AUTH_GROUP_MANAGER", "AUTH_RO_VARY_USER")
   }
 
   @Test
@@ -317,11 +331,11 @@ class UserRepositoryTest {
       .containsExactly(
         "AUTH_NO_EMAIL",
         "AUTH_MFA_NOEMAIL_USER",
-        "NOMIS_ENABLED_AUTH_DISABLED",
+        "AUTH_MFA_NOTEXT_USER",
+        "AUTH_MFA_PREF_TEXT_EMAIL",
         "NOMIS_LOCKED_AUTH_DISABLED",
         "DELIUS_ENABLED_AUTH_DISABLED",
-        "AUTH_MFA_NOTEXT_USER",
-        "AUTH_MFA_PREF_TEXT_EMAIL"
+        "NOMIS_ENABLED_AUTH_DISABLED",
       )
   }
 
@@ -336,7 +350,7 @@ class UserRepositoryTest {
   fun findAll_UserFilter_all() {
     assertThat(
       repository.findAll(
-        UserFilter(roleCode = "LICENCE_VARY", groupCode = "SITE_1_GROUP_2", name = "vary")
+        UserFilter(roleCodes = listOf("LICENCE_VARY"), groupCodes = listOf("SITE_1_GROUP_2"), name = "vary")
       )
     )
       .extracting<String> { it.username }
@@ -415,8 +429,6 @@ class UserRepositoryTest {
     )
     assertThat(inactive).extracting<String> { it.username }.containsExactly("AUTH_DELETE")
   }
-
-  private fun transientEntity() = createSampleUser(username = "user", source = nomis, email = "a@b.com")
 
   companion object {
     private var initialized = false

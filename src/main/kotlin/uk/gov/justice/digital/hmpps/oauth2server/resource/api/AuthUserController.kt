@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiResponses
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
@@ -39,7 +40,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.Verif
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
 import java.util.Optional
-import java.util.stream.Collectors
 import javax.persistence.EntityNotFoundException
 import javax.servlet.http.HttpServletRequest
 
@@ -106,18 +106,10 @@ class AuthUserController(
   @GetMapping("/api/authuser/search")
   @ApiOperation(
     value = "Search for a user.",
-    notes = "Search for a user.",
     nickname = "searchForUser",
-    consumes = "application/json",
     produces = "application/json"
   )
-  @ApiResponses(
-    value = [
-      ApiResponse(code = 200, message = "OK", response = AuthUser::class, responseContainer = "List"),
-      ApiResponse(code = 204, message = "No users found."),
-      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)
-    ]
-  )
+  @ApiResponses(value = [ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)])
   @ApiImplicitParams(
     ApiImplicitParam(
       name = "page",
@@ -142,19 +134,19 @@ class AuthUserController(
       value = "Sort column and direction, eg sort=lastName,desc"
     )
   )
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
   fun searchForUser(
     @ApiParam(
       value = "The username, email or name of the user.",
       example = "j smith"
     ) @RequestParam(required = false) name: String?,
-    @ApiParam(value = "The role of the user.") @RequestParam(required = false) role: String?,
-    @ApiParam(value = "The group of the user.") @RequestParam(required = false) group: String?,
-    @PageableDefault(sort = ["username"], direction = Sort.Direction.ASC) pageable: Pageable?,
-  ): ResponseEntity<Any> {
-    val users = authUserService.findAuthUsers(name, role, group, pageable!!).stream()
-      .map { AuthUser.fromUser(it) }.collect(Collectors.toList())
-    return if (users.isEmpty()) ResponseEntity.noContent().build() else ResponseEntity.ok(users)
-  }
+    @ApiParam(value = "The role codes of the user.") @RequestParam(required = false) roles: List<String>?,
+    @ApiParam(value = "The group codes of the user.") @RequestParam(required = false) groups: List<String>?,
+    @PageableDefault(sort = ["username"], direction = Sort.Direction.ASC) pageable: Pageable,
+    @ApiIgnore authentication: Authentication,
+  ): Page<AuthUser> =
+    authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities)
+      .map { AuthUser.fromUser(it) }
 
   @GetMapping("/api/authuser/me/assignable-groups")
   @ApiOperation(

@@ -1,32 +1,59 @@
-[
-  {
-    "userId": "5105a589-75b3-4ca0-9433-b96228c1c8f3",
-    "username": "AUTH_ADM",
-    "email": "auth_test2@digital.justice.gov.uk",
-    "firstName": "Auth",
-    "lastName": "Adm",
-    "locked": false,
-    "enabled": true,
-    "verified": true
+{
+  "content": [
+    {
+      "userId": "5105a589-75b3-4ca0-9433-b96228c1c8f3",
+      "username": "AUTH_ADM",
+      "email": "auth_test2@digital.justice.gov.uk",
+      "firstName": "Auth",
+      "lastName": "Adm",
+      "locked": false,
+      "enabled": true,
+      "verified": true
+    },
+    {
+      "userId": "9e84f1e4-59c8-4b10-927a-9cf9e9a30791",
+      "username": "AUTH_EXPIRED",
+      "email": "auth_test2@digital.justice.gov.uk",
+      "firstName": "Auth",
+      "lastName": "Expired",
+      "locked": false,
+      "enabled": true,
+      "verified": true
+    },
+    {
+      "userId": "90f930e1-2195-4afd-92ce-0eb5672da02b",
+      "username": "AUTH_RO_USER_TEST2",
+      "email": "auth_ro_user_test2@digital.justice.gov.uk",
+      "firstName": "Ryan-Auth",
+      "lastName": "Orton2",
+      "locked": false,
+      "enabled": true,
+      "verified": true
+    }
+  ],
+  "pageable": {
+    "sort": {
+      "sorted": true,
+      "unsorted": false,
+      "empty": false
+    },
+    "offset": 0,
+    "pageNumber": 0,
+    "pageSize": 10,
+    "paged": true,
+    "unpaged": false
   },
-  {
-    "userId": "9e84f1e4-59c8-4b10-927a-9cf9e9a30791",
-    "username": "AUTH_EXPIRED",
-    "email": "auth_test2@digital.justice.gov.uk",
-    "firstName": "Auth",
-    "lastName": "Expired",
-    "locked": false,
-    "enabled": true,
-    "verified": true
+  "last": true,
+  "totalPages": 1,
+  "totalElements": 3,
+  "number": 0,
+  "sort": {
+    "sorted": true,
+    "unsorted": false,
+    "empty": false
   },
-  {
-    "userId": "90f930e1-2195-4afd-92ce-0eb5672da02b",
-    "username": "AUTH_RO_USER_TEST2",
-    "email": "auth_ro_user_test2@digital.justice.gov.uk",
-    "firstName": "Ryan-Auth",
-    "lastName": "Orton2",
-    "locked": false,
-    "enabled": true,
-    "verified": true
-  }
-]
+  "size": 10,
+  "first": true,
+  "numberOfElements": 3,
+  "empty": false
+}

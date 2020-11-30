@@ -91,15 +91,32 @@ class AuthUserService(
     return oauthServiceRepository.findById(serviceCode).map { it.email!! }.orElseThrow()
   }
 
-  fun findAuthUsers(name: String?, roleCode: String?, groupCode: String?, pageable: Pageable): Page<User> {
-    val userFilter = UserFilter(name = name, roleCode = roleCode, groupCode = groupCode)
+  fun findAuthUsers(
+    name: String?,
+    roleCodes: List<String>?,
+    groupCodes: List<String>?,
+    pageable: Pageable,
+    searcher: String,
+    authorities: Collection<GrantedAuthority>,
+  ): Page<User> {
+    val groupSearchCodes = if (authorities.any { it.authority == "ROLE_MAINTAIN_OAUTH_USERS" }) {
+      groupCodes
+    } else {
+      val assignableGroupCodes = authUserGroupService.getAssignableGroups(searcher, authorities).map { it.groupCode }
+      groupCodes?.filter { g -> assignableGroupCodes.any { it == g } } ?: assignableGroupCodes
+    }
+    val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes)
     return userRepository.findAll(userFilter, pageable)
   }
 
   fun findAuthUsersByUsernames(usernames: List<String>): List<User> = userRepository.findByUsernameIn(usernames)
 
   @Throws(CreateUserException::class)
-  private fun getInitialGroups(groupCodes: Set<String>?, creator: String, authorities: Collection<GrantedAuthority>): Set<Group> {
+  private fun getInitialGroups(
+    groupCodes: Set<String>?,
+    creator: String,
+    authorities: Collection<GrantedAuthority>
+  ): Set<Group> {
     if (groupCodes.isNullOrEmpty()) {
       return if (authorities.any { it.authority == "ROLE_MAINTAIN_OAUTH_USERS" }) {
         emptySet()

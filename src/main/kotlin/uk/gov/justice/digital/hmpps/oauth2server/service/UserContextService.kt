@@ -20,7 +20,7 @@ class UserContextService(
   private val nomisUserService: NomisUserService,
 ) {
 
-  fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String>): List<UserPersonDetails> {
+  fun discoverUsers(loginUser: UserPersonDetails, scopes: Set<String> = emptySet()): List<UserPersonDetails> {
     // if specific accounts are requested via scopes, attempt to find just those.
     // otherwise, attempt to find all accounts.
     val requestedSources = AuthSource.values()
