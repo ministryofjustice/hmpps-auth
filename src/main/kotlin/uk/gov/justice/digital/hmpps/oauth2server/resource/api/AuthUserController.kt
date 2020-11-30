@@ -208,7 +208,7 @@ class AuthUserController(
     if (createUser.groupCodes != null) {
       mergedGroups.addAll(createUser.groupCodes)
     }
-    if (createUser.groupCode != null) {
+    if (!createUser.groupCode.isNullOrBlank()) {
       mergedGroups.add(createUser.groupCode)
     }
 
