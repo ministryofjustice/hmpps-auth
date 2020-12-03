@@ -142,7 +142,7 @@ class AuthUserController(
     ) @RequestParam(required = false) name: String?,
     @ApiParam(value = "The role codes of the user.") @RequestParam(required = false) roles: List<String>?,
     @ApiParam(value = "The group codes of the user.") @RequestParam(required = false) groups: List<String>?,
-    @PageableDefault(sort = ["username"], direction = Sort.Direction.ASC) pageable: Pageable,
+    @PageableDefault(sort = ["Person.lastName", "Person.firstName"], direction = Sort.Direction.ASC) pageable: Pageable,
     @ApiIgnore authentication: Authentication,
   ): Page<AuthUser> =
     authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities)
