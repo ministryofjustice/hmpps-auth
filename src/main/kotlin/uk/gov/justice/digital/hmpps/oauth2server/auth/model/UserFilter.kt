@@ -32,7 +32,7 @@ class UserFilter(
       }
       andBuilder.add(cb.or(*roleBuilder.build().toTypedArray()))
     }
-    if (groupCodes != null) {
+    if (!groupCodes.isNullOrEmpty()) {
       val groupBuilder = ImmutableList.builder<Predicate>()
       groupCodes.forEach {
         groupBuilder.add(cb.equal(root.join<Any, Any>("groups").get<Any>("groupCode"), it.trim().toUpperCase()))

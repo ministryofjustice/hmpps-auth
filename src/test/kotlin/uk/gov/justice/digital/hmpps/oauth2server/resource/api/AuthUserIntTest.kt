@@ -175,7 +175,7 @@ class AuthUserIntTest : IntegrationTest() {
   @Test
   fun `Auth User search endpoint returns user data`() {
     webTestClient
-      .get().uri("/auth/api/authuser/search?name=test2")
+      .get().uri("/auth/api/authuser/search?name=test2&groups=")
       .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
