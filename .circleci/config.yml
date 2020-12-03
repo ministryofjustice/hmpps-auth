@@ -8,7 +8,7 @@ jobs:
   validate:
     executor: hmpps/java
     environment:
-      _JAVA_OPTIONS: -Xmx512m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false
+      _JAVA_OPTIONS: -Xmx800m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false
 
     steps:
       - checkout
@@ -54,11 +54,8 @@ jobs:
       - restore_cache:
           key: gradle-cache-{{ checksum "build.gradle.kts" }}
       - run:
-          name: Run Integration Tests
-          command: ./gradlew testIntegration
-      - run:
           name: Run Fluent Integration Tests
-          command: ./gradlew testFluentIntegration
+          command: ./gradlew testIntegration
       - save_cache:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
@@ -69,9 +66,6 @@ jobs:
             - /home/circleci/.gradle/caches
       - store_artifacts:
           path: build/reports/tests/testIntegration
-          destination: integration/spock
-      - store_artifacts:
-          path: build/reports/tests/testFluentIntegration
           destination: integration/fluent
       - store_test_results:
           path: build/test-results

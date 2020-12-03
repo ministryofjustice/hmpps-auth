@@ -1,0 +1,24 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPattern": "(?i)/secure/users/DELIUS_MIXED_CASE/details"
+  },
+  "response": {
+    "transformers": ["response-template"],
+    "status": 200,
+    "jsonBody": {
+      "userId": 2500077027,
+      "username": "{{request.path.[2]}}",
+      "firstName": "Delius",
+      "surname": "Smith",
+      "email": "TEST@digital.justice.gov.uk",
+      "enabled": true,
+      "roles": [
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

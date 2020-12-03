@@ -51,14 +51,9 @@
                th:value="${#strings.setJoin(clientDetails.resourceIds, ',')}"/>
       </div>
       <div class="govuk-form-group">
-        <label class="govuk-label" for="scopes">Scopes</label>
+        <label class="govuk-label" for="scopes">Approved Scopes</label>
         <input class="govuk-input" id="scopes" type="text" name="scope"
                th:value="${#strings.setJoin(clientDetails.scope, ',')}"/>
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="autoApproveScopes">Auto Approve Scopes</label>
-        <input class="govuk-input" id="autoApproveScopes" type="text" name="autoApproveScopes"
-               th:value="${#strings.setJoin(clientDetails.autoApproveScopes, ',')}"/>
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="authorities">Authorities</label>
@@ -122,6 +117,18 @@
         <input class="govuk-checkboxes__input" type="checkbox" name="skipToAzureField" id="skipToAzureField"
                th:checked="*{clientDetails.additionalInformation['skipToAzureField']}"/>
         <label class="govuk-label govuk-checkboxes__label" for="skipToAzureField">Auto redirect</label>
+      </div>
+    </div>
+
+    <div class="govuk-form-group">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="databaseUsernameField">Database Username</label>
+        <span class="govuk-hint">
+          For client credentials only, the username to "alias" in database when changing data e.g. API_USER
+        </span>
+        <input class="govuk-input" id="databaseUsernameField" type="text" name="databaseUsernameField" readonly="readonly"
+               onfocus="this.removeAttribute('readonly');"
+               th:value="${clientDetails.additionalInformation['databaseUsernameField']}"/>
       </div>
     </div>
 

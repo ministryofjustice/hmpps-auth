@@ -46,6 +46,8 @@ elif [[ "$ENV" == "preprod" ]]; then
   HOST="https://sign-in-preprod.hmpps.service.justice.gov.uk"
 elif [[ "$ENV" == "prod" ]]; then
   HOST="https://sign-in.hmpps.service.justice.gov.uk"
+elif [[ "$ENV" =~ localhost* ]]; then
+  HOST="http://$ENV"
 fi
 
 # Check whether the file exists and is readable
@@ -55,81 +57,67 @@ if [[ ! -f "$FILE" ]]; then
 fi
 
 # Get token for the client name / secret and store it in the environment variable TOKEN
-echo | base64 -w0 > /dev/null 2>&1
-if [[ $? -eq 0 ]]; then
+if echo | base64 -w0 >/dev/null 2>&1; then
   AUTH=$(echo -n "$CLIENT" | base64 -w0)
 else
   AUTH=$(echo -n "$CLIENT" | base64)
 fi
- 
-TOKEN_RESPONSE=$(curl -s -k -d "" -X POST "$HOST/auth/oauth/token?grant_type=client_credentials&username=$USER" -H "Authorization: Basic $AUTH")
-TOKEN=$(echo "$TOKEN_RESPONSE" | jq -er .access_token)
-if [[ $? -ne 0 ]]; then
+
+if ! TOKEN_RESPONSE=$(curl -s -d "" -X POST "$HOST/auth/oauth/token?grant_type=client_credentials&username=$USER" -H "Authorization: Basic $AUTH"); then
   echo "Failed to read token from credentials response"
   echo "$TOKEN_RESPONSE"
   exit 1
 fi
+TOKEN=$(echo "$TOKEN_RESPONSE" | jq -er .access_token)
 
-AUTH_TOKEN="Bearer $TOKEN"
-
-addGroup() {
-  local user=$1
-  local group=$2
-  if [[ "$group" != "" && ! "$group" =~ ^[,]*$ ]]; then
-    curl -X PUT $HOST/auth/api/authuser/$user/groups/$group -H "Content-Length: 0" -H "Authorization: $AUTH_TOKEN" -H "accept: */*" -H "Content-Type: application/text"
-    if [[ $? -ne 0 ]]; then 
-      echo "Failed to add $user to group $group"
-    fi
-  fi
-}
+AUTH_TOKEN_HEADER="Authorization: Bearer $TOKEN"
 
 cnt=0
 
 # user email first last group group2 group3 group4 group5 group6 group7 group8 group9
-while IFS=, read -r -a row
-do
+while IFS=, read -r -a row; do
   user="${row[0]}"
-  if [[ "$user" == "User Name" ]]; then
+  if [[ "$user" == "User Name" || -z "$user" ]]; then
     continue
   fi
 
   echo "Processing ${row[*]}"
 
+  printf -v groups '\"%s\",' "${row[@]:4}"
+
   # Create the user
-  curl -X PUT "$HOST/auth/api/authuser/$user" -H "Authorization: $AUTH_TOKEN" -H "accept: */*" -H "Content-Type: application/json" -d "{ \"groupCode\": \"${row[4]}\", \"email\": \"${row[1]}\", \"firstName\": \"${row[2]}\", \"lastName\": \"${row[3]}\"}"
+  if ! output=$(curl -X PUT "$HOST/auth/api/authuser/$user?enforceUniqueEmail=true" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
+    -d "{ \"groupCodes\": [${groups%,}], \"email\": \"${row[1]}\", \"firstName\": \"${row[2]}\", \"lastName\": \"${row[3]}\"}"); then
 
-  if [[ $? -ne 0 ]]; then
     echo "\033[0;31mFailure to create user ${user}\033[0m"
+  else
+    if [[ $output =~ "error_description" ]]; then
+      echo "\033[0;31mFailure to create user ${user}\033[0m due to $output"
+    else
+      if [[ "$DEBUG_CREATION" == "true" ]]; then
+        # Output the user details to confirm it was created
+        curl -s "$HOST/auth/api/authuser/$user" -H "$AUTH_TOKEN_HEADER" | jq .
+      fi
 
-  else 
-    if [[ "$DEBUG_CREATION" == "true" ]]; then
-      # Output the user details to confirm it was created
-      curl -s "$HOST/auth/api/authuser/$user" -H "Authorization: $AUTH_TOKEN" | jq .
+      if [[ "$VARY_ROLE" == "true" ]]; then
+        echo "Adding the ROLE_LICENCE_VARY role for $user"
+
+        curl -s -X PUT "$HOST/auth/api/authuser/$user/roles/ROLE_LICENCE_VARY" -H "Content-Length: 0" -H "$AUTH_TOKEN_HEADER"
+
+        # Output the roles for the user to confirm
+        curl -s "$HOST/auth/api/authuser/$user/roles" -H "$AUTH_TOKEN_HEADER" | jq .
+      fi
     fi
-
-    if [[ "$VARY_ROLE" == "true" ]]; then
-      echo "Adding the ROLE_LICENCE_VARY role for $user"
-   
-      curl -X PUT $HOST/auth/api/authuser/$user/roles/ROLE_LICENCE_VARY -H "Content-Length: 0" -H "Authorization: $AUTH_TOKEN" -H "accept: */*" -H "Content-Type: application/text"
-   
-      # Output the roles for the user to confirm
-      curl -s $HOST/auth/api/authuser/$user/roles -H "Authorization: $AUTH_TOKEN" | jq .
-    fi
-
-    for group in "${row[@]:5}"; do
-      addGroup "$user" "$group"
-    done
   fi
 
   # Pause for 5 seconds every BATCH number of records
-  cnt=$(($cnt+1))
-  n=$(($cnt%$BATCH))
-  if [ $n -eq 0 ]
-  then
+  cnt=$((cnt + 1))
+  n=$((cnt % BATCH))
+  if [[ $n -eq 0 ]]; then
     echo "Record count $cnt - paused for 5 seconds"
     sleep 5
   fi
 
-done < "$FILE"
+done <"$FILE"
 
 # End

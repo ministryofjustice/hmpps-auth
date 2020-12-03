@@ -7,6 +7,8 @@
   "response": {
     "status": 200,
     "jsonBody": {
+      "userId": 2500077027,
+      "username": "{{request.path.[2]}}",
       "firstName": "John",
       "surname": "Smith",
       "email": "test@digital.justice.gov.uk",

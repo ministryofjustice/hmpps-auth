@@ -1,0 +1,32 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "GET",
+    "urlPattern": "(?i)/secure/users/search/email/single.*/details"
+  },
+  "response": {
+    "transformers": [
+      "response-template"
+    ],
+    "status": 200,
+    "jsonBody": [
+      {
+        "userId": 2500077027,
+        "username": "DELIUSSMITH",
+        "firstName": "Delius",
+        "surname": "Smith",
+        "email": "{{request.path.[4]}}",
+        "enabled": true,
+        "roles": [
+          {
+            "name": "TEST_ROLE",
+            "description": "A Test Role"
+          }
+        ]
+      }
+    ],
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

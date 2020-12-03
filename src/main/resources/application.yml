@@ -11,6 +11,17 @@ server:
 spring:
   application:
     name: oauth2-server
+  profiles:
+    group:
+      dev:
+        - "dev-config"
+        - "auth-seed"
+        - "nomis-seed"
+      test:
+        - "dev"
+        - "token-verification"
+        - "delius"
+
   main:
     allow-bean-definition-overriding: true
   datasource:

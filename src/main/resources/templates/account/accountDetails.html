@@ -11,7 +11,7 @@
   <div role="alert">
     <h1 class="govuk-heading-l">Your account details</h1>
   </div>
-  <div>
+  <div th:unless="${authUser.authSource == 'azuread'}" >
     <p class="govuk-body">
       <a class="govuk-link govuk-link--no-visited-state" th:href="@{/existing-password}" data-qa="changePassword">
         Change your password
@@ -33,7 +33,7 @@
         </a>
       </dd>
     </div>
-    <div class="govuk-summary-list__row">
+    <div class="govuk-summary-list__row" th:if="${authUser.authSource != 'azuread'}">
       <dt class="govuk-summary-list__key">
         Username
       </dt>
@@ -65,7 +65,7 @@
       </dd>
       <dd class="govuk-summary-list__actions">
         <a class="govuk-link govuk-link--no-visited-state" th:href="@{/existing-email}"
-           th:if="${authUser.authSource != 'delius'}"
+           th:if="${authUser.authSource != 'delius' && authUser.authSource != 'azuread'}"
            data-qa="changeEmail">
           <th:block th:text="${#strings.isEmpty(authUser.email)} ? 'Add' : 'Change'">
             Change
@@ -175,6 +175,30 @@
       </dd>
     </div>
   </dl>
+
+  <div th:if="${#lists.size(linkedAccounts) > 0}" >
+    <div role="alert" data-qa="linkedAccountsHeading">
+      <h1 class="govuk-heading-l">Your linked accounts</h1>
+    </div>
+    <dl class="govuk-summary-list" th:each="account, iter : ${linkedAccounts}" data-qa="linkedAccount">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          System
+        </dt>
+        <dd class="govuk-summary-list__value" th:attr="data-qa='system-'+${iter.index}" th:text="${account.systemName}">
+          NOMIS
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          Username
+        </dt>
+        <dd class="govuk-summary-list__value" th:attr="data-qa='username-'+${iter.index}" th:text="${account.username}">
+          TEST_USER
+        </dd>
+      </div>
+    </dl>
+  </div>
 </div>
 </body>
 </html>
