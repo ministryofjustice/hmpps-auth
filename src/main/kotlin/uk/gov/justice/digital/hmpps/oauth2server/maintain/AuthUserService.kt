@@ -103,7 +103,7 @@ class AuthUserService(
       groupCodes
     } else {
       val assignableGroupCodes = authUserGroupService.getAssignableGroups(searcher, authorities).map { it.groupCode }
-      groupCodes?.filter { g -> assignableGroupCodes.any { it == g } } ?: assignableGroupCodes
+      if (groupCodes.isNullOrEmpty()) assignableGroupCodes else groupCodes.filter { g -> assignableGroupCodes.any { it == g } }
     }
     val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes)
     return userRepository.findAll(userFilter, pageable)
