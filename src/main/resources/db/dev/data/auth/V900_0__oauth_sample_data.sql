@@ -39,7 +39,7 @@ VALUES ('omicuser','1200','{"jwtFields":"-user_name"}','SYSTEM_READ_ONLY','passw
        ('delius-login-client','28800','{}',null,'authorization_code,refresh_token','read,delius','$2a$10$RYwV0QebHAovVXWPySb2lefr3HTDntGu1euXHDJc3zwh2NsqeNGHG','43200',null,'read,delius','http://localhost:5000/login/callback'),
        ('probation-offender-events-client','3600','{}','ROLE_COMMUNITY_EVENTS,ROLE_COMMUNITY','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read',null),
        ('hmpps-ppm-client','3600','{}',null,'authorization_code','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
-       ('hmpps-ppm-system','3600','{}','ROLE_GLOBAL_SEARCH','client_credentials','read','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read',null),
+       ('hmpps-ppm-system','3600','{}','ROLE_SYSTEM_USER,ROLE_GLOBAL_SEARCH','client_credentials','read','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read',null),
        ('manage-intelligence-client','3600','{}',null,'authorization_code','read,write','$2a$10$WzgtydqXSuhdivpWDR3WXO.yjLBm4yuDqP64Og.7E4XURdrSfhOTi',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
        ('manage-intelligence-admin','3600','{}','ROLE_GLOBAL_SEARCH,ROLE_SYSTEM_USER,ROLE_COMMUNITY','client_credentials','read,write','$2a$10$ajGimbJNWF1/FmZQMJWvieeQ/OdYaxWHQPgOjYDvvWu/4/744Yw7S',43200,null,'read,write',null);
 
