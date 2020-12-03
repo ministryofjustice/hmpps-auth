@@ -337,11 +337,12 @@ VALUES (1, 'OMIC_ADMIN', 'Omic Administrator', 1, 'APP', 'GENERAL'),
   (31, 'USE_OF_FORCE_COORDINATOR', 'Use of force coordinator', 99, 'APP', 'ADMIN'),
   (32, 'LICENCE_READONLY', 'Licence read only', 100, 'APP', 'GENERAL'),
   (33, 'SOC_CUSTODY', 'SOCU Prison Role', 99, 'APP', 'GENERAL'),
-  (34, 'PPM_ANALYST', 'PPM Analyst', 99, 'APP', 'GENERAL'),
+  (34, 'PPM_ANALYST', 'PPM Analyst', 99, 'APP', 'ADMIN'),
   (35, 'ARTEMIS_USER', 'Artemis user', 99, 'APP', 'GENERAL'),
   (36, 'PF_LOCAL_READER', 'Pathfinder Local Reader', 99, 'APP', 'GENERAL'),
   (37, 'PF_NATIONAL_READER', 'Pathfinder National Reader', 99, 'APP', 'GENERAL'),
-  (38, 'PF_HQ', 'Pathfinder HQ', 99, 'APP', 'GENERAL');
+  (38, 'PF_HQ', 'Pathfinder HQ', 99, 'APP', 'GENERAL'),
+  (39, 'PPM_GLOBAL', 'PPM Global', 99, 'APP', 'ADMIN');
 
 INSERT INTO USER_CASELOAD_ROLES (ROLE_ID, CASELOAD_ID, USERNAME)
 VALUES (-1, 'MDI', 'ITAG_USER'),
@@ -389,6 +390,7 @@ VALUES (-1, 'MDI', 'ITAG_USER'),
   (8, 'NWEB', 'SOC_PRISON_LOCAL'),
   (33, 'NWEB', 'SOC_PRISON_LOCAL'),
   (34, 'NWEB', 'PPM_ANALYST_USER'),
+  (39, 'NWEB', 'PPM_ANALYST_USER'),
   (35, 'NWEB', 'PRISON_COLLATOR_LOCAL'),
   (35, 'NWEB', 'PRISON_ANALYST_LOCAL'),
   (36, 'NWEB', 'PF_LOCAL_READER_USER'),
