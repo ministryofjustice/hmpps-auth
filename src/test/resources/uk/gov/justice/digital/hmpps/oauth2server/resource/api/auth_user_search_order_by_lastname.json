@@ -1,0 +1,79 @@
+{
+  "content": [
+    {
+      "userId": "8351b5de-2c38-4c0a-bcad-8ee78de6b5af",
+      "username": "NOMIS_LOCKED_AUTH_DISABLED",
+      "email": "nomis_auth_user@digital.justice.gov.uk",
+      "firstName": "nomis locked",
+      "lastName": "Auth Disabled",
+      "locked": false,
+      "enabled": false,
+      "verified": true
+    },
+    {
+      "userId": "f83c7a90-50c2-4b1b-b5ab-59206f731202",
+      "username": "DELIUS_ENABLED_AUTH_DISABLED",
+      "email": "delius_auth_user@digital.justice.gov.uk",
+      "firstName": "nomis_disabled",
+      "lastName": "Auth Disabled",
+      "locked": false,
+      "enabled": false,
+      "verified": true
+    },
+    {
+      "userId": "9f6f8681-c273-48e5-bf6c-29a2d4fe159d",
+      "username": "NOMIS_ENABLED_AUTH_DISABLED",
+      "email": "nomis_auth_user@digital.justice.gov.uk",
+      "firstName": "nomis_enabled",
+      "lastName": "Auth Disabled",
+      "locked": false,
+      "enabled": false,
+      "verified": true
+    },
+    {
+      "userId": "f83c7a90-50c2-4b1b-b5ab-59206f731203",
+      "username": "DELIUS_ENABLED_AUTH_DISABLED_LOCKED",
+      "email": "delius_auth_user@digital.justice.gov.uk",
+      "firstName": "delius enabled",
+      "lastName": "Auth Disabled Locked",
+      "locked": true,
+      "enabled": false,
+      "verified": true
+    },
+    {
+      "userId": "ad7d37e2-dbad-4b98-af8d-429e822a6bdc",
+      "username": "AUTH_DISABLED",
+      "email": "auth_disabled@digital.justice.gov.uk",
+      "firstName": "Auth",
+      "lastName": "Disabled",
+      "locked": false,
+      "enabled": false,
+      "verified": true
+    }
+  ],
+  "pageable": {
+    "sort": {
+      "sorted": true,
+      "unsorted": false,
+      "empty": false
+    },
+    "pageSize": 10,
+    "pageNumber": 0,
+    "offset": 0,
+    "paged": true,
+    "unpaged": false
+  },
+  "totalPages": 1,
+  "totalElements": 5,
+  "last": true,
+  "number": 0,
+  "size": 10,
+  "numberOfElements": 5,
+  "sort": {
+    "sorted": true,
+    "unsorted": false,
+    "empty": false
+  },
+  "first": true,
+  "empty": false
+}

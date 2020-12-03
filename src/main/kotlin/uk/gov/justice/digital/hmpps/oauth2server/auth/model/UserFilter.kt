@@ -25,7 +25,7 @@ class UserFilter(
   ): Predicate {
     val andBuilder = ImmutableList.builder<Predicate>()
     andBuilder.add(cb.equal(root.get<Any>("source"), AuthSource.auth))
-    if (roleCodes != null) {
+    if (!roleCodes.isNullOrEmpty()) {
       val roleBuilder = ImmutableList.builder<Predicate>()
       roleCodes.forEach {
         roleBuilder.add(cb.equal(root.join<Any, Any>("authorities").get<Any>("roleCode"), it.trim().toUpperCase()))
