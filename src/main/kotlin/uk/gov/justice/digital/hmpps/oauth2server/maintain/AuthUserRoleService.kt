@@ -109,12 +109,12 @@ class AuthUserRoleService(
   val allRoles: List<Authority>
     get() = roleRepository.findAllByOrderByRoleName()
 
-  private fun getAllAssignableRoles(username: String, authorities: Collection<GrantedAuthority>) =
+  fun getAllAssignableRoles(username: String, authorities: Collection<GrantedAuthority>) =
     if (canMaintainAuthUsers(authorities)) {
       // only allow oauth admins to see that role
       allRoles.filter { r: Authority -> "OAUTH_ADMIN" != r.roleCode || canAddAuthClients(authorities) }.toSet()
+      // otherwise they can assign all roles that can be assigned to any of their groups
     } else roleRepository.findByGroupAssignableRolesForUsername(username)
-  // otherwise they can assign all roles that can be assigned to any of their groups
 
   fun getAssignableRoles(username: String, authorities: Collection<GrantedAuthority>): List<Authority> {
     val user = userRepository.findByUsernameAndMasterIsTrue(username.toUpperCase()).orElseThrow()

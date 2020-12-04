@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
@@ -282,5 +283,68 @@ class AuthUserControllerIntTest : IntegrationTest() {
         assertThat(it).contains("SITE_2_GROUP_1")
         assertThat(it).contains("SITE_3_GROUP_1")
       }
+  }
+
+  @Nested
+  inner class SearchableRoles {
+    @Test
+    fun `Searchable roles for group manager user returns their roles based on the groups they manage`() {
+      webTestClient
+        .get().uri("/auth/api/authuser/me/searchable-roles")
+        .headers(setAuthorisation("AUTH_GROUP_MANAGER2", listOf("ROLE_AUTH_GROUP_MANAGER")))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .json(
+          """
+       [{"roleCode":"PF_POLICE","roleName":"Pathfinder Police"}]
+          """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `Searchable roles for user with MAINTAIN_OAUTH_USERS role returns all roles excluding OAUTH_ADMIN`() {
+      webTestClient
+        .get().uri("/auth/api/authuser/me/searchable-roles")
+        .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.[*].roleCode").value<List<String>> {
+          assertThat(it).hasSizeGreaterThan(22)
+          assertThat(it).contains("MAINTAIN_ACCESS_ROLES_ADMIN")
+          assertThat(it).contains("MAINTAIN_OAUTH_USERS")
+          assertThat(it).contains("MAINTAIN_ACCESS_ROLES")
+          assertThat(it).doesNotContain("OAUTH_ADMIN")
+        }
+    }
+
+    @Test
+    fun `Searchable roles for user with MAINTAIN_OAUTH_USERS and OAUTH_ADMIN role returns all roles`() {
+      webTestClient
+        .get().uri("/auth/api/authuser/me/searchable-roles")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS", "ROLE_OAUTH_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.[*].roleCode").value<List<String>> {
+          assertThat(it).hasSizeGreaterThan(23)
+          assertThat(it).contains("MAINTAIN_ACCESS_ROLES")
+          assertThat(it).contains("OAUTH_ADMIN")
+        }
+    }
+
+    @Test
+    fun `Searchable roles for User without MAINTAIN_OAUTH_USERS role and has no groups will not return any roles`() {
+      webTestClient
+        .get().uri("/auth/api/authuser/me/searchable-roles")
+        .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_AUTH_GROUP_MANAGER")))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.[*].roleCode").value<List<String>> {
+          assertThat(it).hasSize(0)
+        }
+    }
   }
 }
