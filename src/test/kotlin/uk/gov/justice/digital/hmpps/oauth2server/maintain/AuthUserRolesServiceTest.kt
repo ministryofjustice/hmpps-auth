@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.maintain
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
@@ -67,7 +68,8 @@ internal class AuthUserRolesServiceTest {
     fun addRoles_noaccess() {
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       val role2 = Authority("BOB", "Bloggs")
-      val user = createSampleUser(username = "user", groups = setOf(Group("group", "desc")), authorities = setOf(role, role2))
+      val user =
+        createSampleUser(username = "user", groups = setOf(Group("group", "desc")), authorities = setOf(role, role2))
       val groupManager = createSampleUser(username = "groupManager", groups = setOf(Group("group2", "desc")))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
@@ -281,7 +283,8 @@ internal class AuthUserRolesServiceTest {
       val group1 = Group("group", "desc")
       val role = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
       val role2 = Authority("BOB", "Bloggs")
-      val groupManager = createSampleUser(username = "groupManager", groups = setOf(group1), authorities = setOf(role, role2))
+      val groupManager =
+        createSampleUser(username = "groupManager", groups = setOf(group1), authorities = setOf(role, role2))
       val user = createSampleUser(username = "user", groups = setOf(group1), authorities = setOf(role, role2))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
         .thenReturn(Optional.of(user))
@@ -382,6 +385,32 @@ internal class AuthUserRolesServiceTest {
         )
       )
       assertThat(service.getAssignableRoles("BOB", SUPER_USER)).containsExactly(first, second)
+    }
+  }
+
+  @Nested
+  inner class AllAssignableRoles {
+    @Test
+    fun `all assignable roles for group manager`() {
+      val first = Authority("FIRST", "Role First")
+      val second = Authority("SECOND", "Role Second")
+      val fred = Authority("FRED", "Role Fred")
+
+      whenever(roleRepository.findByGroupAssignableRolesForUsername(anyString())).thenReturn(setOf(first, fred, second))
+      assertThat(service.getAllAssignableRoles("BOB", GROUP_MANAGER_ROLE)).containsOnly(first, fred, second)
+      verify(roleRepository, never()).findAllByOrderByRoleName()
+    }
+
+    @Test
+    fun `all assignable roles for Super User`() {
+      val first = Authority("FIRST", "Role First")
+      val second = Authority("SECOND", "Role Second")
+      val fred = Authority("FRED", "Role Fred")
+      val joe = Authority("JOE", "Role Joe")
+
+      whenever(roleRepository.findAllByOrderByRoleName()).thenReturn(listOf(first, fred, second, joe))
+      assertThat(service.getAllAssignableRoles("BOB", SUPER_USER)).containsOnly(first, fred, second, joe)
+      verify(roleRepository, never()).findByGroupAssignableRolesForUsername(anyString())
     }
   }
 

@@ -14,14 +14,17 @@ import org.mockito.Mockito.never
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
+import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AmendUser
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AuthUser
@@ -40,8 +43,9 @@ class AuthUserControllerTest {
   private val userService: UserService = mock()
   private val authUserService: AuthUserService = mock()
   private val authUserGroupService: AuthUserGroupService = mock()
+  private val authUserRoleService: AuthUserRoleService = mock()
   private val request: HttpServletRequest = mock()
-  private val authUserController = AuthUserController(userService, authUserService, authUserGroupService, false)
+  private val authUserController = AuthUserController(userService, authUserService, authUserGroupService, authUserRoleService, false)
   private val authentication = UsernamePasswordAuthenticationToken("bob", "pass", listOf())
 
   @Test
@@ -514,6 +518,15 @@ class AuthUserControllerTest {
     whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(listOf(group1, group2))
     val responseEntity = authUserController.assignableGroups(authentication)
     assertThat(responseEntity).containsOnly(AuthUserGroup(group1), AuthUserGroup(group2))
+  }
+
+  @Test
+  fun `Get list of searchable roles success`() {
+    val role1 = Authority("roles1", "desc1")
+    val role2 = Authority("roles2", "desc2")
+    whenever(authUserRoleService.getAllAssignableRoles(anyString(), any())).thenReturn(setOf(role1, role2))
+    val responseEntity = authUserController.searchableRoles(authentication)
+    assertThat(responseEntity).containsOnly(AuthUserRole(role1), AuthUserRole(role2))
   }
 
   private val authUser: User
