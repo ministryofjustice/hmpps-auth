@@ -109,8 +109,14 @@ class ResetPasswordServiceImpl(
 
     val userDetails = userService.findEnabledMasterUserPersonDetails(user.username)
       // can't find an enabled user in any system, so give up
-      ?: return TemplateAndParameters(resetUnavailableTemplateId, user.username, user.name)
-
+      ?: return TemplateAndParameters(
+        resetUnavailableTemplateId,
+        mapOf(
+          "firstName" to user.username,
+          "fullName" to user.name,
+          "${user.authSource}User" to "true"
+        )
+      )
     // only allow reset for active accounts that aren't locked
     // or are locked by getting password incorrect (in either c-nomis or auth)
     val firstName = userDetails.firstName
@@ -124,7 +130,14 @@ class ResetPasswordServiceImpl(
         mapOf("firstName" to firstName, "fullName" to fullName, "resetLink" to resetLink)
       )
     }
-    return TemplateAndParameters(resetUnavailableTemplateId, firstName, fullName)
+    return TemplateAndParameters(
+      resetUnavailableTemplateId,
+      mapOf(
+        "firstName" to firstName,
+        "fullName" to fullName,
+        "${userDetails.authSource}User" to "true"
+      )
+    )
   }
 
   @Throws(NotificationClientRuntimeException::class)

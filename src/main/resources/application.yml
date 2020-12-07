@@ -80,7 +80,7 @@ application:
   notify:
     verify.template: 4b285841-41ba-47d1-b6b0-104440c4e312
     reset.template: 75fca0df-7652-4339-bd14-291023bee027
-    reset-unavailable.template: e6c105cd-d5b3-48dc-981e-9a346bf2b1b7
+    reset-unavailable.template: a5e97b4b-889a-48f9-8ecf-b61f202c2deb
     reset-unavailable-email-not-found.template: 85060e77-d656-4349-bce9-fa5d8b833793
     create-initial-password.template: 43398947-e0f6-4722-9e33-62d09834e6c7
     create-initial-password-resend.template: e38b0157-d7c5-4a00-a183-dc9931b00dfb

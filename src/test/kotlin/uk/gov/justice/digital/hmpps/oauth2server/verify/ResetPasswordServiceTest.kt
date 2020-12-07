@@ -79,7 +79,24 @@ class ResetPasswordServiceTest {
         eq("resetUnavailableTemplate"),
         eq("email"),
         check {
-          assertThat(it).containsOnly(entry("firstName", "USER"), entry("fullName", "first last"))
+          assertThat(it).containsOnly(entry("firstName", "USER"), entry("fullName", "first last"), entry("nomisUser", "true"))
+        },
+        isNull()
+      )
+      assertThat(optional).isEmpty
+    }
+
+    @Test
+    fun requestResetPassword_noDeliusUser() {
+      val user = createSampleUser(username = "USER", email = "email", verified = true, source = delius)
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+      whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
+      val optional = resetPasswordService.requestResetPassword("user", "url")
+      verify(notificationClient).sendEmail(
+        eq("resetUnavailableTemplate"),
+        eq("email"),
+        check {
+          assertThat(it).containsOnly(entry("firstName", "USER"), entry("fullName", "first last"), entry("deliusUser", "true"))
         },
         isNull()
       )
@@ -98,7 +115,7 @@ class ResetPasswordServiceTest {
         eq("resetUnavailableTemplate"),
         eq("email"),
         check {
-          assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"))
+          assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("nomisUser", "true"))
         },
         isNull()
       )
@@ -146,7 +163,7 @@ class ResetPasswordServiceTest {
         eq("resetUnavailableTemplate"),
         eq("email"),
         check {
-          assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"))
+          assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("nomisUser", "true"))
         },
         isNull()
       )
@@ -332,7 +349,7 @@ class ResetPasswordServiceTest {
         eq("resetUnavailableTemplate"),
         eq("email"),
         check {
-          assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"))
+          assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("authUser", "true"))
         },
         isNull()
       )
