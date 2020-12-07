@@ -79,7 +79,13 @@ class ResetPasswordServiceTest {
         eq("resetUnavailableTemplate"),
         eq("email"),
         check {
-          assertThat(it).containsOnly(entry("firstName", "USER"), entry("fullName", "first last"), entry("nomisUser", "true"))
+          assertThat(it).containsOnly(
+            entry("firstName", "USER"),
+            entry("fullName", "first last"),
+            entry("nomisUser", true),
+            entry("deliusUser", false),
+            entry("authUser", false)
+          )
         },
         isNull()
       )
@@ -96,7 +102,13 @@ class ResetPasswordServiceTest {
         eq("resetUnavailableTemplate"),
         eq("email"),
         check {
-          assertThat(it).containsOnly(entry("firstName", "USER"), entry("fullName", "first last"), entry("deliusUser", "true"))
+          assertThat(it).containsOnly(
+            entry("firstName", "USER"),
+            entry("fullName", "first last"),
+            entry("deliusUser", true),
+            entry("nomisUser", false),
+            entry("authUser", false)
+          )
         },
         isNull()
       )
@@ -115,7 +127,13 @@ class ResetPasswordServiceTest {
         eq("resetUnavailableTemplate"),
         eq("email"),
         check {
-          assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("nomisUser", "true"))
+          assertThat(it).containsOnly(
+            entry("firstName", "Bob"),
+            entry("fullName", "Bob Smith"),
+            entry("nomisUser", true),
+            entry("deliusUser", false),
+            entry("authUser", false)
+          )
         },
         isNull()
       )
@@ -163,7 +181,13 @@ class ResetPasswordServiceTest {
         eq("resetUnavailableTemplate"),
         eq("email"),
         check {
-          assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("nomisUser", "true"))
+          assertThat(it).containsOnly(
+            entry("firstName", "Bob"),
+            entry("fullName", "Bob Smith"),
+            entry("nomisUser", true),
+            entry("deliusUser", false),
+            entry("authUser", false)
+          )
         },
         isNull()
       )
@@ -349,7 +373,13 @@ class ResetPasswordServiceTest {
         eq("resetUnavailableTemplate"),
         eq("email"),
         check {
-          assertThat(it).containsOnly(entry("firstName", "Bob"), entry("fullName", "Bob Smith"), entry("authUser", "true"))
+          assertThat(it).containsOnly(
+            entry("firstName", "Bob"),
+            entry("fullName", "Bob Smith"),
+            entry("nomisUser", false),
+            entry("deliusUser", false),
+            entry("authUser", true)
+          )
         },
         isNull()
       )

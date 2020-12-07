@@ -109,14 +109,8 @@ class ResetPasswordServiceImpl(
 
     val userDetails = userService.findEnabledMasterUserPersonDetails(user.username)
       // can't find an enabled user in any system, so give up
-      ?: return TemplateAndParameters(
-        resetUnavailableTemplateId,
-        mapOf(
-          "firstName" to user.username,
-          "fullName" to user.name,
-          "${user.authSource}User" to "true"
-        )
-      )
+      ?: return TemplateAndParameters(resetUnavailableTemplateId, user.username, user.name, user.authSource)
+
     // only allow reset for active accounts that aren't locked
     // or are locked by getting password incorrect (in either c-nomis or auth)
     val firstName = userDetails.firstName
@@ -130,14 +124,7 @@ class ResetPasswordServiceImpl(
         mapOf("firstName" to firstName, "fullName" to fullName, "resetLink" to resetLink)
       )
     }
-    return TemplateAndParameters(
-      resetUnavailableTemplateId,
-      mapOf(
-        "firstName" to firstName,
-        "fullName" to fullName,
-        "${userDetails.authSource}User" to "true"
-      )
-    )
+    return TemplateAndParameters(resetUnavailableTemplateId, firstName, fullName, userDetails.authSource)
   }
 
   @Throws(NotificationClientRuntimeException::class)
@@ -146,7 +133,7 @@ class ResetPasswordServiceImpl(
   }
 
   @Throws(NotificationClientRuntimeException::class)
-  private fun sendEmail(username: String?, template: String, parameters: Map<String, String?>, email: String?) {
+  private fun sendEmail(username: String?, template: String, parameters: Map<String, Any?>, email: String?) {
     try {
       log.info("Sending reset password to notify for user {}", username)
       notificationClient.sendEmail(template, email, parameters, null)
@@ -255,13 +242,26 @@ class ResetPasswordServiceImpl(
 
   internal data class TemplateAndParameters(
     internal val template: String,
-    internal val parameters: Map<String, String>,
+    internal val parameters: Map<String, Any>,
   ) {
     constructor(template: String, firstName: String, fullName: String) :
       this(template, mapOf("firstName" to firstName, "fullName" to fullName))
 
+    constructor(template: String, firstName: String, fullName: String, authSource: String) :
+      this(
+        template,
+        mapOf(
+          "firstName" to firstName,
+          "fullName" to fullName,
+          "deliusUser" to false,
+          "authUser" to false,
+          "nomisUser" to false,
+          "${authSource}User" to true
+        )
+      )
+
     internal val resetLink: String?
-      get() = parameters["resetLink"]
+      get() = parameters["resetLink"] as String?
   }
 
   // Throttling doesn't allow checked exceptions to be thrown, hence wrapped in a runtime exception
