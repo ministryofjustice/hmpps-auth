@@ -9,6 +9,9 @@ repositories {
   maven("https://dl.bintray.com/gov-uk-notify/maven")
 }
 
+ext["tomcat.version"] = "9.0.40"
+ext["hibernate.version"] = "5.4.24.Final"
+
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
