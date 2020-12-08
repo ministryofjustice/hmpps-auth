@@ -25,14 +25,14 @@ class UserFilter(
   ): Predicate {
     val andBuilder = ImmutableList.builder<Predicate>()
     andBuilder.add(cb.equal(root.get<Any>("source"), AuthSource.auth))
-    if (roleCodes != null) {
+    if (!roleCodes.isNullOrEmpty()) {
       val roleBuilder = ImmutableList.builder<Predicate>()
       roleCodes.forEach {
         roleBuilder.add(cb.equal(root.join<Any, Any>("authorities").get<Any>("roleCode"), it.trim().toUpperCase()))
       }
       andBuilder.add(cb.or(*roleBuilder.build().toTypedArray()))
     }
-    if (groupCodes != null) {
+    if (!groupCodes.isNullOrEmpty()) {
       val groupBuilder = ImmutableList.builder<Predicate>()
       groupCodes.forEach {
         groupBuilder.add(cb.equal(root.join<Any, Any>("groups").get<Any>("groupCode"), it.trim().toUpperCase()))

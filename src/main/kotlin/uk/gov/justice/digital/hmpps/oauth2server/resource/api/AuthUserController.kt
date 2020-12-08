@@ -30,9 +30,11 @@ import springfox.documentation.annotations.ApiIgnore
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
+import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -49,6 +51,7 @@ class AuthUserController(
   private val userService: UserService,
   private val authUserService: AuthUserService,
   private val authUserGroupService: AuthUserGroupService,
+  private val authUserRoleService: AuthUserRoleService,
   @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
 ) {
 
@@ -142,7 +145,7 @@ class AuthUserController(
     ) @RequestParam(required = false) name: String?,
     @ApiParam(value = "The role codes of the user.") @RequestParam(required = false) roles: List<String>?,
     @ApiParam(value = "The group codes of the user.") @RequestParam(required = false) groups: List<String>?,
-    @PageableDefault(sort = ["username"], direction = Sort.Direction.ASC) pageable: Pageable,
+    @PageableDefault(sort = ["Person.lastName", "Person.firstName"], direction = Sort.Direction.ASC) pageable: Pageable,
     @ApiIgnore authentication: Authentication,
   ): Page<AuthUser> =
     authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities)
@@ -158,13 +161,29 @@ class AuthUserController(
   )
   @ApiResponses(
     value = [
-      ApiResponse(code = 200, message = "OK", response = AuthUserGroup::class, responseContainer = "List"),
       ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)
     ]
   )
   fun assignableGroups(@ApiIgnore authentication: Authentication): List<AuthUserGroup> {
     val groups = authUserGroupService.getAssignableGroups(authentication.name, authentication.authorities)
     return groups.map { AuthUserGroup(it) }
+  }
+
+  @GetMapping("/api/authuser/me/searchable-roles")
+  @ApiOperation(
+    value = "Get list of searchable roles.",
+    notes = "Get list of roles that can be search for by the current user.",
+    nickname = "searchableRoles",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class)
+    ]
+  )
+  fun searchableRoles(@ApiIgnore authentication: Authentication): List<AuthUserRole> {
+    val roles = authUserRoleService.getAllAssignableRoles(authentication.name, authentication.authorities)
+    return roles.map { AuthUserRole(it) }
   }
 
   @PutMapping("/api/authuser/{username}")
@@ -208,7 +227,7 @@ class AuthUserController(
     if (createUser.groupCodes != null) {
       mergedGroups.addAll(createUser.groupCodes)
     }
-    if (createUser.groupCode != null) {
+    if (!createUser.groupCode.isNullOrBlank()) {
       mergedGroups.add(createUser.groupCode)
     }
 

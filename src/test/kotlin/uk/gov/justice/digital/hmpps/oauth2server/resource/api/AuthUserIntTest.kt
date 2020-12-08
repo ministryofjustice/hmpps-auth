@@ -175,7 +175,7 @@ class AuthUserIntTest : IntegrationTest() {
   @Test
   fun `Auth User search endpoint returns user data`() {
     webTestClient
-      .get().uri("/auth/api/authuser/search?name=test2")
+      .get().uri("/auth/api/authuser/search?name=test2&groups=&roles=")
       .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -185,10 +185,22 @@ class AuthUserIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `Auth User search endpoint returns user data sorted by last name`() {
+    webTestClient
+      .get().uri("/auth/api/authuser/search?name=AUTH_DISABLED&groups=&roles=")
+      .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("auth_user_search_order_by_lastname.json".readFile())
+  }
+
+  @Test
   fun `Auth User search endpoint returns user data for group managers`() {
     webTestClient
       .mutate().responseTimeout(Duration.ofHours(1)).build()
-      .get().uri("/auth/api/authuser/search?name=test2")
+      .get().uri("/auth/api/authuser/search?name=test2&groups=&roles=")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isOk
