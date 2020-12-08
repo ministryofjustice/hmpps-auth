@@ -55,7 +55,7 @@ SPRING_PROFILES_ACTIVE=dev,token-verification,delius,azure-oidc-int-test ./gradl
 
 ### Run integration tests locally against the development instance (in a separate terminal) with:
 ```bash
-./gradlew testFluentIntegration
+./gradlew testIntegration
 ```
 
 (Will require a matching version of chromedriver to be downloaded and available on the path - check the version of selenium in build.gradle.kts)

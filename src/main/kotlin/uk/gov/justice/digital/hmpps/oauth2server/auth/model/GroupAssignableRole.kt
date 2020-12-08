@@ -18,12 +18,12 @@ data class GroupAssignableRole(
   @Id
   @ManyToOne
   @JoinColumn(name = "role_id")
-  val role: Authority? = null,
+  val role: Authority,
 
   @Id
   @ManyToOne
   @JoinColumn(name = "group_id")
-  val group: Group? = null,
+  val group: Group,
 
   val automatic: Boolean = false,
 ) : Serializable {
