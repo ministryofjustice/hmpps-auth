@@ -80,7 +80,7 @@ class ResetPasswordServiceTest {
         eq("email"),
         check {
           assertThat(it).containsOnly(
-            entry("firstName", "USER"),
+            entry("firstName", "first"),
             entry("fullName", "first last"),
             entry("nomisUser", true),
             entry("deliusUser", false),
@@ -103,7 +103,7 @@ class ResetPasswordServiceTest {
         eq("email"),
         check {
           assertThat(it).containsOnly(
-            entry("firstName", "USER"),
+            entry("firstName", "first"),
             entry("fullName", "first last"),
             entry("deliusUser", true),
             entry("nomisUser", false),

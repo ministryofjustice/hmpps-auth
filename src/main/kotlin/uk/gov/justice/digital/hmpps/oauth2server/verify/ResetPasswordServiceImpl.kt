@@ -109,7 +109,7 @@ class ResetPasswordServiceImpl(
 
     val userDetails = userService.findEnabledMasterUserPersonDetails(user.username)
       // can't find an enabled user in any system, so give up
-      ?: return TemplateAndParameters(resetUnavailableTemplateId, user.username, user.name, user.authSource)
+      ?: return TemplateAndParameters(resetUnavailableTemplateId, user.firstName, user.name, user.authSource)
 
     // only allow reset for active accounts that aren't locked
     // or are locked by getting password incorrect (in either c-nomis or auth)
