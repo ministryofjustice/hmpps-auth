@@ -1,16 +1,13 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.1.2"
-  kotlin("plugin.spring") version "1.4.10"
-  kotlin("plugin.jpa") version "1.4.10"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.1.0"
+  kotlin("plugin.spring") version "1.4.21"
+  kotlin("plugin.jpa") version "1.4.21"
   id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
 }
 
 repositories {
   maven("https://dl.bintray.com/gov-uk-notify/maven")
 }
-
-ext["tomcat.version"] = "9.0.40" // Introduced to mitigate CVE-2020-17527 - remove once this version of tomcat is pulled in by spring-boot-starter-tomcat
-ext["hibernate.version"] = "5.4.24.Final" // Introduced to mitigate CVE-2020-25638 - remove once this version of hibernate is pulled in by spring-boot-starter-data-jpa
 
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
