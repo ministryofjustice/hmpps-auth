@@ -223,7 +223,7 @@ The public key is in the JWKS URI thus:
 The API must store this key on startup to allow for future public key rotation.
 
 #### Using Authorisation Code
-To secure an front end application it is necessary to detect that no JWT session exists and to forward to the HMPPS Auth endpoint called oauth/authorize - an example is shown below:
+To secure a front end application it is necessary to detect that no JWT session exists and to forward to the HMPPS Auth endpoint called oauth/authorize - an example is shown below:
 
 `curl --location --request GET 'https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/authorize?response_type=code&state=abcdef&client_id=dev&redirect_uri=http://localhost:3000'`
 
