@@ -194,7 +194,7 @@ class AuthUserService(
     if (user.verified) {
       user.verified = false
       userRepository.save(user)
-      return verifyEmailService.requestVerification(
+      return verifyEmailService.changeEmailAndRequestVerification(
         usernameInput,
         emailAddressInput,
         user.firstName,

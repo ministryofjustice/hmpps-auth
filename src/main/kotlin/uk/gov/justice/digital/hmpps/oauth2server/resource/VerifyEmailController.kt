@@ -111,7 +111,6 @@ class VerifyEmailController(
         modelAndView.addObject("verifyLink", verifyLink)
       }
       modelAndView.addObject("email", chosenEmail)
-      modelAndView
     } catch (e: VerifyEmailException) {
       log.info("Validation failed for email address due to {}", e.reason)
       telemetryClient.trackEvent("VerifyEmailRequestFailure", mapOf("username" to username, "reason" to e.reason), null)
@@ -183,7 +182,7 @@ class VerifyEmailController(
     val userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow()
     val firstName = userPersonDetails.firstName
     val fullName = userPersonDetails.name
-    return verifyEmailService.requestVerification(username, emailInput, firstName, fullName, url, emailType)
+    return verifyEmailService.changeEmailAndRequestVerification(username, emailInput, firstName, fullName, url, emailType)
   }
 
   private fun createChangeOrVerifyEmailError(

@@ -113,7 +113,7 @@ class VerifyEmailControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(createSampleUser()))
     whenever(
-      verifyEmailService.requestVerification(
+      verifyEmailService.changeEmailAndRequestVerification(
         anyString(),
         anyString(),
         anyString(),
@@ -131,7 +131,7 @@ class VerifyEmailControllerTest {
   @Test
   fun verifyEmail_Success() {
     whenever(
-      verifyEmailService.requestVerification(
+      verifyEmailService.changeEmailAndRequestVerification(
         anyString(),
         anyString(),
         anyString(),
@@ -151,7 +151,7 @@ class VerifyEmailControllerTest {
       entry("emailType", EmailType.PRIMARY),
       entry("email", email)
     )
-    verify(verifyEmailService).requestVerification(
+    verify(verifyEmailService).changeEmailAndRequestVerification(
       "user",
       email,
       "Bob",
@@ -212,7 +212,7 @@ class VerifyEmailControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(createSampleUser()))
     whenever(
-      verifyEmailService.requestVerification(
+      verifyEmailService.changeEmailAndRequestVerification(
         anyString(),
         anyString(),
         anyString(),
@@ -230,7 +230,7 @@ class VerifyEmailControllerTest {
   @Test
   fun verifySecondaryEmail_Success() {
     whenever(
-      verifyEmailService.requestVerification(
+      verifyEmailService.changeEmailAndRequestVerification(
         anyString(),
         anyString(),
         anyString(),
@@ -256,7 +256,7 @@ class VerifyEmailControllerTest {
       entry("emailType", EmailType.SECONDARY),
       entry("email", email)
     )
-    verify(verifyEmailService).requestVerification(
+    verify(verifyEmailService).changeEmailAndRequestVerification(
       "user",
       email,
       "Bob",
