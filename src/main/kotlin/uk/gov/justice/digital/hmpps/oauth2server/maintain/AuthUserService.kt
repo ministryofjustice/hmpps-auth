@@ -86,6 +86,43 @@ class AuthUserService(
     return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate", groups)
   }
 
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(CreateUserException::class, NotificationClientException::class, VerifyEmailException::class)
+  fun createUserByEmail(
+    emailInput: String?,
+    firstName: String?,
+    lastName: String?,
+    groupCodes: Set<String>?,
+    url: String,
+    creator: String,
+    authorities: Collection<GrantedAuthority>,
+  ): String {
+    // and use email helper to format input email
+    val email = EmailHelper.format(emailInput)
+    // validate
+    validate(email, firstName, lastName, EmailType.PRIMARY)
+    // get the initial groups to assign to - only allowed to be empty if super user
+    val groups = getInitialGroups(groupCodes, creator, authorities)
+    // create the user
+    val person = Person(firstName!!.trim(), lastName!!.trim())
+    // obtain list of authorities that should be assigned for group
+    val roles = groups.flatMap { it.assignableRoles }.filter { it.automatic }.mapNotNull { it.role }.toSet()
+
+    // username should now be set to a user's email address & ensure username always uppercase
+    val username = StringUtils.upperCase(email)
+
+    val user = User(
+      username = username,
+      email = email,
+      enabled = true,
+      source = AuthSource.auth,
+      person = person,
+      authorities = roles,
+      groups = groups,
+    )
+    return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate", groups)
+  }
+
   private fun getInitialEmailSupportLink(groups: Collection<Group>): String {
     val serviceCode = groups.firstOrNull { it.groupCode.startsWith("PECS") }?.let { "BOOK_MOVE" } ?: "NOMIS"
     return oauthServiceRepository.findById(serviceCode).map { it.email!! }.orElseThrow()
@@ -248,6 +285,7 @@ class AuthUserService(
     )
   }
 
+  // Old validate method.
   @Throws(CreateUserException::class, VerifyEmailException::class)
   private fun validate(username: String?, email: String?, firstName: String?, lastName: String?, emailType: EmailType) {
     if (username.isNullOrBlank() || username.length < MIN_LENGTH_USERNAME) throw CreateUserException(
@@ -257,7 +295,22 @@ class AuthUserService(
 
     if (username.length > MAX_LENGTH_USERNAME) throw CreateUserException("username", "maxlength")
     if (!username.matches("^[A-Z0-9_]*\$".toRegex())) throw CreateUserException("username", "format")
+
     validate(firstName, lastName)
+    verifyEmailService.validateEmailAddress(email, emailType)
+  }
+
+  @Throws(CreateUserException::class, VerifyEmailException::class)
+  private fun validate(email: String?, firstName: String?, lastName: String?, emailType: EmailType) {
+    validate(firstName, lastName)
+
+    // Username will be set to the email
+    if (email.isNullOrBlank() || email.length < MIN_LENGTH_USERNAME) throw CreateUserException(
+      "username",
+      "length"
+    )
+    if (email.length > MAX_LENGTH_USERNAME) throw CreateUserException("username", "maxlength")
+
     verifyEmailService.validateEmailAddress(email, emailType)
   }
 
@@ -326,7 +379,7 @@ class AuthUserService(
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
 
     // Data item field size validation checks
-    private const val MAX_LENGTH_USERNAME = 30
+    private const val MAX_LENGTH_USERNAME = 240
     private const val MAX_LENGTH_FIRST_NAME = 50
     private const val MAX_LENGTH_LAST_NAME = 50
     private const val MIN_LENGTH_USERNAME = 6

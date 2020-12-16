@@ -101,9 +101,11 @@ class AuthUserServiceTest {
 
   @Test
   fun createUser_usernameMaxLength() {
+    val userName: String = "A".repeat(241)
+
     assertThatThrownBy {
       authUserService.createUser(
-        "ThisIsLongerThanTheAllowedUsernameLength",
+        userName,
         "email",
         "first",
         "last",
