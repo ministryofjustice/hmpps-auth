@@ -124,6 +124,35 @@ class ChangeEmailSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `Change email also changes username`() {
+    goTo(loginPage)
+      .loginExistingPasswordChangeEmail("auth_change_email@justice.gov.uk")
+    goTo(passwordPromptForEmailPage)
+      .isAtPage()
+      .inputAndConfirmCurrentPassword("password123456")
+    changeEmailPage
+      .isAtPage()
+      .inputAndConfirmNewEmail("auth_change_email_new@justice.gov.uk")
+    verifyEmailSentPage
+      .isAt()
+    goTo(loginPage).loginAsWithUnverifiedEmail("auth_change_email_new@justice.gov.uk")
+  }
+
+  @Test
+  fun `Change email rejected if email as username already exists`() {
+    goTo(loginPage)
+      .loginExistingPasswordChangeEmail("auth_user_email_test@justice.gov.uk")
+    goTo(passwordPromptForEmailPage)
+      .isAtPage()
+      .inputAndConfirmCurrentPassword("password123456")
+    changeEmailPage
+      .isAtPage()
+      .inputAndConfirmNewEmail("auth_user_email@justice.gov.uk")
+    verifyEmailErrorPage
+      .checkError("There is already an account with this email address. Please login with that email address instead.")
+  }
+
+  @Test
   fun `Change email flow with failing email`() {
     goTo(loginPage)
       .loginExistingPasswordChangeEmail("AUTH_CHANGE_EMAIL_INCOMPLETE", "password123456")

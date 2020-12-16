@@ -715,7 +715,7 @@ class AuthUserServiceTest {
       EmailType.PRIMARY
     )
     verify(notificationClient).sendEmail(anyString(), anyString(), any(), isNull())
-    verify(verifyEmailService, never()).requestVerification(
+    verify(verifyEmailService, never()).changeEmailAndRequestVerification(
       anyString(),
       anyString(),
       anyString(),
@@ -731,7 +731,7 @@ class AuthUserServiceTest {
       createSampleUser(username = "SOME_USER_NAME", firstName = "first", lastName = "last", verified = true)
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail))
     whenever(
-      verifyEmailService.requestVerification(
+      verifyEmailService.changeEmailAndRequestVerification(
         anyString(),
         anyString(),
         anyString(),
@@ -748,7 +748,7 @@ class AuthUserServiceTest {
       GRANTED_AUTHORITY_SUPER_USER,
       EmailType.PRIMARY
     )
-    verify(verifyEmailService).requestVerification(
+    verify(verifyEmailService).changeEmailAndRequestVerification(
       "SOME_USER_NAME",
       "some_user_email@gov.uk",
       "first",
@@ -762,7 +762,7 @@ class AuthUserServiceTest {
   @Test
   fun amendUserEmail_verifiedEmail_savesUnverifiedUser() {
     whenever(
-      verifyEmailService.requestVerification(
+      verifyEmailService.changeEmailAndRequestVerification(
         anyString(),
         anyString(),
         anyString(),

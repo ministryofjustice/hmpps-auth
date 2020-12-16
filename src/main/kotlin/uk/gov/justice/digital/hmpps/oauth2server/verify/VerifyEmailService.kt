@@ -65,7 +65,7 @@ class VerifyEmailService(
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(NotificationClientException::class, VerifyEmailException::class)
-  fun requestVerification(
+  fun changeEmailAndRequestVerification(
     username: String,
     emailInput: String?,
     firstName: String?,
@@ -81,6 +81,13 @@ class VerifyEmailService(
     validateEmailAddress(email, emailType)
     when (emailType) {
       EmailType.PRIMARY -> {
+        // if the user is configured so that the email address is their username, need to check it is unique
+        if (user.email == username.toLowerCase()) {
+          userRepository.findByUsername(email!!.toUpperCase()).ifPresent {
+            throw VerifyEmailException("duplicate")
+          }
+          user.username = email
+        }
         user.email = email
         user.verified = false
       }
