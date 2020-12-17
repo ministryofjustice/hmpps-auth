@@ -304,12 +304,7 @@ class AuthUserService(
   private fun validate(email: String?, firstName: String?, lastName: String?, emailType: EmailType) {
     validate(firstName, lastName)
 
-    // Username will be set to the email
-    if (email.isNullOrBlank() || email.length < MIN_LENGTH_USERNAME) throw CreateUserException(
-      "username",
-      "length"
-    )
-    if (email.length > MAX_LENGTH_USERNAME) throw CreateUserException("username", "maxlength")
+    if (email.isNullOrBlank() || email.length > MAX_LENGTH_EMAIL) throw CreateUserException("username", "maxlength")
 
     verifyEmailService.validateEmailAddress(email, emailType)
   }
@@ -379,11 +374,12 @@ class AuthUserService(
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
 
     // Data item field size validation checks
-    private const val MAX_LENGTH_USERNAME = 240
+    private const val MAX_LENGTH_USERNAME = 30
     private const val MAX_LENGTH_FIRST_NAME = 50
     private const val MAX_LENGTH_LAST_NAME = 50
     private const val MIN_LENGTH_USERNAME = 6
     private const val MIN_LENGTH_FIRST_NAME = 2
     private const val MIN_LENGTH_LAST_NAME = 2
+    private const val MAX_LENGTH_EMAIL = 240
   }
 }
