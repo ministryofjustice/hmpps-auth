@@ -46,6 +46,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkAndEmail
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientApi
 import java.time.LocalDateTime
@@ -266,9 +267,9 @@ class AuthUserServiceTest {
           assertThat(email).isEqualTo("email")
           assertThat(username).isEqualTo("USERME")
           assertThat(password).isNull()
-          assertThat(isMaster).isTrue()
-          assertThat(verified).isFalse()
-          assertThat(isCredentialsNonExpired).isFalse()
+          assertThat(isMaster).isTrue
+          assertThat(verified).isFalse
+          assertThat(isCredentialsNonExpired).isFalse
           assertThat(authorities).isEmpty()
         }
       }
@@ -1125,7 +1126,7 @@ class AuthUserServiceTest {
       EmailType.PRIMARY
     )
     verify(notificationClient).sendEmail(anyString(), anyString(), any(), isNull())
-    verify(verifyEmailService, never()).requestVerification(
+    verify(verifyEmailService, never()).changeEmailAndRequestVerification(
       anyString(),
       anyString(),
       anyString(),
@@ -1141,7 +1142,7 @@ class AuthUserServiceTest {
       createSampleUser(username = "SOME_USER_NAME", firstName = "first", lastName = "last", verified = true)
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail))
     whenever(
-      verifyEmailService.requestVerification(
+      verifyEmailService.changeEmailAndRequestVerification(
         anyString(),
         anyString(),
         anyString(),
@@ -1149,7 +1150,7 @@ class AuthUserServiceTest {
         anyString(),
         eq(EmailType.PRIMARY)
       )
-    ).thenReturn("SOME_VERIFY_LINK")
+    ).thenReturn(LinkAndEmail("SOME_VERIFY_LINK", "newemail@justice.gov.uk"))
     authUserService.amendUserEmail(
       "SOME_USER_NAME",
       "some_user_email@gov.uk",
@@ -1158,7 +1159,7 @@ class AuthUserServiceTest {
       GRANTED_AUTHORITY_SUPER_USER,
       EmailType.PRIMARY
     )
-    verify(verifyEmailService).requestVerification(
+    verify(verifyEmailService).changeEmailAndRequestVerification(
       "SOME_USER_NAME",
       "some_user_email@gov.uk",
       "first",
@@ -1172,7 +1173,7 @@ class AuthUserServiceTest {
   @Test
   fun amendUserEmail_verifiedEmail_savesUnverifiedUser() {
     whenever(
-      verifyEmailService.requestVerification(
+      verifyEmailService.changeEmailAndRequestVerification(
         anyString(),
         anyString(),
         anyString(),
@@ -1180,7 +1181,7 @@ class AuthUserServiceTest {
         anyString(),
         eq(EmailType.PRIMARY)
       )
-    ).thenReturn("SOME_VERIFY_LINK")
+    ).thenReturn(LinkAndEmail("SOME_VERIFY_LINK", "newemail@justice.gov.uk"))
     val userVerifiedEmail = createSampleUser(username = "SOME_USER_NAME", verified = true)
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail))
     authUserService.amendUserEmail(
@@ -1191,7 +1192,7 @@ class AuthUserServiceTest {
       GRANTED_AUTHORITY_SUPER_USER,
       EmailType.PRIMARY
     )
-    assertThat(userVerifiedEmail.verified).isFalse()
+    assertThat(userVerifiedEmail.verified).isFalse
   }
 
   private fun userOfGroups(vararg groupList: String): User {
@@ -1470,7 +1471,7 @@ class AuthUserServiceTest {
     val user = createSampleUser(username = "user")
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     authUserService.lockUser(user)
-    assertThat(user.locked).isTrue()
+    assertThat(user.locked).isTrue
     verify(userRepository).save(user)
   }
 
@@ -1481,7 +1482,7 @@ class AuthUserServiceTest {
     authUserService.lockUser(user)
     verify(userRepository).save<User>(
       check {
-        assertThat(it.locked).isTrue()
+        assertThat(it.locked).isTrue
         assertThat(it.username).isEqualTo("bob")
         assertThat(it.source).isEqualTo(nomis)
       }
@@ -1493,8 +1494,8 @@ class AuthUserServiceTest {
     val user = createSampleUser(username = "user", locked = true)
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
     authUserService.unlockUser(user)
-    assertThat(user.locked).isFalse()
-    assertThat(user.verified).isTrue()
+    assertThat(user.locked).isFalse
+    assertThat(user.verified).isTrue
     verify(userRepository).save(user)
   }
 
@@ -1505,8 +1506,8 @@ class AuthUserServiceTest {
     authUserService.unlockUser(user)
     verify(userRepository).save<User>(
       check {
-        assertThat(it.locked).isFalse()
-        assertThat(it.verified).isTrue()
+        assertThat(it.locked).isFalse
+        assertThat(it.verified).isTrue
         assertThat(it.username).isEqualTo("bob")
         assertThat(it.source).isEqualTo(nomis)
       }

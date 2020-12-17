@@ -30,24 +30,26 @@
     <a class="govuk-button" th:href="@{/account-details}" id="continue">OK, continue</a>
     </span>
   <span th:unless="${source == 'delius'}">
-        <h1 class="govuk-label-wrapper">
-        <label class="govuk-label govuk-label--l" for="email">What is your new email address?
-        </label>
-      </h1>
-  <form class="form" th:action="@{/verify-email}" method="POST" id="changeEmailForm">
-    <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
-      <span th:if="${error}" id="email-error" class="govuk-error-message"
-            th:text="#{${'verifyemail.' + error}}">No error</span>
-      <input type="hidden" id="candidate-other" name="candidate" value="change">
-       <input type="hidden" id="email-type" name="emailType" value="PRIMARY">
-      <input class="govuk-input  + (${error} ? ' govuk-input--error' : '')"
-             id="email" name="email" type="email" aria-describedby="email-error" autocomplete="email"
-             spellcheck="false" th:value="${email}">
+    <h1 class="govuk-label-wrapper">
+      <label class="govuk-label govuk-label--l" for="email">What is your new email address?</label>
+    </h1>
+    <div class="govuk-inset-text" th:if="${changingUsername}">
+      You will need to use this new email address to sign in
     </div>
-    <input class="govuk-button" id="submit" type="submit" role="button"
-           data-element-id="continue-button" value="Continue">
-  </form>
-</span>
+    <form class="form" th:action="@{/verify-email}" method="POST" id="changeEmailForm">
+      <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
+        <span th:if="${error}" id="email-error" class="govuk-error-message"
+              th:text="#{${'verifyemail.' + error}}">No error</span>
+        <input type="hidden" id="candidate-other" name="candidate" value="change">
+        <input type="hidden" id="email-type" name="emailType" value="PRIMARY">
+        <input class="govuk-input  + (${error} ? ' govuk-input--error' : '')"
+               id="email" name="email" type="email" aria-describedby="email-error" autocomplete="email"
+               spellcheck="false" th:value="${email}">
+      </div>
+      <input class="govuk-button" id="submit" type="submit" role="button"
+             data-element-id="continue-button" value="Continue">
+    </form>
+  </span>
 </div>
 </body>
 </html>
