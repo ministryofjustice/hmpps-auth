@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import java.time.LocalDateTime
+import java.util.Optional
 import java.util.UUID
 
 class UserHelper {
@@ -58,5 +59,7 @@ class UserHelper {
 
       return user
     }
+
+    fun createOptionalSampleUser() = Optional.of(createSampleUser(username = "someuser"))
   }
 }
