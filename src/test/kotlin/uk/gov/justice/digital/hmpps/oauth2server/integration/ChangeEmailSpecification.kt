@@ -135,6 +135,9 @@ class ChangeEmailSpecification : AbstractDeliusAuthSpecification() {
       .inputAndConfirmNewEmail("auth_change_email_new@justice.gov.uk")
     verifyEmailSentPage
       .isAt()
+    // check account details page displays correctly
+    goTo(accountDetailsPage).isAtPage()
+    // now check that we can login with new email address
     goTo(loginPage).loginAsWithUnverifiedEmail("auth_change_email_new@justice.gov.uk")
   }
 

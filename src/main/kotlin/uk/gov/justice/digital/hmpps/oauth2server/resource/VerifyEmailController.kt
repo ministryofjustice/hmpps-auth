@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
@@ -17,6 +18,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSucce
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkAndEmail
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.security.Principal
@@ -104,13 +106,28 @@ class VerifyEmailController(
       ModelAndView("redirect:/verify-email-already", "emailType", emailType)
     } else try {
       val confirmUrl = if (emailType == EmailType.PRIMARY) "-confirm?token=" else "-secondary-confirm?token="
-      val verifyLink =
-        requestVerificationForUser(username, chosenEmail, request.requestURL.append(confirmUrl).toString(), emailType)
+      val (verifyLink, newEmail) =
+        changeEmailAndRequestVerification(
+          username,
+          chosenEmail,
+          request.requestURL.append(confirmUrl).toString(),
+          emailType
+        )
       val modelAndView = ModelAndView("verifyEmailSent", "emailType", emailType)
       if (smokeTestEnabled) {
         modelAndView.addObject("verifyLink", verifyLink)
       }
-      modelAndView.addObject("email", chosenEmail)
+      modelAndView.addObject("email", newEmail)
+
+      // if we have changed the username, then need to update the token otherwise we won't be able to find the user
+      // in subsequent requests
+      if (username != null && username.contains('@')) {
+        val userPersonDetails = userService.findMasterUserPersonDetails(newEmail).orElseThrow()
+        val successToken = UsernamePasswordAuthenticationToken(userPersonDetails, null, userPersonDetails.authorities)
+        jwtAuthenticationSuccessHandler.updateAuthenticationInRequest(request, response, successToken)
+      }
+
+      return modelAndView
     } catch (e: VerifyEmailException) {
       log.info("Validation failed for email address due to {}", e.reason)
       telemetryClient.trackEvent("VerifyEmailRequestFailure", mapOf("username" to username, "reason" to e.reason), null)
@@ -173,16 +190,23 @@ class VerifyEmailController(
     return modelAndView
   }
 
-  private fun requestVerificationForUser(
+  private fun changeEmailAndRequestVerification(
     username: String,
     emailInput: String,
     url: String,
     emailType: EmailType
-  ): String {
+  ): LinkAndEmail {
     val userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow()
     val firstName = userPersonDetails.firstName
     val fullName = userPersonDetails.name
-    return verifyEmailService.changeEmailAndRequestVerification(username, emailInput, firstName, fullName, url, emailType)
+    return verifyEmailService.changeEmailAndRequestVerification(
+      username,
+      emailInput,
+      firstName,
+      fullName,
+      url,
+      emailType
+    )
   }
 
   private fun createChangeOrVerifyEmailError(

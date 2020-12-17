@@ -201,7 +201,7 @@ class AuthUserService(
         user.name,
         url.replace("initial-password", "verify-email-confirm"),
         emailType
-      )
+      ).link
     }
     val email = EmailHelper.format(emailAddressInput)
     verifyEmailService.validateEmailAddress(email, emailType)
