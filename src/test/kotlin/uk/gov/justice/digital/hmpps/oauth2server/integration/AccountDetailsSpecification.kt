@@ -270,6 +270,10 @@ class AccountDetailsPage :
     el("[data-qa='changeName']").click()
   }
 
+  fun navigateToUseEmail() {
+    el("[data-qa='useEmail']").click()
+  }
+
   fun navigateToChangeMobile() {
     el("[data-qa='changeMobile']").click()
   }
@@ -296,5 +300,9 @@ class AccountDetailsPage :
 
   fun cancel() {
     el("[data-qa='back-link']").click()
+  }
+
+  fun checkUsername(username: String) {
+    assertThat(el("[data-qa='username']").text()).isEqualTo(username)
   }
 }

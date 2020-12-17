@@ -244,6 +244,11 @@ class AuthUserService(
         throw VerifyEmailException("duplicate")
       }
       user.username = email
+      telemetryClient.trackEvent(
+        "AuthUserChangeUsername",
+        mapOf("username" to user.username, "previous" to username),
+        null
+      )
     }
     user.email = email
     user.verified = false
@@ -365,10 +370,33 @@ class AuthUserService(
   fun amendUser(username: String, firstName: String?, lastName: String?) {
     validate(firstName, lastName)
     // will always be a user at this stage since we're retrieved it from the authentication
-    val user = userRepository.findByUsernameAndSource(username, AuthSource.auth).orElseThrow()
+    val user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow()
     user.person!!.firstName = firstName!!.trim()
     user.person.lastName = lastName!!.trim()
     userRepository.save(user)
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  fun useEmailAsUsername(username: String?): String? {
+    val user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow()
+
+    // double check can switch
+    val emailUpper = user.email?.toUpperCase()
+    if (emailUpper != null && !user.username.contains('@') &&
+      userRepository.findByUsernameAndMasterIsTrue(emailUpper).isEmpty
+    ) {
+      user.username = emailUpper
+      userRepository.save(user)
+
+      telemetryClient.trackEvent(
+        "AuthUserChangeUsername",
+        mapOf("username" to user.username, "previous" to username),
+        null
+      )
+
+      return user.email
+    }
+    return null
   }
 
   class CreateUserException(val field: String, val errorCode: String) :

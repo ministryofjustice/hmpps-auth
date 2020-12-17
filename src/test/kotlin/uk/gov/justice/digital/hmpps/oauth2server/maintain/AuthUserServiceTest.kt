@@ -41,7 +41,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRep
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
@@ -1216,7 +1215,8 @@ class AuthUserServiceTest {
           any(),
         )
       ).thenReturn(LinkAndEmail("SOME_VERIFY_LINK", "newemail@justice.gov.uk"))
-      val userVerifiedEmail = createSampleUser(username = "SOME_EXISTING_EMAIL@GOV.UK", verified = true, email = "some_existing_email@gov.uk")
+      val userVerifiedEmail =
+        createSampleUser(username = "SOME_EXISTING_EMAIL@GOV.UK", verified = true, email = "some_existing_email@gov.uk")
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail))
       authUserService.amendUserEmail(
         "SOME_EXISTING_email@gov.uk",
@@ -1243,7 +1243,8 @@ class AuthUserServiceTest {
           any(),
         )
       ).thenReturn(LinkAndEmail("SOME_VERIFY_LINK", "newemail@justice.gov.uk"))
-      val userVerifiedEmail = createSampleUser(username = "SOME_EXISTING_EMAIL@GOV.UK", verified = true, email = "some_existing_email@gov.uk")
+      val userVerifiedEmail =
+        createSampleUser(username = "SOME_EXISTING_EMAIL@GOV.UK", verified = true, email = "some_existing_email@gov.uk")
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail))
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(userVerifiedEmail))
       assertThatThrownBy {
@@ -1599,166 +1600,224 @@ class AuthUserServiceTest {
     verify(passwordEncoder).matches("pass", "oldencryptedpassword")
   }
 
-  @Test
-  fun amendUser_firstNameLength() {
-    assertThatThrownBy {
-      authUserService.amendUser(
-        "userme",
-        "s",
-        "last"
-      )
-    }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field firstName with reason: length")
+  @Nested
+  inner class amendUser {
+    @Test
+    fun firstNameLength() {
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          "s",
+          "last"
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field firstName with reason: length")
+    }
+
+    @Test
+    fun firstNameBlank() {
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          "  ",
+          "last"
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field firstName with reason: required")
+    }
+
+    @Test
+    fun firstNameNull() {
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          null,
+          "last"
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field firstName with reason: required")
+    }
+
+    @Test
+    fun firstNameLessThan() {
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          "hello<input",
+          "last"
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field firstName with reason: invalid")
+    }
+
+    @Test
+    fun firstNameGreaterThan() {
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          "helloinput>",
+          "last"
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field firstName with reason: invalid")
+    }
+
+    @Test
+    fun lastNameBlank() {
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          "first",
+          "  "
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field lastName with reason: required")
+    }
+
+    @Test
+    fun lastNameNull() {
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          "first",
+          null
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field lastName with reason: required")
+    }
+
+    @Test
+    fun lastNameLessThan() {
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          "last",
+          "hello<input"
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field lastName with reason: invalid")
+    }
+
+    @Test
+    fun lastNameGreaterThan() {
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          "last",
+          "helloinput>"
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field lastName with reason: invalid")
+    }
+
+    @Test
+    fun firstNameMaxLength() {
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          "ThisFirstNameIsMoreThanFiftyCharactersInLengthAndInvalid",
+          "last"
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field firstName with reason: maxlength")
+    }
+
+    @Test
+    fun lastNameLength() {
+      assertThatThrownBy { authUserService.amendUser("userme", "se", "x") }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field lastName with reason: length")
+    }
+
+    @Test
+    fun lastNameMaxLength() {
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          "se",
+          "ThisLastNameIsMoreThanFiftyCharactersInLengthAndInvalid"
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field lastName with reason: maxlength")
+    }
+
+    @Test
+    fun checkPerson() {
+      val user = createSampleUser(username = "me", firstName = "old", lastName = "name")
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
+      authUserService.amendUser("user", "first", "last")
+      assertThat(user.person).isEqualTo(Person("first", "last"))
+    }
+
+    @Test
+    fun trimPerson() {
+      val user = createSampleUser(username = "me", firstName = "old", lastName = "name")
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
+      authUserService.amendUser("user", "  first  ", "   last ")
+      assertThat(user.person).isEqualTo(Person("first", "last"))
+    }
+
+    @Test
+    fun checkRepositoryCall() {
+      val user = createSampleUser(username = "me", firstName = "old", lastName = "name")
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
+      authUserService.amendUser("user", "first", "last")
+      verify(userRepository).findByUsernameAndMasterIsTrue("user")
+    }
   }
 
-  @Test
-  fun amendUser_firstNameBlank() {
-    assertThatThrownBy {
-      authUserService.amendUser(
-        "userme",
-        "  ",
-        "last"
-      )
-    }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field firstName with reason: required")
-  }
+  @Nested
+  inner class useEmailAsUsername {
+    @Test
+    fun `switch username to email address`() {
+      val user = createSampleUser(username = "me", firstName = "old", lastName = "name", email = "me@me.com")
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
+        .thenReturn(Optional.empty())
+      assertThat(authUserService.useEmailAsUsername("user")).isEqualTo("me@me.com")
+      assertThat(user.username).isEqualTo("ME@ME.COM")
+    }
 
-  @Test
-  fun amendUser_firstNameNull() {
-    assertThatThrownBy {
-      authUserService.amendUser(
-        "userme",
-        null,
-        "last"
-      )
-    }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field firstName with reason: required")
-  }
-
-  @Test
-  fun amendUser_firstNameLessThan() {
-    assertThatThrownBy {
-      authUserService.amendUser(
-        "userme",
-        "hello<input",
-        "last"
-      )
-    }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field firstName with reason: invalid")
-  }
-
-  @Test
-  fun amendUser_firstNameGreaterThan() {
-    assertThatThrownBy {
-      authUserService.amendUser(
-        "userme",
-        "helloinput>",
-        "last"
-      )
-    }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field firstName with reason: invalid")
-  }
-
-  @Test
-  fun amendUser_lastNameBlank() {
-    assertThatThrownBy {
-      authUserService.amendUser(
-        "userme",
-        "first",
-        "  "
-      )
-    }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field lastName with reason: required")
-  }
-
-  @Test
-  fun amendUser_lastNameNull() {
-    assertThatThrownBy {
-      authUserService.amendUser(
-        "userme",
-        "first",
+    @Test
+    fun `switch username to email address sends event`() {
+      val user = createSampleUser(username = "me", firstName = "old", lastName = "name", email = "me@me.com")
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
+        .thenReturn(Optional.empty())
+      assertThat(authUserService.useEmailAsUsername("user")).isEqualTo("me@me.com")
+      verify(telemetryClient).trackEvent(
+        "AuthUserChangeUsername",
+        mapOf("username" to "ME@ME.COM", "previous" to "user"),
         null
       )
-    }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field lastName with reason: required")
-  }
+    }
 
-  @Test
-  fun amendUser_lastNameLessThan() {
-    assertThatThrownBy {
-      authUserService.amendUser(
-        "userme",
-        "last",
-        "hello<input"
-      )
-    }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field lastName with reason: invalid")
-  }
+    @Test
+    fun `can't switch username to email address if no email set`() {
+      val user = createSampleUser(username = "me", firstName = "old", lastName = "name")
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
+        .thenReturn(Optional.empty())
+      assertThat(authUserService.useEmailAsUsername("user")).isNull()
+      assertThat(user.username).isEqualTo("me")
+      verifyZeroInteractions(telemetryClient)
+    }
 
-  @Test
-  fun amendUser_lastNameGreaterThan() {
-    assertThatThrownBy {
-      authUserService.amendUser(
-        "userme",
-        "last",
-        "helloinput>"
-      )
-    }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field lastName with reason: invalid")
-  }
+    @Test
+    fun `can't switch username to email address if using email already`() {
+      val user = createSampleUser(username = "me@joe.com", firstName = "old", lastName = "name", email = "me@me.com")
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
+        .thenReturn(Optional.empty())
+      assertThat(authUserService.useEmailAsUsername("user")).isNull()
+      assertThat(user.username).isEqualTo("me@joe.com")
+      verifyZeroInteractions(telemetryClient)
+    }
 
-  @Test
-  fun amendUser_firstNameMaxLength() {
-    assertThatThrownBy {
-      authUserService.amendUser(
-        "userme",
-        "ThisFirstNameIsMoreThanFiftyCharactersInLengthAndInvalid",
-        "last"
-      )
-    }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field firstName with reason: maxlength")
-  }
-
-  @Test
-  fun amendUser_lastNameLength() {
-    assertThatThrownBy { authUserService.amendUser("userme", "se", "x") }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field lastName with reason: length")
-  }
-
-  @Test
-  fun amendUser_lastNameMaxLength() {
-    assertThatThrownBy {
-      authUserService.amendUser(
-        "userme",
-        "se",
-        "ThisLastNameIsMoreThanFiftyCharactersInLengthAndInvalid"
-      )
-    }.isInstanceOf(CreateUserException::class.java)
-      .hasMessage("Create user failed for field lastName with reason: maxlength")
-  }
-
-  @Test
-  fun amendUser_checkPerson() {
-    val user = createSampleUser(username = "me", firstName = "old", lastName = "name")
-    whenever(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user))
-    authUserService.amendUser("user", "first", "last")
-    assertThat(user.person).isEqualTo(Person("first", "last"))
-  }
-
-  @Test
-  fun amendUser_trimPerson() {
-    val user = createSampleUser(username = "me", firstName = "old", lastName = "name")
-    whenever(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user))
-    authUserService.amendUser("user", "  first  ", "   last ")
-    assertThat(user.person).isEqualTo(Person("first", "last"))
-  }
-
-  @Test
-  fun amendUser_checkRepositoryCall() {
-    val user = createSampleUser(username = "me", firstName = "old", lastName = "name")
-    whenever(userRepository.findByUsernameAndSource(anyString(), any())).thenReturn(Optional.of(user))
-    authUserService.amendUser("user", "first", "last")
-    verify(userRepository).findByUsernameAndSource("user", auth)
+    @Test
+    fun `can't switch username to email address if email already taken`() {
+      val user = createSampleUser(username = "me", firstName = "old", lastName = "name", email = "me@me.com")
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
+        .thenReturn(Optional.of(user))
+      assertThat(authUserService.useEmailAsUsername("user")).isNull()
+      assertThat(user.username).isEqualTo("me")
+      verifyZeroInteractions(telemetryClient)
+    }
   }
 
   private val staffUserAccountForBob: UserPersonDetails

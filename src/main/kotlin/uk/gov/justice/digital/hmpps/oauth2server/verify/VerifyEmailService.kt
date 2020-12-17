@@ -87,6 +87,11 @@ class VerifyEmailService(
             throw VerifyEmailException("duplicate")
           }
           user.username = email
+          telemetryClient.trackEvent(
+            "AuthUserChangeUsername",
+            mapOf("username" to user.username, "previous" to username),
+            null
+          )
         }
         user.email = email
         user.verified = false
