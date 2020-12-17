@@ -41,7 +41,11 @@
         ABC12D
       </dd>
       <dd class="govuk-summary-list__actions">
-        &nbsp;
+        <a class="govuk-link govuk-link--no-visited-state" th:href="@{/use-email}"
+           th:if="${canSwitchUsernameToEmail}" data-qa="useEmail">
+          Use email
+          <span class="govuk-visually-hidden"> instead</span>
+        </a>
       </dd>
     </div>
     <div class="govuk-summary-list__row">

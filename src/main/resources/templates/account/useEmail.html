@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <title>Use email address</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <div role="alert">
+    <h1 class="govuk-heading-l">Use email to sign in</h1>
+  </div>
+
+  <form class="form" th:action="@{/use-email}" method="POST" id="useEmailForm">
+    <fieldset class="govuk-fieldset">
+      <p class="govuk-body">
+        Your email address can now be used instead of your username to sign in.  Please confirm that you would like
+        to use your email address instead.
+      </p>
+      <div class="govuk-inset-text">
+        Note that you will no longer be able to use your username to sign in.
+      </div>
+      <div class="govuk-form-group">
+        <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="confirm-button"
+               value="Confirm">
+
+        <a class="govuk-button" role="button" id="cancel" th:href="@{/account-details}">Cancel</a>
+      </div>
+    </fieldset>
+  </form>
+</div>
+</body>
+</html>
