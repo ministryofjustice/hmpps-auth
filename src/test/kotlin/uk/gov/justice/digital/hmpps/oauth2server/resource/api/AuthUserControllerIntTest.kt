@@ -260,7 +260,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Amend User endpoint amends username as well as email address`() {
     webTestClient
-      .post().uri("/auth/api/authuser/auth_user_email_test2@justice.gov.uk")
+      .post().uri("/auth/api/authuser/auth_user_email2_test@justice.gov.uk")
       .body(BodyInserters.fromValue(mapOf("email" to "auth_user_email_test3@justice.gov.uk")))
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
