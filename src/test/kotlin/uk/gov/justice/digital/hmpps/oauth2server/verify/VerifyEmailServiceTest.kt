@@ -1,3 +1,5 @@
+@file:Suppress("ClassName")
+
 package uk.gov.justice.digital.hmpps.oauth2server.verify
 
 import com.microsoft.applicationinsights.TelemetryClient
@@ -117,10 +119,10 @@ class VerifyEmailServiceTest {
 
     @Test
     fun verifyToken() {
-      val user = createSampleUser(username = "someuser")
+      val user = createSampleUser(username = "someuser", email = "joe@bob.com")
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
-      val verification = verifyEmailService.changeEmailAndRequestVerification(
+      val (verification, newemail) = verifyEmailService.changeEmailAndRequestVerification(
         "user",
         "email@john.com",
         "full name",
@@ -129,7 +131,8 @@ class VerifyEmailServiceTest {
         User.EmailType.PRIMARY
       )
       val value = user.tokens.stream().findFirst().orElseThrow()
-      assertThat(verification).isEqualTo("url" + value.token)
+      assertThat(verification).isEqualTo("url${value.token}")
+      assertThat(newemail).isEqualTo("email@john.com")
     }
 
     @Test
@@ -137,7 +140,7 @@ class VerifyEmailServiceTest {
       val user = createSampleUser(username = "someuser")
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
-      val verification = verifyEmailService.changeEmailAndRequestVerification(
+      val (verification) = verifyEmailService.changeEmailAndRequestVerification(
         "user",
         "email@john.com",
         "firstname",
@@ -146,7 +149,7 @@ class VerifyEmailServiceTest {
         User.EmailType.SECONDARY
       )
       val value = user.tokens.stream().findFirst().orElseThrow()
-      assertThat(verification).isEqualTo("url" + value.token)
+      assertThat(verification).isEqualTo("url${value.token}")
     }
 
     @Test

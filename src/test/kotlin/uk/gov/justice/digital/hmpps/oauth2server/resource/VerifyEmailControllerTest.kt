@@ -6,6 +6,7 @@ import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.MapEntry.entry
@@ -23,6 +24,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSucce
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkAndEmail
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.util.Optional
@@ -139,7 +141,7 @@ class VerifyEmailControllerTest {
         anyString(),
         eq(EmailType.PRIMARY)
       )
-    ).thenReturn("link")
+    ).thenReturn(LinkAndEmail("link", "newemail@justice.gov.uk"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
@@ -149,7 +151,7 @@ class VerifyEmailControllerTest {
     assertThat(modelAndView?.model).containsOnly(
       entry("verifyLink", "link"),
       entry("emailType", EmailType.PRIMARY),
-      entry("email", email)
+      entry("email", "newemail@justice.gov.uk")
     )
     verify(verifyEmailService).changeEmailAndRequestVerification(
       "user",
@@ -159,6 +161,55 @@ class VerifyEmailControllerTest {
       "http://some.url-confirm?token=",
       EmailType.PRIMARY
     )
+  }
+
+  @Test
+  fun verifyEmail_ChangeJwt() {
+    whenever(
+      verifyEmailService.changeEmailAndRequestVerification(
+        anyString(),
+        anyString(),
+        anyString(),
+        anyString(),
+        anyString(),
+        eq(EmailType.PRIMARY)
+      )
+    ).thenReturn(LinkAndEmail("link", "newemail@justice.gov.uk"))
+    val user = getUserPersonalDetails()
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
+    val email = "o'there+bob@b-c.d"
+    val emailPrincipal = UsernamePasswordAuthenticationToken("user@somewhere.com", "pass")
+
+    verifyEmailControllerSmokeTestEnabled.verifyEmail("other", email, EmailType.PRIMARY, emailPrincipal, request, response)
+
+    verify(jwtAuthenticationSuccessHandler).updateAuthenticationInRequest(
+      eq(request),
+      eq(response),
+      check { assertThat(it.principal).isEqualTo(user) }
+    )
+  }
+
+  @Test
+  fun verifyEmail_NoChangeJwt() {
+    whenever(
+      verifyEmailService.changeEmailAndRequestVerification(
+        anyString(),
+        anyString(),
+        anyString(),
+        anyString(),
+        anyString(),
+        eq(EmailType.PRIMARY)
+      )
+    ).thenReturn(LinkAndEmail("link", "newemail@justice.gov.uk"))
+    val user = getUserPersonalDetails()
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
+    val email = "o'there+bob@b-c.d"
+
+    verifyEmailControllerSmokeTestEnabled.verifyEmail("other", email, EmailType.PRIMARY, principal, request, response)
+
+    verifyZeroInteractions(jwtAuthenticationSuccessHandler)
   }
 
   @Test
@@ -238,7 +289,7 @@ class VerifyEmailControllerTest {
         anyString(),
         eq(EmailType.SECONDARY)
       )
-    ).thenReturn("link")
+    ).thenReturn(LinkAndEmail("link", "newemail@justice.gov.uk"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
@@ -254,7 +305,7 @@ class VerifyEmailControllerTest {
     assertThat(modelAndView?.model).containsOnly(
       entry("verifyLink", "link"),
       entry("emailType", EmailType.SECONDARY),
-      entry("email", email)
+      entry("email", "newemail@justice.gov.uk")
     )
     verify(verifyEmailService).changeEmailAndRequestVerification(
       "user",
@@ -291,7 +342,14 @@ class VerifyEmailControllerTest {
   }
 
   private fun getUserPersonalDetails(): NomisUserPersonDetails =
-    NomisUserPersonDetailsHelper.createSampleNomisUser(staff = Staff(firstName = "bob", status = "INACTIVE", lastName = "last", staffId = 1))
+    NomisUserPersonDetailsHelper.createSampleNomisUser(
+      staff = Staff(
+        firstName = "bob",
+        status = "INACTIVE",
+        lastName = "last",
+        staffId = 1
+      )
+    )
 
   @Test
   fun secondaryEmailResendRequest_notVerified() {
