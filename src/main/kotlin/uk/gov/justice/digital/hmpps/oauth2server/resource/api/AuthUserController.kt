@@ -401,10 +401,8 @@ class AuthUserController(
       )
     ]
   )
-  @Throws(
-    NotificationClientException::class
-  )
-  fun amendUser(
+  @Throws(NotificationClientException::class)
+  fun amendUserEmail(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
     @RequestBody amendUser: AmendUser,
     @ApiIgnore request: HttpServletRequest,
