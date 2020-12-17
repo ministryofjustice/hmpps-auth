@@ -225,11 +225,11 @@ class AuthUserService(
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
       .orElseThrow { EntityNotFoundException("User not found with username $username") }
     maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
-    if (user.verified) {
+    if (user.password != null) {
       user.verified = false
       userRepository.save(user)
       return verifyEmailService.changeEmailAndRequestVerification(
-        usernameInput,
+        username,
         emailAddressInput,
         user.firstName,
         user.name,
@@ -239,7 +239,14 @@ class AuthUserService(
     }
     val email = EmailHelper.format(emailAddressInput)
     verifyEmailService.validateEmailAddress(email, emailType)
+    if (user.email == username.toLowerCase()) {
+      userRepository.findByUsername(email!!.toUpperCase()).ifPresent {
+        throw VerifyEmailException("duplicate")
+      }
+      user.username = email
+    }
     user.email = email
+    user.verified = false
     return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.groups)
   }
 

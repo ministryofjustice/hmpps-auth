@@ -4,6 +4,7 @@ import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -160,7 +161,7 @@ class AuthUserControllerTest {
         authentication
       )
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
-    verify(userService, never()).findMasterUserPersonDetails(anyString())
+    verifyZeroInteractions(userService)
   }
 
   @Test
@@ -655,7 +656,7 @@ class AuthUserControllerTest {
   @Test
   fun amendUser_checkService() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
-    authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
+    authUserController.amendUserEmail("user", AmendUser("a@b.com"), request, authentication)
     verify(authUserService).amendUserEmail(
       "user",
       "a@b.com",
@@ -669,7 +670,7 @@ class AuthUserControllerTest {
   @Test
   fun amendUser_statusCode() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
-    val responseEntity = authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
+    val responseEntity = authUserController.amendUserEmail("user", AmendUser("a@b.com"), request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
     assertThat(responseEntity.body).isNull()
   }
@@ -687,7 +688,7 @@ class AuthUserControllerTest {
         eq(EmailType.PRIMARY)
       )
     ).thenThrow(EntityNotFoundException("not found"))
-    val responseEntity = authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
+    val responseEntity = authUserController.amendUserEmail("user", AmendUser("a@b.com"), request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(404)
   }
 
@@ -704,7 +705,7 @@ class AuthUserControllerTest {
         eq(EmailType.PRIMARY)
       )
     ).thenThrow(VerifyEmailException("reason"))
-    val responseEntity = authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
+    val responseEntity = authUserController.amendUserEmail("user", AmendUser("a@b.com"), request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(400)
     assertThat(responseEntity.body).isEqualTo(ErrorDetail("email.reason", "Email address failed validation", "email"))
   }
@@ -722,7 +723,7 @@ class AuthUserControllerTest {
         eq(EmailType.PRIMARY)
       )
     ).thenThrow(AuthUserGroupRelationshipException("user", "reason"))
-    val responseEntity = authUserController.amendUser("user", AmendUser("a@b.com"), request, authentication)
+    val responseEntity = authUserController.amendUserEmail("user", AmendUser("a@b.com"), request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(403)
     assertThat(responseEntity.body).isEqualTo(
       ErrorDetail(

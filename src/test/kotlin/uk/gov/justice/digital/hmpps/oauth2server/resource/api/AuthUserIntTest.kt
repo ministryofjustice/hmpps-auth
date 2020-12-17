@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.oauth2server.resource.DeliusExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
-import java.time.Duration
 
 @ExtendWith(DeliusExtension::class)
 class AuthUserIntTest : IntegrationTest() {
@@ -286,7 +285,6 @@ class AuthUserIntTest : IntegrationTest() {
   @Test
   fun `Auth User search endpoint returns user data for group managers`() {
     webTestClient
-      .mutate().responseTimeout(Duration.ofHours(1)).build()
       .get().uri("/auth/api/authuser/search?name=test2&groups=&roles=")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
