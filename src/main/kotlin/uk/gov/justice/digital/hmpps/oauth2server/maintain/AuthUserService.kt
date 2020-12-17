@@ -97,13 +97,10 @@ class AuthUserService(
     creator: String,
     authorities: Collection<GrantedAuthority>,
   ): String {
-    // and use email helper to format input email
     val email = EmailHelper.format(emailInput)
-    // validate
     validate(email, firstName, lastName, EmailType.PRIMARY)
     // get the initial groups to assign to - only allowed to be empty if super user
     val groups = getInitialGroups(groupCodes, creator, authorities)
-    // create the user
     val person = Person(firstName!!.trim(), lastName!!.trim())
     // obtain list of authorities that should be assigned for group
     val roles = groups.flatMap { it.assignableRoles }.filter { it.automatic }.mapNotNull { it.role }.toSet()
