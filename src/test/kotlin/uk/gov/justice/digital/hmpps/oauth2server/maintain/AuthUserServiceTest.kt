@@ -609,6 +609,416 @@ class AuthUserServiceTest {
     }
 
     @Test
+    fun `createUserByEmail exceeds email max length`() {
+      val email: String = "A".repeat(241)
+      assertThatThrownBy {
+        authUserService.createUserByEmail(
+          email,
+          "first",
+          "last",
+          null,
+          "url",
+          "bob",
+          GRANTED_AUTHORITY_SUPER_USER
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field username with reason: maxlength")
+    }
+
+    @Test
+    fun `createUserByEmail first name does not meet minimum length`() {
+      assertThatThrownBy {
+        authUserService.createUserByEmail(
+          "email",
+          "s",
+          "last",
+          null,
+          "url",
+          "bob",
+          GRANTED_AUTHORITY_SUPER_USER
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field firstName with reason: length")
+    }
+
+    @Test
+    fun `createUserByEmail first Name exceeds max length`() {
+      assertThatThrownBy {
+        authUserService.createUserByEmail(
+          "email",
+          "ThisFirstNameIsMoreThanFiftyCharactersInLengthAndInvalid",
+          "last",
+          null,
+          "url",
+          "bob",
+          GRANTED_AUTHORITY_SUPER_USER
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field firstName with reason: maxlength")
+    }
+
+    @Test
+    fun `createUserByEmail last name does not meet minimum length`() {
+      assertThatThrownBy {
+        authUserService.createUserByEmail(
+          "email",
+          "se",
+          "x",
+          null,
+          "url",
+          "bob",
+          GRANTED_AUTHORITY_SUPER_USER
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field lastName with reason: length")
+    }
+
+    @Test
+    fun `createUserByEmail last name exceeds max lengh`() {
+      assertThatThrownBy {
+        authUserService.createUserByEmail(
+          "email",
+          "se",
+          "ThisLastNameIsMoreThanFiftyCharactersInLengthAndInvalid",
+          null,
+          "url",
+          "bob",
+          GRANTED_AUTHORITY_SUPER_USER
+        )
+      }.isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field lastName with reason: maxlength")
+    }
+
+    @Test
+    fun `createUserByEmail fails email validation`() {
+      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService)
+        .validateEmailAddress(anyString(), eq(EmailType.PRIMARY))
+      assertThatThrownBy {
+        authUserService.createUserByEmail(
+          "email",
+          "se",
+          "xx",
+          null,
+          "url",
+          "bob",
+          GRANTED_AUTHORITY_SUPER_USER
+        )
+      }.isInstanceOf(VerifyEmailException::class.java).hasMessage("Verify email failed with reason: reason")
+      verify(verifyEmailService).validateEmailAddress("email", EmailType.PRIMARY)
+    }
+
+    @Test
+    fun `createUserByEmail returns success link`() {
+      val link =
+        authUserService.createUserByEmail(
+          "email",
+          "se",
+          "xx",
+          null,
+          "url?token=",
+          "bob",
+          GRANTED_AUTHORITY_SUPER_USER
+        )
+      assertThat(link).startsWith("url?token=").hasSize("url?token=".length + 36)
+    }
+
+    @Test
+    fun `createUserByEmail track success`() {
+      authUserService.createUserByEmail(
+        "example@justice.gov.uk",
+        "se",
+        "xx",
+        null,
+        "url?token=",
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER
+      )
+      verify(telemetryClient).trackEvent("AuthUserCreateSuccess", mapOf("username" to "EXAMPLE@JUSTICE.GOV.UK", "admin" to "bob"), null)
+    }
+
+    @Test
+    fun `createUserByEmail save user repository token`() {
+      val link =
+        authUserService.createUserByEmail(
+          "email",
+          "se",
+          "xx",
+          null,
+          "url?token=",
+          "bob",
+          GRANTED_AUTHORITY_SUPER_USER
+        )
+      verify(userRepository).save<User>(
+        check {
+          val userToken = it.tokens.stream().findFirst().orElseThrow()
+          assertThat(userToken.tokenType).isEqualTo(RESET)
+          assertThat(userToken.token).isEqualTo(link.substring("url?token=".length))
+          assertThat(userToken.tokenExpiry).isBetween(LocalDateTime.now().plusDays(6), LocalDateTime.now().plusDays(8))
+        }
+      )
+    }
+
+    @Test
+    fun `createUser save user repository`() {
+      authUserService.createUserByEmail(
+        "example@justice.gov.uk",
+        "first",
+        "last",
+        null,
+        "url?token=",
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER
+      )
+      verify(userRepository).save<User>(
+        check {
+          with(it) {
+            assertThat(name).isEqualTo("first last")
+            assertThat(email).isEqualTo("example@justice.gov.uk")
+            assertThat(username).isEqualTo("EXAMPLE@JUSTICE.GOV.UK")
+            assertThat(password).isNull()
+            assertThat(isMaster).isTrue()
+            assertThat(verified).isFalse()
+            assertThat(isCredentialsNonExpired).isFalse()
+            assertThat(authorities).isEmpty()
+          }
+        }
+      )
+    }
+
+    @Test
+    fun `createUserByEmail trim name`() {
+      authUserService.createUserByEmail(
+        "eMail",
+        "first  ",
+        "  last ",
+        null,
+        "url?token=",
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER
+      )
+      verify(userRepository).save<User>(
+        check {
+          assertThat(it.name).isEqualTo("first last")
+        }
+      )
+    }
+
+    @Test
+    fun `createUserByEmail email input is formatted`() {
+      authUserService.createUserByEmail(
+        "    SARAH.o’connor@gov.uk",
+        "first",
+        "last",
+        null,
+        "url?token=",
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER
+      )
+      verify(userRepository).save<User>(
+        check {
+          assertThat(it.email).isEqualTo("sarah.o'connor@gov.uk")
+        }
+      )
+    }
+
+    @Test
+    fun `createUserByEmail groups are set`() {
+      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
+        listOf(
+          Group(
+            "SITE_1_GROUP_1",
+            "desc"
+          ),
+          Group(
+            "SITE_1_GROUP_2",
+            "desc"
+          ),
+        )
+      )
+      authUserService.createUserByEmail(
+        "eMail",
+        "first",
+        "last",
+        setOf("SITE_1_GROUP_1", "SITE_1_GROUP_2", "SITE_1_GROUP_3"),
+        "url?token=",
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER
+      )
+      verify(userRepository).save<User>(
+        check {
+          assertThat(it.groups).extracting<String> { it.groupCode }.containsOnly("SITE_1_GROUP_1", "SITE_1_GROUP_2")
+        }
+      )
+    }
+
+    @Test
+    fun `createUserByEmail has no roles`() {
+      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
+        listOf(
+          Group(
+            "SITE_1_GROUP_1",
+            "desc"
+          )
+        )
+      )
+      authUserService.createUserByEmail(
+        "eMail",
+        "first",
+        "last",
+        setOf("SITE_1_GROUP_1"),
+        "url?token=",
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER
+      )
+      verify(userRepository).save<User>(
+        check {
+          assertThat(it.authorities).isEmpty()
+        }
+      )
+    }
+
+    @Test
+    fun `createUserByEmail roles are set`() {
+      val group = Group("SITE_1_GROUP_1", "desc")
+      group.assignableRoles.add(GroupAssignableRole(Authority("AUTH_AUTO", "Auth Name"), group, true))
+      group.assignableRoles.add(GroupAssignableRole(Authority("AUTH_MANUAL", "Auth Name"), group, false))
+
+      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(listOf(group))
+      authUserService.createUserByEmail(
+        "eMail",
+        "first",
+        "last",
+        setOf("SITE_1_GROUP_1"),
+        "url?token=",
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER
+      )
+      verify(userRepository).save<User>(
+        check {
+          assertThat(it.authorities).extracting<String> { it.roleCode }.containsOnly("AUTH_AUTO")
+        }
+      )
+    }
+
+    @Test
+    fun `createUserByEmail fails if group not found`() {
+      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
+        listOf(
+          Group(
+            "OTHER_GROUP",
+            "desc"
+          )
+        )
+      )
+      assertThatThrownBy {
+        authUserService.createUserByEmail(
+          "eMail",
+          "first",
+          "last",
+          setOf("SITE_2_GROUP_1"),
+          "url?token=",
+          "bob",
+          GRANTED_AUTHORITY_SUPER_USER
+        )
+      }
+        .isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field groupCode with reason: notfound")
+    }
+
+    @Test
+    fun `createUserByEmail fails if group is missing`() {
+      assertThatThrownBy {
+        authUserService.createUserByEmail(
+          "eMail",
+          "first",
+          "last",
+          emptySet(),
+          "url?token=",
+          "bob",
+          setOf()
+        )
+      }
+        .isInstanceOf(CreateUserException::class.java)
+        .hasMessage("Create user failed for field groupCode with reason: missing")
+    }
+
+    @Test
+    fun `createUserByEmail calls Notify`() {
+      val link = authUserService.createUserByEmail(
+        "email",
+        "first",
+        "last",
+        null,
+        "url?token=",
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER
+      )
+      verify(notificationClient).sendEmail(
+        "licences",
+        "email",
+        mapOf(
+          "resetLink" to link,
+          "firstName" to "first last",
+          "fullName" to "first last",
+          "supportLink" to "nomis_support_link"
+        ),
+        null
+      )
+    }
+
+    @Test
+    fun `createUserByEmail pecs user group support link`() {
+      mockServiceOfNameWithSupportLink("BOOK_MOVE", "book_move_support_link")
+      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
+        listOf(
+          Group(
+            "PECS_GROUP",
+            "desc"
+          )
+        )
+      )
+      authUserService.createUserByEmail(
+        "eMail",
+        "first",
+        "last",
+        setOf("PECS_GROUP"),
+        "url?token=",
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER
+      )
+      verify(notificationClient).sendEmail(
+        anyString(),
+        anyString(),
+        check {
+          assertThat(it["supportLink"]).isEqualTo("book_move_support_link")
+        },
+        isNull()
+      )
+    }
+
+    @Test
+    fun `createUserByEmail support links for no groups`() {
+      authUserService.createUser(
+        "userMe",
+        "eMail",
+        "first",
+        "last",
+        emptySet(),
+        "url?token=",
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER
+      )
+      verify(notificationClient).sendEmail(
+        anyString(),
+        anyString(),
+        check {
+          assertThat(it["supportLink"]).isEqualTo("nomis_support_link")
+        },
+        isNull()
+      )
+    }
+
+    @Test
     fun saveEmailRepository() {
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createOptionalSampleUser())
       authUserService.amendUserEmail("userMe", "eMail", "url?token=", "bob", PRINCIPAL.authorities, EmailType.PRIMARY)

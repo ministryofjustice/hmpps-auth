@@ -127,6 +127,93 @@ class AuthUserIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `Create User by email endpoint succeeds to create user data`() {
+    val user = NewUser("bob2@bobdigital.justice.gov.uk", "Bob", "Smith")
+
+    webTestClient
+      .post().uri("/auth/api/authuser/").bodyValue(user)
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isOk
+
+    webTestClient
+      .get().uri("/auth/api/user/${user.email}")
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
+          mapOf("username" to user.email.toUpperCase(), "active" to true, "name" to "Bob Smith", "authSource" to "auth")
+        )
+      }
+  }
+
+  @Test
+  fun `Create User by email endpoint fails if user with email already exists and unique is enabled`() {
+    val user = NewUser("auth_test@digital.justice.gov.uk", "Bob", "Smith")
+
+    webTestClient
+      .post().uri("/auth/api/authuser/").bodyValue(user)
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+  }
+
+  @Test
+  fun `Create User by email endpoint succeeds to create user data with group and roles`() {
+    val user = NewUser("bob1@bobdigital.justice.gov.uk", "Bob", "Smith", "SITE_1_GROUP_1")
+
+    webTestClient
+      .post().uri("/auth/api/authuser/").bodyValue(user)
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isOk
+
+    webTestClient
+      .get().uri("/auth/api/authuser/${user.email}/groups")
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.[*].groupCode").value<List<String>> {
+        assertThat(it).containsOnly("SITE_1_GROUP_1")
+      }
+      .jsonPath("$.[*].groupName").value<List<String>> {
+        assertThat(it).containsOnly("Site 1 - Group 1")
+      }
+
+    webTestClient
+      .get().uri("/auth/api/authuser/${user.email}/roles")
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.[*].roleCode").value<List<String>> {
+        assertThat(it).isEqualTo(listOf("LICENCE_RO", "GLOBAL_SEARCH"))
+      }
+  }
+
+  @Test
+  fun `Create User by email endpoint fails if no privilege`() {
+    val user = NewUser("bob@bobdigital.justice.gov.uk", "Bob", "Smith")
+
+    webTestClient
+      .post().uri("/auth/api/authuser/").bodyValue(user)
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isForbidden
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it).containsExactlyInAnyOrderEntriesOf(
+          mapOf("error" to "access_denied", "error_description" to "Access is denied")
+        )
+      }
+  }
+
+  @Test
   fun `Auth User endpoint returns user data`() {
     webTestClient
       .get().uri("/auth/api/authuser/AUTH_USER_LAST_LOGIN")
