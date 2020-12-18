@@ -238,6 +238,57 @@ class AuthUserControllerIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `Amend User endpoint fails to alter user email for user whose username is email address and email already taken`() {
+    webTestClient
+      .post().uri("/auth/api/authuser/auth_user_email@justice.gov.uk")
+      .body(BodyInserters.fromValue(mapOf("email" to "auth_user_email_test@justice.gov.uk")))
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isBadRequest
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it).containsAllEntriesOf(
+          mapOf(
+            "error" to "email.duplicate",
+            "error_description" to "Email address failed validation",
+            "field" to "email"
+          )
+        )
+      }
+  }
+
+  @Test
+  fun `Amend User endpoint amends username as well as email address`() {
+    webTestClient
+      .post().uri("/auth/api/authuser/auth_user_email2_test@justice.gov.uk")
+      .body(BodyInserters.fromValue(mapOf("email" to "auth_user_email_test3@justice.gov.uk")))
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isOk
+
+    webTestClient
+      .get().uri("/auth/api/authuser/auth_user_email_test3@justice.gov.uk")
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it).containsAllEntriesOf(
+          mapOf(
+            "userId" to "2e285ccd-dcfd-4497-9e26-d6e8e10a2d3f",
+            "username" to "AUTH_USER_EMAIL_TEST3@JUSTICE.GOV.UK",
+            "email" to "auth_user_email_test3@justice.gov.uk",
+            "firstName" to "User",
+            "lastName" to "Email Test",
+            "locked" to false,
+            "enabled" to true,
+            "verified" to false,
+          )
+        )
+      }
+  }
+
+  @Test
   fun `Amend User endpoint fails if no privilege`() {
     webTestClient
       .post().uri("/auth/api/authuser/AUTH_NEW_USER")

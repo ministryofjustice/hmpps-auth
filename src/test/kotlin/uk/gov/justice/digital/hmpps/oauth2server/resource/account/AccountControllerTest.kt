@@ -38,10 +38,67 @@ class AccountControllerTest {
         "user" to user,
         "authUser" to authUser,
         "mfaPreferenceVerified" to false,
-        "linkedAccounts" to emptyList<String>()
+        "linkedAccounts" to emptyList<String>(),
+        "canSwitchUsernameToEmail" to false,
       )
     )
     verify(userService).findMasterUserPersonDetails("user")
     verify(userService).getUserWithContacts("user")
+  }
+
+  @Test
+  fun `account details can switch username`() {
+    val authUser = createSampleUser("build", email = "anemail@somewhere.com")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(authUser))
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
+
+    val modelAndView = accountController.accountDetails(token)
+
+    assertThat(modelAndView.model).containsEntry("canSwitchUsernameToEmail", true)
+  }
+
+  @Test
+  fun `account details cannot switch username as email not set`() {
+    val authUser = createSampleUser("build")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(authUser))
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
+
+    val modelAndView = accountController.accountDetails(token)
+
+    assertThat(modelAndView.model).containsEntry("canSwitchUsernameToEmail", false)
+  }
+
+  @Test
+  fun `account details cannot switch username as already using email`() {
+    val authUser = createSampleUser("build@joe", email = "anemail@somewhere.com")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(authUser))
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
+
+    val modelAndView = accountController.accountDetails(token)
+
+    assertThat(modelAndView.model).containsEntry("canSwitchUsernameToEmail", false)
+  }
+
+  @Test
+  fun `account details cannot switch username as email already taken`() {
+    val authUser = createSampleUser("build", email = "anemail@somewhere.com")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(authUser))
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
+    whenever(userService.findUser(anyString())).thenReturn(Optional.of(authUser))
+
+    val modelAndView = accountController.accountDetails(token)
+
+    assertThat(modelAndView.model).containsEntry("canSwitchUsernameToEmail", false)
+  }
+
+  @Test
+  fun `account details cannot switch username for non auth users`() {
+    val nomisUser = createSampleUser("build", email = "anemail@somewhere.com", source = AuthSource.nomis)
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(nomisUser))
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(nomisUser)
+
+    val modelAndView = accountController.accountDetails(token)
+
+    assertThat(modelAndView.model).containsEntry("canSwitchUsernameToEmail", false)
   }
 }

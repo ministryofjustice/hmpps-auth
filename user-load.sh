@@ -63,7 +63,7 @@ else
   AUTH=$(echo -n "$CLIENT" | base64)
 fi
 
-if ! TOKEN_RESPONSE=$(curl -s -d "" -X POST "$HOST/auth/oauth/token?grant_type=client_credentials&username=$USER" -H "Authorization: Basic $AUTH"); then
+if ! TOKEN_RESPONSE=$(curl -sS -d "" -X POST "$HOST/auth/oauth/token?grant_type=client_credentials&username=$USER" -H "Authorization: Basic $AUTH"); then
   echo "Failed to read token from credentials response"
   echo "$TOKEN_RESPONSE"
   exit 1
@@ -86,7 +86,7 @@ while IFS=, read -r -a row; do
   printf -v groups '\"%s\",' "${row[@]:4}"
 
   # Create the user
-  if ! output=$(curl -X PUT "$HOST/auth/api/authuser/$user?enforceUniqueEmail=true" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
+  if ! output=$(curl -sS -X PUT "$HOST/auth/api/authuser/$user?enforceUniqueEmail=true" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
     -d "{ \"groupCodes\": [${groups%,}], \"email\": \"${row[1]}\", \"firstName\": \"${row[2]}\", \"lastName\": \"${row[3]}\"}"); then
 
     echo "\033[0;31mFailure to create user ${user}\033[0m"
@@ -96,16 +96,16 @@ while IFS=, read -r -a row; do
     else
       if [[ "$DEBUG_CREATION" == "true" ]]; then
         # Output the user details to confirm it was created
-        curl -s "$HOST/auth/api/authuser/$user" -H "$AUTH_TOKEN_HEADER" | jq .
+        curl -sS "$HOST/auth/api/authuser/$user" -H "$AUTH_TOKEN_HEADER" | jq .
       fi
 
       if [[ "$VARY_ROLE" == "true" ]]; then
         echo "Adding the ROLE_LICENCE_VARY role for $user"
 
-        curl -s -X PUT "$HOST/auth/api/authuser/$user/roles/ROLE_LICENCE_VARY" -H "Content-Length: 0" -H "$AUTH_TOKEN_HEADER"
+        curl -sS -X PUT "$HOST/auth/api/authuser/$user/roles/ROLE_LICENCE_VARY" -H "Content-Length: 0" -H "$AUTH_TOKEN_HEADER"
 
         # Output the roles for the user to confirm
-        curl -s "$HOST/auth/api/authuser/$user/roles" -H "$AUTH_TOKEN_HEADER" | jq .
+        curl -sS "$HOST/auth/api/authuser/$user/roles" -H "$AUTH_TOKEN_HEADER" | jq .
       fi
     fi
   fi

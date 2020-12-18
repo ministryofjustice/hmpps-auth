@@ -31,7 +31,7 @@ import javax.persistence.Transient
 @Table(name = "USERS")
 class User(
   @Column(name = "username", nullable = false)
-  private val username: String,
+  private var username: String,
 
   @Embedded
   val person: Person? = null,
@@ -180,6 +180,10 @@ class User(
     mfaPreference == MfaPreferenceType.SECONDARY_EMAIL && isSecondaryEmailVerified
 
   override fun getUsername(): String = username
+
+  fun setUsername(username: String) {
+    this.username = username.toUpperCase()
+  }
 
   override fun getPassword(): String? = password
 

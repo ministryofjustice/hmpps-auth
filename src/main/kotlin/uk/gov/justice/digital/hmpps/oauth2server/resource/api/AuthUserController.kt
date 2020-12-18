@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
@@ -184,6 +185,90 @@ class AuthUserController(
   fun searchableRoles(@ApiIgnore authentication: Authentication): List<AuthUserRole> {
     val roles = authUserRoleService.getAllAssignableRoles(authentication.name, authentication.authorities)
     return roles.map { AuthUserRole(it) }
+  }
+
+  @PostMapping("/api/authuser/")
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
+  @ApiOperation(
+    value = "Create user.",
+    notes = "Create user.",
+    nickname = "createUser",
+    consumes = "application/json",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 400, message = "Validation failed.", response = ErrorDetail::class),
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 409, message = "User or email already exists.", response = ErrorDetail::class),
+      ApiResponse(code = 500, message = "Server exception e.g. failed to call notify.", response = ErrorDetail::class)
+    ]
+  )
+  @Throws(NotificationClientException::class)
+  fun createUserByEmail(
+    @ApiParam(value = "Details of the user to be created.", required = true) @RequestBody createUser: CreateUser,
+    @ApiIgnore request: HttpServletRequest,
+    @ApiIgnore authentication: Authentication,
+  ): ResponseEntity<Any> {
+
+    val email = EmailHelper.format(createUser.email)
+
+    val user =
+      if (StringUtils.isNotBlank(email)) userService.findMasterUserPersonDetails(StringUtils.trim(email)) else Optional.empty<Any>()
+
+    // check that we're not asked to create a user that is already in nomis, auth or delius
+    if (user.isPresent) {
+      return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(ErrorDetail("username.exists", "User $email already exists", "username"))
+    }
+
+    if (authUserService.findAuthUsersByEmail(email).isNotEmpty()) {
+      return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(ErrorDetail("email.exists", "User $email already exists", "email"))
+    }
+
+    val mergedGroups = mutableSetOf<String>()
+    if (createUser.groupCodes != null) {
+      mergedGroups.addAll(createUser.groupCodes)
+    }
+    if (!createUser.groupCode.isNullOrBlank()) {
+      mergedGroups.add(createUser.groupCode)
+    }
+
+    return try {
+      val setPasswordUrl = createInitialPasswordUrl(request)
+      val resetLink = authUserService.createUserByEmail(
+        email,
+        createUser.firstName,
+        createUser.lastName,
+        mergedGroups,
+        setPasswordUrl,
+        authentication.name,
+        authentication.authorities
+      )
+      log.info("Create user succeeded for user {}", createUser.email)
+      if (smokeTestEnabled) {
+        ResponseEntity.ok(resetLink)
+      } else ResponseEntity.noContent().build()
+    } catch (e: CreateUserException) {
+      log.info(
+        "Create user failed for user {} for field {} with reason {}",
+        createUser.email,
+        e.field,
+        e.errorCode
+      )
+      ResponseEntity.badRequest().body(
+        ErrorDetail(
+          String.format("%s.%s", e.field, e.errorCode),
+          String.format("%s failed validation", e.field),
+          e.field
+        )
+      )
+    } catch (e: VerifyEmailException) {
+      log.info("Create user failed for user {} for field email with reason {}", email, e.reason)
+      ResponseEntity.badRequest()
+        .body(ErrorDetail(String.format("email.%s", e.reason), "Email address failed validation", "email"))
+    }
   }
 
   @PutMapping("/api/authuser/{username}")
@@ -401,10 +486,8 @@ class AuthUserController(
       )
     ]
   )
-  @Throws(
-    NotificationClientException::class
-  )
-  fun amendUser(
+  @Throws(NotificationClientException::class)
+  fun amendUserEmail(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
     @RequestBody amendUser: AmendUser,
     @ApiIgnore request: HttpServletRequest,

@@ -18,7 +18,7 @@ import uk.gov.service.notify.NotificationClientApi
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ActiveProfiles("test")
 @Transactional(transactionManager = "authTransactionManager")
-open class VerifyEmailServiceIntTest {
+class VerifyEmailServiceIntTest {
   @Autowired
   private lateinit var jdbcTemplate: NamedParameterJdbcTemplate
   private lateinit var verifyEmailService: VerifyEmailService
@@ -78,8 +78,8 @@ open class VerifyEmailServiceIntTest {
   @Test
   fun emailAddressSetToNotVerified() {
     val userBefore = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
-    assertThat(userBefore.get().verified).isTrue()
-    verifyEmailService.requestVerification(
+    assertThat(userBefore.get().verified).isTrue
+    verifyEmailService.changeEmailAndRequestVerification(
       "AUTH_CHANGE_EMAIL",
       "phillips@fredjustice.gov.uk",
       "AUTH",
@@ -88,14 +88,14 @@ open class VerifyEmailServiceIntTest {
       User.EmailType.PRIMARY
     )
     val userAfter = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
-    assertThat(userAfter.get().verified).isFalse()
+    assertThat(userAfter.get().verified).isFalse
   }
 
   @Test
   fun secondaryEmailAddressSetToNotVerified() {
     val userBefore = userRepository.findByUsername("AUTH_SECOND_EMAIL_CHANGE")
-    assertThat(userBefore.get().isSecondaryEmailVerified).isTrue()
-    verifyEmailService.requestVerification(
+    assertThat(userBefore.get().isSecondaryEmailVerified).isTrue
+    verifyEmailService.changeEmailAndRequestVerification(
       "AUTH_CHANGE_EMAIL",
       "phillips@fredjustice.gov.uk",
       "AUTH",
@@ -104,6 +104,6 @@ open class VerifyEmailServiceIntTest {
       User.EmailType.SECONDARY
     )
     val userAfter = userRepository.findByUsername("AUTH_CHANGE_EMAIL")
-    assertThat(userAfter.get().isSecondaryEmailVerified).isFalse()
+    assertThat(userAfter.get().isSecondaryEmailVerified).isFalse
   }
 }

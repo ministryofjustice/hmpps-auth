@@ -65,14 +65,14 @@ class VerifyEmailService(
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(NotificationClientException::class, VerifyEmailException::class)
-  fun requestVerification(
+  fun changeEmailAndRequestVerification(
     username: String,
     emailInput: String?,
     firstName: String?,
     fullname: String?,
     url: String,
     emailType: EmailType,
-  ): String {
+  ): LinkAndEmail {
     val user = userRepository.findByUsername(username).orElseThrow()
     val verifyLink =
       url + user.createToken(if (emailType == EmailType.PRIMARY) UserToken.TokenType.VERIFIED else UserToken.TokenType.SECONDARY).token
@@ -81,6 +81,18 @@ class VerifyEmailService(
     validateEmailAddress(email, emailType)
     when (emailType) {
       EmailType.PRIMARY -> {
+        // if the user is configured so that the email address is their username, need to check it is unique
+        if (user.email == username.toLowerCase()) {
+          userRepository.findByUsername(email!!.toUpperCase()).ifPresent {
+            throw VerifyEmailException("duplicate")
+          }
+          user.username = email
+          telemetryClient.trackEvent(
+            "AuthUserChangeUsername",
+            mapOf("username" to user.username, "previous" to username),
+            null
+          )
+        }
         user.email = email
         user.verified = false
       }
@@ -105,7 +117,7 @@ class VerifyEmailService(
       throw e
     }
     userRepository.save(user)
-    return verifyLink
+    return LinkAndEmail(verifyLink, email!!)
   }
 
   @Transactional(transactionManager = "authTransactionManager")
@@ -280,8 +292,9 @@ class VerifyEmailService(
     return Optional.of("expired")
   }
 
-  class VerifyEmailException(val reason: String?) :
-    Exception(String.format("Verify email failed with reason: %s", reason))
+  class VerifyEmailException(val reason: String?) : Exception("Verify email failed with reason: $reason")
+
+  data class LinkAndEmail(val link: String, val email: String)
 
   @Suppress("SqlResolve")
   companion object {
