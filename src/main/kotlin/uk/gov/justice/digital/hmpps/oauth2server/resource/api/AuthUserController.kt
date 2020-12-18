@@ -213,11 +213,9 @@ class AuthUserController(
 
     val email = EmailHelper.format(createUser.email)
 
-    val user =
-      if (StringUtils.isNotBlank(email)) userService.findMasterUserPersonDetails(StringUtils.trim(email)) else Optional.empty<Any>()
+    val user = email?.let { userService.findMasterUserPersonDetails(email).orElse(null) }
 
-    // check that we're not asked to create a user that is already in nomis, auth or delius
-    if (user.isPresent) {
+    if (user != null) {
       return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(ErrorDetail("username.exists", "User $email already exists", "username"))
     }
@@ -259,15 +257,15 @@ class AuthUserController(
       )
       ResponseEntity.badRequest().body(
         ErrorDetail(
-          String.format("%s.%s", e.field, e.errorCode),
-          String.format("%s failed validation", e.field),
+          "${e.field}.${e.errorCode}",
+          "${e.field} failed validation",
           e.field
         )
       )
     } catch (e: VerifyEmailException) {
-      log.info("Create user failed for user {} for field email with reason {}", email, e.reason)
+      log.info("Create user failed for user {} for field email with reason $email")
       ResponseEntity.badRequest()
-        .body(ErrorDetail(String.format("email.%s", e.reason), "Email address failed validation", "email"))
+        .body(ErrorDetail(String.format("email.${e.reason}", e.reason), "Email address failed validation", "email"))
     }
   }
 

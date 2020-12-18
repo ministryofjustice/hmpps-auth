@@ -429,19 +429,6 @@ class AuthUserControllerTest {
   }
 
   @Test
-  fun `createUserByEmail blank does not call user service`() {
-    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/create"))
-    val responseEntity =
-      authUserController.createUserByEmail(
-        CreateUser(" ", "first", "last", null, null),
-        request,
-        authentication
-      )
-    assertThat(responseEntity.statusCodeValue).isEqualTo(204)
-    verify(userService, never()).findMasterUserPersonDetails(anyString())
-  }
-
-  @Test
   fun `createUserByEmail success`() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/create"))
     val responseEntity =
