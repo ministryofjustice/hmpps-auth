@@ -608,23 +608,6 @@ class AuthUserServiceTest {
     }
 
     @Test
-    fun `createUserByEmail exceeds email max length`() {
-      val email: String = "A".repeat(241)
-      assertThatThrownBy {
-        authUserService.createUserByEmail(
-          email,
-          "first",
-          "last",
-          null,
-          "url",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      }.isInstanceOf(CreateUserException::class.java)
-        .hasMessage("Create user failed for field username with reason: maxlength")
-    }
-
-    @Test
     fun `createUserByEmail first name does not meet minimum length`() {
       assertThatThrownBy {
         authUserService.createUserByEmail(

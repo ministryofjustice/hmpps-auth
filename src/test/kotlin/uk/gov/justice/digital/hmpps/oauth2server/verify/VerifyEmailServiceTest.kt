@@ -468,4 +468,16 @@ class VerifyEmailServiceTest {
     val result = verifyEmailService.confirmEmail("token")
     assertThat(result).get().isEqualTo("expired")
   }
+
+  @Test
+  fun `validate email exceeds email max length`() {
+    val email: String = "A".repeat(241)
+    assertThatThrownBy {
+      verifyEmailService.validateEmailAddress(
+        email,
+        User.EmailType.PRIMARY
+      )
+    }.isInstanceOf(VerifyEmailException::class.java)
+      .hasMessage("Verify email failed with reason: maxlength")
+  }
 }

@@ -173,6 +173,7 @@ class VerifyEmailService(
     if (email == null) {
       throw VerifyEmailException("blank")
     }
+    if (email.isNullOrBlank() || email.length > MAX_LENGTH_EMAIL) throw VerifyEmailException("maxlength")
     validateEmailAddressExcludingGsi(email, emailType)
     if (email.matches(Regex(".*@.*\\.gsi\\.gov\\.uk"))) throw VerifyEmailException("gsi")
   }
@@ -319,5 +320,6 @@ class VerifyEmailService(
       """
 
     val log: Logger = LoggerFactory.getLogger(this::class.java)
+    private const val MAX_LENGTH_EMAIL = 240
   }
 }

@@ -187,7 +187,7 @@ class AuthUserController(
     return roles.map { AuthUserRole(it) }
   }
 
-  @PostMapping("/api/authuser/")
+  @PostMapping("/api/authuser/create")
   @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
   @ApiOperation(
     value = "Create user.",
