@@ -131,7 +131,7 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("bob2@bobdigital.justice.gov.uk", "Bob", "Smith")
 
     webTestClient
-      .post().uri("/auth/api/authuser/").bodyValue(user)
+      .post().uri("/auth/api/authuser/create").bodyValue(user)
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -155,7 +155,7 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("auth_test@digital.justice.gov.uk", "Bob", "Smith")
 
     webTestClient
-      .post().uri("/auth/api/authuser/").bodyValue(user)
+      .post().uri("/auth/api/authuser/create").bodyValue(user)
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.CONFLICT)
@@ -166,7 +166,7 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("bob1@bobdigital.justice.gov.uk", "Bob", "Smith", "SITE_1_GROUP_1")
 
     webTestClient
-      .post().uri("/auth/api/authuser/").bodyValue(user)
+      .post().uri("/auth/api/authuser/create").bodyValue(user)
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isOk
@@ -200,7 +200,7 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("bob@bobdigital.justice.gov.uk", "Bob", "Smith")
 
     webTestClient
-      .post().uri("/auth/api/authuser/").bodyValue(user)
+      .post().uri("/auth/api/authuser/create").bodyValue(user)
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isForbidden

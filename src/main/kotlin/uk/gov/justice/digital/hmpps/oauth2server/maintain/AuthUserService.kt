@@ -313,8 +313,6 @@ class AuthUserService(
   private fun validate(email: String?, firstName: String?, lastName: String?, emailType: EmailType) {
     validate(firstName, lastName)
 
-    if (email.isNullOrBlank() || email.length > MAX_LENGTH_EMAIL) throw CreateUserException("username", "maxlength")
-
     verifyEmailService.validateEmailAddress(email, emailType)
   }
 
@@ -412,6 +410,5 @@ class AuthUserService(
     private const val MIN_LENGTH_USERNAME = 6
     private const val MIN_LENGTH_FIRST_NAME = 2
     private const val MIN_LENGTH_LAST_NAME = 2
-    private const val MAX_LENGTH_EMAIL = 240
   }
 }
