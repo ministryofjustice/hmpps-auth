@@ -263,9 +263,9 @@ class AuthUserController(
         )
       )
     } catch (e: VerifyEmailException) {
-      log.info("Create user failed for user {} for field email with reason $email")
+      log.info("Create user failed for user {} for field email with reason ${e.reason}")
       ResponseEntity.badRequest()
-        .body(ErrorDetail(String.format("email.${e.reason}", e.reason), "Email address failed validation", "email"))
+        .body(ErrorDetail("email.${e.reason}", "Email address failed validation", "email"))
     }
   }
 

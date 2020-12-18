@@ -170,10 +170,10 @@ class VerifyEmailService(
 
   @Throws(VerifyEmailException::class)
   fun validateEmailAddress(email: String?, emailType: EmailType) {
-    if (email == null) {
+    if (email.isNullOrBlank()) {
       throw VerifyEmailException("blank")
     }
-    if (email.isNullOrBlank() || email.length > MAX_LENGTH_EMAIL) throw VerifyEmailException("maxlength")
+    if (email.length > MAX_LENGTH_EMAIL) throw VerifyEmailException("maxlength")
     validateEmailAddressExcludingGsi(email, emailType)
     if (email.matches(Regex(".*@.*\\.gsi\\.gov\\.uk"))) throw VerifyEmailException("gsi")
   }
