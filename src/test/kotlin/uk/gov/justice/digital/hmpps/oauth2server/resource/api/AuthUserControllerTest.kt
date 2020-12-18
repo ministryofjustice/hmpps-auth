@@ -429,21 +429,8 @@ class AuthUserControllerTest {
   }
 
   @Test
-  fun `createUserByEmail blank does not call user service`() {
-    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/"))
-    val responseEntity =
-      authUserController.createUserByEmail(
-        CreateUser(" ", "first", "last", null, null),
-        request,
-        authentication
-      )
-    assertThat(responseEntity.statusCodeValue).isEqualTo(204)
-    verify(userService, never()).findMasterUserPersonDetails(anyString())
-  }
-
-  @Test
   fun `createUserByEmail success`() {
-    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/"))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/create"))
     val responseEntity =
       authUserController.createUserByEmail(
         CreateUser("email", "first", "last", null, null),
@@ -456,7 +443,7 @@ class AuthUserControllerTest {
 
   @Test
   fun `createUserByEmail trim email`() {
-    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/"))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/create"))
     authUserController.createUserByEmail(
       CreateUser("   email@justice.gov.uk    ", "first", "last", null, null),
       request,
@@ -476,7 +463,7 @@ class AuthUserControllerTest {
 
   @Test
   fun `createUserByEmail create user error`() {
-    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/"))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/create"))
     whenever(
       authUserService.createUserByEmail(
         anyString(),
@@ -506,7 +493,7 @@ class AuthUserControllerTest {
 
   @Test
   fun `createUserByEmail verify email address error`() {
-    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/"))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/create"))
     whenever(
       authUserService.createUserByEmail(
         anyString(),
@@ -530,7 +517,7 @@ class AuthUserControllerTest {
 
   @Test
   fun `createUserByEmail Initial Password Url`() {
-    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/"))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/create"))
     authUserController.createUserByEmail(
       CreateUser("email", "first", "last", null, null),
       request,
@@ -549,7 +536,7 @@ class AuthUserControllerTest {
 
   @Test
   fun `createUserByEmail no additional roles`() {
-    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/"))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/create"))
     authUserController.createUserByEmail(
       CreateUser("email", "first", "last", null, null),
       request,
@@ -568,7 +555,7 @@ class AuthUserControllerTest {
 
   @Test
   fun `createUserByEmail multiple additional roles`() {
-    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/"))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/create"))
     authUserController.createUserByEmail(
       CreateUser("email", "first", "last", null, setOf("ROLE1", "ROLE2")),
       request,
@@ -587,7 +574,7 @@ class AuthUserControllerTest {
 
   @Test
   fun `createUserByEmail single additonal role`() {
-    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/"))
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/create"))
     authUserController.createUserByEmail(
       CreateUser("email", "first", "last", "ROLE1", null),
       request,
