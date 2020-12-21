@@ -7,9 +7,10 @@ class UserDetailsImpl(
   username: String,
   override val name: String,
   authorities: Collection<GrantedAuthority>,
-  override val authSource: String,
+  override val authSource: String = AuthSource.none.source,
   override val userId: String,
   val jwtId: String,
+  val passedMfa: Boolean = false,
 ) :
   User(username, "", authorities), UserPersonDetails {
   override val firstName: String

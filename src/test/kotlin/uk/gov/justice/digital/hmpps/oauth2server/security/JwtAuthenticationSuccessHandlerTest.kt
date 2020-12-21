@@ -1,3 +1,5 @@
+@file:Suppress("ClassName")
+
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import com.nhaarman.mockitokotlin2.any
@@ -5,6 +7,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
@@ -91,26 +94,42 @@ class JwtAuthenticationSuccessHandlerTest {
     verifyZeroInteractions(restTemplate)
   }
 
-  @Test
-  fun `updateAuthenticationInRequest no existing cookie`() {
-    whenever(jwtAuthenticationHelper.createJwt(any())).thenReturn("newJwt")
-    val token = UsernamePasswordAuthenticationToken("user", "pass")
-    handler.updateAuthenticationInRequest(request, response, token)
+  @Nested
+  inner class updateAuthenticationInRequest {
+    @Test
+    fun `no existing cookie`() {
+      whenever(jwtAuthenticationHelper.createJwt(any())).thenReturn("newJwt")
+      val token = UsernamePasswordAuthenticationToken("user", "pass")
+      handler.updateAuthenticationInRequest(request, response, token)
 
-    verify(jwtCookieHelper).addCookieToResponse(request, response, "newJwt")
-    verify(jwtAuthenticationHelper).createJwt(token)
-  }
+      verify(jwtCookieHelper).addCookieToResponse(request, response, "newJwt")
+      verify(jwtAuthenticationHelper).createJwt(token)
+    }
 
-  @Test
-  fun `updateAuthenticationInRequest existing cookie`() {
-    whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
-    whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
-    whenever(jwtAuthenticationHelper.createJwt(any())).thenReturn("newJwt")
-    val token = UsernamePasswordAuthenticationToken("user", "pass")
-    handler.updateAuthenticationInRequest(request, response, token)
+    @Test
+    fun `existing cookie`() {
+      whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
+      whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
+      whenever(jwtAuthenticationHelper.createJwt(any())).thenReturn("newJwt")
+      val token = UsernamePasswordAuthenticationToken("user", "pass")
+      handler.updateAuthenticationInRequest(request, response, token)
 
-    verify(jwtCookieHelper).addCookieToResponse(request, response, "newJwt")
-    verify(jwtAuthenticationHelper).createJwtWithId(token, "jwtId")
+      verify(jwtCookieHelper).addCookieToResponse(request, response, "newJwt")
+      verify(jwtAuthenticationHelper).createJwtWithId(token, "jwtId", false)
+    }
+
+    @Test
+    fun `existing cookie copies mfa value over`() {
+      val mfaUser = UserDetailsImpl("user", "name", setOf(), auth.name, "userid", "jwtId", true)
+
+      whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
+      whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(mfaUser))
+      whenever(jwtAuthenticationHelper.createJwt(any())).thenReturn("newJwt")
+      val token = UsernamePasswordAuthenticationToken("user", "pass")
+      handler.updateAuthenticationInRequest(request, response, token)
+
+      verify(jwtAuthenticationHelper).createJwtWithId(token, "jwtId", true)
+    }
   }
 
   @BeforeEach

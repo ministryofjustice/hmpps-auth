@@ -73,6 +73,17 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `Log in sets mfa passed in jwt cookie to true`() {
+    goTo(loginPage)
+      .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL")
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode()
+    homePage.isAt()
+    val jwt = homePage.parseJwt()
+    assertThat(jwt.getBooleanClaim("passed_mfa")).isTrue
+  }
+
+  @Test
   fun `Login as user with unverified text MFA enabled but email verified`() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_PREF_TEXT_EMAIL")

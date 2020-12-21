@@ -34,6 +34,13 @@ class LoginSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `Log in sets mfa passed in jwt cookie to false`() {
+    val homePage = goTo(loginPage).loginAs("AUTH_USER")
+    val jwt = homePage.parseJwt()
+    assertThat(jwt.getBooleanClaim("passed_mfa")).isFalse
+  }
+
+  @Test
   fun `Log in with valid nomis credentials`() {
     val homePage = goTo(loginPage).loginAs("ITAG_USER", "password")
     homePage.assertNameDisplayedCorrectly("Itag User")
