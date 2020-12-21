@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -12,6 +11,7 @@ import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
+import uk.gov.justice.digital.hmpps.oauth2server.security.MfaPassedAuthenticationToken
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.service.LoginFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaFlowException
@@ -80,7 +80,7 @@ class MfaController(
 
     // success, so forward on
     telemetryClient.trackEvent("MFAAuthenticateSuccess", mapOf("username" to username), null)
-    val successToken = UsernamePasswordAuthenticationToken(userPersonDetails, "code", userPersonDetails.authorities)
+    val successToken = MfaPassedAuthenticationToken(userPersonDetails, "code", userPersonDetails.authorities)
     jwtAuthenticationSuccessHandler.onAuthenticationSuccess(request, response, successToken)
 
     // return here is not required, since the success handler will have redirected

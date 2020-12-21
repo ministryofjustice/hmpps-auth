@@ -46,12 +46,11 @@ class JwtAuthenticationHelper(
     expiryTime = properties.expiryTime
   }
 
-  fun createJwt(authentication: Authentication): String {
-    return if (authentication is OAuth2AuthenticationToken) createJwtWithIdFromOidcAuthentication(
+  fun createJwt(authentication: Authentication): String =
+    if (authentication is OAuth2AuthenticationToken) createJwtWithIdFromOidcAuthentication(
       authentication,
       randomUUID().toString()
-    ) else createJwtWithId(authentication, randomUUID().toString())
-  }
+    ) else createJwtWithId(authentication, randomUUID().toString(), authentication is MfaPassedAuthenticationToken)
 
   fun createJwtWithIdFromOidcAuthentication(authentication: OAuth2AuthenticationToken, jwtId: String): String {
     val userDetails = authentication.principal as DefaultOidcUser
@@ -73,7 +72,7 @@ class JwtAuthenticationHelper(
       .compact()
   }
 
-  fun createJwtWithId(authentication: Authentication, jwtId: String): String {
+  fun createJwtWithId(authentication: Authentication, jwtId: String, passedMfa: Boolean): String {
     val userDetails = authentication.principal as UserPersonDetails
     val username = userDetails.username
     log.debug("Creating jwt cookie for user {}", username)
@@ -87,7 +86,8 @@ class JwtAuthenticationHelper(
           "authorities" to authoritiesAsString,
           "name" to userDetails.name,
           "auth_source" to userDetails.authSource,
-          "user_id" to userDetails.userId
+          "user_id" to userDetails.userId,
+          "passed_mfa" to passedMfa,
         )
       )
       .setExpiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
@@ -104,27 +104,26 @@ class JwtAuthenticationHelper(
   fun readAuthenticationFromJwt(jwt: String): Optional<UsernamePasswordAuthenticationToken> =
     readUserDetailsFromJwt(jwt).map { UsernamePasswordAuthenticationToken(it, null, it.authorities) }
 
-  fun readUserDetailsFromJwt(jwt: String): Optional<UserDetailsImpl> {
-    return try {
-      val body = Jwts.parser()
-        .setSigningKey(keyPair.public)
-        .parseClaimsJws(jwt)
-        .body
-      val username = body.subject
-      val authoritiesString = body.get("authorities", String::class.java)
-      val name = Optional.ofNullable(body.get("name", String::class.java)).orElse(username)
-      val userId = Optional.ofNullable(body.get("user_id", String::class.java)).orElse(username)
-      val authorities: Collection<GrantedAuthority> = authoritiesString.split(",")
-        .filterNot { it.isEmpty() }
-        .map { SimpleGrantedAuthority(it) }
+  fun readUserDetailsFromJwt(jwt: String): Optional<UserDetailsImpl> = try {
+    val body = Jwts.parser()
+      .setSigningKey(keyPair.public)
+      .parseClaimsJws(jwt)
+      .body
+    val username = body.subject
+    val authoritiesString = body.get("authorities", String::class.java)
+    val name = body.get("name", String::class.java) ?: username
+    val userId = body.get("user_id", String::class.java) ?: username
+    val authorities: Collection<GrantedAuthority> = authoritiesString.split(",")
+      .filterNot { it.isEmpty() }
+      .map { SimpleGrantedAuthority(it) }
+    val authSource = body.get("auth_source", String::class.java) ?: AuthSource.none.source
+    val passedMfa = body.get("passed_mfa", java.lang.Boolean::class.java) ?.booleanValue() ?: false
 
-      val authSource = Optional.ofNullable(body.get("auth_source", String::class.java)).orElse("none")
-      log.debug("Set authentication for {} with jwt id of {}", username, body.id)
-      Optional.of(UserDetailsImpl(username, name, authorities, authSource, userId, body.id))
-    } catch (eje: ExpiredJwtException) {
-      // cookie set to expire at same time as JWT so unlikely really get an expired one
-      log.info("Expired JWT found for user {}", eje.claims.subject)
-      Optional.empty()
-    }
+    log.debug("Set authentication for {} with jwt id of {}", username, body.id)
+    Optional.of(UserDetailsImpl(username, name, authorities, authSource, userId, body.id, passedMfa))
+  } catch (eje: ExpiredJwtException) {
+    // cookie set to expire at same time as JWT so unlikely really get an expired one
+    log.info("Expired JWT found for user {}", eje.claims.subject)
+    Optional.empty()
   }
 }

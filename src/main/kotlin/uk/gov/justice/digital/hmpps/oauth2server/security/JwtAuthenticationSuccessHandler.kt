@@ -29,6 +29,7 @@ open class JwtAuthenticationSuccessHandler(
     setRequestCache(cookieRequestCache)
     defaultTargetUrl = "/"
   }
+
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
@@ -75,18 +76,15 @@ open class JwtAuthenticationSuccessHandler(
   ) {
     val optionalAuth = jwtCookieHelper.readValueFromCookie(request)
       .flatMap { jwtAuthenticationHelper.readUserDetailsFromJwt(it) }
-    val jwt =
-      optionalAuth.map { udi: UserDetailsImpl -> jwtAuthenticationHelper.createJwtWithId(authentication, udi.jwtId) }
-        .orElseGet { jwtAuthenticationHelper.createJwt(authentication) }
+    val passedMfa = optionalAuth.map { it.passedMfa }.orElse(false)
+    val jwt = optionalAuth.map { jwtAuthenticationHelper.createJwtWithId(authentication, it.jwtId, passedMfa) }
+      .orElseGet { jwtAuthenticationHelper.createJwt(authentication) }
+
     jwtCookieHelper.addCookieToResponse(request, response, jwt)
   }
 
   @Throws(ServletException::class, IOException::class)
-  fun proceed(
-    request: HttpServletRequest,
-    response: HttpServletResponse,
-    authentication: Authentication
-  ) {
+  fun proceed(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication) {
     super.onAuthenticationSuccess(request, response, authentication)
   }
 }
