@@ -152,7 +152,7 @@ class ChangeEmailSpecification : AbstractDeliusAuthSpecification() {
       .isAtPage()
       .inputAndConfirmNewEmail("auth_user_email@justice.gov.uk")
     verifyEmailErrorPage
-      .checkError("There is already an account with this email address. Please login with that email address instead.")
+      .checkError("There is already an account with this email address. Please sign in with that email address instead.")
   }
 
   @Test

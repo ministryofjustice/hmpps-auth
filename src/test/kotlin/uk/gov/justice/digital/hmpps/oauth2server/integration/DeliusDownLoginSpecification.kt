@@ -19,7 +19,7 @@ class DeliusDownLoginSpecification : AbstractAuthSpecification() {
       .loginError("DELIUS_USER", "password")
       .checkError(
         "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times." +
-          "\nDelius is experiencing issues. Please try later if you are attempting to login using your Delius credentials."
+          "\nDelius is experiencing issues. Please try later if you are attempting to sign in using your Delius credentials."
       )
   }
 
