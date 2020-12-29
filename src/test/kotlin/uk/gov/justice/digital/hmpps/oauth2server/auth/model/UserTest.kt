@@ -1,3 +1,5 @@
+@file:Suppress("ClassName")
+
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
 import org.assertj.core.api.Assertions.assertThat
@@ -276,6 +278,27 @@ class UserTest {
     fun `mfaPreferenceTextVerified not verified`() {
       val user = createSampleUser(username = "user", mobile = "", mfaPreference = MfaPreferenceType.TEXT)
       assertThat(user.mfaPreferenceTextVerified()).isFalse()
+    }
+  }
+
+  @Nested
+  inner class getCodeDescription {
+    @Test
+    fun `mobile preference`() {
+      val user = createSampleUser(username = "user", mobile = "07700900321", mobileVerified = true)
+      assertThat(user.getCodeDestination(MfaPreferenceType.TEXT)).isEqualTo("*******0321")
+    }
+
+    @Test
+    fun `email preference`() {
+      val user = createSampleUser(username = "user", email = "john.smithson34@digital.justice.gov.uk")
+      assertThat(user.getCodeDestination(MfaPreferenceType.EMAIL)).isEqualTo("john.s******@******.gov.uk")
+    }
+
+    @Test
+    fun `secondary email preference`() {
+      val user = createSampleUser(username = "user", secondaryEmail = "bob@digital.justice.gov.uk")
+      assertThat(user.getCodeDestination(MfaPreferenceType.SECONDARY_EMAIL)).isEqualTo("b******@******.gov.uk")
     }
   }
 }
