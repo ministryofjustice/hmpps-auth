@@ -55,6 +55,28 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `I can edit a client credential with mfa field`() {
+    goTo(loginPage).loginAs("ITAG_USER_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("deliusnewtech")
+    clientMaintenancePage.isAtPage()
+    assertThat(el("#mfa").selected()).isTrue
+  }
+
+  @Test
+  fun `I can edit a client credential and set mfa field`() {
+    goTo(loginPage).loginAs("ITAG_USER_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("v1-client")
+    clientMaintenancePage.isAtPage()
+    assertThat(el("#mfa").selected()).isFalse
+    clientMaintenancePage.selectCheckboxOption("mfa").save()
+    clientSummaryPage.isAtPage().editClient("v1-client")
+    assertThat(el("#mfa").selected()).isTrue
+    clientMaintenancePage.selectCheckboxOption("mfa").save()
+  }
+
+  @Test
   fun `I can edit a client credential as an auth user`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
@@ -75,7 +97,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .edit("accessTokenValiditySeconds", "1200")
       .edit("scopes", "read")
       .edit("authorities", "ROLE_BOB,ROLE_FRED")
-      .editGrantType("client_credentials")
+      .selectCheckboxOption("client_credentials")
       .edit("jwtFields", "-name")
       .save()
     clientSummaryPage.isAtPage()
@@ -156,7 +178,7 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
     return this
   }
 
-  fun editGrantType(type: String): ClientMaintenancePage {
+  fun selectCheckboxOption(type: String): ClientMaintenancePage {
     el("#$type").click()
     return this
   }

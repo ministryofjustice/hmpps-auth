@@ -153,18 +153,7 @@ class MfaService(
 
   fun getCodeDestination(token: String, mfaPreference: MfaPreferenceType): String {
     val userToken = tokenService.getToken(TokenType.MFA, token).orElseThrow()
-
-    return when (mfaPreference) {
-      MfaPreferenceType.EMAIL -> {
-        userToken.user.maskedEmail
-      }
-      MfaPreferenceType.TEXT -> {
-        userToken.user.maskedMobile
-      }
-      MfaPreferenceType.SECONDARY_EMAIL -> {
-        userToken.user.maskedSecondaryEmail
-      }
-    }
+    return userToken.user.getCodeDestination(mfaPreference)
   }
 }
 

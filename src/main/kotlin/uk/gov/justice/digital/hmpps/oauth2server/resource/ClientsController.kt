@@ -52,10 +52,11 @@ class ClientsController(
   fun editClient(
     authentication: Authentication,
     @ModelAttribute clientDetails: AuthClientDetails,
-    @RequestParam(value = "newClient", required = false) newClient: String?
+    @RequestParam(value = "newClient", required = false) newClient: String?,
   ): String {
     val userDetails = authentication.principal as UserPersonDetails
     val telemetryMap = mapOf("username" to userDetails.username, "clientId" to clientDetails.clientId)
+
     if (newClient == null) {
       clientsDetailsService.updateClientDetails(clientDetails)
       telemetryClient.trackEvent("AuthClientDetailsUpdate", telemetryMap, null)
@@ -63,7 +64,7 @@ class ClientsController(
       clientsDetailsService.addClientDetails(clientDetails)
       telemetryClient.trackEvent("AuthClientDetailsAdd", telemetryMap, null)
     }
-    if (!clientDetails.clientSecret.isEmpty()) {
+    if (clientDetails.clientSecret.isNotEmpty()) {
       clientsDetailsService.updateClientSecret(clientDetails.clientId, clientDetails.clientSecret)
       telemetryClient.trackEvent("AuthClientSecretUpdated", telemetryMap, null)
     }
@@ -103,6 +104,11 @@ class ClientsController(
       get() = additionalInformation["databaseUsernameField"] as String?
       set(databaseUsername) {
         addAdditionalInformation("databaseUsernameField", databaseUsername)
+      }
+    var mfa: Boolean?
+      get() = additionalInformation["mfa"] as Boolean?
+      set(mfa) {
+        addAdditionalInformation("mfa", mfa)
       }
   }
 }
