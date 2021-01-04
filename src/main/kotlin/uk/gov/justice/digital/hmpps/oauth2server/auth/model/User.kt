@@ -243,6 +243,13 @@ class User(
   override fun toString(): String =
     "User(username='$username', person=$person, email=$email, verified=$verified, enabled=$enabled, source=$source, id=$id, locked=$locked, passwordExpiry=$passwordExpiry, lastLoggedIn=$lastLoggedIn, mfaPreference=$mfaPreference)"
 
+  fun getCodeDestination(mfaPreference: MfaPreferenceType): String =
+    when (mfaPreference) {
+      MfaPreferenceType.EMAIL -> maskedEmail
+      MfaPreferenceType.TEXT -> maskedMobile
+      MfaPreferenceType.SECONDARY_EMAIL -> maskedSecondaryEmail
+    }
+
   private val allowedMfaPreferences: List<MfaPreferenceType>
     get() {
       val preferences = ArrayList<MfaPreferenceType>()

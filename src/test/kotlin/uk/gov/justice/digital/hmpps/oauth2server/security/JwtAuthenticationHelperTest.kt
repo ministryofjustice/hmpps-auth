@@ -110,13 +110,14 @@ class JwtAuthenticationHelperTest {
     val cookie = Jwts.builder()
       .setId(jwtId)
       .setSubject("BOB")
-      .addClaims(mapOf("authorities" to "", "user_id" to "some user"))
+      .addClaims(mapOf("authorities" to "", "user_id" to "some user", "passed_mfa" to true))
       .setExpiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
       .signWith(RS256, keyPair.private)
       .compact()
-    val token = helper.readAuthenticationFromJwt(cookie)
-    assertThat(token).get().extracting("principal.userId").isEqualTo("some user")
-    assertThat(token).get().extracting("principal.jwtId").isEqualTo(jwtId)
+    val token = helper.readAuthenticationFromJwt(cookie).orElseThrow()
+    assertThat(token).extracting("principal.userId").isEqualTo("some user")
+    assertThat(token).extracting("principal.jwtId").isEqualTo(jwtId)
+    assertThat(token).extracting("principal.passedMfa").isEqualTo(true)
   }
 
   companion object {

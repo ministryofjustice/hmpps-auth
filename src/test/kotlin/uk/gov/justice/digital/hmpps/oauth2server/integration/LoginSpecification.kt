@@ -34,6 +34,13 @@ class LoginSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `Log in sets mfa passed in jwt cookie to false`() {
+    val homePage = goTo(loginPage).loginAs("AUTH_USER")
+    val jwt = homePage.parseJwt()
+    assertThat(jwt.getBooleanClaim("passed_mfa")).isFalse
+  }
+
+  @Test
   fun `Log in with valid nomis credentials`() {
     val homePage = goTo(loginPage).loginAs("ITAG_USER", "password")
     homePage.assertNameDisplayedCorrectly("Itag User")
@@ -211,7 +218,7 @@ class LoginSpecification : AbstractDeliusAuthSpecification() {
     goTo(loginPage).loginError("DELIUS_ERROR_TIMEOUT", "password123456")
       .checkError(
         "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times." +
-          "\nDelius is experiencing issues. Please try later if you are attempting to login using your Delius credentials."
+          "\nDelius is experiencing issues. Please try later if you are attempting to sign in using your Delius credentials."
       )
   }
 
@@ -220,7 +227,7 @@ class LoginSpecification : AbstractDeliusAuthSpecification() {
     goTo(loginPage).loginError("DELIUS_ERROR_SERVER", "password")
       .checkError(
         "Enter a valid username and password. You will be locked out if you enter the wrong details 3 times." +
-          "\nDelius is experiencing issues. Please try later if you are attempting to login using your Delius credentials."
+          "\nDelius is experiencing issues. Please try later if you are attempting to sign in using your Delius credentials."
       )
   }
 }

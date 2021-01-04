@@ -20,6 +20,7 @@ import org.springframework.security.oauth2.provider.ClientAlreadyExistsException
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.ui.ExtendedModelMap
+import uk.gov.justice.digital.hmpps.oauth2server.resource.ClientsController.AuthClientDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 
@@ -48,7 +49,7 @@ class ClientControllerTest {
 
     @Test
     fun `edit client request - add client`() {
-      val authClientDetails: ClientsController.AuthClientDetails = createAuthClientDetails()
+      val authClientDetails: AuthClientDetails = createAuthClientDetails()
       authClientDetails.clientSecret = "bob"
       val view = controller.editClient(authentication, authClientDetails, "true")
       verify(clientDetailsService).addClientDetails(authClientDetails)
@@ -68,7 +69,7 @@ class ClientControllerTest {
 
     @Test
     fun `edit client request - add client throws ClientAlreadyExistsException`() {
-      val authClientDetails: ClientsController.AuthClientDetails = createAuthClientDetails()
+      val authClientDetails: AuthClientDetails = createAuthClientDetails()
       authClientDetails.clientSecret = "bob"
       val exception = ClientAlreadyExistsException("Client already exists: ")
       doThrow(exception).whenever(clientDetailsService).addClientDetails(authClientDetails)
@@ -80,7 +81,7 @@ class ClientControllerTest {
 
     @Test
     fun `edit client request - update existing client`() {
-      val authClientDetails: ClientsController.AuthClientDetails = createAuthClientDetails()
+      val authClientDetails: AuthClientDetails = createAuthClientDetails()
       val view = controller.editClient(authentication, authClientDetails, null)
       verify(clientDetailsService).updateClientDetails(authClientDetails)
       verify(telemetryClient).trackEvent(
@@ -98,7 +99,7 @@ class ClientControllerTest {
 
     @Test
     fun `edit client request - update client throws NoSuchClientException`() {
-      val authClientDetails: ClientsController.AuthClientDetails = createAuthClientDetails()
+      val authClientDetails: AuthClientDetails = createAuthClientDetails()
       val exception = NoSuchClientException("No client found with id = ")
       doThrow(exception).whenever(clientDetailsService).updateClientDetails(authClientDetails)
 
@@ -109,7 +110,7 @@ class ClientControllerTest {
 
     @Test
     fun `edit client request - update existing client secret`() {
-      val authClientDetails: ClientsController.AuthClientDetails = createAuthClientDetails()
+      val authClientDetails: AuthClientDetails = createAuthClientDetails()
       authClientDetails.clientSecret = "bob"
       val view = controller.editClient(authentication, authClientDetails, null)
       verify(clientDetailsService).updateClientDetails(authClientDetails)
@@ -126,8 +127,8 @@ class ClientControllerTest {
       assertThat(view).isEqualTo("redirect:/ui")
     }
 
-    private fun createAuthClientDetails(): ClientsController.AuthClientDetails {
-      val authClientDetails: ClientsController.AuthClientDetails = ClientsController.AuthClientDetails()
+    private fun createAuthClientDetails(): AuthClientDetails {
+      val authClientDetails = AuthClientDetails()
       authClientDetails.clientId = "client"
       authClientDetails.setAuthorizedGrantTypes(listOf("client_credentials"))
       authClientDetails.authorities = mutableListOf(GrantedAuthority { "ROLE_CLIENT" })
@@ -159,6 +160,30 @@ class ClientControllerTest {
       assertThatThrownBy { controller.deleteClient(authentication, "client") }.isEqualTo(exception)
 
       verifyZeroInteractions(telemetryClient)
+    }
+  }
+
+  @Nested
+  inner class AuthClientDetailsTest {
+    @Test
+    fun `set mfa`() {
+      val authClientDetails = AuthClientDetails()
+      authClientDetails.mfa = true
+      assertThat(authClientDetails.additionalInformation).containsExactlyEntriesOf(mapOf("mfa" to true))
+      assertThat(authClientDetails.mfa).isEqualTo(true)
+    }
+
+    @Test
+    fun `get mfa`() {
+      val authClientDetails = AuthClientDetails()
+      authClientDetails.addAdditionalInformation("mfa", true)
+      assertThat(authClientDetails.mfa).isEqualTo(true)
+    }
+
+    @Test
+    fun `get mfa not set`() {
+      val authClientDetails = AuthClientDetails()
+      assertThat(authClientDetails.mfa).isNull()
     }
   }
 }

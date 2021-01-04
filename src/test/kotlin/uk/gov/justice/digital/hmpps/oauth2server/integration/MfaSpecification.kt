@@ -73,6 +73,17 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `Log in sets mfa passed in jwt cookie to true`() {
+    goTo(loginPage)
+      .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL")
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode()
+    homePage.isAt()
+    val jwt = homePage.parseJwt()
+    assertThat(jwt.getBooleanClaim("passed_mfa")).isTrue
+  }
+
+  @Test
   fun `Login as user with unverified text MFA enabled but email verified`() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_PREF_TEXT_EMAIL")
@@ -96,8 +107,8 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
       .loginError("AUTH_MFA_NOEMAIL_USER")
 
     loginPage.checkError(
-      "We need to send you a security code to login, but we can't find a verified email " +
-        "address or phone number. Please login on an approved network and verify your email address and phone number."
+      "We need to send you a security code to sign in, but we can't find a verified email " +
+        "address or phone number. Please verify your email address by clicking the link in your email, or sign in using an approved network and verify your email address and phone number."
     )
   }
 
@@ -107,8 +118,8 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
       .loginError("AUTH_MFA_NOTEXT_USER")
 
     loginPage.checkError(
-      "We need to send you a security code to login, but we can't find a verified email " +
-        "address or phone number. Please login on an approved network and verify your email address and phone number."
+      "We need to send you a security code to sign in, but we can't find a verified email " +
+        "address or phone number. Please verify your email address by clicking the link in your email, or sign in using an approved network and verify your email address and phone number."
     )
   }
 
