@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -16,9 +17,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.GroupAssignableRole
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.ChildGroupNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupNotFoundException
+import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserAssignableRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
-import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 
@@ -36,7 +38,7 @@ class GroupsControllerTest {
   fun `get group details`() {
     val authority = Authority(roleCode = "RO1", roleName = "Role1")
     val group1 = Group(groupCode = "FRED", groupName = "desc")
-    group1.assignableRoles.add(GroupAssignableRole(role = authority, group = group1, automatic = false))
+    group1.assignableRoles.add(GroupAssignableRole(role = authority, group = group1, automatic = true))
     group1.children.add(ChildGroup(groupCode = "BOB", groupName = "desc"))
 
     whenever(
@@ -52,10 +54,45 @@ class GroupsControllerTest {
       GroupDetails(
         groupCode = "FRED",
         groupName = "desc",
-        assignableRoles = listOf(AuthUserRole(roleCode = "RO1", roleName = "Role1")),
+        assignableRoles = listOf(AuthUserAssignableRole(roleCode = "RO1", roleName = "Role1", automatic = true)),
         children = listOf(AuthUserGroup(groupCode = "BOB", groupName = "desc"))
       )
     )
+  }
+
+  @Test
+  fun `amend group name`() {
+    val groupAmendment = GroupAmendment("groupie")
+    groupsController.amendGroupName("group1", authentication, groupAmendment)
+    verify(groupsService).updateGroup("group1", groupAmendment)
+  }
+
+  @Test
+  fun `get child group details`() {
+    val group1 = ChildGroup(groupCode = "FRED", groupName = "desc")
+    whenever(
+      groupsService.getChildGroupDetail(
+        groupCode = anyString(),
+        maintainerName = anyString(),
+        authorities = any()
+      )
+    ).thenReturn(group1)
+
+    val childGroupDetails = groupsController.getChildGroupDetail("group1", authentication)
+
+    assertThat(childGroupDetails).isEqualTo(
+      ChildGroupDetails(
+        groupCode = "FRED",
+        groupName = "desc"
+      )
+    )
+  }
+
+  @Test
+  fun `amend child group name`() {
+    val groupAmendment = GroupAmendment("groupie")
+    groupsController.amendChildGroupName("group1", authentication, groupAmendment)
+    verify(groupsService).updateChildGroup("group1", groupAmendment)
   }
 
   @Test
@@ -69,6 +106,20 @@ class GroupsControllerTest {
 
     assertThatThrownBy { groupsController.getGroupDetail("NotGroup", authentication) }
       .isInstanceOf(GroupNotFoundException::class.java)
+      .withFailMessage("Unable to maintain group: NotGroup with reason: not found")
+  }
+
+  @Test
+  fun `Child Group Not Found`() {
+
+    doThrow(ChildGroupNotFoundException("NotGroup", "not found")).whenever(groupsService).getChildGroupDetail(
+      anyString(),
+      any(),
+      any()
+    )
+
+    assertThatThrownBy { groupsController.getChildGroupDetail("NotGroup", authentication) }
+      .isInstanceOf(ChildGroupNotFoundException::class.java)
       .withFailMessage("Unable to maintain group: NotGroup with reason: not found")
   }
 
