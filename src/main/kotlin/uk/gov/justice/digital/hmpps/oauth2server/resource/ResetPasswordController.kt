@@ -64,7 +64,7 @@ class ResetPasswordController(
       } catch (e: VerifyEmailException) {
         log.info("Validation failed for reset password email address due to {}", e.reason)
         telemetryClient.trackEvent(
-          "VerifyEmailRequestFailure",
+          "ResetPasswordRequestFailure",
           mapOf("email" to usernameOrEmail, "reason" to "email." + e.reason),
           null
         )
