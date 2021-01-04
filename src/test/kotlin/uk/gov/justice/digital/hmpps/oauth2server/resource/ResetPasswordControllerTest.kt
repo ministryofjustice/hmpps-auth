@@ -162,6 +162,13 @@ class ResetPasswordControllerTest {
         entry("error", "email.reason"),
         entry("usernameOrEmail", "user@somewhere")
       )
+      verify(telemetryClient).trackEvent(
+        eq("ResetPasswordRequestFailure"),
+        check {
+          assertThat(it).containsOnly(entry("email", "user@somewhere"), entry("reason", "email.reason"))
+        },
+        isNull()
+      )
     }
 
     @Test
