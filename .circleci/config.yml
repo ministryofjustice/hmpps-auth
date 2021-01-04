@@ -1,8 +1,8 @@
 version: 2.1
 
 orbs:
-  owasp: entur/owasp@0.0.10
-  hmpps: ministryofjustice/hmpps@1.1.0
+  owasp: entur/owasp@0.0.14
+  hmpps: ministryofjustice/hmpps@2.1.0
 
 jobs:
   validate:
@@ -97,6 +97,8 @@ workflows:
             branches:
               only:
                 - main
+          context:
+            - hmpps-common-vars
           requires:
             - build_docker
             - helm_lint
@@ -108,7 +110,9 @@ workflows:
       - hmpps/deploy_env:
           name: deploy_stage
           env: "t2"
-          context: hmpps-auth-t2
+          context:
+            - hmpps-common-vars
+            - hmpps-auth-t2
           requires:
             - request-stage-approval
 
@@ -119,7 +123,9 @@ workflows:
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
-          context: hmpps-auth-preprod
+          context:
+            - hmpps-common-vars
+            - hmpps-auth-preprod
           requires:
             - request-preprod-approval
 
@@ -131,7 +137,9 @@ workflows:
           name: deploy_prod
           env: "prod"
           slack_notification: true
-          context: hmpps-auth-prod
+          context:
+            - hmpps-common-vars
+            - hmpps-auth-prod
           requires:
             - request-prod-approval
 

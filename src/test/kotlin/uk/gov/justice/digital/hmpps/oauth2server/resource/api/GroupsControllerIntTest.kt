@@ -112,4 +112,58 @@ class GroupsControllerIntTest : IntegrationTest() {
       .exchange()
       .expectStatus().isUnauthorized
   }
+
+  @Test
+  fun `Child Group details endpoint returns details of child group when user has ROLE_MAINTAIN_OAUTH_USERS`() {
+    webTestClient
+      .get().uri("/auth/api/groups/child/CHILD_2")
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(APPLICATION_JSON)
+      .expectBody()
+      .json("child_group_details_data.json".readFile())
+  }
+
+  @Test
+  fun `Child Group details endpoint returns forbidden when dose not have admin role `() {
+    webTestClient
+      .get().uri("/auth/api/groups/child/SITE_1_GROUP_2")
+      .headers(setAuthorisation("bob"))
+      .exchange()
+      .expectStatus().isForbidden
+      .expectBody()
+      .json(
+        """
+      {"error":"access_denied","error_description":"Access is denied"}
+        """.trimIndent()
+      )
+  }
+
+  @Test
+  fun `Child Group details endpoint returns error when group not found user has ROLE_MAINTAIN_OAUTH_USERS`() {
+    webTestClient
+      .get().uri("/auth/api/groups/child/bob")
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isNotFound
+      .expectHeader().contentType(APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it).containsExactlyInAnyOrderEntriesOf(
+          mapOf(
+            "error" to "Not Found",
+            "error_description" to "Unable to maintain group: bob with reason: notfound",
+            "field" to "group"
+          )
+        )
+      }
+  }
+
+  @Test
+  fun `Child Group details endpoint not accessible without valid token`() {
+    webTestClient.get().uri("/auth/api/groups/child/GLOBAL_SEARCH")
+      .exchange()
+      .expectStatus().isUnauthorized
+  }
 }

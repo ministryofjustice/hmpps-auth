@@ -1,21 +1,24 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.model
 
 import org.hibernate.annotations.GenericGenerator
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ChildGroup.GroupChildGroupId
 import java.io.Serializable
 import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
+import javax.persistence.IdClass
 import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 import javax.persistence.Table
 
 @Entity
 @Table(name = "CHILD_GROUP")
+@IdClass(GroupChildGroupId::class)
 class ChildGroup(
   @Column(name = "child_group_code", nullable = false) val groupCode: String,
-  @Column(name = "child_group_name", nullable = false) val groupName: String,
+  @Column(name = "child_group_name", nullable = false) var groupName: String,
 ) : Serializable {
   @Id
   @GeneratedValue(generator = "UUID")
@@ -27,6 +30,11 @@ class ChildGroup(
   @ManyToOne
   @JoinColumn(name = "group_id")
   val group: Group? = null
+
+  class GroupChildGroupId : Serializable {
+    private val id: UUID? = null
+    private val group: UUID? = null
+  }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
