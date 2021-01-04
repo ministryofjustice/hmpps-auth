@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  owasp: entur/owasp@0.0.10
+  owasp: entur/owasp@0.0.14
   hmpps: ministryofjustice/hmpps@1.1.0
 
 jobs:
