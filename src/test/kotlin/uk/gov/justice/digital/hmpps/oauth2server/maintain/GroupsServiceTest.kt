@@ -11,17 +11,22 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ChildGroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
+import uk.gov.justice.digital.hmpps.oauth2server.resource.api.GroupAmendment
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthGroupRelationshipException
 import java.util.Optional
 
 class GroupsServiceTest {
   private val groupRepository: GroupRepository = mock()
+  private val childGroupRepository: ChildGroupRepository = mock()
   private val maintainUserCheck: MaintainUserCheck = mock()
   private val groupsService = GroupsService(
     groupRepository,
+    childGroupRepository,
     maintainUserCheck,
   )
 
@@ -35,6 +40,41 @@ class GroupsServiceTest {
     assertThat(group).isEqualTo(dbGroup.get())
     verify(groupRepository).findByGroupCode("bob")
     verify(maintainUserCheck).ensureMaintainerGroupRelationship("Joe", "bob", SUPER_USER)
+  }
+
+  @Test
+  fun `update group details`() {
+    val dbGroup = Optional.of(Group("bob", "disc"))
+    val groupAmendment = GroupAmendment("Joe")
+    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(dbGroup)
+
+    groupsService.updateGroup("bob", groupAmendment)
+
+    verify(groupRepository).findByGroupCode("bob")
+    verify(groupRepository).save(dbGroup.get())
+  }
+
+  @Test
+  fun `get child group details`() {
+    val dbGroup = Optional.of(ChildGroup("bob", "disc"))
+    whenever(childGroupRepository.findByGroupCode(anyString())).thenReturn(dbGroup)
+
+    val group = groupsService.getChildGroupDetail("bob", "Joe", SUPER_USER)
+
+    assertThat(group).isEqualTo(dbGroup.get())
+    verify(childGroupRepository).findByGroupCode("bob")
+  }
+
+  @Test
+  fun `update child group details`() {
+    val dbGroup = Optional.of(ChildGroup("bob", "disc"))
+    val groupAmendment = GroupAmendment("Joe")
+    whenever(childGroupRepository.findByGroupCode(anyString())).thenReturn(dbGroup)
+
+    groupsService.updateChildGroup("bob", groupAmendment)
+
+    verify(childGroupRepository).findByGroupCode("bob")
+    verify(childGroupRepository).save(dbGroup.get())
   }
 
   @Test

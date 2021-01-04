@@ -15,7 +15,7 @@ import javax.persistence.Table
 @Table(name = "GROUPS")
 class Group(
   @Column(name = "group_code", nullable = false) val groupCode: String,
-  @Column(name = "group_name", nullable = false) val groupName: String,
+  @Column(name = "group_name", nullable = false) var groupName: String,
 ) : Serializable {
   @Id
   @GeneratedValue(generator = "UUID")

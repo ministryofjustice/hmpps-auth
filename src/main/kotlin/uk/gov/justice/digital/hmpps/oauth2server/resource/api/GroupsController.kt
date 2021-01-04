@@ -10,12 +10,15 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService
+import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserAssignableRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
-import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 
 @RestController
@@ -27,9 +30,7 @@ class GroupsController(
   @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
   @ApiOperation(
     value = "Group detail.",
-    notes = "Group detail.",
     nickname = "getGroupDetails",
-    consumes = "application/json",
     produces = "application/json"
   )
   @ApiResponses(
@@ -46,6 +47,74 @@ class GroupsController(
     val returnedGroup: Group = groupsService.getGroupDetail(group, authentication.name, authentication.authorities)
     return GroupDetails(returnedGroup)
   }
+
+  @GetMapping("/api/groups/child/{group}")
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @ApiOperation(
+    value = "Child Group detail.",
+    nickname = "getChildGroupDetails",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 404, message = "Child Group not found.", response = ErrorDetail::class)
+    ]
+  )
+  fun getChildGroupDetail(
+    @ApiParam(value = "The group code of the child group.", required = true)
+    @PathVariable group: String,
+    @ApiIgnore authentication: Authentication,
+  ): ChildGroupDetails {
+    val returnedGroup: ChildGroup = groupsService.getChildGroupDetail(group, authentication.name, authentication.authorities)
+    return ChildGroupDetails(returnedGroup)
+  }
+
+  @PutMapping("/api/groups/{group}")
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @ApiOperation(
+    value = "Amend group name.",
+    nickname = "AmendGroupName",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 404, message = "Group not found.", response = ErrorDetail::class)
+    ]
+  )
+  fun amendGroupName(
+    @ApiParam(value = "The group code of the group.", required = true)
+    @PathVariable group: String,
+    @ApiIgnore authentication: Authentication,
+    @ApiParam(value = "Details of the group to be updated.", required = true) @RequestBody groupAmendment: GroupAmendment,
+
+  ) {
+    groupsService.updateGroup(group, groupAmendment)
+  }
+
+  @PutMapping("/api/groups/child/{group}")
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @ApiOperation(
+    value = "Amend child group name.",
+    nickname = "AmendChildGroupName",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 404, message = "Child Group not found.", response = ErrorDetail::class)
+    ]
+  )
+  fun amendChildGroupName(
+    @ApiParam(value = "The group code of the child group.", required = true)
+    @PathVariable group: String,
+    @ApiIgnore authentication: Authentication,
+    @ApiParam(value = "Details of the child group to be updated.", required = true) @RequestBody groupAmendment: GroupAmendment,
+
+  ) {
+    groupsService.updateChildGroup(group, groupAmendment)
+  }
 }
 
 @ApiModel(description = "Group Details")
@@ -57,7 +126,7 @@ data class GroupDetails(
   val groupName: String,
 
   @ApiModelProperty(required = true, value = "Assignable Roles")
-  val assignableRoles: List<AuthUserRole>,
+  val assignableRoles: List<AuthUserAssignableRole>,
 
   @ApiModelProperty(required = true, value = "Child Groups")
   val children: List<AuthUserGroup>,
@@ -65,7 +134,27 @@ data class GroupDetails(
   constructor(g: Group) : this(
     g.groupCode,
     g.groupName,
-    g.assignableRoles.map { AuthUserRole(it.role) }.sortedBy { it.roleName },
+    g.assignableRoles.map { AuthUserAssignableRole(it.role, it.automatic) }.sortedBy { it.roleName },
     g.children.map { AuthUserGroup(it) }.sortedBy { it.groupName }
+  )
+}
+
+@ApiModel(description = "Group Name")
+data class GroupAmendment(
+  @ApiModelProperty(required = true, value = "Group Name", example = "HDC NPS North East")
+  val groupName: String,
+)
+
+@ApiModel(description = "Group Details")
+data class ChildGroupDetails(
+  @ApiModelProperty(required = true, value = "Group Code", example = "HDC_NPS_NE")
+  val groupCode: String,
+
+  @ApiModelProperty(required = true, value = "Group Name", example = "HDC NPS North East")
+  val groupName: String,
+) {
+  constructor(g: ChildGroup) : this(
+    g.groupCode,
+    g.groupName,
   )
 }

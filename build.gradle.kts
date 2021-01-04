@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.1.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.1.2"
   kotlin("plugin.spring") version "1.4.21"
   kotlin("plugin.jpa") version "1.4.21"
   id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
@@ -34,10 +34,10 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
-  implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.1")
+  implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.2")
   implementation("uk.gov.service.notify:notifications-java-client:3.17.0-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:7.3.1")
+  implementation("org.flywaydb:flyway-core:7.3.2")
   implementation("com.zaxxer:HikariCP:3.4.5")
   implementation("org.apache.commons:commons-text:1.9")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre11")
@@ -45,7 +45,7 @@ dependencies {
 
   runtimeOnly("com.h2database:h2:1.4.200")
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
-  runtimeOnly("com.oracle.database.jdbc:ojdbc10:19.8.0.0")
+  runtimeOnly("com.oracle.database.jdbc:ojdbc10:19.9.0.0")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -59,7 +59,7 @@ dependencies {
 
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("org.slf4j:slf4j-api:1.7.30")
-  testImplementation("com.auth0:java-jwt:3.11.0")
+  testImplementation("com.auth0:java-jwt:3.12.0")
 
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.22.0")
   testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.5.1")
