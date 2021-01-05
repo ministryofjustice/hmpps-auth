@@ -35,14 +35,14 @@ class UserLoadIntTest : IntegrationTest() {
     )
       .withFailMessage("Was expecting 3 Failure lines, found:\n${output.joinToString("\n")}")
       .containsExactly(
-        "Failure to create user emailnotallowed",
-        "Failure to create user itag_user",
-        "Failure to create user emailexists",
+        "Failure to create user JOHN.JAMES@SOMEFORCE.PNN.POLICE.UK",
+        "Failure to create user JOHN.JAMES@SOMEFORCE.POLICE.UK",
+        "Failure to create user AUTH_TEST@DIGITAL.JUSTICE.GOV.UK",
       )
 
     // check user now loaded successfully
     webTestClient
-      .get().uri("/auth/api/user/loadsuccess")
+      .get().uri("/auth/api/user/LOAD_SUCCESS@DIGITAL.JUSTICE.GOV.UK")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -50,12 +50,12 @@ class UserLoadIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
-          mapOf("username" to "LOADSUCCESS", "active" to true, "name" to "Load Success", "authSource" to "auth")
+          mapOf("username" to "LOAD_SUCCESS@DIGITAL.JUSTICE.GOV.UK", "active" to true, "name" to "Load Success", "authSource" to "auth")
         )
       }
 
     webTestClient
-      .get().uri("/auth/api/authuser/loadsuccess/groups")
+      .get().uri("/auth/api/authuser/LOAD_SUCCESS@DIGITAL.JUSTICE.GOV.UK/groups")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
