@@ -74,20 +74,22 @@ AUTH_TOKEN_HEADER="Authorization: Bearer $TOKEN"
 
 cnt=0
 
-# user email first last group group2 group3 group4 group5 group6 group7 group8 group9
+# email first last group group2 group3 group4 group5 group6 group7 group8 group9
 while IFS=, read -r -a row; do
   user="${row[0]}"
-  if [[ "$user" == "User Name" || -z "$user" ]]; then
+  # To uppercase
+  user=$(echo $user | tr 'a-z' 'A-Z')
+  if [[ "$user" == "EMAIL" || -z "$user" ]]; then
     continue
   fi
 
   echo "Processing ${row[*]}"
 
-  printf -v groups '\"%s\",' "${row[@]:4}"
+  printf -v groups '\"%s\",' "${row[@]:3}"
 
   # Create the user
-  if ! output=$(curl -sS -X PUT "$HOST/auth/api/authuser/$user?enforceUniqueEmail=true" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
-    -d "{ \"groupCodes\": [${groups%,}], \"email\": \"${row[1]}\", \"firstName\": \"${row[2]}\", \"lastName\": \"${row[3]}\"}"); then
+  if ! output=$(curl -sS -X POST "$HOST/auth/api/authuser/create" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
+    -d "{ \"groupCodes\": [${groups%,}], \"email\": \"${row[0]}\", \"firstName\": \"${row[1]}\", \"lastName\": \"${row[2]}\"}"); then
 
     echo "\033[0;31mFailure to create user ${user}\033[0m"
   else
