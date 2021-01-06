@@ -1,13 +1,10 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.apache.commons.lang3.StringUtils
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Condition
-import org.springframework.context.annotation.ConditionContext
-import org.springframework.context.annotation.Conditional
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.type.AnnotatedTypeMetadata
 
 /**
  * Application insights now controlled by the spring-boot-starter dependency.  However when the key is not specified
@@ -16,13 +13,12 @@ import org.springframework.core.type.AnnotatedTypeMetadata
 @Configuration
 class ApplicationInsightsConfiguration {
   @Bean
-  @Conditional(AppInsightKeyAbsentCondition::class)
+  @ConditionalOnExpression("T(org.apache.commons.lang3.StringUtils).isNotBlank('\${applicationinsights.connection.string:}')")
+  fun insightsPresent(): AppInsightsConfigurationPresent = AppInsightsConfigurationPresent()
+
+  @Bean
+  @ConditionalOnMissingBean(AppInsightsConfigurationPresent::class)
   fun telemetryClient(): TelemetryClient = TelemetryClient()
 
-  class AppInsightKeyAbsentCondition : Condition {
-    override fun matches(context: ConditionContext, metadata: AnnotatedTypeMetadata): Boolean {
-      val telemetryKey = context.environment.getProperty("application.insights.ikey")
-      return StringUtils.isBlank(telemetryKey)
-    }
-  }
+  class AppInsightsConfigurationPresent
 }
