@@ -43,7 +43,7 @@ class AuthUserGroupService(
     // 2. If group admin then needs to be one of their groups and user can't be a member of a different group
     log.info("Adding group {} to user {}", groupFormatted, username)
     user.groups.add(group)
-    user.authorities.addAll(group.assignableRoles.filter { it.automatic }.mapNotNull { it.role })
+    user.authorities.addAll(group.assignableRoles.filter { it.automatic }.map { it.role })
     telemetryClient.trackEvent(
       "AuthUserGroupAddSuccess",
       mapOf("username" to username, "group" to groupFormatted, "admin" to modifier),
