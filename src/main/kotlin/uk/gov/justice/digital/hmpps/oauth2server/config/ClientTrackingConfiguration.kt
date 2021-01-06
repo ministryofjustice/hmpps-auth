@@ -22,7 +22,12 @@ import javax.servlet.http.HttpServletResponse
 @ConditionalOnBean(AppInsightsConfigurationPresent::class)
 class ClientTrackingConfiguration(private val clientTrackingInterceptor: ClientTrackingInterceptor) : WebMvcConfigurer {
   override fun addInterceptors(registry: InterceptorRegistry) {
+    log.debug("Adding application insights client tracking interceptor")
     registry.addInterceptor(clientTrackingInterceptor).addPathPatterns("/**")
+  }
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
 
@@ -30,7 +35,9 @@ class ClientTrackingConfiguration(private val clientTrackingInterceptor: ClientT
 class ClientTrackingInterceptor : HandlerInterceptor {
   override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
     val properties = ThreadContext.getRequestTelemetryContext().httpRequestTelemetry.properties
-    properties["clientIpAddress"] = IpAddressHelper.retrieveIpFromRemoteAddr(request)
+    val addr = IpAddressHelper.retrieveIpFromRemoteAddr(request)
+    log.debug("Setting client ip address of {} in the request telemetry context for application insights", addr)
+    properties["clientIpAddress"] = addr
 
     val token = request.getHeader(HttpHeaders.AUTHORIZATION)
     val bearer = "Bearer "
@@ -52,6 +59,6 @@ class ClientTrackingInterceptor : HandlerInterceptor {
     SignedJWT.parse(token.replace("Bearer ", "")).jwtClaimsSet
 
   companion object {
-    private val log = LoggerFactory.getLogger(ClientTrackingInterceptor::class.java)
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
