@@ -23,16 +23,30 @@ class JwtAuthHelper(
 ) {
   private val keyPair: KeyPair
 
-  fun createJwt(parameters: JwtParameters): String {
-    val claims = mutableMapOf<String, Any>("user_name" to parameters.username, "client_id" to "elite2apiclient")
-    parameters.roles?.let { claims["authorities"] = parameters.roles }
-    parameters.scope?.let { claims["scope"] = parameters.scope }
-    parameters.additionalClaims?.let { claims.putAll(parameters.additionalClaims) }
+  fun createJwt(parameters: JwtParameters): String = createJwt(
+    parameters.username,
+    parameters.scope,
+    parameters.roles,
+    parameters.expiryTime,
+    parameters.additionalClaims
+  )
+
+  fun createJwt(
+    username: String = "someuser",
+    scope: List<String>? = listOf(),
+    roles: List<String>? = listOf(),
+    expiryTime: Duration = Duration.ofHours(1),
+    additionalClaims: Map<String, Any>? = mapOf(),
+  ): String {
+    val claims = mutableMapOf<String, Any>("user_name" to username, "client_id" to "elite2apiclient")
+    roles?.let { claims["authorities"] = roles }
+    scope?.let { claims["scope"] = scope }
+    additionalClaims?.let { claims.putAll(additionalClaims) }
     return Jwts.builder()
       .setId(UUID.randomUUID().toString())
-      .setSubject(parameters.username)
+      .setSubject(username)
       .addClaims(claims)
-      .setExpiration(Date(System.currentTimeMillis() + parameters.expiryTime.toMillis()))
+      .setExpiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
       .signWith(SignatureAlgorithm.RS256, keyPair.private)
       .compact()
   }
