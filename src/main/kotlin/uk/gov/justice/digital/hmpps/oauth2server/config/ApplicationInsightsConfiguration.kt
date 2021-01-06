@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.config
 
 import com.microsoft.applicationinsights.TelemetryClient
+import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -18,7 +19,14 @@ class ApplicationInsightsConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(AppInsightsConfigurationPresent::class)
-  fun telemetryClient(): TelemetryClient = TelemetryClient()
+  fun telemetryClient(): TelemetryClient {
+    log.warn("Application insights configuration missing, returning dummy bean instead")
+
+    return TelemetryClient()
+  }
 
   class AppInsightsConfigurationPresent
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
 }
