@@ -5,6 +5,40 @@
   "customDimensions": {
     "service.version": "${BUILD_NUMBER}"
   },
+  "preview": {
+    "processors": [
+      {
+        "type": "attribute",
+        "include": {
+          "matchType": "regexp",
+          "spanNames": [
+            "^(.*?)ALTER USER(.*?)$"
+          ]
+        },
+        "actions": [
+          {
+            "key": "db.statement",
+            "value": "Redacted alter user statement",
+            "action": "update"
+          }
+        ]
+      },
+      {
+        "type": "span",
+        "include": {
+          "matchType": "regexp",
+          "spanNames": [
+            "^(.*?)ALTER USER(.*?)$"
+          ]
+        },
+        "name": {
+          "fromAttributes": [
+            "db.statement"
+          ]
+        }
+      }
+    ]
+  },
   "selfDiagnostics": {
     "destination": "console",
     "level": "INFO"
