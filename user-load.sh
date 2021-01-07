@@ -8,7 +8,7 @@
 #       1. ENV - [t3|t2|preprod|prod]
 #       2. CLIENT - the client Id and secret, colon-separated
 #       3. USER - the name of the client used to authenticate
-#       4  BATCH - the size of batches (with 30 second pauses between them)
+#       4  BATCH - the size of batches (with 5 second pauses between them)
 #       5. FILE - the name of the file containing the user data
 #       6. VARY_ROLE - [true|false] - true if all users in this load file should receive the ROLE_LICENCE_VARY role
 #       7. DEBUG_CREATION - [true|false] - true if should then output the details of the user after creation
@@ -20,11 +20,10 @@
 # File format for users:
 #
 #  A comma-separated file containing fields
-#        1) username
-#        2) email address
-#        3) First name
-#        4) Last name
-#        5) group code
+#        1) email address
+#        2) First name
+#        3) Last name
+#        4+) group codes (one per column)
 #
 # Make sure there is a new line at the end of the file, otherwise it will not load.
 #

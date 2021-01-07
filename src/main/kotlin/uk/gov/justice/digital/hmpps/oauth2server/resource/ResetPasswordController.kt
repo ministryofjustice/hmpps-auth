@@ -137,8 +137,8 @@ class ResetPasswordController(
 
   @GetMapping("/reset-password-confirm")
   fun resetPasswordConfirm(@RequestParam token: String): ModelAndView {
-    val userTokenOptional = tokenService.checkToken(TokenType.RESET, token)
-    return userTokenOptional.map { ModelAndView("resetPassword", "error", it) }
+    val errorTypeOptional = tokenService.checkToken(TokenType.RESET, token)
+    return errorTypeOptional.map { ModelAndView("resetPassword", "error", it) }
       .orElseGet { createModelWithTokenUsernameAndIsAdmin(TokenType.RESET, token, "setPassword") }
   }
 
