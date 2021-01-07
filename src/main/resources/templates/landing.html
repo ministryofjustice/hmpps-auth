@@ -9,23 +9,27 @@
 <div layout:fragment="content">
   <h1 class="govuk-heading-l">Select service</h1>
 
-  <div class="govuk-grid-row" th:each="row: ${#numbers.sequence(0, services.size(), 3)}">
+  <div class="govuk-grid-row auth-card-group" th:each="row: ${#numbers.sequence(0, services.size(), 3)}">
     <div th:each="i: ${#numbers.sequence(row, row + 2)}" th:if="${i &lt; services.size()}"
-         th:with="service=${services.get(i)}" class="govuk-grid-column-one-third">
-      <div class="govuk-card">
-        <div class="govuk-card__content">
-          <h3 class="govuk-heading-m">
-            <a class="govuk-link" th:id="${service.code}" th:href="${service.url}" th:text="${service.name}">
-              New NOMIS
-            </a>
-          </h3>
-          <p class="govuk-body" th:text="${service.description}">
-            Some descriptive text
-          </p>
-        </div>
+         th:with="service=${services.get(i)}" class="govuk-grid-column-one-third auth-card-group__item">
+      <div class="auth-card auth-card--clickable">
+        <h3 class="govuk-heading-m auth-card__heading">
+          <a class="govuk-link auth-card__link" th:id="${service.code}" th:href="${service.url}"
+             th:text="${service.name}">
+            New NOMIS
+          </a>
+        </h3>
+        <p class="govuk-body auth-card__description" th:text="${service.description}">
+          Some descriptive text
+        </p>
       </div>
     </div>
   </div>
 </div>
+
+<th:block layout:fragment="script">
+  <script th:src="@{/js/card.js}"></script>
+</th:block>
+
 </body>
 </html>

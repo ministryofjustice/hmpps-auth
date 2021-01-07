@@ -37,11 +37,11 @@
 
   <!--[if !IE 8]><!-->
   <link rel="stylesheet" th:href="@{/css/govuk-frontend-3.6.0.min.css}">
-  <link rel="stylesheet" th:href="@{/css/app.css?version=20200415}">
+  <link rel="stylesheet" th:href="@{/css/app.css?version=20210107}">
   <!--<![endif]-->
   <!--[if lt IE 9]>
   <link rel="stylesheet" th:href="@{/css/govuk-frontend-ie8-3.6.0.min.css}">
-  <link rel="stylesheet" th:href="@{/css/app-ie8.css?version=20200415}">
+  <link rel="stylesheet" th:href="@{/css/app-ie8.css?version=20210107}">
   <script th:src="@{/js/html5shiv-3.7.3.min.js}"></script>
   <![endif]-->
 
@@ -72,6 +72,8 @@
 </div>
 
 <th:block th:replace="fragments/footer :: footer"/>
+
+<th:block layout:fragment="script"></th:block>
 
 <script th:src="@{/js/govuk-frontend-3.6.0.min.js}"></script>
 <script>window.GOVUKFrontend.initAll();</script>
