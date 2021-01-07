@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponse
 @ConditionalOnBean(AppInsightsConfigurationPresent::class)
 class ClientTrackingConfiguration(private val clientTrackingInterceptor: ClientTrackingInterceptor) : WebMvcConfigurer {
   override fun addInterceptors(registry: InterceptorRegistry) {
-    log.info("Adding application insights client tracking interceptor")
+    log.debug("Adding application insights client tracking interceptor")
     registry.addInterceptor(clientTrackingInterceptor).addPathPatterns("/**")
   }
 
@@ -36,7 +36,7 @@ class ClientTrackingInterceptor : HandlerInterceptor {
   override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
     val properties = ThreadContext.getRequestTelemetryContext().httpRequestTelemetry.properties
     val addr = IpAddressHelper.retrieveIpFromRemoteAddr(request)
-    log.info("Setting client ip address of {} in the request telemetry context for application insights", addr)
+    log.debug("Setting client ip address of {} in the request telemetry context for application insights", addr)
     properties["clientIpAddress"] = addr
 
     val token = request.getHeader(HttpHeaders.AUTHORIZATION)
