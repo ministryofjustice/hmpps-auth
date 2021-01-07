@@ -54,39 +54,91 @@
   color: #0b0c0c;
 }
 
-/** copied from https://govuk-card-test--region.herokuapp.com/ **/
+/** card copied from prison staff hub **/
 .auth-card {
-  box-sizing: border-box;
+  margin-bottom: 40px;
+  background: #fff;
+  border: 1px solid #d9dadb;
+  position: relative;
+  width: 100%;
+  padding: 25px
 }
 
-@media (min-width: 40.0625em) {
-  .auth-card {
-    margin-bottom: 20px;
+.auth-card__heading {
+  margin-top: 0;
+  margin-bottom: 15px
+}
+
+.auth-card__description {
+  margin-bottom: 0
+}
+
+.auth-card--clickable {
+  border-bottom-width: 5px
+}
+
+.auth-card--clickable:hover,.auth-card--clickable:active {
+  cursor: pointer
+}
+
+.auth-card--clickable:hover .auth-card__heading a,.auth-card--clickable:hover .auth-card__link,.auth-card--clickable:active .auth-card__heading a,.auth-card--clickable:active .auth-card__link {
+  color: #003078;
+  text-decoration: none
+}
+
+.auth-card--clickable:hover .auth-card__heading a:focus,.auth-card--clickable:hover .auth-card__link:focus,.auth-card--clickable:active .auth-card__heading a:focus,.auth-card--clickable:active .auth-card__link:focus {
+  outline: 3px solid transparent;
+  color: #0b0c0c;
+  background-color: #fd0;
+  box-shadow: 0 -2px #fd0,0 4px #0b0c0c;
+  text-decoration: none
+}
+
+.auth-card--clickable:hover {
+  border-color: #b1b4b6
+}
+
+.auth-card--clickable:active {
+  border-color: #b1b4b6;
+  bottom: -1px
+}
+
+.auth-card-group {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+  padding: 0
+}
+
+@media(max-width: 48.0525em) {
+  .auth-card-group {
+    margin-bottom:30px
   }
 }
 
-.auth-card__content {
-  padding-top: 15px;
-  padding-bottom: 0;
+.auth-card-group__item {
+  display: flex;
+  list-style-type: none;
+  margin-bottom: 0
 }
 
-@media (min-width: 40.0625em) {
-  .auth-card__content {
-    padding-top: 20px;
+@media(max-width: 48.0525em) {
+  .auth-card-group__item {
+    flex:0 0 100%
   }
 }
 
-.auth-card__content p {
-  margin-bottom: 0;
+.auth-card-group__item .auth-card {
+  margin-bottom: 25px
 }
 
-.auth-card__content p + p {
-  margin-top: 15px;
-}
+@media(max-width: 48.0525em) {
+  .auth-card-group__item .auth-card {
+    margin-bottom:15px
+  }
 
-@media (min-width: 40.0625em) {
-  .auth-card__content p + p {
-    margin-top: 20px;
+  .auth-card-group__item:last-child .auth-card {
+    margin-bottom: 0
   }
 }
 
