@@ -108,7 +108,7 @@ while IFS=, read -r -a row; do
       username=$(echo "$output" | jq  -r '.username')
 
       if [[ "$username" == "null" ]]; then
-        echo "cannot add user $user as a distinct username could not be found."
+        echo "cannot add user $user, as a username could not be determined."
       else
         echo "username is: $username"
         for group in "${row[@]:3}"; do
