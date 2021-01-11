@@ -29,7 +29,7 @@ class ChildGroup(
   @Id
   @ManyToOne
   @JoinColumn(name = "group_id")
-  val group: Group? = null
+  var group: Group? = null
 
   class GroupChildGroupId : Serializable {
     private val id: UUID? = null

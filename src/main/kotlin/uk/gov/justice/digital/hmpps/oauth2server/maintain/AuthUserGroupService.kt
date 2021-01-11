@@ -33,7 +33,7 @@ class AuthUserGroupService(
 
     // check that group exists
     val group =
-      groupRepository.findByGroupCode(groupFormatted).orElseThrow { AuthUserGroupException("group", "notfound") }
+      groupRepository.findByGroupCode(groupFormatted) ?: throw AuthUserGroupException("group", "notfound")
     if (user.groups.contains(group)) {
       throw AuthUserGroupExistsException()
     }
