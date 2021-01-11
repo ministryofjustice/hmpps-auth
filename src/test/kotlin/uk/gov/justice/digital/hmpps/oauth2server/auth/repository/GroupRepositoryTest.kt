@@ -38,22 +38,22 @@ class GroupRepositoryTest {
     TestTransaction.end()
     assertThat(persistedEntity.groupCode).isNotNull()
     TestTransaction.start()
-    val retrievedEntity = repository.findByGroupCode(entity.groupCode).orElseThrow()
+    val retrievedEntity = repository.findByGroupCode(entity.groupCode)
 
     // equals only compares the business key columns
     assertThat(retrievedEntity).isEqualTo(transientEntity)
-    assertThat(retrievedEntity.groupCode).isEqualTo(transientEntity.groupCode)
-    assertThat(retrievedEntity.groupName).isEqualTo(transientEntity.groupName)
+    assertThat(retrievedEntity?.groupCode).isEqualTo(transientEntity.groupCode)
+    assertThat(retrievedEntity?.groupName).isEqualTo(transientEntity.groupName)
   }
 
   @Test
   fun testRoleMapping() {
-    val entity = repository.findByGroupCode("SITE_3_GROUP_1").orElseThrow()
-    assertThat(entity.groupCode).isEqualTo("SITE_3_GROUP_1")
-    assertThat(entity.assignableRoles).isEmpty()
+    val entity = repository.findByGroupCode("SITE_3_GROUP_1")
+    assertThat(entity?.groupCode).isEqualTo("SITE_3_GROUP_1")
+    assertThat(entity?.assignableRoles).isEmpty()
     val role1 = roleRepository.findByRoleCode("GLOBAL_SEARCH").orElseThrow()
     val role2 = roleRepository.findByRoleCode("LICENCE_RO").orElseThrow()
-    val gar1 = GroupAssignableRole(role = role1, group = entity, automatic = false)
+    val gar1 = GroupAssignableRole(role = role1, group = entity!!, automatic = false)
     entity.assignableRoles.add(gar1)
     val gar2 = GroupAssignableRole(role = role2, group = entity, automatic = true)
     entity.assignableRoles.add(gar2)
@@ -61,28 +61,28 @@ class GroupRepositoryTest {
     TestTransaction.flagForCommit()
     TestTransaction.end()
     TestTransaction.start()
-    val retrievedEntity = repository.findByGroupCode("SITE_3_GROUP_1").orElseThrow()
-    val assignableRoles = retrievedEntity.assignableRoles
+    val retrievedEntity = repository.findByGroupCode("SITE_3_GROUP_1")
+    val assignableRoles = retrievedEntity?.assignableRoles
     assertThat(assignableRoles).extracting<Authority> { obj: GroupAssignableRole -> obj.role }
       .extracting<String> { obj: Authority -> obj.roleCode }.containsOnly("GLOBAL_SEARCH", "LICENCE_RO")
-    assignableRoles.remove(gar1)
+    assignableRoles?.remove(gar1)
     assertThat(assignableRoles).containsExactly(gar2)
-    repository.save(retrievedEntity)
+    repository.save(retrievedEntity!!)
     TestTransaction.flagForCommit()
     TestTransaction.end()
     TestTransaction.start()
-    val retrievedEntity2 = repository.findByGroupCode("SITE_3_GROUP_1").orElseThrow()
-    assertThat(retrievedEntity2.assignableRoles).containsOnly(gar2)
+    val retrievedEntity2 = repository.findByGroupCode("SITE_3_GROUP_1")
+    assertThat(retrievedEntity2?.assignableRoles).containsOnly(gar2)
   }
 
   @Test
   fun givenAnExistingGroupTheyCanBeRetrieved() {
-    val group = repository.findByGroupCode("SITE_1_GROUP_2").orElseThrow()
-    assertThat(group.groupCode).isEqualTo("SITE_1_GROUP_2")
-    assertThat(group.groupName).isEqualTo("Site 1 - Group 2")
-    assertThat(group.assignableRoles).extracting<String> { it.role?.roleCode }
+    val group = repository.findByGroupCode("SITE_1_GROUP_2")
+    assertThat(group?.groupCode).isEqualTo("SITE_1_GROUP_2")
+    assertThat(group?.groupName).isEqualTo("Site 1 - Group 2")
+    assertThat(group?.assignableRoles).extracting<String> { it.role.roleCode }
       .containsOnly("GLOBAL_SEARCH", "LICENCE_RO")
-    assertThat(group.children).extracting<String> { it.groupCode }
+    assertThat(group?.children).extracting<String> { it.groupCode }
       .containsOnly("CHILD_1")
   }
 

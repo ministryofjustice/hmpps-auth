@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.GroupAssignableRole
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.ChildGroupExistsException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.ChildGroupNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserAssignableRole
@@ -33,6 +34,44 @@ class GroupsControllerTest {
       "ROLE_AUTH_GROUP_MANAGER"
     )
   private val groupsController = GroupsController(groupsService)
+
+  @Test
+  fun `create child group`() {
+    val childGroup = CreateChildGroup("PG", "CG", "Group")
+    groupsController.createChildGroup(authentication, childGroup)
+    verify(groupsService).createChildGroup(childGroup)
+  }
+
+  @Test
+  fun `create child group - group already exist exception`() {
+    doThrow(ChildGroupExistsException("child_code", "group code already exists")).whenever(groupsService).createChildGroup(
+      any()
+    )
+
+    val childGroup = CreateChildGroup("parent_code", "child_code", "Child group")
+    assertThatThrownBy { groupsController.createChildGroup(authentication, childGroup) }
+      .isInstanceOf(ChildGroupExistsException::class.java)
+      .withFailMessage("Unable to maintain group: code with reason: group code already exists")
+  }
+
+  @Test
+  fun `create child group - parent group not found exception`() {
+    doThrow(GroupNotFoundException("NotGroup", "ParentGroupNotFound")).whenever(groupsService).createChildGroup(
+      any()
+    )
+
+    val childGroup = CreateChildGroup("parent_code", "child_code", "Child group")
+
+    assertThatThrownBy { groupsController.createChildGroup(authentication, childGroup) }
+      .isInstanceOf(GroupNotFoundException::class.java)
+      .withFailMessage("Unable to maintain group: NotGroup with reason: not found")
+  }
+
+  @Test
+  fun `delete child group`() {
+    groupsController.deleteChildGroup("childGroup", authentication)
+    verify(groupsService).deleteChildGroup("childGroup")
+  }
 
   @Test
   fun `get group details`() {

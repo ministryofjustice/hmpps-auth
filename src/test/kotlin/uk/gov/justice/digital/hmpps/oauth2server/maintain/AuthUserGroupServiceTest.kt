@@ -41,7 +41,7 @@ class AuthUserGroupServiceTest {
     val group = Group("GROUP_LICENCE_VARY", "desc")
     val user = createSampleUser(username = "user", groups = setOf(group))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
-    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(Optional.of(group))
+    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(group)
     assertThatThrownBy {
       service.addGroup(
         "user",
@@ -60,7 +60,7 @@ class AuthUserGroupServiceTest {
     val roleLicence = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
     val roleJoe = Authority("JOE", "Role Joe")
     group.assignableRoles.addAll(setOf(GroupAssignableRole(roleLicence, group, true), GroupAssignableRole(roleJoe, group, false)))
-    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(Optional.of(group))
+    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(group)
     service.addGroup("user", "GROUP_LICENCE_VARY", "admin")
     assertThat(user.groups).extracting<String> { it.groupCode }.containsOnly("GROUP_JOE", "GROUP_LICENCE_VARY")
     assertThat(user.authorities).extracting<String> { it.roleCode }.containsOnly("LICENCE_VARY")

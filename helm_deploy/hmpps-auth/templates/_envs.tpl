@@ -19,8 +19,6 @@ env:
       secretKeyRef:
         key: APPLICATION_INSIGHTS_IKEY
         name: {{ template "app.name" . }}
-  - name: APPLICATIONINSIGHTS_CONNECTION_STRING
-    value: "InstrumentationKey=$(APPLICATION_INSIGHTS_IKEY)"
 
   - name: APPLICATION_NON_PROD_WARNING_ENABLED
     value: {{ .Values.env.APPLICATION_NON_PROD_WARNING_ENABLED | quote }}
