@@ -73,9 +73,8 @@ addGroup() {
   local user=$1
   local group=$2
   if [[ "$group" != "" && ! "$group" =~ ^[,]*$ ]]; then
-    curl -s -X PUT "$HOST/auth/api/authuser/$user/groups/$group" -H "Content-Length: 0" -H "$AUTH_TOKEN_HEADER"
-    if [[ $? -ne 0 ]]; then
-      echo "Failed to add $user to group $group"
+    if [[ $(curl -sS -X PUT "$HOST/auth/api/authuser/$user/groups/$group" -H "Content-Length: 0" -H "$AUTH_TOKEN_HEADER") -ne 0 ]]; then
+        echo "Failed to add $user to group $group"
     fi
   fi
 }
@@ -86,7 +85,7 @@ cnt=0
 while IFS=, read -r -a row; do
   user="${row[0]}"
   # To uppercase
-  user=$(echo $user | tr 'a-z' 'A-Z')
+  user=$(echo "$user" | tr '[:lower:]' '[:upper:]')
   if [[ "$user" == "EMAIL" || -z "$user" ]]; then
     continue
   fi
@@ -110,7 +109,6 @@ while IFS=, read -r -a row; do
       if [[ "$username" == "null" ]]; then
         echo "cannot add user $user, as a username could not be determined."
       else
-        echo "username is: $username"
         for group in "${row[@]:3}"; do
           addGroup "$username" "$group"
         done
