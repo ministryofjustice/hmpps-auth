@@ -7,4 +7,6 @@ john.james@someforce.police.uk,John,James,PECS_DP1,PECS_DP2,PECS_DP3,PECS_DP4,PE
 auth_test@digital.justice.gov.uk,John,James,PECS_DORKMC,,,,,,,,,,,,,,,,,,,,,,,,,,
 ,User that should be loaded
 load_success@digital.justice.gov.uk,Load,Success,PECS_DORKMC,PECS_GLDFMC,PECS_RDHLMC,PECS_RCHTMC,PECS_SUTTMC,,,,,,,,,,,,,,,,,,,,,,,,,
+,User email already exists but username can be found
+auth_change_email@justice.gov.uk,Change,Email,SOC_HQ,,,,,,,,,,,,,,,,,,,,,,,,,,
 

@@ -69,13 +69,23 @@ TOKEN=$(echo "$TOKEN_RESPONSE" | jq -er .access_token)
 
 AUTH_TOKEN_HEADER="Authorization: Bearer $TOKEN"
 
+addGroup() {
+  local user=$1
+  local group=$2
+  if [[ "$group" != "" && ! "$group" =~ ^[,]*$ ]]; then
+    if [[ $(curl -sS -X PUT "$HOST/auth/api/authuser/$user/groups/$group" -H "Content-Length: 0" -H "$AUTH_TOKEN_HEADER") -ne 0 ]]; then
+        echo "Failed to add $user to group $group"
+    fi
+  fi
+}
+
 cnt=0
 
 # email first last group group2 group3 group4 group5 group6 group7 group8 group9
 while IFS=, read -r -a row; do
   user="${row[0]}"
   # To uppercase
-  user=$(echo $user | tr 'a-z' 'A-Z')
+  user=$(echo "$user" | tr '[:lower:]' '[:upper:]')
   if [[ "$user" == "EMAIL" || -z "$user" ]]; then
     continue
   fi
@@ -92,6 +102,18 @@ while IFS=, read -r -a row; do
   else
     if [[ $output =~ "error_description" ]]; then
       echo "\033[0;31mFailure to create user ${user}\033[0m due to $output"
+
+      #Check if the username was returned. If so, try to add the groups.
+      username=$(echo "$output" | jq  -r '.username')
+
+      if [[ "$username" == "null" ]]; then
+        echo "cannot add user $user, as a username could not be determined."
+      else
+        for group in "${row[@]:3}"; do
+          addGroup "$username" "$group"
+        done
+      fi
+
     else
       if [[ "$DEBUG_CREATION" == "true" ]]; then
         # Output the user details to confirm it was created

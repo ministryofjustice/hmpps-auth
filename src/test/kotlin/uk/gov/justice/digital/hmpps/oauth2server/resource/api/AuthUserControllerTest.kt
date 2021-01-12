@@ -408,7 +408,7 @@ class AuthUserControllerTest {
       )
     assertThat(responseEntity.statusCodeValue).isEqualTo(409)
     assertThat(responseEntity.body).isEqualTo(
-      ErrorDetail("username.exists", "User email@justice.gov.uk already exists", "username")
+      AuthUserController.ErrorDetailUsername("username.exists", "User email@justice.gov.uk already exists", "username", "name")
     )
   }
 
@@ -424,7 +424,23 @@ class AuthUserControllerTest {
       )
     assertThat(responseEntity.statusCodeValue).isEqualTo(409)
     assertThat(responseEntity.body).isEqualTo(
-      ErrorDetail("email.exists", "User email@justice.gov.uk already exists", "email")
+      AuthUserController.ErrorDetailUsername("email.exists", "User email@justice.gov.uk already exists", "email", "joe")
+    )
+  }
+
+  @Test
+  fun `createUserByEmail email already exists can't determine username`() {
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
+    whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(createSampleUser("joe"), createSampleUser("bob")))
+    val responseEntity =
+      authUserController.createUserByEmail(
+        CreateUser("email@justice.gov.uk", "first", "last", null, null),
+        request,
+        authentication
+      )
+    assertThat(responseEntity.statusCodeValue).isEqualTo(409)
+    assertThat(responseEntity.body).isEqualTo(
+      AuthUserController.ErrorDetailUsername("email.exists", "User email@justice.gov.uk already exists", "email", null)
     )
   }
 
