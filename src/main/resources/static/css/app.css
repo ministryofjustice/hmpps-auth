@@ -142,6 +142,352 @@
   }
 }
 
+.auth-header {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  background-color: #0b0c0c
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header {
+    padding-top:15px
+  }
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header {
+    padding-bottom:15px
+  }
+}
+
+.auth-header__container {
+  max-width: 1170px;
+  margin-right: 15px;
+  margin-left: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center
+}
+
+@supports(margin: max(calc(0px))) {
+  .auth-header__container {
+    margin-right:max(15px, calc(15px + env(safe-area-inset-right)));
+    margin-left: max(15px, calc(15px + env(safe-area-inset-left)))
+  }
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header__container {
+    margin-right:30px;
+    margin-left: 30px
+  }
+
+  @supports(margin: max(calc(0px))) {
+    .auth-header__container {
+      margin-right:max(30px, calc(15px + env(safe-area-inset-right)));
+      margin-left: max(30px, calc(15px + env(safe-area-inset-left)))
+    }
+  }
+}
+
+@media(min-width: 1230px) {
+  .auth-header__container {
+    margin-right:auto;
+    margin-left: auto
+  }
+
+  @supports(margin: max(calc(0px))) {
+    .auth-header__container {
+      margin-right:auto;
+      margin-left: auto
+    }
+  }
+}
+
+.auth-header__logo {
+  margin-right: 10px;
+  position: relative;
+  top: -2px;
+  fill: #fff
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header__logo {
+    margin-right:10px
+  }
+}
+
+.auth-header__title {
+  padding-right: 15px;
+  display: flex;
+  align-items: center
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header__title {
+    padding-right:15px
+  }
+}
+
+.auth-header__title__organisation-name {
+  margin-right: 10px;
+  font-family: "GDS Transport",arial,sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 700;
+  font-size: 18px;
+  font-size: 1.125rem;
+  line-height: 1.1111111111;
+  display: flex;
+  align-items: center
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header__title__organisation-name {
+    margin-right:10px
+  }
+}
+
+@media print {
+  .auth-header__title__organisation-name {
+    font-family: sans-serif
+  }
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header__title__organisation-name {
+    font-size:24px;
+    font-size: 1.5rem;
+    line-height: 1.25
+  }
+}
+
+@media print {
+  .auth-header__title__organisation-name {
+    font-size: 18pt;
+    line-height: 1.15
+  }
+}
+
+.auth-header__title__service-name {
+  display: none;
+  font-family: "GDS Transport",arial,sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 400;
+  font-size: 18px;
+  font-size: 1.125rem;
+  line-height: 1.1111111111
+}
+
+@media print {
+  .auth-header__title__service-name {
+    font-family: sans-serif
+  }
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header__title__service-name {
+    font-size:24px;
+    font-size: 1.5rem;
+    line-height: 1.25
+  }
+}
+
+@media print {
+  .auth-header__title__service-name {
+    font-size: 18pt;
+    line-height: 1.15
+  }
+}
+
+@media(min-width: 48.0625em) {
+  .auth-header__title__service-name {
+    display:inline-block
+  }
+}
+
+.auth-header__link {
+  font-family: "GDS Transport",arial,sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale
+}
+
+@media print {
+  .auth-header__link {
+    font-family: sans-serif
+  }
+}
+
+.auth-header__link:focus {
+  outline: 3px solid transparent;
+  color: #0b0c0c;
+  background-color: #fd0;
+  box-shadow: 0 -2px #fd0,0 4px #0b0c0c;
+  text-decoration: none
+}
+
+.auth-header__link:link {
+  color: #1d70b8
+}
+
+.auth-header__link:visited {
+  color: #4c2c92
+}
+
+.auth-header__link:hover {
+  color: #003078
+}
+
+.auth-header__link:active {
+  color: #0b0c0c
+}
+
+.auth-header__link:focus {
+  color: #0b0c0c
+}
+
+.auth-header__link:link,.auth-header__link:visited,.auth-header__link:active {
+  color: #fff;
+  text-decoration: none
+}
+
+.auth-header__link:hover {
+  text-decoration: underline
+}
+
+.auth-header__link:focus {
+  color: #0b0c0c
+}
+
+.auth-header__link:focus svg {
+  fill: #0b0c0c
+}
+
+.auth-header__link__sub-text {
+  font-family: "GDS Transport",arial,sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 400;
+  font-size: 14px;
+  font-size: .875rem;
+  line-height: 1.1428571429;
+  display: none
+}
+
+@media print {
+  .auth-header__link__sub-text {
+    font-family: sans-serif
+  }
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header__link__sub-text {
+    font-size:16px;
+    font-size: 1rem;
+    line-height: 1.25
+  }
+}
+
+@media print {
+  .auth-header__link__sub-text {
+    font-size: 14pt;
+    line-height: 1.2
+  }
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header__link__sub-text {
+    display:block
+  }
+}
+
+.auth-header__navigation {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  list-style: none;
+  margin: 0;
+  padding: 0
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header__navigation {
+    flex-direction:row;
+    align-items: center
+  }
+}
+
+.auth-header__navigation__item {
+  font-family: "GDS Transport",arial,sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 400;
+  font-size: 16px;
+  font-size: 1rem;
+  line-height: 1.25;
+  margin-bottom: 5px;
+  text-align: right
+}
+
+@media print {
+  .auth-header__navigation__item {
+    font-family: sans-serif
+  }
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header__navigation__item {
+    font-size:19px;
+    font-size: 1.1875rem;
+    line-height: 1.3157894737
+  }
+}
+
+@media print {
+  .auth-header__navigation__item {
+    font-size: 14pt;
+    line-height: 1.15
+  }
+}
+
+@media(min-width: 40.0625em) {
+  .auth-header__navigation__item {
+    margin-right:15px;
+    padding-right: 15px;
+    margin-bottom: 0;
+    border-right: 1px solid #fff
+  }
+}
+
+@media(min-width: 40.0625em)and (min-width: 40.0625em) {
+  .auth-header__navigation__item {
+    margin-right:20px
+  }
+}
+
+@media(min-width: 40.0625em)and (min-width: 40.0625em) {
+  .auth-header__navigation__item {
+    padding-right:20px
+  }
+}
+
+.auth-header__navigation__item a {
+  display: inline-block
+}
+
+.auth-header__navigation__item:last-child {
+  margin-right: 0;
+  border-right: 0;
+  padding-right: 0
+}
+
+@media print {
+  .auth-header {
+    display: none
+  }
+}
+
 .incomplete {
   background-color: #005EA5;
 }
