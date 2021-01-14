@@ -19,6 +19,7 @@
     </p>
   </div>
   <dl class="govuk-summary-list">
+
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key">
         Name
@@ -33,7 +34,7 @@
         </a>
       </dd>
     </div>
-    <div class="govuk-summary-list__row" th:if="${authUser.authSource != 'azuread'}">
+    <div class="govuk-summary-list__row" th:if="${authUser.authSource != 'azuread'} and ${usernameNotEmail == true} ">
       <dt class="govuk-summary-list__key">
         Username
       </dt>
@@ -49,20 +50,11 @@
       </dd>
     </div>
     <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">
-        Last signed in
-      </dt>
-      <dd class="govuk-summary-list__value" data-qa="lastLoggedIn"
-          th:text="${#temporals.format(authUser.lastLoggedIn, 'd MMMM yyyy, HH:mm')}">
-        24 January 2020 - 10:00:13
-      </dd>
-      <dd class="govuk-summary-list__actions">
-        &nbsp;
-      </dd>
-    </div>
-    <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">
+      <dt th:if="${usernameNotEmail == true}" class="govuk-summary-list__key" data-qa="usernameEmail">
         Email address
+      </dt>
+      <dt th:unless="${usernameNotEmail == true}" class="govuk-summary-list__key" data-qa="usernameEmail">
+        Username/Email address
       </dt>
       <dd class="govuk-summary-list__value" data-qa="email" th:text="${authUser.email}">
         sarah.philips@digital.justice.gov.uk

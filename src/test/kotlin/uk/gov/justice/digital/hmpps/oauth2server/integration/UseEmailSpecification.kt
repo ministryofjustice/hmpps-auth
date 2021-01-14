@@ -21,7 +21,7 @@ class UseEmailSpecification : AbstractAuthSpecification() {
     goTo(useEmailPage).submit()
 
     accountDetailsPage.isAt()
-    accountDetailsPage.checkUsername("AUTH_CHANGE@JUSTICE.GOV.UK")
+    accountDetailsPage.checkEmailUsername("auth_change@justice.gov.uk")
 
     goTo(loginPage).loginAs("auth_change@justice.gov.uk")
   }

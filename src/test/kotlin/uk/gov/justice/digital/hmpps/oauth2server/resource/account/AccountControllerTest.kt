@@ -40,6 +40,7 @@ class AccountControllerTest {
         "mfaPreferenceVerified" to false,
         "linkedAccounts" to emptyList<String>(),
         "canSwitchUsernameToEmail" to false,
+        "usernameNotEmail" to true,
       )
     )
     verify(userService).findMasterUserPersonDetails("user")
