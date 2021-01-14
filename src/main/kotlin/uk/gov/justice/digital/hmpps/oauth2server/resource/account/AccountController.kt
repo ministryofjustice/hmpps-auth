@@ -22,12 +22,15 @@ class AccountController(private val userService: UserService, private val userCo
     val canSwitchUsernameToEmail = userInAuth.source == AuthSource.auth && email != null &&
       !user.username.contains('@') && userService.findUser(email).isEmpty
 
+    val usernameNotEmail = email != username.toLowerCase()
+
     return ModelAndView("account/accountDetails")
       .addObject("user", user)
       .addObject("authUser", userInAuth)
       .addObject("mfaPreferenceVerified", userInAuth.mfaPreferenceVerified())
       .addObject("linkedAccounts", linkedAccounts)
       .addObject("canSwitchUsernameToEmail", canSwitchUsernameToEmail)
+      .addObject("usernameNotEmail", usernameNotEmail)
   }
 }
 

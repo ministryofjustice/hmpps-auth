@@ -20,6 +20,15 @@ class AccountDetailsSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `auth account details with username as email`() {
+    goTo(loginPage).loginAs("AUTH_RO_USER1@DIGITAL.JUSTICE.GOV.UK")
+      .navigateToAccountDetails()
+
+    accountDetailsPage.isAt()
+    accountDetailsPage.checkAuthEmailUsernameDetails()
+  }
+
+  @Test
   fun `nomis account details`() {
     goTo(loginPage).loginAs("ITAG_USER", "password")
 
@@ -135,9 +144,31 @@ class AccountDetailsPage :
     assertThat(el("[data-qa='changePassword']").text()).isEqualToNormalizingWhitespace("Change your password")
     assertThat(el("[data-qa='username']").text()).isEqualTo("AUTH_RO_USER")
     assertThat(el("[data-qa='name']").text()).isEqualTo("Ryan-Auth Orton")
-    assertThat(el("[data-qa='lastLoggedIn']").text()).isNotBlank()
     assertThat(el("[data-qa='changeName']").text()).isEqualToNormalizingWhitespace("Change name")
+    assertThat(el("[data-qa='usernameEmail']").text()).isEqualToNormalizingWhitespace("Email address")
     assertThat(el("[data-qa='email']").text()).isEqualTo("auth_ro_user@digital.justice.gov.uk")
+    assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
+    assertThat(el("[data-qa='verified']").text()).isEqualTo("Yes")
+    assertThat(find("[data-qa='verifyEmail']")).isEmpty()
+    assertThat(el("[data-qa='secondaryEmail']").text()).isBlank()
+    assertThat(el("[data-qa='changeSecondaryEmail']").text()).isEqualToNormalizingWhitespace("Add backup email")
+    assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualTo("No")
+    assertThat(find("[data-qa='verifySecondaryEmail']")).isEmpty()
+    assertThat(el("[data-qa='mobile']").text()).isBlank()
+    assertThat(el("[data-qa='changeMobile']").text()).isEqualToNormalizingWhitespace("Add mobile number")
+    assertThat(el("[data-qa='mobileVerified']").text()).isEqualTo("No")
+    assertThat(find("[data-qa='verifyMobile']")).isEmpty()
+    assertThat(el("[data-qa='mfaPreference']").text()).isEqualTo("Email")
+    assertThat(el("[data-qa='changeMfaPreference']").text()).isEqualToNormalizingWhitespace("Change 2-step verification preference")
+    return this
+  }
+
+  fun checkAuthEmailUsernameDetails(): AccountDetailsPage {
+    assertThat(el("[data-qa='changePassword']").text()).isEqualToNormalizingWhitespace("Change your password")
+    assertThat(el("[data-qa='name']").text()).isEqualTo("Ryan-Auth Orton")
+    assertThat(el("[data-qa='changeName']").text()).isEqualToNormalizingWhitespace("Change name")
+    assertThat(el("[data-qa='usernameEmail']").text()).isEqualToNormalizingWhitespace("Username/Email address")
+    assertThat(el("[data-qa='email']").text()).isEqualTo("auth_ro_user1@digital.justice.gov.uk")
     assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
     assertThat(el("[data-qa='verified']").text()).isEqualTo("Yes")
     assertThat(find("[data-qa='verifyEmail']")).isEmpty()
@@ -172,7 +203,6 @@ class AccountDetailsPage :
 
   fun checkAzureDetails(): AccountDetailsPage {
     assertThat(el("[data-qa='name']").text()).isEqualTo("Test User")
-    assertThat(find("[data-qa='username']")).isEmpty()
     assertThat(find("[data-qa='changeName']")).isEmpty()
     assertThat(find("[data-qa='changePassword']")).isEmpty()
     assertThat(find("[data-qa='changeEmail']")).isEmpty()
@@ -304,5 +334,9 @@ class AccountDetailsPage :
 
   fun checkUsername(username: String) {
     assertThat(el("[data-qa='username']").text()).isEqualTo(username)
+  }
+
+  fun checkEmailUsername(username: String) {
+    assertThat(el("[data-qa='email']").text()).isEqualTo(username)
   }
 }
