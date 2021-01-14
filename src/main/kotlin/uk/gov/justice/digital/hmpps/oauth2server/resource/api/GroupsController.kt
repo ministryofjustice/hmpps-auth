@@ -135,6 +135,7 @@ class GroupsController(
       ApiResponse(code = 409, message = "Child Group already exists.", response = ErrorDetail::class)
     ]
   )
+  @Throws(GroupsService.ChildGroupExistsException::class, GroupsService.GroupNotFoundException::class)
   fun createChildGroup(
     @ApiParam(value = "The group code of the child group.", required = true)
     @ApiIgnore authentication: Authentication,
