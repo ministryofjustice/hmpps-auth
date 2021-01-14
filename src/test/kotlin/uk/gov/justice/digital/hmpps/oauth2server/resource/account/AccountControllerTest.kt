@@ -22,6 +22,10 @@ class AccountControllerTest {
     UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"),
     "pass"
   )
+  private val token2 = TestingAuthenticationToken(
+    UserDetailsImpl("anemail@somewhere.com", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"),
+    "pass"
+  )
 
   @Test
   fun `account details`() {
@@ -56,6 +60,17 @@ class AccountControllerTest {
     val modelAndView = accountController.accountDetails(token)
 
     assertThat(modelAndView.model).containsEntry("canSwitchUsernameToEmail", true)
+  }
+
+  @Test
+  fun `account details username same as email UsernameNotEmail set to false`() {
+    val authUser = createSampleUser("anemail@somewhere.com", email = "anemail@somewhere.com")
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(authUser))
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
+
+    val modelAndView = accountController.accountDetails(token2)
+
+    assertThat(modelAndView.model).containsEntry("usernameNotEmail", false)
   }
 
   @Test
