@@ -101,14 +101,13 @@ while IFS=, read -r -a row; do
     echo "\033[0;31mFailure to create user ${user}\033[0m"
   else
     if [[ $output =~ "error_description" ]]; then
-      echo "\033[0;31mFailure to create user ${user}\033[0m due to $output"
-
       #Check if the username was returned. If so, try to add the groups.
       username=$(echo "$output" | jq  -r '.username')
 
       if [[ "$username" == "null" ]]; then
-        echo "cannot add user $user, as a username could not be determined."
+        echo "\033[0;31mFailure to create user ${user}\033[0m due to $output"
       else
+        echo "existing user: ${user} found. Adding groups to this user."
         for group in "${row[@]:3}"; do
           addGroup "$username" "$group"
         done

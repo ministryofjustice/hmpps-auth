@@ -33,12 +33,11 @@ class UserLoadIntTest : IntegrationTest() {
         .filter { it.contains("Failure") }
         .map { it.substringAfter("\\033[0;31m").substringBefore("\\033[0m") }
     )
-      .withFailMessage("Was expecting 4 Failure lines, found:\n${output.joinToString("\n")}")
+      .withFailMessage("Was expecting 3 Failure lines, found:\n${output.joinToString("\n")}")
       .containsExactly(
         "Failure to create user JOHN.JAMES@SOMEFORCE.PNN.POLICE.UK",
         "Failure to create user JOHN.JAMES@SOMEFORCE.POLICE.UK",
         "Failure to create user AUTH_TEST@DIGITAL.JUSTICE.GOV.UK",
-        "Failure to create user AUTH_CHANGE_EMAIL@JUSTICE.GOV.UK",
       )
 
     // check user now loaded successfully
