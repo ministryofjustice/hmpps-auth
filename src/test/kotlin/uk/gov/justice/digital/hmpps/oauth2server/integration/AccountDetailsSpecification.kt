@@ -167,7 +167,7 @@ class AccountDetailsPage :
     assertThat(el("[data-qa='changePassword']").text()).isEqualToNormalizingWhitespace("Change your password")
     assertThat(el("[data-qa='name']").text()).isEqualTo("Ryan-Auth Orton")
     assertThat(el("[data-qa='changeName']").text()).isEqualToNormalizingWhitespace("Change name")
-    assertThat(el("[data-qa='usernameEmail']").text()).isEqualToNormalizingWhitespace("Username/Email address")
+    assertThat(el("[data-qa='usernameEmail']").text()).isEqualToNormalizingWhitespace("Username / email")
     assertThat(el("[data-qa='email']").text()).isEqualTo("auth_ro_user1@digital.justice.gov.uk")
     assertThat(el("[data-qa='changeEmail']").text()).isEqualToNormalizingWhitespace("Change email")
     assertThat(el("[data-qa='verified']").text()).isEqualTo("Yes")
