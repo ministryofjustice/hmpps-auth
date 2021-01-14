@@ -34,7 +34,7 @@
         </a>
       </dd>
     </div>
-    <div class="govuk-summary-list__row" th:if="${authUser.authSource != 'azuread'} and ${usernameNotEmail == true} ">
+    <div class="govuk-summary-list__row" th:if="${usernameNotEmail == true} ">
       <dt class="govuk-summary-list__key">
         Username
       </dt>
