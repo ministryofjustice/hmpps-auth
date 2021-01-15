@@ -62,7 +62,7 @@
 <th:block th:replace="fragments/header :: header"/>
 
 <div class="govuk-width-container">
-    <a th:if="${showBack}" th:href="@{/}" class="govuk-back-link" id="back-link" data-qa="back-link">Back</a>
+  <a th:if="${showBack}" th:href="@{/}" class="govuk-back-link" id="back-link" data-qa="back-link">Back</a>
   <main class="govuk-main-wrapper" id="main-content" role="main">
     <div class="govuk-grid-row">
       <th:block layout:fragment="content"/>
