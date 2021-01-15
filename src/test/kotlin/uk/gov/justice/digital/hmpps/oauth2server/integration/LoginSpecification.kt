@@ -21,7 +21,7 @@ class LoginSpecification : AbstractDeliusAuthSpecification() {
   @Test
   fun `Log in with valid auth credentials`() {
     val homePage = goTo(loginPage).loginAs("AUTH_USER")
-    homePage.assertNameDisplayedCorrectly("Auth Only")
+    homePage.assertNameDisplayedCorrectly("A. Only")
   }
 
   @Test
@@ -43,13 +43,13 @@ class LoginSpecification : AbstractDeliusAuthSpecification() {
   @Test
   fun `Log in with valid nomis credentials`() {
     val homePage = goTo(loginPage).loginAs("ITAG_USER", "password")
-    homePage.assertNameDisplayedCorrectly("Itag User")
+    homePage.assertNameDisplayedCorrectly("I. User")
   }
 
   @Test
   fun `first time Log in with valid nomis credentials`() {
     val homePage = goTo(loginPage).loginAs("nomis_email", "password123456")
-    homePage.assertNameDisplayedCorrectly("Nomis Email")
+    homePage.assertNameDisplayedCorrectly("N. Email")
   }
 
   @Test
@@ -64,7 +64,7 @@ class LoginSpecification : AbstractDeliusAuthSpecification() {
   @Test
   fun `Log in with valid delius credentials`() {
     val homePage = goTo(loginPage).loginAs("DELIUS_USER", "password")
-    homePage.assertNameDisplayedCorrectly("Delius Smith")
+    homePage.assertNameDisplayedCorrectly("D. Smith")
   }
 
   @Test
@@ -79,7 +79,7 @@ class LoginSpecification : AbstractDeliusAuthSpecification() {
   @Test
   fun `Log in with valid credentials in lower case`() {
     val homePage = goTo(loginPage).loginAs("itag_user", "password")
-    homePage.assertNameDisplayedCorrectly("Itag User")
+    homePage.assertNameDisplayedCorrectly("I. User")
   }
 
   @Test
@@ -123,13 +123,13 @@ class LoginSpecification : AbstractDeliusAuthSpecification() {
   @Test
   fun `Log in with valid credentials same user name in Auth and Delius but Auth account disabled`() {
     val homePage = goTo(loginPage).loginAs("DELIUS_ENABLED_AUTH_DISABLED", "password")
-    homePage.assertNameDisplayedCorrectly("Delius Smith")
+    homePage.assertNameDisplayedCorrectly("D. Smith")
   }
 
   @Test
   fun `Log in with valid credentials same user name in Auth and Nomis but Auth account disabled`() {
     val homePage = goTo(loginPage).loginAs("NOMIS_ENABLED_AUTH_DISABLED", "password123456")
-    homePage.assertNameDisplayedCorrectly("Nomis Enabled Auth Disabled")
+    homePage.assertNameDisplayedCorrectly("N. Disabled")
   }
 
   @Test
