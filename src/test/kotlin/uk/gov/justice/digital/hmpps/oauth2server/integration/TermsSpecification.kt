@@ -16,7 +16,8 @@ class TermsSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `Accept terms and conditions`() {
-    goTo(termsPage).accept()
+    goTo(loginPage).viewTerms()
+    termsPage.accept()
     loginPage.isAt()
   }
 }
