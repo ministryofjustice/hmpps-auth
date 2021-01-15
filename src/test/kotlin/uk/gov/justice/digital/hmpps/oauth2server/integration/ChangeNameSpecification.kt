@@ -21,13 +21,13 @@ class ChangeNameSpecification : AbstractAuthSpecification() {
 
     goTo(changeNamePage)
       .checkCurrentName(currentName)
-      .submitUserDetails("   Joe  ", "  New Name  ")
+      .submitUserDetails("   Harry  ", "  New Name  ")
 
     accountDetailsPage.isAt()
-    assertThat(accountDetailsPage.getCurrentName()).isEqualTo("Joe New Name")
+    assertThat(accountDetailsPage.getCurrentName()).isEqualTo("H. Name")
 
     goTo(changeNamePage)
-      .checkCurrentName("Joe New Name")
+      .checkCurrentName("H. Name")
   }
 
   @Test
@@ -47,9 +47,9 @@ class ChangeNameSpecification : AbstractAuthSpecification() {
   fun `A user can change their user details and the auth jwt id stays the same`() {
     val homePage = goTo(loginPage).loginAs("AUTH_ADM")
     val oldJwtId = homePage.parseJwt().jwtid
-    goTo(changeNamePage).submitUserDetails("   Joe  ", "  New stays the same Name  ")
+    goTo(changeNamePage).submitUserDetails("   Norman  ", "  New stays the same Name  ")
     accountDetailsPage.isAt()
-    assertThat(accountDetailsPage.getCurrentName()).isEqualTo("Joe New stays the same Name")
+    assertThat(accountDetailsPage.getCurrentName()).isEqualTo("N. Name")
     assertThat(accountDetailsPage.parseJwt().jwtid).isEqualTo(oldJwtId)
   }
 }
@@ -86,7 +86,7 @@ open class ChangeNamePage :
   }
 
   fun checkCurrentName(name: String): ChangeNamePage {
-    assertThat("${firstName.value()} ${lastName.value()}").isEqualTo(name)
+    assertThat("${firstName.value().first()}. ${lastName.value().split(" ").last()}").isEqualTo(name)
     return this
   }
 }

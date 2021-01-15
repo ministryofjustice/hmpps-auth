@@ -29,7 +29,7 @@ class DeliusDownLoginSpecification : AbstractAuthSpecification() {
       .loginAs("AUTH_USER", "password123456")
     homePage
       .isAtPage()
-    Assertions.assertThat(accountDetailsPage.getCurrentName()).isEqualTo("Auth Only")
+    Assertions.assertThat(accountDetailsPage.getCurrentName()).isEqualTo("A. Only")
   }
 
   @Test
@@ -38,6 +38,6 @@ class DeliusDownLoginSpecification : AbstractAuthSpecification() {
       .loginAs("ITAG_USER", "password")
     homePage
       .isAtPage()
-    Assertions.assertThat(accountDetailsPage.getCurrentName()).isEqualTo("Itag User")
+    Assertions.assertThat(accountDetailsPage.getCurrentName()).isEqualTo("I. User")
   }
 }
