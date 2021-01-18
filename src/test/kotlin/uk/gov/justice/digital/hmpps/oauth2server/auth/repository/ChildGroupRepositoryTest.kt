@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.auth.repository
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -24,8 +24,8 @@ class ChildGroupRepositoryTest {
 
   @Test
   fun givenAnExistingRoleTheyCanBeRetrieved() {
-    val retrievedEntity = repository.findByGroupCode("CHILD_2").orElseThrow()
-    Assertions.assertThat(retrievedEntity.groupCode).isEqualTo("CHILD_2")
-    Assertions.assertThat(retrievedEntity.groupName).isEqualTo("Child - Site 2 - Group 1")
+    val retrievedEntity = repository.findByGroupCode("CHILD_2")
+    assertThat(retrievedEntity?.groupCode).isEqualTo("CHILD_2")
+    assertThat(retrievedEntity?.groupName).isEqualTo("Child - Site 2 - Group 1")
   }
 }

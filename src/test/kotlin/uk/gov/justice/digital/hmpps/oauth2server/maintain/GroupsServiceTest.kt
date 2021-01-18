@@ -15,10 +15,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ChildGroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
+import uk.gov.justice.digital.hmpps.oauth2server.resource.api.CreateChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.GroupAmendment
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthGroupRelationshipException
-import java.util.Optional
 
 class GroupsServiceTest {
   private val groupRepository: GroupRepository = mock()
@@ -32,54 +32,74 @@ class GroupsServiceTest {
 
   @Test
   fun `get group details`() {
-    val dbGroup = Optional.of(Group("bob", "disc"))
+    val dbGroup = Group("bob", "disc")
     whenever(groupRepository.findByGroupCode(anyString())).thenReturn(dbGroup)
 
     val group = groupsService.getGroupDetail("bob", "Joe", SUPER_USER)
 
-    assertThat(group).isEqualTo(dbGroup.get())
+    assertThat(group).isEqualTo(dbGroup)
     verify(groupRepository).findByGroupCode("bob")
     verify(maintainUserCheck).ensureMaintainerGroupRelationship("Joe", "bob", SUPER_USER)
   }
 
   @Test
   fun `update group details`() {
-    val dbGroup = Optional.of(Group("bob", "disc"))
+    val dbGroup = Group("bob", "disc")
     val groupAmendment = GroupAmendment("Joe")
     whenever(groupRepository.findByGroupCode(anyString())).thenReturn(dbGroup)
 
     groupsService.updateGroup("bob", groupAmendment)
 
     verify(groupRepository).findByGroupCode("bob")
-    verify(groupRepository).save(dbGroup.get())
+    verify(groupRepository).save(dbGroup)
+  }
+
+  @Test
+  fun `Create child group`() {
+    val parentGroup = Group("PG", "parent group")
+    val createChildGroup = CreateChildGroup("PG", "CG", "Child Group")
+    whenever(childGroupRepository.findByGroupCode(anyString())).thenReturn(null)
+    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(parentGroup)
+
+    groupsService.createChildGroup(createChildGroup)
+    val cg = ChildGroup("CG", "Child Group")
+    verify(childGroupRepository).findByGroupCode("CG")
+    verify(groupRepository).findByGroupCode("PG")
+    verify(childGroupRepository).save(cg)
+  }
+
+  @Test
+  fun `Delete child group`() {
+    groupsService.deleteChildGroup("CG")
+    verify(childGroupRepository).deleteByGroupCode("CG")
   }
 
   @Test
   fun `get child group details`() {
-    val dbGroup = Optional.of(ChildGroup("bob", "disc"))
+    val dbGroup = ChildGroup("bob", "disc")
     whenever(childGroupRepository.findByGroupCode(anyString())).thenReturn(dbGroup)
 
     val group = groupsService.getChildGroupDetail("bob", "Joe", SUPER_USER)
 
-    assertThat(group).isEqualTo(dbGroup.get())
+    assertThat(group).isEqualTo(dbGroup)
     verify(childGroupRepository).findByGroupCode("bob")
   }
 
   @Test
   fun `update child group details`() {
-    val dbGroup = Optional.of(ChildGroup("bob", "disc"))
+    val dbGroup = ChildGroup("bob", "disc")
     val groupAmendment = GroupAmendment("Joe")
     whenever(childGroupRepository.findByGroupCode(anyString())).thenReturn(dbGroup)
 
     groupsService.updateChildGroup("bob", groupAmendment)
 
     verify(childGroupRepository).findByGroupCode("bob")
-    verify(childGroupRepository).save(dbGroup.get())
+    verify(childGroupRepository).save(dbGroup)
   }
 
   @Test
   fun `get group details throws error when user does not have group to be able to maintain`() {
-    val dbGroup = Optional.of(Group("bob", "disc"))
+    val dbGroup = Group("bob", "disc")
     whenever(groupRepository.findByGroupCode(anyString())).thenReturn(dbGroup)
     doThrow(AuthGroupRelationshipException("bob", "Group not with your groups")).whenever(maintainUserCheck)
       .ensureMaintainerGroupRelationship(

@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.core.annotation.Page
 import org.fluentlenium.core.annotation.PageUrl
 import org.fluentlenium.core.domain.FluentWebElement
@@ -194,7 +194,7 @@ class ChangeEmailSpecification : AbstractDeliusAuthSpecification() {
       .confirm()
     accountDetailsPage
       .isAtPage()
-    Assertions.assertThat(accountDetailsPage.getCurrentName()).isEqualTo("Delius Smith")
+    assertThat(accountDetailsPage.getCurrentName()).isEqualTo("D. Smith")
   }
 
   @Test
@@ -307,7 +307,7 @@ open class ChangeEmailDeliusPage : AuthPage<ChangeEmailDeliusPage>(
   private lateinit var continueButton: FluentWebElement
 
   fun confirm(): ChangeEmailDeliusPage {
-    Assertions.assertThat(continueButton.text()).isEqualTo("OK, continue")
+    assertThat(continueButton.text()).isEqualTo("OK, continue")
     continueButton.click()
     return this
   }

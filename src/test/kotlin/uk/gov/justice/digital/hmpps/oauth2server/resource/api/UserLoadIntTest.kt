@@ -22,12 +22,12 @@ class UserLoadIntTest : IntegrationTest() {
         .runCommand()
         .split('\n')
 
-    // check 4 rows processed
+    // check 5 rows processed
     assertThat(output.filter { it.startsWith("Processing") })
-      .withFailMessage("Was expecting 4 Processing lines, found:\n${output.joinToString("\n")}")
-      .hasSize(4)
+      .withFailMessage("Was expecting 5 Processing lines, found:\n${output.joinToString("\n")}")
+      .hasSize(5)
 
-    // check 3 failures
+    // check 4 failures
     assertThat(
       output
         .filter { it.contains("Failure") }
@@ -63,6 +63,17 @@ class UserLoadIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$.[*].groupCode").value<List<String>> {
         assertThat(it).containsExactlyInAnyOrder("PECS_RCHTMC", "PECS_GLDFMC", "PECS_DORKMC", "PECS_SUTTMC", "PECS_RDHLMC")
+      }
+
+    webTestClient
+      .get().uri("/auth/api/authuser/AUTH_CHANGE_EMAIL@JUSTICE.GOV.UK/groups")
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$.[*].groupCode").value<List<String>> {
+        assertThat(it).containsExactlyInAnyOrder("SOC_HQ")
       }
   }
 

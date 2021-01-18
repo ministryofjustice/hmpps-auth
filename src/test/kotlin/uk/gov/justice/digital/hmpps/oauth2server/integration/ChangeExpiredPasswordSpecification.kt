@@ -76,7 +76,7 @@ class ChangeExpiredPasswordSpecification : AbstractAuthSpecification() {
       .loginAs("EXPIRED_TEST2_USER", "helloworld2")
     homePage
       .isAtPage()
-      .assertNameDisplayedCorrectly("Change Password2")
+      .assertNameDisplayedCorrectly("C. Password2")
   }
 
   @Test

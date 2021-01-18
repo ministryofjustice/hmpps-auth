@@ -49,7 +49,7 @@ VALUES ('omicuser','1200','{"jwtFields":"-user_name"}','SYSTEM_READ_ONLY','passw
        ('user-load','3600','{}','ROLE_MAINTAIN_OAUTH_USERS','client_credentials','read,write','{bcrypt}$2a$10$zF0guKjmvHPxmkGdqmPa9ehLM0myWx/KCYNvbpKb6.eEIsDlYc/5S',43200,null,'read,write',null),
        ('pecs-jpc-client','3600','{}',null,'authorization_code','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write','http://localhost:8080/login/oauth2/code/hmpps'),
        ('smoke-test-client','3600','{}','ROLE_SMOKE_TEST','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read',null),
-       ('interventions','1200','{}','ROLE_COMMUNITY,ROLE_AUTH_DELIUS_LDAP,ROLE_INTERVENTIONS','client_credentials,authorization_code,refresh_token', 'read,write', '$2a$10$a5WJN/AZc7Nq3rFoy5GOQ.avY.opPq/RaF59TXFaInt0Jxp6NV94a',43200,null,'read,write','http://localhost:3000,http://localhost:3000/login/callback');
+       ('interventions','1200','{}','ROLE_COMMUNITY,ROLE_AUTH_DELIUS_LDAP,ROLE_INTERVENTIONS,ROLE_OASYS_READ_ONLY','client_credentials,authorization_code,refresh_token', 'read,write', '$2a$10$a5WJN/AZc7Nq3rFoy5GOQ.avY.opPq/RaF59TXFaInt0Jxp6NV94a',43200,null,'read,write','http://localhost:3000,http://localhost:3000/login/callback');
 
 UPDATE oauth_client_details
 SET additional_information = '{"jwtFields":"-name"}'
@@ -67,7 +67,7 @@ VALUES ('BOOK_MOVE', 'Book a secure move', 'Book a secure move', 'ROLE_PECS_SUPP
        ('OAUTHADMIN', 'Oauth Client Management', 'Manage Client Credentials for OAUTH2 Clients', 'ROLE_OAUTH_ADMIN', 'http://localhost:8080/auth/ui/', 1, null),
        ('POM', 'Allocate a POM Service', 'Allocate the appropriate offender manager to a prisoner', 'ROLE_ALLOC_MGR', 'https://moic.service.justice.gov.uk', 1, 'https://moic.service.justice.gov.uk/help'),
        ('PATHFINDER', 'Pathfinder Service', 'View and Manage Pathfinder nominals', 'ROLE_PF_STD_PRISON,ROLE_PF_APPROVAL,ROLE_PF_POLICE', 'http://localhost:3000', 1, null),
-       ('SOC', 'Manage SOC cases', 'View and manage SOC cases', 'ROLE_SOC_CUSTODY,ROLE_SOC_COMMUNITY,ROLE_SOC_RESTRICTED', 'http://localhost:3000', 1, null),
+       ('SOC', 'Manage SOC cases', 'View and manage SOC cases', 'ROLE_SOC_CUSTODY,ROLE_SOC_COMMUNITY', 'http://localhost:3000', 1, null),
        ('USERADMIN', 'Manage user accounts', null, 'ROLE_KW_MIGRATION,ROLE_MAINTAIN_ACCESS_ROLES,ROLE_MAINTAIN_ACCESS_ROLES_ADMIN,ROLE_MAINTAIN_OAUTH_USERS,ROLE_AUTH_GROUP_MANAGER', 'http://localhost:3001/', 1, null),
        ('DETAILS', 'Manage account details', null, null, '/auth/account-details', 1, null),
        ('MANAGEINTEL', 'Manage Intelligence', 'Manage Intelligence Reports', 'ROLE_ARTEMIS_USER', 'http://localhost:3000', 1, null);
@@ -124,6 +124,7 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8', 'AUTH_RO_VARY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user@digital.justice.gov.uk', 'Ryan-Auth-Vary', 'Orton', 1, 1, 0, 'auth'),
         ('AD7D37E2-DBAD-4B98-AF8D-429E822A6BDC', 'AUTH_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_disabled@digital.justice.gov.uk', 'Auth', 'Disabled', 1, 0, 0, 'auth'),
         ('7CA04ED7-8275-45B2-AFB4-4FF51432D1EA', 'AUTH_RO_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user@digital.justice.gov.uk', 'Ryan-Auth', 'Orton', 1, 1, 0, 'auth'),
+        ('7CA04ED7-8275-45B2-AFB4-4FF51432D1EB', 'AUTH_RO_USER1@DIGITAL.JUSTICE.GOV.UK', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user1@digital.justice.gov.uk', 'Ryan-Auth', 'Orton', 1, 1, 0, 'auth'),
         ('1F650F15-0993-4DB7-9A32-5B930FF86035', 'AUTH_GROUP_MANAGER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_group_manager@digital.justice.gov.uk', 'Group', 'Manager', 1, 1, 0, 'auth'),
         ('1F650F15-0993-4DB7-9A32-5B930FF86036', 'AUTH_GROUP_MANAGER2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_group_manager2@digital.justice.gov.uk', 'Group', 'Manager2', 1, 1, 0, 'auth'),
         ('FC494152-F9AD-48A0-A87C-9ADC8BD75255', 'AUTH_STATUS', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Status', 1, 0, 0, 'auth'),
@@ -241,14 +242,10 @@ INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups,
 INSERT INTO users (user_id, username, password, email, first_name, last_name, verified, locked, enabled, master, password_expiry, source, mfa_preference)
 VALUES ('ABCF4E74-0056-43D1-454B-8BD7E0ED5B10', 'SOC_POLICE_LOCAL_NE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'soc.ne@digital.justice.gov.uk', 'Bobby', 'Gateshead', 1, 0, 1, 0, '2040-04-26 16:17:28.0000000', 'auth', 'EMAIL');
 
-INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'SOC_POLICE_LOCAL_NE' and role_code = 'SOC_RESTRICTED';
-
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'SOC_POLICE_LOCAL_NE' and group_code = 'SOC_NORTH_EAST';
 
 INSERT INTO users (user_id, username, password, email, first_name, last_name, verified, locked, enabled, master, password_expiry, source, mfa_preference)
 VALUES ('ABCF4F85-0057-43E1-454C-87D345DD510A', 'SOC_POLICE_LOCAL_NW', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'soc.nw@digital.justice.gov.uk', 'Bobby', 'Chester', 1, 0, 1, 0, '2040-04-26 16:17:28.0000000', 'auth', 'EMAIL');
-
-INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'SOC_POLICE_LOCAL_NW' and role_code = 'SOC_RESTRICTED';
 
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'SOC_POLICE_LOCAL_NW' and group_code = 'SOC_NORTH_WEST';
 
@@ -327,10 +324,13 @@ INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, use
 INSERT INTO groups (group_id, group_code, group_name) VALUES (newid(), 'SITE_1_GROUP_1', 'Site 1 - Group 1'),
        (newid(), 'SITE_1_GROUP_2', 'Site 1 - Group 2'),
        (newid(), 'SITE_2_GROUP_1', 'Site 2 - Group 1'),
-       (newid(), 'SITE_3_GROUP_1', 'Site 3 - Group 1');
+       (newid(), 'SITE_3_GROUP_1', 'Site 3 - Group 1'),
+       (newid(), 'SITE_9_GROUP_1', 'Site 9 - Group 1');
 
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'CHILD_1', 'Child - Site 1 - Group 2', (select group_id from groups where group_code = 'SITE_1_GROUP_2'));
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'CHILD_2', 'Child - Site 2 - Group 1', (select group_id from groups where group_code = 'SITE_2_GROUP_1'));
+INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'CHILD_3', 'Child - Site 2 - Group 1', (select group_id from groups where group_code = 'SITE_2_GROUP_1'));
+INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'CHILD_9', 'Child - Site 9 - Group 1', (select group_id from groups where group_code = 'SITE_9_GROUP_1'));
 
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_VARY_USER' and group_code = 'SITE_1_GROUP_1';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_VARY_USER' and group_code = 'SITE_1_GROUP_2';

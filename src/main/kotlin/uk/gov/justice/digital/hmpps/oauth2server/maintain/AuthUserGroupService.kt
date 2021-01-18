@@ -33,7 +33,7 @@ class AuthUserGroupService(
 
     // check that group exists
     val group =
-      groupRepository.findByGroupCode(groupFormatted).orElseThrow { AuthUserGroupException("group", "notfound") }
+      groupRepository.findByGroupCode(groupFormatted) ?: throw AuthUserGroupException("group", "notfound")
     if (user.groups.contains(group)) {
       throw AuthUserGroupExistsException()
     }
@@ -43,6 +43,7 @@ class AuthUserGroupService(
     // 2. If group admin then needs to be one of their groups and user can't be a member of a different group
     log.info("Adding group {} to user {}", groupFormatted, username)
     user.groups.add(group)
+    user.authorities.addAll(group.assignableRoles.filter { it.automatic }.map { it.role })
     telemetryClient.trackEvent(
       "AuthUserGroupAddSuccess",
       mapOf("username" to username, "group" to groupFormatted, "admin" to modifier),

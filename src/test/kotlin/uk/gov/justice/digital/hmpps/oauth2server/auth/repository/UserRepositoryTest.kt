@@ -87,7 +87,8 @@ class UserRepositoryTest {
 
   @Test
   fun givenATransientAuthEntityItCanBePersisted() {
-    val transientEntity = createSampleUser(username = "user", source = nomis, email = "a@b.com", firstName = "first", lastName = "last")
+    val transientEntity =
+      createSampleUser(username = "user", source = nomis, email = "a@b.com", firstName = "first", lastName = "last")
     val roleLicenceVary = roleRepository.findByRoleCode("LICENCE_VARY").orElseThrow()
     val roleGlobalSearch = roleRepository.findByRoleCode("GLOBAL_SEARCH").orElseThrow()
     transientEntity.authorities.addAll(setOf(roleLicenceVary, roleGlobalSearch))
@@ -179,10 +180,10 @@ class UserRepositoryTest {
     assertThat(entity.name).isEqualTo("Auth Test")
     assertThat(TestTransaction.isActive()).isTrue()
     assertThat(entity.groups).isEmpty()
-    val group1 = groupRepository.findByGroupCode("SITE_1_GROUP_1").orElseThrow()
-    val group3 = groupRepository.findByGroupCode("SITE_3_GROUP_1").orElseThrow()
-    entity.groups.add(group1)
-    entity.groups.add(group3)
+    val group1 = groupRepository.findByGroupCode("SITE_1_GROUP_1")
+    val group3 = groupRepository.findByGroupCode("SITE_3_GROUP_1")
+    entity.groups.add(group1!!)
+    entity.groups.add(group3!!)
     repository.save(entity)
     TestTransaction.flagForCommit()
     TestTransaction.end()
@@ -343,7 +344,13 @@ class UserRepositoryTest {
   fun findAll_UserFilter_ByLastNameFirstName() {
     assertThat(repository.findAll(UserFilter(name = "orton, r")))
       .extracting<String> { it.username }
-      .containsOnly("AUTH_RO_USER", "AUTH_RO_VARY_USER", "AUTH_RO_USER_TEST", "AUTH_RO_USER_TEST2")
+      .containsOnly(
+        "AUTH_RO_USER",
+        "AUTH_RO_VARY_USER",
+        "AUTH_RO_USER1@DIGITAL.JUSTICE.GOV.UK",
+        "AUTH_RO_USER_TEST",
+        "AUTH_RO_USER_TEST2"
+      )
   }
 
   @Test

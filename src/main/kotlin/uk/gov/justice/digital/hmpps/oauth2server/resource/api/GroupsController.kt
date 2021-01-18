@@ -8,8 +8,11 @@ import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
@@ -20,7 +23,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserAssignableRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
+import javax.validation.Valid
+import javax.validation.constraints.NotBlank
 
+@Validated
 @RestController
 class GroupsController(
   private val groupsService: GroupsService
@@ -49,7 +55,7 @@ class GroupsController(
   }
 
   @GetMapping("/api/groups/child/{group}")
-  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
   @ApiOperation(
     value = "Child Group detail.",
     nickname = "getChildGroupDetails",
@@ -71,7 +77,7 @@ class GroupsController(
   }
 
   @PutMapping("/api/groups/{group}")
-  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
   @ApiOperation(
     value = "Amend group name.",
     nickname = "AmendGroupName",
@@ -94,7 +100,7 @@ class GroupsController(
   }
 
   @PutMapping("/api/groups/child/{group}")
-  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
   @ApiOperation(
     value = "Amend child group name.",
     nickname = "AmendChildGroupName",
@@ -114,6 +120,49 @@ class GroupsController(
 
   ) {
     groupsService.updateChildGroup(group, groupAmendment)
+  }
+
+  @PostMapping("/api/groups/child")
+  @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @ApiOperation(
+    value = "Create child group.",
+    nickname = "CreateChildGroup",
+    consumes = "application/json",
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 409, message = "Child Group already exists.", response = ErrorDetail::class)
+    ]
+  )
+  @Throws(GroupsService.ChildGroupExistsException::class, GroupsService.GroupNotFoundException::class)
+  fun createChildGroup(
+    @ApiParam(value = "The group code of the child group.", required = true)
+    @ApiIgnore authentication: Authentication,
+    @ApiParam(value = "Details of the child group to be created.", required = true)
+    @Valid @RequestBody createChildGroup: CreateChildGroup,
+  ) {
+    groupsService.createChildGroup(createChildGroup)
+  }
+
+  @DeleteMapping("/api/groups/child/{group}")
+  @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @ApiOperation(
+    value = "Delete child group.",
+    nickname = "DeleteChildGroup",
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 404, message = "Child Group not found.", response = ErrorDetail::class)
+    ]
+  )
+  fun deleteChildGroup(
+    @ApiParam(value = "The group code of the child group.", required = true)
+    @PathVariable group: String,
+    @ApiIgnore authentication: Authentication,
+  ) {
+    groupsService.deleteChildGroup(group)
   }
 }
 
@@ -142,6 +191,7 @@ data class GroupDetails(
 @ApiModel(description = "Group Name")
 data class GroupAmendment(
   @ApiModelProperty(required = true, value = "Group Name", example = "HDC NPS North East")
+  @field:NotBlank(message = "parent group code must be supplied")
   val groupName: String,
 )
 
@@ -158,3 +208,17 @@ data class ChildGroupDetails(
     g.groupName,
   )
 }
+
+data class CreateChildGroup(
+  @ApiModelProperty(required = true, value = "Parent Group Code", example = "HNC_NPS", position = 1)
+  @field:NotBlank(message = "parent group code must be supplied")
+  val parentGroupCode: String,
+
+  @ApiModelProperty(required = true, value = "Group Code", example = "HDC_NPS_NE", position = 2)
+  @field:NotBlank(message = "group code must be supplied")
+  val groupCode: String,
+
+  @ApiModelProperty(required = true, value = "groupName", example = "HDC NPS North East", position = 3)
+  @field:NotBlank(message = "group name must be supplied")
+  val groupName: String,
+)

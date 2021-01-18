@@ -8,7 +8,9 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.GroupAssignableRole
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
@@ -39,7 +41,7 @@ class AuthUserGroupServiceTest {
     val group = Group("GROUP_LICENCE_VARY", "desc")
     val user = createSampleUser(username = "user", groups = setOf(group))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
-    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(Optional.of(group))
+    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(group)
     assertThatThrownBy {
       service.addGroup(
         "user",
@@ -55,9 +57,13 @@ class AuthUserGroupServiceTest {
     val user = createSampleUser(username = "user", groups = setOf(Group("GROUP_JOE", "desc")))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
     val group = Group("GROUP_LICENCE_VARY", "desc")
-    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(Optional.of(group))
+    val roleLicence = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
+    val roleJoe = Authority("JOE", "Role Joe")
+    group.assignableRoles.addAll(setOf(GroupAssignableRole(roleLicence, group, true), GroupAssignableRole(roleJoe, group, false)))
+    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(group)
     service.addGroup("user", "GROUP_LICENCE_VARY", "admin")
     assertThat(user.groups).extracting<String> { it.groupCode }.containsOnly("GROUP_JOE", "GROUP_LICENCE_VARY")
+    assertThat(user.authorities).extracting<String> { it.roleCode }.containsOnly("LICENCE_VARY")
   }
 
   @Test
