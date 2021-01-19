@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 class PublicKeyIntTest : IntegrationTest() {
   @Test
   fun `Public key values are correct`() {
-    webTestClient.get().uri("/auth/jwt-public-key")
+    webTestClient.get().uri("/jwt-public-key")
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("encoded")

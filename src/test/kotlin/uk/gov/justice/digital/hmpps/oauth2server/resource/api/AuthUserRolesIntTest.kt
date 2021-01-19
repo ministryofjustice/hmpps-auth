@@ -14,7 +14,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles add role endpoint adds a role to a user`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_RO_USER/roles/licence_vary")
+      .put().uri("/api/authuser/AUTH_RO_USER/roles/licence_vary")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isNoContent
@@ -25,7 +25,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles add role endpoint adds a role to a user that already exists`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_RO_USER/roles/licence_ro")
+      .put().uri("/api/authuser/AUTH_RO_USER/roles/licence_ro")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.CONFLICT)
@@ -36,7 +36,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles add role endpoint adds a role to a user not in their group`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_ADM/roles/licence_vary")
+      .put().uri("/api/authuser/AUTH_ADM/roles/licence_vary")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.CONFLICT)
@@ -47,7 +47,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles add role endpoint adds a role that doesn't exist`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_RO_USER_TEST/roles/licence_bob")
+      .put().uri("/api/authuser/AUTH_RO_USER_TEST/roles/licence_bob")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isBadRequest
@@ -58,7 +58,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles add role endpoint adds a role requires role`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_RO_USER_TEST/roles/licence_bob")
+      .put().uri("/api/authuser/AUTH_RO_USER_TEST/roles/licence_bob")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_GLOBAL_SEARCH")))
       .exchange()
       .expectStatus().isForbidden
@@ -68,7 +68,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles remove role endpoint removes a role from a user`() {
     webTestClient
-      .delete().uri("/auth/api/authuser/AUTH_RO_USER_TEST/roles/licence_ro")
+      .delete().uri("/api/authuser/AUTH_RO_USER_TEST/roles/licence_ro")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isNoContent
@@ -79,7 +79,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles remove role endpoint removes a role from a user that isn't found`() {
     webTestClient
-      .delete().uri("/auth/api/authuser/AUTH_RO_USER_TEST/roles/licence_bob")
+      .delete().uri("/api/authuser/AUTH_RO_USER_TEST/roles/licence_bob")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isBadRequest
@@ -90,7 +90,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles remove role endpoint removes a role from a user that isn't on the user`() {
     webTestClient
-      .delete().uri("/auth/api/authuser/AUTH_RO_USER_TEST/roles/VIDEO_LINK_COURT_USER")
+      .delete().uri("/api/authuser/AUTH_RO_USER_TEST/roles/VIDEO_LINK_COURT_USER")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isBadRequest
@@ -101,7 +101,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles remove role endpoint removes a role from a user not in their group`() {
     webTestClient
-      .delete().uri("/auth/api/authuser/AUTH_ADM/roles/licence_ro")
+      .delete().uri("/api/authuser/AUTH_ADM/roles/licence_ro")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.CONFLICT)
@@ -112,7 +112,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles remove role endpoint requires role`() {
     webTestClient
-      .delete().uri("/auth/api/authuser/AUTH_ADM/roles/licence_ro")
+      .delete().uri("/api/authuser/AUTH_ADM/roles/licence_ro")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_GLOBAL_SEARCH")))
       .exchange()
       .expectStatus().isForbidden
@@ -127,7 +127,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles endpoint returns user roles not allowed`() {
     webTestClient
-      .get().uri("/auth/api/authuser/AUTH_ADM/roles")
+      .get().uri("/api/authuser/AUTH_ADM/roles")
       .exchange()
       .expectStatus().isUnauthorized
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -138,7 +138,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth Roles endpoint returns all assignable auth roles for a group for admin maintainer`() {
     webTestClient
-      .get().uri("/auth/api/authuser/auth_ro_vary_user/assignable-roles")
+      .get().uri("/api/authuser/auth_ro_vary_user/assignable-roles")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -153,7 +153,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth Roles endpoint returns all assignable auth roles for a group for group manager`() {
     webTestClient
-      .get().uri("/auth/api/authuser/AUTH_RO_USER_TEST2/assignable-roles")
+      .get().uri("/api/authuser/AUTH_RO_USER_TEST2/assignable-roles")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isOk
@@ -167,7 +167,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth User Roles add role POST endpoint adds a role to a user`() {
     webTestClient
-      .post().uri("/auth/api/authuser/AUTH_ADD_ROLE_TEST/roles")
+      .post().uri("/api/authuser/AUTH_ADD_ROLE_TEST/roles")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .body(BodyInserters.fromValue(listOf("GLOBAL_SEARCH", "LICENCE_RO")))
       .exchange()
@@ -178,7 +178,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
 
   private fun checkRolesForUser(user: String, roles: List<String>) {
     webTestClient
-      .get().uri("/auth/api/authuser/$user/roles")
+      .get().uri("/api/authuser/$user/roles")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk

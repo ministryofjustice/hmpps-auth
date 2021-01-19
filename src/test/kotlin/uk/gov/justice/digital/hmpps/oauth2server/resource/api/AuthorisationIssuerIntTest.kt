@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 class AuthorisationIssuerIntTest : IntegrationTest() {
   @Test
   fun `Metadata page responds and can be parsed`() {
-    webTestClient.get().uri("/auth/issuer/.well-known/openid-configuration")
+    webTestClient.get().uri("/issuer/.well-known/openid-configuration")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)

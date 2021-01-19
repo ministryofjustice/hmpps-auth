@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 class PingIntTest : IntegrationTest() {
   @Test
   fun `Ping returns pong`() {
-    webTestClient.get().uri("/auth/ping")
+    webTestClient.get().uri("/ping")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType("text/plain;charset=UTF-8")

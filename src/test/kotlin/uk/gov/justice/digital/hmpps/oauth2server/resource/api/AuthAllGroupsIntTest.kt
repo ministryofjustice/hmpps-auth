@@ -9,7 +9,7 @@ class AuthAllGroupsIntTest : IntegrationTest() {
   @Test
   fun `Auth Groups endpoint returns all possible auth groups`() {
     webTestClient
-      .get().uri("/auth/api/authgroups")
+      .get().uri("/api/authgroups")
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -24,7 +24,7 @@ class AuthAllGroupsIntTest : IntegrationTest() {
 
   @Test
   fun `Auth Groups endpoint not accessible without valid token`() {
-    webTestClient.get().uri("/auth/api/authgroups")
+    webTestClient.get().uri("/api/authgroups")
       .exchange()
       .expectStatus().isUnauthorized
   }

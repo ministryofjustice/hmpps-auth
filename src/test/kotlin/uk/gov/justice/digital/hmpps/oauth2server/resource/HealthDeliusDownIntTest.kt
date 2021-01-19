@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 class HealthDeliusDownIntTest : IntegrationTest() {
   @Test
   fun `Health reports delius info`() {
-    webTestClient.get().uri("/auth/health/deliusApiHealth")
+    webTestClient.get().uri("/health/deliusApiHealth")
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("status").isEqualTo("UP")

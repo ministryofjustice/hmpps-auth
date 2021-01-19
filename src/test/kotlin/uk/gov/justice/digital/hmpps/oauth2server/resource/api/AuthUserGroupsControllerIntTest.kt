@@ -17,7 +17,7 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
       .doesNotExist()
 
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_RO_USER/groups/site_1_group_2")
+      .put().uri("/api/authuser/AUTH_RO_USER/groups/site_1_group_2")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isNoContent
@@ -34,7 +34,7 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
       .isEqualTo(mapOf("groupCode" to "SITE_1_GROUP_1", "groupName" to "Site 1 - Group 1"))
 
     webTestClient
-      .delete().uri("/auth/api/authuser/AUTH_RO_USER/groups/site_1_group_1")
+      .delete().uri("/api/authuser/AUTH_RO_USER/groups/site_1_group_1")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isNoContent
@@ -47,7 +47,7 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Groups endpoint returns user groups no children`() {
     webTestClient
-      .get().uri("/auth/api/authuser/auth_ro_vary_user/groups?children=false")
+      .get().uri("/api/authuser/auth_ro_vary_user/groups?children=false")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -64,7 +64,7 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Groups endpoint returns user groups with children by default`() {
     webTestClient
-      .get().uri("/auth/api/authuser/auth_ro_vary_user/groups")
+      .get().uri("/api/authuser/auth_ro_vary_user/groups")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -93,7 +93,7 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Groups endpoint not accessible without valid token`() {
     webTestClient
-      .get().uri("/auth/api/authuser/auth_ro_vary_user/groups")
+      .get().uri("/api/authuser/auth_ro_vary_user/groups")
       .exchange()
       .expectStatus().isUnauthorized
   }
@@ -101,7 +101,7 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Groups add group endpoint not accessible without valid token`() {
     webTestClient
-      .put().uri("/auth/api/authuser/auth_ro_vary_user/groups/licence_ro")
+      .put().uri("/api/authuser/auth_ro_vary_user/groups/licence_ro")
       .header("Authorization", "Basic $invalidToken")
       .exchange()
       .expectStatus().isUnauthorized
@@ -110,14 +110,14 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Groups remove group endpoint not accessible without valid token`() {
     webTestClient
-      .delete().uri("/auth/api/authuser/auth_ro_vary_user/groups/licence_ro")
+      .delete().uri("/api/authuser/auth_ro_vary_user/groups/licence_ro")
       .header("Authorization", "Basic $invalidToken")
       .exchange()
       .expectStatus().isUnauthorized
   }
 
   private fun callGetGroups(user: String = "AUTH_RO_USER", children: Boolean = false): BodyContentSpec = webTestClient
-    .get().uri("/auth/api/authuser/$user/groups?children=$children")
+    .get().uri("/api/authuser/$user/groups?children=$children")
     .headers(setAuthorisation("ITAG_USER_ADM"))
     .exchange()
     .expectStatus().isOk

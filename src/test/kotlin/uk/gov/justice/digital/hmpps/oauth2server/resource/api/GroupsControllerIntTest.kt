@@ -15,7 +15,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Group details endpoint returns details of group when user has ROLE_MAINTAIN_OAUTH_USERS`() {
       webTestClient
-        .get().uri("/auth/api/groups/SITE_1_GROUP_2")
+        .get().uri("/api/groups/SITE_1_GROUP_2")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .exchange()
         .expectStatus().isOk
@@ -27,7 +27,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Group details endpoint returns details of group when user is able to maintain group`() {
       webTestClient
-        .get().uri("/auth/api/groups/SITE_1_GROUP_2")
+        .get().uri("/api/groups/SITE_1_GROUP_2")
         .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
         .exchange()
         .expectStatus().isOk
@@ -39,7 +39,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Group details endpoint returns error when user is not allowed to maintain group`() {
       webTestClient
-        .get().uri("/auth/api/groups/SITE_1_GROUP_2")
+        .get().uri("/api/groups/SITE_1_GROUP_2")
         .headers(setAuthorisation("AUTH_USER", listOf("ROLE_AUTH_GROUP_MANAGER")))
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.CONFLICT)
@@ -59,7 +59,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Group details endpoint returns forbidden when dose not have admin role `() {
       webTestClient
-        .get().uri("/auth/api/groups/SITE_1_GROUP_2")
+        .get().uri("/api/groups/SITE_1_GROUP_2")
         .headers(setAuthorisation("bob"))
         .exchange()
         .expectStatus().isForbidden
@@ -74,7 +74,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Group details endpoint returns error when group not found user has ROLE_MAINTAIN_OAUTH_USERS`() {
       webTestClient
-        .get().uri("/auth/api/groups/bob")
+        .get().uri("/api/groups/bob")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .exchange()
         .expectStatus().isNotFound
@@ -94,7 +94,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Group details endpoint returns error when group not found`() {
       webTestClient
-        .get().uri("/auth/api/groups/bob")
+        .get().uri("/api/groups/bob")
         .headers(setAuthorisation("AUTH_USER", listOf("ROLE_AUTH_GROUP_MANAGER")))
         .exchange()
         .expectStatus().isNotFound
@@ -113,7 +113,7 @@ class GroupsControllerIntTest : IntegrationTest() {
 
     @Test
     fun `Group details endpoint not accessible without valid token`() {
-      webTestClient.get().uri("/auth/api/groups/GLOBAL_SEARCH")
+      webTestClient.get().uri("/api/groups/GLOBAL_SEARCH")
         .exchange()
         .expectStatus().isUnauthorized
     }
@@ -124,7 +124,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Change group name`() {
       webTestClient
-        .put().uri("/auth/api/groups/SITE_9_GROUP_1")
+        .put().uri("/api/groups/SITE_9_GROUP_1")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .body(BodyInserters.fromValue(mapOf("groupName" to "new group name")))
         .exchange()
@@ -134,7 +134,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Change group name endpoint returns forbidden when dose not have admin role `() {
       webTestClient
-        .put().uri("/auth/api/groups/SITE_9_GROUP_1")
+        .put().uri("/api/groups/SITE_9_GROUP_1")
         .headers(setAuthorisation("bob"))
         .body(BodyInserters.fromValue(mapOf("groupName" to "new group name")))
         .exchange()
@@ -150,7 +150,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Change group name returns error when group not found`() {
       webTestClient
-        .put().uri("/auth/api/groups/Not_A_Group")
+        .put().uri("/api/groups/Not_A_Group")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .body(BodyInserters.fromValue(mapOf("groupName" to "new group name")))
         .exchange()
@@ -170,7 +170,7 @@ class GroupsControllerIntTest : IntegrationTest() {
 
     @Test
     fun `Group details endpoint not accessible without valid token`() {
-      webTestClient.put().uri("/auth/api/groups/SITE_9_GROUP_1")
+      webTestClient.put().uri("/api/groups/SITE_9_GROUP_1")
         .exchange()
         .expectStatus().isUnauthorized
     }
@@ -181,7 +181,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Create child group`() {
       webTestClient
-        .post().uri("/auth/api/groups/child")
+        .post().uri("/api/groups/child")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .body(
           BodyInserters.fromValue(
@@ -199,7 +199,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Create child group error`() {
       webTestClient
-        .post().uri("/auth/api/groups/child")
+        .post().uri("/api/groups/child")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .body(
           BodyInserters.fromValue(
@@ -217,7 +217,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Create child group endpoint returns forbidden when dose not have admin role `() {
       webTestClient
-        .post().uri("/auth/api/groups/child")
+        .post().uri("/api/groups/child")
         .headers(setAuthorisation("bob"))
         .body(
           BodyInserters.fromValue(
@@ -241,7 +241,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Create child group - group already exists`() {
       webTestClient
-        .post().uri("/auth/api/groups/child")
+        .post().uri("/api/groups/child")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .body(
           BodyInserters.fromValue(
@@ -256,7 +256,7 @@ class GroupsControllerIntTest : IntegrationTest() {
         .expectStatus().isOk
 
       webTestClient
-        .post().uri("/auth/api/groups/child")
+        .post().uri("/api/groups/child")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .body(
           BodyInserters.fromValue(
@@ -286,7 +286,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     fun `Create child group - parent group doesnt exist`() {
 
       webTestClient
-        .post().uri("/auth/api/groups/child")
+        .post().uri("/api/groups/child")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .body(
           BodyInserters.fromValue(
@@ -314,7 +314,7 @@ class GroupsControllerIntTest : IntegrationTest() {
 
     @Test
     fun `Create Child Group endpoint not accessible without valid token`() {
-      webTestClient.post().uri("/auth/api/groups/child")
+      webTestClient.post().uri("/api/groups/child")
         .exchange()
         .expectStatus().isUnauthorized
     }
@@ -325,7 +325,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Child Group details endpoint returns details of child group when user has ROLE_MAINTAIN_OAUTH_USERS`() {
       webTestClient
-        .get().uri("/auth/api/groups/child/CHILD_2")
+        .get().uri("/api/groups/child/CHILD_2")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .exchange()
         .expectStatus().isOk
@@ -337,7 +337,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Child Group details endpoint returns forbidden when dose not have admin role `() {
       webTestClient
-        .get().uri("/auth/api/groups/child/SITE_1_GROUP_2")
+        .get().uri("/api/groups/child/SITE_1_GROUP_2")
         .headers(setAuthorisation("bob"))
         .exchange()
         .expectStatus().isForbidden
@@ -352,7 +352,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Child Group details endpoint returns error when group not found user has ROLE_MAINTAIN_OAUTH_USERS`() {
       webTestClient
-        .get().uri("/auth/api/groups/child/bob")
+        .get().uri("/api/groups/child/bob")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .exchange()
         .expectStatus().isNotFound
@@ -371,7 +371,7 @@ class GroupsControllerIntTest : IntegrationTest() {
 
     @Test
     fun `Child Group details endpoint not accessible without valid token`() {
-      webTestClient.get().uri("/auth/api/groups/child/GLOBAL_SEARCH")
+      webTestClient.get().uri("/api/groups/child/GLOBAL_SEARCH")
         .exchange()
         .expectStatus().isUnauthorized
     }
@@ -382,7 +382,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Change group name`() {
       webTestClient
-        .put().uri("/auth/api/groups/child/CHILD_9")
+        .put().uri("/api/groups/child/CHILD_9")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .body(BodyInserters.fromValue(mapOf("groupName" to "new group name")))
         .exchange()
@@ -392,7 +392,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Change group name endpoint returns forbidden when dose not have admin role `() {
       webTestClient
-        .put().uri("/auth/api/groups/child/CHILD_9")
+        .put().uri("/api/groups/child/CHILD_9")
         .headers(setAuthorisation("bob"))
         .body(BodyInserters.fromValue(mapOf("groupName" to "new group name")))
         .exchange()
@@ -408,7 +408,7 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Change group name returns error when group not found`() {
       webTestClient
-        .put().uri("/auth/api/groups/child/Not_A_Group")
+        .put().uri("/api/groups/child/Not_A_Group")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .body(BodyInserters.fromValue(mapOf("groupName" to "new group name")))
         .exchange()
@@ -428,7 +428,7 @@ class GroupsControllerIntTest : IntegrationTest() {
 
     @Test
     fun `Group details endpoint not accessible without valid token`() {
-      webTestClient.put().uri("/auth/api/groups/child/CHILD_9")
+      webTestClient.put().uri("/api/groups/child/CHILD_9")
         .exchange()
         .expectStatus().isUnauthorized
     }
@@ -438,7 +438,7 @@ class GroupsControllerIntTest : IntegrationTest() {
   inner class DeleteChildGroup {
     @Test
     fun `Delete Child Group`() {
-      webTestClient.delete().uri("/auth/api/groups/child/bob")
+      webTestClient.delete().uri("/api/groups/child/bob")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .exchange()
         .expectStatus().isOk
@@ -446,7 +446,7 @@ class GroupsControllerIntTest : IntegrationTest() {
 
     @Test
     fun `Delete Child Group endpoint returns forbidden when dose not have admin role`() {
-      webTestClient.delete().uri("/auth/api/groups/child/bob")
+      webTestClient.delete().uri("/api/groups/child/bob")
         .headers(setAuthorisation("bob"))
         .exchange()
         .expectStatus().isForbidden
@@ -460,7 +460,7 @@ class GroupsControllerIntTest : IntegrationTest() {
 
     @Test
     fun `Delete Child Group details endpoint not accessible without valid token`() {
-      webTestClient.delete().uri("/auth/api/groups/child/bob")
+      webTestClient.delete().uri("/api/groups/child/bob")
         .exchange()
         .expectStatus().isUnauthorized
     }

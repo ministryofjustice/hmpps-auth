@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class HealthIntTest : IntegrationTest() {
   @Test
   fun `Health page reports ok`() {
-    webTestClient.get().uri("/auth/health")
+    webTestClient.get().uri("/health")
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("status").isEqualTo("UP")
@@ -15,7 +15,7 @@ class HealthIntTest : IntegrationTest() {
 
   @Test
   fun `Health reports delius info`() {
-    webTestClient.get().uri("/auth/health/deliusApiHealth")
+    webTestClient.get().uri("/health/deliusApiHealth")
       .exchange()
       .expectBody().jsonPath("status").isEqualTo("UP")
       .jsonPath("details.HttpStatus").isEqualTo("OK")
@@ -23,7 +23,7 @@ class HealthIntTest : IntegrationTest() {
 
   @Test
   fun `Health reports token verification info`() {
-    webTestClient.get().uri("/auth/health/tokenVerificationApiHealth")
+    webTestClient.get().uri("/health/tokenVerificationApiHealth")
       .exchange()
       .expectBody().jsonPath("status").isEqualTo("UP")
       .jsonPath("details.HttpStatus").isEqualTo("OK")
@@ -31,7 +31,7 @@ class HealthIntTest : IntegrationTest() {
 
   @Test
   fun `Health ping reports ok`() {
-    webTestClient.get().uri("/auth/health/ping")
+    webTestClient.get().uri("/health/ping")
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("status").isEqualTo("UP")
@@ -39,7 +39,7 @@ class HealthIntTest : IntegrationTest() {
 
   @Test
   fun `Health reports db info`() {
-    webTestClient.get().uri("/auth/health/db")
+    webTestClient.get().uri("/health/db")
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("components.authDataSource.details.database").isEqualTo("H2")
@@ -48,7 +48,7 @@ class HealthIntTest : IntegrationTest() {
 
   @Test
   fun `Health liveness page is accessible`() {
-    webTestClient.get().uri("/auth/health/liveness")
+    webTestClient.get().uri("/health/liveness")
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("status").isEqualTo("UP")
@@ -56,7 +56,7 @@ class HealthIntTest : IntegrationTest() {
 
   @Test
   fun `Health readiness page is accessible`() {
-    webTestClient.get().uri("/auth/health/readiness")
+    webTestClient.get().uri("/health/readiness")
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("status").isEqualTo("UP")

@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest
 class HealthTokenVerificationDisabledIntTest : IntegrationTest() {
   @Test
   fun `Health reports delius info`() {
-    webTestClient.get().uri("/auth/health/tokenVerificationApiHealth")
+    webTestClient.get().uri("/health/tokenVerificationApiHealth")
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("status").isEqualTo("UP")
