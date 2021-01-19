@@ -483,7 +483,7 @@ class ResetPasswordServiceTest {
     fun resetPassword() {
       val staffUserAccountForBob = staffUserAccountForBob
       whenever(userService.findEnabledMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBob)
-      val user = createSampleUser(username = "user", person = Person("First", "Last"), source = nomis)
+      val user = createSampleUser(username = "USER", person = Person("First", "Last"), source = nomis)
       val userToken = user.createToken(UserToken.TokenType.RESET)
       whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
       resetPasswordService.setPassword("bob", "pass")
@@ -493,11 +493,34 @@ class ResetPasswordServiceTest {
       verify(notificationClient).sendEmail(
         "reset-confirm",
         null,
-        mapOf("firstName" to "First", "fullName" to "First Last", "username" to "user"),
+        mapOf("firstName" to "First", "fullName" to "First Last", "username" to "USER"),
         null
       )
     }
 
+    @Test
+    fun `Reset password - when username is email address, reset password email text to contain username in lower case`() {
+      val staffUserAccountForBob = staffUserAccountForBob
+      whenever(userService.findEnabledMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountForBob)
+      val user = createSampleUser(
+        username = "SOMEUSER@SOMEWHERE.COM",
+        person = Person("First", "Last"),
+        source = nomis,
+        email = "someuser@somewhere.com"
+      )
+      val userToken = user.createToken(UserToken.TokenType.RESET)
+      whenever(userTokenRepository.findById(anyString())).thenReturn(Optional.of(userToken))
+      resetPasswordService.setPassword("bob", "pass")
+      assertThat(user.tokens).isEmpty()
+      verify(userRepository).save(user)
+      verify(delegatingUserService).changePasswordWithUnlock(staffUserAccountForBob, "pass")
+      verify(notificationClient).sendEmail(
+        "reset-confirm",
+        "someuser@somewhere.com",
+        mapOf("firstName" to "First", "fullName" to "First Last", "username" to "someuser@somewhere.com"),
+        null
+      )
+    }
     @Test
     fun resetPassword_authUser() {
       val user = createSampleUser(
