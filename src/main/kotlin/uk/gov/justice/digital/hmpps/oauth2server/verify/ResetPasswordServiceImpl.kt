@@ -182,7 +182,7 @@ class ResetPasswordServiceImpl(
 
   private fun sendPasswordResetEmail(user: User) {
     // then the reset token
-    val username = user.username
+    val username = if (user.username.contains("@")) user.username.toLowerCase() else user.username
     val email = user.email
     val parameters = mapOf("firstName" to user.firstName, "fullName" to user.name, "username" to username)
 
