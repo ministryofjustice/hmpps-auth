@@ -9,7 +9,7 @@ class AuthAllRolesIntTest : IntegrationTest() {
   @Test
   fun `Auth Roles endpoint returns all possible auth roles`() {
     webTestClient
-      .get().uri("/auth/api/authroles")
+      .get().uri("/api/authroles")
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -24,7 +24,7 @@ class AuthAllRolesIntTest : IntegrationTest() {
 
   @Test
   fun `Auth Roles endpoint not accessible without valid token`() {
-    webTestClient.get().uri("/auth/api/authroles")
+    webTestClient.get().uri("/api/authroles")
       .exchange()
       .expectStatus().isUnauthorized
   }

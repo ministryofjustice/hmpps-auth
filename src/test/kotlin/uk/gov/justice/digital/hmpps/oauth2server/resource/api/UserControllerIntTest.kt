@@ -12,7 +12,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User Me endpoint returns principal user data for client credentials grant`() {
     webTestClient
-      .get().uri("/auth/api/user/me")
+      .get().uri("/api/user/me")
       .headers(setAuthorisation("ITAG_USER"))
       .exchange()
       .expectStatus().isOk
@@ -35,7 +35,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User Me endpoint returns principal user data for auth user`() {
     webTestClient
-      .get().uri("/auth/api/user/me")
+      .get().uri("/api/user/me")
       .headers(setAuthorisation("AUTH_USER"))
       .exchange()
       .expectStatus().isOk
@@ -56,7 +56,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User Me endpoint returns principal user data for delius user`() {
     webTestClient
-      .get().uri("/auth/api/user/me")
+      .get().uri("/api/user/me")
       .headers(setAuthorisation("DELIUS"))
       .exchange()
       .expectStatus().isOk
@@ -77,7 +77,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User username endpoint returns user data`() {
     webTestClient
-      .get().uri("/auth/api/user/RO_USER")
+      .get().uri("/api/user/RO_USER")
       .headers(setAuthorisation("ITAG_USER"))
       .exchange()
       .expectStatus().isOk
@@ -100,7 +100,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User username endpoint returns user data for auth user`() {
     webTestClient
-      .get().uri("/auth/api/user/AUTH_USER")
+      .get().uri("/api/user/AUTH_USER")
       .headers(setAuthorisation("ITAG_USER"))
       .exchange()
       .expectStatus().isOk
@@ -121,7 +121,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User username endpoint returns user data for delius user`() {
     webTestClient
-      .get().uri("/auth/api/user/me")
+      .get().uri("/api/user/me")
       .headers(setAuthorisation("delius"))
       .exchange()
       .expectStatus().isOk
@@ -142,7 +142,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User email endpoint returns user data for auth user`() {
     webTestClient
-      .get().uri("/auth/api/user/AUTH_USER/email")
+      .get().uri("/api/user/AUTH_USER/email")
       .headers(setAuthorisation("ITAG_USER"))
       .exchange()
       .expectStatus().isOk
@@ -160,7 +160,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User email endpoint returns user data for nomis user`() {
     webTestClient
-      .get().uri("/auth/api/user/ITAG_USER/email")
+      .get().uri("/api/user/ITAG_USER/email")
       .headers(setAuthorisation("ITAG_USER"))
       .exchange()
       .expectStatus().isOk
@@ -178,7 +178,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User email endpoint returns user data for delius user`() {
     webTestClient
-      .get().uri("/auth/api/user/delius_email/email")
+      .get().uri("/api/user/delius_email/email")
       .headers(setAuthorisation("delius_email"))
       .exchange()
       .expectStatus().isOk
@@ -196,7 +196,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User email endpoint returns no user data for unverified email address`() {
     webTestClient
-      .get().uri("/auth/api/user/DM_USER/email")
+      .get().uri("/api/user/DM_USER/email")
       .headers(setAuthorisation("ITAG_USER"))
       .exchange()
       .expectStatus().isNoContent
@@ -205,7 +205,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User Roles endpoint returns principal user data`() {
     webTestClient
-      .get().uri("/auth/api/user/me/roles")
+      .get().uri("/api/user/me/roles")
       .headers(setAuthorisation("ITAG_USER", listOf("ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS", "ROLE_OAUTH_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -220,7 +220,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User Roles endpoint returns principal user data for auth user`() {
     webTestClient
-      .get().uri("/auth/api/user/me/roles")
+      .get().uri("/api/user/me/roles")
       .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_GLOBAL_SEARCH")))
       .exchange()
       .expectStatus().isOk
@@ -233,7 +233,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User Roles endpoint returns principal user data for delius user`() {
     webTestClient
-      .get().uri("/auth/api/user/me/roles")
+      .get().uri("/api/user/me/roles")
       .headers(setAuthorisation("DELIUS", listOf("ROLE_PROBATION")))
       .exchange()
       .expectStatus().isOk
@@ -246,7 +246,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User Me endpoint not accessible without valid token`() {
     webTestClient
-      .get().uri("/auth/api/user/me")
+      .get().uri("/api/user/me")
       .exchange()
       .expectStatus().isUnauthorized
   }
@@ -254,7 +254,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User Me Roles endpoint not accessible without valid token`() {
     webTestClient
-      .get().uri("/auth/api/user/me/roles")
+      .get().uri("/api/user/me/roles")
       .exchange()
       .expectStatus().isUnauthorized
   }
@@ -262,7 +262,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User username endpoint not accessible without valid token`() {
     webTestClient
-      .get().uri("/auth/api/user/bob")
+      .get().uri("/api/user/bob")
       .exchange()
       .expectStatus().isUnauthorized
   }
@@ -270,7 +270,7 @@ class UserControllerIntTest : IntegrationTest() {
   @Test
   fun `User email endpoint not accessible without valid token`() {
     webTestClient
-      .get().uri("/auth/api/user/bob/email")
+      .get().uri("/api/user/bob/email")
       .exchange()
       .expectStatus().isUnauthorized
   }

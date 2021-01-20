@@ -9,7 +9,7 @@ class UserContactsIntTest : IntegrationTest() {
   @Test
   fun `User contacts endpoint returns contact information`() {
     webTestClient
-      .get().uri("/auth/api/user/AUTH_MFA_PREF_EMAIL/contacts")
+      .get().uri("/api/user/AUTH_MFA_PREF_EMAIL/contacts")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_RETRIEVE_OAUTH_CONTACTS")))
       .exchange()
       .expectStatus().isOk
@@ -21,7 +21,7 @@ class UserContactsIntTest : IntegrationTest() {
   @Test
   fun `User contacts endpoint returns forbidden if missing role`() {
     webTestClient
-      .get().uri("/auth/api/user/AUTH_MFA_PREF_EMAIL/contacts")
+      .get().uri("/api/user/AUTH_MFA_PREF_EMAIL/contacts")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isForbidden
@@ -37,7 +37,7 @@ class UserContactsIntTest : IntegrationTest() {
   @Test
   fun `User contacts endpoint returns not found response if user not found`() {
     webTestClient
-      .get().uri("/auth/api/user/USER_DOESNT_EXIST/contacts")
+      .get().uri("/api/user/USER_DOESNT_EXIST/contacts")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_RETRIEVE_OAUTH_CONTACTS")))
       .exchange()
       .expectStatus().isNotFound

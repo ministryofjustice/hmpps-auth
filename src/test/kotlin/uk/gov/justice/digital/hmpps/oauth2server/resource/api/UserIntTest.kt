@@ -8,7 +8,7 @@ class UserIntTest : IntegrationTest() {
   @Test
   fun `User Me endpoint returns principal user data`() {
     webTestClient
-      .get().uri("/auth/api/user/ITAG_USER")
+      .get().uri("/api/user/ITAG_USER")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk

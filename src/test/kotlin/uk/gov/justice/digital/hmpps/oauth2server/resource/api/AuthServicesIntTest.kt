@@ -9,7 +9,7 @@ class AuthServicesIntTest : IntegrationTest() {
   @Test
   fun `Auth Services endpoint returns all possible enabled services`() {
     webTestClient
-      .get().uri("/auth/api/services")
+      .get().uri("/api/services")
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -33,7 +33,7 @@ class AuthServicesIntTest : IntegrationTest() {
   @Test
   fun `Auth Services endpoint returns my possible enabled services`() {
     webTestClient
-      .get().uri("/auth/api/services/me")
+      .get().uri("/api/services/me")
       .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_PRISON")))
       .exchange()
       .expectStatus().isOk
@@ -56,7 +56,7 @@ class AuthServicesIntTest : IntegrationTest() {
 
   @Test
   fun `Auth Roles endpoint accessible without valid token`() {
-    webTestClient.get().uri("/auth/api/services")
+    webTestClient.get().uri("/api/services")
       .exchange()
       .expectStatus().isOk
       .expectBody()
@@ -67,7 +67,7 @@ class AuthServicesIntTest : IntegrationTest() {
 
   @Test
   fun `Auth Roles Me endpoint inaccessible without valid token`() {
-    webTestClient.get().uri("/auth/api/services/me")
+    webTestClient.get().uri("/api/services/me")
       .exchange()
       .expectStatus().isUnauthorized
   }

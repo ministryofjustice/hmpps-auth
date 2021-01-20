@@ -24,7 +24,7 @@ class OauthIntTest : IntegrationTest() {
     val authCode = "5bDHCW"
     val clientUrl = "http://localhost:8081/login" // same as row in oauth_code table
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=$clientUrl")
+      .post().uri("/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=$clientUrl")
       .headers(setBasicAuthorisation("ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA=="))
       .exchange()
       .expectStatus().isOk
@@ -40,7 +40,7 @@ class OauthIntTest : IntegrationTest() {
   fun `Client Credentials Login`() {
     val encodedClientAndSecret = convertToBase64("deliusnewtech", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=client_credentials")
+      .post().uri("/oauth/token?grant_type=client_credentials")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -56,7 +56,7 @@ class OauthIntTest : IntegrationTest() {
   fun `Client Credentials Login hold subject`() {
     val encodedClientAndSecret = convertToBase64("deliusnewtech", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=client_credentials")
+      .post().uri("/oauth/token?grant_type=client_credentials")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -72,7 +72,7 @@ class OauthIntTest : IntegrationTest() {
     val token = getClientCredentialsTokenWithUsername(encodedClientAndSecret, "CA_USER")
 
     webTestClient
-      .get().uri("/auth/api/user/me")
+      .get().uri("/api/user/me")
       .header("Authorization", "Bearer $token")
       .exchange()
       .expectStatus().isOk
@@ -91,7 +91,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("omicadmin", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=client_credentials&username=CA_USER")
+      .post().uri("/oauth/token?grant_type=client_credentials&username=CA_USER")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -109,7 +109,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("omicadmin", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=client_credentials&username=AUTH_USER")
+      .post().uri("/oauth/token?grant_type=client_credentials&username=AUTH_USER")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -127,7 +127,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("omicadmin", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=client_credentials&username=AUTH_USER&auth_source=delius")
+      .post().uri("/oauth/token?grant_type=client_credentials&username=AUTH_USER&auth_source=delius")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -145,7 +145,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("community-api-client", "community-api-client")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=client_credentials")
+      .post().uri("/oauth/token?grant_type=client_credentials")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -165,7 +165,7 @@ class OauthIntTest : IntegrationTest() {
     val token = getClientCredentialsTokenWithUsername(encodedClientAndSecret, "AUTH_USER")
 
     webTestClient
-      .get().uri("/auth/api/user/me")
+      .get().uri("/api/user/me")
       .header("Authorization", "Bearer $token")
       .exchange()
       .expectStatus().isOk
@@ -184,7 +184,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("elite2apiclient", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=password&username=ITAG_USER&password=password")
+      .post().uri("/oauth/token?grant_type=password&username=ITAG_USER&password=password")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -203,7 +203,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("elite2apiclient", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=password&username=AUTH_USER&password=password123456")
+      .post().uri("/oauth/token?grant_type=password&username=AUTH_USER&password=password123456")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -222,7 +222,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("elite2apiclient", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=password&username=delius&password=password")
+      .post().uri("/oauth/token?grant_type=password&username=delius&password=password")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -242,7 +242,7 @@ class OauthIntTest : IntegrationTest() {
     val (accessToken, refreshToken) = getAccessAndRefreshTokens(encodedClientAndSecret, "ITAG_USER", "password")
 
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=refresh_token&refresh_token=$refreshToken")
+      .post().uri("/oauth/token?grant_type=refresh_token&refresh_token=$refreshToken")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -261,7 +261,7 @@ class OauthIntTest : IntegrationTest() {
     val (accessToken, refreshToken) = getAccessAndRefreshTokens(encodedClientAndSecret, "AUTH_USER", "password123456")
 
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=refresh_token&refresh_token=$refreshToken")
+      .post().uri("/oauth/token?grant_type=refresh_token&refresh_token=$refreshToken")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -280,7 +280,7 @@ class OauthIntTest : IntegrationTest() {
     val (accessToken, refreshToken) = getAccessAndRefreshTokens(encodedClientAndSecret, "delius", "password")
 
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=refresh_token&refresh_token=$refreshToken")
+      .post().uri("/oauth/token?grant_type=refresh_token&refresh_token=$refreshToken")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -298,7 +298,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("elite2apiclient", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=password&username=ITAG_USER&password=password2")
+      .post().uri("/oauth/token?grant_type=password&username=ITAG_USER&password=password2")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isBadRequest
@@ -318,7 +318,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("elite2apiclient", "clientsecretBAD")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=password&username=ITAG_USER&password=password")
+      .post().uri("/oauth/token?grant_type=password&username=ITAG_USER&password=password")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isUnauthorized
@@ -329,7 +329,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("elite2apiclientBAD", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=password&username=ITAG_USER&password=password")
+      .post().uri("/oauth/token?grant_type=password&username=ITAG_USER&password=password")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isUnauthorized
@@ -340,7 +340,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("elite2apiclient", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=password&username=EXPIRED_USER&password=password123456")
+      .post().uri("/oauth/token?grant_type=password&username=EXPIRED_USER&password=password123456")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isBadRequest
@@ -360,7 +360,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("elite2apiclient", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=password&username=LOCKED_USER&password=password123456")
+      .post().uri("/oauth/token?grant_type=password&username=LOCKED_USER&password=password123456")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isBadRequest
@@ -380,7 +380,7 @@ class OauthIntTest : IntegrationTest() {
 
     val encodedClientAndSecret = convertToBase64("elite2apiclient", "clientsecret")
     webTestClient
-      .post().uri("/auth/oauth/token?grant_type=password&username=DELIUS_ERROR_LOCKED&password=password123456")
+      .post().uri("/oauth/token?grant_type=password&username=DELIUS_ERROR_LOCKED&password=password123456")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isUnauthorized
@@ -402,7 +402,7 @@ class OauthIntTest : IntegrationTest() {
     val token = getPasswordCredentialsToken(encodedClientAndSecret)
 
     webTestClient
-      .get().uri("/auth/api/user/me")
+      .get().uri("/api/user/me")
       .header("Authorization", "Bearer $token")
       .exchange()
       .expectStatus().isOk
@@ -423,7 +423,7 @@ class OauthIntTest : IntegrationTest() {
     val token = getClientCredentialsToken(encodedClientAndSecret)
 
     webTestClient
-      .get().uri("/auth/api/user/me")
+      .get().uri("/api/user/me")
       .header("Authorization", "Bearer $token")
       .exchange()
       .expectStatus().isOk
@@ -441,7 +441,7 @@ class OauthIntTest : IntegrationTest() {
   fun `Kid header is returned`() {
     val encodedClientAndSecret = convertToBase64("elite2apiclient", "clientsecret")
     val result = webTestClient
-      .post().uri("/auth/oauth/token?grant_type=password&username=ITAG_USER&password=password")
+      .post().uri("/oauth/token?grant_type=password&username=ITAG_USER&password=password")
       .header("Authorization", "Basic $encodedClientAndSecret")
       .exchange()
       .expectStatus().isOk
@@ -457,7 +457,7 @@ class OauthIntTest : IntegrationTest() {
   private fun getClientCredentialsTokenWithUsername(encodedClientAndSecret: String, username: String): String {
     val result =
       webTestClient
-        .post().uri("/auth/oauth/token?grant_type=client_credentials&username=$username")
+        .post().uri("/oauth/token?grant_type=client_credentials&username=$username")
         .header("Authorization", "Basic $encodedClientAndSecret")
         .exchange()
         .expectStatus().isOk
@@ -469,7 +469,7 @@ class OauthIntTest : IntegrationTest() {
   private fun getClientCredentialsToken(encodedClientAndSecret: String): String {
     val result =
       webTestClient
-        .post().uri("/auth/oauth/token?grant_type=client_credentials")
+        .post().uri("/oauth/token?grant_type=client_credentials")
         .header("Authorization", "Basic $encodedClientAndSecret")
         .exchange()
         .expectStatus().isOk
@@ -481,7 +481,7 @@ class OauthIntTest : IntegrationTest() {
   private fun getPasswordCredentialsToken(encodedClientAndSecret: String): String {
     val result =
       webTestClient
-        .post().uri("/auth/oauth/token?grant_type=password&username=ITAG_USER&password=password")
+        .post().uri("/oauth/token?grant_type=password&username=ITAG_USER&password=password")
         .header("Authorization", "Basic $encodedClientAndSecret")
         .exchange()
         .expectStatus().isOk
@@ -493,7 +493,7 @@ class OauthIntTest : IntegrationTest() {
   private fun getAccessAndRefreshTokens(encodedClientAndSecret: String, username: String, password: String): Pair<String, String> {
     val result =
       webTestClient
-        .post().uri("/auth/oauth/token?grant_type=password&username=$username&password=$password")
+        .post().uri("/oauth/token?grant_type=password&username=$username&password=$password")
         .header("Authorization", "Basic $encodedClientAndSecret")
         .exchange()
         .expectStatus().isOk

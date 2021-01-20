@@ -11,13 +11,13 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Enable endpoint enables user`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_STATUS/enable")
+      .put().uri("/api/authuser/AUTH_STATUS/enable")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isNoContent
 
     webTestClient
-      .get().uri("/auth/api/authuser/AUTH_STATUS")
+      .get().uri("/api/authuser/AUTH_STATUS")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -41,19 +41,19 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Group manager Enable endpoint enables user`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_STATUS2/groups/site_1_group_2")
+      .put().uri("/api/authuser/AUTH_STATUS2/groups/site_1_group_2")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isNoContent
 
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_STATUS2/enable")
+      .put().uri("/api/authuser/AUTH_STATUS2/enable")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isNoContent
 
     webTestClient
-      .get().uri("/auth/api/authuser/AUTH_STATUS2")
+      .get().uri("/api/authuser/AUTH_STATUS2")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -77,7 +77,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Group manager Enable endpoint fails user not in group manager group forbidden`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_STATUS/enable")
+      .put().uri("/api/authuser/AUTH_STATUS/enable")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isForbidden
@@ -92,7 +92,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Enable endpoint fails is not an admin user`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_STATUS/enable")
+      .put().uri("/api/authuser/AUTH_STATUS/enable")
       .headers(setAuthorisation("ITAG_USER", listOf()))
       .exchange()
       .expectStatus().isForbidden
@@ -107,13 +107,13 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Disable endpoint disables user`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_STATUS/disable")
+      .put().uri("/api/authuser/AUTH_STATUS/disable")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isNoContent
 
     webTestClient
-      .get().uri("/auth/api/authuser/AUTH_STATUS")
+      .get().uri("/api/authuser/AUTH_STATUS")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -137,25 +137,25 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Group manager Disable endpoint enables user`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_STATUS/groups/site_1_group_2")
+      .put().uri("/api/authuser/AUTH_STATUS/groups/site_1_group_2")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isNoContent
 
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_STATUS/enable")
+      .put().uri("/api/authuser/AUTH_STATUS/enable")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isNoContent
 
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_STATUS/disable")
+      .put().uri("/api/authuser/AUTH_STATUS/disable")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isNoContent
 
     webTestClient
-      .get().uri("/auth/api/authuser/AUTH_STATUS")
+      .get().uri("/api/authuser/AUTH_STATUS")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -179,7 +179,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Group manager Disable endpoint fails user not in group manager group forbidden`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_STATUS/disable")
+      .put().uri("/api/authuser/AUTH_STATUS/disable")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isForbidden
@@ -194,7 +194,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Disable endpoint fails is not an admin user`() {
     webTestClient
-      .put().uri("/auth/api/authuser/AUTH_STATUS/disable")
+      .put().uri("/api/authuser/AUTH_STATUS/disable")
       .headers(setAuthorisation("ITAG_USER", listOf()))
       .exchange()
       .expectStatus().isForbidden
@@ -209,14 +209,14 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Amend User endpoint succeeds to alter user email`() {
     webTestClient
-      .post().uri("/auth/api/authuser/AUTH_NEW_USER")
+      .post().uri("/api/authuser/AUTH_NEW_USER")
       .body(BodyInserters.fromValue(mapOf("email" to "bobby.b@digital.justice.gov.uk")))
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
 
     webTestClient
-      .get().uri("/auth/api/authuser/AUTH_NEW_USER")
+      .get().uri("/api/authuser/AUTH_NEW_USER")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -240,7 +240,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Amend User endpoint fails to alter user email for user whose username is email address and email already taken`() {
     webTestClient
-      .post().uri("/auth/api/authuser/auth_user_email@justice.gov.uk")
+      .post().uri("/api/authuser/auth_user_email@justice.gov.uk")
       .body(BodyInserters.fromValue(mapOf("email" to "auth_user_email_test@justice.gov.uk")))
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
@@ -260,14 +260,14 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Amend User endpoint amends username as well as email address`() {
     webTestClient
-      .post().uri("/auth/api/authuser/auth_user_email2_test@justice.gov.uk")
+      .post().uri("/api/authuser/auth_user_email2_test@justice.gov.uk")
       .body(BodyInserters.fromValue(mapOf("email" to "auth_user_email_test3@digital.justice.gov.uk")))
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
 
     webTestClient
-      .get().uri("/auth/api/authuser/auth_user_email_test3@digital.justice.gov.uk")
+      .get().uri("/api/authuser/auth_user_email_test3@digital.justice.gov.uk")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -291,7 +291,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Amend User endpoint fails if no privilege`() {
     webTestClient
-      .post().uri("/auth/api/authuser/AUTH_NEW_USER")
+      .post().uri("/api/authuser/AUTH_NEW_USER")
       .body(BodyInserters.fromValue(mapOf("email" to "bobby.b@digital.justice.gov.uk")))
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
@@ -307,7 +307,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Assignable Groups endpoint for normal user returns their own groups`() {
     webTestClient
-      .get().uri("/auth/api/authuser/me/assignable-groups")
+      .get().uri("/api/authuser/me/assignable-groups")
       .headers(setAuthorisation("AUTH_RO_VARY_USER", listOf("ROLE_AUTH_RO_VARY_USER")))
       .exchange()
       .expectStatus().isOk
@@ -322,7 +322,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
   @Test
   fun `Auth User Assignable Groups endpoint for super user returns all groups`() {
     webTestClient
-      .get().uri("/auth/api/authuser/me/assignable-groups")
+      .get().uri("/api/authuser/me/assignable-groups")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -341,7 +341,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
     @Test
     fun `Searchable roles for group manager user returns their roles based on the groups they manage`() {
       webTestClient
-        .get().uri("/auth/api/authuser/me/searchable-roles")
+        .get().uri("/api/authuser/me/searchable-roles")
         .headers(setAuthorisation("AUTH_GROUP_MANAGER2", listOf("ROLE_AUTH_GROUP_MANAGER")))
         .exchange()
         .expectStatus().isOk
@@ -356,7 +356,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
     @Test
     fun `Searchable roles for user with MAINTAIN_OAUTH_USERS role returns all roles excluding OAUTH_ADMIN`() {
       webTestClient
-        .get().uri("/auth/api/authuser/me/searchable-roles")
+        .get().uri("/api/authuser/me/searchable-roles")
         .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
         .exchange()
         .expectStatus().isOk
@@ -373,7 +373,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
     @Test
     fun `Searchable roles for user with MAINTAIN_OAUTH_USERS and OAUTH_ADMIN role returns all roles`() {
       webTestClient
-        .get().uri("/auth/api/authuser/me/searchable-roles")
+        .get().uri("/api/authuser/me/searchable-roles")
         .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS", "ROLE_OAUTH_ADMIN")))
         .exchange()
         .expectStatus().isOk
@@ -388,7 +388,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
     @Test
     fun `Searchable roles for User without MAINTAIN_OAUTH_USERS role and has no groups will not return any roles`() {
       webTestClient
-        .get().uri("/auth/api/authuser/me/searchable-roles")
+        .get().uri("/api/authuser/me/searchable-roles")
         .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_AUTH_GROUP_MANAGER")))
         .exchange()
         .expectStatus().isOk

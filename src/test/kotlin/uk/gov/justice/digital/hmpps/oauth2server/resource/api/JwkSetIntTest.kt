@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 class JwkSetIntTest : IntegrationTest() {
   @Test
   fun `Jwk set page returns JwkSet`() {
-    webTestClient.get().uri("/auth/.well-known/jwks.json")
+    webTestClient.get().uri("/.well-known/jwks.json")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)

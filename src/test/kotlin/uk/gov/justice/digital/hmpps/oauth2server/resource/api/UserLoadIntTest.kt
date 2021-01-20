@@ -42,7 +42,7 @@ class UserLoadIntTest : IntegrationTest() {
 
     // check user now loaded successfully
     webTestClient
-      .get().uri("/auth/api/user/LOAD_SUCCESS@DIGITAL.JUSTICE.GOV.UK")
+      .get().uri("/api/user/LOAD_SUCCESS@DIGITAL.JUSTICE.GOV.UK")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -55,7 +55,7 @@ class UserLoadIntTest : IntegrationTest() {
       }
 
     webTestClient
-      .get().uri("/auth/api/authuser/LOAD_SUCCESS@DIGITAL.JUSTICE.GOV.UK/groups")
+      .get().uri("/api/authuser/LOAD_SUCCESS@DIGITAL.JUSTICE.GOV.UK/groups")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -66,7 +66,7 @@ class UserLoadIntTest : IntegrationTest() {
       }
 
     webTestClient
-      .get().uri("/auth/api/authuser/AUTH_CHANGE_EMAIL@JUSTICE.GOV.UK/groups")
+      .get().uri("/api/authuser/AUTH_CHANGE_EMAIL@JUSTICE.GOV.UK/groups")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk

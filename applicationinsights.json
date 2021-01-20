@@ -1,0 +1,12 @@
+{
+  "role": {
+    "name": "oauth2-server"
+  },
+  "customDimensions": {
+    "service.version": "${BUILD_NUMBER}"
+  },
+  "selfDiagnostics": {
+    "destination": "console",
+    "level": "INFO"
+  }
+}

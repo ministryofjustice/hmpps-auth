@@ -9,7 +9,7 @@ import java.util.function.Consumer
 class InfoIntTest : IntegrationTest() {
   @Test
   fun `Info page contains git information`() {
-    webTestClient.get().uri("/auth/info")
+    webTestClient.get().uri("/info")
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("git.commit.id").isNotEmpty
@@ -17,7 +17,7 @@ class InfoIntTest : IntegrationTest() {
 
   @Test
   fun `Info page reports version`() {
-    webTestClient.get().uri("/auth/info")
+    webTestClient.get().uri("/info")
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("build.version").value(

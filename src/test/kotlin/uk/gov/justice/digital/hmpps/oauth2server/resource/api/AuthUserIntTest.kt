@@ -19,13 +19,13 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("bob@bobdigital.justice.gov.uk", "Bob", "Smith")
 
     webTestClient
-      .put().uri("/auth/api/authuser/$username").bodyValue(user)
+      .put().uri("/api/authuser/$username").bodyValue(user)
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
 
     webTestClient
-      .get().uri("/auth/api/user/$username")
+      .get().uri("/api/user/$username")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -44,7 +44,7 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("auth_test@digital.justice.gov.uk", "Bob", "Smith")
 
     webTestClient
-      .put().uri("/auth/api/authuser/$username?enforceUniqueEmail=true").bodyValue(user)
+      .put().uri("/api/authuser/$username?enforceUniqueEmail=true").bodyValue(user)
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.CONFLICT)
@@ -56,13 +56,13 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("bob@bobdigital.justice.gov.uk", "Bob", "Smith", "SITE_1_GROUP_1")
 
     webTestClient
-      .put().uri("/auth/api/authuser/$username").bodyValue(user)
+      .put().uri("/api/authuser/$username").bodyValue(user)
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isOk
 
     webTestClient
-      .get().uri("/auth/api/authuser/$username/groups")
+      .get().uri("/api/authuser/$username/groups")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -75,7 +75,7 @@ class AuthUserIntTest : IntegrationTest() {
       }
 
     webTestClient
-      .get().uri("/auth/api/authuser/$username/roles")
+      .get().uri("/api/authuser/$username/roles")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -91,7 +91,7 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("bob@bobdigital.justice.gov.uk", "Bob", "Smith")
 
     webTestClient
-      .put().uri("/auth/api/authuser/$username").bodyValue(user)
+      .put().uri("/api/authuser/$username").bodyValue(user)
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isForbidden
@@ -110,7 +110,7 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("bob@bobdigital.justice.gov.uk", "Bob", "Smith")
 
     webTestClient
-      .put().uri("/auth/api/authuser/$username").bodyValue(user)
+      .put().uri("/api/authuser/$username").bodyValue(user)
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isUnauthorized
@@ -131,13 +131,13 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("bob2@bobdigital.justice.gov.uk", "Bob", "Smith")
 
     webTestClient
-      .post().uri("/auth/api/authuser/create").bodyValue(user)
+      .post().uri("/api/authuser/create").bodyValue(user)
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
 
     webTestClient
-      .get().uri("/auth/api/user/${user.email}")
+      .get().uri("/api/user/${user.email}")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -155,7 +155,7 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("auth_test@digital.justice.gov.uk", "Bob", "Smith")
 
     webTestClient
-      .post().uri("/auth/api/authuser/create").bodyValue(user)
+      .post().uri("/api/authuser/create").bodyValue(user)
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.CONFLICT)
@@ -166,13 +166,13 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("bob1@bobdigital.justice.gov.uk", "Bob", "Smith", "SITE_1_GROUP_1")
 
     webTestClient
-      .post().uri("/auth/api/authuser/create").bodyValue(user)
+      .post().uri("/api/authuser/create").bodyValue(user)
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isOk
 
     webTestClient
-      .get().uri("/auth/api/authuser/${user.email}/groups")
+      .get().uri("/api/authuser/${user.email}/groups")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -185,7 +185,7 @@ class AuthUserIntTest : IntegrationTest() {
       }
 
     webTestClient
-      .get().uri("/auth/api/authuser/${user.email}/roles")
+      .get().uri("/api/authuser/${user.email}/roles")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -200,7 +200,7 @@ class AuthUserIntTest : IntegrationTest() {
     val user = NewUser("bob@bobdigital.justice.gov.uk", "Bob", "Smith")
 
     webTestClient
-      .post().uri("/auth/api/authuser/create").bodyValue(user)
+      .post().uri("/api/authuser/create").bodyValue(user)
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isForbidden
@@ -216,7 +216,7 @@ class AuthUserIntTest : IntegrationTest() {
   @Test
   fun `Auth User endpoint returns user data`() {
     webTestClient
-      .get().uri("/auth/api/authuser/AUTH_USER_LAST_LOGIN")
+      .get().uri("/api/authuser/AUTH_USER_LAST_LOGIN")
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -228,7 +228,7 @@ class AuthUserIntTest : IntegrationTest() {
   @Test
   fun `Auth User endpoint returns no data for nomis user`() {
     webTestClient
-      .get().uri("/auth/api/authuser/ITAG_USER")
+      .get().uri("/api/authuser/ITAG_USER")
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus().isNotFound
@@ -240,7 +240,7 @@ class AuthUserIntTest : IntegrationTest() {
   @Test
   fun `Auth User email endpoint returns user data`() {
     webTestClient
-      .get().uri("/auth/api/authuser?email=auth_test2@digital.justice.gov.uk")
+      .get().uri("/api/authuser?email=auth_test2@digital.justice.gov.uk")
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus().isOk
@@ -252,7 +252,7 @@ class AuthUserIntTest : IntegrationTest() {
   @Test
   fun `Auth User email endpoint returns no data if not found`() {
     webTestClient
-      .get().uri("/auth/api/authuser?email=nobody@nowhere")
+      .get().uri("/api/authuser?email=nobody@nowhere")
       .headers(setAuthorisation("AUTH_ADM"))
       .exchange()
       .expectStatus().isNoContent
@@ -261,7 +261,7 @@ class AuthUserIntTest : IntegrationTest() {
   @Test
   fun `Auth User search endpoint returns user data`() {
     webTestClient
-      .get().uri("/auth/api/authuser/search?name=test2&groups=&roles=")
+      .get().uri("/api/authuser/search?name=test2&groups=&roles=")
       .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -273,7 +273,7 @@ class AuthUserIntTest : IntegrationTest() {
   @Test
   fun `Auth User search endpoint returns user data sorted by last name`() {
     webTestClient
-      .get().uri("/auth/api/authuser/search?name=AUTH_DISABLED&groups=&roles=")
+      .get().uri("/api/authuser/search?name=AUTH_DISABLED&groups=&roles=")
       .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
@@ -285,7 +285,7 @@ class AuthUserIntTest : IntegrationTest() {
   @Test
   fun `Auth User search endpoint returns user data for group managers`() {
     webTestClient
-      .get().uri("/auth/api/authuser/search?name=test2&groups=&roles=")
+      .get().uri("/api/authuser/search?name=test2&groups=&roles=")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isOk
