@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      layout:decorate="~{fragments/layout}" th:with="showBack=true">
+      layout:decorate="~{fragments/layout}" th:with="showBack=true, returnTo=${returnTo}">
 <head>
   <title>Your Account Details</title>
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-full">
+  <div class="govuk-body">
 
   <div role="alert">
     <h1 class="govuk-heading-l">Your account details</h1>
   </div>
-  <div th:unless="${authUser.authSource == 'azuread'}" >
+  <div th:unless="${authUser.authSource == 'azuread'}">
     <p class="govuk-body">
       <a class="govuk-link govuk-link--no-visited-state" th:href="@{/existing-password}" data-qa="changePassword">
         Change your password
@@ -172,7 +173,8 @@
     </div>
   </dl>
 
-  <div th:if="${#lists.size(linkedAccounts) > 0}" >
+
+  <div th:if="${#lists.size(linkedAccounts) > 0}">
     <div role="alert" data-qa="linkedAccountsHeading">
       <h1 class="govuk-heading-l">Your linked accounts</h1>
     </div>
