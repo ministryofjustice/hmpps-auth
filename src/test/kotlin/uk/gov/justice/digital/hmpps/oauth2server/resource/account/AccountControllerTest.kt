@@ -22,7 +22,7 @@ class AccountControllerTest {
   private val response: HttpServletResponse = mock()
   private val userService: UserService = mock()
   private val userContextService: UserContextService = mock()
-  private val accountController = AccountController(userService, userContextService, true)
+  private val accountController = AccountController(userService, userContextService)
   private val token = TestingAuthenticationToken(
     UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"),
     "pass"

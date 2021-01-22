@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.account
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
 import org.springframework.util.Base64Utils
@@ -19,7 +18,6 @@ import javax.servlet.http.HttpServletResponse
 class AccountController(
   private val userService: UserService,
   private val userContextService: UserContextService,
-  @param:Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean
 ) {
   @GetMapping("/account-details")
   fun accountDetails(
@@ -43,8 +41,8 @@ class AccountController(
       val usernameNotEmail = email != username.toLowerCase()
 
       val returnToUrl =
-        if (!returnTo.isNullOrEmpty()) returnTo
-        else String(Base64Utils.decodeFromString(returnToFromCookie))
+        if (returnTo.isNullOrEmpty()) String(Base64Utils.decodeFromString(returnToFromCookie))
+        else returnTo
 
       addReturnCookie(returnToUrl, request, response)
 
