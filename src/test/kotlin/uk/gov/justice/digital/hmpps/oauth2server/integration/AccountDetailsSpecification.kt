@@ -10,6 +10,9 @@ class AccountDetailsSpecification : AbstractDeliusAuthSpecification() {
   @Page
   private lateinit var accountDetailsPage: AccountDetailsPage
 
+  @Page
+  private lateinit var changeNamePage: ChangeNamePage
+
   @Test
   fun `auth account details`() {
     goTo(loginPage).loginAs("AUTH_RO_USER")
@@ -17,6 +20,35 @@ class AccountDetailsSpecification : AbstractDeliusAuthSpecification() {
 
     accountDetailsPage.isAt()
     accountDetailsPage.checkAuthDetails()
+    accountDetailsPage.checkBackLink("/auth/")
+  }
+
+  @Test
+  fun `auth account details back link to dps when first visited from dps`() {
+    goTo(loginPage).loginAs("AUTH_RO_USER")
+    goTo("/account-details?returnTo=somewhere/in/DPS/")
+
+    accountDetailsPage.isAt()
+    accountDetailsPage.checkBackLink("somewhere/in/DPS/")
+  }
+
+  @Test
+  fun `auth account details back link to dsp`() {
+    goTo(loginPage).loginAs("AUTH_RO_USER")
+    goTo("/account-details?returnTo=somewhere/in/DPS/")
+
+    accountDetailsPage.isAt()
+    accountDetailsPage.checkBackLink("somewhere/in/DPS/")
+
+    goTo(changeNamePage)
+      .submitUserDetails("   Harry  ", "  New Name  ")
+    accountDetailsPage.isAt()
+    accountDetailsPage.checkBackLink("somewhere/in/DPS/")
+
+    goTo(changeNamePage)
+      .submitUserDetails("Ryan-Auth", "Orton")
+    accountDetailsPage.isAt()
+    accountDetailsPage.checkBackLink("somewhere/in/DPS/")
   }
 
   @Test
@@ -26,6 +58,7 @@ class AccountDetailsSpecification : AbstractDeliusAuthSpecification() {
 
     accountDetailsPage.isAt()
     accountDetailsPage.checkAuthEmailUsernameDetails()
+    accountDetailsPage.checkBackLink("/auth/")
   }
 
   @Test
@@ -338,5 +371,9 @@ class AccountDetailsPage :
 
   fun checkEmailUsername(username: String) {
     assertThat(el("[data-qa='email']").text()).isEqualTo(username)
+  }
+
+  fun checkBackLink(href: String) {
+    assertThat(el("[data-qa='back-link']").element.getAttribute("href")).endsWith(href)
   }
 }
