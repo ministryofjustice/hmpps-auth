@@ -49,9 +49,11 @@ class AccountController(
       } else false
 
       val returnToUri =
-        if (redirectUri.isNullOrEmpty()) String(Base64Utils.decodeFromString(returnToFromCookie))
-        else if (redirectOk) redirectUri
-        else "/"
+        when {
+          redirectUri.isNullOrEmpty() -> String(Base64Utils.decodeFromString(returnToFromCookie))
+          redirectOk -> redirectUri
+          else -> "/"
+        }
 
       addReturnCookie(returnToUri, request, response)
 
