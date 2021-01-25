@@ -14,14 +14,18 @@ import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+@Suppress("DEPRECATION")
 @Controller
 class AccountController(
   private val userService: UserService,
   private val userContextService: UserContextService,
+  private val backLinkHandler: BackLinkHandler,
 ) {
+
   @GetMapping("/account-details")
   fun accountDetails(
-    @RequestParam(required = false, name = "returnTo") returnTo: String?,
+    @RequestParam(required = false, name = "redirect_uri") redirectUri: String?,
+    @RequestParam(required = false, name = "client_id") client: String?,
     authentication: Authentication,
     request: HttpServletRequest,
     response: HttpServletResponse,
@@ -40,14 +44,19 @@ class AccountController(
 
       val usernameNotEmail = email != username.toLowerCase()
 
-      val returnToUrl =
-        if (returnTo.isNullOrEmpty()) String(Base64Utils.decodeFromString(returnToFromCookie))
-        else returnTo
+      val redirectOk: Boolean = if (client != null && redirectUri != null) {
+        backLinkHandler.validateRedirect(client, redirectUri)
+      } else false
 
-      addReturnCookie(returnToUrl, request, response)
+      val returnToUri =
+        if (redirectUri.isNullOrEmpty()) String(Base64Utils.decodeFromString(returnToFromCookie))
+        else if (redirectOk) redirectUri
+        else "/"
+
+      addReturnCookie(returnToUri, request, response)
 
       return ModelAndView("account/accountDetails")
-        .addObject("returnTo", returnToUrl)
+        .addObject("returnTo", returnToUri)
         .addObject("user", user)
         .addObject("authUser", userInAuth)
         .addObject("mfaPreferenceVerified", userInAuth.mfaPreferenceVerified())
