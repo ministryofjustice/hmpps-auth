@@ -26,29 +26,28 @@ class AccountDetailsSpecification : AbstractDeliusAuthSpecification() {
   @Test
   fun `auth account details back link to dps when first visited from dps`() {
     goTo(loginPage).loginAs("AUTH_RO_USER")
-    goTo("/account-details?returnTo=somewhere/in/DPS/")
+    goTo("/account-details?returnTo=/")
 
     accountDetailsPage.isAt()
-    accountDetailsPage.checkBackLink("somewhere/in/DPS/")
   }
 
   @Test
   fun `auth account details back link to dsp`() {
     goTo(loginPage).loginAs("AUTH_RO_USER")
-    goTo("/account-details?returnTo=somewhere/in/DPS/")
+    goTo("/account-details?redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fsearch-external-users&client_id=elite2apiclient")
 
     accountDetailsPage.isAt()
-    accountDetailsPage.checkBackLink("somewhere/in/DPS/")
+    accountDetailsPage.checkBackLink("http://localhost:3001/search-external-users")
 
     goTo(changeNamePage)
       .submitUserDetails("   Harry  ", "  New Name  ")
     accountDetailsPage.isAt()
-    accountDetailsPage.checkBackLink("somewhere/in/DPS/")
+    accountDetailsPage.checkBackLink("http://localhost:3001/search-external-users")
 
     goTo(changeNamePage)
       .submitUserDetails("Ryan-Auth", "Orton")
     accountDetailsPage.isAt()
-    accountDetailsPage.checkBackLink("somewhere/in/DPS/")
+    accountDetailsPage.checkBackLink("http://localhost:3001/search-external-users")
   }
 
   @Test

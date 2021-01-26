@@ -22,7 +22,8 @@ class AccountControllerTest {
   private val response: HttpServletResponse = mock()
   private val userService: UserService = mock()
   private val userContextService: UserContextService = mock()
-  private val accountController = AccountController(userService, userContextService)
+  private val backLinkHandler: BackLinkHandler = mock()
+  private val accountController = AccountController(userService, userContextService, backLinkHandler)
   private val token = TestingAuthenticationToken(
     UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"),
     "pass"
@@ -39,7 +40,7 @@ class AccountControllerTest {
     val authUser = createSampleUser("build")
     whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
 
-    val modelAndView = accountController.accountDetails(null, token, request, response, "Lw==")
+    val modelAndView = accountController.accountDetails(null, null, token, request, response, "Lw==")
 
     assertThat(modelAndView.viewName).isEqualTo("account/accountDetails")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(
@@ -63,7 +64,7 @@ class AccountControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(authUser))
     whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
 
-    val modelAndView = accountController.accountDetails(null, token, request, response, "Lw==")
+    val modelAndView = accountController.accountDetails(null, null, token, request, response, "Lw==")
 
     assertThat(modelAndView.model).containsEntry("canSwitchUsernameToEmail", true)
   }
@@ -74,7 +75,7 @@ class AccountControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(authUser))
     whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
 
-    val modelAndView = accountController.accountDetails(null, token2, request, response, "Lw==")
+    val modelAndView = accountController.accountDetails(null, null, token2, request, response, "Lw==")
 
     assertThat(modelAndView.model).containsEntry("usernameNotEmail", false)
   }
@@ -85,7 +86,7 @@ class AccountControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(authUser))
     whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
 
-    val modelAndView = accountController.accountDetails(null, token, request, response, "Lw==")
+    val modelAndView = accountController.accountDetails(null, null, token, request, response, "Lw==")
 
     assertThat(modelAndView.model).containsEntry("canSwitchUsernameToEmail", false)
   }
@@ -96,7 +97,7 @@ class AccountControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(authUser))
     whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
 
-    val modelAndView = accountController.accountDetails(null, token, request, response, "Lw==")
+    val modelAndView = accountController.accountDetails(null, null, token, request, response, "Lw==")
 
     assertThat(modelAndView.model).containsEntry("canSwitchUsernameToEmail", false)
   }
@@ -108,7 +109,7 @@ class AccountControllerTest {
     whenever(userService.getUserWithContacts(anyString())).thenReturn(authUser)
     whenever(userService.findUser(anyString())).thenReturn(Optional.of(authUser))
 
-    val modelAndView = accountController.accountDetails(null, token, request, response, "Lw==")
+    val modelAndView = accountController.accountDetails(null, null, token, request, response, "Lw==")
 
     assertThat(modelAndView.model).containsEntry("canSwitchUsernameToEmail", false)
   }
@@ -119,7 +120,7 @@ class AccountControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(nomisUser))
     whenever(userService.getUserWithContacts(anyString())).thenReturn(nomisUser)
 
-    val modelAndView = accountController.accountDetails(null, token, request, response, "Lw==")
+    val modelAndView = accountController.accountDetails(null, null, token, request, response, "Lw==")
 
     assertThat(modelAndView.model).containsEntry("canSwitchUsernameToEmail", false)
   }
@@ -129,10 +130,23 @@ class AccountControllerTest {
     val nomisUser = createSampleUser("build", email = "anemail@somewhere.com", source = AuthSource.nomis)
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(nomisUser))
     whenever(userService.getUserWithContacts(anyString())).thenReturn(nomisUser)
+    whenever(backLinkHandler.validateRedirect(anyString(), anyString())).thenReturn(true)
 
-    val modelAndView = accountController.accountDetails("/somewhere-else/", token, request, response, "Lw==")
+    val modelAndView = accountController.accountDetails("/somewhere-else/", "bob", token, request, response, "Lw==")
 
     assertThat(modelAndView.model).containsEntry("returnTo", "/somewhere-else/")
+  }
+
+  @Test
+  fun `account details returnTo param fails and slash for backlink`() {
+    val nomisUser = createSampleUser("build", email = "anemail@somewhere.com", source = AuthSource.nomis)
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(nomisUser))
+    whenever(userService.getUserWithContacts(anyString())).thenReturn(nomisUser)
+    whenever(backLinkHandler.validateRedirect(anyString(), anyString())).thenReturn(false)
+
+    val modelAndView = accountController.accountDetails("/somewhere-not-valid/", "bob", token, request, response, "Lw==")
+
+    assertThat(modelAndView.model).containsEntry("returnTo", "/")
   }
 
   @Test
@@ -141,7 +155,7 @@ class AccountControllerTest {
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(nomisUser))
     whenever(userService.getUserWithContacts(anyString())).thenReturn(nomisUser)
     val base64Cookie = Base64Utils.encodeToString("/somewhere-else/cookie".toByteArray())
-    val modelAndView = accountController.accountDetails(null, token, request, response, base64Cookie)
+    val modelAndView = accountController.accountDetails(null, null, token, request, response, base64Cookie)
 
     assertThat(modelAndView.model).containsEntry("returnTo", "/somewhere-else/cookie")
   }
@@ -151,7 +165,7 @@ class AccountControllerTest {
     val nomisUser = createSampleUser("build", email = "anemail@somewhere.com", source = AuthSource.nomis)
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(nomisUser))
     whenever(userService.getUserWithContacts(anyString())).thenReturn(nomisUser)
-    val modelAndView = accountController.accountDetails(null, token, request, response, "Lw==")
+    val modelAndView = accountController.accountDetails(null, null, token, request, response, "Lw==")
 
     assertThat(modelAndView.model).containsEntry("returnTo", "/")
   }
