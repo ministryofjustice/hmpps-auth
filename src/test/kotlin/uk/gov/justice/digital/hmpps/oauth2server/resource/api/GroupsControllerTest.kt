@@ -39,14 +39,16 @@ class GroupsControllerTest {
   fun `create child group`() {
     val childGroup = CreateChildGroup("PG", "CG", "Group")
     groupsController.createChildGroup(authentication, childGroup)
-    verify(groupsService).createChildGroup(childGroup)
+    verify(groupsService).createChildGroup("user", childGroup)
   }
 
   @Test
   fun `create child group - group already exist exception`() {
-    doThrow(ChildGroupExistsException("child_code", "group code already exists")).whenever(groupsService).createChildGroup(
-      any()
-    )
+    doThrow(ChildGroupExistsException("child_code", "group code already exists")).whenever(groupsService)
+      .createChildGroup(
+        anyString(),
+        any()
+      )
 
     val childGroup = CreateChildGroup("parent_code", "child_code", "Child group")
     assertThatThrownBy { groupsController.createChildGroup(authentication, childGroup) }
@@ -57,6 +59,7 @@ class GroupsControllerTest {
   @Test
   fun `create child group - parent group not found exception`() {
     doThrow(GroupNotFoundException("NotGroup", "ParentGroupNotFound")).whenever(groupsService).createChildGroup(
+      anyString(),
       any()
     )
 
@@ -70,7 +73,7 @@ class GroupsControllerTest {
   @Test
   fun `delete child group`() {
     groupsController.deleteChildGroup("childGroup", authentication)
-    verify(groupsService).deleteChildGroup("childGroup")
+    verify(groupsService).deleteChildGroup("user", "childGroup")
   }
 
   @Test
@@ -103,7 +106,7 @@ class GroupsControllerTest {
   fun `amend group name`() {
     val groupAmendment = GroupAmendment("groupie")
     groupsController.amendGroupName("group1", authentication, groupAmendment)
-    verify(groupsService).updateGroup("group1", groupAmendment)
+    verify(groupsService).updateGroup("user", "group1", groupAmendment)
   }
 
   @Test
@@ -131,7 +134,7 @@ class GroupsControllerTest {
   fun `amend child group name`() {
     val groupAmendment = GroupAmendment("groupie")
     groupsController.amendChildGroupName("group1", authentication, groupAmendment)
-    verify(groupsService).updateChildGroup("group1", groupAmendment)
+    verify(groupsService).updateChildGroup("user", "group1", groupAmendment)
   }
 
   @Test
