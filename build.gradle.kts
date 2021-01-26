@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.0.0-BETA-3"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.0.0"
   kotlin("plugin.spring") version "1.4.21"
   kotlin("plugin.jpa") version "1.4.21"
   id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
@@ -37,8 +37,8 @@ dependencies {
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.2")
   implementation("uk.gov.service.notify:notifications-java-client:3.17.0-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:7.3.2")
-  implementation("com.zaxxer:HikariCP:3.4.5")
+  implementation("org.flywaydb:flyway-core:7.5.1")
+  implementation("com.zaxxer:HikariCP:4.0.1")
   implementation("org.apache.commons:commons-text:1.9")
   implementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre11")
   implementation("io.swagger:swagger-core:1.6.2")
@@ -61,7 +61,7 @@ dependencies {
   testImplementation("org.slf4j:slf4j-api:1.7.30")
   testImplementation("com.auth0:java-jwt:3.12.0")
 
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.22.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.22.1")
   testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.5.1")
   testImplementation("org.fluentlenium:fluentlenium-assertj:4.5.1")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.24")
