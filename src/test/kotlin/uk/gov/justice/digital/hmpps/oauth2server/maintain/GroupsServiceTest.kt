@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain
 
+import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
@@ -24,10 +25,12 @@ class GroupsServiceTest {
   private val groupRepository: GroupRepository = mock()
   private val childGroupRepository: ChildGroupRepository = mock()
   private val maintainUserCheck: MaintainUserCheck = mock()
+  private val telemetryClient: TelemetryClient = mock()
   private val groupsService = GroupsService(
     groupRepository,
     childGroupRepository,
     maintainUserCheck,
+    telemetryClient,
   )
 
   @Test
@@ -48,10 +51,15 @@ class GroupsServiceTest {
     val groupAmendment = GroupAmendment("Joe")
     whenever(groupRepository.findByGroupCode(anyString())).thenReturn(dbGroup)
 
-    groupsService.updateGroup("bob", groupAmendment)
+    groupsService.updateGroup("user", "bob", groupAmendment)
 
     verify(groupRepository).findByGroupCode("bob")
     verify(groupRepository).save(dbGroup)
+    verify(telemetryClient).trackEvent(
+      "GroupUpdateSuccess",
+      mapOf("username" to "user", "groupCode" to "bob", "newGroupName" to "Joe"),
+      null
+    )
   }
 
   @Test
@@ -61,17 +69,27 @@ class GroupsServiceTest {
     whenever(childGroupRepository.findByGroupCode(anyString())).thenReturn(null)
     whenever(groupRepository.findByGroupCode(anyString())).thenReturn(parentGroup)
 
-    groupsService.createChildGroup(createChildGroup)
+    groupsService.createChildGroup("user", createChildGroup)
     val cg = ChildGroup("CG", "Child Group")
     verify(childGroupRepository).findByGroupCode("CG")
     verify(groupRepository).findByGroupCode("PG")
     verify(childGroupRepository).save(cg)
+    verify(telemetryClient).trackEvent(
+      "GroupChildCreateSuccess",
+      mapOf("username" to "user", "groupCode" to "PG", "childGroupCode" to "CG", "childGroupName" to "Child Group"),
+      null
+    )
   }
 
   @Test
   fun `Delete child group`() {
-    groupsService.deleteChildGroup("CG")
+    groupsService.deleteChildGroup("user", "CG")
     verify(childGroupRepository).deleteByGroupCode("CG")
+    verify(telemetryClient).trackEvent(
+      "GroupChildDeleteSuccess",
+      mapOf("username" to "user", "childGroupCode" to "CG"),
+      null
+    )
   }
 
   @Test
@@ -91,10 +109,15 @@ class GroupsServiceTest {
     val groupAmendment = GroupAmendment("Joe")
     whenever(childGroupRepository.findByGroupCode(anyString())).thenReturn(dbGroup)
 
-    groupsService.updateChildGroup("bob", groupAmendment)
+    groupsService.updateChildGroup("user", "bob", groupAmendment)
 
     verify(childGroupRepository).findByGroupCode("bob")
     verify(childGroupRepository).save(dbGroup)
+    verify(telemetryClient).trackEvent(
+      "GroupChildUpdateSuccess",
+      mapOf("username" to "user", "childGroupCode" to "bob", "newChildGroupName" to "Joe"),
+      null
+    )
   }
 
   @Test

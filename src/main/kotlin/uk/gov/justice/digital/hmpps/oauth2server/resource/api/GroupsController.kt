@@ -72,7 +72,8 @@ class GroupsController(
     @PathVariable group: String,
     @ApiIgnore authentication: Authentication,
   ): ChildGroupDetails {
-    val returnedGroup: ChildGroup = groupsService.getChildGroupDetail(group, authentication.name, authentication.authorities)
+    val returnedGroup: ChildGroup =
+      groupsService.getChildGroupDetail(group, authentication.name, authentication.authorities)
     return ChildGroupDetails(returnedGroup)
   }
 
@@ -93,10 +94,13 @@ class GroupsController(
     @ApiParam(value = "The group code of the group.", required = true)
     @PathVariable group: String,
     @ApiIgnore authentication: Authentication,
-    @ApiParam(value = "Details of the group to be updated.", required = true) @RequestBody groupAmendment: GroupAmendment,
+    @ApiParam(
+      value = "Details of the group to be updated.",
+      required = true
+    ) @RequestBody groupAmendment: GroupAmendment,
 
   ) {
-    groupsService.updateGroup(group, groupAmendment)
+    groupsService.updateGroup(authentication.name, group, groupAmendment)
   }
 
   @PutMapping("/api/groups/child/{group}")
@@ -116,10 +120,13 @@ class GroupsController(
     @ApiParam(value = "The group code of the child group.", required = true)
     @PathVariable group: String,
     @ApiIgnore authentication: Authentication,
-    @ApiParam(value = "Details of the child group to be updated.", required = true) @RequestBody groupAmendment: GroupAmendment,
+    @ApiParam(
+      value = "Details of the child group to be updated.",
+      required = true
+    ) @RequestBody groupAmendment: GroupAmendment,
 
   ) {
-    groupsService.updateChildGroup(group, groupAmendment)
+    groupsService.updateChildGroup(authentication.name, group, groupAmendment)
   }
 
   @PostMapping("/api/groups/child")
@@ -142,7 +149,7 @@ class GroupsController(
     @ApiParam(value = "Details of the child group to be created.", required = true)
     @Valid @RequestBody createChildGroup: CreateChildGroup,
   ) {
-    groupsService.createChildGroup(createChildGroup)
+    groupsService.createChildGroup(authentication.name, createChildGroup)
   }
 
   @DeleteMapping("/api/groups/child/{group}")
@@ -162,7 +169,7 @@ class GroupsController(
     @PathVariable group: String,
     @ApiIgnore authentication: Authentication,
   ) {
-    groupsService.deleteChildGroup(group)
+    groupsService.deleteChildGroup(authentication.name, group)
   }
 }
 
