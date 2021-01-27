@@ -14,4 +14,4 @@ where group_id in
 
 delete
 from groups
-where group_code ='PECS_STTCYC';
+where group_code = 'PECS_STTCYC';
