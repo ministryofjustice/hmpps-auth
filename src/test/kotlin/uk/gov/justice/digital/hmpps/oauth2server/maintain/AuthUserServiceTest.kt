@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter.Status
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createOptionalSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET
@@ -1447,6 +1448,7 @@ class AuthUserServiceTest {
         unpaged,
         "bob",
         GRANTED_AUTHORITY_SUPER_USER,
+        Status.ALL,
       )
       verify(userRepository).findAll(
         check {
@@ -1474,6 +1476,7 @@ class AuthUserServiceTest {
         unpaged,
         "bob",
         GROUP_MANAGER,
+        Status.ALL,
       )
       verify(userRepository).findAll(
         check {
@@ -1501,6 +1504,7 @@ class AuthUserServiceTest {
         unpaged,
         "bob",
         GROUP_MANAGER,
+        Status.ALL,
       )
       verify(userRepository).findAll(
         check {

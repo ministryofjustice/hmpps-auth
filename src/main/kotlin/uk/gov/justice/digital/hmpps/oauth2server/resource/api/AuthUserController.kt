@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter.Status
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
@@ -146,10 +147,11 @@ class AuthUserController(
     ) @RequestParam(required = false) name: String?,
     @ApiParam(value = "The role codes of the user.") @RequestParam(required = false) roles: List<String>?,
     @ApiParam(value = "The group codes of the user.") @RequestParam(required = false) groups: List<String>?,
+    @ApiParam(value = "Limit to active / inactive / show all users.") @RequestParam(required = false, defaultValue = "ALL") status: Status,
     @PageableDefault(sort = ["Person.lastName", "Person.firstName"], direction = Sort.Direction.ASC) pageable: Pageable,
     @ApiIgnore authentication: Authentication,
   ): Page<AuthUser> =
-    authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities)
+    authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities, status)
       .map { AuthUser.fromUser(it) }
 
   @GetMapping("/api/authuser/me/assignable-groups")
