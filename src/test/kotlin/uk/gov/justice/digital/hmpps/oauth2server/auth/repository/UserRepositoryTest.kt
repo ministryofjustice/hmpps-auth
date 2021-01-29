@@ -364,6 +364,29 @@ class UserRepositoryTest {
       .containsExactly("AUTH_RO_VARY_USER")
   }
 
+  @Test
+  fun `findAll UserFilter ActiveOnly`() {
+    assertThat(repository.findAll(UserFilter(name = "a no", status = UserFilter.Status.ACTIVE)))
+      .extracting<String> { it.username }
+      .containsExactly(
+        "AUTH_NO_EMAIL",
+        "AUTH_MFA_NOEMAIL_USER",
+        "AUTH_MFA_NOTEXT_USER",
+        "AUTH_MFA_PREF_TEXT_EMAIL",
+      )
+  }
+
+  @Test
+  fun `findAll UserFilter InactiveOnly`() {
+    assertThat(repository.findAll(UserFilter(name = "a no", status = UserFilter.Status.INACTIVE)))
+      .extracting<String> { it.username }
+      .containsExactly(
+        "NOMIS_LOCKED_AUTH_DISABLED",
+        "DELIUS_ENABLED_AUTH_DISABLED",
+        "NOMIS_ENABLED_AUTH_DISABLED",
+      )
+  }
+
   @Suppress("UNCHECKED_CAST")
   @Test
   fun findInactiveUsers_First10() {

@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter.Status
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService
@@ -756,45 +757,50 @@ class AuthUserControllerTest {
   }
 
   private val authUser: User
-    get() {
-      val user = createSampleUser(
-        id = UUID.fromString(USER_ID),
-        username = "authentication",
-        email = "email",
-        verified = true,
-        enabled = true,
-        firstName = "Joe",
-        lastName = "Bloggs",
-        lastLoggedIn = LocalDateTime.of(2019, 1, 1, 12, 0)
-      )
-      return user
-    }
+    get() = createSampleUser(
+      id = UUID.fromString(USER_ID),
+      username = "authentication",
+      email = "email",
+      verified = true,
+      enabled = true,
+      firstName = "Joe",
+      lastName = "Bloggs",
+      lastLoggedIn = LocalDateTime.of(2019, 1, 1, 12, 0)
+    )
 
   @Test
   fun searchForUser() {
     val unpaged = Pageable.unpaged()
-    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any())).thenReturn(
+    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any(), any())).thenReturn(
       PageImpl(
         listOf(
           authUser
         )
       )
     )
-    authUserController.searchForUser("somename", listOf("somerole"), listOf("somegroup"), unpaged, authentication)
-    verify(authUserService).findAuthUsers("somename", listOf("somerole"), listOf("somegroup"), unpaged, "bob", emptyList())
+    authUserController.searchForUser("somename", listOf("somerole"), listOf("somegroup"), Status.ALL, unpaged, authentication)
+    verify(authUserService).findAuthUsers(
+      "somename",
+      listOf("somerole"),
+      listOf("somegroup"),
+      unpaged,
+      "bob",
+      emptyList(),
+      Status.ALL
+    )
   }
 
   @Test
   fun `searchForUser map auth user`() {
     val unpaged = Pageable.unpaged()
-    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any())).thenReturn(
+    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any(), any())).thenReturn(
       PageImpl(
         listOf(
           authUser
         )
       )
     )
-    val page = authUserController.searchForUser("somename", listOf("somerole"), listOf("somegroup"), unpaged, authentication).toList()
+    val page = authUserController.searchForUser("somename", listOf("somerole"), listOf("somegroup"), Status.ALL, unpaged, authentication).toList()
     assertThat(page).hasSize(1).containsExactlyInAnyOrder(
       AuthUser(
         userId = USER_ID,

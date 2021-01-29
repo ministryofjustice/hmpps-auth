@@ -132,6 +132,7 @@ class AuthUserService(
     pageable: Pageable,
     searcher: String,
     authorities: Collection<GrantedAuthority>,
+    status: UserFilter.Status,
   ): Page<User> {
     val groupSearchCodes = if (authorities.any { it.authority == "ROLE_MAINTAIN_OAUTH_USERS" }) {
       groupCodes
