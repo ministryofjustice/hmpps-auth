@@ -1460,6 +1460,27 @@ class AuthUserServiceTest {
     }
 
     @Test
+    fun `passes status through to filter`() {
+      whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
+      val unpaged = Pageable.unpaged()
+      authUserService.findAuthUsers(
+        "somename ",
+        listOf("somerole"),
+        listOf("somegroup"),
+        unpaged,
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER,
+        Status.ACTIVE,
+      )
+      verify(userRepository).findAll(
+        check {
+          assertThat(it).extracting("status").isEqualTo(Status.ACTIVE)
+        },
+        eq(unpaged)
+      )
+    }
+
+    @Test
     fun `adds all group manager groups if no group specified`() {
       whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
         listOf(

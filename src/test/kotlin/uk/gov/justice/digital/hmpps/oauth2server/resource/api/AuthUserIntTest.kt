@@ -271,6 +271,18 @@ class AuthUserIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `Auth User search endpoint filters by status`() {
+    webTestClient
+      .get().uri("/api/authuser/search?name=test2&groups=&roles=&status=INACTIVE")
+      .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("auth_user_search_no_results.json".readFile())
+  }
+
+  @Test
   fun `Auth User search endpoint returns user data sorted by last name`() {
     webTestClient
       .get().uri("/api/authuser/search?name=AUTH_DISABLED&groups=&roles=")
