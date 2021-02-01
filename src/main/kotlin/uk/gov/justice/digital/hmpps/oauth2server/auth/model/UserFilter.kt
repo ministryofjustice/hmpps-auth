@@ -14,6 +14,7 @@ class UserFilter(
   name: String? = null,
   val roleCodes: List<String>? = null,
   val groupCodes: List<String>? = null,
+  val status: Status = Status.ALL,
 ) : Specification<User> {
 
   private val name: String? = if (name.isNullOrBlank()) null else name.trim()
@@ -42,6 +43,9 @@ class UserFilter(
     if (!name.isNullOrBlank()) {
       andBuilder.add(buildNamePredicate(root, cb))
     }
+    if (status != Status.ALL) {
+      andBuilder.add(cb.equal(root.get<Any>("enabled"), status == Status.ACTIVE))
+    }
     query.distinct(true)
     val personJoin = root.join<Any, Any>("person", JoinType.INNER)
     query.orderBy(cb.asc(personJoin.get<Any>("firstName")), cb.asc(personJoin.get<Any>("lastName")))
@@ -67,5 +71,9 @@ class UserFilter(
       )
     )
     return cb.or(*orBuilder.build().toTypedArray())
+  }
+
+  enum class Status {
+    ACTIVE, INACTIVE, ALL
   }
 }

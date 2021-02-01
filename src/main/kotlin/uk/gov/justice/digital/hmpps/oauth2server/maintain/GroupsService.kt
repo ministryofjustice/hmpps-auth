@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.hibernate.Hibernate
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.stereotype.Service
@@ -18,6 +19,7 @@ class GroupsService(
   private val groupRepository: GroupRepository,
   private val childGroupRepository: ChildGroupRepository,
   private val maintainUserCheck: MaintainUserCheck,
+  private val telemetryClient: TelemetryClient,
 ) {
 
   @Throws(GroupNotFoundException::class)
@@ -43,27 +45,31 @@ class GroupsService(
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(GroupNotFoundException::class)
-  fun updateGroup(groupCode: String, groupAmendment: GroupAmendment) {
+  fun updateGroup(username: String, groupCode: String, groupAmendment: GroupAmendment) {
     val groupToUpdate = groupRepository.findByGroupCode(groupCode) ?: throw
     GroupNotFoundException(groupCode, "notfound")
 
     groupToUpdate.groupName = groupAmendment.groupName
     groupRepository.save(groupToUpdate)
+
+    telemetryClient.trackEvent("GroupUpdateSuccess", mapOf("username" to username, "groupCode" to groupCode, "newGroupName" to groupAmendment.groupName), null)
   }
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(ChildGroupNotFoundException::class)
-  fun updateChildGroup(groupCode: String, groupAmendment: GroupAmendment) {
+  fun updateChildGroup(username: String, groupCode: String, groupAmendment: GroupAmendment) {
     val groupToUpdate = childGroupRepository.findByGroupCode(groupCode) ?: throw
     GroupNotFoundException(groupCode, "notfound")
 
     groupToUpdate.groupName = groupAmendment.groupName
     childGroupRepository.save(groupToUpdate)
+
+    telemetryClient.trackEvent("GroupChildUpdateSuccess", mapOf("username" to username, "childGroupCode" to groupCode, "newChildGroupName" to groupAmendment.groupName), null)
   }
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(ChildGroupExistsException::class, GroupNotFoundException::class)
-  fun createChildGroup(createChildGroup: CreateChildGroup) {
+  fun createChildGroup(username: String, createChildGroup: CreateChildGroup) {
     val childGroupFromDB = childGroupRepository.findByGroupCode(createChildGroup.groupCode)
     if (childGroupFromDB != null) {
       throw ChildGroupExistsException(createChildGroup.groupCode, "group code already exists")
@@ -75,12 +81,16 @@ class GroupsService(
     child.group = parentGroupDetails
 
     childGroupRepository.save(child)
+
+    telemetryClient.trackEvent("GroupChildCreateSuccess", mapOf("username" to username, "groupCode" to parentGroupDetails.groupCode, "childGroupCode" to createChildGroup.groupCode, "childGroupName" to createChildGroup.groupName), null)
   }
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(ChildGroupNotFoundException::class)
-  fun deleteChildGroup(groupCode: String) {
+  fun deleteChildGroup(username: String, groupCode: String) {
     childGroupRepository.deleteByGroupCode(groupCode)
+
+    telemetryClient.trackEvent("GroupChildDeleteSuccess", mapOf("username" to username, "childGroupCode" to groupCode), null)
   }
 
   class GroupNotFoundException(val group: String, val errorCode: String) :

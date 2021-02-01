@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Service
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter.Status
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createOptionalSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.RESET
@@ -1447,11 +1448,33 @@ class AuthUserServiceTest {
         unpaged,
         "bob",
         GRANTED_AUTHORITY_SUPER_USER,
+        Status.ALL,
       )
       verify(userRepository).findAll(
         check {
           assertThat(it).extracting("name", "roleCodes", "groupCodes")
             .containsExactly("somename", listOf("somerole"), listOf("somegroup"))
+        },
+        eq(unpaged)
+      )
+    }
+
+    @Test
+    fun `passes status through to filter`() {
+      whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
+      val unpaged = Pageable.unpaged()
+      authUserService.findAuthUsers(
+        "somename ",
+        listOf("somerole"),
+        listOf("somegroup"),
+        unpaged,
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER,
+        Status.ACTIVE,
+      )
+      verify(userRepository).findAll(
+        check {
+          assertThat(it).extracting("status").isEqualTo(Status.ACTIVE)
         },
         eq(unpaged)
       )
@@ -1474,6 +1497,7 @@ class AuthUserServiceTest {
         unpaged,
         "bob",
         GROUP_MANAGER,
+        Status.ALL,
       )
       verify(userRepository).findAll(
         check {
@@ -1501,6 +1525,7 @@ class AuthUserServiceTest {
         unpaged,
         "bob",
         GROUP_MANAGER,
+        Status.ALL,
       )
       verify(userRepository).findAll(
         check {
