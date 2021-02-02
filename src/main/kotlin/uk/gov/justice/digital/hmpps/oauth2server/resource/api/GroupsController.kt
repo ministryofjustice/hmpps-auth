@@ -20,6 +20,9 @@ import springfox.documentation.annotations.ApiIgnore
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.ChildGroupExistsException
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupHasChildGroupException
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserAssignableRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
@@ -103,6 +106,27 @@ class GroupsController(
     groupsService.updateGroup(authentication.name, group, groupAmendment)
   }
 
+  @DeleteMapping("/api/groups/{group}")
+  @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @ApiOperation(
+    value = "Delete group.",
+    nickname = "DeleteGroup",
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 404, message = "Group not found.", response = ErrorDetail::class)
+    ]
+  )
+  @Throws(GroupNotFoundException::class, GroupHasChildGroupException::class)
+  fun deleteGroup(
+    @ApiParam(value = "The group code of the group.", required = true)
+    @PathVariable group: String,
+    @ApiIgnore authentication: Authentication,
+  ) {
+    groupsService.deleteGroup(authentication.name, group)
+  }
+
   @PutMapping("/api/groups/child/{group}")
   @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
   @ApiOperation(
@@ -142,7 +166,7 @@ class GroupsController(
       ApiResponse(code = 409, message = "Child Group already exists.", response = ErrorDetail::class)
     ]
   )
-  @Throws(GroupsService.ChildGroupExistsException::class, GroupsService.GroupNotFoundException::class)
+  @Throws(ChildGroupExistsException::class, GroupNotFoundException::class)
   fun createChildGroup(
     @ApiParam(value = "The group code of the child group.", required = true)
     @ApiIgnore authentication: Authentication,

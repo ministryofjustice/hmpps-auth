@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
@@ -14,8 +15,10 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ChildGroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.CreateChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.GroupAmendment
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
@@ -24,12 +27,16 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Auth
 class GroupsServiceTest {
   private val groupRepository: GroupRepository = mock()
   private val childGroupRepository: ChildGroupRepository = mock()
+  private val userRepository: UserRepository = mock()
   private val maintainUserCheck: MaintainUserCheck = mock()
   private val telemetryClient: TelemetryClient = mock()
+  private val authUserGroupService: AuthUserGroupService = mock()
   private val groupsService = GroupsService(
     groupRepository,
     childGroupRepository,
+    userRepository,
     maintainUserCheck,
+    authUserGroupService,
     telemetryClient,
   )
 
@@ -60,6 +67,33 @@ class GroupsServiceTest {
       mapOf("username" to "user", "groupCode" to "bob", "newGroupName" to "Joe"),
       null
     )
+  }
+
+  @Test
+  fun `delete group, no members`() {
+    val dbGroup = Group("groupCode", "disc")
+    whenever(groupRepository.findByGroupCode("groupCode")).thenReturn(dbGroup)
+    whenever(userRepository.findAll(any())).thenReturn(listOf())
+
+    groupsService.deleteGroup("user", "groupCode")
+    verify(groupRepository).findByGroupCode("groupCode")
+    verify(userRepository).findAll(any())
+    verify(groupRepository).delete(dbGroup)
+  }
+
+  @Test
+  fun `delete group, with members`() {
+    val user1 = createSampleUser(username = "user1")
+    val user2 = createSampleUser(username = "user2")
+    val dbGroup = Group("groupCode", "disc")
+    whenever(groupRepository.findByGroupCode("groupCode")).thenReturn(dbGroup)
+    whenever(userRepository.findAll(any())).thenReturn(listOf(user1, user2))
+
+    groupsService.deleteGroup("user", "groupCode")
+    verify(groupRepository).findByGroupCode("groupCode")
+    verify(userRepository).findAll(any())
+    verify(authUserGroupService, times(2)).removeGroup(anyString(), anyString(), anyString())
+    verify(groupRepository).delete(dbGroup)
   }
 
   @Test
