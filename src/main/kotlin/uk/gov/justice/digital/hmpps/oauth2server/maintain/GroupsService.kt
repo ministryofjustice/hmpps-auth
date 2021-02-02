@@ -72,7 +72,7 @@ class GroupsService(
     when {
       group.children.isEmpty() -> {
         removeUsersFromGroup(groupCode, username)
-        groupRepository.deleteByGroupCode(groupCode)
+        groupRepository.delete(group)
 
         telemetryClient.trackEvent(
           "GroupDeleteSuccess",

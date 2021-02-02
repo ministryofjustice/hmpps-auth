@@ -78,7 +78,7 @@ class GroupsServiceTest {
     groupsService.deleteGroup("user", "groupCode")
     verify(groupRepository).findByGroupCode("groupCode")
     verify(userRepository).findAll(any())
-    verify(groupRepository).deleteByGroupCode("groupCode")
+    verify(groupRepository).delete(dbGroup)
   }
 
   @Test
@@ -93,7 +93,7 @@ class GroupsServiceTest {
     verify(groupRepository).findByGroupCode("groupCode")
     verify(userRepository).findAll(any())
     verify(authUserGroupService, times(2)).removeGroup(anyString(), anyString(), anyString())
-    verify(groupRepository).deleteByGroupCode("groupCode")
+    verify(groupRepository).delete(dbGroup)
   }
 
   @Test
