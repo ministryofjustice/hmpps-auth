@@ -29,6 +29,9 @@ class Group(
   @OneToMany(mappedBy = "group", cascade = [CascadeType.ALL], orphanRemoval = true)
   val children: MutableSet<ChildGroup> = mutableSetOf()
 
+  // @ManyToMany(mappedBy = "groups", cascade = [CascadeType.DETACH])
+  // val users: MutableSet<User> = mutableSetOf()
+
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false

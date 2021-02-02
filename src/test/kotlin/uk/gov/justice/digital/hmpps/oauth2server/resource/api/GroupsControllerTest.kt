@@ -58,7 +58,7 @@ class GroupsControllerTest {
 
   @Test
   fun `create child group - parent group not found exception`() {
-    doThrow(GroupNotFoundException("NotGroup", "ParentGroupNotFound")).whenever(groupsService).createChildGroup(
+    doThrow(GroupNotFoundException("create", "NotGroup", "ParentGroupNotFound")).whenever(groupsService).createChildGroup(
       anyString(),
       any()
     )
@@ -103,6 +103,12 @@ class GroupsControllerTest {
   }
 
   @Test
+  fun `delete group`() {
+    groupsController.deleteGroup("GroupCode", authentication)
+    verify(groupsService).deleteGroup("user", "GroupCode")
+  }
+
+  @Test
   fun `amend group name`() {
     val groupAmendment = GroupAmendment("groupie")
     groupsController.amendGroupName("group1", authentication, groupAmendment)
@@ -140,7 +146,7 @@ class GroupsControllerTest {
   @Test
   fun `Group Not Found`() {
 
-    doThrow(GroupNotFoundException("NotGroup", "not found")).whenever(groupsService).getGroupDetail(
+    doThrow(GroupNotFoundException("find", "NotGroup", "not found")).whenever(groupsService).getGroupDetail(
       anyString(),
       any(),
       any()
@@ -148,7 +154,7 @@ class GroupsControllerTest {
 
     assertThatThrownBy { groupsController.getGroupDetail("NotGroup", authentication) }
       .isInstanceOf(GroupNotFoundException::class.java)
-      .withFailMessage("Unable to maintain group: NotGroup with reason: not found")
+      .withFailMessage("Unable to find group: NotGroup with reason: not found")
   }
 
   @Test

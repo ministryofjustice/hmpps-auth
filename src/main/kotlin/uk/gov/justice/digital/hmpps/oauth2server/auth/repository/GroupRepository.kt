@@ -7,4 +7,6 @@ interface GroupRepository : CrudRepository<Group, String> {
 
   fun findAllByOrderByGroupName(): List<Group>
   fun findByGroupCode(groupCode: String?): Group?
+
+  fun deleteByGroupCode(groupCode: String?)
 }

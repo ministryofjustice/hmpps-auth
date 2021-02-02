@@ -327,12 +327,16 @@ INSERT INTO groups (group_id, group_code, group_name) VALUES (newid(), 'SITE_1_G
        (newid(), 'SITE_1_GROUP_2', 'Site 1 - Group 2'),
        (newid(), 'SITE_2_GROUP_1', 'Site 2 - Group 1'),
        (newid(), 'SITE_3_GROUP_1', 'Site 3 - Group 1'),
-       (newid(), 'SITE_9_GROUP_1', 'Site 9 - Group 1');
+       (newid(), 'SITE_9_GROUP_1', 'Site 9 - Group 1'),
+       (newid(), 'GC_DEL_1', 'Group 1 for deleting'),
+       (newid(), 'GC_DEL_2', 'Group 2 for deleting'),
+       (newid(), 'GC_DEL_3', 'Group 3 for deleting');
 
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'CHILD_1', 'Child - Site 1 - Group 2', (select group_id from groups where group_code = 'SITE_1_GROUP_2'));
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'CHILD_2', 'Child - Site 2 - Group 1', (select group_id from groups where group_code = 'SITE_2_GROUP_1'));
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'CHILD_3', 'Child - Site 2 - Group 1', (select group_id from groups where group_code = 'SITE_2_GROUP_1'));
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'CHILD_9', 'Child - Site 9 - Group 1', (select group_id from groups where group_code = 'SITE_9_GROUP_1'));
+INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'DEL_CHILD_1', 'Child - GC_DEL_3', (select group_id from groups where group_code = 'GC_DEL_3'));
 
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_VARY_USER' and group_code = 'SITE_1_GROUP_1';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_VARY_USER' and group_code = 'SITE_1_GROUP_2';
@@ -345,6 +349,8 @@ INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups,
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_GROUP_MANAGER' and group_code = 'SITE_1_GROUP_2';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_DELETEALL' and group_code = 'SITE_3_GROUP_1';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_GROUP_MANAGER2' and group_code = 'PF_LONDON';
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_CHANGE_TEST' and group_code = 'GC_DEL_2';
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_CHANGE_TEST' and group_code = 'GC_DEL_2';
 
 INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'true' FROM groups g, roles r WHERE r.role_code = 'GLOBAL_SEARCH' AND g.group_code = 'SITE_1_GROUP_1';
 INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'true' FROM groups g, roles r WHERE r.role_code = 'LICENCE_RO' AND g.group_code = 'SITE_1_GROUP_1';

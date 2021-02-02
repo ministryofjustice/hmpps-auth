@@ -84,7 +84,7 @@ class GroupsControllerIntTest : IntegrationTest() {
           assertThat(it).containsExactlyInAnyOrderEntriesOf(
             mapOf(
               "error" to "Not Found",
-              "error_description" to "Unable to maintain group: bob with reason: notfound",
+              "error_description" to "Unable to get group: bob with reason: notfound",
               "field" to "group"
             )
           )
@@ -104,7 +104,7 @@ class GroupsControllerIntTest : IntegrationTest() {
           assertThat(it).containsExactlyInAnyOrderEntriesOf(
             mapOf(
               "error" to "Not Found",
-              "error_description" to "Unable to maintain group: bob with reason: notfound",
+              "error_description" to "Unable to get group: bob with reason: notfound",
               "field" to "group"
             )
           )
@@ -114,6 +114,62 @@ class GroupsControllerIntTest : IntegrationTest() {
     @Test
     fun `Group details endpoint not accessible without valid token`() {
       webTestClient.get().uri("/api/groups/GLOBAL_SEARCH")
+        .exchange()
+        .expectStatus().isUnauthorized
+    }
+
+    @Test
+    fun `Delete Group - no child groups and no members`() {
+      webTestClient.delete().uri("/api/groups/GC_DEL_1")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .exchange()
+        .expectStatus().isOk
+    }
+
+    @Test
+    fun `Delete Group - no child groups and but has members`() {
+      webTestClient.delete().uri("/api/groups/GC_DEL_2")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .exchange()
+        .expectStatus().isOk
+    }
+
+    @Test
+    fun `Delete Group - has child groups`() {
+      webTestClient.delete().uri("/api/groups/GC_DEL_3")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody()
+        .jsonPath("$").value<Map<String, Any>> {
+          assertThat(it).containsExactlyInAnyOrderEntriesOf(
+            mapOf(
+              "error" to "child group exist",
+              "error_description" to "Unable to delete group: GC_DEL_3 with reason: child group exist",
+              "field" to "group"
+            )
+          )
+        }
+    }
+
+    @Test
+    fun `Delete Child Group endpoint returns forbidden when dose not have admin role`() {
+      webTestClient.delete().uri("/api/groups/GC_DEL_1")
+        .headers(setAuthorisation("bob"))
+        .exchange()
+        .expectStatus().isForbidden
+        .expectBody()
+        .json(
+          """
+      {"error":"access_denied","error_description":"Access is denied"}
+          """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `Delete Child Group details endpoint not accessible without valid token`() {
+      webTestClient.delete().uri("/api/groups/GC_DEL_1")
         .exchange()
         .expectStatus().isUnauthorized
     }
@@ -305,7 +361,7 @@ class GroupsControllerIntTest : IntegrationTest() {
           assertThat(it).containsExactlyInAnyOrderEntriesOf(
             mapOf(
               "error" to "Not Found",
-              "error_description" to "Unable to maintain group: pg with reason: ParentGroupNotFound",
+              "error_description" to "Unable to create group: pg with reason: ParentGroupNotFound",
               "field" to "group"
             )
           )
@@ -362,7 +418,7 @@ class GroupsControllerIntTest : IntegrationTest() {
           assertThat(it).containsExactlyInAnyOrderEntriesOf(
             mapOf(
               "error" to "Not Found",
-              "error_description" to "Unable to maintain group: bob with reason: notfound",
+              "error_description" to "Unable to get group: bob with reason: notfound",
               "field" to "group"
             )
           )

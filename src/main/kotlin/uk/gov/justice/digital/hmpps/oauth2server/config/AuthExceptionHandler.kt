@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleExistsException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.ChildGroupExistsException
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupHasChildGroupException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthGroupRelationshipException
@@ -62,6 +63,14 @@ class AuthExceptionHandler {
     return ResponseEntity
       .status(HttpStatus.BAD_REQUEST)
       .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", e.field))
+  }
+
+  @ExceptionHandler(GroupHasChildGroupException::class)
+  fun handleGroupHasChildGroupException(e: GroupHasChildGroupException): ResponseEntity<ErrorDetail> {
+    log.debug("Group has children exception caught: {}", e.message)
+    return ResponseEntity
+      .status(HttpStatus.CONFLICT)
+      .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", "group"))
   }
 
   @ExceptionHandler(ChildGroupExistsException::class)
