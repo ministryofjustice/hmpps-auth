@@ -44,16 +44,16 @@ spec:
             httpGet:
               path: {{ .Values.image.livenessProbePath }}
               port: {{ .Values.image.port }}
-            periodSeconds: 10
-            initialDelaySeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 5
+            periodSeconds: 30
+            initialDelaySeconds: 90
+            timeoutSeconds: 20
+            failureThreshold: 10
           readinessProbe:
             httpGet:
               path: {{ .Values.image.readinessProbePath }}
               port: {{ .Values.image.port }}
-            periodSeconds: 10
-            initialDelaySeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 5
+            periodSeconds: 20
+            initialDelaySeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 15
 {{ include "deployment.envs" . | nindent 10 }}
