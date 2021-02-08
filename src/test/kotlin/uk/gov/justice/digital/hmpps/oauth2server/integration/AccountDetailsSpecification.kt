@@ -130,7 +130,7 @@ class AccountDetailsSpecification : AbstractDeliusAuthSpecification() {
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
-    newInstance(NewSecondaryEmailPage::class.java).isAt()
+    newInstance(AccountMfaEmailPage::class.java).isAt()
   }
 
   @Test
@@ -316,14 +316,14 @@ class AccountDetailsPage :
     return this
   }
 
-  fun checkSecondaryEmailAndIsNotVerified(): AccountDetailsPage {
-    assertThat(el("[data-qa='secondaryEmail']").text()).isEqualToNormalizingWhitespace("bob@gmail.com")
+  fun checkSecondaryEmailAndIsNotVerified(email: String = "bob@gmail.com"): AccountDetailsPage {
+    assertThat(el("[data-qa='secondaryEmail']").text()).isEqualToNormalizingWhitespace(email)
     assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualToNormalizingWhitespace("No")
     return this
   }
 
-  fun checkSecondaryEmailAndIsVerified(): AccountDetailsPage {
-    assertThat(el("[data-qa='secondaryEmail']").text()).isEqualToNormalizingWhitespace("bob@gmail.com")
+  fun checkSecondaryEmailAndIsVerified(email: String = "bob@gmail.com"): AccountDetailsPage {
+    assertThat(el("[data-qa='secondaryEmail']").text()).isEqualToNormalizingWhitespace(email)
     assertThat(el("[data-qa='verifiedSecondaryEmail']").text()).isEqualToNormalizingWhitespace("Yes")
     return this
   }
@@ -374,5 +374,10 @@ class AccountDetailsPage :
 
   fun checkBackLink(href: String) {
     assertThat(el("[data-qa='back-link']").element.getAttribute("href")).endsWith(href)
+  }
+
+  fun checkAccountDetailAuthenticationFailedError(): AccountDetailsPage {
+    checkError("Your authentication request failed. You will be locked out if you enter the wrong details 3 times.")
+    return this
   }
 }

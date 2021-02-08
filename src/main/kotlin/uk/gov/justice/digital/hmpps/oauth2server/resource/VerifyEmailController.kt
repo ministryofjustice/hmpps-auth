@@ -90,6 +90,7 @@ class VerifyEmailController(
     @RequestParam(required = false) candidate: String,
     @RequestParam email: String?,
     @RequestParam emailType: EmailType,
+    @RequestParam token: String?,
     principal: Principal,
     request: HttpServletRequest,
     response: HttpServletResponse
@@ -131,10 +132,10 @@ class VerifyEmailController(
     } catch (e: VerifyEmailException) {
       log.info("Validation failed for email address due to {}", e.reason)
       telemetryClient.trackEvent("VerifyEmailRequestFailure", mapOf("username" to username, "reason" to e.reason), null)
-      createChangeOrVerifyEmailError(chosenEmail, e.reason, candidate, emailType)
+      createChangeOrVerifyEmailError(token, chosenEmail, e.reason, candidate, emailType)
     } catch (e: NotificationClientException) {
       log.error("Failed to send email due to", e)
-      createChangeOrVerifyEmailError(chosenEmail, "other", candidate, emailType)
+      createChangeOrVerifyEmailError(token, chosenEmail, "other", candidate, emailType)
     }
   }
 
@@ -155,7 +156,11 @@ class VerifyEmailController(
   }
 
   @PostMapping("/verify-secondary-email-resend")
-  fun secondaryEmailResend(principal: Principal, request: HttpServletRequest): ModelAndView {
+  fun secondaryEmailResend(
+    @RequestParam token: String?,
+    principal: Principal,
+    request: HttpServletRequest
+  ): ModelAndView {
     val username = principal.name
     val originalUrl = request.requestURL.toString()
     val url = originalUrl.replace("verify-secondary-email-resend", "verify-email-secondary-confirm?token=")
@@ -165,10 +170,10 @@ class VerifyEmailController(
     } catch (e: VerifyEmailException) {
       log.info("Validation failed for email address due to {}", e.reason)
       telemetryClient.trackEvent("VerifyEmailRequestFailure", mapOf("username" to username, "reason" to e.reason), null)
-      createChangeOrVerifyEmailError(null, e.reason, "change", EmailType.SECONDARY)
+      createChangeOrVerifyEmailError(token, null, e.reason, "change", EmailType.SECONDARY)
     } catch (e: NotificationClientException) {
       log.error("Failed to send email due to", e)
-      createChangeOrVerifyEmailError(null, "other", "change", EmailType.SECONDARY)
+      createChangeOrVerifyEmailError(token, null, "other", "change", EmailType.SECONDARY)
     }
   }
 
@@ -210,6 +215,7 @@ class VerifyEmailController(
   }
 
   private fun createChangeOrVerifyEmailError(
+    token: String?,
     chosenEmail: String?,
     reason: String?,
     type: String,
@@ -223,7 +229,7 @@ class VerifyEmailController(
           .addObject("error", reason)
       }
       EmailType.SECONDARY ->
-        ModelAndView("redirect:/new-backup-email")
+        ModelAndView("redirect:/new-backup-email?token=$token")
           .addObject("email", chosenEmail)
           .addObject("error", reason)
     }
