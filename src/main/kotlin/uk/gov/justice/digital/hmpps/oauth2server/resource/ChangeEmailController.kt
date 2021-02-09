@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
@@ -15,7 +16,7 @@ class ChangeEmailController(private val tokenService: TokenService, private val 
 
   @GetMapping("/new-email")
   fun newEmailRequest(@RequestParam token: String): ModelAndView {
-    val userToken = tokenService.getToken(UserToken.TokenType.CHANGE, token)
+    val userToken = tokenService.getToken(TokenType.CHANGE, token)
     val modelAndView = ModelAndView("changeEmail", "token", token)
     addUsernameAndIsAdminToModel(userToken.orElseThrow(), modelAndView)
     return modelAndView
@@ -40,8 +41,14 @@ class ChangeEmailController(private val tokenService: TokenService, private val 
   }
 
   @GetMapping("/new-backup-email")
-  fun newSecondaryEmailRequest(authentication: Authentication): ModelAndView {
+  fun newSecondaryEmailRequest(@RequestParam token: String, authentication: Authentication): ModelAndView {
+    val optionalErrorForToken = tokenService.checkToken(TokenType.CHANGE, token)
+    if (optionalErrorForToken.isPresent) {
+      return ModelAndView("redirect:/account-details?error=mfa${optionalErrorForToken.get()}")
+    }
     val currentSecondaryEmail = userService.getUserWithContacts(authentication.name).secondaryEmail
-    return ModelAndView("account/changeBackupEmail", "secondaryEmail", currentSecondaryEmail)
+    val modelAndView = ModelAndView("account/changeBackupEmail", "secondaryEmail", currentSecondaryEmail)
+    modelAndView.addObject("token", token)
+    return modelAndView
   }
 }

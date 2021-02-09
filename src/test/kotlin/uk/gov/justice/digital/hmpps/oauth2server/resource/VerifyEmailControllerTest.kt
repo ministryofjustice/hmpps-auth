@@ -104,7 +104,7 @@ class VerifyEmailControllerTest {
   fun verifyEmail_noselection() {
     val candidates = listOf("joe", "bob")
     whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(candidates)
-    val modelAndView = verifyEmailController.verifyEmail("", "", EmailType.PRIMARY, principal, request, response)
+    val modelAndView = verifyEmailController.verifyEmail("", "", EmailType.PRIMARY, null, principal, request, response)
     assertThat(modelAndView?.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView?.model).containsExactly(entry("error", "noselection"), entry("candidates", candidates))
   }
@@ -125,7 +125,7 @@ class VerifyEmailControllerTest {
       )
     ).thenThrow(NotificationClientException("something went wrong"))
     val modelAndView =
-      verifyEmailController.verifyEmail("a@b.com", null, EmailType.PRIMARY, principal, request, response)
+      verifyEmailController.verifyEmail("a@b.com", null, EmailType.PRIMARY, null, principal, request, response)
     assertThat(modelAndView?.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView?.model).containsExactly(entry("email", "a@b.com"), entry("error", "other"))
   }
@@ -146,7 +146,15 @@ class VerifyEmailControllerTest {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
     val modelAndView =
-      verifyEmailControllerSmokeTestEnabled.verifyEmail("other", email, EmailType.PRIMARY, principal, request, response)
+      verifyEmailControllerSmokeTestEnabled.verifyEmail(
+        "other",
+        email,
+        EmailType.PRIMARY,
+        null,
+        principal,
+        request,
+        response
+      )
     assertThat(modelAndView?.viewName).isEqualTo("verifyEmailSent")
     assertThat(modelAndView?.model).containsOnly(
       entry("verifyLink", "link"),
@@ -181,7 +189,15 @@ class VerifyEmailControllerTest {
     val email = "o'there+bob@b-c.d"
     val emailPrincipal = UsernamePasswordAuthenticationToken("user@somewhere.com", "pass")
 
-    verifyEmailControllerSmokeTestEnabled.verifyEmail("other", email, EmailType.PRIMARY, emailPrincipal, request, response)
+    verifyEmailControllerSmokeTestEnabled.verifyEmail(
+      "other",
+      email,
+      EmailType.PRIMARY,
+      null,
+      emailPrincipal,
+      request,
+      response
+    )
 
     verify(jwtAuthenticationSuccessHandler).updateAuthenticationInRequest(
       eq(request),
@@ -207,7 +223,15 @@ class VerifyEmailControllerTest {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
 
-    verifyEmailControllerSmokeTestEnabled.verifyEmail("other", email, EmailType.PRIMARY, principal, request, response)
+    verifyEmailControllerSmokeTestEnabled.verifyEmail(
+      "other",
+      email,
+      EmailType.PRIMARY,
+      null,
+      principal,
+      request,
+      response
+    )
 
     verifyZeroInteractions(jwtAuthenticationSuccessHandler)
   }
@@ -227,6 +251,7 @@ class VerifyEmailControllerTest {
       "change",
       "auth_email@digital.justice.gov.uk",
       EmailType.PRIMARY,
+      null,
       principal,
       request,
       response
@@ -252,7 +277,8 @@ class VerifyEmailControllerTest {
   fun verifySecondaryEmail_noselection() {
     val candidates = listOf("joe", "bob")
     whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(candidates)
-    val modelAndView = verifyEmailController.verifyEmail("", "", EmailType.SECONDARY, principal, request, response)
+    val modelAndView =
+      verifyEmailController.verifyEmail("", "", EmailType.SECONDARY, null, principal, request, response)
     assertThat(modelAndView?.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView?.model).containsExactly(entry("error", "noselection"), entry("candidates", candidates))
   }
@@ -273,9 +299,20 @@ class VerifyEmailControllerTest {
       )
     ).thenThrow(NotificationClientException("something went wrong"))
     val modelAndView =
-      verifyEmailController.verifyEmail("a@b.com", null, EmailType.SECONDARY, principal, request, response)
-    assertThat(modelAndView?.viewName).isEqualTo("redirect:/new-backup-email")
-    assertThat(modelAndView?.model).containsExactly(entry("email", "a@b.com"), entry("error", "other"))
+      verifyEmailController.verifyEmail(
+        "a@b.com",
+        null,
+        EmailType.SECONDARY,
+        "71396b28-0c57-4efd-bc70-cc5992965aed",
+        principal,
+        request,
+        response
+      )
+    assertThat(modelAndView?.viewName).isEqualTo("redirect:/new-backup-email?token=71396b28-0c57-4efd-bc70-cc5992965aed")
+    assertThat(modelAndView?.model).containsExactly(
+      entry("email", "a@b.com"),
+      entry("error", "other")
+    )
   }
 
   @Test
@@ -297,6 +334,7 @@ class VerifyEmailControllerTest {
       "other",
       email,
       EmailType.SECONDARY,
+      null,
       principal,
       request,
       response
@@ -334,6 +372,7 @@ class VerifyEmailControllerTest {
       "change",
       "auth_email@digital.justice.gov.uk",
       EmailType.SECONDARY,
+      null,
       principal,
       request,
       response
@@ -373,7 +412,8 @@ class VerifyEmailControllerTest {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString()))
       .thenReturn(Optional.of("http://some.url/auth/verify-email-secondary-confirm?token=71396b28-0c57-4efd-bc70-cc5992965aed"))
-    val modelAndView = verifyEmailController.secondaryEmailResend(principal, request)
+    val modelAndView =
+      verifyEmailController.secondaryEmailResend("71396b28-0c57-4efd-bc70-cc5992965aed", principal, request)
     assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-email-sent")
     assertThat(modelAndView.model).isEmpty()
   }
@@ -387,7 +427,11 @@ class VerifyEmailControllerTest {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString()))
       .thenReturn(Optional.of("http://some.url/auth/verify-email-secondary-confirm?token=71396b28-0c57-4efd-bc70-cc5992965aed"))
-    val modelAndView = verifyEmailControllerSmokeTestEnabled.secondaryEmailResend(principal, request)
+    val modelAndView = verifyEmailControllerSmokeTestEnabled.secondaryEmailResend(
+      "71396b28-0c57-4efd-bc70-cc5992965aed",
+      principal,
+      request
+    )
     assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-email-sent")
     assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("verifyLink" to "http://some.url/auth/verify-email-secondary-confirm?token=71396b28-0c57-4efd-bc70-cc5992965aed"))
   }
@@ -401,9 +445,13 @@ class VerifyEmailControllerTest {
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString())).thenThrow(
       VerifyEmailException("reason")
     )
-    val modelAndView = verifyEmailController.secondaryEmailResend(principal, request)
-    assertThat(modelAndView.viewName).isEqualTo("redirect:/new-backup-email")
-    assertThat(modelAndView.model).containsExactly(entry("email", null), entry("error", "reason"))
+    val modelAndView =
+      verifyEmailController.secondaryEmailResend("71396b28-0c57-4efd-bc70-cc5992965aed", principal, request)
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/new-backup-email?token=71396b28-0c57-4efd-bc70-cc5992965aed")
+    assertThat(modelAndView.model).containsExactly(
+      entry("email", null),
+      entry("error", "reason")
+    )
     verify(telemetryClient).trackEvent(
       eq("VerifyEmailRequestFailure"),
       check {
@@ -422,9 +470,13 @@ class VerifyEmailControllerTest {
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString())).thenThrow(
       NotificationClientException("something went wrong")
     )
-    val modelAndView = verifyEmailController.secondaryEmailResend(principal, request)
-    assertThat(modelAndView.viewName).isEqualTo("redirect:/new-backup-email")
-    assertThat(modelAndView.model).containsExactly(entry("email", null), entry("error", "other"))
+    val modelAndView =
+      verifyEmailController.secondaryEmailResend("71396b28-0c57-4efd-bc70-cc5992965aed", principal, request)
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/new-backup-email?token=71396b28-0c57-4efd-bc70-cc5992965aed")
+    assertThat(modelAndView.model).containsExactly(
+      entry("email", null),
+      entry("error", "other")
+    )
   }
 
   @Test
