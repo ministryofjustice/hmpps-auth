@@ -62,9 +62,6 @@ class AccountMfaController(
     // can just grab token here as validated above
     val username = tokenService.getToken(TokenType.MFA, token).map { it.user.username }.orElseThrow()
 
-    // now load the user
-    // val userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow()
-
     try {
       mfaService.validateAndRemoveMfaCode(token, code)
     } catch (e: MfaFlowException) {
@@ -78,7 +75,6 @@ class AccountMfaController(
 
     // success, so forward on
     telemetryClient.trackEvent("MFAAuthenticateSuccess", mapOf("username" to username), null)
-    // val successToken = MfaPassedAuthenticationToken(userPersonDetails, "code", userPersonDetails.authorities)
 
     return continueToChangeAccountDetails(username, contactType)
   }
