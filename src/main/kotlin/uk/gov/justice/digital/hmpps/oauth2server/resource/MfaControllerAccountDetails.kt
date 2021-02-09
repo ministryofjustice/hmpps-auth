@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponse
 
 @Controller
 @Validated
-class AccountMfaController(
+class MfaControllerAccountDetails(
   private val tokenService: TokenService,
   private val telemetryClient: TelemetryClient,
   private val mfaService: MfaService,
@@ -37,7 +37,7 @@ class AccountMfaController(
     // issue token to current mfa preference
     val mfaData = mfaService.createTokenAndSendMfaCode(authentication.name)
     val codeDestination = mfaService.getCodeDestination(mfaData.token, mfaData.mfaType)
-    val modelAndView = ModelAndView("mfaChallengeAD", "token", mfaData.token)
+    val modelAndView = ModelAndView("mfaChallengeAccountDetails", "token", mfaData.token)
       .addObject("mfaPreference", mfaData.mfaType)
       .addObject("codeDestination", codeDestination)
       .addObject("contactType", contactType)
@@ -66,7 +66,7 @@ class AccountMfaController(
       mfaService.validateAndRemoveMfaCode(token, code)
     } catch (e: MfaFlowException) {
       return ModelAndView(
-        "mfaChallengeAD",
+        "mfaChallengeAccountDetails",
         mapOf("token" to token, "error" to e.error, "mfaPreference" to mfaPreference, "contactType" to contactType)
       )
     } catch (e: LoginFlowException) {
@@ -97,7 +97,7 @@ class AccountMfaController(
     val optionalError = tokenService.checkToken(TokenType.MFA, token)
 
     return optionalError.map { ModelAndView("redirect:/account-detail?error=mfa$it") }
-      .orElseGet { mfaService.buildModelAndViewWithMfaResendOptions("mfaResendAD", token, mfaPreference, contactType) }
+      .orElseGet { mfaService.buildModelAndViewWithMfaResendOptions("mfaResendAccountDetails", token, mfaPreference, contactType) }
   }
 
   @PostMapping("/account/mfa-resend")
