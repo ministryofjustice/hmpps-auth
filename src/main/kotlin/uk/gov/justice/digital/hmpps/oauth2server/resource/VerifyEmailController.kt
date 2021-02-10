@@ -102,7 +102,7 @@ class VerifyEmailController(
       val optionalErrorForToken = tokenService.checkToken(TokenType.CHANGE, token!!)
       if (optionalErrorForToken.isPresent) {
         return ModelAndView("redirect:/account-details?error=token${optionalErrorForToken.get()}")
-      } 
+      }
     }
 
     // candidate will either be an email address from the selection or 'other' meaning free text
