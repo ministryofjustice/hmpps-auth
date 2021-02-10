@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
@@ -96,6 +96,14 @@ class VerifyEmailController(
     response: HttpServletResponse
   ): ModelAndView? {
     val username = principal.name
+
+    // check token is valid for secondary email - this if will be removed when 2FA added for primary email as we will need the check for it as well
+    if (emailType == EmailType.SECONDARY) {
+      val optionalErrorForToken = tokenService.checkToken(TokenType.CHANGE, token!!)
+      if (optionalErrorForToken.isPresent) {
+        return ModelAndView("redirect:/account-details?error=token${optionalErrorForToken.get()}")
+      }
+    }
 
     // candidate will either be an email address from the selection or 'other' meaning free text
     if (StringUtils.isEmpty(candidate)) {
@@ -256,7 +264,7 @@ class VerifyEmailController(
 
   @GetMapping("/verify-email-expired")
   fun verifyEmailLinkExpired(@RequestParam token: String?, request: HttpServletRequest): ModelAndView {
-    val user = tokenService.getUserFromToken(UserToken.TokenType.VERIFIED, token!!)
+    val user = tokenService.getUserFromToken(TokenType.VERIFIED, token!!)
     val originalUrl = request.requestURL.toString()
     val url = originalUrl.replace("expired", "confirm?token=")
     val verifyLink = verifyEmailService.resendVerificationCodeEmail(user.username, url)
@@ -283,7 +291,7 @@ class VerifyEmailController(
 
   @GetMapping("/verify-email-secondary-expired")
   fun verifySecondaryEmailLinkExpired(@RequestParam token: String?, request: HttpServletRequest): ModelAndView {
-    val user = tokenService.getUserFromToken(UserToken.TokenType.SECONDARY, token!!)
+    val user = tokenService.getUserFromToken(TokenType.SECONDARY, token!!)
     val originalUrl = request.requestURL.toString()
     val url = originalUrl.replace("expired", "confirm?token=")
     val verifyCode = verifyEmailService.resendVerificationCodeSecondaryEmail(user.username, url)

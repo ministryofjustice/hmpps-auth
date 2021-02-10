@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.isNull
@@ -28,6 +29,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkA
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.util.Optional
+import java.util.UUID
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -278,7 +280,15 @@ class VerifyEmailControllerTest {
     val candidates = listOf("joe", "bob")
     whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(candidates)
     val modelAndView =
-      verifyEmailController.verifyEmail("", "", EmailType.SECONDARY, null, principal, request, response)
+      verifyEmailController.verifyEmail(
+        "",
+        "",
+        EmailType.SECONDARY,
+        UUID.randomUUID().toString(),
+        principal,
+        request,
+        response
+      )
     assertThat(modelAndView?.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView?.model).containsExactly(entry("error", "noselection"), entry("candidates", candidates))
   }
@@ -316,6 +326,36 @@ class VerifyEmailControllerTest {
   }
 
   @Test
+  fun verifySecondaryEmail_tokenInvalid() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
+    val modelAndView = verifyEmailControllerSmokeTestEnabled.verifyEmail(
+      "other",
+      "bob@digital.justice.goc.uk",
+      EmailType.SECONDARY,
+      UUID.randomUUID().toString(),
+      principal,
+      request,
+      response
+    )
+    assertThat(modelAndView?.viewName).isEqualTo("redirect:/account-details?error=tokeninvalid")
+  }
+
+  @Test
+  fun verifySecondaryEmail_tokenExpired() {
+    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("expired"))
+    val modelAndView = verifyEmailControllerSmokeTestEnabled.verifyEmail(
+      "other",
+      "bob@digital.justice.goc.uk",
+      EmailType.SECONDARY,
+      UUID.randomUUID().toString(),
+      principal,
+      request,
+      response
+    )
+    assertThat(modelAndView?.viewName).isEqualTo("redirect:/account-details?error=tokenexpired")
+  }
+
+  @Test
   fun verifySecondaryEmail_Success() {
     whenever(
       verifyEmailService.changeEmailAndRequestVerification(
@@ -334,7 +374,7 @@ class VerifyEmailControllerTest {
       "other",
       email,
       EmailType.SECONDARY,
-      null,
+      UUID.randomUUID().toString(),
       principal,
       request,
       response
@@ -372,7 +412,7 @@ class VerifyEmailControllerTest {
       "change",
       "auth_email@digital.justice.gov.uk",
       EmailType.SECONDARY,
-      null,
+      UUID.randomUUID().toString(),
       principal,
       request,
       response
