@@ -13,15 +13,19 @@ import org.junit.jupiter.api.Test
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.common.OAuth2AccessToken
 import org.springframework.security.oauth2.provider.AuthorizationRequest
+import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.OAuth2RequestFactory
 import org.springframework.security.oauth2.provider.token.TokenStore
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 
 internal class UserContextApprovalHandlerTest {
   private val userContextService: UserContextService = mock()
-  private val handler = UserContextApprovalHandler(userContextService)
+  private val clientDetailsService: ClientDetailsService = mock()
+  private val mfaService: MfaService = mock()
+  private val handler = UserContextApprovalHandler(userContextService, clientDetailsService, mfaService)
   private val authentication: Authentication = mock()
   private val authorizationRequest = AuthorizationRequest()
   private val requestFactory: OAuth2RequestFactory = mock()

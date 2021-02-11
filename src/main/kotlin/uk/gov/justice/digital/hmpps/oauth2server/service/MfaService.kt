@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.service.notify.NotificationClientApi
 
+@Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Service
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
 class MfaService(
@@ -32,24 +33,19 @@ class MfaService(
   private val userRetriesService: UserRetriesService,
 ) {
 
-  private val ipMatchers: List<IpAddressMatcher>
-
-  init {
-    ipMatchers = whitelist.map { ip -> IpAddressMatcher(ip) }
-  }
+  private val ipMatchers: List<IpAddressMatcher> = whitelist.map { ip -> IpAddressMatcher(ip) }
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun needsMfa(authorities: Collection<GrantedAuthority>): Boolean {
-    // if they're whitelisted then no mfa
+  fun outsideApprovedNetwork(): Boolean {
     val ip = IpAddressHelper.retrieveIpFromRequest()
-    return if (ipMatchers.any { it.matches(ip) }) {
-      false
-      // otherwise check that they have a role that requires mfa
-    } else authorities.stream().map { it.authority }.anyMatch { r -> mfaRoles.contains(r) }
+    return !ipMatchers.any { it.matches(ip) }
   }
+
+  fun needsMfa(authorities: Collection<GrantedAuthority>): Boolean =
+    outsideApprovedNetwork() && authorities.stream().map { it.authority }.anyMatch { r -> mfaRoles.contains(r) }
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(MfaUnavailableException::class)

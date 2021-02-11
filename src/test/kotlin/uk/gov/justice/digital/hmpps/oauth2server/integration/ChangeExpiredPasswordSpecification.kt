@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
+import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientMockServer.Companion.clientBaseUrl
 
 class ChangeExpiredPasswordSpecification : AbstractAuthSpecification() {
 
@@ -24,8 +25,6 @@ class ChangeExpiredPasswordSpecification : AbstractAuthSpecification() {
 
   @Page
   private lateinit var mfaEmailPage: MfaEmailPage
-
-  private val clientBaseUrl = "http://localhost:8081/login"
 
   @Test
   fun `Attempt change password without credentials`() {

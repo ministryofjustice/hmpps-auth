@@ -39,6 +39,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserContextApprovalHandler
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 import java.security.interfaces.RSAPublicKey
 import javax.sql.DataSource
@@ -60,7 +61,8 @@ class OAuth2AuthorizationServerConfig(
   @Qualifier("tokenVerificationApiRestTemplate") private val restTemplate: RestTemplate,
   @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean,
   private val tokenVerificationClientCredentials: TokenVerificationClientCredentials,
-  private val userContextService: UserContextService
+  private val userContextService: UserContextService,
+  private val mfaService: MfaService,
 ) : AuthorizationServerConfigurerAdapter() {
 
   private val privateKeyPair: Resource = ByteArrayResource(Base64.decodeBase64(privateKeyPair))
@@ -83,12 +85,12 @@ class OAuth2AuthorizationServerConfig(
 
   @Bean
   @Primary
-  fun jdbcClientDetailsService(): JdbcClientDetailsService? {
+  fun jdbcClientDetailsService(): JdbcClientDetailsService {
     if (jdbcClientDetailsService == null) {
       jdbcClientDetailsService = JdbcClientDetailsService(dataSource)
       jdbcClientDetailsService!!.setPasswordEncoder(passwordEncoder)
     }
-    return jdbcClientDetailsService
+    return jdbcClientDetailsService!!
   }
 
   @Throws(Exception::class)
@@ -123,8 +125,7 @@ class OAuth2AuthorizationServerConfig(
   }
 
   private fun userApprovalHandler(): UserApprovalHandler {
-    val approvalHandler = UserContextApprovalHandler(userContextService)
-    approvalHandler.setClientDetailsService(jdbcClientDetailsService())
+    val approvalHandler = UserContextApprovalHandler(userContextService, jdbcClientDetailsService(), mfaService)
     approvalHandler.setRequestFactory(requestFactory())
     approvalHandler.setTokenStore(tokenStore())
     return approvalHandler

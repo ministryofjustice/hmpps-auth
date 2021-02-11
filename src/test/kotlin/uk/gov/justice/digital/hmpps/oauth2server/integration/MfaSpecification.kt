@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
+import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientMockServer.Companion.clientBaseUrl
 
 class MfaSpecification : AbstractDeliusAuthSpecification() {
 
@@ -30,8 +31,6 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
 
   @Page
   private lateinit var homePage: HomePage
-
-  private val clientBaseUrl = "http://localhost:8081/login"
 
   @Test
   fun `Attempt MFA challenge with invalid token`() {

@@ -26,4 +26,9 @@ class RemoteClientExtension : BeforeAllCallback, AfterAllCallback, BeforeEachCal
   }
 }
 
-class RemoteClientMockServer : WireMockServer(wireMockConfig().port(8081).usingFilesUnderClasspath("remoteClient"))
+class RemoteClientMockServer : WireMockServer(wireMockConfig().port(port).usingFilesUnderClasspath("remoteClient")) {
+  companion object {
+    const val port = 8081
+    const val clientBaseUrl = "http://localhost:$port/login"
+  }
+}

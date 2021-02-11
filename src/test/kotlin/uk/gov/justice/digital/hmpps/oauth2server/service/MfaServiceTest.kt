@@ -1,3 +1,5 @@
+@file:Suppress("ClassName")
+
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
 import com.nhaarman.mockitokotlin2.any
@@ -11,6 +13,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Assertions.entry
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.mock.web.MockHttpServletRequest
@@ -52,25 +55,41 @@ class MfaServiceTest {
   }
 
   @AfterEach
-  fun tearDown() {
-    RequestContextHolder.resetRequestAttributes()
+  fun tearDown(): Unit = RequestContextHolder.resetRequestAttributes()
+
+  @Nested
+  inner class needsMfa {
+    @Test
+    fun `whitelisted IP`() {
+      request.remoteAddr = "12.21.23.24"
+
+      assertThat(service.needsMfa(emptySet())).isFalse
+    }
+
+    @Test
+    fun `non whitelisted IP`() {
+      assertThat(service.needsMfa(emptySet())).isFalse
+    }
+
+    @Test
+    fun `non whitelisted IP enabled role`() {
+      assertThat(service.needsMfa(setOf(SimpleGrantedAuthority("MFA")))).isTrue
+    }
   }
 
-  @Test
-  fun `needsMfa whitelisted IP`() {
-    request.remoteAddr = "12.21.23.24"
+  @Nested
+  inner class outsideApprovedNetwork {
+    @Test
+    fun `whitelisted IP`() {
+      request.remoteAddr = "12.21.23.24"
 
-    assertThat(service.needsMfa(emptySet())).isFalse()
-  }
+      assertThat(service.outsideApprovedNetwork()).isFalse
+    }
 
-  @Test
-  fun `needsMfa non whitelisted IP`() {
-    assertThat(service.needsMfa(emptySet())).isFalse()
-  }
-
-  @Test
-  fun `needsMfa non whitelisted IP enabled role`() {
-    assertThat(service.needsMfa(setOf(SimpleGrantedAuthority("MFA")))).isTrue()
+    @Test
+    fun `non whitelisted IP`() {
+      assertThat(service.outsideApprovedNetwork()).isTrue
+    }
   }
 
   @Test
