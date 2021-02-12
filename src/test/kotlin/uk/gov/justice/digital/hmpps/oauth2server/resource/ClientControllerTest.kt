@@ -168,16 +168,16 @@ class ClientControllerTest {
     @Test
     fun `set mfa`() {
       val authClientDetails = AuthClientDetails()
-      authClientDetails.mfa = true
-      assertThat(authClientDetails.additionalInformation).containsExactlyEntriesOf(mapOf("mfa" to true))
-      assertThat(authClientDetails.mfa).isEqualTo(true)
+      authClientDetails.mfa = MfaAccess.all
+      assertThat(authClientDetails.additionalInformation).containsExactlyEntriesOf(mapOf("mfa" to MfaAccess.all))
+      assertThat(authClientDetails.mfa).isEqualTo(MfaAccess.all)
     }
 
     @Test
     fun `get mfa`() {
       val authClientDetails = AuthClientDetails()
-      authClientDetails.addAdditionalInformation("mfa", true)
-      assertThat(authClientDetails.mfa).isEqualTo(true)
+      authClientDetails.addAdditionalInformation("mfa", MfaAccess.untrusted)
+      assertThat(authClientDetails.mfa).isEqualTo(MfaAccess.untrusted)
     }
 
     @Test

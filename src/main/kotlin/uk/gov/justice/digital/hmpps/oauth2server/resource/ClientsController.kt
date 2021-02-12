@@ -105,10 +105,13 @@ class ClientsController(
       set(databaseUsername) {
         addAdditionalInformation("databaseUsernameField", databaseUsername)
       }
-    var mfa: Boolean?
-      get() = additionalInformation["mfa"] as Boolean?
+    var mfa: MfaAccess?
+      get() = additionalInformation["mfa"] as MfaAccess?
       set(mfa) {
         addAdditionalInformation("mfa", mfa)
       }
   }
+}
+enum class MfaAccess {
+  none, untrusted, all
 }

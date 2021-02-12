@@ -121,19 +121,43 @@
     </div>
 
     <div class="govuk-form-group">
-      <label class="govuk-label" for="mfa">Multi Factor Authentication</label>
-      <span class="govuk-hint">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend">
+          <h1 class="govuk-fieldset__heading">
+            Multi Factor Authentication
+          </h1>
+          <span class="govuk-hint">
           Require additional verification to access this service
         </span>
+
+        </legend>
+        <div class="govuk-radios">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="mfa-1" name="mfa" type="radio" value="none"
+                   th:checked="${clientDetails.additionalInformation['mfa'] == 'none'}">
+            <label class="govuk-label govuk-radios__label" for="mfa-1">
+              None
+            </label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="mfa-2" name="mfa" type="radio" value="untrusted"
+                   th:checked="${clientDetails.additionalInformation['mfa'] == 'untrusted'}">
+            <label class="govuk-label govuk-radios__label" for="mfa-2">
+              Access from untrusted networks
+            </label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="mfa-3" name="mfa" type="radio" value="all"
+                   th:checked="${clientDetails.additionalInformation['mfa'] == 'all'}">
+            <label class="govuk-label govuk-radios__label" for="mfa-3">
+              Access from all networks
+            </label>
+          </div>
+        </div>
+
+      </fieldset>
     </div>
-    <div class="govuk-form-group">
-      <div class="govuk-checkboxes__item">
-        <input name="_mfa" type="hidden" value="on"/>
-        <input class="govuk-checkboxes__input" type="checkbox" name="mfa" id="mfa"
-               th:checked="*{clientDetails.additionalInformation['mfa']}"/>
-        <label class="govuk-label govuk-checkboxes__label" for="mfa">Access from untrusted networks</label>
-      </div>
-    </div>
+
 
     <div class="govuk-form-group">
       <div class="govuk-form-group">
@@ -141,7 +165,8 @@
         <span class="govuk-hint">
           For client credentials only, the username to "alias" in database when changing data e.g. API_USER
         </span>
-        <input class="govuk-input" id="databaseUsernameField" type="text" name="databaseUsernameField" readonly="readonly"
+        <input class="govuk-input" id="databaseUsernameField" type="text" name="databaseUsernameField"
+               readonly="readonly"
                onfocus="this.removeAttribute('readonly');"
                th:value="${clientDetails.additionalInformation['databaseUsernameField']}"/>
       </div>
