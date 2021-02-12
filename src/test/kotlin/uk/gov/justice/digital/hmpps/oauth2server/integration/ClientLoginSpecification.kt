@@ -23,6 +23,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.BodyContentSpec
 import uk.gov.justice.digital.hmpps.oauth2server.resource.AzureOIDCExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientExtension
+import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientMockServer.Companion.clientBaseUrl
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 import java.nio.charset.Charset
 import java.util.Base64
@@ -35,7 +36,6 @@ import java.util.Base64
  */
 @ExtendWith(RemoteClientExtension::class)
 class ClientLoginSpecification : AbstractDeliusAuthSpecification() {
-  private val clientBaseUrl = "http://localhost:8081/login"
   private val webTestClient = WebTestClient.bindToServer().baseUrl(baseUrl).build()
 
   @Page

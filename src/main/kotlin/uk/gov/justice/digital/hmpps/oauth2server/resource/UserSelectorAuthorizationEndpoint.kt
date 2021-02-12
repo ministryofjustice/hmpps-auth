@@ -32,13 +32,14 @@ class UserSelectorAuthorizationEndpoint(
   private val userRetriesService: UserRetriesService,
   private val telemetryClient: TelemetryClient,
 ) {
-  @GetMapping(value = ["/oauth/authorize"])
+  @GetMapping("/oauth/authorize")
   fun authorize(
-    model: MutableMap<String, *>?,
+    model: MutableMap<String, *>,
     @RequestParam parameters: Map<String, String>,
-    sessionStatus: SessionStatus?,
-    authentication: Authentication?,
+    sessionStatus: SessionStatus,
+    authentication: Authentication,
   ): ModelAndView {
+
     val modelAndView = authorizationEndpoint.authorize(model, parameters, sessionStatus, authentication)
     val potentialUsers = modelAndView.model["users"]
     potentialUsers?.let {

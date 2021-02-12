@@ -4,11 +4,29 @@ package uk.gov.justice.digital.hmpps.oauth2server.security
 
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.provider.AuthorizationRequest
+import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.approval.TokenStoreUserApprovalHandler
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 
-class UserContextApprovalHandler(private val userContextService: UserContextService) : TokenStoreUserApprovalHandler() {
+class UserContextApprovalHandler(
+  private val userContextService: UserContextService,
+  private val clientDetailsService: ClientDetailsService,
+  private val mfaService: MfaService,
+) : TokenStoreUserApprovalHandler() {
+
+  init {
+    super.setClientDetailsService(clientDetailsService)
+  }
+
+  /**
+   * Users need approval if:
+   * <ol>
+   *   <li>The service requires MFA and they haven't already been through it</li>
+   *   <li>The user is an Azure user</li>
+   * </ol>
+   */
   override fun checkForPreApproval(
     authorizationRequest: AuthorizationRequest,
     userAuthentication: Authentication,
