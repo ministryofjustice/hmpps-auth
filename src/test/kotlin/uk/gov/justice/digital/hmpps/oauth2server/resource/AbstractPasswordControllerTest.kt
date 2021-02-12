@@ -205,7 +205,7 @@ class AbstractPasswordControllerTest {
   }
 
   @Test
-  fun setPassword_Blacklist() {
+  fun setPassword_Denylist() {
     setupCheckAndGetTokenValid()
     setupGetUserCallForProfile(null)
     val modelAndView = controller.setPassword("token", "passWORD1", "passWORD1", null)
@@ -215,7 +215,7 @@ class AbstractPasswordControllerTest {
         "token" to "token",
         "isAdmin" to false,
         "error" to true,
-        "errornew" to listOf("blacklist"),
+        "errornew" to listOf("denylist"),
         "username" to "someuser"
       )
     )

@@ -22,7 +22,7 @@ class InitialPasswordController(
   private val tokenService: TokenService,
   userService: UserService,
   telemetryClient: TelemetryClient,
-  @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String>,
+  @Value("\${application.authentication.denylist}") passwordDenylist: Set<String>,
   @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
 ) :
   AbstractPasswordController(
@@ -32,7 +32,7 @@ class InitialPasswordController(
     telemetryClient,
     "resetPassword",
     "setPassword",
-    passwordBlacklist
+    passwordDenylist
   ) {
 
   @GetMapping("/initial-password-success")

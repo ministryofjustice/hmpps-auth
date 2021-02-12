@@ -22,7 +22,7 @@ open class AbstractPasswordController(
   private val telemetryClient: TelemetryClient,
   private val startAgainViewOrUrl: String,
   private val failureViewName: String,
-  private val passwordBlacklist: Set<String>,
+  private val passwordDenylist: Set<String>,
 ) {
 
   companion object {
@@ -128,8 +128,8 @@ open class AbstractPasswordController(
     if (digits.length == newPassword.length) {
       builder.add("errornew", "alldigits")
     }
-    if (passwordBlacklist.contains(newPassword.toLowerCase())) {
-      builder.add("errornew", "blacklist")
+    if (passwordDenylist.contains(newPassword.toLowerCase())) {
+      builder.add("errornew", "denylist")
     }
     if (StringUtils.containsIgnoreCase(newPassword, username)) {
       builder.add("errornew", "username")
