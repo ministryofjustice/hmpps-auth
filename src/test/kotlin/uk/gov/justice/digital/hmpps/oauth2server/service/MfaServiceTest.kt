@@ -60,19 +60,19 @@ class MfaServiceTest {
   @Nested
   inner class needsMfa {
     @Test
-    fun `whitelisted IP`() {
+    fun `allowlisted IP`() {
       request.remoteAddr = "12.21.23.24"
 
       assertThat(service.needsMfa(emptySet())).isFalse
     }
 
     @Test
-    fun `non whitelisted IP`() {
+    fun `non allowlisted IP`() {
       assertThat(service.needsMfa(emptySet())).isFalse
     }
 
     @Test
-    fun `non whitelisted IP enabled role`() {
+    fun `non allowlisted IP enabled role`() {
       assertThat(service.needsMfa(setOf(SimpleGrantedAuthority("MFA")))).isTrue
     }
   }
@@ -80,14 +80,14 @@ class MfaServiceTest {
   @Nested
   inner class outsideApprovedNetwork {
     @Test
-    fun `whitelisted IP`() {
+    fun `allowlisted IP`() {
       request.remoteAddr = "12.21.23.24"
 
       assertThat(service.outsideApprovedNetwork()).isFalse
     }
 
     @Test
-    fun `non whitelisted IP`() {
+    fun `non allowlisted IP`() {
       assertThat(service.outsideApprovedNetwork()).isTrue
     }
   }

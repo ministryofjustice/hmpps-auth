@@ -24,7 +24,7 @@ class AuthIpSecurityTest {
   }
 
   @Test
-  fun testRemoteAddressWithPortNoInWhitelist() {
+  fun testRemoteAddressWithPortNoInAllowlist() {
     val request = MockHttpServletRequest()
     request.remoteAddr = "82.34.12.11:13321"
     val testClass = AuthIpSecurity(setOf("82.34.12.10/32", "82.34.12.12/32"))

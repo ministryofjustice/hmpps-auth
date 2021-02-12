@@ -6,8 +6,9 @@ Environment variables for web and worker containers
 env:
   - name: APPLICATION_AUTHENTICATION_MATCH_SUBDOMAINS
     value: {{ .Values.env.APPLICATION_AUTHENTICATION_MATCH_SUBDOMAINS | quote }}
-  - name: APPLICATION_AUTHENTICATION_UI_WHITELIST
-    value: {{ .Values.env.APPLICATION_AUTHENTICATION_UI_WHITELIST | quote }}
+
+  - name: APPLICATION_AUTHENTICATION_UI_ALLOWLIST
+    value: {{ .Values.env.APPLICATION_AUTHENTICATION_UI_ALLOWLIST | quote }}
 
   - name: APPLICATION_GOOGLE_TAG_ID
     valueFrom:
@@ -144,7 +145,7 @@ env:
   - name: TOKENVERIFICATION_ENDPOINT_URL
     value: {{ .Values.env.TOKENVERIFICATION_ENDPOINT_URL | quote }}
 
-  - name: APPLICATION_AUTHENTICATION_MFA_WHITELIST
+  - name: APPLICATION_AUTHENTICATION_MFA_ALLOWLIST
     value: {{ include "app.joinListWithComma" .Values.mfa_allowlist | quote }}
 
   - name: APPLICATION_AUTHENTICATION_MFA_ROLES
