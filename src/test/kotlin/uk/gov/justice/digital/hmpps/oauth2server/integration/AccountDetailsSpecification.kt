@@ -110,7 +110,7 @@ class AccountDetailsSpecification : AbstractDeliusAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
-    newInstance(AddMobilePage::class.java).isAt()
+    newInstance(AccountMfaEmailPage::class.java).isAt()
   }
 
   @Test

@@ -26,6 +26,7 @@ class VerifyMobileController(
   companion object {
     private val log = LoggerFactory.getLogger(VerifyMobileController::class.java)
   }
+
   @GetMapping("/verify-mobile")
   fun verifyMobile(): String = "verifyMobileSent"
 
@@ -73,9 +74,13 @@ class VerifyMobileController(
     }
   }
 
-  private fun createChangeOrVerifyMobileError(reason: String): ModelAndView =
-    ModelAndView("redirect:/change-mobile")
-      .addObject("error", reason)
+  private fun createChangeOrVerifyMobileError(reason: String): ModelAndView {
+    return if (reason == "nomobile") {
+      ModelAndView("redirect:/account-details?error=nomobile")
+    } else {
+      ModelAndView("redirect:/new-mobile", "error", reason)
+    }
+  }
 
   private fun redirectToVerifyMobileWithVerifyCode(verifyCode: String): ModelAndView {
     val modelAndView = ModelAndView("redirect:/verify-mobile")
