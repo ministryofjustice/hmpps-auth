@@ -47,8 +47,7 @@ class ChangeEmailController(private val tokenService: TokenService, private val 
       return ModelAndView("redirect:/account-details?error=mfa${optionalErrorForToken.get()}")
     }
     val currentSecondaryEmail = userService.getUserWithContacts(authentication.name).secondaryEmail
-    val modelAndView = ModelAndView("account/changeBackupEmail", "secondaryEmail", currentSecondaryEmail)
-    modelAndView.addObject("token", token)
-    return modelAndView
+    return ModelAndView("account/changeBackupEmail", "secondaryEmail", currentSecondaryEmail)
+      .addObject("token", token)
   }
 }
