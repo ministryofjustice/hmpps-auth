@@ -28,7 +28,7 @@ class ChangePasswordController(
   private val tokenService: TokenService,
   userService: UserService,
   private val telemetryClient: TelemetryClient,
-  @Value("\${application.authentication.blacklist}") passwordBlacklist: Set<String>,
+  @Value("\${application.authentication.denylist}") passwordDenylist: Set<String>,
 ) :
   AbstractPasswordController(
     changePasswordService,
@@ -37,7 +37,7 @@ class ChangePasswordController(
     telemetryClient,
     "redirect:/login?error=%s",
     "changePassword",
-    passwordBlacklist
+    passwordDenylist
   ) {
 
   @GetMapping("/change-password")
