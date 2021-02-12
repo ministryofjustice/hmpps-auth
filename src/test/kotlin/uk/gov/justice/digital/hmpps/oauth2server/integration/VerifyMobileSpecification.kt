@@ -29,11 +29,20 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
   @Page
   private lateinit var accountDetailsPage: AccountDetailsPage
 
+  @Page
+  private lateinit var accountMfaEmailPage: AccountMfaEmailPage
+
   @Test
   fun `Change mobile flow resend verification code`() {
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE_ADD")
 
-    goTo(changeMobilePage)
+    goTo(accountDetailsPage).navigateToChangeMobile()
+
+    val validMfaCode = accountMfaEmailPage.getCode()
+    accountMfaEmailPage
+      .submitCode(validMfaCode)
+
+    changeMobilePage
       .addMobileAs("07700900321")
 
     verifyMobileSentPage.isAtPage()
@@ -53,10 +62,15 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `Change mobile flow invalid verification code`() {
-
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE_UPDATE")
 
-    goTo(changeMobilePage)
+    goTo(accountDetailsPage).navigateToChangeMobile()
+
+    val validMfaCode = accountMfaEmailPage.getCode()
+    accountMfaEmailPage
+      .submitCode(validMfaCode)
+
+    changeMobilePage
       .updateMobileAs("07700900322", "07700900321")
 
     verifyMobileSentPage.isAtPage()
@@ -72,7 +86,7 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
     goTo(mobileVerificationResendPage)
       .resendCode()
 
-    addMobilePage.checkError("No phone number found")
+    accountDetailsPage.checkError("No phone number found")
   }
 
   @Test

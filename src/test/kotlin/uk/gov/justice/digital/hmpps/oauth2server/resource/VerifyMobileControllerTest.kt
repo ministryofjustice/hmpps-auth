@@ -147,7 +147,7 @@ class VerifyMobileControllerTest {
     fun mobileResend_verifyMobileException() {
       whenever(verifyMobileService.resendVerificationCode(anyString())).thenThrow(VerifyMobileException("reason"))
       val modelAndView = controller.mobileResend(principal)
-      assertThat(modelAndView.viewName).isEqualTo("redirect:/change-mobile")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/new-mobile")
       assertThat(modelAndView.model).containsExactly(entry("error", "reason"))
       verify(telemetryClient).trackEvent(
         eq("VerifyMobileRequestFailure"),
@@ -162,7 +162,7 @@ class VerifyMobileControllerTest {
     fun mobileResend_notificationClientException() {
       whenever(verifyMobileService.resendVerificationCode(anyString())).thenThrow(NotificationClientException("something went wrong"))
       val modelAndView = controller.mobileResend(principal)
-      assertThat(modelAndView.viewName).isEqualTo("redirect:/change-mobile")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/new-mobile")
       assertThat(modelAndView.model).containsExactly(entry("error", "other"))
     }
   }
