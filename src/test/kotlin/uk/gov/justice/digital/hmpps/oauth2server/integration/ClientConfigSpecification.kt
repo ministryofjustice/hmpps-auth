@@ -55,25 +55,25 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `I can edit a client credential with mfa field`() {
+  fun `I can edit a client credential with an mfa field`() {
     goTo(loginPage).loginAs("ITAG_USER_ADM", "password123456")
 
     goTo(clientSummaryPage).editClient("deliusnewtech")
     clientMaintenancePage.isAtPage()
-    assertThat(el("#mfa").selected()).isTrue
+    assertThat(el("#mfa-2").selected()).isTrue
   }
 
   @Test
-  fun `I can edit a client credential and set mfa field`() {
+  fun `I can edit a client credential and set an mfa field`() {
     goTo(loginPage).loginAs("ITAG_USER_ADM", "password123456")
 
     goTo(clientSummaryPage).editClient("v1-client")
     clientMaintenancePage.isAtPage()
-    assertThat(el("#mfa").selected()).isFalse
-    clientMaintenancePage.selectCheckboxOption("mfa").save()
+    assertThat(el("#mfa-3").selected()).isFalse
+    clientMaintenancePage.selectCheckboxOption("mfa-3").save()
     clientSummaryPage.isAtPage().editClient("v1-client")
-    assertThat(el("#mfa").selected()).isTrue
-    clientMaintenancePage.selectCheckboxOption("mfa").save()
+    assertThat(el("#mfa-3").selected()).isTrue
+    clientMaintenancePage.selectCheckboxOption("mfa-1").save()
   }
 
   @Test
