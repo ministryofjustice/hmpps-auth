@@ -8,16 +8,16 @@ import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper.retrieveI
 import javax.servlet.http.HttpServletRequest
 
 @Component
-class AuthIpSecurity(@Value("\${application.authentication.ui.whitelist}") private val whitelist: Set<String>) {
+class AuthIpSecurity(@Value("\${application.authentication.ui.allowlist}") private val allowlist: Set<String>) {
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
   fun check(request: HttpServletRequest?): Boolean {
     val remoteIp = retrieveIpFromRemoteAddr(request!!)
-    val matchIp = whitelist.any { ip: String? -> IpAddressMatcher(ip).matches(remoteIp) }
+    val matchIp = allowlist.any { ip: String? -> IpAddressMatcher(ip).matches(remoteIp) }
     if (!matchIp) {
-      log.warn("Client IP {}, is not in whitelist {}", remoteIp, whitelist)
+      log.warn("Client IP {}, is not in allowlist {}", remoteIp, allowlist)
     }
     return matchIp
   }

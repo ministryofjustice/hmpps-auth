@@ -23,7 +23,7 @@ import uk.gov.service.notify.NotificationClientApi
 @Service
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
 class MfaService(
-  @Value("\${application.authentication.mfa.whitelist}") whitelist: Set<String>,
+  @Value("\${application.authentication.mfa.allowlist}") allowlist: Set<String>,
   @Value("\${application.authentication.mfa.roles}") private val mfaRoles: Set<String>,
   @Value("\${application.notify.mfa.template}") private val mfaEmailTemplateId: String,
   @Value("\${application.notify.mfa-text.template}") private val mfaTextTemplateId: String,
@@ -33,7 +33,7 @@ class MfaService(
   private val userRetriesService: UserRetriesService,
 ) {
 
-  private val ipMatchers: List<IpAddressMatcher> = whitelist.map { ip -> IpAddressMatcher(ip) }
+  private val ipMatchers: List<IpAddressMatcher> = allowlist.map { ip -> IpAddressMatcher(ip) }
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
