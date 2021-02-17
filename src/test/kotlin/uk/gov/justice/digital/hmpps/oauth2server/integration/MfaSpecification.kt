@@ -672,12 +672,22 @@ class AccountMfaEmailPage : AuthPage<MfaEmailPage>("HMPPS Digital Services - Ema
     return this
   }
 
+  fun submitWithoutCode(): AccountMfaEmailPage {
+    continueButton.submit()
+    return this
+  }
+
   fun resendCodeLink() {
     resend.click()
   }
 
   fun checkEmailCodeIsIncorrectError(): AccountMfaEmailPage {
     checkError("Security code is incorrect. Please check your email and try again. You will be locked out if you enter the wrong code 3 times.")
+    return this
+  }
+
+  fun enterTheCodeError(): AccountMfaEmailPage {
+    checkError("Enter the code received in the email")
     return this
   }
 

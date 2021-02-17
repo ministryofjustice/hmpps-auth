@@ -65,10 +65,10 @@ class MfaControllerAccountDetails(
     try {
       mfaService.validateAndRemoveMfaCode(token, code)
     } catch (e: MfaFlowException) {
-      return ModelAndView(
-        "mfaChallengeAccountDetails",
-        mapOf("token" to token, "error" to e.error, "mfaPreference" to mfaPreference, "contactType" to contactType)
-      )
+      return ModelAndView("redirect:/account/mfa-challenge?contactType=$contactType")
+        .addObject("token", token)
+        .addObject("error", e.error)
+        .addObject("mfaPreference", mfaPreference)
     } catch (e: LoginFlowException) {
       return ModelAndView("redirect:/login?error=${e.error}")
     }
