@@ -73,6 +73,56 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `Change mobile mfa code not entered continue displays error`() {
+    goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE")
+
+    homePage.navigateToAccountDetails()
+
+    accountDetailsPage.navigateToChangeMobile()
+
+    accountMfaEmailPage
+      .submitWithoutCode()
+      .enterTheCodeError()
+
+    val validMfaCode = accountMfaEmailPage.getCode()
+    accountMfaEmailPage
+      .submitCode(validMfaCode)
+
+    changeMobilePage
+      .isAtPage()
+  }
+
+  @Test
+  fun `Change mobile mfa code not entered, page displays correctly when continue and go back`() {
+    goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE")
+
+    homePage.navigateToAccountDetails()
+
+    accountDetailsPage.navigateToChangeMobile()
+
+    accountMfaEmailPage
+      .submitWithoutCode()
+      .enterTheCodeError()
+      .submitWithoutCode()
+      .enterTheCodeError()
+      .submitWithoutCode()
+      .enterTheCodeError()
+
+    driver.navigate().back()
+    driver.navigate().back()
+
+    accountMfaEmailPage
+      .enterTheCodeError()
+
+    val validMfaCode = accountMfaEmailPage.getCode()
+    accountMfaEmailPage
+      .submitCode(validMfaCode)
+
+    changeMobilePage
+      .isAtPage()
+  }
+
+  @Test
   fun `Change mobile invalid number entered`() {
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE2")
 
