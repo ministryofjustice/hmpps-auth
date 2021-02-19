@@ -168,7 +168,8 @@ class UserService(
             authUsersByUsername[nomisUser.username]?.verified ?: false
           },
           firstName = nomisUser.firstName,
-          lastName = nomisUser.lastName
+          lastName = nomisUser.lastName,
+          activeCaseloadId = nomisUser.activeCaseLoadId
         )
       }
   }
@@ -181,4 +182,5 @@ data class PrisonUserDto(
   val verified: Boolean,
   val firstName: String,
   val lastName: String,
+  val activeCaseloadId: String?
 )

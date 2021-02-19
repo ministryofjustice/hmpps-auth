@@ -7,10 +7,13 @@ class NomisUserPersonDetailsHelper {
       profile: String = "TAG_GENERAL",
       staff: Staff = Staff(firstName = "bob", status = "ACTIVE", lastName = "Smith", staffId = 1),
       username: String = "bob",
-      accountStatus: String = "OPEN"
+      accountStatus: String = "OPEN",
+      activeCaseLoadId: String? = null
     ): NomisUserPersonDetails {
       val detail = AccountDetail("user", accountStatus, profile, null)
-      return NomisUserPersonDetails(username = username, staff = staff, accountDetail = detail)
+      val personDetails = NomisUserPersonDetails(username = username, staff = staff, accountDetail = detail)
+      personDetails.activeCaseLoadId = activeCaseLoadId
+      return personDetails
     }
   }
 }

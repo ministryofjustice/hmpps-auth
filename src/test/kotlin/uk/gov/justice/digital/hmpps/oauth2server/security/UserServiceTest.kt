@@ -81,7 +81,14 @@ class UserServiceTest {
   inner class FindEnabledMasterUserPersonDetails {
     @Test
     fun `findEnabledMasterUserPersonDetails auth user`() {
-      whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(createSampleUser("someuser", enabled = true)))
+      whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(
+        Optional.of(
+          createSampleUser(
+            "someuser",
+            enabled = true
+          )
+        )
+      )
       val user = userService.findEnabledMasterUserPersonDetails("   bob   ")
       assertThat(user?.username).isEqualTo("someuser")
     }
@@ -179,7 +186,7 @@ class UserServiceTest {
         Optional.of(createSampleNomisUser(username = "joe"))
       )
       whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(listOf())
-      whenever(userRepository.save<User>(any())).thenAnswer { it.getArguments()[0] }
+      whenever(userRepository.save<User>(any())).thenAnswer { it.arguments[0] }
 
       val newUser = userService.getOrCreateUser("joe")
       assertThat(newUser).hasValueSatisfying {
@@ -197,13 +204,13 @@ class UserServiceTest {
       whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(
         listOf("a@b.justice.gov.uk")
       )
-      whenever(userRepository.save<User>(any())).thenAnswer { it.getArguments()[0] }
+      whenever(userRepository.save<User>(any())).thenAnswer { it.arguments[0] }
 
       val newUser = userService.getOrCreateUser("joe")
       assertThat(newUser).hasValueSatisfying {
         assertThat(it.username).isEqualTo("joe")
         assertThat(it.email).isEqualTo("a@b.justice.gov.uk")
-        assertThat(it.verified).isTrue()
+        assertThat(it.verified).isTrue
         assertThat(it.authSource).isEqualTo(nomis.name)
       }
     }
@@ -244,19 +251,19 @@ class UserServiceTest {
     @Test
     fun `hasVerifiedMfaMethod success`() {
       val user = createSampleUser(username = "joe", email = "someemail", verified = true)
-      assertThat(userService.hasVerifiedMfaMethod(user)).isTrue()
+      assertThat(userService.hasVerifiedMfaMethod(user)).isTrue
     }
 
     @Test
     fun `hasVerifiedMfaMethod no email`() {
       val user = createSampleUser(username = "joe", verified = true)
-      assertThat(userService.hasVerifiedMfaMethod(user)).isFalse()
+      assertThat(userService.hasVerifiedMfaMethod(user)).isFalse
     }
 
     @Test
     fun `hasVerifiedMfaMethod not verified`() {
       val user = createSampleUser(username = "joe", email = "someemail")
-      assertThat(userService.hasVerifiedMfaMethod(user)).isFalse()
+      assertThat(userService.hasVerifiedMfaMethod(user)).isFalse
     }
   }
 
@@ -268,7 +275,7 @@ class UserServiceTest {
       val user = createSampleUser(mobile = "07700900001")
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "")
-      assertThat(returnValue).isFalse()
+      assertThat(returnValue).isFalse
     }
 
     @Test
@@ -276,7 +283,7 @@ class UserServiceTest {
       val user = createSampleUser(mobile = "07700900001", mobileVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "07700900000")
-      assertThat(returnValue).isFalse()
+      assertThat(returnValue).isFalse
     }
 
     @Test
@@ -284,7 +291,7 @@ class UserServiceTest {
       val user = createSampleUser(mobile = "07700900001", mobileVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "0770 090 0000")
-      assertThat(returnValue).isFalse()
+      assertThat(returnValue).isFalse
     }
 
     @Test
@@ -292,7 +299,7 @@ class UserServiceTest {
       val user = createSampleUser(mobile = "07700900000", mobileVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "07700900000")
-      assertThat(returnValue).isTrue()
+      assertThat(returnValue).isTrue
     }
 
     @Test
@@ -300,7 +307,7 @@ class UserServiceTest {
       val user = createSampleUser(mobile = "07700900000", mobileVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedMobile("someuser", "0770 090 0000")
-      assertThat(returnValue).isTrue()
+      assertThat(returnValue).isTrue
     }
   }
 
@@ -311,7 +318,7 @@ class UserServiceTest {
       val user = createSampleUser(email = "someemail", verified = false)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.PRIMARY)
-      assertThat(returnValue).isFalse()
+      assertThat(returnValue).isFalse
     }
 
     @Test
@@ -319,7 +326,7 @@ class UserServiceTest {
       val user = createSampleUser(email = "someemail", verified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "somenewemail", User.EmailType.PRIMARY)
-      assertThat(returnValue).isFalse()
+      assertThat(returnValue).isFalse
     }
 
     @Test
@@ -327,7 +334,7 @@ class UserServiceTest {
       val user = createSampleUser(email = "someemail", verified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.PRIMARY)
-      assertThat(returnValue).isTrue()
+      assertThat(returnValue).isTrue
     }
 
     @Test
@@ -335,7 +342,7 @@ class UserServiceTest {
       val user = createSampleUser(secondaryEmail = "someemail")
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.SECONDARY)
-      assertThat(returnValue).isFalse()
+      assertThat(returnValue).isFalse
     }
 
     @Test
@@ -343,7 +350,7 @@ class UserServiceTest {
       val user = createSampleUser(secondaryEmail = "someemail", secondaryEmailVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "somenewemail", User.EmailType.SECONDARY)
-      assertThat(returnValue).isFalse()
+      assertThat(returnValue).isFalse
     }
 
     @Test
@@ -351,7 +358,7 @@ class UserServiceTest {
       val user = createSampleUser(secondaryEmail = "someemail", secondaryEmailVerified = true)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       val returnValue = userService.isSameAsCurrentVerifiedEmail("someuser", "someemail", User.EmailType.SECONDARY)
-      assertThat(returnValue).isTrue()
+      assertThat(returnValue).isTrue
     }
   }
 
@@ -375,15 +382,18 @@ class UserServiceTest {
         listOf(
           createSampleNomisUser(
             staff = Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE"),
-            username = "U1"
+            username = "U1",
+            activeCaseLoadId = null
           ),
           createSampleNomisUser(
             staff = Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE"),
-            username = "U2"
+            username = "U2",
+            activeCaseLoadId = null
           ),
           createSampleNomisUser(
             staff = Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE"),
-            username = "U3"
+            username = "U3",
+            activeCaseLoadId = "MDI"
           ),
         )
       )
@@ -407,7 +417,8 @@ class UserServiceTest {
             verified = true,
             userId = "1",
             firstName = "F1",
-            lastName = "l1"
+            lastName = "l1",
+            activeCaseloadId = null
           ),
           PrisonUserDto(
             username = "U2",
@@ -415,7 +426,8 @@ class UserServiceTest {
             verified = false,
             userId = "2",
             firstName = "F2",
-            lastName = "l2"
+            lastName = "l2",
+            activeCaseloadId = null
           ),
           PrisonUserDto(
             username = "U3",
@@ -423,7 +435,8 @@ class UserServiceTest {
             verified = false,
             userId = "3",
             firstName = "F3",
-            lastName = "l3"
+            lastName = "l3",
+            activeCaseloadId = "MDI"
           ),
         )
       verify(verifyEmailService).getExistingEmailAddressesForUsernames(listOf("U1", "U2", "U3"))
@@ -436,15 +449,18 @@ class UserServiceTest {
         listOf(
           createSampleNomisUser(
             staff = Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE"),
-            username = "U1"
+            username = "U1",
+            activeCaseLoadId = "MDI"
           ),
           createSampleNomisUser(
             staff = Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE"),
-            username = "U2"
+            username = "U2",
+            activeCaseLoadId = null
           ),
           createSampleNomisUser(
             staff = Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE"),
-            username = "U3"
+            username = "U3",
+            activeCaseLoadId = "MDI"
           ),
         )
       )
@@ -465,7 +481,8 @@ class UserServiceTest {
             verified = true,
             userId = "1",
             firstName = "F1",
-            lastName = "l1"
+            lastName = "l1",
+            activeCaseloadId = "MDI"
           ),
           PrisonUserDto(
             username = "U2",
@@ -473,7 +490,9 @@ class UserServiceTest {
             verified = true,
             userId = "2",
             firstName = "F2",
-            lastName = "l2"
+            lastName = "l2",
+            activeCaseloadId = null
+
           ),
           PrisonUserDto(
             username = "U3",
@@ -481,7 +500,8 @@ class UserServiceTest {
             verified = false,
             userId = "3",
             firstName = "F3",
-            lastName = "l3"
+            lastName = "l3",
+            activeCaseloadId = "MDI"
           ),
         )
 
@@ -495,19 +515,23 @@ class UserServiceTest {
         listOf(
           createSampleNomisUser(
             staff = Staff(firstName = "f1", lastName = "l1", staffId = 1, status = "INACTIVE"),
-            username = "U1"
+            username = "U1",
+            activeCaseLoadId = "MDI"
           ),
           createSampleNomisUser(
             staff = Staff(firstName = "f2", lastName = "l2", staffId = 2, status = "INACTIVE"),
-            username = "U2"
+            username = "U2",
+            activeCaseLoadId = null
           ),
           createSampleNomisUser(
             staff = Staff(firstName = "f3", lastName = "l3", staffId = 3, status = "INACTIVE"),
-            username = "U3"
+            username = "U3",
+            activeCaseLoadId = null
           ),
           createSampleNomisUser(
             staff = Staff(firstName = "f4", lastName = "l4", staffId = 4, status = "INACTIVE"),
-            username = "U4"
+            username = "U4",
+            activeCaseLoadId = "MDI"
           ),
         )
       )
@@ -538,7 +562,8 @@ class UserServiceTest {
             verified = true,
             userId = "1",
             firstName = "F1",
-            lastName = "l1"
+            lastName = "l1",
+            activeCaseloadId = "MDI"
           ),
           PrisonUserDto(
             username = "U2",
@@ -546,7 +571,8 @@ class UserServiceTest {
             verified = true,
             userId = "2",
             firstName = "F2",
-            lastName = "l2"
+            lastName = "l2",
+            activeCaseloadId = null
           ),
           PrisonUserDto(
             username = "U3",
@@ -554,7 +580,8 @@ class UserServiceTest {
             verified = true,
             userId = "3",
             firstName = "F3",
-            lastName = "l3"
+            lastName = "l3",
+            activeCaseloadId = null
           ),
           PrisonUserDto(
             username = "U4",
@@ -562,7 +589,8 @@ class UserServiceTest {
             verified = false,
             userId = "4",
             firstName = "F4",
-            lastName = "l4"
+            lastName = "l4",
+            activeCaseloadId = "MDI"
           ),
         )
 
@@ -587,7 +615,7 @@ class UserServiceTest {
         Optional.of(createSampleUser(username = "bob", verified = false, email = "joe@fred.com"))
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(authUser)
       val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", auth, "joe@fred.com")
-      assertThat(details).isEmpty()
+      assertThat(details).isEmpty
     }
 
     @Test
@@ -596,7 +624,7 @@ class UserServiceTest {
         Optional.of(createSampleUser(username = "bob", verified = true, email = "harold@henry.com"))
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(authUser)
       val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", auth, "joe@fred.com")
-      assertThat(details).isEmpty()
+      assertThat(details).isEmpty
     }
 
     @Test
@@ -611,7 +639,7 @@ class UserServiceTest {
     fun `test getMasterUserPersonDetailsWithEmailCheck - nomis user not matched`() {
       whenever(nomisUserService.getNomisUserByUsername(anyString())).thenReturn(staffUserAccountForBob)
       val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", nomis, "joe@fred.com")
-      assertThat(details).isEmpty()
+      assertThat(details).isEmpty
     }
 
     @Test
@@ -625,7 +653,7 @@ class UserServiceTest {
     fun `test getMasterUserPersonDetailsWithEmailCheck - delius user not matched`() {
       whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(deliusUserAccountForBob)
       val details = userService.getMasterUserPersonDetailsWithEmailCheck("user", delius, "joe@fred.com")
-      assertThat(details).isEmpty()
+      assertThat(details).isEmpty
     }
 
     @Test
