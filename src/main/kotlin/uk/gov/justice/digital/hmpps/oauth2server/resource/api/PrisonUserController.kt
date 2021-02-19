@@ -50,7 +50,7 @@ class PrisonUserController(private val userService: UserService) {
           firstName = WordUtils.capitalizeFully(it.firstName),
           lastName = WordUtils.capitalizeFully(it.lastName),
           name = WordUtils.capitalizeFully("${it.firstName} ${it.lastName}"),
-          activeCaseloadId = it.activeCaseloadId
+          activeCaseLoadId = it.activeCaseLoadId
         )
       }
   }
@@ -76,5 +76,5 @@ data class PrisonUser(
   @ApiModelProperty(required = true, example = "Ryan Orton")
   val name: String,
   @ApiModelProperty(required = false, example = "MDI")
-  val activeCaseloadId: String?
+  val activeCaseLoadId: String?
 )

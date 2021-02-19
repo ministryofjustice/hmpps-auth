@@ -418,7 +418,7 @@ class UserServiceTest {
             userId = "1",
             firstName = "F1",
             lastName = "l1",
-            activeCaseloadId = null
+            activeCaseLoadId = null
           ),
           PrisonUserDto(
             username = "U2",
@@ -427,7 +427,7 @@ class UserServiceTest {
             userId = "2",
             firstName = "F2",
             lastName = "l2",
-            activeCaseloadId = null
+            activeCaseLoadId = null
           ),
           PrisonUserDto(
             username = "U3",
@@ -436,7 +436,7 @@ class UserServiceTest {
             userId = "3",
             firstName = "F3",
             lastName = "l3",
-            activeCaseloadId = "MDI"
+            activeCaseLoadId = "MDI"
           ),
         )
       verify(verifyEmailService).getExistingEmailAddressesForUsernames(listOf("U1", "U2", "U3"))
@@ -482,7 +482,7 @@ class UserServiceTest {
             userId = "1",
             firstName = "F1",
             lastName = "l1",
-            activeCaseloadId = "MDI"
+            activeCaseLoadId = "MDI"
           ),
           PrisonUserDto(
             username = "U2",
@@ -491,7 +491,7 @@ class UserServiceTest {
             userId = "2",
             firstName = "F2",
             lastName = "l2",
-            activeCaseloadId = null
+            activeCaseLoadId = null
 
           ),
           PrisonUserDto(
@@ -501,7 +501,7 @@ class UserServiceTest {
             userId = "3",
             firstName = "F3",
             lastName = "l3",
-            activeCaseloadId = "MDI"
+            activeCaseLoadId = "MDI"
           ),
         )
 
@@ -563,7 +563,7 @@ class UserServiceTest {
             userId = "1",
             firstName = "F1",
             lastName = "l1",
-            activeCaseloadId = "MDI"
+            activeCaseLoadId = "MDI"
           ),
           PrisonUserDto(
             username = "U2",
@@ -572,7 +572,7 @@ class UserServiceTest {
             userId = "2",
             firstName = "F2",
             lastName = "l2",
-            activeCaseloadId = null
+            activeCaseLoadId = null
           ),
           PrisonUserDto(
             username = "U3",
@@ -581,7 +581,7 @@ class UserServiceTest {
             userId = "3",
             firstName = "F3",
             lastName = "l3",
-            activeCaseloadId = null
+            activeCaseLoadId = null
           ),
           PrisonUserDto(
             username = "U4",
@@ -590,7 +590,7 @@ class UserServiceTest {
             userId = "4",
             firstName = "F4",
             lastName = "l4",
-            activeCaseloadId = "MDI"
+            activeCaseLoadId = "MDI"
           ),
         )
 

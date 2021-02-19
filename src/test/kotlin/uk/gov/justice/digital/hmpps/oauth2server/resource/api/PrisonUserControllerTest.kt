@@ -20,7 +20,7 @@ class PrisonUserControllerTest {
 
   @Test
   fun `User mapped to PrisonUser`() {
-    val user = PrisonUserDto(verified = true, username = "username", email = "user@justice.gov.uk", firstName = "first", lastName = "last", userId = "123456789", activeCaseloadId = "MDI")
+    val user = PrisonUserDto(verified = true, username = "username", email = "user@justice.gov.uk", firstName = "first", lastName = "last", userId = "123456789", activeCaseLoadId = "MDI")
 
     whenever(userService.findPrisonUsersByFirstAndLastNames(anyString(), anyString())).thenReturn(listOf(user))
 
@@ -34,14 +34,14 @@ class PrisonUserControllerTest {
           firstName = "First",
           lastName = "Last",
           name = "First Last",
-          activeCaseloadId = "MDI"
+          activeCaseLoadId = "MDI"
         )
       )
   }
 
   @Test
   fun `User mapped to PrisonUser handling missing values`() {
-    val user = PrisonUserDto(verified = false, username = "username", firstName = "first", lastName = "last", userId = "123456789", email = null, activeCaseloadId = null)
+    val user = PrisonUserDto(verified = false, username = "username", firstName = "first", lastName = "last", userId = "123456789", email = null, activeCaseLoadId = null)
 
     whenever(userService.findPrisonUsersByFirstAndLastNames(anyString(), anyString())).thenReturn(listOf(user))
 
@@ -55,7 +55,7 @@ class PrisonUserControllerTest {
           lastName = "Last",
           name = "First Last",
           email = null,
-          activeCaseloadId = null
+          activeCaseLoadId = null
         )
       )
   }

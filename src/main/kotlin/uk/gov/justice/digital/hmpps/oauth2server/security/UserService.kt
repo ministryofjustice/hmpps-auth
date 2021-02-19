@@ -169,7 +169,7 @@ class UserService(
           },
           firstName = nomisUser.firstName,
           lastName = nomisUser.lastName,
-          activeCaseloadId = nomisUser.activeCaseLoadId
+          activeCaseLoadId = nomisUser.activeCaseLoadId
         )
       }
   }
@@ -182,5 +182,5 @@ data class PrisonUserDto(
   val verified: Boolean,
   val firstName: String,
   val lastName: String,
-  val activeCaseloadId: String?
+  val activeCaseLoadId: String?
 )
