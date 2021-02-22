@@ -80,11 +80,11 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
+    val validMfaCode = accountMfaEmailPage.getCode()
     accountMfaEmailPage
       .submitWithoutCode()
       .enterTheCodeError()
 
-    val validMfaCode = accountMfaEmailPage.getCode()
     accountMfaEmailPage
       .submitCode(validMfaCode)
 
@@ -100,21 +100,21 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
-    accountMfaEmailPage
-      .submitWithoutCode()
-      .enterTheCodeError()
-      .submitWithoutCode()
-      .enterTheCodeError()
-      .submitWithoutCode()
-      .enterTheCodeError()
-
-    driver.navigate().back()
-    driver.navigate().back()
-
-    accountMfaEmailPage
-      .enterTheCodeError()
-
     val validMfaCode = accountMfaEmailPage.getCode()
+    accountMfaEmailPage
+      .submitWithoutCode()
+      .enterTheCodeError()
+      .submitWithoutCode()
+      .enterTheCodeError()
+      .submitWithoutCode()
+      .enterTheCodeError()
+
+    driver.navigate().back()
+    driver.navigate().back()
+
+    accountMfaEmailPage
+      .enterTheCodeError()
+
     accountMfaEmailPage
       .submitCode(validMfaCode)
 
