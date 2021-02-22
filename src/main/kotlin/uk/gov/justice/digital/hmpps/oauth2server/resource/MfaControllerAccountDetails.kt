@@ -47,14 +47,12 @@ class MfaControllerAccountDetails(
         .addObject("contactType", contactType)
       if (smokeTestEnabled) modelAndView.addObject("smokeCode", mfaData.code)
       return modelAndView
-    } else {
-      val codeDestination = mfaService.getCodeDestination(token!!, mfaPreference!!)
-      val modelAndView = ModelAndView("mfaChallengeAccountDetails", "token", token)
-        .addObject("mfaPreference", mfaPreference)
-        .addObject("codeDestination", codeDestination)
-        .addObject("contactType", contactType)
-      return modelAndView
     }
+    val codeDestination = mfaService.getCodeDestination(token!!, mfaPreference!!)
+    return ModelAndView("mfaChallengeAccountDetails", "token", token)
+      .addObject("mfaPreference", mfaPreference)
+      .addObject("codeDestination", codeDestination)
+      .addObject("contactType", contactType)
   }
 
   @PostMapping("/account/mfa-challenge")
