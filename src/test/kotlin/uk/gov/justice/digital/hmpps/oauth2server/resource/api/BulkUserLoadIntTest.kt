@@ -13,7 +13,7 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 @ExtendWith(DeliusExtension::class)
-class UserLoadIntTest : IntegrationTest() {
+class BulkUserLoadIntTest : IntegrationTest() {
   @Test
   @DisabledOnOs(OS.WINDOWS)
   fun `Calling user load creates users`() {
@@ -29,9 +29,8 @@ class UserLoadIntTest : IntegrationTest() {
 
     // check 4 failures
     assertThat(
-      output
-        .filter { it.contains("Failure") }
-        .map { it.substringAfter("\\033[0;31m").substringBefore("\\033[0m") }
+      output.filter { it.contains("Failure") }
+        .map { it.substringBefore(" due to") }
     )
       .withFailMessage("Was expecting 3 Failure lines, found:\n${output.joinToString("\n")}")
       .containsExactly(
@@ -50,7 +49,12 @@ class UserLoadIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
-          mapOf("username" to "LOAD_SUCCESS@DIGITAL.JUSTICE.GOV.UK", "active" to true, "name" to "Load Success", "authSource" to "auth")
+          mapOf(
+            "username" to "LOAD_SUCCESS@DIGITAL.JUSTICE.GOV.UK",
+            "active" to true,
+            "name" to "Load Success",
+            "authSource" to "auth"
+          )
         )
       }
 
@@ -62,7 +66,13 @@ class UserLoadIntTest : IntegrationTest() {
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
       .jsonPath("$.[*].groupCode").value<List<String>> {
-        assertThat(it).containsExactlyInAnyOrder("PECS_RCHTMC", "PECS_GLDFMC", "PECS_DORKMC", "PECS_SUTTMC", "PECS_RDHLMC")
+        assertThat(it).containsExactlyInAnyOrder(
+          "PECS_RCHTMC",
+          "PECS_GLDFMC",
+          "PECS_DORKMC",
+          "PECS_SUTTMC",
+          "PECS_RDHLMC"
+        )
       }
 
     webTestClient

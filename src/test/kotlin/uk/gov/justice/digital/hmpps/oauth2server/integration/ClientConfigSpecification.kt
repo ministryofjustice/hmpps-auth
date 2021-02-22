@@ -104,7 +104,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .checkClientSummary(
         client = "new-client",
         text =
-          """
+        """
           new-client 
           [read] 
           [client_credentials] 

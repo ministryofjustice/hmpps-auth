@@ -15,7 +15,7 @@ class UseEmailSpecification : AbstractAuthSpecification() {
 
   @Test
   fun `A user can change their user details`() {
-    val homePage = goTo(loginPage).loginAs("AUTH_CHANGE_TO_USERNAME")
+    goTo(loginPage).loginAs("AUTH_CHANGE_TO_USERNAME")
 
     goTo(accountDetailsPage).isAtPage().checkUsername("AUTH_CHANGE_TO_USERNAME")
     goTo(useEmailPage).submit()

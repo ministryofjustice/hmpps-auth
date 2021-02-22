@@ -1183,7 +1183,6 @@ class AuthUserServiceTest {
         "SOME_HOST/verify-email-confirm?token=SOME_TOKEN",
         EmailType.PRIMARY
       )
-      assertThat(userVerifiedEmail.verified).isFalse
       verifyZeroInteractions(notificationClient)
     }
 
