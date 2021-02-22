@@ -1,0 +1,12 @@
+User,Email
+,User that doesn't exist
+NO_USER_FOUND_HERE,john.james@someforce.police.uk
+,Email that isn't in allow list
+AUTH_USER,john.james@someforce.pnn.police.uk,
+,Email that already exists in auth with different username
+AUTH_RO_USER1@DIGITAL.JUSTICE.GOV.UK,auth_user_email@justice.gov.uk
+,User that should be amended
+AUTH_BULK_AMEND_EMAIL,auth_bulk_amend_email@digital.justice.gov.uk
+,User that should be amended by email address
+auth_bulk_amend_email@digital.justice.gov.uk,auth_bulk_amend_email2@digital.justice.gov.uk
+

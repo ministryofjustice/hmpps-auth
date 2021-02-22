@@ -41,7 +41,7 @@ class ServicesSpecification : AbstractAuthSpecification() {
       .checkServicesSummary(
         service = "HDC",
         text =
-          """
+        """
       Home Detention Curfew 
       Service for HDC Licences Creation and Approval 
       [ROLE_BOB, ROLE_JOE] 
@@ -83,7 +83,7 @@ class ServicesSpecification : AbstractAuthSpecification() {
       .checkServicesSummary(
         service = "NEW",
         text =
-          """
+        """
       A new service 
       With a description 
       [ROLE_SOME, ROLE_THING] 

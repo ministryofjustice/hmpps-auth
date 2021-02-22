@@ -227,8 +227,6 @@ class AuthUserService(
       .orElseThrow { EntityNotFoundException("User not found with username $username") }
     maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
     if (user.password != null) {
-      user.verified = false
-      userRepository.save(user)
       return verifyEmailService.changeEmailAndRequestVerification(
         username,
         emailAddressInput,

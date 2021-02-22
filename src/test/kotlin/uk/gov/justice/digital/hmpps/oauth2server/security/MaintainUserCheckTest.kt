@@ -67,7 +67,6 @@ class MaintainUserCheckTest {
 
   @Test
   fun `superUser Does Not Throw Error when ensureMaintainerGroupRelationship`() {
-    val user = createSampleUser("user")
     assertThatCode {
       maintainUserCheck.ensureMaintainerGroupRelationship(
         "SuperUser",

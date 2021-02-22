@@ -34,40 +34,12 @@ BATCH=${4?No batch size specified}
 FILE=${5?No file specified}
 DEBUG_CREATION=${6?No debug indicator specified}
 
-# Set the environment-specific hostname for the oauth2 service
-if [[ "$ENV" == "t3" ]]; then
-  HOST="https://sign-in-dev.hmpps.service.justice.gov.uk"
-elif [[ "$ENV" == "t2" ]]; then
-  HOST="https://sign-in-stage.hmpps.service.justice.gov.uk"
-elif [[ "$ENV" == "preprod" ]]; then
-  HOST="https://sign-in-preprod.hmpps.service.justice.gov.uk"
-elif [[ "$ENV" == "prod" ]]; then
-  HOST="https://sign-in.hmpps.service.justice.gov.uk"
-elif [[ "$ENV" =~ localhost* ]]; then
-  HOST="http://$ENV"
-fi
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+. "${DIR}"/token-functions.sh
 
-# Check whether the file exists and is readable
-if [[ ! -f "$FILE" ]]; then
-  echo "Unable to find file $FILE"
-  exit 1
-fi
-
-# Get token for the client name / secret and store it in the environment variable TOKEN
-if echo | base64 -w0 >/dev/null 2>&1; then
-  AUTH=$(echo -n "$CLIENT" | base64 -w0)
-else
-  AUTH=$(echo -n "$CLIENT" | base64)
-fi
-
-if ! TOKEN_RESPONSE=$(curl -sS -d "" -X POST "$HOST/auth/oauth/token?grant_type=client_credentials&username=$USER" -H "Authorization: Basic $AUTH"); then
-  echo "Failed to read token from credentials response"
-  echo "$TOKEN_RESPONSE"
-  exit 1
-fi
-TOKEN=$(echo "$TOKEN_RESPONSE" | jq -er .access_token)
-
-AUTH_TOKEN_HEADER="Authorization: Bearer $TOKEN"
+HOST=$(calculateHostname "$ENV")
+checkFile "$FILE"
+AUTH_TOKEN_HEADER=$(authenticate "$CLIENT" "$USER")
 
 addGroup() {
   local user=$1
@@ -98,14 +70,14 @@ while IFS=, read -r -a row; do
   if ! output=$(curl -sS -X POST "$HOST/auth/api/authuser/create" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
     -d "{ \"groupCodes\": [${groups%,}], \"email\": \"${row[0]}\", \"firstName\": \"${row[1]}\", \"lastName\": \"${row[2]}\"}"); then
 
-    echo "\033[0;31mFailure to create user ${user}\033[0m"
+    echo "Failure to create user ${user}"
   else
     if [[ $output =~ "error_description" ]]; then
       #Check if the username was returned. If so, try to add the groups.
       username=$(echo "$output" | jq  -r '.username')
 
       if [[ "$username" == "null" ]]; then
-        echo "\033[0;31mFailure to create user ${user}\033[0m due to $output"
+        echo "Failure to create user ${user} due to $output"
       else
         echo "existing user: ${user} found. Adding groups to this user."
         for group in "${row[@]:3}"; do
