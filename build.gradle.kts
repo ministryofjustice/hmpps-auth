@@ -1,8 +1,8 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.1.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.1.1"
   kotlin("plugin.spring") version "1.4.30"
   kotlin("plugin.jpa") version "1.4.30"
-  id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
+  id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
 }
 
 repositories {
@@ -23,24 +23,24 @@ dependencies {
 
   implementation("javax.annotation:javax.annotation-api:1.3.2")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
-  implementation("com.sun.xml.bind:jaxb-impl:2.3.3")
-  implementation("com.sun.xml.bind:jaxb-core:2.3.0.1")
+  implementation("com.sun.xml.bind:jaxb-impl:3.0.0")
+  implementation("com.sun.xml.bind:jaxb-core:3.0.0")
   implementation("javax.activation:activation:1.1.1")
 
   implementation("javax.transaction:javax.transaction-api:1.3")
 
-  implementation("io.springfox:springfox-swagger2:2.9.2")
-  implementation("io.springfox:springfox-swagger-ui:2.9.2")
+  implementation("io.springfox:springfox-swagger2:3.0.0")
+  implementation("io.springfox:springfox-swagger-ui:3.0.0")
 
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.2")
   implementation("uk.gov.service.notify:notifications-java-client:3.17.0-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:7.5.1")
-  implementation("com.zaxxer:HikariCP:4.0.1")
+  implementation("org.flywaydb:flyway-core:7.5.3")
+  implementation("com.zaxxer:HikariCP:4.0.2")
   implementation("org.apache.commons:commons-text:1.9")
-  implementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre11")
+  implementation("com.microsoft.sqlserver:mssql-jdbc:9.2.0.jre15")
   implementation("io.swagger:swagger-core:1.6.2")
 
   runtimeOnly("com.h2database:h2:1.4.200")
@@ -50,8 +50,8 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 
-  testImplementation("org.gebish:geb-core:3.4.1")
-  testImplementation("org.gebish:geb-spock:3.4.1")
+  testImplementation("org.gebish:geb-core:4.0")
+  testImplementation("org.gebish:geb-spock:4.0")
   testImplementation("org.seleniumhq.selenium:selenium-support:3.141.59")
   testImplementation("org.seleniumhq.selenium:selenium-chrome-driver:3.141.59")
   testImplementation("org.seleniumhq.selenium:selenium-firefox-driver:3.141.59")
@@ -59,11 +59,11 @@ dependencies {
 
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("org.slf4j:slf4j-api:1.7.30")
-  testImplementation("com.auth0:java-jwt:3.12.0")
+  testImplementation("com.auth0:java-jwt:3.13.0")
 
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.22.1")
-  testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.5.1")
-  testImplementation("org.fluentlenium:fluentlenium-assertj:4.5.1")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.24.0")
+  testImplementation("org.fluentlenium:fluentlenium-junit-jupiter:4.6.1")
+  testImplementation("org.fluentlenium:fluentlenium-assertj:4.6.1")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.24")
 }
 
