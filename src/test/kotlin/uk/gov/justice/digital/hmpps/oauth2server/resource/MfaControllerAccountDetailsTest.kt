@@ -91,6 +91,19 @@ class MfaControllerAccountDetailsTest {
     }
 
     @Test
+    fun `mfaChallengeRequest check model contains when error when error in param`() {
+      whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.EMAIL))).thenReturn("auth******@******.gov.uk")
+      val modelAndView = controller.mfaChallengeRequestAccountDetail(authentication, "EMAIL", "invalid", "some token", MfaPreferenceType.EMAIL)
+      assertThat(modelAndView.model).containsOnly(
+        entry("mfaPreference", MfaPreferenceType.EMAIL),
+        entry("codeDestination", "auth******@******.gov.uk"),
+        entry("error", "invalid"),
+        entry("token", "some token"),
+        entry("contactType", "EMAIL")
+      )
+    }
+
+    @Test
     fun `mfaChallengeRequest check model text`() {
       whenever(mfaService.createTokenAndSendMfaCode(anyString())).thenReturn(
         MfaData(

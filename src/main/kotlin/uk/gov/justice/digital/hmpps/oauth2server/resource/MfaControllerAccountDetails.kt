@@ -53,6 +53,7 @@ class MfaControllerAccountDetails(
       .addObject("mfaPreference", mfaPreference)
       .addObject("codeDestination", codeDestination)
       .addObject("contactType", contactType)
+      .addObject("error", error)
   }
 
   @PostMapping("/account/mfa-challenge")
