@@ -174,7 +174,6 @@ class ResetPasswordServiceTest {
     fun requestResetPassword_notAuthLocked() {
       val user = createSampleUser(username = "someuser", email = "email", verified = true, source = nomis)
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
-      val accountOptional = staffUserAccountLockedForBobOptional
       whenever(userService.findEnabledMasterUserPersonDetails(anyString())).thenReturn(staffUserAccountLockedForBob)
       val optional = resetPasswordService.requestResetPassword("user", "url")
       verify(notificationClient).sendEmail(

@@ -510,7 +510,8 @@ class AuthUserController(
         ResponseEntity.ok(resetLink)
       } else ResponseEntity.noContent().build()
     } catch (e: EntityNotFoundException) {
-      ResponseEntity.notFound().build()
+      ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(ErrorDetail("username.notfound", "User not found", "username"))
     } catch (e: VerifyEmailException) {
       log.info("Amend user failed for user {} for field email with reason {}", username, e.reason)
       ResponseEntity.badRequest()
