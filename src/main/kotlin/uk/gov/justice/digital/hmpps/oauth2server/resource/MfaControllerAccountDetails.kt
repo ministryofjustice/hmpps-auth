@@ -30,24 +30,36 @@ class MfaControllerAccountDetails(
 ) {
 
   @GetMapping("/account/mfa-challenge")
-  fun serviceMfaChallengeRequest(
+  fun mfaChallengeRequestAccountDetail(
     authentication: Authentication,
     @RequestParam contactType: String,
+    @RequestParam error: String?,
+    @RequestParam token: String?,
+    @RequestParam mfaPreference: MfaPreferenceType?,
   ): ModelAndView {
-    // issue token to current mfa preference
-    val mfaData = mfaService.createTokenAndSendMfaCode(authentication.name)
-    val codeDestination = mfaService.getCodeDestination(mfaData.token, mfaData.mfaType)
-    val modelAndView = ModelAndView("mfaChallengeAccountDetails", "token", mfaData.token)
-      .addObject("mfaPreference", mfaData.mfaType)
-      .addObject("codeDestination", codeDestination)
-      .addObject("contactType", contactType)
-    if (smokeTestEnabled) modelAndView.addObject("smokeCode", mfaData.code)
-    return modelAndView
+    if (error.isNullOrEmpty()) {
+      // issue token to current mfa preference
+      val mfaData = mfaService.createTokenAndSendMfaCode(authentication.name)
+      val codeDestination = mfaService.getCodeDestination(mfaData.token, mfaData.mfaType)
+      val modelAndView = ModelAndView("mfaChallengeAccountDetails", "token", mfaData.token)
+        .addObject("mfaPreference", mfaData.mfaType)
+        .addObject("codeDestination", codeDestination)
+        .addObject("contactType", contactType)
+      if (smokeTestEnabled) modelAndView.addObject("smokeCode", mfaData.code)
+      return modelAndView
+    } else {
+      val codeDestination = mfaService.getCodeDestination(token!!, mfaPreference!!)
+      val modelAndView = ModelAndView("mfaChallengeAccountDetails", "token", token)
+        .addObject("mfaPreference", mfaPreference)
+        .addObject("codeDestination", codeDestination)
+        .addObject("contactType", contactType)
+      return modelAndView
+    }
   }
 
   @PostMapping("/account/mfa-challenge")
   @Throws(IOException::class, ServletException::class)
-  fun serviceMfaChallenge(
+  fun mfaChallengeAccountDetail(
     @RequestParam token: String,
     @RequestParam mfaPreference: MfaPreferenceType,
     @RequestParam code: String,
@@ -97,7 +109,14 @@ class MfaControllerAccountDetails(
     val optionalError = tokenService.checkToken(TokenType.MFA, token)
 
     return optionalError.map { ModelAndView("redirect:/account-detail?error=mfa$it") }
-      .orElseGet { mfaService.buildModelAndViewWithMfaResendOptions("mfaResendAccountDetails", token, mfaPreference, contactType) }
+      .orElseGet {
+        mfaService.buildModelAndViewWithMfaResendOptions(
+          "mfaResendAccountDetails",
+          token,
+          mfaPreference,
+          contactType
+        )
+      }
   }
 
   @PostMapping("/account/mfa-resend")
