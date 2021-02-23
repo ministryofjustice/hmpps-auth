@@ -1,5 +1,5 @@
 INSERT INTO groups (group_id, group_code, group_name)
-VALUES (NEWID(), 'PECS_WRWKCC', 'PECS Court Leamington Crown Court'),
+VALUES (NEWID(), 'PECS_WRWKCC', 'PECS Court Leamington Spa Crown Court'),
        (NEWID(), 'PECS_SHWKMC', 'PECS Court South Warwickshire Magistrates Court');
 
 INSERT INTO group_assignable_role (role_id, group_id, automatic)
