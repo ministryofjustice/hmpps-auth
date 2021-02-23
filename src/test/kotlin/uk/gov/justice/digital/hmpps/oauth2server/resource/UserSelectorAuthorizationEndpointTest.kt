@@ -65,9 +65,10 @@ internal class UserSelectorAuthorizationEndpointTest {
       )
       whenever(authorizationEndpoint.authorize(any(), any(), any(), any())).thenReturn(authModelAndView)
 
-      val modelAndView = endpoint.authorize(mutableMapOf<String, Any>(), mapOf(), sessionStatus, authentication)
+      val modelAndView = endpoint.authorize(authModelAndView.model, mapOf(), sessionStatus, authentication)
 
-      assertThat(modelAndView).isSameAs(authModelAndView)
+      assertThat(modelAndView.viewName).isEqualTo("userSelector")
+      assertThat(modelAndView.model).isEqualTo(authModelAndView.model)
     }
 
     @Test
