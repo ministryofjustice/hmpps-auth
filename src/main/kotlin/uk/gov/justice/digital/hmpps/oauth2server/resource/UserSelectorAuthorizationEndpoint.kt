@@ -41,40 +41,31 @@ class UserSelectorAuthorizationEndpoint(
   ): ModelAndView {
 
     val modelAndView = authorizationEndpoint.authorize(model, parameters, sessionStatus, authentication)
-    val potentialUsers = modelAndView.model["users"]
-    potentialUsers?.let {
-      val users = it as List<*>
-      when (users.size) {
-        // no discovered users, continue by explicitly approving the request
-        0 -> return ModelAndView(
-          authorizationEndpoint.approveOrDeny(
-            hashMapOf(USER_OAUTH_APPROVAL to "true"),
-            model,
-            sessionStatus,
-            authentication
+    // breakout for users that don't need authorisation
+    val users = modelAndView.model["users"] as? List<*> ?: return modelAndView
+
+    // otherwise processes the user count
+    return when (users.size) {
+      // no discovered users, continue by explicitly approving the request
+      0 -> ModelAndView(
+        authorizationEndpoint.approveOrDeny(
+          hashMapOf(USER_OAUTH_APPROVAL to "true"), model, sessionStatus, authentication
+        ),
+        model
+      )
+      // only one discovered user, pass on to approveOrDeny for further verification
+      1 -> with(users[0] as UserPersonDetails) {
+        val account = "$authSource/$username"
+        ModelAndView(
+          approveOrDeny(
+            hashMapOf(USER_OAUTH_APPROVAL to account), model, sessionStatus, authentication
           ),
           model
         )
-        // only one discovered user, pass on to approveOrDeny for further verification
-        1 -> {
-          with(users[0] as UserPersonDetails) {
-            val account = "$authSource/$username"
-            return ModelAndView(
-              approveOrDeny(
-                hashMapOf(USER_OAUTH_APPROVAL to account),
-                model,
-                sessionStatus,
-                authentication
-              ),
-              model
-            )
-          }
-        }
-        else -> {
-        } // no action required, will take the user to the user selector
       }
+      // take the user to select what user they would like to use
+      else -> ModelAndView("userSelector", model)
     }
-    return modelAndView
   }
 
   @PostMapping(value = ["/oauth/authorize"], params = [USER_OAUTH_APPROVAL])
@@ -87,47 +78,51 @@ class UserSelectorAuthorizationEndpoint(
     val account = approvalParameters[USER_OAUTH_APPROVAL]
 
     val replacedAuthentication = if (!account.isNullOrBlank() && authentication != null) {
-      val source = account.substringBefore("/")
-      val username = account.substringAfter("/")
-
-      val azureUser = authentication.principal as UserDetailsImpl
-
-      val user = userService.getMasterUserPersonDetailsWithEmailCheck(
-        username,
-        AuthSource.fromNullableString(source),
-        azureUser.userId
-      )
-      user.map { upd ->
-        // if we're successful with the replace then change the approval parameter to true
-        approvalParameters[USER_OAUTH_APPROVAL] = "true"
-
-        // now replace the principal
-        val newAuth: Authentication = UsernamePasswordAuthenticationToken(
-          UserDetailsImpl(
-            upd.username,
-            upd.name,
-            upd.authorities,
-            source,
-            upd.userId,
-            azureUser.jwtId
-          ),
-          authentication.credentials,
-          upd.authorities
-        )
-
-        userRetriesService.resetRetriesAndRecordLogin(upd)
-
-        telemetryClient.trackEvent(
-          "UserForAccessToken",
-          mapOf("azureuser" to azureUser.userId, "username" to upd.username, "auth_source" to upd.authSource),
-          null
-        )
-
-        newAuth
-      }.orElse(authentication)
-    } else {
-      authentication
-    }
+      replaceAuthentication(account, authentication, approvalParameters)
+    } else authentication
     return authorizationEndpoint.approveOrDeny(approvalParameters, model, sessionStatus, replacedAuthentication)
+  }
+
+  private fun replaceAuthentication(
+    account: String,
+    authentication: Authentication,
+    approvalParameters: MutableMap<String, String>
+  ): Authentication? {
+    val source = account.substringBefore("/")
+    val username = account.substringAfter("/")
+
+    val azureUser = authentication.principal as UserDetailsImpl
+
+    val user = userService.getMasterUserPersonDetailsWithEmailCheck(
+      username, AuthSource.fromNullableString(source), azureUser.userId
+    )
+    return user.map { upd ->
+      // if we're successful with the replace then change the approval parameter to true
+      approvalParameters[USER_OAUTH_APPROVAL] = "true"
+
+      // now replace the principal
+      val newAuth: Authentication = UsernamePasswordAuthenticationToken(
+        UserDetailsImpl(
+          upd.username,
+          upd.name,
+          upd.authorities,
+          source,
+          upd.userId,
+          azureUser.jwtId
+        ),
+        authentication.credentials,
+        upd.authorities
+      )
+
+      userRetriesService.resetRetriesAndRecordLogin(upd)
+
+      telemetryClient.trackEvent(
+        "UserForAccessToken",
+        mapOf("azureuser" to azureUser.userId, "username" to upd.username, "auth_source" to upd.authSource),
+        null
+      )
+
+      newAuth
+    }.orElse(authentication)
   }
 }

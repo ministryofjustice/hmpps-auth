@@ -14,7 +14,7 @@
     Please select the one you would like to use to access the service.
   </p>
 
-  <form id="confirmationForm" name="confirmationForm" th:action="@{/oauth/authorize}" method="POST">
+  <form id="confirmationForm" name="confirmationForm" th:action="@{/user-selector}" method="POST">
     <div class="govuk-radios">
       <div class="govuk-radios__item" th:each="user, iter: ${users}">
         <input class="govuk-radios__input" th:id="${user.userId}" name="user_oauth_approval" type="radio"
