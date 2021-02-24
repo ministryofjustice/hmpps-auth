@@ -6,6 +6,8 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.common.util.OAuth2Utils.USER_OAUTH_APPROVAL
+import org.springframework.security.oauth2.provider.AuthorizationRequest
+import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.endpoint.AuthorizationEndpoint
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,6 +22,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 
 @Controller
 @SessionAttributes(
@@ -31,56 +34,82 @@ class UserSelectorAuthorizationEndpoint(
   private val userService: UserService,
   private val userRetriesService: UserRetriesService,
   private val telemetryClient: TelemetryClient,
+  private val clientDetailsService: ClientDetailsService,
+  private val mfaService: MfaService,
 ) {
   @GetMapping("/oauth/authorize")
   fun authorize(
-    model: MutableMap<String, *>,
+    model: MutableMap<String, Any>,
     @RequestParam parameters: Map<String, String>,
     sessionStatus: SessionStatus,
     authentication: Authentication,
   ): ModelAndView {
 
     val modelAndView = authorizationEndpoint.authorize(model, parameters, sessionStatus, authentication)
+    val requireMfa = modelAndView.model["requireMfa"] as? Boolean ?: false
+    val users = modelAndView.model["users"] as? List<*>
     // breakout for users that don't need authorisation
-    val users = modelAndView.model["users"] as? List<*> ?: return modelAndView
+    if (users == null && !requireMfa) return modelAndView
 
-    // otherwise processes the user count
-    return when (users.size) {
-      // no discovered users, continue by explicitly approving the request
-      0 -> ModelAndView(
-        authorizationEndpoint.approveOrDeny(
-          hashMapOf(USER_OAUTH_APPROVAL to "true"), model, sessionStatus, authentication
-        ),
-        model
-      )
-      // only one discovered user, pass on to approveOrDeny for further verification
-      1 -> with(users[0] as UserPersonDetails) {
-        val account = "$authSource/$username"
-        ModelAndView(
-          approveOrDeny(
-            hashMapOf(USER_OAUTH_APPROVAL to account), model, sessionStatus, authentication
-          ),
-          model
-        )
+    val selectedUser = users?.let {
+      when (users.size) {
+        // no users found so don't need to do anything?
+        0 -> null
+        1 -> {
+          val user = users[0] as UserPersonDetails
+          "${user.authSource}/${user.username}"
+        }
+        // otherwise take user to userSelector page to select their user first
+        // need to go there since if end up doing role based mfa selection then need to map user before selecting role
+        else -> return ModelAndView("userSelector", model)
       }
-      // take the user to select what user they would like to use
-      else -> ModelAndView("userSelector", model)
     }
+
+    if (requireMfa) {
+      selectedUser?.apply { model["selectedUser"] = selectedUser }
+      return ModelAndView("forward:/service-mfa-challenge", model)
+    }
+
+    return ModelAndView(
+      if (selectedUser.isNullOrBlank()) authorizationEndpoint.approveOrDeny(
+        hashMapOf(USER_OAUTH_APPROVAL to "true"), model, sessionStatus, authentication
+      ) else approveOrDeny(
+        hashMapOf(USER_OAUTH_APPROVAL to selectedUser), model, sessionStatus, authentication
+      ),
+      model
+    )
   }
 
   @PostMapping(value = ["/oauth/authorize"], params = [USER_OAUTH_APPROVAL])
   fun approveOrDeny(
     @RequestParam approvalParameters: MutableMap<String, String>,
-    model: MutableMap<String, *>?,
-    sessionStatus: SessionStatus?,
+    model: MutableMap<String, Any>,
+    sessionStatus: SessionStatus,
     authentication: Authentication?,
   ): View {
     val account = approvalParameters[USER_OAUTH_APPROVAL]
 
-    val replacedAuthentication = if (!account.isNullOrBlank() && authentication != null) {
-      replaceAuthentication(account, authentication, approvalParameters)
+    val user = authentication?.principal as UserDetailsImpl?
+    val authorizationRequest = model["authorizationRequest"] as AuthorizationRequest?
+
+    val clientNeedsMfa = clientNeedsMfa(authorizationRequest?.clientId)
+    val mfaPassed = user?.passedMfa == true
+
+    val replacedAuthentication = if ((clientNeedsMfa && mfaPassed) || !clientNeedsMfa) {
+      if (!account.isNullOrBlank() && authentication != null) {
+        replaceAuthentication(account, authentication, approvalParameters)
+      } else if (mfaPassed) {
+        approvalParameters[USER_OAUTH_APPROVAL] = "true"
+        authentication
+      } else authentication
     } else authentication
     return authorizationEndpoint.approveOrDeny(approvalParameters, model, sessionStatus, replacedAuthentication)
+  }
+
+  private fun clientNeedsMfa(clientId: String?): Boolean {
+    val client = clientId.let { clientDetailsService.loadClientByClientId(clientId) }
+    val mfa = client.additionalInformation["mfa"] as? String?
+    return (mfa == MfaAccess.untrusted.name && mfaService.outsideApprovedNetwork()) || mfa == MfaAccess.all.name
   }
 
   private fun replaceAuthentication(
@@ -90,7 +119,6 @@ class UserSelectorAuthorizationEndpoint(
   ): Authentication? {
     val source = account.substringBefore("/")
     val username = account.substringAfter("/")
-
     val azureUser = authentication.principal as UserDetailsImpl
 
     val user = userService.getMasterUserPersonDetailsWithEmailCheck(

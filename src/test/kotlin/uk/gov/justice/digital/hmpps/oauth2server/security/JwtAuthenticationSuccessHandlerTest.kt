@@ -6,12 +6,15 @@ import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.verify
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.RedirectStrategy
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
@@ -48,50 +51,53 @@ class JwtAuthenticationSuccessHandlerTest {
   )
   private val user = UserDetailsImpl("user", "name", setOf(), auth.name, "userid", "jwtId")
 
-  @Test
-  fun onAuthenticationSuccess_verifyEnabledAlreadyVerified() {
-    whenever(verifyEmailService.isNotVerified(anyString())).thenReturn(false)
-    handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
-    verify(redirectStrategy).sendRedirect(request, response, "/")
-  }
+  @Nested
+  inner class onAuthenticationSuccess {
+    @Test
+    fun verifyEnabledAlreadyVerified() {
+      whenever(verifyEmailService.isNotVerified(anyString())).thenReturn(false)
+      handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
+      verify(redirectStrategy).sendRedirect(request, response, "/")
+    }
 
-  @Test
-  fun onAuthenticationSuccess_verifyEnabledNotVerified() {
-    whenever(verifyEmailService.isNotVerified(anyString())).thenReturn(true)
-    handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
-    verify(redirectStrategy).sendRedirect(request, response, "/verify-email")
-  }
+    @Test
+    fun verifyEnabledNotVerified() {
+      whenever(verifyEmailService.isNotVerified(anyString())).thenReturn(true)
+      handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
+      verify(redirectStrategy).sendRedirect(request, response, "/verify-email")
+    }
 
-  @Test
-  fun `onAuthenticationSuccess existing cookie`() {
-    whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
-    whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
-    handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
-    verify(restTemplate).delete("/token?authJwtId={authJwtId}", "jwtId")
-  }
+    @Test
+    fun `existing cookie`() {
+      whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
+      whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
+      handler.onAuthenticationSuccess(request, response, UsernamePasswordAuthenticationToken("user", "pass"))
+      verify(restTemplate).delete("/token?authJwtId={authJwtId}", "jwtId")
+    }
 
-  @Test
-  fun `onAuthenticationSuccess new jwt id value`() {
-    whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
-    whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
-    whenever(jwtAuthenticationHelper.createJwt(any())).thenReturn("newJwt")
-    val token = UsernamePasswordAuthenticationToken("user", "pass")
-    handler.onAuthenticationSuccess(request, response, token)
+    @Test
+    fun `new jwt id value`() {
+      whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
+      whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
+      whenever(jwtAuthenticationHelper.createJwt(any())).thenReturn("newJwt")
+      val token = UsernamePasswordAuthenticationToken("user", "pass")
+      handler.onAuthenticationSuccess(request, response, token)
 
-    verify(jwtCookieHelper).addCookieToResponse(request, response, "newJwt")
-    verify(jwtAuthenticationHelper).createJwt(token)
-  }
+      verify(jwtCookieHelper).addCookieToResponse(request, response, "newJwt")
+      verify(jwtAuthenticationHelper).createJwt(token)
+    }
 
-  @Test
-  fun `onAuthenticationSuccess existing cookie verification disabled`() {
-    whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
-    whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
-    handlerTokenVerificationDisabled.onAuthenticationSuccess(
-      request,
-      response,
-      UsernamePasswordAuthenticationToken("user", "pass")
-    )
-    verifyZeroInteractions(restTemplate)
+    @Test
+    fun `existing cookie verification disabled`() {
+      whenever(jwtCookieHelper.readValueFromCookie(any())).thenReturn(Optional.of("cookie_value"))
+      whenever(jwtAuthenticationHelper.readUserDetailsFromJwt(anyString())).thenReturn(Optional.of(user))
+      handlerTokenVerificationDisabled.onAuthenticationSuccess(
+        request,
+        response,
+        UsernamePasswordAuthenticationToken("user", "pass")
+      )
+      verifyZeroInteractions(restTemplate)
+    }
   }
 
   @Nested
@@ -129,6 +135,24 @@ class JwtAuthenticationSuccessHandlerTest {
       handler.updateAuthenticationInRequest(request, response, token)
 
       verify(jwtAuthenticationHelper).createJwtWithId(token, "jwtId", true)
+    }
+  }
+
+  @Nested
+  inner class updateMfaInRequest {
+    @Test
+    fun `mfa is updated in request`() {
+      whenever(jwtAuthenticationHelper.createJwtWithId(any(), anyString(), anyBoolean())).thenReturn("newJwt")
+      val token = UsernamePasswordAuthenticationToken(
+        UserDetailsImpl("user", jwtId = "bob", userId = "userId", authorities = setOf(), name = "joe"), "pass"
+      )
+      whenever(jwtAuthenticationHelper.readAuthenticationFromJwt(anyString())).thenReturn(Optional.of(token))
+      handler.updateMfaInRequest(request, response, token)
+
+      verify(jwtCookieHelper).addCookieToResponse(request, response, "newJwt")
+      verify(jwtAuthenticationHelper).createJwtWithId(token, "bob", true)
+      verify(jwtAuthenticationHelper).readAuthenticationFromJwt("newJwt")
+      assertThat(SecurityContextHolder.getContext().authentication).isEqualTo(token)
     }
   }
 
