@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.oauth2server.integration
 
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.JWTParser
+import org.apache.commons.lang3.RandomStringUtils
+import org.apache.http.client.utils.URLEncodedUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.adapter.junit.jupiter.FluentTest
 import org.fluentlenium.core.FluentPage
@@ -11,11 +13,19 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.openqa.selenium.logging.LogType
 import org.openqa.selenium.support.FindBy
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.oauth2server.resource.AzureOIDCExtension
+import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientMockServer
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension
+import java.nio.charset.Charset
+import java.util.Base64
 
 @ExtendWith(TokenVerificationExtension::class, AzureOIDCExtension::class)
 open class AbstractAuthSpecification : FluentTest() {
+  private val webTestClient = WebTestClient.bindToServer().baseUrl(baseUrl).build()
+
   init {
     // Resolves an issue where Wiremock keeps previous sockets open from other tests causing connection resets
     System.setProperty("http.keepAlive", "false")
@@ -36,6 +46,46 @@ open class AbstractAuthSpecification : FluentTest() {
       error.printStackTrace()
     }
   }
+
+  fun clientAccess(doWithinAuth: () -> Unit = {}, clientId: String = "elite2apiclient"): WebTestClient.BodyContentSpec {
+    val state = RandomStringUtils.random(6, true, true)
+    goTo("/oauth/authorize?client_id=$clientId&redirect_uri=${RemoteClientMockServer.clientBaseUrl}&response_type=code&state=$state")
+
+    doWithinAuth()
+
+    assertThat(driver.currentUrl).startsWith("${RemoteClientMockServer.clientBaseUrl}?code").contains("state=$state")
+
+    val params = URLEncodedUtils.parse(driver.currentUrl.replace("${RemoteClientMockServer.clientBaseUrl}?", ""), Charset.forName("UTF-8"))
+    val code = params.find { it.name == "code" }!!.value
+
+    return getAccessToken(code, clientId)
+  }
+
+  fun getAccessToken(authCode: String, clientId: String): WebTestClient.BodyContentSpec {
+    val auth = Base64.getEncoder().encodeToString("$clientId:clientsecret".toByteArray())
+    return webTestClient
+      .post().uri("/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=${RemoteClientMockServer.clientBaseUrl}")
+      .headers { it.set(HttpHeaders.AUTHORIZATION, "Basic $auth") }
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+      .expectBody()
+  }
+
+  fun getRefreshToken(refreshToken: String): WebTestClient.BodyContentSpec =
+    webTestClient
+      .post().uri("/oauth/token?grant_type=refresh_token&refresh_token=$refreshToken")
+      .headers { it.set(HttpHeaders.AUTHORIZATION, "Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA==") }
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+      .expectBody()
+
+  fun clientSignIn(
+    username: String,
+    password: String = "password123456",
+    clientId: String = "elite2apiclient",
+  ) = clientAccess({ loginPage.isAtPage().submitLogin(username, password) }, clientId)
 }
 
 @Suppress("UNCHECKED_CAST")
