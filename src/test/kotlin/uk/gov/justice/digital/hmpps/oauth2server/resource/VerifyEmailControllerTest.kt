@@ -58,6 +58,7 @@ class VerifyEmailControllerTest {
     true
   )
   private val principal = UsernamePasswordAuthenticationToken("user", "pass")
+  private val token = UUID.randomUUID().toString()
 
   @Test
   fun verifyEmailRequest() {
@@ -106,7 +107,7 @@ class VerifyEmailControllerTest {
   fun verifyEmail_noselection() {
     val candidates = listOf("joe", "bob")
     whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(candidates)
-    val modelAndView = verifyEmailController.verifyEmail("", "", EmailType.PRIMARY, null, principal, request, response)
+    val modelAndView = verifyEmailController.verifyEmail("", "", EmailType.PRIMARY, token, false, principal, request, response)
     assertThat(modelAndView?.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView?.model).containsExactly(entry("error", "noselection"), entry("candidates", candidates))
   }
@@ -127,7 +128,7 @@ class VerifyEmailControllerTest {
       )
     ).thenThrow(NotificationClientException("something went wrong"))
     val modelAndView =
-      verifyEmailController.verifyEmail("a@b.com", null, EmailType.PRIMARY, null, principal, request, response)
+      verifyEmailController.verifyEmail("a@b.com", null, EmailType.PRIMARY, token, false, principal, request, response)
     assertThat(modelAndView?.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView?.model).containsExactly(entry("email", "a@b.com"), entry("error", "other"))
   }
@@ -152,7 +153,8 @@ class VerifyEmailControllerTest {
         "other",
         email,
         EmailType.PRIMARY,
-        null,
+        token,
+        false,
         principal,
         request,
         response
@@ -195,7 +197,8 @@ class VerifyEmailControllerTest {
       "other",
       email,
       EmailType.PRIMARY,
-      null,
+      token,
+      false,
       emailPrincipal,
       request,
       response
@@ -229,7 +232,8 @@ class VerifyEmailControllerTest {
       "other",
       email,
       EmailType.PRIMARY,
-      null,
+      token,
+      false,
       principal,
       request,
       response
@@ -253,7 +257,8 @@ class VerifyEmailControllerTest {
       "change",
       "auth_email@digital.justice.gov.uk",
       EmailType.PRIMARY,
-      null,
+      token,
+      false,
       principal,
       request,
       response
@@ -284,7 +289,8 @@ class VerifyEmailControllerTest {
         "",
         "",
         EmailType.SECONDARY,
-        UUID.randomUUID().toString(),
+        token,
+        false,
         principal,
         request,
         response
@@ -313,12 +319,13 @@ class VerifyEmailControllerTest {
         "a@b.com",
         null,
         EmailType.SECONDARY,
-        "71396b28-0c57-4efd-bc70-cc5992965aed",
+        token,
+        false,
         principal,
         request,
         response
       )
-    assertThat(modelAndView?.viewName).isEqualTo("redirect:/new-backup-email?token=71396b28-0c57-4efd-bc70-cc5992965aed")
+    assertThat(modelAndView?.viewName).isEqualTo("redirect:/new-backup-email?token=$token")
     assertThat(modelAndView?.model).containsExactly(
       entry("email", "a@b.com"),
       entry("error", "other")
@@ -332,7 +339,8 @@ class VerifyEmailControllerTest {
       "other",
       "bob@digital.justice.goc.uk",
       EmailType.SECONDARY,
-      UUID.randomUUID().toString(),
+      token,
+      false,
       principal,
       request,
       response
@@ -347,7 +355,8 @@ class VerifyEmailControllerTest {
       "other",
       "bob@digital.justice.goc.uk",
       EmailType.SECONDARY,
-      UUID.randomUUID().toString(),
+      token,
+      false,
       principal,
       request,
       response
@@ -374,7 +383,8 @@ class VerifyEmailControllerTest {
       "other",
       email,
       EmailType.SECONDARY,
-      UUID.randomUUID().toString(),
+      token,
+      false,
       principal,
       request,
       response
@@ -412,7 +422,8 @@ class VerifyEmailControllerTest {
       "change",
       "auth_email@digital.justice.gov.uk",
       EmailType.SECONDARY,
-      UUID.randomUUID().toString(),
+      token,
+      false,
       principal,
       request,
       response

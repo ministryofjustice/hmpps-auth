@@ -37,6 +37,7 @@
       <input type="hidden" id="candidate-other" name="candidate" value="change">
       <input type="hidden" id="email-type" name="emailType" value="SECONDARY">
       <input type="hidden" id="token" name="token" th:value="${param.token}">
+      <input type="hidden" id="resend" name="resend" th:value="false">
       <input class="govuk-input  + (${error} ? ' govuk-input--error' : '')"
              id="email" name="email" type="email" aria-describedby="email-error" autocomplete="email"
              spellcheck="false" th:value="${secondaryEmail}">

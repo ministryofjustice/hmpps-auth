@@ -107,7 +107,7 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
 
     loginPage.checkError(
       "We need to send you a security code to sign in, but we can't find a verified email " +
-        "address or phone number. Please verify your email address by clicking the link in your email, or sign in using an approved network and verify your email address and phone number."
+        "address or phone number. Please verify your email address by clicking the link in your email."
     )
   }
 
@@ -118,7 +118,7 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
 
     loginPage.checkError(
       "We need to send you a security code to sign in, but we can't find a verified email " +
-        "address or phone number. Please verify your email address by clicking the link in your email, or sign in using an approved network and verify your email address and phone number."
+        "address or phone number. Please verify your email address by clicking the link in your email."
     )
   }
 

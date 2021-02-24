@@ -91,6 +91,7 @@
 
       <div class="govuk-form-group">
         <input type="hidden" id="email-type" name="emailType" value="PRIMARY">
+        <input type="hidden" id="resend" value="true" name="resend"/>
         <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="continue-button"
                th:value="${suggestion != null ? 'Resend email' : 'Save'}">
         <a class="govuk-button" role="button" id="cancel"

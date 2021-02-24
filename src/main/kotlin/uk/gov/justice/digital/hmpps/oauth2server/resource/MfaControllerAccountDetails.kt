@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaUnavailableException
 import uk.gov.justice.digital.hmpps.oauth2server.service.LoginFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
@@ -37,23 +38,27 @@ class MfaControllerAccountDetails(
     @RequestParam token: String?,
     @RequestParam mfaPreference: MfaPreferenceType?,
   ): ModelAndView {
-    if (error.isNullOrEmpty()) {
-      // issue token to current mfa preference
-      val mfaData = mfaService.createTokenAndSendMfaCode(authentication.name)
-      val codeDestination = mfaService.getCodeDestination(mfaData.token, mfaData.mfaType)
-      val modelAndView = ModelAndView("mfaChallengeAccountDetails", "token", mfaData.token)
-        .addObject("mfaPreference", mfaData.mfaType)
+    try {
+      if (error.isNullOrEmpty()) {
+        // issue token to current mfa preference
+        val mfaData = mfaService.createTokenAndSendMfaCode(authentication.name)
+        val codeDestination = mfaService.getCodeDestination(mfaData.token, mfaData.mfaType)
+        val modelAndView = ModelAndView("mfaChallengeAccountDetails", "token", mfaData.token)
+          .addObject("mfaPreference", mfaData.mfaType)
+          .addObject("codeDestination", codeDestination)
+          .addObject("contactType", contactType)
+        if (smokeTestEnabled) modelAndView.addObject("smokeCode", mfaData.code)
+        return modelAndView
+      }
+      val codeDestination = mfaService.getCodeDestination(token!!, mfaPreference!!)
+      return ModelAndView("mfaChallengeAccountDetails", "token", token)
+        .addObject("mfaPreference", mfaPreference)
         .addObject("codeDestination", codeDestination)
         .addObject("contactType", contactType)
-      if (smokeTestEnabled) modelAndView.addObject("smokeCode", mfaData.code)
-      return modelAndView
+        .addObject("error", error)
+    } catch (e: MfaUnavailableException) {
+      return ModelAndView("redirect:/account-details?error=mfaunavailable")
     }
-    val codeDestination = mfaService.getCodeDestination(token!!, mfaPreference!!)
-    return ModelAndView("mfaChallengeAccountDetails", "token", token)
-      .addObject("mfaPreference", mfaPreference)
-      .addObject("codeDestination", codeDestination)
-      .addObject("contactType", contactType)
-      .addObject("error", error)
   }
 
   @PostMapping("/account/mfa-challenge")
