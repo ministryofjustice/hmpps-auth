@@ -283,7 +283,7 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
     return newInstance(t)
   }
 
-  fun submitLogin(username: String, password: String = "password123456") {
+  fun submitLogin(username: String = "ITAG_USER", password: String = "password123456") {
     this.username.fill().withText(username)
     this.password.fill().withText(password)
     signInButton.submit()

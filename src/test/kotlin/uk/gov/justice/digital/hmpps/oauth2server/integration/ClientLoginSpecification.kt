@@ -9,7 +9,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.nimbusds.jwt.JWTParser
 import net.minidev.json.JSONArray
 import org.apache.commons.lang3.RandomStringUtils
-import org.apache.http.client.utils.URLEncodedUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.core.annotation.Page
 import org.fluentlenium.core.annotation.PageUrl
@@ -17,16 +16,11 @@ import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.openqa.selenium.support.FindBy
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
-import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.WebTestClient.BodyContentSpec
 import uk.gov.justice.digital.hmpps.oauth2server.resource.AzureOIDCExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientMockServer.Companion.clientBaseUrl
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
-import java.nio.charset.Charset
-import java.util.Base64
 
 /**
  * Verify clients can login, be redirected back to their system and then logout again.
@@ -36,8 +30,6 @@ import java.util.Base64
  */
 @ExtendWith(RemoteClientExtension::class)
 class ClientLoginSpecification : AbstractDeliusAuthSpecification() {
-  private val webTestClient = WebTestClient.bindToServer().baseUrl(baseUrl).build()
-
   @Page
   internal lateinit var selectUserPage: SelectUserPage
 
@@ -249,12 +241,6 @@ class ClientLoginSpecification : AbstractDeliusAuthSpecification() {
     )
   }
 
-  private fun clientSignIn(
-    username: String,
-    password: String = "password123456",
-    clientId: String = "elite2apiclient",
-  ) = clientAccess({ loginPage.isAtPage().submitLogin(username, password) }, clientId)
-
   private fun azureClientSignIn(email: String): BodyContentSpec {
     AzureOIDCExtension.azureOIDC.stubToken(email)
     return clientAccess({ loginPage.clickAzureOIDCLink() }, "azure-login-client")
@@ -270,40 +256,6 @@ class ClientLoginSpecification : AbstractDeliusAuthSpecification() {
       "azure-login-client"
     )
   }
-
-  private fun clientAccess(doWithinAuth: () -> Unit = {}, clientId: String = "elite2apiclient"): BodyContentSpec {
-    val state = RandomStringUtils.random(6, true, true)
-    goTo("/oauth/authorize?client_id=$clientId&redirect_uri=$clientBaseUrl&response_type=code&state=$state")
-
-    doWithinAuth()
-
-    assertThat(driver.currentUrl).startsWith("$clientBaseUrl?code").contains("state=$state")
-
-    val params = URLEncodedUtils.parse(driver.currentUrl.replace("$clientBaseUrl?", ""), Charset.forName("UTF-8"))
-    val code = params.find { it.name == "code" }!!.value
-
-    return getAccessToken(code, clientId)
-  }
-
-  private fun getAccessToken(authCode: String, clientId: String): BodyContentSpec {
-    val auth = Base64.getEncoder().encodeToString("$clientId:clientsecret".toByteArray())
-    return webTestClient
-      .post().uri("/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=$clientBaseUrl")
-      .headers { it.set(HttpHeaders.AUTHORIZATION, "Basic $auth") }
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-      .expectBody()
-  }
-
-  private fun getRefreshToken(refreshToken: String): BodyContentSpec =
-    webTestClient
-      .post().uri("/oauth/token?grant_type=refresh_token&refresh_token=$refreshToken")
-      .headers { it.set(HttpHeaders.AUTHORIZATION, "Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA==") }
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
-      .expectBody()
 }
 
 @PageUrl("/oauth/authorize")
