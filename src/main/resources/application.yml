@@ -1,6 +1,8 @@
 server:
   servlet:
     context-path: /auth
+    session:
+      tracking-modes: cookie
   forward-headers-strategy: native
   tomcat:
     remoteip:

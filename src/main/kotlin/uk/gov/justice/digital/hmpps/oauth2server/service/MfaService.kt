@@ -33,7 +33,7 @@ class MfaService(
   private val userRetriesService: UserRetriesService,
 ) {
 
-  private val ipMatchers: List<IpAddressMatcher> = allowlist.map { ip -> IpAddressMatcher(ip) }
+  private val ipMatchers: List<IpAddressMatcher> = allowlist.map { IpAddressMatcher(it) }
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -41,11 +41,11 @@ class MfaService(
 
   fun outsideApprovedNetwork(): Boolean {
     val ip = IpAddressHelper.retrieveIpFromRequest()
-    return !ipMatchers.any { it.matches(ip) }
+    return ipMatchers.none { it.matches(ip) }
   }
 
   fun needsMfa(authorities: Collection<GrantedAuthority>): Boolean =
-    outsideApprovedNetwork() && authorities.stream().map { it.authority }.anyMatch { r -> mfaRoles.contains(r) }
+    outsideApprovedNetwork() && authorities.map { it.authority }.any { mfaRoles.contains(it) }
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(MfaUnavailableException::class)
