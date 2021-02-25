@@ -7,8 +7,21 @@ import org.junit.jupiter.api.Test
 
 internal class UserSelectorControllerTest {
   @Test
-  fun userSelector() {
-    val forward = UserSelectorController().approveOrDeny()
-    assertThat(forward).isEqualTo("forward:/oauth/authorize")
+  fun `selectUser mfa true`() {
+    val forward = UserSelectorController().selectUser(true, "delius/bob")
+    assertThat(forward.viewName).isEqualTo("redirect:/service-mfa-challenge")
+    assertThat(forward.model).containsExactlyEntriesOf(mapOf("user_oauth_approval" to "delius/bob"))
+  }
+
+  @Test
+  fun `selectUser mfa not set`() {
+    val forward = UserSelectorController().selectUser(null, "auth/joe")
+    assertThat(forward.viewName).isEqualTo("forward:/oauth/authorize")
+  }
+
+  @Test
+  fun `selectUser mfa false`() {
+    val forward = UserSelectorController().selectUser(false, "nomis/harry")
+    assertThat(forward.viewName).isEqualTo("forward:/oauth/authorize")
   }
 }

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns="http://www.w3.org/1999/html" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <title th:with="mfaPreference=${param.mfaPreference ?: mfaPreference}"
+         th:text="${#strings.equals(mfaPreference, 'TEXT')} ? 'Text Message Verification' : 'Email Verification'"></title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds"
+     th:with="mfaPreference=${param.mfaPreference ?: mfaPreference}">
+  <div th:unless="${#arrays.isEmpty(error)}" class="govuk-error-summary" aria-labelledby="error-summary-title"
+       role="alert"
+       data-module="govuk-error-summary">
+    <h2 class="govuk-error-summary__title" id="error-summary">
+      There is a problem
+    </h2>
+    <div class="govuk-error-summary__body" id="error-detail">
+      <ul class="govuk-list govuk-error-summary__list">
+        <li th:each="error: ${error}" th:switch="${error}">
+          <a th:case="'missingcode'" href="#code" th:text="#{${'mfa.missingcode.' + mfaPreference}}">Missing code</a>
+          <a th:case="'invalid'" href="#code"
+             th:text="#{${'mfa.invalid.' + mfaPreference}(${@environment.getProperty('application.authentication.lockout-count')})}">
+            Invalid message</a>
+          <a th:case="*" href="#code" th:text="#{${'mfa.' + error}}">Username message</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <h1 class="govuk-heading-l" th:if="${#strings.equals(mfaPreference, 'TEXT')}">Check your phone</h1>
+
+  <p class="govuk-body" th:if="${#strings.equals(mfaPreference, 'TEXT')}">We’ve sent you a text message to
+    <span id="mfa-pref-text-code-destination" th:text="${codeDestination}">.</span>
+    with a security code
+  </p>
+
+  <h1 class="govuk-heading-l" th:unless="${#strings.equals(mfaPreference, 'TEXT')}">Check your email</h1>
+
+  <p class="govuk-body" th:unless="${#strings.equals(mfaPreference, 'TEXT')}">We've sent you an email to
+    <span id="mfa-pref-email-code-destination" th:text="${codeDestination}">.</span>
+    with a security code
+  </p>
+
+  <form th:action="@{/service-mfa-challenge}" method="POST" id="mfaForm" autocomplete="off" novalidate>
+    <div class="govuk-form-group">
+      <input id="mfaPreference" name="mfaPreference" type="hidden" data-element-id="mfaPreference"
+             th:value="${mfaPreference}">
+      <input type="hidden" name="user_oauth_approval" th:value="${user_oauth_approval}">
+    </div>
+
+    <div>
+      <div th:class="'govuk-form-group' + (${error} ? ' govuk-form-group--error' : '')">
+        <label class="govuk-label" for="code"><span
+            th:text="${#strings.equals(mfaPreference, 'TEXT')} ? 'Text message' : 'Email'">email</span> code</label>
+        <span id="code-hint" class="govuk-hint">
+          For example 321456
+        </span>
+        <span th:if="${error}" id="security-code-error" class="govuk-error-message"
+              th:text="#{${'mfa.' + error + '.' + mfaPreference}(${@environment.getProperty('application.authentication.lockout-count')})}">No error</span>
+        <input
+            th:class="'govuk-input--width-4 govuk-input' + (${error} ? ' govuk-input--error' : '')"
+            id="code" name="code" type="text" inputmode=”numeric” pattern="[0-9]*" autocomplete="off"
+            autocapitalize="off" spellcheck="false" data-element-id="code" aria-describedby="code-error" maxlength="6">
+      </div>
+
+    </div>
+    <div class="govuk-form-group">
+      <input class="govuk-button" id="submit" type="submit" role="button" data-element-id="continue-button"
+             value="Continue">
+    </div>
+  </form>
+
+  <div class="govuk-form-group">
+    <ul class="govuk-list">
+      <li><a class="govuk-link" th:if="${#strings.equals(mfaPreference, 'TEXT')}"
+             th:href="@{/service-mfa-resend(mfaPreference=${mfaPreference})}"
+             id="resend-mfa-text">Not received a text message?</a></li>
+      <li><a class="govuk-link" th:unless="${#strings.equals(mfaPreference, 'TEXT')}"
+             th:href="@{/service-mfa-resend(mfaPreference=${mfaPreference})}"
+             id="resend-mfa-email">Not received an email?</a></li>
+    </ul>
+  </div>
+
+  <p th:if="${smokeCode}" class="govuk-body">
+    <br>
+    <code>application.smoketest.enabled</code> environment variable is set.
+    Code that was sent in the <span th:text="${mfaPreference}">mfaPreference</span> is
+    <span data-qa="mfa-code" th:text="${smokeCode}">123456</span>.
+  </p>
+</div>
+</body>
+</html>
