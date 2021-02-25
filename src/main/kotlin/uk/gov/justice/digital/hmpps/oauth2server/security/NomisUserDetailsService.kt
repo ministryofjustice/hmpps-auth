@@ -10,7 +10,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaClientNetworkService
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 
@@ -38,8 +38,8 @@ class NomisUserDetailsService(private val nomisUserService: NomisUserService) :
 class NomisAuthenticationProvider(
   nomisUserDetailsService: NomisUserDetailsService,
   userRetriesService: UserRetriesService,
-  mfaService: MfaService,
+  mfaClientNetworkService: MfaClientNetworkService,
   userService: UserService,
   telemetryClient: TelemetryClient,
 ) :
-  LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, mfaService, userService, telemetryClient)
+  LockingAuthenticationProvider(nomisUserDetailsService, userRetriesService, mfaClientNetworkService, userService, telemetryClient)

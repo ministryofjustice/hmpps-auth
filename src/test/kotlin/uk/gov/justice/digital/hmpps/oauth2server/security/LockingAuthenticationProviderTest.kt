@@ -11,17 +11,17 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaRequiredException
 import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaUnavailableException
-import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaClientNetworkService
 
 class LockingAuthenticationProviderTest {
   private val userRetriesService: UserRetriesService = mock()
   private val userDetailsService: AuthUserDetailsService = mock()
   private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val mfaService: MfaService = mock()
+  private val mfaClientNetworkService: MfaClientNetworkService = mock()
 
   private val lockingAuthenticationProvider =
-    AuthAuthenticationProvider(userDetailsService, userRetriesService, mfaService, userService, telemetryClient)
+    AuthAuthenticationProvider(userDetailsService, userRetriesService, mfaClientNetworkService, userService, telemetryClient)
 
   @Test
   fun `authenticate nomisUser`() { // test that oracle passwords are authenticated okay
@@ -37,7 +37,7 @@ class LockingAuthenticationProviderTest {
 
   @Test
   fun `authenticate authUser needs MFA`() {
-    whenever(mfaService.needsMfa(any())).thenReturn(true)
+    whenever(mfaClientNetworkService.needsMfa(any())).thenReturn(true)
     whenever(userService.hasVerifiedMfaMethod(any())).thenReturn(true)
 
     setupLoadUser("{bcrypt}${BCryptPasswordEncoder().encode("some_pass")}")
@@ -49,7 +49,7 @@ class LockingAuthenticationProviderTest {
 
   @Test
   fun `authenticate authUser MFA unavailable`() {
-    whenever(mfaService.needsMfa(any())).thenReturn(true)
+    whenever(mfaClientNetworkService.needsMfa(any())).thenReturn(true)
 
     setupLoadUser("{bcrypt}${BCryptPasswordEncoder().encode("some_pass")}")
 

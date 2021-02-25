@@ -9,7 +9,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
-import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaClientNetworkService
 
 @Service("deliusUserDetailsService")
 class DeliusUserDetailsService(
@@ -35,14 +35,14 @@ class DeliusAuthenticationProvider(
   private val deliusUserService: DeliusUserService,
   deliusUserDetailsService: DeliusUserDetailsService,
   userRetriesService: UserRetriesService,
-  mfaService: MfaService,
+  mfaClientNetworkService: MfaClientNetworkService,
   userService: UserService,
   telemetryClient: TelemetryClient,
 ) :
   LockingAuthenticationProvider(
     deliusUserDetailsService,
     userRetriesService,
-    mfaService,
+    mfaClientNetworkService,
     userService,
     telemetryClient
   ) {

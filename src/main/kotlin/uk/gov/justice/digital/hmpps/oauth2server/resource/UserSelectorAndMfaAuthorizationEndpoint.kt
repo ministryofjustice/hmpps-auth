@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "SpringMVCViewInspection")
 
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
@@ -7,7 +7,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.common.util.OAuth2Utils.USER_OAUTH_APPROVAL
 import org.springframework.security.oauth2.provider.AuthorizationRequest
-import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.endpoint.AuthorizationEndpoint
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,20 +21,19 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
-import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaClientService
 
 @Controller
 @SessionAttributes(
   "authorizationRequest",
   "org.springframework.security.oauth2.provider.endpoint.AuthorizationEndpoint.ORIGINAL_AUTHORIZATION_REQUEST"
 )
-class UserSelectorAuthorizationEndpoint(
+class UserSelectorAndMfaAuthorizationEndpoint(
   private val authorizationEndpoint: AuthorizationEndpoint,
   private val userService: UserService,
   private val userRetriesService: UserRetriesService,
   private val telemetryClient: TelemetryClient,
-  private val clientDetailsService: ClientDetailsService,
-  private val mfaService: MfaService,
+  private val mfaClientService: MfaClientService,
 ) {
   @GetMapping("/oauth/authorize")
   fun authorize(
@@ -92,7 +90,7 @@ class UserSelectorAuthorizationEndpoint(
     val user = authentication?.principal as UserDetailsImpl?
     val authorizationRequest = model["authorizationRequest"] as AuthorizationRequest?
 
-    val clientNeedsMfa = clientNeedsMfa(authorizationRequest?.clientId)
+    val clientNeedsMfa = mfaClientService.clientNeedsMfa(authorizationRequest?.clientId)
     val mfaPassed = user?.passedMfa == true
 
     val replacedAuthentication = if ((clientNeedsMfa && mfaPassed) || !clientNeedsMfa) {
@@ -104,12 +102,6 @@ class UserSelectorAuthorizationEndpoint(
       } else authentication
     } else authentication
     return authorizationEndpoint.approveOrDeny(approvalParameters, model, sessionStatus, replacedAuthentication)
-  }
-
-  private fun clientNeedsMfa(clientId: String?): Boolean {
-    val client = clientId.let { clientDetailsService.loadClientByClientId(clientId) }
-    val mfa = client.additionalInformation["mfa"] as? String?
-    return (mfa == MfaAccess.untrusted.name && mfaService.outsideApprovedNetwork()) || mfa == MfaAccess.all.name
   }
 
   private fun replaceAuthentication(

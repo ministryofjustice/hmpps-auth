@@ -6,15 +6,14 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.provider.AuthorizationRequest
 import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.approval.TokenStoreUserApprovalHandler
-import uk.gov.justice.digital.hmpps.oauth2server.resource.MfaAccess
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
-import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 
 class UserContextApprovalHandler(
   private val userContextService: UserContextService,
-  private val clientDetailsService: ClientDetailsService,
-  private val mfaService: MfaService,
+  clientDetailsService: ClientDetailsService,
+  private val mfaClientService: MfaClientService,
 ) : TokenStoreUserApprovalHandler() {
 
   init {
@@ -37,7 +36,7 @@ class UserContextApprovalHandler(
     // we are purposefully not calling the super method, because if we deny the request
     // based on unapproved scopes we do not currently have a way to explicitly approve it.
 
-    if (!(userAuthentication.principal as UserDetailsImpl).passedMfa && clientNeedsMfa(authorizationRequest.clientId)) {
+    if (!(userAuthentication.principal as UserDetailsImpl).passedMfa && mfaClientService.clientNeedsMfa(authorizationRequest.clientId)) {
       authorizationRequest.isApproved = false
       return authorizationRequest
     }
@@ -72,17 +71,11 @@ class UserContextApprovalHandler(
       userApprovalRequest["users"] = users
     }
 
-    if (!userDetails.passedMfa && clientNeedsMfa(authorizationRequest.clientId)) {
+    if (!userDetails.passedMfa && mfaClientService.clientNeedsMfa(authorizationRequest.clientId)) {
       // found a client that requires mfa
       userApprovalRequest["requireMfa"] = true
     }
 
     return userApprovalRequest
-  }
-
-  private fun clientNeedsMfa(clientId: String): Boolean {
-    val client = clientDetailsService.loadClientByClientId(clientId)
-    val mfa = client.additionalInformation["mfa"] as? String?
-    return (mfa == MfaAccess.untrusted.name && mfaService.outsideApprovedNetwork()) || mfa == MfaAccess.all.name
   }
 }
