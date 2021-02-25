@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "SpringJavaInjectionPointsAutowiringInspection")
 
 package uk.gov.justice.digital.hmpps.oauth2server.config
 
@@ -39,12 +39,12 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserContextApprovalHandler
-import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaClientNetworkService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.UserContextService
 import java.security.interfaces.RSAPublicKey
 import javax.sql.DataSource
 
-@Suppress("DEPRECATION")
 @Configuration
 @EnableAuthorizationServer
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
@@ -62,7 +62,7 @@ class OAuth2AuthorizationServerConfig(
   @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean,
   private val tokenVerificationClientCredentials: TokenVerificationClientCredentials,
   private val userContextService: UserContextService,
-  private val mfaService: MfaService,
+  private val mfaClientNetworkService: MfaClientNetworkService,
 ) : AuthorizationServerConfigurerAdapter() {
 
   private val privateKeyPair: Resource = ByteArrayResource(Base64.decodeBase64(privateKeyPair))
@@ -70,6 +70,7 @@ class OAuth2AuthorizationServerConfig(
   private var jdbcClientDetailsService: JdbcClientDetailsService? = null
   private var tokenStore: JwtTokenStore? = null
   private var oAuth2RequestFactory: DefaultOAuth2RequestFactory? = null
+  private var mfaClientService: MfaClientService? = null
 
   companion object {
     private const val HOUR_IN_SECS = 60 * 60
@@ -124,8 +125,17 @@ class OAuth2AuthorizationServerConfig(
       .tokenServices(tokenServices())
   }
 
+  @Bean
+  fun mfaClientService(): MfaClientService {
+    if (mfaClientService == null) {
+      mfaClientService = MfaClientService(jdbcClientDetailsService(), mfaClientNetworkService)
+    }
+    return mfaClientService!!
+  }
+
   private fun userApprovalHandler(): UserApprovalHandler {
-    val approvalHandler = UserContextApprovalHandler(userContextService, jdbcClientDetailsService(), mfaService)
+    val approvalHandler =
+      UserContextApprovalHandler(userContextService, jdbcClientDetailsService(), mfaClientService())
     approvalHandler.setRequestFactory(requestFactory())
     approvalHandler.setTokenStore(tokenStore())
     return approvalHandler

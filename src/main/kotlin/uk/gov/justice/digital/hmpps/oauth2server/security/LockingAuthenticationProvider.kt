@@ -15,12 +15,12 @@ import org.springframework.security.core.userdetails.UserDetailsChecker
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder
-import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaClientNetworkService
 
 abstract class LockingAuthenticationProvider(
   userDetailsService: UserDetailsService,
   private val userRetriesService: UserRetriesService,
-  private val mfaService: MfaService,
+  private val mfaClientNetworkService: MfaClientNetworkService,
   private val userService: UserService,
   private val telemetryClient: TelemetryClient
 ) : DaoAuthenticationProvider() {
@@ -30,6 +30,7 @@ abstract class LockingAuthenticationProvider(
   }
 
   init {
+    @Suppress("LeakingThis")
     setUserDetailsService(userDetailsService)
     val oracleSha1PasswordEncoder = OracleSha1PasswordEncoder()
     val encoders = mapOf("bcrypt" to BCryptPasswordEncoder(), "oracle" to oracleSha1PasswordEncoder)
@@ -82,7 +83,7 @@ abstract class LockingAuthenticationProvider(
       val userDetails = fullAuthentication.principal as UserPersonDetails
 
       // now check if mfa is enabled for the user
-      if (mfaService.needsMfa(fullAuthentication.authorities)) {
+      if (mfaClientNetworkService.needsMfa(fullAuthentication.authorities)) {
         if (userService.hasVerifiedMfaMethod(userDetails)) {
           throw MfaRequiredException("MFA required")
         }

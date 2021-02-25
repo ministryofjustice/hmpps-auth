@@ -1,4 +1,4 @@
-@file:Suppress("ClassName")
+@file:Suppress("ClassName", "DEPRECATION")
 
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
@@ -11,15 +11,8 @@ import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Assertions.entry
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
-import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.request.ServletRequestAttributes
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
@@ -31,66 +24,19 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.service.notify.NotificationClientApi
 import java.util.Optional
 
-class MfaServiceTest {
+internal class MfaServiceTest {
   private val tokenService: TokenService = mock()
   private val userService: UserService = mock()
   private val userRetriesService: UserRetriesService = mock()
   private val notificationClientApi: NotificationClientApi = mock()
-  private val request = MockHttpServletRequest()
   private val service = MfaService(
-    setOf("12.21.23.24"),
-    setOf("MFA"),
     "emailTemplate",
     "textTemplate",
     tokenService,
     userService,
     notificationClientApi,
-    userRetriesService
+    userRetriesService,
   )
-
-  @BeforeEach
-  fun setUp() {
-    request.remoteAddr = "0:0:0:0:0:0:0:1"
-    RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request, null))
-  }
-
-  @AfterEach
-  fun tearDown(): Unit = RequestContextHolder.resetRequestAttributes()
-
-  @Nested
-  inner class needsMfa {
-    @Test
-    fun `allowlisted IP`() {
-      request.remoteAddr = "12.21.23.24"
-
-      assertThat(service.needsMfa(emptySet())).isFalse
-    }
-
-    @Test
-    fun `non allowlisted IP`() {
-      assertThat(service.needsMfa(emptySet())).isFalse
-    }
-
-    @Test
-    fun `non allowlisted IP enabled role`() {
-      assertThat(service.needsMfa(setOf(SimpleGrantedAuthority("MFA")))).isTrue
-    }
-  }
-
-  @Nested
-  inner class outsideApprovedNetwork {
-    @Test
-    fun `allowlisted IP`() {
-      request.remoteAddr = "12.21.23.24"
-
-      assertThat(service.outsideApprovedNetwork()).isFalse
-    }
-
-    @Test
-    fun `non allowlisted IP`() {
-      assertThat(service.outsideApprovedNetwork()).isTrue
-    }
-  }
 
   @Test
   fun `validateAndRemoveMfaCode null`() {
@@ -285,7 +231,6 @@ class MfaServiceTest {
 
     service.createTokenAndSendMfaCode("user")
     verify(notificationClientApi).sendSms("textTemplate", "07700900321", mapOf("mfaCode" to "somecode"), null, null)
-//    verify(notificationClientApi).sendEmail("emailTemplate", "secondaryEmail", mapOf("firstName" to "first", "code" to "somecode"), null)
   }
 
   @Test

@@ -16,8 +16,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.oauth2.provider.AuthorizationRequest
-import org.springframework.security.oauth2.provider.ClientDetails
-import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.OAuth2Authentication
 import org.springframework.security.oauth2.provider.endpoint.AuthorizationEndpoint
 import org.springframework.web.bind.support.SessionStatus
@@ -29,25 +27,22 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserRetriesService
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
-import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
+import uk.gov.justice.digital.hmpps.oauth2server.service.MfaClientService
 import java.util.Optional
 import java.util.UUID
 
-internal class UserSelectorAuthorizationEndpointTest {
+internal class UserSelectorAndMfaAuthorizationEndpointTest {
   private val authorizationEndpoint: AuthorizationEndpoint = mock()
   private val userService: UserService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val userRetriesService: UserRetriesService = mock()
-  private val clientDetailsService: ClientDetailsService = mock()
-  private val mfaService: MfaService = mock()
-  private val clientDetails: ClientDetails = mock()
-  private val endpoint = UserSelectorAuthorizationEndpoint(
+  private val mfaClientService: MfaClientService = mock()
+  private val endpoint = UserSelectorAndMfaAuthorizationEndpoint(
     authorizationEndpoint,
     userService,
     userRetriesService,
     telemetryClient,
-    clientDetailsService,
-    mfaService
+    mfaClientService
   )
   private val authentication: OAuth2Authentication = mock()
   private val sessionStatus: SessionStatus = mock()
@@ -132,7 +127,6 @@ internal class UserSelectorAuthorizationEndpointTest {
       )
       whenever(authorizationEndpoint.authorize(any(), any(), any(), any())).thenReturn(authModelAndView)
       whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), any())).thenReturn(view)
-      whenever(clientDetailsService.loadClientByClientId(isNull())).thenReturn(clientDetails)
       whenever(authentication.principal).thenReturn(
         UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId", passedMfa = true)
       )
@@ -156,7 +150,6 @@ internal class UserSelectorAuthorizationEndpointTest {
     fun `test approveOrDeny no approval specified`() {
       whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), any())).thenReturn(view)
       val authorizationRequest = AuthorizationRequest("bob", setOf())
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(clientDetails)
       val model: MutableMap<String, Any> = mutableMapOf("authorizationRequest" to authorizationRequest)
       val approveView = endpoint.approveOrDeny(
         mutableMapOf(),
@@ -172,7 +165,6 @@ internal class UserSelectorAuthorizationEndpointTest {
     fun `test approveOrDeny no authentication specified`() {
       whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), isNull())).thenReturn(view)
       val authorizationRequest = AuthorizationRequest("bob", setOf())
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(clientDetails)
       val model: MutableMap<String, Any> = mutableMapOf("authorizationRequest" to authorizationRequest)
       val approveView = endpoint.approveOrDeny(
         mutableMapOf(),
@@ -188,7 +180,6 @@ internal class UserSelectorAuthorizationEndpointTest {
     fun `test approveOrDeny user not found`() {
       whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), any())).thenReturn(view)
       val authorizationRequest = AuthorizationRequest("bob", setOf())
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(clientDetails)
       whenever(authentication.principal).thenReturn(
         UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId", passedMfa = true)
       )
@@ -206,7 +197,6 @@ internal class UserSelectorAuthorizationEndpointTest {
     fun `test approveOrDeny user mapped`() {
       whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), any())).thenReturn(view)
       val authorizationRequest = AuthorizationRequest("bob", setOf())
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(clientDetails)
       whenever(authentication.principal).thenReturn(
         UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId", passedMfa = true)
       )
@@ -258,7 +248,6 @@ internal class UserSelectorAuthorizationEndpointTest {
     fun `test approveOrDeny create event`() {
       whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), any())).thenReturn(view)
       val authorizationRequest = AuthorizationRequest("bob", setOf())
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(clientDetails)
 
       whenever(authentication.principal).thenReturn(
         UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId", passedMfa = true)
@@ -294,7 +283,6 @@ internal class UserSelectorAuthorizationEndpointTest {
     fun `test approveOrDeny record login`() {
       whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), any())).thenReturn(view)
       val authorizationRequest = AuthorizationRequest("bob", setOf())
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(clientDetails)
       whenever(authentication.principal).thenReturn(
         UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId", passedMfa = true)
       )
@@ -325,8 +313,7 @@ internal class UserSelectorAuthorizationEndpointTest {
     fun `test client needs mfa but mfa not passed`() {
       whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), isNull())).thenReturn(view)
       val authorizationRequest = AuthorizationRequest("bob", setOf())
-      whenever(clientDetails.additionalInformation).thenReturn(mapOf("mfa" to MfaAccess.all.name))
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(clientDetails)
+      whenever(mfaClientService.clientNeedsMfa(any())).thenReturn(true)
       val model: MutableMap<String, Any> = mutableMapOf("authorizationRequest" to authorizationRequest)
       val approveView = endpoint.approveOrDeny(
         mutableMapOf(),
@@ -339,12 +326,10 @@ internal class UserSelectorAuthorizationEndpointTest {
     }
 
     @Test
-    fun `test client needs mfa on untrusted and user not on trusted network`() {
+    fun `test client needs mfa`() {
       whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), isNull())).thenReturn(view)
       val authorizationRequest = AuthorizationRequest("bob", setOf())
-      whenever(mfaService.outsideApprovedNetwork()).thenReturn(true)
-      whenever(clientDetails.additionalInformation).thenReturn(mapOf("mfa" to MfaAccess.untrusted.name))
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(clientDetails)
+      whenever(mfaClientService.clientNeedsMfa(any())).thenReturn(true)
       val model: MutableMap<String, Any> = mutableMapOf("authorizationRequest" to authorizationRequest)
       val approveView = endpoint.approveOrDeny(
         mutableMapOf(),
@@ -360,8 +345,7 @@ internal class UserSelectorAuthorizationEndpointTest {
     fun `test client needs mfa and mfa passed`() {
       whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), any())).thenReturn(view)
       val authorizationRequest = AuthorizationRequest("bob", setOf())
-      whenever(clientDetails.additionalInformation).thenReturn(mapOf("mfa" to MfaAccess.all.name))
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(clientDetails)
+      whenever(mfaClientService.clientNeedsMfa(any())).thenReturn(true)
       whenever(authentication.principal).thenReturn(
         UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId", passedMfa = true)
       )
@@ -380,9 +364,7 @@ internal class UserSelectorAuthorizationEndpointTest {
     fun `test client needs mfa on untrusted network and mfa passed`() {
       whenever(authorizationEndpoint.approveOrDeny(any(), any(), any(), any())).thenReturn(view)
       val authorizationRequest = AuthorizationRequest("bob", setOf())
-      whenever(mfaService.outsideApprovedNetwork()).thenReturn(true)
-      whenever(clientDetails.additionalInformation).thenReturn(mapOf("mfa" to MfaAccess.untrusted.name))
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(clientDetails)
+      whenever(mfaClientService.clientNeedsMfa(any())).thenReturn(true)
       whenever(authentication.principal).thenReturn(
         UserDetailsImpl("user", "name", setOf(), AuthSource.azuread.name, "userid", "jwtId", passedMfa = true)
       )
