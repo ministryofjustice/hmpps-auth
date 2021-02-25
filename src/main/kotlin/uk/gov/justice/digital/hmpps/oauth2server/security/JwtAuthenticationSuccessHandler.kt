@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
@@ -14,8 +15,9 @@ import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+@Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @Component
-open class JwtAuthenticationSuccessHandler(
+class JwtAuthenticationSuccessHandler(
   private val jwtCookieHelper: JwtCookieHelper,
   private val jwtAuthenticationHelper: JwtAuthenticationHelper,
   cookieRequestCache: CookieRequestCache,
@@ -86,5 +88,15 @@ open class JwtAuthenticationSuccessHandler(
   @Throws(ServletException::class, IOException::class)
   fun proceed(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication) {
     super.onAuthenticationSuccess(request, response, authentication)
+  }
+
+  fun updateMfaInRequest(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication) {
+    val user = authentication.principal as UserDetailsImpl
+    val jwt = jwtAuthenticationHelper.createJwtWithId(authentication, user.jwtId, true)
+    jwtCookieHelper.addCookieToResponse(request, response, jwt)
+
+    // also need to update current authentication in security context
+    jwtAuthenticationHelper.readAuthenticationFromJwt(jwt)
+      .ifPresent { SecurityContextHolder.getContext().authentication = it }
   }
 }
