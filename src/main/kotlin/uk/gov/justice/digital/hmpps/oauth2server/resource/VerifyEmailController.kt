@@ -91,14 +91,14 @@ class VerifyEmailController(
     @RequestParam email: String?,
     @RequestParam emailType: EmailType,
     @RequestParam token: String?,
+    @RequestParam resend: Boolean,
     principal: Principal,
     request: HttpServletRequest,
     response: HttpServletResponse
   ): ModelAndView? {
     val username = principal.name
 
-    // check token is valid for secondary email - this if will be removed when 2FA added for primary email as we will need the check for it as well
-    if (emailType == EmailType.SECONDARY) {
+    if (!resend) {
       val optionalErrorForToken = tokenService.checkToken(TokenType.CHANGE, token!!)
       if (optionalErrorForToken.isPresent) {
         return ModelAndView("redirect:/account-details?error=token${optionalErrorForToken.get()}")
