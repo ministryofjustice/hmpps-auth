@@ -27,7 +27,7 @@ class ChangeMobileController(
 
   @GetMapping("/new-mobile")
   fun changeMobileRequest(@RequestParam token: String, authentication: Authentication): ModelAndView {
-    val optionalErrorForToken = tokenService.checkToken(UserToken.TokenType.CHANGE, token)
+    val optionalErrorForToken = tokenService.checkToken(UserToken.TokenType.ACCOUNT, token)
     if (optionalErrorForToken.isPresent) {
       return ModelAndView("redirect:/account-details?error=token${optionalErrorForToken.get()}")
     }
@@ -45,7 +45,7 @@ class ChangeMobileController(
     requestType: String,
     authentication: Authentication
   ): ModelAndView {
-    val optionalErrorForToken = tokenService.checkToken(UserToken.TokenType.CHANGE, token)
+    val optionalErrorForToken = tokenService.checkToken(UserToken.TokenType.ACCOUNT, token)
     if (optionalErrorForToken.isPresent) {
       return ModelAndView("redirect:/account-details?error=mobiletoken${optionalErrorForToken.get()}")
     }

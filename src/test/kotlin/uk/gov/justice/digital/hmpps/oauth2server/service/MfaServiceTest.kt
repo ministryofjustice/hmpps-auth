@@ -401,18 +401,19 @@ internal class MfaServiceTest {
   @Test
   fun `buildModelAndViewWithMfaResendOptions check view`() {
     whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(createSampleUser())
-    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", MfaPreferenceType.EMAIL, "")
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", "pass token", MfaPreferenceType.EMAIL, "")
     assertThat(modelAndView.viewName).isEqualTo("mfaResend")
   }
 
   @Test
   fun `buildModelAndViewWithMfaResendOptions check model`() {
     whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(createSampleUser())
-    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", MfaPreferenceType.EMAIL, "")
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", "pass token", MfaPreferenceType.EMAIL, "")
     assertThat(modelAndView.model).containsExactly(
       entry("token", "token"),
       entry("mfaPreference", MfaPreferenceType.EMAIL),
-      entry("contactType", "")
+      entry("contactType", ""),
+      entry("passToken", "pass token")
     )
   }
 
@@ -427,11 +428,12 @@ internal class MfaServiceTest {
       verified = true
     )
     whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
-    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", MfaPreferenceType.EMAIL, "")
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", "pass token", MfaPreferenceType.EMAIL, "")
     assertThat(modelAndView.model).containsExactly(
       entry("token", "token"),
       entry("mfaPreference", MfaPreferenceType.EMAIL),
       entry("contactType", ""),
+      entry("passToken", "pass token"),
       entry("email", "b******@******.gov.uk"),
       entry("mobile", "*******0321"),
       entry("secondaryemail", "jo******@******ith.com")
@@ -448,11 +450,12 @@ internal class MfaServiceTest {
         verified = true
       )
     whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
-    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", MfaPreferenceType.EMAIL, "")
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", "pass token", MfaPreferenceType.EMAIL, "")
     assertThat(modelAndView.model).containsExactly(
       entry("token", "token"),
       entry("mfaPreference", MfaPreferenceType.EMAIL),
       entry("contactType", ""),
+      entry("passToken", "pass token"),
       entry("email", "b******@******.gov.uk"),
       entry("mobile", "*******0321")
     )
@@ -468,11 +471,12 @@ internal class MfaServiceTest {
         verified = false
       )
     whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
-    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", MfaPreferenceType.EMAIL, "")
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", "pass token", MfaPreferenceType.EMAIL, "")
     assertThat(modelAndView.model).containsExactly(
       entry("token", "token"),
       entry("mfaPreference", MfaPreferenceType.EMAIL),
       entry("contactType", ""),
+      entry("passToken", "pass token"),
       entry("mobile", "*******0321")
     )
   }
@@ -487,11 +491,12 @@ internal class MfaServiceTest {
         verified = true
       )
     whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
-    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", MfaPreferenceType.EMAIL, "")
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", "pass token", MfaPreferenceType.EMAIL, "")
     assertThat(modelAndView.model).containsExactly(
       entry("token", "token"),
       entry("mfaPreference", MfaPreferenceType.EMAIL),
       entry("contactType", ""),
+      entry("passToken", "pass token"),
       entry("email", "b******@******.gov.uk")
     )
   }
@@ -506,11 +511,12 @@ internal class MfaServiceTest {
       secondaryEmailVerified = true
     )
     whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
-    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", MfaPreferenceType.EMAIL, "")
+    val modelAndView = service.buildModelAndViewWithMfaResendOptions("mfaResend", "token", "pass token", MfaPreferenceType.EMAIL, "")
     assertThat(modelAndView.model).containsExactly(
       entry("token", "token"),
       entry("mfaPreference", MfaPreferenceType.EMAIL),
       entry("contactType", ""),
+      entry("passToken", "pass token"),
       entry("secondaryemail", "jo******@******ith.com")
     )
   }

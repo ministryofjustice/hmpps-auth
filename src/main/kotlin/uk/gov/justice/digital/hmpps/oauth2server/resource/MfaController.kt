@@ -93,7 +93,7 @@ class MfaController(
     val optionalError = tokenService.checkToken(TokenType.MFA, token)
 
     return optionalError.map { ModelAndView("redirect:/login?error=mfa$it") }
-      .orElseGet { mfaService.buildModelAndViewWithMfaResendOptions("mfaResend", token, mfaPreference, "") }
+      .orElseGet { mfaService.buildModelAndViewWithMfaResendOptions("mfaResend", token, "", mfaPreference, "") }
   }
 
   @PostMapping("/mfa-resend")

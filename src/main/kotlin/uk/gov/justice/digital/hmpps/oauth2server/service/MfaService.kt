@@ -109,6 +109,7 @@ class MfaService(
   fun buildModelAndViewWithMfaResendOptions(
     view: String,
     token: String,
+    passToken: String,
     mfaPreference: MfaPreferenceType,
     contactType: String
   ): ModelAndView {
@@ -116,6 +117,7 @@ class MfaService(
     val modelAndView = ModelAndView(view, "token", token)
       .addObject("mfaPreference", mfaPreference)
       .addObject("contactType", contactType)
+      .addObject("passToken", passToken)
 
     if (user.verified) {
       modelAndView.addObject("email", user.maskedEmail)

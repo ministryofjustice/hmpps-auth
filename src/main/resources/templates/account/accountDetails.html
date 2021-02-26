@@ -23,8 +23,10 @@
             <a th:case="'mfaexpired'" href="#username"
                th:text="#{login.mfaexpired(${@environment.getProperty('application.authentication.lockout-count')})}">
               Mfa expired message</a>
-            <a th:case="'secondarytokeninvalid'" href="#secondaryEmail" th:text="#{verifyemail.token.invalid}">token invalid message</a>
-            <a th:case="'secondarytokenexpired'" href="#secondaryEmail" th:text="#{verifyemail.token.expired}">token expired message</a>
+            <a th:case="'tokeninvalid'" href="#email" th:text="#{verifyemail.token.invalid}">token invalid message</a>
+            <a th:case="'tokenexpired'" href="#email" th:text="#{verifyemail.token.expired}">token invalid message</a>
+            <a th:case="'secondarytokeninvalid'" href="#secondaryEmail" th:text="#{verifyemail.secondary.token.invalid}">token invalid message</a>
+            <a th:case="'secondarytokenexpired'" href="#secondaryEmail" th:text="#{verifyemail.secondary.token.expired}">token expired message</a>
             <a th:case="'mobiletokeninvalid'" href="#mobile" th:text="#{verifymobile.token.invalid}">token invalid message</a>
             <a th:case="'mobiletokenexpired'" href="#mobile" th:text="#{verifymobile.token.expired}">token expired message</a>
             <a th:case="'nomobile'" href="#mobile" th:text="#{verifymobile.nomobile}">no mobile message</a>

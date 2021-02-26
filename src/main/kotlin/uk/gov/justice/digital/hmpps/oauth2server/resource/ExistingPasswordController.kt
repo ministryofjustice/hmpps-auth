@@ -73,11 +73,12 @@ class ExistingPasswordController(
   }
 
   private fun continueToNewEmailOrPassword(username: String, type: String): ModelAndView {
-    if (type == "email") {
-      return ModelAndView("redirect:/account/mfa-challenge?contactType=email")
-    }
     // successfully logged in with credentials, so generate change password token
     val token = tokenService.createToken(TokenType.CHANGE, username)
+
+    if (type == "email") {
+      return ModelAndView("redirect:/account/mfa-challenge?contactType=email", "passToken", token)
+    }
 
     @Suppress("SpringMVCViewInspection")
     return ModelAndView("redirect:/new-$type", "token", token)

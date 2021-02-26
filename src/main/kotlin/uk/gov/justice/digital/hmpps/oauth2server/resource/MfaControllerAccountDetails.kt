@@ -36,8 +36,14 @@ class MfaControllerAccountDetails(
     @RequestParam contactType: String,
     @RequestParam error: String?,
     @RequestParam token: String?,
+    @RequestParam passToken: String?,
     @RequestParam mfaPreference: MfaPreferenceType?,
   ): ModelAndView {
+    if (contactType == "email") {
+      if (passToken.isNullOrEmpty()) return ModelAndView("redirect:/account-details?error=tokeninvalid")
+      val optionalErrorForToken = tokenService.checkToken(TokenType.CHANGE, passToken)
+      if (optionalErrorForToken.isPresent) return ModelAndView("redirect:/account-details?error=token${optionalErrorForToken.get()}")
+    }
     try {
       if (error.isNullOrEmpty()) {
         // issue token to current mfa preference
@@ -47,6 +53,7 @@ class MfaControllerAccountDetails(
           .addObject("mfaPreference", mfaData.mfaType)
           .addObject("codeDestination", codeDestination)
           .addObject("contactType", contactType)
+          .addObject("passToken", passToken)
         if (smokeTestEnabled) modelAndView.addObject("smokeCode", mfaData.code)
         return modelAndView
       }
@@ -55,6 +62,7 @@ class MfaControllerAccountDetails(
         .addObject("mfaPreference", mfaPreference)
         .addObject("codeDestination", codeDestination)
         .addObject("contactType", contactType)
+        .addObject("passToken", passToken)
         .addObject("error", error)
     } catch (e: MfaUnavailableException) {
       return ModelAndView("redirect:/account-details?error=mfaunavailable")
@@ -65,6 +73,7 @@ class MfaControllerAccountDetails(
   @Throws(IOException::class, ServletException::class)
   fun mfaChallengeAccountDetail(
     @RequestParam token: String,
+    @RequestParam passToken: String,
     @RequestParam mfaPreference: MfaPreferenceType,
     @RequestParam code: String,
     @RequestParam contactType: String,
@@ -83,6 +92,7 @@ class MfaControllerAccountDetails(
     } catch (e: MfaFlowException) {
       return ModelAndView("redirect:/account/mfa-challenge?contactType=$contactType")
         .addObject("token", token)
+        .addObject("passToken", passToken)
         .addObject("error", e.error)
         .addObject("mfaPreference", mfaPreference)
     } catch (e: LoginFlowException) {
@@ -97,7 +107,7 @@ class MfaControllerAccountDetails(
 
   private fun continueToChangeAccountDetails(username: String, contactType: String): ModelAndView {
     // successfully passed 2fa, so generate change password token
-    val token = tokenService.createToken(TokenType.CHANGE, username)
+    val token = tokenService.createToken(TokenType.ACCOUNT, username)
 
     @Suppress("SpringMVCViewInspection")
     return ModelAndView("redirect:/new-$contactType", "token", token)
@@ -107,6 +117,7 @@ class MfaControllerAccountDetails(
   fun mfaResendRequest(
     @RequestParam contactType: String,
     @RequestParam token: String,
+    @RequestParam passToken: String,
     @RequestParam mfaPreference: MfaPreferenceType
   ): ModelAndView {
 
@@ -117,6 +128,7 @@ class MfaControllerAccountDetails(
         mfaService.buildModelAndViewWithMfaResendOptions(
           "mfaResendAccountDetails",
           token,
+          passToken,
           mfaPreference,
           contactType
         )
@@ -128,6 +140,7 @@ class MfaControllerAccountDetails(
   fun mfaResend(
     @RequestParam contactType: String,
     @RequestParam token: String,
+    @RequestParam passToken: String,
     @RequestParam mfaResendPreference: MfaPreferenceType,
     request: HttpServletRequest,
     response: HttpServletResponse,
@@ -146,6 +159,7 @@ class MfaControllerAccountDetails(
     val modelAndView = ModelAndView("redirect:/account/mfa-challenge", "token", token)
       .addObject("contactType", contactType)
       .addObject("mfaPreference", mfaResendPreference)
+      .addObject("passToken", passToken)
     if (smokeTestEnabled) modelAndView.addObject("smokeCode", code)
     return modelAndView
   }
