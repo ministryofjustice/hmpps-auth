@@ -31,6 +31,7 @@ dependencies {
 
   implementation("io.springfox:springfox-swagger2:2.9.2")
   implementation("io.springfox:springfox-swagger-ui:2.9.2")
+  implementation("io.swagger:swagger-core:1.6.2")
 
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
@@ -40,12 +41,11 @@ dependencies {
   implementation("org.flywaydb:flyway-core:7.5.4")
   implementation("com.zaxxer:HikariCP:4.0.2")
   implementation("org.apache.commons:commons-text:1.9")
-  implementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre11")
-  implementation("io.swagger:swagger-core:1.6.2")
+  implementation("com.microsoft.sqlserver:mssql-jdbc:9.2.0.jre11")
 
   runtimeOnly("com.h2database:h2:1.4.200")
   runtimeOnly("org.springframework.boot:spring-boot-devtools")
-  runtimeOnly("com.oracle.database.jdbc:ojdbc10:19.9.0.0")
+  runtimeOnly("com.oracle.database.jdbc:ojdbc10:19.10.0.0")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-webflux")

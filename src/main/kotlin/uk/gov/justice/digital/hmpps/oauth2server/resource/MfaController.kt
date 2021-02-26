@@ -1,3 +1,5 @@
+@file:Suppress("SpringJavaInjectionPointsAutowiringInspection", "SpringMVCViewInspection")
+
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
@@ -31,6 +33,10 @@ class MfaController(
   private val telemetryClient: TelemetryClient,
   private val mfaService: MfaService,
   @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
+) : AbstractMfaController(
+  tokenService,
+  "",
+  "/login",
 ) {
   @GetMapping("/mfa-challenge")
   fun mfaChallengeRequest(
@@ -88,13 +94,8 @@ class MfaController(
   }
 
   @GetMapping("/mfa-resend")
-  fun mfaResendRequest(@RequestParam token: String, @RequestParam mfaPreference: MfaPreferenceType): ModelAndView {
-
-    val optionalError = tokenService.checkToken(TokenType.MFA, token)
-
-    return optionalError.map { ModelAndView("redirect:/login?error=mfa$it") }
-      .orElseGet { mfaService.buildModelAndViewWithMfaResendOptions("mfaResend", token, "", mfaPreference, "") }
-  }
+  fun mfaResendRequest(@RequestParam token: String, @RequestParam mfaPreference: MfaPreferenceType): ModelAndView =
+    createMfaResendRequest(token, mfaPreference)
 
   @PostMapping("/mfa-resend")
   @Throws(IOException::class, ServletException::class)

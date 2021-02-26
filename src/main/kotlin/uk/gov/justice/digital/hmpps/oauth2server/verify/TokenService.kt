@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify
 
 import com.microsoft.applicationinsights.TelemetryClient
+import org.hibernate.Hibernate
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -34,6 +35,7 @@ class TokenService(
     val userTokenOptional = userTokenRepository.findById(token)
     val userToken = userTokenOptional.filter { t -> t.tokenType == tokenType }
       .orElseThrow { EntityNotFoundException("Token not found $token") }
+    Hibernate.initialize(userToken.user.contacts)
     return userToken.user
   }
 

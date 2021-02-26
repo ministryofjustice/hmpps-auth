@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
-import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
@@ -330,143 +329,107 @@ class MfaControllerTest {
   }
 
   @Nested
-  inner class MfaResendEmailRequest {
+  inner class mfaResendRequest {
     @Test
-    fun `mfaEmailResendRequest check view`() {
-      whenever(
-        mfaService.buildModelAndViewWithMfaResendOptions(
-          anyString(),
-          anyString(),
-          anyString(),
-          eq(MfaPreferenceType.EMAIL),
-          anyString()
-        )
-      ).thenReturn(
-        ModelAndView("mfaResend")
+    fun `email preference`() {
+      val user = createSampleUser(
+        email = "auth.user@digital.justice.gov.uk",
+        mobile = "07700900321",
+        mfaPreference = MfaPreferenceType.TEXT,
+        verified = true
       )
+      whenever(tokenService.getUserFromToken(any(), any())).thenReturn(user)
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
       val modelAndView = controller.mfaResendRequest("some token", MfaPreferenceType.EMAIL)
       assertThat(modelAndView.viewName).isEqualTo("mfaResend")
+      assertThat(modelAndView.model).containsOnly(
+        entry("token", "some token"), entry("mfaPreference", MfaPreferenceType.EMAIL),
+        entry("email", "auth******@******.gov.uk")
+      )
     }
 
     @Test
-    fun `mfaTextResendRequest check view`() {
-      whenever(
-        mfaService.buildModelAndViewWithMfaResendOptions(
-          anyString(),
-          anyString(),
-          anyString(),
-          eq(MfaPreferenceType.TEXT),
-          anyString()
-        )
-      ).thenReturn(
-        ModelAndView("mfaResend")
+    fun `text preference`() {
+      val user = createSampleUser(
+        email = "auth.user@digital.justice.gov.uk",
+        mobile = "07700900321",
+        mfaPreference = MfaPreferenceType.TEXT,
+        mobileVerified = true,
       )
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
+      whenever(tokenService.getUserFromToken(any(), any())).thenReturn(user)
       val modelAndView = controller.mfaResendRequest("some token", MfaPreferenceType.TEXT)
+      verify(tokenService).checkToken(TokenType.MFA, "some token")
       assertThat(modelAndView.viewName).isEqualTo("mfaResend")
-    }
-
-    @Test
-    fun `mfaEmailResendRequest check model`() {
-      whenever(
-        mfaService.buildModelAndViewWithMfaResendOptions(
-          anyString(),
-          anyString(),
-          anyString(),
-          eq(MfaPreferenceType.EMAIL),
-          anyString()
-        )
-      )
-        .thenReturn(
-          ModelAndView("mfaResend", "token", "some token").addObject(
-            "mfaPreference",
-            MfaPreferenceType.EMAIL
-          )
-        )
-      whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
-      val modelAndView = controller.mfaResendRequest("some token", MfaPreferenceType.EMAIL)
-      assertThat(modelAndView.model).containsExactly(
-        entry("token", "some token"),
-        entry("mfaPreference", MfaPreferenceType.EMAIL)
+      assertThat(modelAndView.model).containsOnly(
+        entry("token", "some token"), entry("mfaPreference", MfaPreferenceType.TEXT),
+        entry("mobile", "*******0321")
       )
     }
 
     @Test
-    fun `mfaTextResendRequest check model`() {
-      whenever(
-        mfaService.buildModelAndViewWithMfaResendOptions(
-          anyString(),
-          anyString(),
-          anyString(),
-          eq(MfaPreferenceType.TEXT),
-          anyString()
-        )
-      )
-        .thenReturn(ModelAndView("mfaResend", "token", "some token").addObject("mfaPreference", MfaPreferenceType.TEXT))
-      whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
-      val modelAndView = controller.mfaResendRequest("some token", MfaPreferenceType.TEXT)
-      assertThat(modelAndView.model).containsExactly(
-        entry("token", "some token"),
-        entry("mfaPreference", MfaPreferenceType.TEXT)
-      )
-    }
-
-    @Test
-    fun `mfaEmailResendRequest check service call`() {
-      whenever(
-        mfaService.buildModelAndViewWithMfaResendOptions(
-          anyString(),
-          anyString(),
-          anyString(),
-          eq(MfaPreferenceType.EMAIL),
-          anyString()
-        )
-      ).thenReturn(
-        ModelAndView("mfaResend")
+    fun `secondary email preference`() {
+      val user = createSampleUser(
+        secondaryEmail = "auth.user@digital.justice.gov.uk",
+        mobile = "07700900321",
+        mfaPreference = MfaPreferenceType.TEXT,
+        secondaryEmailVerified = true,
       )
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
-      controller.mfaResendRequest("some token", MfaPreferenceType.EMAIL)
+      whenever(tokenService.getUserFromToken(any(), any())).thenReturn(user)
+      val modelAndView = controller.mfaResendRequest("some token", MfaPreferenceType.SECONDARY_EMAIL)
       verify(tokenService).checkToken(TokenType.MFA, "some token")
+      assertThat(modelAndView.viewName).isEqualTo("mfaResend")
+      assertThat(modelAndView.model).containsOnly(
+        entry("token", "some token"), entry("mfaPreference", MfaPreferenceType.SECONDARY_EMAIL),
+        entry("secondaryemail", "auth******@******.gov.uk")
+      )
     }
 
     @Test
-    fun `mfaTextResendRequest check service call`() {
-      whenever(
-        mfaService.buildModelAndViewWithMfaResendOptions(
-          anyString(),
-          anyString(),
-          anyString(),
-          eq(MfaPreferenceType.TEXT),
-          anyString()
-        )
-      ).thenReturn(
-        ModelAndView("mfaResend")
+    fun `all verified`() {
+      val user = createSampleUser(
+        email = "auth.user@digital.justice.gov.uk",
+        verified = true,
+        secondaryEmail = "secondary@digital.justice.gov.uk",
+        secondaryEmailVerified = true,
+        mobile = "07700900321",
+        mobileVerified = true,
+        mfaPreference = MfaPreferenceType.TEXT,
       )
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.empty())
-      controller.mfaResendRequest("some token", MfaPreferenceType.TEXT)
+      whenever(tokenService.getUserFromToken(any(), any())).thenReturn(user)
+      val modelAndView = controller.mfaResendRequest("some token", MfaPreferenceType.SECONDARY_EMAIL)
       verify(tokenService).checkToken(TokenType.MFA, "some token")
+      assertThat(modelAndView.viewName).isEqualTo("mfaResend")
+      assertThat(modelAndView.model).containsOnly(
+        entry("token", "some token"), entry("mfaPreference", MfaPreferenceType.SECONDARY_EMAIL),
+        entry("secondaryemail", "seco******@******.gov.uk"),
+        entry("email", "auth******@******.gov.uk"), entry("mobile", "*******0321")
+      )
     }
 
     @Test
     fun `mfaResendEmailRequest error`() {
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
       val modelAndView = controller.mfaResendRequest("some token", MfaPreferenceType.EMAIL)
-      assertThat(modelAndView.viewName).isEqualTo("redirect:/login?error=mfainvalid")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/login")
+      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "mfainvalid"))
     }
-  }
 
-  @Test
-  fun `mfaResendTextRequest error`() {
-    val user = createSampleUser(
-      email = "auth.user@digital.justice.gov.uk",
-      mobile = "07700900321",
-      mfaPreference = MfaPreferenceType.TEXT
-    )
-    whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
-    whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
-    val modelAndView = controller.mfaResendRequest("some token", MfaPreferenceType.TEXT)
-    assertThat(modelAndView.viewName).isEqualTo("redirect:/login?error=mfainvalid")
+    @Test
+    fun `mfaResendTextRequest error`() {
+      val user = createSampleUser(
+        email = "auth.user@digital.justice.gov.uk",
+        mobile = "07700900321",
+        mfaPreference = MfaPreferenceType.TEXT
+      )
+      whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
+      whenever(tokenService.getUserFromToken(any(), anyString())).thenReturn(user)
+      val modelAndView = controller.mfaResendRequest("some token", MfaPreferenceType.TEXT)
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/login")
+      assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("error" to "mfainvalid"))
+    }
   }
 
   @Test
