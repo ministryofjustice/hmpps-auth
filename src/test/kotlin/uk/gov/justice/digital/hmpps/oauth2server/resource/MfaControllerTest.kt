@@ -336,7 +336,8 @@ class MfaControllerTest {
       whenever(
         mfaService.buildModelAndViewWithMfaResendOptions(
           anyString(),
-          any(),
+          anyString(),
+          anyString(),
           eq(MfaPreferenceType.EMAIL),
           anyString()
         )
@@ -353,7 +354,8 @@ class MfaControllerTest {
       whenever(
         mfaService.buildModelAndViewWithMfaResendOptions(
           anyString(),
-          any(),
+          anyString(),
+          anyString(),
           eq(MfaPreferenceType.TEXT),
           anyString()
         )
@@ -370,7 +372,8 @@ class MfaControllerTest {
       whenever(
         mfaService.buildModelAndViewWithMfaResendOptions(
           anyString(),
-          any(),
+          anyString(),
+          anyString(),
           eq(MfaPreferenceType.EMAIL),
           anyString()
         )
@@ -394,7 +397,8 @@ class MfaControllerTest {
       whenever(
         mfaService.buildModelAndViewWithMfaResendOptions(
           anyString(),
-          any(),
+          anyString(),
+          anyString(),
           eq(MfaPreferenceType.TEXT),
           anyString()
         )
@@ -413,7 +417,8 @@ class MfaControllerTest {
       whenever(
         mfaService.buildModelAndViewWithMfaResendOptions(
           anyString(),
-          any(),
+          anyString(),
+          anyString(),
           eq(MfaPreferenceType.EMAIL),
           anyString()
         )
@@ -430,7 +435,8 @@ class MfaControllerTest {
       whenever(
         mfaService.buildModelAndViewWithMfaResendOptions(
           anyString(),
-          any(),
+          anyString(),
+          anyString(),
           eq(MfaPreferenceType.TEXT),
           anyString()
         )

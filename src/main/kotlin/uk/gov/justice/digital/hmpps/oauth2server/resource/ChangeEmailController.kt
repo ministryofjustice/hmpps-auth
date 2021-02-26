@@ -16,7 +16,7 @@ class ChangeEmailController(private val tokenService: TokenService, private val 
 
   @GetMapping("/new-email")
   fun newEmailRequest(@RequestParam token: String): ModelAndView {
-    val userToken = tokenService.getToken(TokenType.CHANGE, token)
+    val userToken = tokenService.getToken(TokenType.ACCOUNT, token)
     val modelAndView = ModelAndView("changeEmail", "token", token)
     addUsernameAndIsAdminToModel(userToken.orElseThrow(), modelAndView)
     return modelAndView
@@ -42,7 +42,7 @@ class ChangeEmailController(private val tokenService: TokenService, private val 
 
   @GetMapping("/new-backup-email")
   fun newSecondaryEmailRequest(@RequestParam token: String, authentication: Authentication): ModelAndView {
-    val optionalErrorForToken = tokenService.checkToken(TokenType.CHANGE, token)
+    val optionalErrorForToken = tokenService.checkToken(TokenType.ACCOUNT, token)
     if (optionalErrorForToken.isPresent) {
       return ModelAndView("redirect:/account-details?error=mfa${optionalErrorForToken.get()}")
     }

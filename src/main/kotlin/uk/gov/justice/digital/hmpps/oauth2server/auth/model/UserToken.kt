@@ -53,7 +53,7 @@ class UserToken(
   fun resetExpiry() {
     val now = LocalDateTime.now()
     tokenExpiry =
-      if (tokenType == TokenType.CHANGE || tokenType == TokenType.MFA) now.plusMinutes(20) else now.plusDays(1)
+      if (tokenType == TokenType.ACCOUNT || tokenType == TokenType.CHANGE || tokenType == TokenType.MFA) now.plusMinutes(20) else now.plusDays(1)
   }
 
   fun hasTokenExpired(): Boolean = tokenExpiry.isBefore(LocalDateTime.now())
@@ -83,6 +83,7 @@ class UserToken(
     RESET("ResetPassword"),
     VERIFIED("VerifiedPassword"),
     CHANGE("ChangePassword"),
+    ACCOUNT("ChangeAccountDetails"),
     MFA("MFA"),
     MFA_CODE("MFACode"),
     SECONDARY("SecondEmailVerifyCode"),
