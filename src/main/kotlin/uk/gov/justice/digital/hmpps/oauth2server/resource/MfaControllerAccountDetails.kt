@@ -32,8 +32,11 @@ class MfaControllerAccountDetails(
   @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
 ) : AbstractMfaController(
   tokenService,
+  mfaService,
+  smokeTestEnabled,
   "AccountDetails",
   "/account-details",
+  "/account/mfa-challenge",
 ) {
   @GetMapping("/account/mfa-challenge")
   fun mfaChallengeRequestAccountDetail(
@@ -127,33 +130,12 @@ class MfaControllerAccountDetails(
   ): ModelAndView = createMfaResendRequest(token, mfaPreference, extraModel(contactType, passToken))
 
   @PostMapping("/account/mfa-resend")
-  @Throws(IOException::class, ServletException::class)
   fun mfaResend(
     @RequestParam contactType: String,
     @RequestParam token: String,
     @RequestParam passToken: String,
     @RequestParam mfaResendPreference: MfaPreferenceType,
-    request: HttpServletRequest,
-    response: HttpServletResponse,
-  ): ModelAndView {
-    val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
-    if (optionalErrorForToken.isPresent) {
-      return ModelAndView("redirect:/account-detail?error=mfa${optionalErrorForToken.get()}")
-    }
-
-    val code = mfaService.resendMfaCode(token, mfaResendPreference)
-    // shouldn't really get a code without a valid token, but cope with the scenario anyway
-    if (code.isNullOrEmpty()) {
-      return ModelAndView("redirect:/account-detail?error=mfainvalid")
-    }
-
-    val modelAndView = ModelAndView("redirect:/account/mfa-challenge", "token", token)
-      .addObject("contactType", contactType)
-      .addObject("mfaPreference", mfaResendPreference)
-      .addObject("passToken", passToken)
-    if (smokeTestEnabled) modelAndView.addObject("smokeCode", code)
-    return modelAndView
-  }
+  ): ModelAndView = createMfaResend(token, mfaResendPreference, extraModel(contactType, passToken))
 
   private fun extraModel(contactType: String, passToken: String) =
     mapOf("contactType" to contactType, "passToken" to passToken)
