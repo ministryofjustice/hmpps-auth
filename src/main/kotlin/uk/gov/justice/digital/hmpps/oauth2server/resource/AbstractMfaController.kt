@@ -2,9 +2,12 @@
 
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
+import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.MFA
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 
@@ -16,10 +19,41 @@ abstract class AbstractMfaController(
   private val startPageUrl: String,
   private val pageUrl: String,
 ) {
+  protected fun mfaChallengeRequest(
+    authentication: Authentication,
+    extraModel: Map<String, Any?> = emptyMap(),
+  ): ModelAndView = try {
+    // issue token to current mfa preference
+    val mfaData = mfaService.createTokenAndSendMfaCode(authentication.name)
+    val codeDestination = mfaService.getCodeDestination(mfaData.token, mfaData.mfaType)
+    val modelAndView = ModelAndView("mfaChallenge$viewNameSuffix", "token", mfaData.token)
+      .addObject("mfaPreference", mfaData.mfaType)
+      .addObject("codeDestination", codeDestination)
+      .addAllObjects(extraModel)
+    if (smokeTestEnabled) modelAndView.addObject("smokeCode", mfaData.code)
+    modelAndView
+  } catch (e: LockingAuthenticationProvider.MfaUnavailableException) {
+    ModelAndView("redirect:/$startPageUrl", "error", "mfaunavailable")
+  }
+
+  protected fun mfaChallengeRequestError(
+    @RequestParam error: String?,
+    @RequestParam token: String?,
+    @RequestParam mfaPreference: MfaPreferenceType?,
+    extraModel: Map<String, Any?> = emptyMap(),
+  ): ModelAndView {
+    val codeDestination = mfaService.getCodeDestination(token!!, mfaPreference!!)
+    return ModelAndView("mfaChallenge$viewNameSuffix", "token", token)
+      .addObject("mfaPreference", mfaPreference)
+      .addObject("codeDestination", codeDestination)
+      .addAllObjects(extraModel)
+      .addObject("error", error)
+  }
+
   protected fun createMfaResendRequest(
     token: String,
     mfaPreference: MfaPreferenceType,
-    extraModel: Map<String, Any?> = emptyMap()
+    extraModel: Map<String, Any?> = emptyMap(),
   ): ModelAndView {
     val optionalError = tokenService.checkToken(MFA, token)
 
