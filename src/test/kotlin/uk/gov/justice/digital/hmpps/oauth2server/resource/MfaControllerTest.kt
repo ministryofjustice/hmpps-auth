@@ -156,7 +156,8 @@ class MfaControllerTest {
     fun `mfaChallenge token invalid`() {
       whenever(tokenService.checkToken(any(), anyString())).thenReturn(Optional.of("invalid"))
       val modelAndView = controller.mfaChallenge("some token", MfaPreferenceType.EMAIL, "some code", request, response)
-      assertThat(modelAndView!!.viewName).isEqualTo("redirect:/login?error=mfainvalid")
+      assertThat(modelAndView!!.viewName).isEqualTo("redirect:/login")
+      assertThat(modelAndView.model).containsOnly(entry("error", "mfainvalid"))
     }
 
     @Test
@@ -223,7 +224,8 @@ class MfaControllerTest {
       whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(LoginFlowException("locked"))
       whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
       val modelAndView = controller.mfaChallenge("some token", MfaPreferenceType.EMAIL, "some code", request, response)
-      assertThat(modelAndView!!.viewName).isEqualTo("redirect:/login?error=locked")
+      assertThat(modelAndView!!.viewName).isEqualTo("redirect:/logout")
+      assertThat(modelAndView.model).containsOnly(entry("error", "locked"))
     }
 
     @Test
@@ -242,7 +244,8 @@ class MfaControllerTest {
       whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(LoginFlowException("locked"))
       whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
       val modelAndView = controller.mfaChallenge("some token", MfaPreferenceType.TEXT, "some code", request, response)
-      assertThat(modelAndView!!.viewName).isEqualTo("redirect:/login?error=locked")
+      assertThat(modelAndView!!.viewName).isEqualTo("redirect:/logout")
+      assertThat(modelAndView.model).containsOnly(entry("error", "locked"))
     }
 
     @Test

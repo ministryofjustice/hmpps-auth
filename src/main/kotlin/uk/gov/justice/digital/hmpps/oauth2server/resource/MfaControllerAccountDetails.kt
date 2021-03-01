@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
-import uk.gov.justice.digital.hmpps.oauth2server.service.LoginFlowException
-import uk.gov.justice.digital.hmpps.oauth2server.service.MfaFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import java.io.IOException
@@ -26,16 +24,18 @@ import javax.servlet.http.HttpServletResponse
 @Validated
 class MfaControllerAccountDetails(
   private val tokenService: TokenService,
-  private val telemetryClient: TelemetryClient,
-  private val mfaService: MfaService,
+  telemetryClient: TelemetryClient,
+  mfaService: MfaService,
   @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
 ) : AbstractMfaController(
   tokenService,
+  telemetryClient,
   mfaService,
   smokeTestEnabled,
   "AccountDetails",
   "/account-details",
   "/account/mfa-challenge",
+  "redirect:/account/mfa-challenge-error",
 ) {
   @GetMapping("/account/mfa-challenge")
   fun mfaChallengeRequestAccountDetail(
@@ -43,7 +43,13 @@ class MfaControllerAccountDetails(
     @RequestParam contactType: String,
     @RequestParam passToken: String?,
   ): ModelAndView {
-    passTokenInvalidForEmail(contactType, passToken)?.let { return ModelAndView("redirect:/account-details", "error", it) }
+    passTokenInvalidForEmail(contactType, passToken)?.let {
+      return ModelAndView(
+        "redirect:/account-details",
+        "error",
+        it
+      )
+    }
     return mfaChallengeRequest(authentication, extraModel(contactType, passToken))
   }
 
@@ -62,7 +68,13 @@ class MfaControllerAccountDetails(
     @RequestParam passToken: String?,
     @RequestParam mfaPreference: MfaPreferenceType?,
   ): ModelAndView {
-    passTokenInvalidForEmail(contactType, passToken)?.let { return ModelAndView("redirect:/account-details", "error", it) }
+    passTokenInvalidForEmail(contactType, passToken)?.let {
+      return ModelAndView(
+        "redirect:/account-details",
+        "error",
+        it
+      )
+    }
 
     return mfaChallengeRequestError(error, token, mfaPreference, extraModel(contactType, passToken))
   }
@@ -77,37 +89,14 @@ class MfaControllerAccountDetails(
     @RequestParam contactType: String,
     request: HttpServletRequest,
     response: HttpServletResponse,
-  ): ModelAndView? {
-    val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
-    if (optionalErrorForToken.isPresent) {
-      return ModelAndView("redirect:/account-details", "error", "mfa${optionalErrorForToken.get()}")
-    }
-    // can just grab token here as validated above
-    val username = tokenService.getToken(TokenType.MFA, token).map { it.user.username }.orElseThrow()
-
-    try {
-      mfaService.validateAndRemoveMfaCode(token, code)
-    } catch (e: MfaFlowException) {
-      return ModelAndView("redirect:/account/mfa-challenge-error")
-        .addObject("token", token)
-        .addAllObjects(extraModel(contactType, passToken))
-        .addObject("error", e.error)
-        .addObject("mfaPreference", mfaPreference)
-    } catch (e: LoginFlowException) {
-      return ModelAndView("redirect:/logout", "error", e.error)
-    }
-
-    // success, so forward on
-    telemetryClient.trackEvent("MFAAuthenticateSuccess", mapOf("username" to username), null)
-
-    return continueToChangeAccountDetails(username, contactType)
+  ): ModelAndView? = mfaChallenge(token, mfaPreference, code, extraModel(contactType, passToken)) {
+    continueToChangeAccountDetails(it, contactType)
   }
 
   private fun continueToChangeAccountDetails(username: String, contactType: String): ModelAndView {
     // successfully passed 2fa, so generate change password token
     val token = tokenService.createToken(TokenType.ACCOUNT, username)
 
-    @Suppress("SpringMVCViewInspection")
     return ModelAndView("redirect:/new-$contactType", "token", token)
   }
 
