@@ -33,7 +33,7 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
   private lateinit var accountMfaEmailPage: AccountMfaEmailPage
 
   @Test
-  fun `Change mobile flow resend verification code`() {
+  fun `Change mobile flow resend security code`() {
     goTo(loginPage).loginAs("AUTH_CHANGE_MOBILE_ADD")
 
     goTo(accountDetailsPage).navigateToChangeMobile()
@@ -104,7 +104,7 @@ class VerifyMobileSpecification : AbstractAuthSpecification() {
 
 @PageUrl("/mobile-resend")
 class MobileVerificationResendPage : AuthPage<MobileVerificationResendPage>(
-  "HMPPS Digital Services - Resend Verification Code",
+  "HMPPS Digital Services - Resend Security Code",
   "Send another text message"
 ) {
   @FindBy(css = "input[type='submit']")
