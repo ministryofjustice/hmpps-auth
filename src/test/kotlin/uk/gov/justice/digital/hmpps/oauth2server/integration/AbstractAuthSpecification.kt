@@ -126,11 +126,13 @@ open class AuthPage<T>(
     return this as T
   }
 
-  private fun isAtError() {
+  internal fun isAtError(): T {
     super.isAt()
 
     assertThat(window().title()).isEqualTo("Error: $title")
     assertThat(headingText.text()).isEqualTo(heading)
+
+    return this as T
   }
 
   internal fun checkError(error: String): T {

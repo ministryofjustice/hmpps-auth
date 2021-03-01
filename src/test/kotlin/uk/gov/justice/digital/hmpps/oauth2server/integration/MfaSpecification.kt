@@ -655,8 +655,14 @@ open class MfaTextResendCodePage :
 @PageUrl("/account/mfa-challenge")
 class AccountMfaEmailPage : MfaEmailPage()
 
+@PageUrl("/account/mfa-challenge-error")
+class AccountMfaEmailErrorPage : MfaEmailPage()
+
 @PageUrl("/account/mfa-challenge")
 class AccountMfaTextPage : MfaTextPage()
+
+@PageUrl("/account/mfa-challenge-error")
+class AccountMfaTextErrorPage : MfaTextPage()
 
 @PageUrl("/account/mfa-challenge")
 class AccountMfaEmailResendCodePage : MfaEmailResendCodePage()

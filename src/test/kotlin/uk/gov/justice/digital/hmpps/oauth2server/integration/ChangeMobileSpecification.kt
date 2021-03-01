@@ -31,7 +31,13 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
   private lateinit var accountMfaEmailPage: AccountMfaEmailPage
 
   @Page
+  private lateinit var accountMfaEmailErrorPage: AccountMfaEmailErrorPage
+
+  @Page
   private lateinit var accountMfaTextPage: AccountMfaTextPage
+
+  @Page
+  private lateinit var accountMfaTextErrorPage: AccountMfaTextErrorPage
 
   @Page
   private lateinit var accountMfaEmailResendCodePage: AccountMfaEmailResendCodePage
@@ -57,8 +63,7 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage
-      .submitCode(validMfaCode)
+    accountMfaEmailPage.submitCode(validMfaCode)
 
     changeMobilePage
       .addMobileAs("07987654321")
@@ -81,12 +86,10 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage
-      .submitWithoutCode()
-      .enterTheCodeError()
+    accountMfaEmailPage.submitWithoutCode()
+    accountMfaEmailErrorPage.isAtError().enterTheCodeError()
 
-    accountMfaEmailPage
-      .submitCode(validMfaCode)
+    accountMfaEmailPage.submitCode(validMfaCode)
 
     changeMobilePage
       .isAtPage()
@@ -101,9 +104,8 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage
-      .submitWithoutCode()
-      .enterTheCodeError()
+    accountMfaEmailPage.submitWithoutCode()
+    accountMfaEmailErrorPage.isAtError().enterTheCodeError()
       .submitWithoutCode()
       .enterTheCodeError()
       .submitWithoutCode()
@@ -112,14 +114,11 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     driver.navigate().back()
     driver.navigate().back()
 
-    accountMfaEmailPage
-      .enterTheCodeError()
+    accountMfaEmailErrorPage.isAtError().enterTheCodeError()
 
-    accountMfaEmailPage
-      .submitCode(validMfaCode)
+    accountMfaEmailPage.submitCode(validMfaCode)
 
-    changeMobilePage
-      .isAtPage()
+    changeMobilePage.isAtPage()
   }
 
   @Test
@@ -131,8 +130,7 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage
-      .submitCode(validMfaCode)
+    accountMfaEmailPage.submitCode(validMfaCode)
 
     addMobilePage
       .setMobileAs("07")
@@ -150,11 +148,9 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage
-      .submitCode(validMfaCode)
+    accountMfaEmailPage.submitCode(validMfaCode)
 
-    changeMobilePage
-      .setMobileAs("07700900322")
+    changeMobilePage.setMobileAs("07700900322")
 
     verifyMobileSentPage.isAtPage()
       .submitCode("123456")
@@ -171,11 +167,9 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage
-      .submitCode(validMfaCode)
+    accountMfaEmailPage.submitCode(validMfaCode)
 
-    changeMobilePage
-      .updateMobileAs("07700900321", "07700900321")
+    changeMobilePage.updateMobileAs("07700900321", "07700900321")
 
     verifyMobileAlreadyPage.isAtPage()
       .continueToAccountDetailsPage()
@@ -298,9 +292,8 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
-    accountMfaEmailPage
-      .submitCode("123")
-      .checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage.submitCode("123")
+    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
       .submitCode("123")
@@ -319,9 +312,8 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
-    accountMfaTextPage
-      .submitCode("123")
-      .checkTextCodeIsIncorrectError()
+    accountMfaTextPage.submitCode("123")
+    accountMfaTextErrorPage.isAtError().checkTextCodeIsIncorrectError()
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
       .submitCode("123")
@@ -340,9 +332,8 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
-    accountMfaEmailPage
-      .submitCode("123")
-      .checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage.submitCode("123")
+    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
       .submitCode("123")
@@ -363,9 +354,8 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage
-      .submitCode("123")
-      .checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage.submitCode("123")
+    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
       .submitCode(validMfaCode)
@@ -395,9 +385,8 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaTextPage.getCode()
-    accountMfaTextPage
-      .submitCode("123")
-      .checkTextCodeIsIncorrectError()
+    accountMfaTextPage.submitCode("123")
+    accountMfaTextErrorPage.isAtError().checkTextCodeIsIncorrectError()
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
       .submitCode(validMfaCode)
@@ -427,9 +416,8 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage
-      .submitCode("123")
-      .checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage.submitCode("123")
+    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
       .submitCode(validMfaCode)
