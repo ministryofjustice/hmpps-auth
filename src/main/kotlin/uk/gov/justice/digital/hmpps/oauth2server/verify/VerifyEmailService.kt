@@ -178,11 +178,6 @@ class VerifyEmailService(
     if (email.matches(Regex(".*@.*\\.gsi\\.gov\\.uk"))) throw VerifyEmailException("gsi")
   }
 
-  fun maskedSecondaryEmailFromUsername(username: String): String {
-    val user = userRepository.findByUsername(username)
-    return user.orElseThrow().maskedSecondaryEmail
-  }
-
   @Throws(VerifyEmailException::class)
   fun validateEmailAddressExcludingGsi(email: String, emailType: EmailType) {
     val atIndex = StringUtils.indexOf(email, '@'.toInt())

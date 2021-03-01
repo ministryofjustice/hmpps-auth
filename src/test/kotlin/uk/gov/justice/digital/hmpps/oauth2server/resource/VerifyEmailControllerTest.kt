@@ -575,7 +575,7 @@ class VerifyEmailControllerTest {
   @Test
   fun `verify secondary email link expired link resend`() {
     whenever(tokenService.getUserFromToken(UserToken.TokenType.SECONDARY, "token"))
-      .thenReturn(createSampleUser(username = "bob"))
+      .thenReturn(createSampleUser(username = "bob", secondaryEmail = "bob@gmail.com"))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/expired"))
     whenever(
       verifyEmailService.resendVerificationCodeSecondaryEmail(
@@ -583,7 +583,6 @@ class VerifyEmailControllerTest {
         anyString()
       )
     ).thenReturn(Optional.of("verifyLink"))
-    whenever(verifyEmailService.maskedSecondaryEmailFromUsername(anyString())).thenReturn("b******@******ail.com")
     val modelAndView = verifyEmailController.verifySecondaryEmailLinkExpired("token", request)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailExpired")
     assertThat(modelAndView.model).containsOnly(entry("email", "b******@******ail.com"))
@@ -592,7 +591,7 @@ class VerifyEmailControllerTest {
   @Test
   fun `verify secondary email link expired link resend smoke test enabled`() {
     whenever(tokenService.getUserFromToken(UserToken.TokenType.SECONDARY, "token"))
-      .thenReturn(createSampleUser(username = "bob"))
+      .thenReturn(createSampleUser(username = "bob", secondaryEmail = "bob@gmail.com"))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/expired"))
     whenever(
       verifyEmailService.resendVerificationCodeSecondaryEmail(
@@ -600,7 +599,6 @@ class VerifyEmailControllerTest {
         anyString()
       )
     ).thenReturn(Optional.of("verifyLink"))
-    whenever(verifyEmailService.maskedSecondaryEmailFromUsername(anyString())).thenReturn("b******@******ail.com")
     val modelAndView = verifyEmailControllerSmokeTestEnabled.verifySecondaryEmailLinkExpired("token", request)
     assertThat(modelAndView.viewName).isEqualTo("verifyEmailExpired")
     assertThat(modelAndView.model).containsExactly(entry("email", "b******@******ail.com"), entry("link", "verifyLink"))

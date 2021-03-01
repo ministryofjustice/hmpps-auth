@@ -1,3 +1,5 @@
+@file:Suppress("SpringMVCViewInspection")
+
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
@@ -297,7 +299,7 @@ class VerifyEmailController(
     val url = originalUrl.replace("expired", "confirm?token=")
     val verifyCode = verifyEmailService.resendVerificationCodeSecondaryEmail(user.username, url)
     val modelAndView = ModelAndView("verifyEmailExpired")
-    modelAndView.addObject("email", verifyEmailService.maskedSecondaryEmailFromUsername(user.username))
+    modelAndView.addObject("email", user.maskedSecondaryEmail)
     if (smokeTestEnabled) modelAndView.addObject("link", verifyCode.orElseThrow())
     return modelAndView
   }

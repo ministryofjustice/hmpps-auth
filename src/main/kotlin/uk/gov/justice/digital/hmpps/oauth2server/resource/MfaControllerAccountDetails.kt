@@ -1,3 +1,5 @@
+@file:Suppress("SpringJavaInjectionPointsAutowiringInspection", "SpringMVCViewInspection")
+
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
@@ -28,8 +30,11 @@ class MfaControllerAccountDetails(
   private val telemetryClient: TelemetryClient,
   private val mfaService: MfaService,
   @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
+) : AbstractMfaController(
+  tokenService,
+  "AccountDetails",
+  "/account-details",
 ) {
-
   @GetMapping("/account/mfa-challenge")
   fun mfaChallengeRequestAccountDetail(
     authentication: Authentication,
@@ -119,21 +124,7 @@ class MfaControllerAccountDetails(
     @RequestParam token: String,
     @RequestParam passToken: String,
     @RequestParam mfaPreference: MfaPreferenceType
-  ): ModelAndView {
-
-    val optionalError = tokenService.checkToken(TokenType.MFA, token)
-
-    return optionalError.map { ModelAndView("redirect:/account-detail?error=mfa$it") }
-      .orElseGet {
-        mfaService.buildModelAndViewWithMfaResendOptions(
-          "mfaResendAccountDetails",
-          token,
-          passToken,
-          mfaPreference,
-          contactType
-        )
-      }
-  }
+  ): ModelAndView = createMfaResendRequest(token, mfaPreference, extraModel(contactType, passToken))
 
   @PostMapping("/account/mfa-resend")
   @Throws(IOException::class, ServletException::class)
@@ -163,4 +154,7 @@ class MfaControllerAccountDetails(
     if (smokeTestEnabled) modelAndView.addObject("smokeCode", code)
     return modelAndView
   }
+
+  private fun extraModel(contactType: String, passToken: String) =
+    mapOf("contactType" to contactType, "passToken" to passToken)
 }

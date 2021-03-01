@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
@@ -104,31 +103,6 @@ class MfaService(
     }
 
     return code
-  }
-
-  fun buildModelAndViewWithMfaResendOptions(
-    view: String,
-    token: String,
-    passToken: String,
-    mfaPreference: MfaPreferenceType,
-    contactType: String
-  ): ModelAndView {
-    val user = tokenService.getUserFromToken(TokenType.MFA, token)
-    val modelAndView = ModelAndView(view, "token", token)
-      .addObject("mfaPreference", mfaPreference)
-      .addObject("contactType", contactType)
-      .addObject("passToken", passToken)
-
-    if (user.verified) {
-      modelAndView.addObject("email", user.maskedEmail)
-    }
-    if (user.isMobileVerified) {
-      modelAndView.addObject("mobile", user.maskedMobile)
-    }
-    if (user.isSecondaryEmailVerified) {
-      modelAndView.addObject("secondaryemail", user.maskedSecondaryEmail)
-    }
-    return modelAndView
   }
 
   private fun emailCode(user: User, code: String, email: String) {
