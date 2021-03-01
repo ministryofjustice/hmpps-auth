@@ -141,7 +141,7 @@ open class VerifySecondaryEmailSentPage : AuthPage<VerifySecondaryEmailSentPage>
 
 @PageUrl("/backup-email-resend")
 class SecondaryEmailVerificationResendPage : AuthPage<SecondaryEmailVerificationResendPage>(
-  "HMPPS Digital Services - Resend Verification Code",
+  "HMPPS Digital Services - Resend Security Code",
   "Resend security code"
 ) {
   @FindBy(css = "input[type='submit']")

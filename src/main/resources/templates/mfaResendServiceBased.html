@@ -18,9 +18,10 @@
     arrive. If you do not receive the email, you can resend
     it.</p>
 
-  <form th:action="@{/mfa-resend}" method="POST" id="mfaForm" autocomplete="off" novalidate>
+  <form th:action="@{/service-mfa-resend}" method="POST" id="mfaForm" autocomplete="off" novalidate>
     <div class="govuk-form-group">
       <input id="token" name="token" type="hidden" data-element-id="token" th:value="${token}">
+      <input type="hidden" name="user_oauth_approval" th:value="${user_oauth_approval}">
       <input id="mfaPreference" name="mfaPreference" type="hidden" data-element-id="mfaPreference"
              th:value="${mfaPreference}">
     </div>

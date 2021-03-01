@@ -8,7 +8,7 @@
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds"
-     th:with="mfaPreference=${param.mfaPreference ?: mfaPreference}">
+     th:with="token=${#strings.isEmpty(token) ? param.token : token}, mfaPreference=${param.mfaPreference ?: mfaPreference}, error=${param.error ?: error}">
   <div th:unless="${#arrays.isEmpty(error)}" class="govuk-error-summary" aria-labelledby="error-summary-title"
        role="alert"
        data-module="govuk-error-summary">
@@ -44,6 +44,7 @@
 
   <form th:action="@{/service-mfa-challenge}" method="POST" id="mfaForm" autocomplete="off" novalidate>
     <div class="govuk-form-group">
+      <input id="token" name="token" type="hidden" data-element-id="token" th:value="${token}">
       <input id="mfaPreference" name="mfaPreference" type="hidden" data-element-id="mfaPreference"
              th:value="${mfaPreference}">
       <input type="hidden" name="user_oauth_approval" th:value="${user_oauth_approval}">
@@ -74,10 +75,10 @@
   <div class="govuk-form-group">
     <ul class="govuk-list">
       <li><a class="govuk-link" th:if="${#strings.equals(mfaPreference, 'TEXT')}"
-             th:href="@{/service-mfa-resend(mfaPreference=${mfaPreference})}"
+             th:href="@{/service-mfa-resend(token=${token},mfaPreference=${mfaPreference},user_oauth_approval=${user_oauth_approval})}"
              id="resend-mfa-text">Not received a text message?</a></li>
       <li><a class="govuk-link" th:unless="${#strings.equals(mfaPreference, 'TEXT')}"
-             th:href="@{/service-mfa-resend(mfaPreference=${mfaPreference})}"
+             th:href="@{/service-mfa-resend(token=${token},mfaPreference=${mfaPreference},user_oauth_approval=${user_oauth_approval})}"
              id="resend-mfa-email">Not received an email?</a></li>
     </ul>
   </div>

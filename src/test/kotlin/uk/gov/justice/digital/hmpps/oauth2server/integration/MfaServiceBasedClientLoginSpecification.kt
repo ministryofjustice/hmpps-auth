@@ -29,6 +29,9 @@ class MfaServiceBasedClientLoginSpecification : AbstractDeliusAuthSpecification(
   @Page
   internal lateinit var serviceBasedMfaFromAuthorizeEmailPage: ServiceBasedMfaFromAuthorizeEmailPage
 
+  @Page
+  private lateinit var serviceBasedMfaEmailResendCodePage: ServiceBasedMfaEmailResendCodePage
+
   @Test
   fun `Sign in as azure ad user with multiple accounts`() {
     AzureOIDCExtension.azureOIDC.stubToken("Auth_Test@digital.Justice.gov.UK")
@@ -64,6 +67,20 @@ class MfaServiceBasedClientLoginSpecification : AbstractDeliusAuthSpecification(
       .jsonPath(".sub").isEqualTo("ITAG_USER")
       .jsonPath(".auth_source").isEqualTo("nomis")
   }
+
+  @Test
+  fun `Mfa preference email - I would like the MFA code to be resent by email`() {
+    clientAccess(
+      {
+        loginPage.isAtPage().submitLogin("ITAG_USER", "password")
+        serviceBasedMfaFromAuthorizeEmailPage.isAtPage().resendCodeLink()
+        serviceBasedMfaEmailResendCodePage.isAtPage().resendCodeByEmail()
+        serviceBasedMfaFromAuthorizeEmailPage.submitCode()
+      },
+      "service-mfa-test-client"
+    )
+      .jsonPath(".user_name").isEqualTo("ITAG_USER")
+  }
 }
 
 @PageUrl("/service-mfa-challenge")
@@ -73,3 +90,8 @@ class ServiceBasedMfaEmailPage : MfaEmailPage()
 // append the session id to the url and can't do redirect with session cookie so have to forward instead
 @PageUrl("/oauth/authorize")
 class ServiceBasedMfaFromAuthorizeEmailPage : MfaEmailPage()
+
+@PageUrl("/service-mfa-resend")
+class ServiceBasedMfaTextResendCodePage : MfaTextResendCodePage()
+@PageUrl("/service-mfa-resend")
+class ServiceBasedMfaEmailResendCodePage : MfaEmailResendCodePage()
