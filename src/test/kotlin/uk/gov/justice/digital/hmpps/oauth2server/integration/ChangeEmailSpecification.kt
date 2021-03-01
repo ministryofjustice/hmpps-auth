@@ -43,7 +43,13 @@ class ChangeEmailSpecification : AbstractDeliusAuthSpecification() {
   private lateinit var accountMfaEmailPage: AccountMfaEmailPage
 
   @Page
+  private lateinit var accountMfaEmailErrorPage: AccountMfaEmailErrorPage
+
+  @Page
   private lateinit var accountMfaTextPage: AccountMfaTextPage
+
+  @Page
+  private lateinit var accountMfaTextErrorPage: AccountMfaTextErrorPage
 
   @Page
   private lateinit var accountMfaEmailResendCodePage: AccountMfaEmailResendCodePage
@@ -419,9 +425,8 @@ class ChangeEmailSpecification : AbstractDeliusAuthSpecification() {
 
     passwordPromptForEmailPage.inputAndConfirmCurrentPassword("password123456")
 
-    accountMfaEmailPage
-      .submitCode("123")
-      .checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage.submitCode("123")
+    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
       .submitCode("123")
@@ -442,9 +447,8 @@ class ChangeEmailSpecification : AbstractDeliusAuthSpecification() {
 
     passwordPromptForEmailPage.inputAndConfirmCurrentPassword("password123456")
 
-    accountMfaTextPage
-      .submitCode("123")
-      .checkTextCodeIsIncorrectError()
+    accountMfaTextPage.submitCode("123")
+    accountMfaTextErrorPage.isAtError().checkTextCodeIsIncorrectError()
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
       .submitCode("123")
@@ -465,9 +469,8 @@ class ChangeEmailSpecification : AbstractDeliusAuthSpecification() {
 
     passwordPromptForEmailPage.inputAndConfirmCurrentPassword("password123456")
 
-    accountMfaEmailPage
-      .submitCode("123")
-      .checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage.submitCode("123")
+    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
       .submitCode("123")
@@ -490,9 +493,8 @@ class ChangeEmailSpecification : AbstractDeliusAuthSpecification() {
     passwordPromptForEmailPage.inputAndConfirmCurrentPassword("password123456")
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage
-      .submitCode("123")
-      .checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage.submitCode("123")
+    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
       .submitCode(validMfaCode)
@@ -524,9 +526,8 @@ class ChangeEmailSpecification : AbstractDeliusAuthSpecification() {
     passwordPromptForEmailPage.inputAndConfirmCurrentPassword("password123456")
 
     val validMfaCode = accountMfaTextPage.getCode()
-    accountMfaTextPage
-      .submitCode("123")
-      .checkTextCodeIsIncorrectError()
+    accountMfaTextPage.submitCode("123")
+    accountMfaTextErrorPage.isAtError().checkTextCodeIsIncorrectError()
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
       .submitCode(validMfaCode)
@@ -558,9 +559,8 @@ class ChangeEmailSpecification : AbstractDeliusAuthSpecification() {
     passwordPromptForEmailPage.inputAndConfirmCurrentPassword("password123456")
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage
-      .submitCode("123")
-      .checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage.submitCode("123")
+    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
       .submitCode(validMfaCode)
