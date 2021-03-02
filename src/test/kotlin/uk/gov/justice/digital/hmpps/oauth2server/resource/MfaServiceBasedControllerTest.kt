@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSuccessHandler
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider
 import uk.gov.justice.digital.hmpps.oauth2server.service.LoginFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaData
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaFlowException
@@ -85,6 +86,17 @@ class MfaServiceBasedControllerTest {
         entry("token", "some token"),
         entry("user_oauth_approval", "bob/user"),
       )
+    }
+
+    @Test
+    fun `mfaChallengeRequest unavailable`() {
+      whenever(mfaService.createTokenAndSendMfaCode(anyString())).thenThrow(
+        LockingAuthenticationProvider.MfaUnavailableException("some msg")
+      )
+      whenever(mfaService.getCodeDestination(anyString(), any())).thenReturn("")
+      val modelAndView = controller.mfaChallengeRequestServiceBased(authentication, "bob/user")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/")
+      assertThat(modelAndView.model).containsOnly(entry("error", "mfaunavailable"))
     }
   }
 

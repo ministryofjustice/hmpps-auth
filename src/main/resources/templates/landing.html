@@ -6,30 +6,63 @@
   <title>Home</title>
 </head>
 <body>
-<div layout:fragment="content">
-  <h1 class="govuk-heading-l">Select service</h1>
+<div layout:fragment="content" class="govuk-grid-column-full">
+  <div class="govuk-body">
+    <div th:unless="${#arrays.isEmpty(param.error)}" class="govuk-error-summary" aria-labelledby="error-summary-title"
+         role="alert"
+         data-module="govuk-error-summary">
+      <h2 class="govuk-error-summary__title" id="error-summary">
+        There is a problem
+      </h2>
+      <div class="govuk-error-summary__body" id="error-detail">
+        <ul class="govuk-list govuk-error-summary__list">
+          <li th:each="error: ${param.error}" th:switch="${error}">
+            <a th:case="'mfainvalid'" href="#username"
+               th:text="#{login.mfainvalid(${@environment.getProperty('application.authentication.lockout-count')})}">
+              Mfa invalid message</a>
+            <a th:case="'mfaexpired'" href="#username"
+               th:text="#{login.mfaexpired(${@environment.getProperty('application.authentication.lockout-count')})}">
+              Mfa expired message</a>
+            <a th:case="'tokeninvalid'" href="#email" th:text="#{verifyemail.token.invalid}">token invalid message</a>
+            <a th:case="'tokenexpired'" href="#email" th:text="#{verifyemail.token.expired}">token invalid message</a>
+            <a th:case="'secondarytokeninvalid'" href="#secondaryEmail"
+               th:text="#{verifyemail.secondary.token.invalid}">token invalid message</a>
+            <a th:case="'secondarytokenexpired'" href="#secondaryEmail"
+               th:text="#{verifyemail.secondary.token.expired}">token expired message</a>
+            <a th:case="'mobiletokeninvalid'" href="#mobile" th:text="#{verifymobile.token.invalid}">token invalid
+              message</a>
+            <a th:case="'mobiletokenexpired'" href="#mobile" th:text="#{verifymobile.token.expired}">token expired
+              message</a>
+            <a th:case="'nomobile'" href="#mobile" th:text="#{verifymobile.nomobile}">no mobile message</a>
+            <a th:case="'mfaunavailable'" href="#mobile" th:text="#{mfa.unavailable}">mfa unavailable message</a>
+          </li>
+        </ul>
+      </div>
+    </div>
 
-  <div class="govuk-grid-row auth-card-group" th:each="row: ${#numbers.sequence(0, services.size(), 3)}">
-    <div th:each="i: ${#numbers.sequence(row, row + 2)}" th:if="${i &lt; services.size()}"
-         th:with="service=${services.get(i)}" class="govuk-grid-column-one-third auth-card-group__item">
-      <div class="auth-card auth-card--clickable">
-        <h3 class="govuk-heading-m auth-card__heading">
-          <a class="govuk-link auth-card__link" th:id="${service.code}" th:href="${service.url}"
-             th:text="${service.name}">
-            New NOMIS
-          </a>
-        </h3>
-        <p class="govuk-body auth-card__description" th:text="${service.description}">
-          Some descriptive text
-        </p>
+    <h1 class="govuk-heading-l">Select service</h1>
+
+    <div class="govuk-grid-row auth-card-group" th:each="row: ${#numbers.sequence(0, services.size(), 3)}">
+      <div th:each="i: ${#numbers.sequence(row, row + 2)}" th:if="${i &lt; services.size()}"
+           th:with="service=${services.get(i)}" class="govuk-grid-column-one-third auth-card-group__item">
+        <div class="auth-card auth-card--clickable">
+          <h3 class="govuk-heading-m auth-card__heading">
+            <a class="govuk-link auth-card__link" th:id="${service.code}" th:href="${service.url}"
+               th:text="${service.name}">
+              New NOMIS
+            </a>
+          </h3>
+          <p class="govuk-body auth-card__description" th:text="${service.description}">
+            Some descriptive text
+          </p>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<th:block layout:fragment="script">
-  <script th:src="@{/js/card.js}"></script>
-</th:block>
+  <th:block layout:fragment="script">
+    <script th:src="@{/js/card.js}"></script>
+  </th:block>
 
 </body>
 </html>
