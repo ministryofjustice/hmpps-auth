@@ -9,6 +9,7 @@ import org.fluentlenium.core.annotation.Page
 import org.fluentlenium.core.annotation.PageUrl
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.oauth2server.resource.AzureOIDCExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientExtension
 
@@ -24,10 +25,16 @@ class MfaServiceBasedClientLoginSpecification : AbstractDeliusAuthSpecification(
   internal lateinit var selectUserPage: SelectUserPage
 
   @Page
+  private lateinit var homePage: HomePage
+
+  @Page
   internal lateinit var serviceBasedMfaEmailPage: ServiceBasedMfaEmailPage
 
   @Page
   internal lateinit var serviceBasedMfaFromAuthorizeEmailPage: ServiceBasedMfaFromAuthorizeEmailPage
+
+  @Page
+  internal lateinit var serviceBasedMfaFromAuthorizeTextPage: ServiceBasedMfaFromAuthorizeTextPage
 
   @Page
   private lateinit var serviceBasedMfaEmailResendCodePage: ServiceBasedMfaEmailResendCodePage
@@ -35,14 +42,11 @@ class MfaServiceBasedClientLoginSpecification : AbstractDeliusAuthSpecification(
   @Test
   fun `Sign in as azure ad user with multiple accounts`() {
     AzureOIDCExtension.azureOIDC.stubToken("Auth_Test@digital.Justice.gov.UK")
-    clientAccess(
-      {
-        loginPage.clickAzureOIDCLink()
-        selectUserPage.isAtPage().selectUser("auth", "AUTH_CHANGE_TEST")
-        serviceBasedMfaEmailPage.isAtPage().submitCode()
-      },
-      "service-mfa-test-client"
-    )
+    clientMfaServiceAccess {
+      loginPage.clickAzureOIDCLink()
+      selectUserPage.isAtPage().selectUser("auth", "AUTH_CHANGE_TEST")
+      serviceBasedMfaEmailPage.isAtPage().submitCode()
+    }
       .jsonPath(".user_name").isEqualTo("AUTH_CHANGE_TEST")
       .jsonPath(".user_id").isEqualTo("2e285ccd-dcfd-4497-9e22-d6e8e10a2b3f")
       .jsonPath(".sub").isEqualTo("AUTH_CHANGE_TEST")
@@ -55,13 +59,12 @@ class MfaServiceBasedClientLoginSpecification : AbstractDeliusAuthSpecification(
 
   @Test
   fun `Sign in as nomis user`() {
-    clientAccess(
-      {
-        loginPage.isAtPage().submitLogin("ITAG_USER", "password")
-        serviceBasedMfaFromAuthorizeEmailPage.isAtPage().submitCode()
-      },
-      "service-mfa-test-client"
-    )
+    clientMfaServiceAccess {
+      loginPage.isAtPage().submitLogin("ITAG_USER", "password")
+      serviceBasedMfaFromAuthorizeEmailPage.isAtPage()
+        .assertEmailCodeDestination("itag******@******.gov.uk")
+        .submitCode()
+    }
       .jsonPath(".user_name").isEqualTo("ITAG_USER")
       .jsonPath(".user_id").isEqualTo("1")
       .jsonPath(".sub").isEqualTo("ITAG_USER")
@@ -69,18 +72,66 @@ class MfaServiceBasedClientLoginSpecification : AbstractDeliusAuthSpecification(
   }
 
   @Test
+  fun `Sign in as auth user with text MFA`() {
+    goTo(loginPage).loginAs("AUTH_PREF_TEXT")
+    clientMfaServiceAccess {
+      serviceBasedMfaFromAuthorizeTextPage.isAtPage()
+        .assertMobileCodeDestination("*******0321")
+        .submitCode()
+    }.jsonPath(".user_name").isEqualTo("AUTH_PREF_TEXT")
+  }
+
+  @Test
+  fun `Sign in as auth user with secondary email MFA`() {
+    goTo(loginPage).loginAs("AUTH_PREF_2ND_EMAIL")
+    clientMfaServiceAccess {
+      serviceBasedMfaFromAuthorizeEmailPage.isAtPage()
+        .assertEmailCodeDestination("jo******@******ith.com")
+        .submitCode()
+    }.jsonPath(".user_name").isEqualTo("AUTH_PREF_2ND_EMAIL")
+  }
+
+  @Test
   fun `Mfa preference email - I would like the MFA code to be resent by email`() {
-    clientAccess(
-      {
-        loginPage.isAtPage().submitLogin("ITAG_USER", "password")
-        serviceBasedMfaFromAuthorizeEmailPage.isAtPage().resendCodeLink()
-        serviceBasedMfaEmailResendCodePage.isAtPage().resendCodeByEmail()
-        serviceBasedMfaFromAuthorizeEmailPage.submitCode()
-      },
-      "service-mfa-test-client"
-    )
+    clientMfaServiceAccess {
+      loginPage.isAtPage().submitLogin("ITAG_USER", "password")
+      serviceBasedMfaFromAuthorizeEmailPage.isAtPage().resendCodeLink()
+      serviceBasedMfaEmailResendCodePage.isAtPage().resendCodeByEmail()
+      serviceBasedMfaFromAuthorizeEmailPage.submitCode()
+    }
       .jsonPath(".user_name").isEqualTo("ITAG_USER")
   }
+
+  @Test
+  fun `Sign in sets mfa passed in jwt cookie to true`() {
+    goTo(loginPage).loginAs("AUTH_PREF_TEXT")
+    clientMfaServiceAccess {
+      serviceBasedMfaFromAuthorizeTextPage.isAtPage()
+        .assertMobileCodeDestination("*******0321")
+        .submitCode()
+    }.jsonPath(".user_name").isEqualTo("AUTH_PREF_TEXT")
+    goTo(homePage).isAt()
+    val jwt = homePage.parseJwt()
+    assertThat(jwt.getBooleanClaim("passed_mfa")).isTrue
+  }
+
+  @Test
+  fun `Login as user with MFA enabled but no email addresses or mobile number`() {
+    goTo(loginPage).loginAsWithUnverifiedEmail("AUTH_NO_PREF")
+      .cancel()
+
+    startClientAccess("service-mfa-test-client")
+    homePage.isAtError()
+      .checkError(
+        """
+            We need to send you a security code, but we can't find a verified email address or phone number. 
+            Please verify your email address by clicking the link in your email.
+        """.trimIndent().replace("\n", "")
+      )
+  }
+
+  private fun clientMfaServiceAccess(doWithinAuth: () -> Unit): WebTestClient.BodyContentSpec =
+    clientAccess(doWithinAuth, "service-mfa-test-client")
 }
 
 @PageUrl("/service-mfa-challenge")
@@ -91,7 +142,11 @@ class ServiceBasedMfaEmailPage : MfaEmailPage()
 @PageUrl("/oauth/authorize")
 class ServiceBasedMfaFromAuthorizeEmailPage : MfaEmailPage()
 
+@PageUrl("/oauth/authorize")
+class ServiceBasedMfaFromAuthorizeTextPage : MfaTextPage()
+
 @PageUrl("/service-mfa-resend")
 class ServiceBasedMfaTextResendCodePage : MfaTextResendCodePage()
+
 @PageUrl("/service-mfa-resend")
 class ServiceBasedMfaEmailResendCodePage : MfaEmailResendCodePage()

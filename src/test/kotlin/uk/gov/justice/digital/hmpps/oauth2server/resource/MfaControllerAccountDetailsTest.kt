@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceTy
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaUnavailableException
 import uk.gov.justice.digital.hmpps.oauth2server.service.LoginFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaData
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaFlowException
@@ -124,6 +125,15 @@ class MfaControllerAccountDetailsTest {
         entry("passToken", "password token"),
         entry("contactType", "email")
       )
+    }
+
+    @Test
+    fun `mfaChallengeRequest unavailable`() {
+      whenever(mfaService.createTokenAndSendMfaCode(anyString())).thenThrow(MfaUnavailableException("some msg"))
+      whenever(mfaService.getCodeDestination(anyString(), any())).thenReturn("")
+      val modelAndView = controller.mfaChallengeRequestAccountDetail(authentication, "TEXT", null)
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/account-details")
+      assertThat(modelAndView.model).containsOnly(entry("error", "mfaunavailable"))
     }
   }
 

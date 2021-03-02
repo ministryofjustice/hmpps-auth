@@ -7,7 +7,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType.MFA
-import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider
+import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaUnavailableException
 import uk.gov.justice.digital.hmpps.oauth2server.service.LoginFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
@@ -36,8 +36,8 @@ abstract class AbstractMfaController(
       .addAllObjects(extraModel)
     if (smokeTestEnabled) modelAndView.addObject("smokeCode", mfaData.code)
     modelAndView
-  } catch (e: LockingAuthenticationProvider.MfaUnavailableException) {
-    ModelAndView("redirect:/$startPageUrl", "error", "mfaunavailable")
+  } catch (e: MfaUnavailableException) {
+    ModelAndView("redirect:$startPageUrl", "error", "mfaunavailable")
   }
 
   protected fun mfaChallengeRequestError(

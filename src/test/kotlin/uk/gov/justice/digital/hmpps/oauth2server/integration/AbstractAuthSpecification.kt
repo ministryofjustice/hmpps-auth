@@ -48,8 +48,7 @@ open class AbstractAuthSpecification : FluentTest() {
   }
 
   fun clientAccess(doWithinAuth: () -> Unit = {}, clientId: String = "elite2apiclient"): WebTestClient.BodyContentSpec {
-    val state = RandomStringUtils.random(6, true, true)
-    goTo("/oauth/authorize?client_id=$clientId&redirect_uri=${RemoteClientMockServer.clientBaseUrl}&response_type=code&state=$state")
+    val state = startClientAccess(clientId)
 
     doWithinAuth()
 
@@ -59,6 +58,12 @@ open class AbstractAuthSpecification : FluentTest() {
     val code = params.find { it.name == "code" }!!.value
 
     return getAccessToken(code, clientId)
+  }
+
+  protected fun startClientAccess(clientId: String = "elite2apiclient"): String? {
+    val state = RandomStringUtils.random(6, true, true)
+    goTo("/oauth/authorize?client_id=$clientId&redirect_uri=${RemoteClientMockServer.clientBaseUrl}&response_type=code&state=$state")
+    return state
   }
 
   fun getAccessToken(authCode: String, clientId: String): WebTestClient.BodyContentSpec {
