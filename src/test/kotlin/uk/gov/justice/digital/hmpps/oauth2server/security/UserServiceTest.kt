@@ -229,6 +229,54 @@ class UserServiceTest {
   }
 
   @Nested
+  inner class FindUsersByEmail {
+    @Test
+    fun findUsersByEmail() {
+      val authUser = createSampleUser(username = "authuser")
+      val nomisUser = createSampleNomisUser(
+        staff = Staff(
+          firstName = "first",
+          lastName = "last",
+          status = "ACTIVE",
+          staffId = 123
+        ),
+        username = "nomisuser"
+      )
+
+      whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser))
+      whenever(nomisUserService.getNomisUsersByEmail(anyString())).thenReturn(listOf(nomisUser))
+
+      val found = userService.findUsersByEmail("some@email.com")
+
+      assertThat(found).hasSize(2)
+      assertThat(found[0]).isSameAs(authUser)
+      assertThat(found[1]).isSameAs(nomisUser)
+    }
+
+    @Test
+    fun findDistinctUsersByEmail() {
+      val authUser = createSampleUser(username = "user1")
+      val nomisUser = createSampleNomisUser(
+        staff = Staff(
+          firstName = "first",
+          lastName = "last",
+          status = "ACTIVE",
+          staffId = 123
+        ),
+        username = "user1"
+      )
+
+      whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser))
+      whenever(nomisUserService.getNomisUsersByEmail(anyString())).thenReturn(listOf(nomisUser))
+
+      val found = userService.findUsersByEmail("some@email.com")
+
+      assertThat(found).hasSize(1)
+      assertThat(found[0]).isSameAs(authUser)
+    }
+  }
+
+  @Nested
   inner class GetUser {
     @Test
     fun `getUser found`() {

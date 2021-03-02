@@ -6,10 +6,13 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
@@ -23,6 +26,35 @@ import java.security.Principal
 @RestController
 @Api(tags = ["/api/user"])
 class UserController(private val userService: UserService) {
+
+  @GetMapping("/api/user")
+  @ApiOperation(
+    value = "WIP - Search for a user in Auth and NOMIS.",
+    notes = "WIP - Search for a user in Auth and NOMIS.",
+    nickname = "getUsers",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 200, message = "OK", response = UserDetail::class, responseContainer = "List"),
+      ApiResponse(code = 204, message = "No users found."),
+      ApiResponse(code = 400, message = "Bad request", response = ErrorDetail::class),
+      ApiResponse(code = 401, message = "Unauthorized", response = ErrorDetail::class)
+    ]
+  )
+  fun getUsers(
+    @ApiParam(value = "The email address of the user.") @RequestParam email: String?
+  ): ResponseEntity<Any> {
+
+    if (email.isNullOrEmpty()) {
+      return ResponseEntity.badRequest()
+        .body(ErrorDetail(BAD_REQUEST.reasonPhrase, "No email address provided to search", "email"))
+    }
+
+    val users = userService.findUsersByEmail(email).map { UserDetail.fromPerson(it) }
+
+    return if (users.isEmpty()) ResponseEntity.noContent().build() else ResponseEntity.ok(users)
+  }
 
   @GetMapping("/api/user/me")
   @ApiOperation(

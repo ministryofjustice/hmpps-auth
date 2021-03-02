@@ -198,6 +198,63 @@ class UserControllerTest {
     assertThat(responseEntity.body).isNull()
   }
 
+  @Test
+  fun userSearch_found() {
+    val user = createSampleUser("JOE")
+    whenever(userService.findUsersByEmail(anyString())).thenReturn(listOf(user))
+    val responseEntity = userController.getUsers("some@email.com")
+    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
+    assertThat(responseEntity.body).isEqualTo(
+      listOf(
+        UserDetail(
+          "JOE",
+          true,
+          "Joe Bloggs",
+          AuthSource.auth,
+          null,
+          null,
+          USER_ID
+        )
+      )
+    )
+  }
+
+  @Test
+  fun userSearch_notFound() {
+    whenever(userService.findUsersByEmail(anyString())).thenReturn(emptyList())
+    val responseEntity = userController.getUsers("some@email.com")
+    assertThat(responseEntity.statusCodeValue).isEqualTo(204)
+    assertThat(responseEntity.body).isNull()
+  }
+
+  @Test
+  fun userSearch_badRequestIfEmailNull() {
+    whenever(userService.findUsersByEmail(anyString())).thenReturn(emptyList())
+    val responseEntity = userController.getUsers(null)
+    assertThat(responseEntity.statusCodeValue).isEqualTo(400)
+    assertThat(responseEntity.body).isEqualTo(
+      ErrorDetail(
+        "Bad Request",
+        "No email address provided to search",
+        "email"
+      )
+    )
+  }
+
+  @Test
+  fun userSearch_badRequestIfEmailEmpty() {
+    whenever(userService.findUsersByEmail(anyString())).thenReturn(emptyList())
+    val responseEntity = userController.getUsers("")
+    assertThat(responseEntity.statusCodeValue).isEqualTo(400)
+    assertThat(responseEntity.body).isEqualTo(
+      ErrorDetail(
+        "Bad Request",
+        "No email address provided to search",
+        "email"
+      )
+    )
+  }
+
   private fun setupFindUserCallForNomis(): NomisUserPersonDetails {
     val user = createSampleNomisUser(staff = Staff(firstName = "JOE", status = "INACTIVE", lastName = "bloggs", staffId = 5), username = "principal", accountStatus = "EXPIRED & LOCKED")
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))

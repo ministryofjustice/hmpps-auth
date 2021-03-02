@@ -75,6 +75,31 @@ class UserControllerIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `User search endpoint returns user data for given email address`() {
+    webTestClient
+      .get().uri("/api/user?email=auth_user@digital.justice.gov.uk")
+      .headers(setAuthorisation("ITAG_USER"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .json(
+        """
+       [{"username":"AUTH_USER","active":true,"name":"Auth Only","authSource":"auth","userId":"608955ae-52ed-44cc-884c-011597a77949"}]
+        """.trimIndent()
+      )
+  }
+
+  @Test
+  fun `User search endpoint returns empty`() {
+    webTestClient
+      .get().uri("/api/user?email=unknown@unknown.com")
+      .headers(setAuthorisation("ITAG_USER"))
+      .exchange()
+      .expectStatus().isNoContent
+      .expectBody().isEmpty
+  }
+
+  @Test
   fun `User username endpoint returns user data`() {
     webTestClient
       .get().uri("/api/user/RO_USER")
@@ -271,6 +296,14 @@ class UserControllerIntTest : IntegrationTest() {
   fun `User email endpoint not accessible without valid token`() {
     webTestClient
       .get().uri("/api/user/bob/email")
+      .exchange()
+      .expectStatus().isUnauthorized
+  }
+
+  @Test
+  fun `User search endpoint not accessible without valid token`() {
+    webTestClient
+      .get().uri("/api/user?email=auth_user@digital.justice.gov.uk")
       .exchange()
       .expectStatus().isUnauthorized
   }
