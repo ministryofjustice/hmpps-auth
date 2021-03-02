@@ -15,7 +15,7 @@ class UserSelectorController {
     @RequestParam user_oauth_approval: String,
   ): ModelAndView =
     if (requireMfa == true) ModelAndView(
-      "redirect:/service-mfa-challenge", "user_oauth_approval", user_oauth_approval
+      "redirect:/service-mfa-send-challenge", "user_oauth_approval", user_oauth_approval
     )
     else ModelAndView("forward:/oauth/authorize")
 }

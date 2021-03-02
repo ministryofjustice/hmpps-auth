@@ -67,7 +67,7 @@ internal class UserSelectorAndMfaAuthorizationEndpointTest {
 
       val modelAndView = endpoint.authorize(mutableMapOf(), mapOf(), sessionStatus, authentication)
 
-      assertThat(modelAndView.viewName).isEqualTo("forward:/service-mfa-challenge")
+      assertThat(modelAndView.viewName).isEqualTo("forward:/service-mfa-send-challenge")
       assertThat(modelAndView.model).isEmpty()
     }
 
@@ -84,7 +84,7 @@ internal class UserSelectorAndMfaAuthorizationEndpointTest {
 
       val modelAndView = endpoint.authorize(mutableMapOf(), mapOf(), sessionStatus, authentication)
 
-      assertThat(modelAndView.viewName).isEqualTo("forward:/service-mfa-challenge")
+      assertThat(modelAndView.viewName).isEqualTo("forward:/service-mfa-send-challenge")
       assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("selectedUser" to "auth/user1"))
     }
 

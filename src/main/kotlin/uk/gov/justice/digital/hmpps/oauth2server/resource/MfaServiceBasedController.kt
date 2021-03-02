@@ -41,21 +41,20 @@ class MfaServiceBasedController(
   "ServiceBased",
   "/",
   "/service-mfa-challenge",
-  "redirect:/service-mfa-challenge-error",
 ) {
-  @GetMapping("/service-mfa-challenge")
-  fun mfaChallengeRequestServiceBased(
+  @GetMapping("/service-mfa-send-challenge")
+  fun mfaSendChallengeServiceBased(
     authentication: Authentication,
     @RequestParam user_oauth_approval: String?,
-  ): ModelAndView = mfaChallengeRequest(authentication, extraModel(user_oauth_approval))
+  ): ModelAndView = mfaSendChallenge(authentication, extraModel(user_oauth_approval))
 
-  @GetMapping("/service-mfa-challenge-error")
-  fun mfaChallengeRequestServiceBasedError(
+  @GetMapping("/service-mfa-challenge")
+  fun mfaChallengeRequestServiceBased(
     @RequestParam error: String?,
     @RequestParam token: String?,
     @RequestParam mfaPreference: MfaPreferenceType?,
     @RequestParam user_oauth_approval: String?,
-  ): ModelAndView = mfaChallengeRequestError(error, token, mfaPreference, extraModel(user_oauth_approval))
+  ): ModelAndView = mfaChallengeRequest(error, token, mfaPreference, extraModel(user_oauth_approval))
 
   @PostMapping("/service-mfa-challenge")
   @Throws(IOException::class, ServletException::class)

@@ -427,7 +427,7 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     assertThat(url).contains("state=$state")
 
     val authCode = splitQuery(url)["code"]?.first()
-    assertThat(authCode).isNotNull()
+    assertThat(authCode).isNotNull
 
     val response = getAccessToken(authCode!!)
     assertThat(response["user_name"]).isEqualTo("AUTH_MFA_PREF_EMAIL4")
@@ -448,7 +448,7 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     assertThat(url).contains("state=$state")
 
     val authCode = splitQuery(url)["code"]?.first()
-    assertThat(authCode).isNotNull()
+    assertThat(authCode).isNotNull
 
     val response = getAccessToken(authCode!!)
     assertThat(response["user_name"]).isEqualTo("AUTH_MFA_PREF_TEXT4")
@@ -655,17 +655,11 @@ open class MfaTextResendCodePage :
 @PageUrl("/account/mfa-challenge")
 class AccountMfaEmailPage : MfaEmailPage()
 
-@PageUrl("/account/mfa-challenge-error")
-class AccountMfaEmailErrorPage : MfaEmailPage()
-
 @PageUrl("/account/mfa-challenge")
 class AccountMfaTextPage : MfaTextPage()
 
-@PageUrl("/account/mfa-challenge-error")
-class AccountMfaTextErrorPage : MfaTextPage()
-
-@PageUrl("/account/mfa-challenge")
+@PageUrl("/account/mfa-resend")
 class AccountMfaEmailResendCodePage : MfaEmailResendCodePage()
 
-@PageUrl("/account/mfa-resend-text")
+@PageUrl("/account/mfa-resend")
 class AccountMfaTextResendCodePage : MfaTextResendCodePage()

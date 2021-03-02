@@ -45,15 +45,15 @@ class MfaServiceBasedControllerTest {
   private val authentication = UsernamePasswordAuthenticationToken("bob", "pass")
 
   @Nested
-  inner class mfaChallengeRequestServiceBased {
+  inner class mfaSendChallengeServiceBased {
     @Test
     fun `mfaChallengeRequest check view`() {
       whenever(mfaService.createTokenAndSendMfaCode(anyString())).thenReturn(
         MfaData("token", "code", MfaPreferenceType.EMAIL)
       )
       whenever(mfaService.getCodeDestination(anyString(), any())).thenReturn("")
-      val modelAndView = controller.mfaChallengeRequestServiceBased(authentication, "bob/user")
-      assertThat(modelAndView.viewName).isEqualTo("mfaChallengeServiceBased")
+      val modelAndView = controller.mfaSendChallengeServiceBased(authentication, "bob/user")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/service-mfa-challenge")
     }
 
     @Test
@@ -63,10 +63,9 @@ class MfaServiceBasedControllerTest {
       )
       whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.EMAIL))).thenReturn("auth******@******.gov.uk")
       val modelAndView =
-        controller.mfaChallengeRequestServiceBased(authentication, "bob/user")
+        controller.mfaSendChallengeServiceBased(authentication, "bob/user")
       assertThat(modelAndView.model).containsOnly(
         entry("mfaPreference", MfaPreferenceType.EMAIL),
-        entry("codeDestination", "auth******@******.gov.uk"),
         entry("token", "some token"),
         entry("user_oauth_approval", "bob/user"),
       )
@@ -79,10 +78,9 @@ class MfaServiceBasedControllerTest {
       )
       whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.TEXT))).thenReturn("*******0321")
       val modelAndView =
-        controller.mfaChallengeRequestServiceBased(authentication, "bob/user")
+        controller.mfaSendChallengeServiceBased(authentication, "bob/user")
       assertThat(modelAndView.model).containsOnly(
         entry("mfaPreference", MfaPreferenceType.TEXT),
-        entry("codeDestination", "*******0321"),
         entry("token", "some token"),
         entry("user_oauth_approval", "bob/user"),
       )
@@ -94,18 +92,18 @@ class MfaServiceBasedControllerTest {
         LockingAuthenticationProvider.MfaUnavailableException("some msg")
       )
       whenever(mfaService.getCodeDestination(anyString(), any())).thenReturn("")
-      val modelAndView = controller.mfaChallengeRequestServiceBased(authentication, "bob/user")
+      val modelAndView = controller.mfaSendChallengeServiceBased(authentication, "bob/user")
       assertThat(modelAndView.viewName).isEqualTo("redirect:/")
       assertThat(modelAndView.model).containsOnly(entry("error", "mfaunavailable"))
     }
   }
 
   @Nested
-  inner class mfaChallengeRequestServiceBasedError {
+  inner class mfaChallengeRequestServiceBased {
     @Test
     fun `mfaChallengeRequest check model contains when error when error in param`() {
       whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.EMAIL))).thenReturn("auth******@******.gov.uk")
-      val modelAndView = controller.mfaChallengeRequestServiceBasedError(
+      val modelAndView = controller.mfaChallengeRequestServiceBased(
         "invalid",
         "some token",
         MfaPreferenceType.EMAIL,
@@ -162,7 +160,7 @@ class MfaServiceBasedControllerTest {
         response,
         authentication,
       )
-      assertThat(modelAndView!!.viewName).isEqualTo("redirect:/service-mfa-challenge-error")
+      assertThat(modelAndView!!.viewName).isEqualTo("mfaChallengeServiceBased")
       assertThat(modelAndView.model).containsOnly(
         entry("token", "some token"),
         entry("error", "invalid"),
@@ -194,7 +192,7 @@ class MfaServiceBasedControllerTest {
         response,
         authentication,
       )
-      assertThat(modelAndView!!.viewName).isEqualTo("redirect:/service-mfa-challenge-error")
+      assertThat(modelAndView!!.viewName).isEqualTo("mfaChallengeServiceBased")
       assertThat(modelAndView.model).containsOnly(
         entry("token", "some token"),
         entry("error", "invalid"),

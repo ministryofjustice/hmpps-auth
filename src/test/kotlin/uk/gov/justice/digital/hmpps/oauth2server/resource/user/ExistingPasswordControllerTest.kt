@@ -84,7 +84,7 @@ class ExistingPasswordControllerTest {
       whenever(authenticationManager.authenticate(any())).thenReturn(token)
       whenever(tokenService.createToken(any(), anyString())).thenReturn("passtoken")
       val mandv = controller.existingPassword("somepass", "email", token)
-      assertThat(mandv.viewName).isEqualTo("redirect:/account/mfa-challenge?contactType=email")
+      assertThat(mandv.viewName).isEqualTo("redirect:/account/mfa-send-challenge?contactType=email")
       assertThat(mandv.model).containsExactlyInAnyOrderEntriesOf(mapOf("passToken" to "passtoken"))
     }
 

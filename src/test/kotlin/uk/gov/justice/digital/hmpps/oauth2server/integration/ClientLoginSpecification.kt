@@ -243,18 +243,17 @@ class ClientLoginSpecification : AbstractDeliusAuthSpecification() {
 
   private fun azureClientSignIn(email: String): BodyContentSpec {
     AzureOIDCExtension.azureOIDC.stubToken(email)
-    return clientAccess({ loginPage.clickAzureOIDCLink() }, "azure-login-client")
+    return clientAccess("azure-login-client") { loginPage.clickAzureOIDCLink() }
   }
 
   private fun azureClientSignInChooseUser(email: String, username: String): BodyContentSpec {
     AzureOIDCExtension.azureOIDC.stubToken(email)
     return clientAccess(
-      {
-        loginPage.clickAzureOIDCLink()
-        selectUserPage.isAtPage().selectUser("auth", username)
-      },
       "azure-login-client"
-    )
+    ) {
+      loginPage.clickAzureOIDCLink()
+      selectUserPage.isAtPage().selectUser("auth", username)
+    }
   }
 }
 

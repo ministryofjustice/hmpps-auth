@@ -47,7 +47,7 @@ open class AbstractAuthSpecification : FluentTest() {
     }
   }
 
-  fun clientAccess(doWithinAuth: () -> Unit = {}, clientId: String = "elite2apiclient"): WebTestClient.BodyContentSpec {
+  fun clientAccess(clientId: String = "elite2apiclient", doWithinAuth: () -> Unit = {}): WebTestClient.BodyContentSpec {
     val state = startClientAccess(clientId)
 
     doWithinAuth()
@@ -90,7 +90,7 @@ open class AbstractAuthSpecification : FluentTest() {
     username: String,
     password: String = "password123456",
     clientId: String = "elite2apiclient",
-  ) = clientAccess({ loginPage.isAtPage().submitLogin(username, password) }, clientId)
+  ) = clientAccess(clientId) { loginPage.isAtPage().submitLogin(username, password) }
 }
 
 @Suppress("UNCHECKED_CAST")
