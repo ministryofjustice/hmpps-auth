@@ -84,11 +84,11 @@
     </ul>
   </div>
 
-  <p th:if="${smokeCode}" class="govuk-body">
+  <p th:if="${param.smokeCode}" class="govuk-body">
     <br>
     <code>application.smoketest.enabled</code> environment variable is set.
     Code that was sent in the <span th:text="${mfaPreference}">mfaPreference</span> is
-    <span data-qa="mfa-code" th:text="${smokeCode}">123456</span>.
+    <span data-qa="mfa-code" th:text="${param.smokeCode}">123456</span>.
   </p>
 </div>
 </body>

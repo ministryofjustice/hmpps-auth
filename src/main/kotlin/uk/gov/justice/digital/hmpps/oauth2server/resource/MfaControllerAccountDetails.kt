@@ -35,10 +35,9 @@ class MfaControllerAccountDetails(
   "AccountDetails",
   "/account-details",
   "/account/mfa-challenge",
-  "redirect:/account/mfa-challenge-error",
 ) {
-  @GetMapping("/account/mfa-challenge")
-  fun mfaChallengeRequestAccountDetail(
+  @GetMapping("/account/mfa-send-challenge")
+  fun mfaSendChallengeAccountDetail(
     authentication: Authentication,
     @RequestParam contactType: String,
     @RequestParam passToken: String?,
@@ -50,7 +49,7 @@ class MfaControllerAccountDetails(
         it
       )
     }
-    return mfaChallengeRequest(authentication, extraModel(contactType, passToken))
+    return mfaSendChallenge(authentication, extraModel(contactType, passToken))
   }
 
   private fun passTokenInvalidForEmail(contactType: String, passToken: String?): String? {
@@ -60,8 +59,8 @@ class MfaControllerAccountDetails(
     return optionalErrorForToken.map { "token$it" }.orElse(null)
   }
 
-  @GetMapping("/account/mfa-challenge-error")
-  fun mfaChallengeRequestAccountDetailError(
+  @GetMapping("/account/mfa-challenge")
+  fun mfaChallengeRequestAccountDetail(
     @RequestParam contactType: String,
     @RequestParam error: String?,
     @RequestParam token: String?,
@@ -76,7 +75,7 @@ class MfaControllerAccountDetails(
       )
     }
 
-    return mfaChallengeRequestError(error, token, mfaPreference, extraModel(contactType, passToken))
+    return mfaChallengeRequest(error, token, mfaPreference, extraModel(contactType, passToken))
   }
 
   @PostMapping("/account/mfa-challenge")

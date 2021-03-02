@@ -77,7 +77,7 @@ class ExistingPasswordController(
     val token = tokenService.createToken(TokenType.CHANGE, username)
 
     if (type == "email") {
-      return ModelAndView("redirect:/account/mfa-challenge?contactType=email", "passToken", token)
+      return ModelAndView("redirect:/account/mfa-send-challenge?contactType=email", "passToken", token)
     }
 
     @Suppress("SpringMVCViewInspection")

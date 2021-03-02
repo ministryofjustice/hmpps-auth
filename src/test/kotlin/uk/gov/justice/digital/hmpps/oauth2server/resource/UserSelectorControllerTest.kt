@@ -9,7 +9,7 @@ internal class UserSelectorControllerTest {
   @Test
   fun `selectUser mfa true`() {
     val forward = UserSelectorController().selectUser(true, "delius/bob")
-    assertThat(forward.viewName).isEqualTo("redirect:/service-mfa-challenge")
+    assertThat(forward.viewName).isEqualTo("redirect:/service-mfa-send-challenge")
     assertThat(forward.model).containsExactlyEntriesOf(mapOf("user_oauth_approval" to "delius/bob"))
   }
 

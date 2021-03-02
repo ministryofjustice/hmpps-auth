@@ -38,8 +38,7 @@ class MfaController(
   smokeTestEnabled,
   "",
   "/login",
-  "/mfa-challenge",
-  "mfaChallenge"
+  "/mfa-challenge"
 ) {
   @GetMapping("/mfa-challenge")
   fun mfaChallengeRequest(

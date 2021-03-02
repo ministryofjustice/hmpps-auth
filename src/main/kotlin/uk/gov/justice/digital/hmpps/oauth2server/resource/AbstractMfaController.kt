@@ -19,39 +19,40 @@ abstract class AbstractMfaController(
   private val mfaService: MfaService,
   private val smokeTestEnabled: Boolean,
   private val viewNameSuffix: String,
-  private val startPageUrl: String,
+  private val initiatorUrl: String,
   private val pageUrl: String,
-  private val errorView: String,
 ) {
-  protected fun mfaChallengeRequest(
+  protected fun mfaSendChallenge(
     authentication: Authentication,
     extraModel: Map<String, Any?> = emptyMap(),
   ): ModelAndView = try {
     // issue token to current mfa preference
     val mfaData = mfaService.createTokenAndSendMfaCode(authentication.name)
-    val codeDestination = mfaService.getCodeDestination(mfaData.token, mfaData.mfaType)
-    val modelAndView = ModelAndView("mfaChallenge$viewNameSuffix", "token", mfaData.token)
+    val modelAndView = ModelAndView("redirect:$pageUrl", "token", mfaData.token)
       .addObject("mfaPreference", mfaData.mfaType)
-      .addObject("codeDestination", codeDestination)
       .addAllObjects(extraModel)
     if (smokeTestEnabled) modelAndView.addObject("smokeCode", mfaData.code)
     modelAndView
   } catch (e: MfaUnavailableException) {
-    ModelAndView("redirect:$startPageUrl", "error", "mfaunavailable")
+    ModelAndView("redirect:$initiatorUrl", "error", "mfaunavailable")
   }
 
-  protected fun mfaChallengeRequestError(
+  protected fun mfaChallengeRequest(
     error: String?,
     token: String?,
     mfaPreference: MfaPreferenceType?,
     extraModel: Map<String, Any?> = emptyMap(),
   ): ModelAndView {
     val codeDestination = mfaService.getCodeDestination(token!!, mfaPreference!!)
-    return ModelAndView("mfaChallenge$viewNameSuffix", "token", token)
+
+    val modelAndView = ModelAndView("mfaChallenge$viewNameSuffix", "token", token)
       .addObject("mfaPreference", mfaPreference)
       .addObject("codeDestination", codeDestination)
       .addAllObjects(extraModel)
-      .addObject("error", error)
+
+    if (error != null) modelAndView.addObject("error", error)
+
+    return modelAndView
   }
 
   protected fun mfaChallenge(
@@ -63,7 +64,7 @@ abstract class AbstractMfaController(
   ): ModelAndView? {
     val optionalErrorForToken = tokenService.checkToken(MFA, token)
     if (optionalErrorForToken.isPresent) {
-      return ModelAndView("redirect:$startPageUrl", "error", "mfa${optionalErrorForToken.get()}")
+      return ModelAndView("redirect:$initiatorUrl", "error", "mfa${optionalErrorForToken.get()}")
     }
     // can just grab token here as validated above
     val username = tokenService.getToken(MFA, token).map { it.user.username }.orElseThrow()
@@ -71,7 +72,7 @@ abstract class AbstractMfaController(
     try {
       mfaService.validateAndRemoveMfaCode(token, code)
     } catch (e: MfaFlowException) {
-      return ModelAndView(errorView)
+      return ModelAndView("mfaChallenge$viewNameSuffix")
         .addObject("token", token)
         .addAllObjects(extraModel)
         .addObject("error", e.error)
@@ -93,7 +94,7 @@ abstract class AbstractMfaController(
   ): ModelAndView {
     val optionalError = tokenService.checkToken(MFA, token)
 
-    return optionalError.map { ModelAndView("redirect:$startPageUrl", "error", "mfa$it") }
+    return optionalError.map { ModelAndView("redirect:$initiatorUrl", "error", "mfa$it") }
       .orElseGet {
         ModelAndView(
           "mfaResend$viewNameSuffix",
@@ -109,13 +110,13 @@ abstract class AbstractMfaController(
   ): ModelAndView {
     val optionalErrorForToken = tokenService.checkToken(MFA, token)
     if (optionalErrorForToken.isPresent) {
-      return ModelAndView("redirect:$startPageUrl", "error", "mfa${optionalErrorForToken.get()}")
+      return ModelAndView("redirect:$initiatorUrl", "error", "mfa${optionalErrorForToken.get()}")
     }
 
     val code = mfaService.resendMfaCode(token, mfaResendPreference)
     // shouldn't really get a code without a valid token, but cope with the scenario anyway
     if (code.isNullOrEmpty()) {
-      return ModelAndView("redirect:$startPageUrl", "error", "mfainvalid")
+      return ModelAndView("redirect:$initiatorUrl", "error", "mfainvalid")
     }
 
     val modelAndView = ModelAndView("redirect:$pageUrl", "token", token)
