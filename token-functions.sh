@@ -16,6 +16,22 @@ calculateHostname() {
   fi
 }
 
+calculatePrisonHostname() {
+  local ENV=$1
+  # Set the environment-specific hostname for the oauth2 service
+  if [[ "$ENV" == "t3" ]]; then
+    echo "https://api-dev.prison.service.justice.gov.uk"
+  elif [[ "$ENV" == "t2" ]]; then
+    echo "https://api-stage.prison.service.justice.gov.uk"
+  elif [[ "$ENV" == "preprod" ]]; then
+    echo "https://api-preprod.prison.service.justice.gov.uk"
+  elif [[ "$ENV" == "prod" ]]; then
+    echo "https://api.prison.service.justice.gov.uk"
+  elif [[ "$ENV" =~ localhost* ]]; then
+    echo "http://$ENV"
+  fi
+}
+
 checkFile() {
   local FILE=$1
   # Check whether the file exists and is readable
@@ -36,7 +52,7 @@ authenticate() {
     AUTH=$(echo -n "$CLIENT" | base64)
   fi
 
-  if ! TOKEN_RESPONSE=$(curl -sS -d "" -X POST "$HOST/auth/oauth/token?grant_type=client_credentials&username=$USER" -H "Authorization: Basic $AUTH"); then
+  if ! TOKEN_RESPONSE=$(http --ignore-stdin --check-status POST "$HOST/auth/oauth/token?grant_type=client_credentials&username=$USER" "Authorization: Basic $AUTH"); then
     echo "Failed to read token from credentials response"
     echo "$TOKEN_RESPONSE"
     exit 1

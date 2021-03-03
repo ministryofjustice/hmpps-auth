@@ -23,6 +23,8 @@
 #
 # Make sure there is a new line at the end of the file, otherwise it will not load.
 #
+# Requires HTTPie and jq.
+#
 
 ENV=${1?No environment specified}
 CLIENT=${2?No client specified}
@@ -35,7 +37,10 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 HOST=$(calculateHostname "$ENV")
 checkFile "$FILE"
-AUTH_TOKEN_HEADER=$(authenticate "$CLIENT" "$USER")
+if ! AUTH_TOKEN_HEADER=$(authenticate "$CLIENT" "$USER"); then
+  echo "$AUTH_TOKEN_HEADER"
+  exit 1
+fi
 
 cnt=0
 
@@ -51,11 +56,8 @@ while IFS=, read -r -a row; do
   echo "Amending user $user with new email of $email"
 
   # Amend user email address
-  if ! output=$(curl -sS -X POST "$HOST/auth/api/authuser/${user}" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
-    -d "{ \"email\": \"${email}\" }"); then
-
-    echo "Failed to amend email for $user to $email"
-  elif [[ $output =~ "error_description" ]]; then
+  if ! output=$(echo "{ \"email\": \"${email}\" }" | \
+      http --check-status POST "$HOST/auth/api/authuser/${user}" "$AUTH_TOKEN_HEADER" "Content-Type: application/json"); then
     echo "Failed to amend email for $user to $email due to $output"
   fi
 

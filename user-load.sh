@@ -39,13 +39,16 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 HOST=$(calculateHostname "$ENV")
 checkFile "$FILE"
-AUTH_TOKEN_HEADER=$(authenticate "$CLIENT" "$USER")
+if ! AUTH_TOKEN_HEADER=$(authenticate "$CLIENT" "$USER"); then
+  echo "$AUTH_TOKEN_HEADER"
+  exit 1
+fi
 
 addGroup() {
   local user=$1
   local group=$2
   if [[ "$group" != "" && ! "$group" =~ ^[,]*$ ]]; then
-    if [[ $(curl -sS -X PUT "$HOST/auth/api/authuser/$user/groups/$group" -H "Content-Length: 0" -H "$AUTH_TOKEN_HEADER") -ne 0 ]]; then
+    if [[ $(http --ignore-stdin --check-status PUT "$HOST/auth/api/authuser/$user/groups/$group" "Content-Length: 0" "$AUTH_TOKEN_HEADER") -ne 0 ]]; then
         echo "Failed to add $user to group $group"
     fi
   fi
@@ -67,8 +70,8 @@ while IFS=, read -r -a row; do
   printf -v groups '\"%s\",' "${row[@]:3}"
 
   # Create the user
-  if ! output=$(curl -sS -X POST "$HOST/auth/api/authuser/create" -H "$AUTH_TOKEN_HEADER" -H "Content-Type: application/json" \
-    -d "{ \"groupCodes\": [${groups%,}], \"email\": \"${row[0]}\", \"firstName\": \"${row[1]}\", \"lastName\": \"${row[2]}\"}"); then
+  if ! output=$(echo "{ \"groupCodes\": [${groups%,}], \"email\": \"${row[0]}\", \"firstName\": \"${row[1]}\", \"lastName\": \"${row[2]}\"}" | \
+      http POST "$HOST/auth/api/authuser/create" "$AUTH_TOKEN_HEADER" "Content-Type: application/json"); then
 
     echo "Failure to create user ${user}"
   else
@@ -88,7 +91,7 @@ while IFS=, read -r -a row; do
     else
       if [[ "$DEBUG_CREATION" == "true" ]]; then
         # Output the user details to confirm it was created
-        curl -sS "$HOST/auth/api/authuser/$user" -H "$AUTH_TOKEN_HEADER" | jq .
+        http --ignore-stdin --check-status "$HOST/auth/api/authuser/$user" "$AUTH_TOKEN_HEADER" | jq .
       fi
     fi
   fi
