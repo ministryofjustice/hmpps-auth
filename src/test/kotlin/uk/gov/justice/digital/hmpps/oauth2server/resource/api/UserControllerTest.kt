@@ -202,10 +202,8 @@ class UserControllerTest {
   fun userSearch_found() {
     val user = createSampleUser("JOE")
     whenever(userService.findUsersByEmail(anyString())).thenReturn(listOf(user))
-    val responseEntity = userController.getUsers("some@email.com")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body).isEqualTo(
-      listOf(
+    assertThat(userController.getUsers("some@email.com")).isEqualTo(
+      setOf(
         UserDetail(
           "JOE",
           true,
@@ -222,37 +220,7 @@ class UserControllerTest {
   @Test
   fun userSearch_notFound() {
     whenever(userService.findUsersByEmail(anyString())).thenReturn(emptyList())
-    val responseEntity = userController.getUsers("some@email.com")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(204)
-    assertThat(responseEntity.body).isNull()
-  }
-
-  @Test
-  fun userSearch_badRequestIfEmailNull() {
-    whenever(userService.findUsersByEmail(anyString())).thenReturn(emptyList())
-    val responseEntity = userController.getUsers(null)
-    assertThat(responseEntity.statusCodeValue).isEqualTo(400)
-    assertThat(responseEntity.body).isEqualTo(
-      ErrorDetail(
-        "Bad Request",
-        "No email address provided to search",
-        "email"
-      )
-    )
-  }
-
-  @Test
-  fun userSearch_badRequestIfEmailEmpty() {
-    whenever(userService.findUsersByEmail(anyString())).thenReturn(emptyList())
-    val responseEntity = userController.getUsers("")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(400)
-    assertThat(responseEntity.body).isEqualTo(
-      ErrorDetail(
-        "Bad Request",
-        "No email address provided to search",
-        "email"
-      )
-    )
+    assertThat(userController.getUsers("some@email.com")).isEmpty()
   }
 
   private fun setupFindUserCallForNomis(): NomisUserPersonDetails {

@@ -95,8 +95,9 @@ class UserControllerIntTest : IntegrationTest() {
       .get().uri("/api/user?email=unknown@unknown.com")
       .headers(setAuthorisation("ITAG_USER"))
       .exchange()
-      .expectStatus().isNoContent
-      .expectBody().isEmpty
+      .expectStatus().isOk
+      .expectBody()
+      .json("[]")
   }
 
   @Test

@@ -233,6 +233,13 @@ class UserServiceTest {
     @Test
     fun findUsersByEmail() {
       val authUser = createSampleUser(username = "authuser")
+      val deliusUser = DeliusUserPersonDetails(
+        username = "deliususer",
+        userId = "12345",
+        firstName = "F",
+        surname = "L",
+        email = "a@b.com"
+      )
       val nomisUser = createSampleNomisUser(
         staff = Staff(
           firstName = "first",
@@ -245,34 +252,14 @@ class UserServiceTest {
 
       whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser))
       whenever(nomisUserService.getNomisUsersByEmail(anyString())).thenReturn(listOf(nomisUser))
+      whenever(deliusUserService.getDeliusUsersByEmail(anyString())).thenReturn(listOf(deliusUser))
 
       val found = userService.findUsersByEmail("some@email.com")
 
-      assertThat(found).hasSize(2)
+      assertThat(found).hasSize(3)
       assertThat(found[0]).isSameAs(authUser)
       assertThat(found[1]).isSameAs(nomisUser)
-    }
-
-    @Test
-    fun findDistinctUsersByEmail() {
-      val authUser = createSampleUser(username = "user1")
-      val nomisUser = createSampleNomisUser(
-        staff = Staff(
-          firstName = "first",
-          lastName = "last",
-          status = "ACTIVE",
-          staffId = 123
-        ),
-        username = "user1"
-      )
-
-      whenever(authUserService.findAuthUsersByEmail(anyString())).thenReturn(listOf(authUser))
-      whenever(nomisUserService.getNomisUsersByEmail(anyString())).thenReturn(listOf(nomisUser))
-
-      val found = userService.findUsersByEmail("some@email.com")
-
-      assertThat(found).hasSize(1)
-      assertThat(found[0]).isSameAs(authUser)
+      assertThat(found[2]).isSameAs(deliusUser)
     }
   }
 

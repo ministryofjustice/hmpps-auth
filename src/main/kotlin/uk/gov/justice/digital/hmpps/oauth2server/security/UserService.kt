@@ -177,7 +177,8 @@ class UserService(
   fun findUsersByEmail(email: String): List<UserPersonDetails> {
     val authUsers = authUserService.findAuthUsersByEmail(email)
     val nomisUsers = nomisUserService.getNomisUsersByEmail(email)
-    return (authUsers + nomisUsers).distinctBy { it.username }
+    val deliusUsers = deliusUserService.getDeliusUsersByEmail(email)
+    return authUsers + nomisUsers + deliusUsers
   }
 }
 
