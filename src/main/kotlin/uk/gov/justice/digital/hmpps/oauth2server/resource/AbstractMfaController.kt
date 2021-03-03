@@ -72,11 +72,13 @@ abstract class AbstractMfaController(
     try {
       mfaService.validateAndRemoveMfaCode(token, code)
     } catch (e: MfaFlowException) {
+      val codeDestination = mfaService.getCodeDestination(token, mfaPreference)
       return ModelAndView("mfaChallenge$viewNameSuffix")
         .addObject("token", token)
         .addAllObjects(extraModel)
         .addObject("error", e.error)
         .addObject("mfaPreference", mfaPreference)
+        .addObject("codeDestination", codeDestination)
     } catch (e: LoginFlowException) {
       return ModelAndView("redirect:/logout", "error", e.error)
     }

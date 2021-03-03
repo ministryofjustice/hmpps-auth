@@ -151,6 +151,7 @@ class MfaServiceBasedControllerTest {
         )
       )
       whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(MfaFlowException("invalid"))
+      whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.EMAIL))).thenReturn("auth******@******.gov.uk")
       val modelAndView = controller.mfaChallengeServiceBased(
         "some token",
         MfaPreferenceType.EMAIL,
@@ -166,6 +167,7 @@ class MfaServiceBasedControllerTest {
         entry("error", "invalid"),
         entry("mfaPreference", MfaPreferenceType.EMAIL),
         entry("user_oauth_approval", "bob/user"),
+        entry("codeDestination", "auth******@******.gov.uk"),
       )
     }
 
@@ -183,6 +185,7 @@ class MfaServiceBasedControllerTest {
         )
       )
       whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(MfaFlowException("invalid"))
+      whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.TEXT))).thenReturn("*******0321")
       val modelAndView = controller.mfaChallengeServiceBased(
         "some token",
         MfaPreferenceType.TEXT,
@@ -198,6 +201,7 @@ class MfaServiceBasedControllerTest {
         entry("error", "invalid"),
         entry("mfaPreference", MfaPreferenceType.TEXT),
         entry("user_oauth_approval", "bob/user"),
+        entry("codeDestination", "*******0321"),
       )
     }
 

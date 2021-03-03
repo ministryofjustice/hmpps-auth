@@ -175,12 +175,14 @@ class MfaControllerTest {
       )
       whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(MfaFlowException("invalid"))
       whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+      whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.EMAIL))).thenReturn("auth******@******.gov.uk")
       val modelAndView = controller.mfaChallenge("some token", MfaPreferenceType.EMAIL, "some code", request, response)
       assertThat(modelAndView!!.viewName).isEqualTo("mfaChallenge")
       assertThat(modelAndView.model).containsOnly(
         entry("token", "some token"),
         entry("error", "invalid"),
-        entry("mfaPreference", MfaPreferenceType.EMAIL)
+        entry("mfaPreference", MfaPreferenceType.EMAIL),
+        entry("codeDestination", "auth******@******.gov.uk"),
       )
     }
 
@@ -199,12 +201,14 @@ class MfaControllerTest {
       )
       whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(MfaFlowException("invalid"))
       whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+      whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.TEXT))).thenReturn("*******0321")
       val modelAndView = controller.mfaChallenge("some token", MfaPreferenceType.TEXT, "some code", request, response)
       assertThat(modelAndView!!.viewName).isEqualTo("mfaChallenge")
       assertThat(modelAndView.model).containsOnly(
         entry("token", "some token"),
         entry("error", "invalid"),
-        entry("mfaPreference", MfaPreferenceType.TEXT)
+        entry("mfaPreference", MfaPreferenceType.TEXT),
+        entry("codeDestination", "*******0321"),
       )
     }
 

@@ -126,44 +126,55 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
   fun `MFA code is required - email`() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_PREF_EMAIL2")
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode(" ")
 
     mfaEmailPage.checkError("Enter the code received in the email")
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
   }
 
   @Test
   fun `MFA code is required - text message`() {
     goTo(loginPage)
       .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
+      .assertMobileCodeDestination("*******0321")
       .submitCode(" ")
 
     mfaTextPage.checkError("Enter the code received in the text message")
+      .assertMobileCodeDestination("*******0321")
   }
 
   @Test
   fun `MFA code is incorrect email`() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_USER")
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
       .submitCode("123")
     mfaEmailPage.checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
   }
 
   @Test
   fun `MFA code is incorrect text`() {
     goTo(loginPage)
       .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
     mfaTextPage.checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
   }
 
   @Test
   fun `MFA user email preference gets locked after 3 invalid MFA attempts`() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_LOCKED_EMAIL")
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
       .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
@@ -175,10 +186,13 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
   fun `MFA user text preference gets locked after 3 invalid MFA attempts`() {
     goTo(loginPage)
       .loginWithMfaText("AUTH_MFA_LOCKED_TEXT")
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
@@ -190,10 +204,13 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
   fun `MFA user secondary email preference gets locked after 3 invalid MFA attempts`() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_LOCKED_2ND_EMAIL")
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
@@ -208,8 +225,10 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
       .loginError("AUTH_MFA_LOCKED2_EMAIL", "wrongpass")
       .checkLoginUsernamePasswordError()
       .loginWithMfaEmail("AUTH_MFA_LOCKED2_EMAIL")
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
       .submitCode("123456")
       .checkEmailCodeIsIncorrectError()
 
@@ -225,8 +244,10 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
       .loginError("AUTH_MFA_LOCKED2_TEXT", "wrongpass")
       .checkLoginUsernamePasswordError()
       .loginWithMfaText("AUTH_MFA_LOCKED2_TEXT")
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123456")
       .checkTextCodeIsIncorrectError()
 
@@ -242,8 +263,10 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
       .loginError("AUTH_MFA_LOCKED2_2ND_EMAIL", "wrongpass")
       .checkLoginUsernamePasswordError()
       .loginWithMfaEmail("AUTH_MFA_LOCKED2_2ND_EMAIL")
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123456")
       .checkEmailCodeIsIncorrectError()
 
@@ -260,8 +283,10 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     val validMfaCode = mfaEmailPage.getCode()
     mfaEmailPage.submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode(validMfaCode)
 
     homePage.isAt()
@@ -281,8 +306,10 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     val validMfaCode = mfaTextPage.getCode()
     mfaTextPage.submitCode("123")
       .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode(validMfaCode)
 
     homePage.isAt()
@@ -302,8 +329,10 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     val validMfaCode = mfaEmailPage.getCode()
     mfaEmailPage.submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode(validMfaCode)
 
     homePage.isAt()
@@ -320,11 +349,15 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_USER")
 
-    mfaEmailPage.resendCodeLink()
+    mfaEmailPage
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
+      .resendCodeLink()
 
     mfaEmailResendCodePage.resendCodeByEmail()
 
-    mfaEmailPage.submitCode()
+    mfaEmailPage
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
+      .submitCode()
 
     homePage.isAt()
   }
@@ -334,11 +367,15 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_PREF_EMAIL4")
 
-    mfaEmailPage.resendCodeLink()
+    mfaEmailPage
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
+      .resendCodeLink()
 
     mfaEmailResendCodePage.resendCodeByText()
 
-    mfaEmailPage.submitCode()
+    mfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode()
 
     homePage.isAt()
   }
@@ -348,11 +385,15 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_PREF_EMAIL5")
 
-    mfaEmailPage.resendCodeLink()
+    mfaEmailPage
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
+      .resendCodeLink()
 
     mfaEmailResendCodePage.resendCodeBySecondaryEmail()
 
-    mfaEmailPage.submitCode()
+    mfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode()
 
     homePage.isAt()
   }
@@ -360,13 +401,17 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
   @Test
   fun `MFA preference text - I would like the MFA code to be resent by email`() {
     goTo(loginPage)
-      .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
+      .loginWithMfaText("AUTH_MFA_PREF_TEXT5")
 
-    mfaTextPage.resendCodeLink()
+    mfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .resendCodeLink()
 
     mfaTextResendCodePage.resendCodeByEmail()
 
-    mfaTextPage.submitCode()
+    mfaEmailPage
+      .assertEmailCodeDestination("auth******@******.gov.uk")
+      .submitCode()
 
     homePage.isAt()
   }
@@ -374,27 +419,35 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
   @Test
   fun `MFA preference text - I would like the MFA code to be resent by text`() {
     goTo(loginPage)
-      .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
+      .loginWithMfaText("AUTH_MFA_PREF_TEXT5")
 
-    mfaTextPage.resendCodeLink()
+    mfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .resendCodeLink()
 
     mfaTextResendCodePage.resendCodeByText()
 
-    mfaTextPage.submitCode()
+    mfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode()
 
     homePage.isAt()
   }
 
   @Test
-  fun `Mfa preference secondary email - I would like the MFA code to be resent by text`() {
+  fun `MFA preference text - I would like the MFA code to be resent by secondary email`() {
     goTo(loginPage)
-      .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL2")
+      .loginWithMfaText("AUTH_MFA_PREF_TEXT5")
 
-    mfaEmailPage.resendCodeLink()
+    mfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .resendCodeLink()
 
-    mfaEmailResendCodePage.resendCodeByText()
+    mfaTextResendCodePage.resendCodeBySecondaryEmail()
 
-    mfaTextPage.submitCode()
+    mfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode()
 
     homePage.isAt()
   }
@@ -404,11 +457,51 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL2")
 
-    mfaEmailPage.resendCodeLink()
+    mfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .resendCodeLink()
 
     mfaEmailResendCodePage.resendCodeByEmail()
 
-    mfaEmailPage.submitCode()
+    mfaEmailPage
+      .assertEmailCodeDestination("auth_u******@******.gov.uk")
+      .submitCode()
+
+    homePage.isAt()
+  }
+
+  @Test
+  fun `Mfa preference secondary email - I would like the MFA code to be resent by text`() {
+    goTo(loginPage)
+      .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL2")
+
+    mfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .resendCodeLink()
+
+    mfaEmailResendCodePage.resendCodeByText()
+
+    mfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode()
+
+    homePage.isAt()
+  }
+
+  @Test
+  fun `Mfa preference secondary email - I would like the MFA code to be resent by secondary email`() {
+    goTo(loginPage)
+      .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL2")
+
+    mfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .resendCodeLink()
+
+    mfaEmailResendCodePage.resendCodeBySecondaryEmail()
+
+    mfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode()
 
     homePage.isAt()
   }
@@ -420,6 +513,7 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
 
     loginPage
       .loginWithMfaEmail("AUTH_MFA_PREF_EMAIL4")
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode()
 
     val url = driver.currentUrl
@@ -441,6 +535,7 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
 
     loginPage
       .loginWithMfaText("AUTH_MFA_PREF_TEXT4")
+      .assertMobileCodeDestination("*******0321")
       .submitCode()
 
     val url = driver.currentUrl
@@ -466,6 +561,7 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
 
     loginPage
       .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL4")
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode()
 
     val url = driver.currentUrl
@@ -641,6 +737,9 @@ open class MfaTextResendCodePage :
   @FindBy(css = "input[id='mfa-pref-text']")
   private lateinit var selectMfaPreferenceText: FluentWebElement
 
+  @FindBy(css = "input[id='mfa-pref-secondary-email']")
+  private lateinit var selectMfaPreferenceSecondaryEmail: FluentWebElement
+
   fun resendCodeByEmail() {
     selectMfaPreferenceEmail.click()
     resendSecurityCode.submit()
@@ -648,6 +747,11 @@ open class MfaTextResendCodePage :
 
   fun resendCodeByText() {
     selectMfaPreferenceText.click()
+    resendSecurityCode.submit()
+  }
+
+  fun resendCodeBySecondaryEmail() {
+    selectMfaPreferenceSecondaryEmail.click()
     resendSecurityCode.submit()
   }
 }
