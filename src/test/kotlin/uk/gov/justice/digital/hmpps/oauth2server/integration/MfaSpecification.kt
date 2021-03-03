@@ -401,7 +401,7 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
   @Test
   fun `MFA preference text - I would like the MFA code to be resent by email`() {
     goTo(loginPage)
-      .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
+      .loginWithMfaText("AUTH_MFA_PREF_TEXT5")
 
     mfaTextPage
       .assertMobileCodeDestination("*******0321")
@@ -419,7 +419,7 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
   @Test
   fun `MFA preference text - I would like the MFA code to be resent by text`() {
     goTo(loginPage)
-      .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
+      .loginWithMfaText("AUTH_MFA_PREF_TEXT5")
 
     mfaTextPage
       .assertMobileCodeDestination("*******0321")
@@ -437,7 +437,7 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
   @Test
   fun `MFA preference text - I would like the MFA code to be resent by secondary email`() {
     goTo(loginPage)
-      .loginWithMfaText("AUTH_MFA_PREF_TEXT2")
+      .loginWithMfaText("AUTH_MFA_PREF_TEXT5")
 
     mfaTextPage
       .assertMobileCodeDestination("*******0321")
