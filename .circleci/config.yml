@@ -17,6 +17,8 @@ jobs:
             - gradle-{{ checksum "build.gradle.kts" }}
             - gradle-
       - run:
+          command: sudo apt-get install httpie -y
+      - run:
           command: ./gradlew build
       - save_cache:
           paths:
