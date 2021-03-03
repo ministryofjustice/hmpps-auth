@@ -205,6 +205,7 @@ class MfaControllerAccountDetailsTest {
         )
       )
       whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(MfaFlowException("invalid"))
+      whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.EMAIL))).thenReturn("auth******@******.gov.uk")
       val modelAndView = controller.mfaChallengeAccountDetail(
         "some token",
         "pass token",
@@ -220,7 +221,8 @@ class MfaControllerAccountDetailsTest {
         entry("passToken", "pass token"),
         entry("error", "invalid"),
         entry("mfaPreference", MfaPreferenceType.EMAIL),
-        entry("contactType", "email")
+        entry("contactType", "email"),
+        entry("codeDestination", "auth******@******.gov.uk"),
       )
     }
 
@@ -238,6 +240,7 @@ class MfaControllerAccountDetailsTest {
         )
       )
       whenever(mfaService.validateAndRemoveMfaCode(anyString(), anyString())).thenThrow(MfaFlowException("invalid"))
+      whenever(mfaService.getCodeDestination(any(), eq(MfaPreferenceType.TEXT))).thenReturn("*******0321")
       val modelAndView = controller.mfaChallengeAccountDetail(
         "some token",
         "pass token",
@@ -253,7 +256,8 @@ class MfaControllerAccountDetailsTest {
         entry("passToken", "pass token"),
         entry("error", "invalid"),
         entry("mfaPreference", MfaPreferenceType.TEXT),
-        entry("contactType", "email")
+        entry("contactType", "email"),
+        entry("codeDestination", "*******0321"),
       )
     }
 

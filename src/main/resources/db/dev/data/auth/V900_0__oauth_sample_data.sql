@@ -386,6 +386,7 @@ INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECON
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'bob@gmail.com', 0 FROM users where username = 'AUTH_SECOND_EMAIL_VERIFY2';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_SECOND_EMAIL_ALREADY';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_SECOND_EMAIL_CHANGE';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_PREF_TEXT2';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_PREF_2ND_EMAIL';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_PREF_2ND_EMAIL2';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_PREF_2ND_EMAIL3';
