@@ -1,6 +1,6 @@
 {
   "role": {
-    "name": "oauth2-server"
+    "name": "hmpps-auth"
   },
   "customDimensions": {
     "service.version": "${BUILD_NUMBER}"
