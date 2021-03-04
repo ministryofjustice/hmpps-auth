@@ -114,9 +114,10 @@ class VerifyEmailController(
     }
     val chosenEmail =
       StringUtils.trim(if (StringUtils.isBlank(candidate) || "other" == candidate || "change" == candidate) email else candidate)
-    return if (userService.isSameAsCurrentVerifiedEmail(username, chosenEmail, emailType)) {
-      ModelAndView("redirect:/verify-email-already", "emailType", emailType)
-    } else try {
+    if (userService.isSameAsCurrentVerifiedEmail(username, chosenEmail, emailType)) {
+      removeAccountToken(token)
+      return ModelAndView("redirect:/verify-email-already", "emailType", emailType)
+    } else return try {
       val confirmUrl = if (emailType == EmailType.PRIMARY) "-confirm?token=" else "-secondary-confirm?token="
       val (verifyLink, newEmail) =
         changeEmailAndRequestVerification(
@@ -125,6 +126,7 @@ class VerifyEmailController(
           request.requestURL.append(confirmUrl).toString(),
           emailType
         )
+      removeAccountToken(token)
       val modelAndView = ModelAndView("verifyEmailSent", "emailType", emailType)
       if (smokeTestEnabled) {
         modelAndView.addObject("verifyLink", verifyLink)
@@ -138,7 +140,6 @@ class VerifyEmailController(
         val successToken = UsernamePasswordAuthenticationToken(userPersonDetails, null, userPersonDetails.authorities)
         jwtAuthenticationSuccessHandler.updateAuthenticationInRequest(request, response, successToken)
       }
-
       return modelAndView
     } catch (e: VerifyEmailException) {
       log.info("Validation failed for email address due to {}", e.reason)
@@ -198,6 +199,12 @@ class VerifyEmailController(
     return "verifyEmailFailure"
   }
 
+  private fun removeAccountToken(token: String?) {
+    if (!token.isNullOrEmpty()) {
+      tokenService.removeToken(TokenType.ACCOUNT, token)
+    }
+  }
+
   private fun redirectToVerifyEmailWithVerifyCode(verifyLink: String): ModelAndView {
     val modelAndView = ModelAndView("redirect:/verify-email-sent")
     if (smokeTestEnabled) {
@@ -255,7 +262,7 @@ class VerifyEmailController(
     val errorOptional = verifyEmailService.confirmEmail(token!!)
     if (errorOptional.isPresent) {
       val error = errorOptional.get()
-      VerifyEmailController.log.info("Failed to verify email due to: {}", error)
+      log.info("Failed to verify email due to: {}", error)
       return if (StringUtils.equals(error, "expired")) ModelAndView(
         "redirect:/verify-email-expired",
         "token",

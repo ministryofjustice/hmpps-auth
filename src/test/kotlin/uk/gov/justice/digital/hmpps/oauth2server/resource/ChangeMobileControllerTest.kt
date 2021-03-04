@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
+import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken
 import uk.gov.justice.digital.hmpps.oauth2server.resource.account.ChangeMobileController
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
@@ -101,6 +104,7 @@ class ChangeMobileControllerTest {
           "requestType" to "change"
         )
       )
+      verify(tokenService, never()).removeToken(UserToken.TokenType.ACCOUNT, token)
     }
 
     @Test
@@ -119,6 +123,7 @@ class ChangeMobileControllerTest {
           "requestType" to "change"
         )
       )
+      verify(tokenService, never()).removeToken(UserToken.TokenType.ACCOUNT, token)
     }
 
     @Test
@@ -131,6 +136,7 @@ class ChangeMobileControllerTest {
       assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile")
       assertThat(modelAndView.model).isEmpty()
       verify(verifyMobileService).changeMobileAndRequestVerification("user", mobile)
+      verify(tokenService, times(1)).removeToken(UserToken.TokenType.ACCOUNT, token)
     }
 
     @Test
@@ -142,6 +148,7 @@ class ChangeMobileControllerTest {
       val modelAndView = controllerSmokeEnabled.changeMobile(token, mobile, "change", authentication)
       assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile")
       assertThat(modelAndView.model).containsExactlyInAnyOrderEntriesOf(mapOf("verifyCode" to "123456"))
+      verify(tokenService, times(1)).removeToken(UserToken.TokenType.ACCOUNT, token)
     }
 
     @Test
@@ -149,6 +156,7 @@ class ChangeMobileControllerTest {
       whenever(userService.isSameAsCurrentVerifiedMobile(anyString(), anyString())).thenReturn(true)
       val modelAndView = controller.changeMobile(token, "07700900321", "change", authentication)
       assertThat(modelAndView.viewName).isEqualTo("redirect:/verify-mobile-already")
+      verify(tokenService, times(1)).removeToken(UserToken.TokenType.ACCOUNT, token)
     }
   }
 }
