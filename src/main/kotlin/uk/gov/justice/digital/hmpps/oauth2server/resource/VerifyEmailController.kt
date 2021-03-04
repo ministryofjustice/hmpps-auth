@@ -114,10 +114,10 @@ class VerifyEmailController(
     }
     val chosenEmail =
       StringUtils.trim(if (StringUtils.isBlank(candidate) || "other" == candidate || "change" == candidate) email else candidate)
-    if (userService.isSameAsCurrentVerifiedEmail(username, chosenEmail, emailType)) {
+    return if (userService.isSameAsCurrentVerifiedEmail(username, chosenEmail, emailType)) {
       removeAccountToken(token)
-      return ModelAndView("redirect:/verify-email-already", "emailType", emailType)
-    } else return try {
+      ModelAndView("redirect:/verify-email-already", "emailType", emailType)
+    } else try {
       val confirmUrl = if (emailType == EmailType.PRIMARY) "-confirm?token=" else "-secondary-confirm?token="
       val (verifyLink, newEmail) =
         changeEmailAndRequestVerification(
