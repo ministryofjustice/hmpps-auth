@@ -31,6 +31,8 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
   flyway:
     enabled: false
+  session:
+    store-type=jdbc
 
   jpa:
     hibernate:
