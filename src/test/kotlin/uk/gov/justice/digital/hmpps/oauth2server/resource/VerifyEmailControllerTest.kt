@@ -6,6 +6,7 @@ import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
@@ -110,6 +111,7 @@ class VerifyEmailControllerTest {
     val modelAndView = verifyEmailController.verifyEmail("", "", EmailType.PRIMARY, token, false, principal, request, response)
     assertThat(modelAndView?.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView?.model).containsExactly(entry("error", "noselection"), entry("candidates", candidates))
+    verify(tokenService, never()).removeToken(any(), anyString())
   }
 
   @Test
@@ -131,6 +133,7 @@ class VerifyEmailControllerTest {
       verifyEmailController.verifyEmail("a@b.com", null, EmailType.PRIMARY, token, false, principal, request, response)
     assertThat(modelAndView?.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView?.model).containsExactly(entry("email", "a@b.com"), entry("error", "other"))
+    verify(tokenService, never()).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -173,6 +176,7 @@ class VerifyEmailControllerTest {
       "http://some.url-confirm?token=",
       EmailType.PRIMARY
     )
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -209,6 +213,8 @@ class VerifyEmailControllerTest {
       eq(response),
       check { assertThat(it.principal).isEqualTo(user) }
     )
+
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -240,6 +246,8 @@ class VerifyEmailControllerTest {
     )
 
     verifyZeroInteractions(jwtAuthenticationSuccessHandler)
+
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -264,6 +272,7 @@ class VerifyEmailControllerTest {
       response
     )
     assertThat(modelAndView?.viewName).isEqualTo("redirect:/verify-email-already")
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -297,6 +306,8 @@ class VerifyEmailControllerTest {
       )
     assertThat(modelAndView?.viewName).isEqualTo("verifyEmail")
     assertThat(modelAndView?.model).containsExactly(entry("error", "noselection"), entry("candidates", candidates))
+
+    verify(tokenService, never()).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -330,6 +341,8 @@ class VerifyEmailControllerTest {
       entry("email", "a@b.com"),
       entry("error", "other")
     )
+
+    verify(tokenService, never()).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -346,6 +359,7 @@ class VerifyEmailControllerTest {
       response
     )
     assertThat(modelAndView?.viewName).isEqualTo("redirect:/account-details?error=tokeninvalid")
+    verify(tokenService, never()).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -362,6 +376,7 @@ class VerifyEmailControllerTest {
       response
     )
     assertThat(modelAndView?.viewName).isEqualTo("redirect:/account-details?error=tokenexpired")
+    verify(tokenService, never()).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -403,6 +418,7 @@ class VerifyEmailControllerTest {
       "http://some.url-secondary-confirm?token=",
       EmailType.SECONDARY
     )
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -429,6 +445,7 @@ class VerifyEmailControllerTest {
       response
     )
     assertThat(modelAndView?.viewName).isEqualTo("redirect:/verify-email-already")
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   private fun getUserPersonalDetails(): NomisUserPersonDetails =
