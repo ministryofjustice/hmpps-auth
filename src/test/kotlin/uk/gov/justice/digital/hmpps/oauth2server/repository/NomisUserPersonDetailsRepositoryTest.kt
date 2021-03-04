@@ -66,7 +66,8 @@ class NomisUserPersonDetailsRepositoryTest {
         "Global Search",
         "Create Category assessments",
         "Approve Category assessments",
-        "Security Cat tool role"
+        "Security Cat tool role",
+        "HMPPS Registers Maintainer"
       )
     assertThat(retrievedEntity.filterRolesByCaseload("NWEB").stream().map { r: UserCaseloadRole -> r.role.name })
       .containsExactly(
@@ -76,7 +77,8 @@ class NomisUserPersonDetailsRepositoryTest {
         "Global Search",
         "Create Category assessments",
         "Approve Category assessments",
-        "Security Cat tool role"
+        "Security Cat tool role",
+        "HMPPS Registers Maintainer"
       )
   }
 
