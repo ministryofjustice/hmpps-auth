@@ -12,7 +12,7 @@ server:
 
 spring:
   application:
-    name: oauth2-server
+    name: hmpps-auth
   profiles:
     group:
       dev:
