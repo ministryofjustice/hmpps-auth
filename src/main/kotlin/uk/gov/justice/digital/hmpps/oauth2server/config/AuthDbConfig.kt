@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
+import org.springframework.session.jdbc.config.annotation.SpringSessionDataSource
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.EnableTransactionManagement
 import javax.persistence.EntityManagerFactory
@@ -27,6 +28,7 @@ class AuthDbConfig {
   lateinit var datasource: Map<String, String>
 
   @Bean(name = ["authDataSource"])
+  @SpringSessionDataSource
   fun authDataSource(): DataSource = DataSourceBuilder.create()
     .url(datasource["url"])
     .username(datasource["username"])
