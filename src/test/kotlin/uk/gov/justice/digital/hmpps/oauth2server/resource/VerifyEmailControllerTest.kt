@@ -7,7 +7,6 @@ import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
@@ -177,7 +176,7 @@ class VerifyEmailControllerTest {
       "http://some.url-confirm?token=",
       EmailType.PRIMARY
     )
-    verify(tokenService, times(1)).removeToken(UserToken.TokenType.ACCOUNT, token)
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -215,7 +214,7 @@ class VerifyEmailControllerTest {
       check { assertThat(it.principal).isEqualTo(user) }
     )
 
-    verify(tokenService, times(1)).removeToken(UserToken.TokenType.ACCOUNT, token)
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -248,7 +247,7 @@ class VerifyEmailControllerTest {
 
     verifyZeroInteractions(jwtAuthenticationSuccessHandler)
 
-    verify(tokenService, times(1)).removeToken(UserToken.TokenType.ACCOUNT, token)
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -273,7 +272,7 @@ class VerifyEmailControllerTest {
       response
     )
     assertThat(modelAndView?.viewName).isEqualTo("redirect:/verify-email-already")
-    verify(tokenService, times(1)).removeToken(UserToken.TokenType.ACCOUNT, token)
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -419,7 +418,7 @@ class VerifyEmailControllerTest {
       "http://some.url-secondary-confirm?token=",
       EmailType.SECONDARY
     )
-    verify(tokenService, times(1)).removeToken(UserToken.TokenType.ACCOUNT, token)
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   @Test
@@ -446,7 +445,7 @@ class VerifyEmailControllerTest {
       response
     )
     assertThat(modelAndView?.viewName).isEqualTo("redirect:/verify-email-already")
-    verify(tokenService, times(1)).removeToken(UserToken.TokenType.ACCOUNT, token)
+    verify(tokenService).removeToken(UserToken.TokenType.ACCOUNT, token)
   }
 
   private fun getUserPersonalDetails(): NomisUserPersonDetails =
