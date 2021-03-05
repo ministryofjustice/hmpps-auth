@@ -286,6 +286,12 @@ VALUES
 
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'JPC_USER' and role_code = 'PECS_JPC';
 
+-- auth user for interventions service provider journeys
+INSERT INTO users (user_id, username, password, email, first_name, last_name, verified, locked, enabled, master, create_datetime, password_expiry, last_logged_in, source, mfa_preference)
+    VALUES ('6C4036B7-E87D-44FB-864F-5A06C1C492F3', 'TEST_INTERVENTIONS_SP_1', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'test.interventions.sp.1@digital.justice.gov.uk', 'Robin', 'Croswell', 1, 0, 1, 0, '2021-03-05 11:48:34.2723638', '2040-04-26 16:17:28.4953990', '2021-03-05 11:48:34.2723638', 'auth', 'EMAIL');
+INSERT INTO groups (group_id, group_code, group_name) values ('6B30BD55-8F75-4B0B-A647-42A34B0A383D', 'INT_SP_HARMONY_LIVING', 'Int SP Harmony Living');
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'TEST_INTERVENTIONS_SP_1' and group_code = 'INT_SP_HARMONY_LIVING';
+
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'LOCKED_USER';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset2', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_DELETEALL';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset3', 'RESET', '3031-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_CREATE_USER_VALID';
