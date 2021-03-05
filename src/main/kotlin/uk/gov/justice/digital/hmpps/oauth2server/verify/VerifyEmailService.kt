@@ -117,6 +117,7 @@ class VerifyEmailService(
       throw e
     }
     userRepository.save(user)
+
     return LinkAndEmail(verifyLink, email!!)
   }
 

@@ -51,10 +51,12 @@ class ChangeMobileController(
     }
     val username = authentication.name
     if (userService.isSameAsCurrentVerifiedMobile(username, mobile)) {
+      tokenService.removeToken(UserToken.TokenType.ACCOUNT, token)
       return ModelAndView("redirect:/verify-mobile-already")
     }
     return try {
       val verifyCode = verifyMobileService.changeMobileAndRequestVerification(username, mobile)
+      tokenService.removeToken(UserToken.TokenType.ACCOUNT, token)
       redirectToVerifyMobileWithVerifyCode(verifyCode)
     } catch (e: VerifyMobileException) {
       log.info("Validation failed for mobile phone number due to {}", e.reason)

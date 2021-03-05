@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.MfaPreferenceType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
-import uk.gov.justice.digital.hmpps.oauth2server.security.LockingAuthenticationProvider.MfaUnavailableException
-import uk.gov.justice.digital.hmpps.oauth2server.service.LoginFlowException
-import uk.gov.justice.digital.hmpps.oauth2server.service.MfaFlowException
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import java.io.IOException
@@ -27,40 +24,32 @@ import javax.servlet.http.HttpServletResponse
 @Validated
 class MfaControllerAccountDetails(
   private val tokenService: TokenService,
-  private val telemetryClient: TelemetryClient,
-  private val mfaService: MfaService,
+  telemetryClient: TelemetryClient,
+  mfaService: MfaService,
   @Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
 ) : AbstractMfaController(
   tokenService,
+  telemetryClient,
   mfaService,
   smokeTestEnabled,
   "AccountDetails",
   "/account-details",
   "/account/mfa-challenge",
 ) {
-  @GetMapping("/account/mfa-challenge")
-  fun mfaChallengeRequestAccountDetail(
+  @GetMapping("/account/mfa-send-challenge")
+  fun mfaSendChallengeAccountDetail(
     authentication: Authentication,
     @RequestParam contactType: String,
-    @RequestParam token: String?,
     @RequestParam passToken: String?,
-    @RequestParam mfaPreference: MfaPreferenceType?,
   ): ModelAndView {
-    passTokenInvalidForEmail(contactType, passToken)?.let { return ModelAndView("redirect:/account-details", "error", it) }
-
-    return try {
-      // issue token to current mfa preference
-      val mfaData = mfaService.createTokenAndSendMfaCode(authentication.name)
-      val codeDestination = mfaService.getCodeDestination(mfaData.token, mfaData.mfaType)
-      val modelAndView = ModelAndView("mfaChallengeAccountDetails", "token", mfaData.token)
-        .addObject("mfaPreference", mfaData.mfaType)
-        .addObject("codeDestination", codeDestination)
-        .addAllObjects(extraModel(contactType, passToken))
-      if (smokeTestEnabled) modelAndView.addObject("smokeCode", mfaData.code)
-      modelAndView
-    } catch (e: MfaUnavailableException) {
-      ModelAndView("redirect:/account-details", "error", "mfaunavailable")
+    passTokenInvalidForEmail(contactType, passToken)?.let {
+      return ModelAndView(
+        "redirect:/account-details",
+        "error",
+        it
+      )
     }
+    return mfaSendChallenge(authentication, extraModel(contactType, passToken))
   }
 
   private fun passTokenInvalidForEmail(contactType: String, passToken: String?): String? {
@@ -70,23 +59,23 @@ class MfaControllerAccountDetails(
     return optionalErrorForToken.map { "token$it" }.orElse(null)
   }
 
-  @GetMapping("/account/mfa-challenge-error")
-  fun mfaChallengeRequestAccountDetailError(
-    authentication: Authentication,
+  @GetMapping("/account/mfa-challenge")
+  fun mfaChallengeRequestAccountDetail(
     @RequestParam contactType: String,
     @RequestParam error: String?,
     @RequestParam token: String?,
     @RequestParam passToken: String?,
     @RequestParam mfaPreference: MfaPreferenceType?,
   ): ModelAndView {
-    passTokenInvalidForEmail(contactType, passToken)?.let { return ModelAndView("redirect:/account-details", "error", it) }
+    passTokenInvalidForEmail(contactType, passToken)?.let {
+      return ModelAndView(
+        "redirect:/account-details",
+        "error",
+        it
+      )
+    }
 
-    val codeDestination = mfaService.getCodeDestination(token!!, mfaPreference!!)
-    return ModelAndView("mfaChallengeAccountDetails", "token", token)
-      .addObject("mfaPreference", mfaPreference)
-      .addObject("codeDestination", codeDestination)
-      .addAllObjects(extraModel(contactType, passToken))
-      .addObject("error", error)
+    return mfaChallengeRequest(error, token, mfaPreference, extraModel(contactType, passToken))
   }
 
   @PostMapping("/account/mfa-challenge")
@@ -99,37 +88,14 @@ class MfaControllerAccountDetails(
     @RequestParam contactType: String,
     request: HttpServletRequest,
     response: HttpServletResponse,
-  ): ModelAndView? {
-    val optionalErrorForToken = tokenService.checkToken(TokenType.MFA, token)
-    if (optionalErrorForToken.isPresent) {
-      return ModelAndView("redirect:/account-details", "error", "mfa${optionalErrorForToken.get()}")
-    }
-    // can just grab token here as validated above
-    val username = tokenService.getToken(TokenType.MFA, token).map { it.user.username }.orElseThrow()
-
-    try {
-      mfaService.validateAndRemoveMfaCode(token, code)
-    } catch (e: MfaFlowException) {
-      return ModelAndView("redirect:/account/mfa-challenge-error")
-        .addObject("token", token)
-        .addAllObjects(extraModel(contactType, passToken))
-        .addObject("error", e.error)
-        .addObject("mfaPreference", mfaPreference)
-    } catch (e: LoginFlowException) {
-      return ModelAndView("redirect:/logout", "error", e.error)
-    }
-
-    // success, so forward on
-    telemetryClient.trackEvent("MFAAuthenticateSuccess", mapOf("username" to username), null)
-
-    return continueToChangeAccountDetails(username, contactType)
+  ): ModelAndView? = mfaChallenge(token, mfaPreference, code, extraModel(contactType, passToken)) {
+    continueToChangeAccountDetails(it, contactType)
   }
 
   private fun continueToChangeAccountDetails(username: String, contactType: String): ModelAndView {
     // successfully passed 2fa, so generate change password token
     val token = tokenService.createToken(TokenType.ACCOUNT, username)
 
-    @Suppress("SpringMVCViewInspection")
     return ModelAndView("redirect:/new-$contactType", "token", token)
   }
 

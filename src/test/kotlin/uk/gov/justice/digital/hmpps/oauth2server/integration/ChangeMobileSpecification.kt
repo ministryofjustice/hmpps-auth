@@ -31,13 +31,7 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
   private lateinit var accountMfaEmailPage: AccountMfaEmailPage
 
   @Page
-  private lateinit var accountMfaEmailErrorPage: AccountMfaEmailErrorPage
-
-  @Page
   private lateinit var accountMfaTextPage: AccountMfaTextPage
-
-  @Page
-  private lateinit var accountMfaTextErrorPage: AccountMfaTextErrorPage
 
   @Page
   private lateinit var accountMfaEmailResendCodePage: AccountMfaEmailResendCodePage
@@ -63,7 +57,9 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage.submitCode(validMfaCode)
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
+      .submitCode(validMfaCode)
 
     changeMobilePage
       .addMobileAs("07987654321")
@@ -86,10 +82,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage.submitWithoutCode()
-    accountMfaEmailErrorPage.isAtError().enterTheCodeError()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
+      .submitWithoutCode()
+      .isAtError()
+      .enterTheCodeError()
 
-    accountMfaEmailPage.submitCode(validMfaCode)
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
+      .submitCode(validMfaCode)
 
     changeMobilePage
       .isAtPage()
@@ -105,7 +106,7 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     val validMfaCode = accountMfaEmailPage.getCode()
     accountMfaEmailPage.submitWithoutCode()
-    accountMfaEmailErrorPage.isAtError().enterTheCodeError()
+      .enterTheCodeError()
       .submitWithoutCode()
       .enterTheCodeError()
       .submitWithoutCode()
@@ -113,10 +114,11 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     driver.navigate().back()
     driver.navigate().back()
+    driver.navigate().back()
 
-    accountMfaEmailErrorPage.isAtError().enterTheCodeError()
-
-    accountMfaEmailPage.submitCode(validMfaCode)
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
+      .submitCode(validMfaCode)
 
     changeMobilePage.isAtPage()
   }
@@ -130,7 +132,9 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage.submitCode(validMfaCode)
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
+      .submitCode(validMfaCode)
 
     addMobilePage
       .setMobileAs("07")
@@ -148,7 +152,9 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage.submitCode(validMfaCode)
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
+      .submitCode(validMfaCode)
 
     changeMobilePage.setMobileAs("07700900322")
 
@@ -167,7 +173,9 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage.submitCode(validMfaCode)
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
+      .submitCode(validMfaCode)
 
     changeMobilePage.updateMobileAs("07700900321", "07700900321")
 
@@ -292,10 +300,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
-    accountMfaEmailPage.submitCode("123")
-    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
+      .submitCode("123")
+      .isAtError()
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
       .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
@@ -312,10 +325,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
-    accountMfaTextPage.submitCode("123")
-    accountMfaTextErrorPage.isAtError().checkTextCodeIsIncorrectError()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode("123")
+      .isAtError()
+      .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
@@ -332,10 +350,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
-    accountMfaEmailPage.submitCode("123")
-    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode("123")
+      .isAtError()
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
@@ -354,10 +377,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage.submitCode("123")
-    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
+      .submitCode("123")
+      .isAtError()
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode(validMfaCode)
 
     changeMobilePage.logOut()
@@ -365,10 +393,14 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_PREF_EMAIL3")
     val validMfaCode2 = mfaEmailPage.getCode()
-    mfaEmailPage.submitCode("123")
-      .checkEmailCodeIsIncorrectError()
+    mfaEmailPage
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
+      .submitCode("123")
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode(validMfaCode2)
 
     homePage.isAt()
@@ -385,10 +417,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaTextPage.getCode()
-    accountMfaTextPage.submitCode("123")
-    accountMfaTextErrorPage.isAtError().checkTextCodeIsIncorrectError()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode("123")
+      .isAtError()
+      .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode(validMfaCode)
 
     changeMobilePage.logOut()
@@ -396,10 +433,14 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     goTo(loginPage)
       .loginWithMfaText("AUTH_MFA_PREF_TEXT3")
     val validMfaCode2 = mfaTextPage.getCode()
-    mfaTextPage.submitCode("123")
-      .checkTextCodeIsIncorrectError()
+    mfaTextPage
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
+      .submitCode("123")
+      .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode(validMfaCode2)
 
     homePage.isAt()
@@ -416,10 +457,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     accountDetailsPage.navigateToChangeMobile()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage.submitCode("123")
-    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode("123")
+      .isAtError()
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode(validMfaCode)
 
     changeMobilePage.logOut()
@@ -427,10 +473,14 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_PREF_2ND_EMAIL3")
     val validMfaCode2 = mfaEmailPage.getCode()
-    mfaEmailPage.submitCode("123")
-      .checkEmailCodeIsIncorrectError()
+    mfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode("123")
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode(validMfaCode2)
 
     homePage.isAt()
@@ -446,11 +496,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
-    accountMfaEmailPage.resendCodeLink()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
+      .resendCodeLink()
 
     accountMfaEmailResendCodePage.resendCodeByEmail()
 
-    accountMfaEmailPage.submitCode()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
+      .submitCode()
 
     addMobilePage.isAt()
   }
@@ -464,11 +518,13 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeMobile()
-    accountMfaEmailPage.resendCodeLink()
-
-    accountMfaEmailResendCodePage.resendCodeByText()
-
-    accountMfaEmailPage.submitCode()
+    accountMfaEmailPage.isAtPage()
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
+      .resendCodeLink()
+    accountMfaEmailResendCodePage.isAtPage().resendCodeByText()
+    accountMfaTextPage.isAtPage()
+      .assertMobileCodeDestination("*******0321")
+      .submitCode()
 
     changeMobilePage.isAt()
   }
@@ -482,11 +538,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeMobile()
-    accountMfaEmailPage.resendCodeLink()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
+      .resendCodeLink()
 
     accountMfaEmailResendCodePage.resendCodeBySecondaryEmail()
 
-    accountMfaEmailPage.submitCode()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode()
 
     changeMobilePage.isAt()
   }
@@ -500,11 +560,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeMobile()
-    accountMfaTextPage.resendCodeLink()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .resendCodeLink()
 
     accountMfaTextResendCodePage.resendCodeByEmail()
 
-    accountMfaTextPage.submitCode()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth******@******.gov.uk")
+      .submitCode()
 
     changeMobilePage.isAt()
   }
@@ -519,11 +583,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
 
     accountDetailsPage.navigateToChangeMobile()
 
-    accountMfaTextPage.resendCodeLink()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .resendCodeLink()
 
     accountMfaTextResendCodePage.resendCodeByText()
 
-    accountMfaTextPage.submitCode()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode()
 
     changeMobilePage.isAt()
   }
@@ -537,11 +605,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeMobile()
-    accountMfaEmailPage.resendCodeLink()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .resendCodeLink()
 
-    accountMfaEmailResendCodePage.resendCodeByText()
+    accountMfaEmailResendCodePage.resendCodeByEmail()
 
-    accountMfaTextPage.submitCode()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_u******@******.gov.uk")
+      .submitCode()
 
     changeMobilePage.isAt()
   }
@@ -555,11 +627,15 @@ class ChangeMobileSpecification : AbstractAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeMobile()
-    accountMfaEmailPage.resendCodeLink()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .resendCodeLink()
 
     accountMfaEmailResendCodePage.resendCodeByText()
 
-    accountMfaTextPage.submitCode()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode()
 
     changeMobilePage.isAt()
   }
@@ -606,12 +682,6 @@ open class AddMobilePage :
     assertThat(changeMobileButton.value()).isEqualTo("Continue")
     changeMobileButton.click()
     return this
-  }
-
-  fun addMobileAs(mobile: String) {
-    this.mobile.fill().withText(mobile)
-    assertThat(changeMobileButton.value()).isEqualTo("Continue")
-    changeMobileButton.click()
   }
 
   fun setMobileAs(mobile: String): AddMobilePage {

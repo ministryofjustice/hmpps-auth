@@ -52,7 +52,7 @@ VALUES ('omicuser','1200','{"jwtFields":"-user_name"}','SYSTEM_READ_ONLY','passw
        ('smoke-test-client','3600','{}','ROLE_SMOKE_TEST','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read',null),
        ('interventions','1200','{}','ROLE_COMMUNITY,ROLE_AUTH_DELIUS_LDAP,ROLE_INTERVENTIONS,ROLE_OASYS_READ_ONLY','client_credentials,authorization_code,refresh_token', 'read,write', '$2a$10$a5WJN/AZc7Nq3rFoy5GOQ.avY.opPq/RaF59TXFaInt0Jxp6NV94a',43200,null,'read,write','http://localhost:3000,http://localhost:3000/login/callback'),
        ('hmpps-registers-ui','3600','{}',null,'authorization_code,refresh_token','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
-       ('hmpps-registers-ui-client','3600','{}','ROLE_MAINTAIN_REF_DATA','client_credentials','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read',null);
+       ('hmpps-registers-ui-client','3600','{}','ROLE_MAINTAIN_REF_DATA','client_credentials','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write',null);
 
 UPDATE oauth_client_details
 SET additional_information = '{"jwtFields":"-name"}'
@@ -167,6 +167,7 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('2E285CCD-DCFD-4497-9E21-D6E8E10A2A9F', 'AUTH_MFA_LOCKED3_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'mfa_user@digital.justice.gov.uk', 'Mfa Locked', 'User', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E21-D6E8E10A2A10', 'AUTH_MFA_LOCKED4_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'mfa_user@digital.justice.gov.uk', 'Mfa Locked', 'User', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E21-D6E8E10A2A11', 'AUTH_MFA_LOCKED5_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'mfa_user@digital.justice.gov.uk', 'Mfa Locked', 'User', 1, 1, 0, 'auth'),
+        ('2E285CCD-DCFD-4497-9E21-D6E8E10A2A12', 'AUTH_MFA_LOCKED6_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'mfa_user@digital.justice.gov.uk', 'Mfa Locked', 'User', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-E6E8E10A2A6F', 'AUTH_MFA_CHANGE', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'mfa_user@digital.justice.gov.uk', 'Mfa Locked', 'User', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-F6E8E10A2A6F', 'AUTH_MFA_CHANGE_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'Mfa', 'User', 1, 1, 0, 'auth'),
         ('2E285CCD-DCFD-4497-9E22-A9E8E10A2A60', 'AUTH_SECOND_EMAIL_ADD', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_email@digital.justice.gov.uk', 'email', 'User', 1, 1, 0, 'auth'),
@@ -206,6 +207,7 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D65', 'AUTH_MFA_PREF_TEXT2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D66', 'AUTH_MFA_PREF_TEXT3', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D67', 'AUTH_MFA_PREF_TEXT4', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2A11', 'AUTH_MFA_PREF_TEXT5', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D68', 'AUTH_MFA_LOCKED_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D69', 'AUTH_MFA_LOCKED2_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
         ('2E285CCD-DCFD-4497-9E23-D6E8E10A2D69', 'AUTH_MFA_LOCKED3_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
@@ -228,6 +230,10 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('2E285CCD-DCFD-4497-9E20-D6E8E10A2D76', 'AUTH_MFA_LOCKED4_2ND_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'SECONDARY_EMAIL'),
         ('2E285CCD-DCFD-4497-9E19-D6E8E10A2D76', 'AUTH_MFA_LOCKED5_2ND_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'SECONDARY_EMAIL'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D77', 'AUTH_MFA_PREF_2ND_EMAIL_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'SECONDARY_EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D80', 'AUTH_PREF_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.pref.text@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'TEXT'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D81', 'AUTH_PREF_2ND_EMAIL', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.pref.secondemail@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'SECONDARY_EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D83', 'AUTH_PREF_EMAIL_TEXT', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.pref.secondemail@digital.justice.gov.uk', 'Auth', 'Mfa', 1, 1, 0, 'auth', 'SECONDARY_EMAIL'),
+        ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D82', 'AUTH_NO_PREF', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth.no.pref@digital.justice.gov.uk', 'Auth', 'Mfa', 0, 1, 0, 'auth', 'TEXT'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D78', 'AUTH_USER_LINK_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 0, 1, 0, 'auth', 'SECONDARY_EMAIL'),
         ('2E285CCD-DCFD-4497-9E22-D6E8E10A2D79', 'AUTH_USER_2ND_EMAIL_LINK_EXP', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_unverified@digital.justice.gov.uk', 'Auth', 'Mfa', 0, 1, 0, 'auth', 'SECONDARY_EMAIL');
 
@@ -333,6 +339,7 @@ INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, use
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_PREF_TEXT2' and role_code = 'MFA';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_PREF_TEXT3' and role_code = 'MFA';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_PREF_TEXT4' and role_code = 'MFA';
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_PREF_TEXT5' and role_code = 'MFA';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_SHORT_EMAIL' and role_code = 'MFA';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_NON_VERIFIED' and role_code = 'MFA';
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'AUTH_MFA_PREF_2ND_EMAIL' and role_code = 'MFA';
@@ -387,6 +394,7 @@ INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECON
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'bob@gmail.com', 0 FROM users where username = 'AUTH_SECOND_EMAIL_VERIFY2';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_SECOND_EMAIL_ALREADY';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_SECOND_EMAIL_CHANGE';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_PREF_TEXT5';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_PREF_2ND_EMAIL';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_PREF_2ND_EMAIL2';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_MFA_PREF_2ND_EMAIL3';
@@ -410,6 +418,7 @@ INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBIL
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_TEXT2';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_TEXT3';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_TEXT4';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_TEXT5';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_LOCKED_TEXT';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_LOCKED2_TEXT';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_LOCKED3_TEXT';
@@ -421,6 +430,9 @@ INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBIL
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 0 FROM users where username = 'AUTH_UNVERIFIED_TEXT';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_2ND_EMAIL2';
 INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_MFA_PREF_EMAIL_AND_TEXT';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_PREF_TEXT';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'MOBILE_PHONE', '07700900321', 1 FROM users where username = 'AUTH_PREF_EMAIL_TEXT';
+INSERT INTO user_contact (user_id, type, value, verified) SELECT user_id, 'SECONDARY_EMAIL', 'john@smith.com', 1 FROM users where username = 'AUTH_PREF_2ND_EMAIL';
 
 INSERT INTO oauth_code (code, authentication)
 VALUES ('5bDHCW',

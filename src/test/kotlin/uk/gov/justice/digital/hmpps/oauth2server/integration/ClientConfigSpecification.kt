@@ -99,6 +99,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .edit("authorities", "ROLE_BOB,ROLE_FRED")
       .selectCheckboxOption("client_credentials")
       .edit("jwtFields", "-name")
+      .selectCheckboxOption("mfa-3")
       .save()
     clientSummaryPage.isAtPage()
       .checkClientSummary(
@@ -110,7 +111,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
           [client_credentials] 
           [ROLE_BOB, ROLE_FRED] 
           1200 
-          Edit
+          MFA ALL
       """
       )
 
@@ -138,8 +139,7 @@ class ClientSummaryPage : AuthPage<ClientSummaryPage>(
       [reporting] 
       [client_credentials] 
       [ROLE_REPORTING] 
-      3600 
-      Edit""",
+      3600""",
   ): ClientSummaryPage {
     assertThat(rows).hasSizeGreaterThan(10)
     assertThat(el("tr[data-qa='$client']").text()).isEqualTo(text.replaceIndent().replace("\n", ""))

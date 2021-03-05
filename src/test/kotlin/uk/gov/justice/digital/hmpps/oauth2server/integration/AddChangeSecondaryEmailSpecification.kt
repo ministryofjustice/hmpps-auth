@@ -34,13 +34,7 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
   private lateinit var accountMfaEmailPage: AccountMfaEmailPage
 
   @Page
-  private lateinit var accountMfaEmailErrorPage: AccountMfaEmailErrorPage
-
-  @Page
   private lateinit var accountMfaTextPage: AccountMfaTextPage
-
-  @Page
-  private lateinit var accountMfaTextErrorPage: AccountMfaTextErrorPage
 
   @Page
   private lateinit var accountMfaEmailResendCodePage: AccountMfaEmailResendCodePage
@@ -65,6 +59,7 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
 
     val validMfaCode = accountMfaEmailPage.getCode()
     accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
       .submitCode(validMfaCode)
 
     newSecondaryEmailPage.addSecondaryEmailAs("bob@gmail.com")
@@ -85,6 +80,7 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
 
     val validMfaCode = accountMfaEmailPage.getCode()
     accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
       .submitCode(validMfaCode)
 
     changeSecondaryEmailPage.updateSecondaryEmailAs("bob@gmail.com")
@@ -119,6 +115,7 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
 
     val validMfaCode = accountMfaEmailPage.getCode()
     accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
       .submitCode(validMfaCode)
 
     changeSecondaryEmailPage.updateSecondaryEmailAs("bob1@gmail.com")
@@ -153,6 +150,7 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
 
     val validMfaCode = accountMfaEmailPage.getCode()
     accountMfaEmailPage
+      .assertEmailCodeDestination("te******@******.gov.uk")
       .submitCode(validMfaCode)
 
     changeSecondaryEmailPage.updateSecondaryEmailAs("bob@gmail.com")
@@ -186,7 +184,9 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage.submitCode(validMfaCode)
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
+      .submitCode(validMfaCode)
 
     changeSecondaryEmailPage
       .updateSecondaryEmailAs("bob@justice.gsi.gov.uk")
@@ -205,6 +205,7 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
 
     val validMfaCode = accountMfaEmailPage.getCode()
     accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
       .submitCode(validMfaCode)
 
     changeSecondaryEmailPage
@@ -223,10 +224,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage.submitCode("123")
-    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
+      .submitCode("123")
+      .isAtError()
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth_******@******.gov.uk")
       .submitCode(validMfaCode)
 
     changeSecondaryEmailPage.updateSecondaryEmailAs("john@smith.com")
@@ -349,10 +355,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
-    accountMfaEmailPage.submitCode("123")
-    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
+      .submitCode("123")
+      .isAtError()
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
       .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
@@ -369,10 +380,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
-    accountMfaTextPage.submitCode("123")
-    accountMfaTextErrorPage.isAtError().checkTextCodeIsIncorrectError()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode("123")
+      .isAtError()
+      .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
@@ -389,10 +405,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
-    accountMfaEmailPage.submitCode("123")
-    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode("123")
+      .isAtError()
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
 
     loginPage.checkLoginAccountLockedError()
@@ -411,10 +432,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage.submitCode("123")
-    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
+      .submitCode("123")
+      .isAtError()
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode(validMfaCode)
 
     changeSecondaryEmailPage.logOut()
@@ -422,10 +448,14 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     goTo(loginPage)
       .loginWithMfaEmail("AUTH_MFA_PREF_EMAIL3")
     val validMfaCode2 = mfaEmailPage.getCode()
-    mfaEmailPage.submitCode("123")
-      .checkEmailCodeIsIncorrectError()
+    mfaEmailPage
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
+      .submitCode("123")
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
       .submitCode(validMfaCode2)
 
     homePage.isAt()
@@ -442,10 +472,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
     val validMfaCode = accountMfaTextPage.getCode()
-    accountMfaTextPage.submitCode("123")
-    accountMfaTextErrorPage.isAtError().checkTextCodeIsIncorrectError()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode("123")
+      .isAtError()
+      .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode(validMfaCode)
 
     changeSecondaryEmailPage.logOut()
@@ -453,10 +488,14 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     goTo(loginPage)
       .loginWithMfaText("AUTH_MFA_PREF_TEXT3")
     val validMfaCode2 = mfaTextPage.getCode()
-    mfaTextPage.submitCode("123")
-      .checkTextCodeIsIncorrectError()
+    mfaTextPage
+      .assertMobileCodeDestination("*******0321")
       .submitCode("123")
       .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
+      .submitCode("123")
+      .checkTextCodeIsIncorrectError()
+      .assertMobileCodeDestination("*******0321")
       .submitCode(validMfaCode2)
 
     homePage.isAt()
@@ -473,10 +512,16 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
     val validMfaCode = accountMfaEmailPage.getCode()
-    accountMfaEmailPage.submitCode("123")
-    accountMfaEmailErrorPage.isAtError().checkEmailCodeIsIncorrectError()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode("123")
+      .isAtError()
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode("123")
       .checkEmailCodeIsIncorrectError()
+      .checkEmailCodeIsIncorrectError()
+      .assertEmailCodeDestination("jo******@******ith.com")
       .submitCode(validMfaCode)
 
     changeSecondaryEmailPage.logOut()
@@ -503,11 +548,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
-    accountMfaEmailPage.resendCodeLink()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
+      .resendCodeLink()
 
     accountMfaEmailResendCodePage.resendCodeByEmail()
 
-    accountMfaEmailPage.submitCode()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("mfa_******@******.gov.uk")
+      .submitCode()
 
     newSecondaryEmailPage.isAt()
   }
@@ -521,11 +570,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
-    accountMfaEmailPage.resendCodeLink()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
+      .resendCodeLink()
 
     accountMfaEmailResendCodePage.resendCodeByText()
 
-    accountMfaEmailPage.submitCode()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode()
 
     newSecondaryEmailPage.isAt()
   }
@@ -539,11 +592,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
-    accountMfaEmailPage.resendCodeLink()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth.******@******.gov.uk")
+      .resendCodeLink()
 
     accountMfaEmailResendCodePage.resendCodeBySecondaryEmail()
 
-    accountMfaEmailPage.submitCode()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .submitCode()
 
     changeSecondaryEmailPage.isAt()
   }
@@ -557,11 +614,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
-    accountMfaTextPage.resendCodeLink()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .resendCodeLink()
 
     accountMfaTextResendCodePage.resendCodeByEmail()
 
-    accountMfaTextPage.submitCode()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth******@******.gov.uk")
+      .submitCode()
 
     newSecondaryEmailPage.isAt()
   }
@@ -576,11 +637,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
 
-    accountMfaTextPage.resendCodeLink()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .resendCodeLink()
 
     accountMfaTextResendCodePage.resendCodeByText()
 
-    accountMfaTextPage.submitCode()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode()
 
     newSecondaryEmailPage.isAt()
   }
@@ -594,11 +659,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
-    accountMfaEmailPage.resendCodeLink()
+    accountMfaEmailPage
 
-    accountMfaEmailResendCodePage.resendCodeByText()
+      .resendCodeLink()
 
-    accountMfaTextPage.submitCode()
+    accountMfaEmailResendCodePage.resendCodeByEmail()
+
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_u******@******.gov.uk")
+      .submitCode()
 
     changeSecondaryEmailPage.isAt()
   }
@@ -612,11 +681,15 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
     homePage.navigateToAccountDetails()
 
     accountDetailsPage.navigateToChangeSecondaryEmail()
-    accountMfaEmailPage.resendCodeLink()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("jo******@******ith.com")
+      .resendCodeLink()
 
     accountMfaEmailResendCodePage.resendCodeByText()
 
-    accountMfaTextPage.submitCode()
+    accountMfaTextPage
+      .assertMobileCodeDestination("*******0321")
+      .submitCode()
 
     changeSecondaryEmailPage.isAt()
   }
