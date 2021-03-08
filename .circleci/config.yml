@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   owasp: entur/owasp@0.0.14
-  hmpps: ministryofjustice/hmpps@2.2
+  hmpps: ministryofjustice/hmpps@3.0
 
 jobs:
   validate:
