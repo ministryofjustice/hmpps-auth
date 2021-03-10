@@ -65,13 +65,13 @@ class GroupsService(
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(GroupNotFoundException::class, GroupHasChildGroupException::class)
-  fun deleteGroup(username: String, groupCode: String) {
+  fun deleteGroup(username: String, groupCode: String, authorities: Collection<GrantedAuthority>) {
     val group = groupRepository.findByGroupCode(groupCode) ?: throw
     GroupNotFoundException("delete", groupCode, "notfound")
 
     when {
       group.children.isEmpty() -> {
-        removeUsersFromGroup(groupCode, username)
+        removeUsersFromGroup(groupCode, username, authorities)
         groupRepository.delete(group)
 
         telemetryClient.trackEvent(
@@ -86,9 +86,9 @@ class GroupsService(
     }
   }
 
-  private fun removeUsersFromGroup(groupCode: String, username: String) {
+  private fun removeUsersFromGroup(groupCode: String, username: String, authorities: Collection<GrantedAuthority>) {
     val usersWithGroup = userRepository.findAll(UserFilter(groupCodes = listOf(groupCode)))
-    usersWithGroup.forEach { authUserGroupService.removeGroup(it.username, groupCode, username) }
+    usersWithGroup.forEach { authUserGroupService.removeGroup(it.username, groupCode, username, authorities) }
   }
 
   @Transactional(transactionManager = "authTransactionManager")
