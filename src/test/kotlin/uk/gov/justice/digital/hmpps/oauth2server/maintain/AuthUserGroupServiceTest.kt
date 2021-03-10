@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupManagerException
 import java.util.Optional
 
 class AuthUserGroupServiceTest {
@@ -116,8 +117,8 @@ class AuthUserGroupServiceTest {
     whenever(groupRepository.findByGroupCode(anyString())).thenReturn(group)
     assertThatThrownBy {
       service.addGroup("user", "GROUP_LICENCE_VARY", "manager", GROUP_MANAGER_ROLE)
-    }.isInstanceOf(AuthUserGroupException::class.java)
-      .hasMessage("Add group failed for field group with reason: group manager is not member of group")
+    }.isInstanceOf(AuthUserGroupManagerException::class.java)
+      .hasMessage("Add group failed for field group with reason: managerNotMember")
   }
 
   @Test
