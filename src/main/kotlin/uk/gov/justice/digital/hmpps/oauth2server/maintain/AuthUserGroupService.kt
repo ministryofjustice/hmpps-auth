@@ -25,8 +25,8 @@ class AuthUserGroupService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(AuthUserGroupException::class)
-  fun addGroup(username: String, groupCode: String, modifier: String) {
+  @Throws(AuthUserGroupException::class, AuthUserGroupManagerException::class)
+  fun addGroup(username: String, groupCode: String, modifier: String, authorities: Collection<GrantedAuthority>) {
     // already checked that user exists
     val user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow()
     val groupFormatted = formatGroup(groupCode)
@@ -38,9 +38,9 @@ class AuthUserGroupService(
       throw AuthUserGroupExistsException()
     }
 
-    // TODO: Validate that the group is allowed to be added to the user:
-    // 1. If super user then can add anyone to anything
-    // 2. If group admin then needs to be one of their groups and user can't be a member of a different group
+    if (!checkGroupModifier(groupCode, authorities, modifier)) {
+      throw AuthUserGroupManagerException("Add", "group", "managerNotMember")
+    }
     log.info("Adding group {} to user {}", groupFormatted, username)
     user.groups.add(group)
     user.authorities.addAll(group.assignableRoles.filter { it.automatic }.map { it.role })
@@ -52,15 +52,17 @@ class AuthUserGroupService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(AuthUserGroupException::class)
-  fun removeGroup(username: String, groupCode: String, modifier: String) {
+  @Throws(AuthUserGroupException::class, AuthUserGroupManagerException::class)
+  fun removeGroup(username: String, groupCode: String, modifier: String, authorities: Collection<GrantedAuthority>) {
     val groupFormatted = formatGroup(groupCode)
     // already checked that user exists
     val user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow()
-    if (user.groups.map { it.groupCode }
-      .none { it == groupFormatted }
+    if (user.groups.map { it.groupCode }.none { it == groupFormatted }
     ) {
       throw AuthUserGroupException("group", "missing")
+    }
+    if (!checkGroupModifier(groupFormatted, authorities, modifier)) {
+      throw AuthUserGroupManagerException("delete", "group", "managerNotMember")
     }
     log.info("Removing group {} from user {}", groupFormatted, username)
     user.groups.removeIf { a: Group -> a.groupCode == groupFormatted }
@@ -69,6 +71,19 @@ class AuthUserGroupService(
       mapOf("username" to username, "group" to groupCode, "admin" to modifier),
       null
     )
+  }
+
+  private fun checkGroupModifier(
+    groupCode: String,
+    authorities: Collection<GrantedAuthority>,
+    modifier: String
+  ): Boolean {
+    return if (canMaintainAuthUsers(authorities)) {
+      true
+    } else {
+      val modifierGroups = getAssignableGroups(modifier, authorities)
+      return modifierGroups.map { it.groupCode }.contains(groupCode)
+    }
   }
 
   private fun formatGroup(group: String) = group.trim().toUpperCase()
@@ -92,4 +107,7 @@ class AuthUserGroupService(
   class AuthUserGroupExistsException : AuthUserGroupException("group", "exists")
   open class AuthUserGroupException(val field: String, val errorCode: String) :
     Exception("Add group failed for field $field with reason: $errorCode")
+
+  open class AuthUserGroupManagerException(val action: String = "add", val field: String, val errorCode: String) :
+    Exception("$action group failed for field $field with reason: $errorCode")
 }

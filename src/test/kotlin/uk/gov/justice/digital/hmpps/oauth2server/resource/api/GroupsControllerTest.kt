@@ -105,7 +105,7 @@ class GroupsControllerTest {
   @Test
   fun `delete group`() {
     groupsController.deleteGroup("GroupCode", authentication)
-    verify(groupsService).deleteGroup("user", "GroupCode")
+    verify(groupsService).deleteGroup("user", "GroupCode", authentication.authorities)
   }
 
   @Test

@@ -75,7 +75,7 @@ class GroupsServiceTest {
     whenever(groupRepository.findByGroupCode("groupCode")).thenReturn(dbGroup)
     whenever(userRepository.findAll(any())).thenReturn(listOf())
 
-    groupsService.deleteGroup("user", "groupCode")
+    groupsService.deleteGroup("user", "groupCode", SUPER_USER)
     verify(groupRepository).findByGroupCode("groupCode")
     verify(userRepository).findAll(any())
     verify(groupRepository).delete(dbGroup)
@@ -89,10 +89,10 @@ class GroupsServiceTest {
     whenever(groupRepository.findByGroupCode("groupCode")).thenReturn(dbGroup)
     whenever(userRepository.findAll(any())).thenReturn(listOf(user1, user2))
 
-    groupsService.deleteGroup("user", "groupCode")
+    groupsService.deleteGroup("user", "groupCode", SUPER_USER)
     verify(groupRepository).findByGroupCode("groupCode")
     verify(userRepository).findAll(any())
-    verify(authUserGroupService, times(2)).removeGroup(anyString(), anyString(), anyString())
+    verify(authUserGroupService, times(2)).removeGroup(anyString(), anyString(), anyString(), any())
     verify(groupRepository).delete(dbGroup)
   }
 

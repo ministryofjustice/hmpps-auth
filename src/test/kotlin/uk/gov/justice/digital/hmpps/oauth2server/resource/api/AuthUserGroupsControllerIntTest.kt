@@ -45,6 +45,76 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `Auth User Groups add group endpoint adds a group to a user - group manager`() {
+
+    callGetGroups(user = "AUTH_RO_USER_TEST3")
+      .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_2')]")
+      .doesNotExist()
+
+    webTestClient
+      .put().uri("/api/authuser/AUTH_RO_USER_TEST3/groups/SITE_1_GROUP_2")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isNoContent
+
+    callGetGroups(user = "AUTH_RO_USER_TEST3")
+      .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_2')]")
+      .isEqualTo(mapOf("groupCode" to "SITE_1_GROUP_2", "groupName" to "Site 1 - Group 2"))
+  }
+
+  @Test
+  fun `Auth User Groups remove group endpoint removes a group from a user - group manager`() {
+    callGetGroups(user = "AUTH_RO_USER_TEST3")
+      .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_1')]")
+      .isEqualTo(mapOf("groupCode" to "SITE_1_GROUP_1", "groupName" to "Site 1 - Group 1"))
+
+    webTestClient
+      .delete().uri("/api/authuser/AUTH_RO_USER_TEST3/groups/SITE_1_GROUP_1")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isNoContent
+
+    callGetGroups(user = "AUTH_RO_USER_TEST3")
+      .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_1')]")
+      .doesNotExist()
+  }
+
+  @Test
+  fun `Auth User Groups add group endpoint adds a group to a user - group manager2`() {
+
+    callGetGroups(user = "AUTH_RO_USER_TEST3")
+      .jsonPath(".[?(@.groupCode == 'PECS_DRB8')]")
+      .doesNotExist()
+
+    webTestClient
+      .put().uri("/api/authuser/AUTH_RO_USER_TEST3/groups/PECS_DRB8")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isBadRequest
+
+    callGetGroups(user = "AUTH_RO_USER_TEST3")
+      .jsonPath(".[?(@.groupCode == 'PECS_DRB8')]")
+      .doesNotExist()
+  }
+
+  @Test
+  fun `Auth User Groups remove group endpoint removes a group from a user - group manager2`() {
+    callGetGroups(user = "AUTH_RO_USER_TEST3")
+      .jsonPath(".[?(@.groupCode == 'GC_DEL_4')]")
+      .isEqualTo(mapOf("groupCode" to "GC_DEL_4", "groupName" to "Group 4 for deleting"))
+
+    webTestClient
+      .delete().uri("/api/authuser/AUTH_RO_USER_TEST3/groups/GC_DEL_4")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isBadRequest
+
+    callGetGroups(user = "AUTH_RO_USER_TEST3")
+      .jsonPath(".[?(@.groupCode == 'GC_DEL_4')]")
+      .isEqualTo(mapOf("groupCode" to "GC_DEL_4", "groupName" to "Group 4 for deleting"))
+  }
+
+  @Test
   fun `Auth User Groups endpoint returns user groups no children`() {
     webTestClient
       .get().uri("/api/authuser/auth_ro_vary_user/groups?children=false")
