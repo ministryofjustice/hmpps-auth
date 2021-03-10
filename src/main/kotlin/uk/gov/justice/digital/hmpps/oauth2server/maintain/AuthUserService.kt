@@ -133,6 +133,7 @@ class AuthUserService(
     searcher: String,
     authorities: Collection<GrantedAuthority>,
     status: UserFilter.Status,
+    userSources: List<AuthSource>?,
   ): Page<User> {
     val groupSearchCodes = if (authorities.any { it.authority == "ROLE_MAINTAIN_OAUTH_USERS" }) {
       groupCodes
@@ -140,7 +141,7 @@ class AuthUserService(
       val assignableGroupCodes = authUserGroupService.getAssignableGroups(searcher, authorities).map { it.groupCode }
       if (groupCodes.isNullOrEmpty()) assignableGroupCodes else groupCodes.filter { g -> assignableGroupCodes.any { it == g } }
     }
-    val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes, status)
+    val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes, status, userSources)
     return userRepository.findAll(userFilter, pageable)
   }
 
