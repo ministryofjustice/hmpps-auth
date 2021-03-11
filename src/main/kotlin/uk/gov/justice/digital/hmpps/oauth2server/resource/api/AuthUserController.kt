@@ -140,12 +140,11 @@ class AuthUserController(
       value = "Sort column and direction, eg sort=lastName,desc"
     )
   )
-  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER', 'ROLE_INTEL_ADMIN')")
+  @PreAuthorize(
+    "hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER', 'ROLE_INTEL_ADMIN', 'ROLE_PPM_GLOBAL_ADMIN')"
+  )
   fun searchForUser(
-    @ApiParam(
-      value = "The username, email or name of the user.",
-      example = "j smith"
-    ) @RequestParam(required = false) name: String?,
+    @ApiParam(value = "The username, email or name of the user.", example = "j smith") @RequestParam(required = false) name: String?,
     @ApiParam(value = "The role codes of the user.") @RequestParam(required = false) roles: List<String>?,
     @ApiParam(value = "The group codes of the user.") @RequestParam(required = false) groups: List<String>?,
     @ApiParam(value = "Limit to active / inactive / show all users.") @RequestParam(required = false, defaultValue = "ALL") status: Status,
