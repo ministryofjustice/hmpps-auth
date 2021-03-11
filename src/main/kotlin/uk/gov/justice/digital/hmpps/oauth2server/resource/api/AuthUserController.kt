@@ -148,7 +148,7 @@ class AuthUserController(
     @ApiParam(value = "The role codes of the user.") @RequestParam(required = false) roles: List<String>?,
     @ApiParam(value = "The group codes of the user.") @RequestParam(required = false) groups: List<String>?,
     @ApiParam(value = "Limit to active / inactive / show all users.") @RequestParam(required = false, defaultValue = "ALL") status: Status,
-    @ApiParam(value = "Optional list of user sources - nomis, delius, auth") @RequestParam(required = false) userSources: List<AuthSource>?,
+    @ApiParam(value = "Optional list of user sources [nomis|delius|auth|azuread] (incompatible with group and role filters)") @RequestParam(required = false) userSources: List<AuthSource>?,
     @PageableDefault(sort = ["Person.lastName", "Person.firstName"], direction = Sort.Direction.ASC) pageable: Pageable,
     @ApiIgnore authentication: Authentication,
   ): Page<AuthUser> =

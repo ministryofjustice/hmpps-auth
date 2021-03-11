@@ -135,13 +135,21 @@ class AuthUserService(
     status: UserFilter.Status,
     userSources: List<AuthSource>?,
   ): Page<User> {
+
+    // The roleCodes and groupCodes filters are not compatible with userSources other than "auth"
+    var sourceArgsValid = true
+    if (!userSources.isNullOrEmpty() && (!roleCodes.isNullOrEmpty() || !groupCodes.isNullOrEmpty())) {
+      sourceArgsValid = userSources.any { it in listOf(AuthSource.nomis, AuthSource.delius, AuthSource.azuread) }
+    }
+    val limitedUserSources = if (sourceArgsValid) userSources else listOf(AuthSource.auth)
+
     val groupSearchCodes = if (authorities.any { it.authority == "ROLE_MAINTAIN_OAUTH_USERS" }) {
       groupCodes
     } else {
       val assignableGroupCodes = authUserGroupService.getAssignableGroups(searcher, authorities).map { it.groupCode }
       if (groupCodes.isNullOrEmpty()) assignableGroupCodes else groupCodes.filter { g -> assignableGroupCodes.any { it == g } }
     }
-    val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes, status, userSources)
+    val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes, status, limitedUserSources)
     return userRepository.findAll(userFilter, pageable)
   }
 
