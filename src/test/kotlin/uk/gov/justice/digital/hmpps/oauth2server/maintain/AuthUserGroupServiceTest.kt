@@ -7,6 +7,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupManagerException
 import java.util.Optional
 
 class AuthUserGroupServiceTest {
@@ -30,7 +32,8 @@ class AuthUserGroupServiceTest {
       service.addGroup(
         "user",
         "        ",
-        "admin"
+        "admin",
+        listOf(SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"))
       )
     }.isInstanceOf(AuthUserGroupException::class.java)
       .hasMessage("Add group failed for field group with reason: notfound")
@@ -46,7 +49,8 @@ class AuthUserGroupServiceTest {
       service.addGroup(
         "user",
         "LICENCE_VARY",
-        "admin"
+        "admin",
+        listOf(SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"))
       )
     }.isInstanceOf(AuthUserGroupException::class.java)
       .hasMessage("Add group failed for field group with reason: exists")
@@ -59,18 +63,76 @@ class AuthUserGroupServiceTest {
     val group = Group("GROUP_LICENCE_VARY", "desc")
     val roleLicence = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
     val roleJoe = Authority("JOE", "Role Joe")
-    group.assignableRoles.addAll(setOf(GroupAssignableRole(roleLicence, group, true), GroupAssignableRole(roleJoe, group, false)))
+    group.assignableRoles.addAll(
+      setOf(
+        GroupAssignableRole(roleLicence, group, true),
+        GroupAssignableRole(roleJoe, group, false)
+      )
+    )
     whenever(groupRepository.findByGroupCode(anyString())).thenReturn(group)
-    service.addGroup("user", "GROUP_LICENCE_VARY", "admin")
+    service.addGroup("user", "GROUP_LICENCE_VARY", "admin", SUPER_USER)
     assertThat(user.groups).extracting<String> { it.groupCode }.containsOnly("GROUP_JOE", "GROUP_LICENCE_VARY")
     assertThat(user.authorities).extracting<String> { it.roleCode }.containsOnly("LICENCE_VARY")
+  }
+
+  @Test
+  fun addGroup_success_groupManager() {
+    val user = createSampleUser(username = "user", groups = setOf(Group("GROUP_JOE", "desc")))
+    whenever(userRepository.findByUsernameAndMasterIsTrue("user")).thenReturn(Optional.of(user))
+    val manager = createSampleUser(
+      username = "user",
+      groups = setOf(Group("GROUP_JOE", "desc"), Group("GROUP_LICENCE_VARY", "desc"))
+    )
+    whenever(userRepository.findByUsernameAndMasterIsTrue("MANAGER")).thenReturn(Optional.of(manager))
+    val group = Group("GROUP_LICENCE_VARY", "desc")
+    val roleLicence = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
+    val roleJoe = Authority("JOE", "Role Joe")
+    group.assignableRoles.addAll(
+      setOf(
+        GroupAssignableRole(roleLicence, group, true),
+        GroupAssignableRole(roleJoe, group, false)
+      )
+    )
+    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(group)
+    service.addGroup("user", "GROUP_LICENCE_VARY", "manager", GROUP_MANAGER_ROLE)
+    assertThat(user.groups).extracting<String> { it.groupCode }.containsOnly("GROUP_JOE", "GROUP_LICENCE_VARY")
+    assertThat(user.authorities).extracting<String> { it.roleCode }.containsOnly("LICENCE_VARY")
+  }
+
+  @Test
+  fun addGroup_failure_groupManagerNotMemberOfGroup() {
+    val user = createSampleUser(username = "user", groups = setOf(Group("GROUP_JOE", "desc")))
+    whenever(userRepository.findByUsernameAndMasterIsTrue("user")).thenReturn(Optional.of(user))
+    val manager = createSampleUser(username = "user", groups = setOf(Group("GROUP_JOE", "desc")))
+    whenever(userRepository.findByUsernameAndMasterIsTrue("MANAGER")).thenReturn(Optional.of(manager))
+    val group = Group("GROUP_LICENCE_VARY", "desc")
+    val roleLicence = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
+    val roleJoe = Authority("JOE", "Role Joe")
+    group.assignableRoles.addAll(
+      setOf(
+        GroupAssignableRole(roleLicence, group, true),
+        GroupAssignableRole(roleJoe, group, false)
+      )
+    )
+    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(group)
+    assertThatThrownBy {
+      service.addGroup("user", "GROUP_LICENCE_VARY", "manager", GROUP_MANAGER_ROLE)
+    }.isInstanceOf(AuthUserGroupManagerException::class.java)
+      .hasMessage("Add group failed for field group with reason: managerNotMember")
   }
 
   @Test
   fun removeGroup_groupNotOnUser() {
     val user = createSampleUser(username = "user")
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
-    assertThatThrownBy { service.removeGroup("user", "BOB", "admin") }.isInstanceOf(AuthUserGroupException::class.java)
+    assertThatThrownBy {
+      service.removeGroup(
+        "user",
+        "BOB",
+        "admin",
+        listOf(SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"))
+      )
+    }.isInstanceOf(AuthUserGroupException::class.java)
       .hasMessage("Add group failed for field group with reason: missing")
   }
 
@@ -79,7 +141,35 @@ class AuthUserGroupServiceTest {
     val user = createSampleUser(username = "user")
     user.groups.addAll(setOf(Group("JOE", "desc"), Group("LICENCE_VARY", "desc2")))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(user))
-    service.removeGroup("user", "  licence_vary   ", "admin")
+    service.removeGroup("user", "  licence_vary   ", "admin", SUPER_USER)
+    assertThat(user.groups).extracting<String> { it.groupCode }.containsOnly("JOE")
+  }
+
+  @Test
+  fun removeGroup_success_groupManager() {
+    val user = createSampleUser(username = "user")
+    user.groups.addAll(setOf(Group("JOE", "desc"), Group("GROUP_LICENCE_VARY", "desc2")))
+    whenever(userRepository.findByUsernameAndMasterIsTrue("user")).thenReturn(Optional.of(user))
+    val manager = createSampleUser(
+      username = "user",
+      groups = setOf(Group("GROUP_JOE", "desc"), Group("GROUP_LICENCE_VARY", "desc"))
+    )
+    whenever(userRepository.findByUsernameAndMasterIsTrue("MANAGER")).thenReturn(Optional.of(manager))
+    service.removeGroup("user", "  group_licence_vary   ", "MANAGER", GROUP_MANAGER_ROLE)
+    assertThat(user.groups).extracting<String> { it.groupCode }.containsOnly("JOE")
+  }
+
+  @Test
+  fun removeGroup_failure_groupManager() {
+    val user = createSampleUser(username = "user")
+    user.groups.addAll(setOf(Group("JOE", "desc"), Group("GROUP_LICENCE_VARY", "desc2")))
+    whenever(userRepository.findByUsernameAndMasterIsTrue("user")).thenReturn(Optional.of(user))
+    val manager = createSampleUser(
+      username = "user",
+      groups = setOf(Group("GROUP_JOE", "desc"), Group("GROUP_LICENCE_VARY", "desc"))
+    )
+    whenever(userRepository.findByUsernameAndMasterIsTrue("MANAGER")).thenReturn(Optional.of(manager))
+    service.removeGroup("user", "  group_licence_vary   ", "MANAGER", GROUP_MANAGER_ROLE)
     assertThat(user.groups).extracting<String> { it.groupCode }.containsOnly("JOE")
   }
 
@@ -123,5 +213,10 @@ class AuthUserGroupServiceTest {
     )
     val groups = service.getAssignableGroups(" BOB ", setOf(SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS")))
     assertThat(groups).extracting<String> { it.groupCode }.containsOnly("JOE", "LICENCE_VARY")
+  }
+
+  companion object {
+    private val SUPER_USER: Set<GrantedAuthority> = setOf(SimpleGrantedAuthority("ROLE_MAINTAIN_OAUTH_USERS"))
+    private val GROUP_MANAGER_ROLE: Set<GrantedAuthority> = setOf(SimpleGrantedAuthority("ROLE_AUTH_GROUP_MANAGER"))
   }
 }

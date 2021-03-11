@@ -124,7 +124,7 @@ class GroupsController(
     @PathVariable group: String,
     @ApiIgnore authentication: Authentication,
   ) {
-    groupsService.deleteGroup(authentication.name, group)
+    groupsService.deleteGroup(authentication.name, group, authentication.authorities)
   }
 
   @PutMapping("/api/groups/child/{group}")

@@ -351,7 +351,8 @@ class UserRepositoryTest {
         "AUTH_RO_VARY_USER",
         "AUTH_RO_USER1@DIGITAL.JUSTICE.GOV.UK",
         "AUTH_RO_USER_TEST",
-        "AUTH_RO_USER_TEST2"
+        "AUTH_RO_USER_TEST2",
+        "AUTH_RO_USER_TEST3",
       )
   }
 

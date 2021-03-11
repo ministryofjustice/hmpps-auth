@@ -124,7 +124,8 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('0E7AFB2E-A326-4AB6-920C-0A7098F5031F', 'AUTH_LOCKED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Locked', 1, 1, 1, 'auth'),
         ('90F930E1-2195-4AFD-92CE-0EB5672DA02A', 'AUTH_RO_USER_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user_test@digital.justice.gov.uk', 'Ryan-Auth', 'Orton', 1, 1, 0, 'auth'),
         ('90F930E1-2195-4AFD-92CE-0EB5672DA02B', 'AUTH_RO_USER_TEST2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user_test2@digital.justice.gov.uk', 'Ryan-Auth', 'Orton2', 1, 1, 0, 'auth'),
-        ('90F930E1-2195-4AFD-92CE-0EB5672DA02C', 'AUTH_ADD_ROLE_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_add_role@digital.justice.gov.uk', 'Add', 'RoleTest', 1, 1, 0, 'auth'),
+        ('90F930E1-2195-4AFD-92CE-0EB5672DA02C', 'AUTH_RO_USER_TEST3', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user_test3@digital.justice.gov.uk', 'Ryan-Auth', 'Orton3', 1, 1, 0, 'auth'),
+        ('90F930E1-2195-4AFD-92CE-0EB5672DA02D', 'AUTH_ADD_ROLE_TEST', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_add_role@digital.justice.gov.uk', 'Add', 'RoleTest', 1, 1, 0, 'auth'),
         ('D9873CB3-24BD-4CFF-9CFE-1E64CE6BBCC4', 'AUTH_LOCKED2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_locked2@digital.justice.gov.uk', 'Auth', 'Locked2', 1, 1, 1, 'auth'),
         ('5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8', 'AUTH_RO_VARY_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_ro_user@digital.justice.gov.uk', 'Ryan-Auth-Vary', 'Orton', 1, 1, 0, 'auth'),
         ('AD7D37E2-DBAD-4B98-AF8D-429E822A6BDC', 'AUTH_DISABLED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_disabled@digital.justice.gov.uk', 'Auth', 'Disabled', 1, 0, 0, 'auth'),
@@ -358,7 +359,8 @@ INSERT INTO groups (group_id, group_code, group_name) VALUES (newid(), 'SITE_1_G
        (newid(), 'SITE_9_GROUP_1', 'Site 9 - Group 1'),
        (newid(), 'GC_DEL_1', 'Group 1 for deleting'),
        (newid(), 'GC_DEL_2', 'Group 2 for deleting'),
-       (newid(), 'GC_DEL_3', 'Group 3 for deleting');
+       (newid(), 'GC_DEL_3', 'Group 3 for deleting'),
+       (newid(), 'GC_DEL_4', 'Group 4 for deleting');
 
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'CHILD_1', 'Child - Site 1 - Group 2', (select group_id from groups where group_code = 'SITE_1_GROUP_2'));
 INSERT INTO child_group (child_group_id, child_group_code, child_group_name, group_id) VALUES (newid(), 'CHILD_2', 'Child - Site 2 - Group 1', (select group_id from groups where group_code = 'SITE_2_GROUP_1'));
@@ -373,6 +375,8 @@ INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups,
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_USER_TEST' and group_code = 'SITE_2_GROUP_1';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_USER_TEST2' and group_code = 'SITE_1_GROUP_1';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_USER_TEST2' and group_code = 'SITE_2_GROUP_1';
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_USER_TEST3' and group_code = 'SITE_1_GROUP_1';
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_RO_USER_TEST3' and group_code = 'GC_DEL_4';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_GROUP_MANAGER' and group_code = 'SITE_1_GROUP_1';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_GROUP_MANAGER' and group_code = 'SITE_1_GROUP_2';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_DELETEALL' and group_code = 'SITE_3_GROUP_1';

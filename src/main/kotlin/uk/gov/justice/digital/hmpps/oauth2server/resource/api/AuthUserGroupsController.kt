@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,10 +22,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupExistsException
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupManagerException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
-import java.security.Principal
 
 @RestController
 @Api(tags = ["/api/authuser/{username}/groups"])
@@ -63,7 +64,7 @@ class AuthUserGroupsController(
     ?: throw UsernameNotFoundException("User $username not found")
 
   @PutMapping("/api/authuser/{username}/groups/{group}")
-  @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
   @ApiOperation(
     value = "Add group to user.",
     notes = "Add group to user.",
@@ -84,13 +85,13 @@ class AuthUserGroupsController(
   fun addGroup(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
     @ApiParam(value = "The group to be added to the user.", required = true) @PathVariable group: String,
-    @ApiIgnore principal: Principal,
+    @ApiIgnore authentication: Authentication,
   ): ResponseEntity<Any> {
     val userOptional = authUserService.getAuthUserByUsername(username)
     return userOptional.map { it.username }
       .map { usernameInDb: String ->
         try {
-          authUserGroupService.addGroup(usernameInDb, group, principal.name)
+          authUserGroupService.addGroup(usernameInDb, group, authentication.name, authentication.authorities)
           log.info("Add group succeeded for user {} and group {}", usernameInDb, group)
           return@map ResponseEntity.noContent().build<Any>()
         } catch (e: AuthUserGroupExistsException) {
@@ -105,6 +106,21 @@ class AuthUserGroupsController(
               "group.exists",
               "Username $usernameInDb already has group $group",
               "group"
+            )
+          )
+        } catch (e: AuthUserGroupManagerException) {
+          log.info(
+            "Add group failed for user {} and group {} for field {} with reason {}",
+            usernameInDb,
+            group,
+            e.field,
+            e.errorCode
+          )
+          return@map ResponseEntity.badRequest().body<Any>(
+            ErrorDetail(
+              "${e.field}.${e.errorCode}",
+              "Group Manager is not a member of group",
+              e.field
             )
           )
         } catch (e: AuthUserGroupException) {
@@ -127,7 +143,7 @@ class AuthUserGroupsController(
   }
 
   @DeleteMapping("/api/authuser/{username}/groups/{group}")
-  @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
   @ApiOperation(
     value = "Remove group from user.",
     notes = "Remove group from user.",
@@ -147,13 +163,21 @@ class AuthUserGroupsController(
   fun removeGroup(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
     @ApiParam(value = "The group to be delete from the user.", required = true) @PathVariable group: String,
-    @ApiIgnore principal: Principal,
+    @ApiIgnore authentication: Authentication,
   ): ResponseEntity<Any> {
     val userOptional = authUserService.getAuthUserByUsername(username)
     return userOptional.map { u: User ->
       val usernameInDb = u.username
       try {
-        authUserGroupService.removeGroup(usernameInDb, group, principal.name)
+        authUserGroupService.removeGroup(usernameInDb, group, authentication.name, authentication.authorities)
+      } catch (e: AuthUserGroupManagerException) {
+        return@map ResponseEntity.status(HttpStatus.BAD_REQUEST).body<Any>(
+          ErrorDetail(
+            "group.managerNotMember",
+            "Group Manager is not a member of group: $group",
+            "group"
+          )
+        )
       } catch (e: AuthUserGroupException) {
         return@map ResponseEntity.status(HttpStatus.BAD_REQUEST).body<Any>(
           ErrorDetail(
