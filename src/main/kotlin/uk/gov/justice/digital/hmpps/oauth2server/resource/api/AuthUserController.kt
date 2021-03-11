@@ -624,7 +624,7 @@ class AuthUserController(
           username = user.username,
           email = user.email,
           firstName = user.firstName,
-          lastName = user.person!!.lastName,
+          lastName = user.person?.lastName,
           locked = user.locked,
           enabled = user.isEnabled,
           verified = user.verified,
