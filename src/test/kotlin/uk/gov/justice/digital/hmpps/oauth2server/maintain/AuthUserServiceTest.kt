@@ -1462,13 +1462,13 @@ class AuthUserServiceTest {
     }
 
     @Test
-    fun `passes multiple user sources through the filter`() {
+    fun `passes multiple auth sources to the user filter`() {
       whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
       val unpaged = Pageable.unpaged()
       authUserService.findAuthUsers(
         "somename ",
-        listOf("somerole"),
-        listOf("somegroup"),
+        null,
+        null,
         unpaged,
         "bob",
         GRANTED_AUTHORITY_SUPER_USER,
@@ -1477,7 +1477,29 @@ class AuthUserServiceTest {
       )
       verify(userRepository).findAll(
         check {
-          assertThat(it).extracting("status").isEqualTo(Status.ACTIVE)
+          assertThat(it).extracting("authSources").asList().containsAll(listOf(auth, nomis, delius))
+        },
+        eq(unpaged)
+      )
+    }
+
+    @Test
+    fun `defaults the auth source to auth in the user filter when no value provided`() {
+      whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
+      val unpaged = Pageable.unpaged()
+      authUserService.findAuthUsers(
+        "somename ",
+        null,
+        null,
+        unpaged,
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER,
+        Status.ACTIVE,
+        null,
+      )
+      verify(userRepository).findAll(
+        check {
+          assertThat(it).extracting("authSources").asList().containsOnly(auth)
         },
         eq(unpaged)
       )

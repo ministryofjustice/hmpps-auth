@@ -3,11 +3,15 @@ package uk.gov.justice.digital.hmpps.oauth2server.security
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User.EmailType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.azure.service.AzureUserService
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
@@ -173,6 +177,16 @@ class UserService(
         )
       }
   }
+
+  fun searchUsersInMultipleSourceSystems(
+    name: String?,
+    pageable: Pageable,
+    searcher: String,
+    authorities: Collection<GrantedAuthority>,
+    status: UserFilter.Status,
+    authSources: List<AuthSource>?,
+  ): Page<User> =
+    authUserService.findAuthUsers(name, null, null, pageable, searcher, authorities, status, authSources)
 }
 
 data class PrisonUserDto(

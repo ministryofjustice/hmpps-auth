@@ -135,20 +135,16 @@ class AuthUserService(
     status: UserFilter.Status,
     authSources: List<AuthSource>?,
   ): Page<User> {
-
-    // If auth sources are provided along with roles and/or groups then default the search to AuthSource.auth only
-    val sources = if (!authSources.isNullOrEmpty() && (!roleCodes.isNullOrEmpty() || !groupCodes.isNullOrEmpty()))
-      listOf(AuthSource.auth)
-    else
-      authSources
-
+    val sources = if (authSources.isNullOrEmpty()) listOf(AuthSource.auth) else authSources
     val groupSearchCodes = if (authorities.any { it.authority == "ROLE_MAINTAIN_OAUTH_USERS" }) {
       groupCodes
-    } else {
+    } else if (authorities.any { it.authority == "ROLE_AUTH_GROUP_MANAGER" }) {
       val assignableGroupCodes = authUserGroupService.getAssignableGroups(searcher, authorities).map { it.groupCode }
       if (groupCodes.isNullOrEmpty()) assignableGroupCodes else groupCodes.filter { g -> assignableGroupCodes.any { it == g } }
+    } else {
+      emptyList()
     }
-    val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes, status, sources)
+    val userFilter = UserFilter(name, roleCodes, groupCodes = groupSearchCodes, status, sources)
     return userRepository.findAll(userFilter, pageable)
   }
 

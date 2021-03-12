@@ -37,7 +37,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.Create
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
@@ -141,18 +140,17 @@ class AuthUserController(
     )
   )
   @PreAuthorize(
-    "hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER', 'ROLE_INTEL_ADMIN', 'ROLE_PPM_GLOBAL_ADMIN')"
+    "hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')"
   )
   fun searchForUser(
     @ApiParam(value = "The username, email or name of the user.", example = "j smith") @RequestParam(required = false) name: String?,
     @ApiParam(value = "The role codes of the user.") @RequestParam(required = false) roles: List<String>?,
     @ApiParam(value = "The group codes of the user.") @RequestParam(required = false) groups: List<String>?,
     @ApiParam(value = "Limit to active / inactive / show all users.") @RequestParam(required = false, defaultValue = "ALL") status: Status,
-    @ApiParam(value = "Optional list of authentication sources [nomis|delius|auth|azuread] (incompatible with group and role filters)") @RequestParam(required = false) authSources: List<AuthSource>?,
     @PageableDefault(sort = ["Person.lastName", "Person.firstName"], direction = Sort.Direction.ASC) pageable: Pageable,
     @ApiIgnore authentication: Authentication,
   ): Page<AuthUser> =
-    authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities, status, authSources)
+    authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities, status, null)
       .map { AuthUser.fromUser(it) }
 
   @GetMapping("/api/authuser/me/assignable-groups")

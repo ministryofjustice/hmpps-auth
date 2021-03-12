@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -772,14 +773,14 @@ class AuthUserControllerTest {
   @Test
   fun searchForUser() {
     val unpaged = Pageable.unpaged()
-    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any(), any(), anyList())).thenReturn(
+    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any(), any(), anyOrNull())).thenReturn(
       PageImpl(
         listOf(
           authUser
         )
       )
     )
-    authUserController.searchForUser("somename", listOf("somerole"), listOf("somegroup"), Status.ALL, emptyList(), unpaged, authentication)
+    authUserController.searchForUser("somename", listOf("somerole"), listOf("somegroup"), Status.ALL, unpaged, authentication)
     verify(authUserService).findAuthUsers(
       "somename",
       listOf("somerole"),
@@ -788,44 +789,21 @@ class AuthUserControllerTest {
       "bob",
       emptyList(),
       Status.ALL,
-      emptyList(),
-    )
-  }
-
-  @Test
-  fun searchForUserMultipleSources() {
-    val unpaged = Pageable.unpaged()
-    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any(), any(), anyList())).thenReturn(
-      PageImpl(
-        listOf(
-          authUser
-        )
-      )
-    )
-    authUserController.searchForUser("somename", listOf("somerole"), listOf("somegroup"), Status.ALL, listOf(AuthSource.auth, AuthSource.nomis), unpaged, authentication)
-    verify(authUserService).findAuthUsers(
-      "somename",
-      listOf("somerole"),
-      listOf("somegroup"),
-      unpaged,
-      "bob",
-      emptyList(),
-      Status.ALL,
-      listOf(AuthSource.auth, AuthSource.nomis),
+      null,
     )
   }
 
   @Test
   fun `searchForUser map auth user`() {
     val unpaged = Pageable.unpaged()
-    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any(), any(), anyList())).thenReturn(
+    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any(), any(), anyOrNull())).thenReturn(
       PageImpl(
         listOf(
           authUser
         )
       )
     )
-    val page = authUserController.searchForUser("somename", listOf("somerole"), listOf("somegroup"), Status.ALL, emptyList(), unpaged, authentication).toList()
+    val page = authUserController.searchForUser("somename", listOf("somerole"), listOf("somegroup"), Status.ALL, unpaged, authentication).toList()
     assertThat(page).hasSize(1).containsExactlyInAnyOrder(
       AuthUser(
         userId = USER_ID,
@@ -837,6 +815,16 @@ class AuthUserControllerTest {
         lastName = "Bloggs",
         lastLoggedIn = LocalDateTime.parse("2019-01-01T12:00")
       )
+    )
+    verify(authUserService).findAuthUsers(
+      "somename",
+      listOf("somerole"),
+      listOf("somegroup"),
+      unpaged,
+      "bob",
+      emptyList(),
+      Status.ALL,
+      null,
     )
   }
 

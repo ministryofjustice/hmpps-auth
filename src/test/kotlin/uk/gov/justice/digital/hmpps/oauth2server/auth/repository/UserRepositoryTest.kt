@@ -313,13 +313,6 @@ class UserRepositoryTest {
   }
 
   @Test
-  fun findAll_UserFilter_ByGroups_IgnoreMultipleSources() {
-    assertThat(repository.findAll(UserFilter(groupCodes = listOf("SITE_1_GROUP_2  ", "  SITE_1_GROUP_3"), authSources = listOf(auth, nomis, delius))))
-      .extracting<String> { it.username }
-      .containsExactly("AUTH_GROUP_MANAGER", "AUTH_RO_VARY_USER")
-  }
-
-  @Test
   fun findAll_UserFilter_ByUsername() {
     assertThat(repository.findAll(UserFilter(name = "_expired")))
       .extracting<String> { it.username }

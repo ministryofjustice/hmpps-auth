@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.oauth2server.resource.DeliusExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 
@@ -273,5 +274,43 @@ class UserControllerIntTest : IntegrationTest() {
       .get().uri("/api/user/bob/email")
       .exchange()
       .expectStatus().isUnauthorized
+  }
+
+  @Test
+  fun `User search by multiple auth sources`() {
+    webTestClient
+      .get()
+      .uri("/api/user/search?name=test2&authSources=nomis&authSources=delius&authSources=auth&authSources=nomis")
+      .headers(setAuthorisation("INTEL_ADMIN", listOf("ROLE_INTEL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("auth_user_search_multiple_source.json".readFile())
+  }
+
+  @Test
+  fun `User search by the defaulted auth source`() {
+    webTestClient
+      .get().uri("/api/user/search?name=test2")
+      .headers(setAuthorisation("INTEL_ADMIN", listOf("ROLE_INTEL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("auth_user_search_default_source.json".readFile())
+  }
+
+  @Test
+  fun `User search by multiple auth sources and status filter`() {
+    webTestClient
+      .get()
+      .uri("/api/user/search?name=test2&status=INACTIVE&authSources=nomis&authSources=delius")
+      .headers(setAuthorisation("ITAG_USER", listOf("ROLE_INTEL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("auth_user_search_multiple_source_inactive.json".readFile())
   }
 }

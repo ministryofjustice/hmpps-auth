@@ -27,6 +27,7 @@ class UserFilter(
   ): Predicate {
     val andBuilder = ImmutableList.builder<Predicate>()
 
+    // Defaults to AuthSource.auth when no authSources provided
     andBuilder.add(buildSourcesPredicate(root, cb, authSources))
 
     if (!roleCodes.isNullOrEmpty()) {

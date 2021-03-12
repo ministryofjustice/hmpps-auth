@@ -1,0 +1,40 @@
+{
+  "content": [
+    {
+      "userId": "7969d655-03f6-464e-a318-9d3c8b53787a",
+      "username": "EXPIRED_TEST2_USER",
+      "email": "expired_test2_user@digital.justice.gov.uk",
+      "firstName": "EXPIRED_TEST2_USER",
+      "lastName": null,
+      "locked": false,
+      "enabled": false,
+      "verified": true,
+      "source": "nomis"
+    }
+  ],
+  "pageable": {
+    "sort": {
+      "sorted": true,
+      "unsorted": false,
+      "empty": false
+    },
+    "pageNumber": 0,
+    "pageSize": 10,
+    "offset": 0,
+    "paged": true,
+    "unpaged": false
+  },
+  "last": true,
+  "totalPages": 1,
+  "totalElements": 1,
+  "sort": {
+    "sorted": true,
+    "unsorted": false,
+    "empty": false
+  },
+  "first": true,
+  "numberOfElements": 1,
+  "number": 0,
+  "size": 10,
+  "empty": false
+}
