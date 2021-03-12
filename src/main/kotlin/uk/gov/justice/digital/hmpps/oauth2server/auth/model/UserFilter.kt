@@ -15,7 +15,7 @@ class UserFilter(
   val roleCodes: List<String>? = null,
   val groupCodes: List<String>? = null,
   val status: Status = Status.ALL,
-  val userSources: List<AuthSource>? = null,
+  val authSources: List<AuthSource>? = null,
 ) : Specification<User> {
 
   private val name: String? = if (name.isNullOrBlank()) null else name.trim()
@@ -27,11 +27,8 @@ class UserFilter(
   ): Predicate {
     val andBuilder = ImmutableList.builder<Predicate>()
 
-    if (!userSources.isNullOrEmpty()) {
-      andBuilder.add(buildMultipleSourcesPredicate(root, cb, userSources))
-    } else {
-      andBuilder.add(cb.equal(root.get<Any>("source"), AuthSource.auth))
-    }
+    andBuilder.add(buildSourcesPredicate(root, cb, authSources))
+
     if (!roleCodes.isNullOrEmpty()) {
       val roleBuilder = ImmutableList.builder<Predicate>()
       roleCodes.forEach {
@@ -58,12 +55,15 @@ class UserFilter(
     return cb.and(*andBuilder.build().toTypedArray())
   }
 
-  private fun buildMultipleSourcesPredicate(root: Root<User>, cb: CriteriaBuilder, sources: List<AuthSource>): Predicate {
-    val orBuilder = ImmutableList.builder<Predicate>()
-    for (source in sources) {
-      orBuilder.add(cb.equal(root.get<Any>("source"), source))
+  private fun buildSourcesPredicate(root: Root<User>, cb: CriteriaBuilder, sources: List<AuthSource>?): Predicate {
+    if (!sources.isNullOrEmpty()) {
+      val orBuilder = ImmutableList.builder<Predicate>()
+      sources.forEach {
+        orBuilder.add(cb.equal(root.get<Any>("source"), it))
+      }
+      return cb.or(*orBuilder.build().toTypedArray())
     }
-    return cb.or(*orBuilder.build().toTypedArray())
+    return cb.equal(root.get<Any>("source"), AuthSource.auth)
   }
 
   private fun buildNamePredicate(root: Root<User>, cb: CriteriaBuilder): Predicate {

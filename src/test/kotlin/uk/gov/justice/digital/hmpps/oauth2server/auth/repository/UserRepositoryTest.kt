@@ -314,7 +314,7 @@ class UserRepositoryTest {
 
   @Test
   fun findAll_UserFilter_ByGroups_IgnoreMultipleSources() {
-    assertThat(repository.findAll(UserFilter(groupCodes = listOf("SITE_1_GROUP_2  ", "  SITE_1_GROUP_3"), userSources = listOf(auth, nomis, delius))))
+    assertThat(repository.findAll(UserFilter(groupCodes = listOf("SITE_1_GROUP_2  ", "  SITE_1_GROUP_3"), authSources = listOf(auth, nomis, delius))))
       .extracting<String> { it.username }
       .containsExactly("AUTH_GROUP_MANAGER", "AUTH_RO_VARY_USER")
   }
@@ -364,7 +364,7 @@ class UserRepositoryTest {
 
   @Test
   fun findAll_UserFilter_ByAuthSourcesMultiple() {
-    assertThat(repository.findAll(UserFilter(name = "orton, r", userSources = listOf(auth, nomis))))
+    assertThat(repository.findAll(UserFilter(name = "orton, r", authSources = listOf(auth, nomis))))
       .extracting<String> { it.username }
       .containsOnly(
         "AUTH_RO_USER",

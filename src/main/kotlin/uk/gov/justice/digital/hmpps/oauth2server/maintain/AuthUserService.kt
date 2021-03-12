@@ -133,16 +133,14 @@ class AuthUserService(
     searcher: String,
     authorities: Collection<GrantedAuthority>,
     status: UserFilter.Status,
-    userSources: List<AuthSource>?,
+    authSources: List<AuthSource>?,
   ): Page<User> {
 
-    var incompatibleSources = false
-    if (!userSources.isNullOrEmpty() && (!roleCodes.isNullOrEmpty() || !groupCodes.isNullOrEmpty())) {
-      incompatibleSources = userSources.any { it in listOf(AuthSource.nomis, AuthSource.delius, AuthSource.azuread) }
-    }
-
-    // If userSources and one or both of groupCodes and roleCodes are supplied change the source to AuthSource.auth - anything else is incompatible
-    val compatibleSources = if (incompatibleSources) listOf(AuthSource.auth) else userSources
+    // If auth sources are provided along with roles and/or groups then default the search to AuthSource.auth only
+    val sources = if (!authSources.isNullOrEmpty() && (!roleCodes.isNullOrEmpty() || !groupCodes.isNullOrEmpty()))
+      listOf(AuthSource.auth)
+    else
+      authSources
 
     val groupSearchCodes = if (authorities.any { it.authority == "ROLE_MAINTAIN_OAUTH_USERS" }) {
       groupCodes
@@ -150,7 +148,7 @@ class AuthUserService(
       val assignableGroupCodes = authUserGroupService.getAssignableGroups(searcher, authorities).map { it.groupCode }
       if (groupCodes.isNullOrEmpty()) assignableGroupCodes else groupCodes.filter { g -> assignableGroupCodes.any { it == g } }
     }
-    val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes, status, compatibleSources)
+    val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes, status, sources)
     return userRepository.findAll(userFilter, pageable)
   }
 

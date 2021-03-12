@@ -148,11 +148,11 @@ class AuthUserController(
     @ApiParam(value = "The role codes of the user.") @RequestParam(required = false) roles: List<String>?,
     @ApiParam(value = "The group codes of the user.") @RequestParam(required = false) groups: List<String>?,
     @ApiParam(value = "Limit to active / inactive / show all users.") @RequestParam(required = false, defaultValue = "ALL") status: Status,
-    @ApiParam(value = "Optional list of user sources [nomis|delius|auth|azuread] (incompatible with group and role filters)") @RequestParam(required = false) userSources: List<AuthSource>?,
+    @ApiParam(value = "Optional list of authentication sources [nomis|delius|auth|azuread] (incompatible with group and role filters)") @RequestParam(required = false) authSources: List<AuthSource>?,
     @PageableDefault(sort = ["Person.lastName", "Person.firstName"], direction = Sort.Direction.ASC) pageable: Pageable,
     @ApiIgnore authentication: Authentication,
   ): Page<AuthUser> =
-    authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities, status, userSources)
+    authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities, status, authSources)
       .map { AuthUser.fromUser(it) }
 
   @GetMapping("/api/authuser/me/assignable-groups")
