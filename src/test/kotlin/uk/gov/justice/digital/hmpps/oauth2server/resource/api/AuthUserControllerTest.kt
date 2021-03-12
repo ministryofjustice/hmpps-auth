@@ -32,7 +32,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AmendUser
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AuthUser
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.CreateUser
-import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService

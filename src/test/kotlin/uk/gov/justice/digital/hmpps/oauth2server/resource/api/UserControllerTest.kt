@@ -7,7 +7,6 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.anyList
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -223,10 +222,8 @@ class UserControllerTest {
   @Test
   fun userSearch_multipleSourceSystems() {
     val unpaged = Pageable.unpaged()
-    whenever(
-      userService.searchUsersInMultipleSourceSystems(anyString(), any(), anyString(), any(), any(), anyOrNull()))
-      .thenReturn(PageImpl(listOf(fakeUser))
-    )
+    whenever(userService.searchUsersInMultipleSourceSystems(anyString(), any(), anyString(), any(), any(), anyOrNull()))
+      .thenReturn(PageImpl(listOf(fakeUser)))
 
     val pageOfUsers = userController.searchForUsersInMultipleSourceSystems(
       "somename",
@@ -251,10 +248,8 @@ class UserControllerTest {
   @Test
   fun userSearch_mulitpleSourcesDefaultValues() {
     val unpaged = Pageable.unpaged()
-    whenever(
-      userService.searchUsersInMultipleSourceSystems(anyString(), any(), anyString(), any(), any(), anyOrNull()))
-      .thenReturn(PageImpl(listOf(fakeUser))
-      )
+    whenever(userService.searchUsersInMultipleSourceSystems(anyString(), any(), anyString(), any(), any(), anyOrNull()))
+      .thenReturn(PageImpl(listOf(fakeUser)))
 
     val pageOfUsers = userController.searchForUsersInMultipleSourceSystems(
       "somename",
@@ -279,10 +274,8 @@ class UserControllerTest {
   @Test
   fun userSearch_mulitpleSourcesWithStatusFilterActive() {
     val unpaged = Pageable.unpaged()
-    whenever(
-      userService.searchUsersInMultipleSourceSystems(anyString(), any(), anyString(), any(), any(), anyOrNull()))
-      .thenReturn(PageImpl(listOf(fakeUser))
-      )
+    whenever(userService.searchUsersInMultipleSourceSystems(anyString(), any(), anyString(), any(), any(), anyOrNull()))
+      .thenReturn(PageImpl(listOf(fakeUser)))
 
     val pageOfUsers = userController.searchForUsersInMultipleSourceSystems(
       "somename",

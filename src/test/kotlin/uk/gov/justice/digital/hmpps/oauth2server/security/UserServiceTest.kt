@@ -13,8 +13,6 @@ import org.mockito.ArgumentMatchers.anyList
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
@@ -683,35 +681,31 @@ class UserServiceTest {
     @Test
     fun `test search user with multiple auth sources `() {
       val unpaged = Pageable.unpaged()
-      whenever(
-        authUserService.findAuthUsers(anyString(), anyOrNull(), anyOrNull(),any(), anyString(), anyList(), any(), anyOrNull())
-      ).thenReturn(Page.empty())
+      whenever(authUserService.findAuthUsers(anyString(), anyOrNull(), anyOrNull(), any(), anyString(), anyList(), any(), anyOrNull()))
+        .thenReturn(Page.empty())
 
       userService.searchUsersInMultipleSourceSystems(
         "test", unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, listOf(nomis, auth)
       )
 
-      verify(authUserService)
-        .findAuthUsers(
-          "test", null, null, unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, listOf(nomis, auth)
-        )
+      verify(authUserService).findAuthUsers(
+        "test", null, null, unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, listOf(nomis, auth)
+      )
     }
 
     @Test
     fun `test search user with default auth source`() {
       val unpaged = Pageable.unpaged()
-      whenever(
-        authUserService.findAuthUsers(anyString(), anyOrNull(), anyOrNull(),any(), anyString(), anyList(), any(), anyOrNull())
-      ).thenReturn(Page.empty())
+      whenever(authUserService.findAuthUsers(anyString(), anyOrNull(), anyOrNull(), any(), anyString(), anyList(), any(), anyOrNull()))
+        .thenReturn(Page.empty())
 
       userService.searchUsersInMultipleSourceSystems(
         "test", unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, null
       )
 
-      verify(authUserService)
-        .findAuthUsers(
-          "test", null, null, unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, null
-        )
+      verify(authUserService).findAuthUsers(
+        "test", null, null, unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, null
+      )
     }
   }
 
