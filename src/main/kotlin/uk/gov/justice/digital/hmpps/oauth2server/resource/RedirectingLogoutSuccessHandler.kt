@@ -1,6 +1,7 @@
+@file:Suppress("DEPRECATION")
+
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
-import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
@@ -12,12 +13,11 @@ import org.springframework.security.oauth2.provider.endpoint.RedirectResolver
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler
 import org.springframework.stereotype.Component
 import org.springframework.util.CollectionUtils
+import org.springframework.web.util.UriComponentsBuilder
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-@Suppress("DEPRECATION")
 @Component
-
 class RedirectingLogoutSuccessHandler(
   private val clientDetailsService: ClientDetailsService,
   @param:Value("#{servletContext.contextPath}") private val servletContextPath: String,
@@ -59,7 +59,9 @@ class RedirectingLogoutSuccessHandler(
         }
       }
     }
-    response.sendRedirect(servletContextPath + "/login?logout" + if (StringUtils.isNotBlank(error)) "&error=$error" else "")
+    val urlBuilder = UriComponentsBuilder.fromPath("$servletContextPath/login").queryParam("logout")
+    if (!error.isNullOrBlank()) urlBuilder.queryParam("error", error)
+    response.sendRedirect(urlBuilder.build().toString())
   }
 
   private fun responseRedirectedOnValidRedirect(
