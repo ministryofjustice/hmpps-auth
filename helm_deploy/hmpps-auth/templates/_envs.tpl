@@ -149,7 +149,7 @@ env:
     value: {{ include "app.joinListWithComma" .Values.mfa_allowlist | quote }}
 
   - name: APPLICATION_AUTHENTICATION_MFA_ROLES
-    value: "ROLE_MFA,ROLE_PECS_COURT,ROLE_PECS_SUPPLIER,ROLE_PPM_ANALYST,ROLE_AUTH_GROUP_MANAGER"
+    value: "ROLE_MFA,ROLE_PECS_COURT,ROLE_PECS_SUPPLIER,ROLE_AUTH_GROUP_MANAGER"
 
   - name: APPLICATION_SUPPORT_URL
     value: {{ .Values.env.APPLICATION_SUPPORT_URL | quote }}
