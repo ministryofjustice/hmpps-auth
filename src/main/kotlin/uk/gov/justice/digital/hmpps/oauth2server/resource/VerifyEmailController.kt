@@ -247,7 +247,7 @@ class VerifyEmailController(
           .addObject("error", reason)
       }
       EmailType.SECONDARY ->
-        ModelAndView("redirect:/new-backup-email?token=$token")
+        ModelAndView("redirect:/new-backup-email", "token", token)
           .addObject("email", chosenEmail)
           .addObject("error", reason)
     }
