@@ -212,7 +212,6 @@ class UserControllerIntTest : IntegrationTest() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath(".[*].roleCode").value<List<String>> {
-        assertThat(it).contains("MAINTAIN_ACCESS_ROLES")
         assertThat(it).contains("MAINTAIN_OAUTH_USERS")
         assertThat(it).contains("OAUTH_ADMIN")
       }

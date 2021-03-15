@@ -363,9 +363,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
         .expectBody()
         .jsonPath("$.[*].roleCode").value<List<String>> {
           assertThat(it).hasSizeGreaterThan(22)
-          assertThat(it).contains("MAINTAIN_ACCESS_ROLES_ADMIN")
           assertThat(it).contains("MAINTAIN_OAUTH_USERS")
-          assertThat(it).contains("MAINTAIN_ACCESS_ROLES")
           assertThat(it).doesNotContain("OAUTH_ADMIN")
         }
     }
@@ -380,7 +378,7 @@ class AuthUserControllerIntTest : IntegrationTest() {
         .expectBody()
         .jsonPath("$.[*].roleCode").value<List<String>> {
           assertThat(it).hasSizeGreaterThan(23)
-          assertThat(it).contains("MAINTAIN_ACCESS_ROLES")
+          assertThat(it).contains("AUTH_GROUP_MANAGER")
           assertThat(it).contains("OAUTH_ADMIN")
         }
     }

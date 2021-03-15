@@ -22,7 +22,7 @@ class AuthAuthenticationProviderIntTest {
     val auth = provider.authenticate(UsernamePasswordAuthenticationToken("AUTH_ADM", "password123456"))
     assertThat(auth).isNotNull
     assertThat(auth.authorities).extracting<String> { it.authority }
-      .containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS")
+      .containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_OAUTH_USERS")
   }
 
   @Test
