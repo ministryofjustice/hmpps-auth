@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -31,6 +32,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AmendUser
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.AuthUser
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.AuthUserController.CreateUser
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
@@ -771,7 +773,7 @@ class AuthUserControllerTest {
   @Test
   fun searchForUser() {
     val unpaged = Pageable.unpaged()
-    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any(), any())).thenReturn(
+    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any(), any(), anyOrNull())).thenReturn(
       PageImpl(
         listOf(
           authUser
@@ -786,14 +788,15 @@ class AuthUserControllerTest {
       unpaged,
       "bob",
       emptyList(),
-      Status.ALL
+      Status.ALL,
+      listOf(AuthSource.auth)
     )
   }
 
   @Test
   fun `searchForUser map auth user`() {
     val unpaged = Pageable.unpaged()
-    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any(), any())).thenReturn(
+    whenever(authUserService.findAuthUsers(anyString(), anyList(), anyList(), any(), anyString(), any(), any(), anyOrNull())).thenReturn(
       PageImpl(
         listOf(
           authUser
@@ -812,6 +815,16 @@ class AuthUserControllerTest {
         lastName = "Bloggs",
         lastLoggedIn = LocalDateTime.parse("2019-01-01T12:00")
       )
+    )
+    verify(authUserService).findAuthUsers(
+      "somename",
+      listOf("somerole"),
+      listOf("somegroup"),
+      unpaged,
+      "bob",
+      emptyList(),
+      Status.ALL,
+      listOf(AuthSource.auth),
     )
   }
 

@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.security
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
@@ -7,11 +9,15 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.ArgumentMatchers.anyString
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.azure.AzureUserPersonDetails
@@ -670,6 +676,39 @@ class UserServiceTest {
     }
   }
 
+  @Nested
+  inner class UserSearchMultipleSources {
+    @Test
+    fun `test search user with multiple auth sources `() {
+      val unpaged = Pageable.unpaged()
+      whenever(authUserService.findAuthUsers(anyString(), anyOrNull(), anyOrNull(), any(), anyString(), anyList(), any(), any()))
+        .thenReturn(Page.empty())
+
+      userService.searchUsersInMultipleSourceSystems(
+        "test", unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, listOf(nomis, auth)
+      )
+
+      verify(authUserService).findAuthUsers(
+        "test", emptyList(), emptyList(), unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, listOf(nomis, auth)
+      )
+    }
+
+    @Test
+    fun `test search user with default auth source when not provided`() {
+      val unpaged = Pageable.unpaged()
+      whenever(authUserService.findAuthUsers(anyString(), anyOrNull(), anyOrNull(), any(), anyString(), anyList(), any(), any()))
+        .thenReturn(Page.empty())
+
+      userService.searchUsersInMultipleSourceSystems(
+        "test", unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, null
+      )
+
+      verify(authUserService).findAuthUsers(
+        "test", emptyList(), emptyList(), unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, listOf(AuthSource.auth)
+      )
+    }
+  }
+
   private fun createUser() = Optional.of(createSampleUser(username = "someuser"))
 
   private val staffUserAccountForBob: Optional<NomisUserPersonDetails>
@@ -703,4 +742,9 @@ class UserServiceTest {
         accountNonLocked = true
       )
     )
+
+  companion object {
+    private val AUTHORITY_INTEL_ADMIN: Set<GrantedAuthority> =
+      setOf(SimpleGrantedAuthority("ROLE_INTEL_ADMIN"))
+  }
 }
