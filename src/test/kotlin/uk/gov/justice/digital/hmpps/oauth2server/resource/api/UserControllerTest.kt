@@ -1,13 +1,20 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.model.EmailAddress
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
@@ -18,12 +25,14 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDeta
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.Staff
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import java.time.LocalDateTime
 import java.util.Optional
 import java.util.UUID
 
 class UserControllerTest {
   private val userService: UserService = mock()
   private val userController = UserController(userService)
+  private val authentication = UsernamePasswordAuthenticationToken("bob", "pass", listOf())
 
   @Test
   fun user_userNotFound() {
@@ -196,6 +205,96 @@ class UserControllerTest {
     val responseEntity = userController.getUserEmail("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
     assertThat(responseEntity.body).isNull()
+  }
+
+  private val fakeUser: User
+    get() = createSampleUser(
+      id = UUID.fromString(USER_ID),
+      username = "authentication",
+      email = "email",
+      verified = true,
+      enabled = true,
+      firstName = "Joe",
+      lastName = "Bloggs",
+      lastLoggedIn = LocalDateTime.of(2019, 1, 1, 12, 0)
+    )
+
+  @Test
+  fun userSearch_multipleSourceSystems() {
+    val unpaged = Pageable.unpaged()
+    whenever(userService.searchUsersInMultipleSourceSystems(anyString(), any(), anyString(), any(), any(), anyOrNull()))
+      .thenReturn(PageImpl(listOf(fakeUser)))
+
+    val pageOfUsers = userController.searchForUsersInMultipleSourceSystems(
+      "somename",
+      UserFilter.Status.ALL,
+      listOf(AuthSource.auth, AuthSource.nomis),
+      unpaged,
+      authentication
+    )
+
+    assertThat(pageOfUsers.totalElements).isEqualTo(1)
+
+    verify(userService).searchUsersInMultipleSourceSystems(
+      "somename",
+      unpaged,
+      "bob",
+      emptyList(),
+      UserFilter.Status.ALL,
+      listOf(AuthSource.auth, AuthSource.nomis),
+    )
+  }
+
+  @Test
+  fun userSearch_mulitpleSourcesDefaultValues() {
+    val unpaged = Pageable.unpaged()
+    whenever(userService.searchUsersInMultipleSourceSystems(anyString(), any(), anyString(), any(), any(), anyOrNull()))
+      .thenReturn(PageImpl(listOf(fakeUser)))
+
+    val pageOfUsers = userController.searchForUsersInMultipleSourceSystems(
+      "somename",
+      UserFilter.Status.ALL,
+      null,
+      unpaged,
+      authentication
+    )
+
+    assertThat(pageOfUsers.totalElements).isEqualTo(1)
+
+    verify(userService).searchUsersInMultipleSourceSystems(
+      "somename",
+      unpaged,
+      "bob",
+      emptyList(),
+      UserFilter.Status.ALL,
+      null,
+    )
+  }
+
+  @Test
+  fun userSearch_mulitpleSourcesWithStatusFilterActive() {
+    val unpaged = Pageable.unpaged()
+    whenever(userService.searchUsersInMultipleSourceSystems(anyString(), any(), anyString(), any(), any(), anyOrNull()))
+      .thenReturn(PageImpl(listOf(fakeUser)))
+
+    val pageOfUsers = userController.searchForUsersInMultipleSourceSystems(
+      "somename",
+      UserFilter.Status.ACTIVE,
+      listOf(AuthSource.auth, AuthSource.nomis, AuthSource.delius),
+      unpaged,
+      authentication
+    )
+
+    assertThat(pageOfUsers.totalElements).isEqualTo(1)
+
+    verify(userService).searchUsersInMultipleSourceSystems(
+      "somename",
+      unpaged,
+      "bob",
+      emptyList(),
+      UserFilter.Status.ACTIVE,
+      listOf(AuthSource.auth, AuthSource.nomis, AuthSource.delius),
+    )
   }
 
   private fun setupFindUserCallForNomis(): NomisUserPersonDetails {

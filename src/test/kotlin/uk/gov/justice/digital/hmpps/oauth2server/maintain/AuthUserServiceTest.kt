@@ -42,6 +42,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRep
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
@@ -996,6 +998,49 @@ class AuthUserServiceTest {
         check {
           assertThat(it).extracting("name", "roleCodes", "groupCodes")
             .containsExactly("somename", listOf("somerole"), listOf("somegroup"))
+        },
+        eq(unpaged)
+      )
+    }
+
+    @Test
+    fun `passes multiple auth sources to the repository specification`() {
+      whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
+      val unpaged = Pageable.unpaged()
+      authUserService.findAuthUsers(
+        "somename ",
+        null,
+        null,
+        unpaged,
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER,
+        Status.ACTIVE,
+        listOf(auth, nomis, delius),
+      )
+      verify(userRepository).findAll(
+        check {
+          assertThat(it).extracting("authSources").asList().containsAll(listOf(auth, nomis, delius))
+        },
+        eq(unpaged)
+      )
+    }
+
+    @Test
+    fun `passes a default auth source through to the repository specification`() {
+      whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
+      val unpaged = Pageable.unpaged()
+      authUserService.findAuthUsers(
+        "somename ",
+        null,
+        null,
+        unpaged,
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER,
+        Status.ACTIVE,
+      )
+      verify(userRepository).findAll(
+        check {
+          assertThat(it).extracting("authSources").asList().containsOnly(auth)
         },
         eq(unpaged)
       )
