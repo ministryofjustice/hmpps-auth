@@ -8,7 +8,6 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
@@ -43,7 +42,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
-import java.util.Optional
 import javax.persistence.EntityNotFoundException
 import javax.servlet.http.HttpServletRequest
 
@@ -270,89 +268,6 @@ class AuthUserController(
       log.info("Create user failed for user {} for field email with reason {}", email, e.reason)
       ResponseEntity.badRequest()
         .body(ErrorDetail("email.${e.reason}", "Email address failed validation", "email"))
-    }
-  }
-
-  @PutMapping("/api/authuser/{username}")
-  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
-  @ApiOperation(
-    value = "Create user.",
-    notes = "Create user.",
-    nickname = "createUser",
-    consumes = "application/json",
-    produces = "application/json"
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(code = 400, message = "Validation failed.", response = ErrorDetail::class),
-      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
-      ApiResponse(code = 409, message = "User or email already exists.", response = ErrorDetail::class),
-      ApiResponse(code = 500, message = "Server exception e.g. failed to call notify.", response = ErrorDetail::class)
-    ]
-  )
-  @Throws(NotificationClientException::class)
-  fun createUser(
-    @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String?,
-    @ApiParam(value = "Details of the user to be created.", required = true) @RequestBody createUser: CreateUser,
-    @ApiParam(value = "Enforce whether this email is unique in auth.") @RequestParam(required = false) enforceUniqueEmail: Boolean,
-    @ApiIgnore request: HttpServletRequest,
-    @ApiIgnore authentication: Authentication,
-  ): ResponseEntity<Any> {
-    val user =
-      if (StringUtils.isNotBlank(username)) userService.findMasterUserPersonDetails(StringUtils.trim(username)) else Optional.empty<Any>()
-
-    // check that we're not asked to create a user that is already in nomis, auth or delius
-    if (user.isPresent) {
-      return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(ErrorDetail("username.exists", "User $username already exists", "username"))
-    }
-    if (enforceUniqueEmail && authUserService.findAuthUsersByEmail(createUser.email).isNotEmpty()) {
-      return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(ErrorDetail("email.exists", "User ${createUser.email} already exists", "email"))
-    }
-    val mergedGroups = mutableSetOf<String>()
-    if (createUser.groupCodes != null) {
-      mergedGroups.addAll(createUser.groupCodes)
-    }
-    if (!createUser.groupCode.isNullOrBlank()) {
-      mergedGroups.add(createUser.groupCode)
-    }
-
-    // new user
-    return try {
-      val setPasswordUrl = createInitialPasswordUrl(request)
-      val resetLink = authUserService.createUser(
-        StringUtils.trim(username),
-        createUser.email,
-        createUser.firstName,
-        createUser.lastName,
-        mergedGroups,
-        setPasswordUrl,
-        authentication.name,
-        authentication.authorities
-      )
-      log.info("Create user succeeded for user {}", username)
-      if (smokeTestEnabled) {
-        ResponseEntity.ok(resetLink)
-      } else ResponseEntity.noContent().build()
-    } catch (e: CreateUserException) {
-      log.info(
-        "Create user failed for user {} for field {} with reason {}",
-        username,
-        e.field,
-        e.errorCode
-      )
-      ResponseEntity.badRequest().body(
-        ErrorDetail(
-          String.format("%s.%s", e.field, e.errorCode),
-          String.format("%s failed validation", e.field),
-          e.field
-        )
-      )
-    } catch (e: VerifyEmailException) {
-      log.info("Create user failed for user {} for field email with reason {}", username, e.reason)
-      ResponseEntity.badRequest()
-        .body(ErrorDetail(String.format("email.%s", e.reason), "Email address failed validation", "email"))
     }
   }
 
