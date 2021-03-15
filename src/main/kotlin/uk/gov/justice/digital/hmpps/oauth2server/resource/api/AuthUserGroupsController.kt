@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.A
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 
 @RestController
 @Api(tags = ["/api/authuser/{username}/groups"])
@@ -94,6 +95,15 @@ class AuthUserGroupsController(
           authUserGroupService.addGroup(usernameInDb, group, authentication.name, authentication.authorities)
           log.info("Add group succeeded for user {} and group {}", usernameInDb, group)
           return@map ResponseEntity.noContent().build<Any>()
+        } catch (e: AuthUserGroupRelationshipException) {
+          log.info("enable user failed  with reason {}", e.errorCode)
+          return@map ResponseEntity.status(HttpStatus.FORBIDDEN).body<Any>(
+            ErrorDetail(
+              "unable to maintain user",
+              "Unable to enable user, the user is not within one of your groups",
+              "groups"
+            )
+          )
         } catch (e: AuthUserGroupExistsException) {
           log.info(
             "Add group failed for user {} for field {} with reason {}",
