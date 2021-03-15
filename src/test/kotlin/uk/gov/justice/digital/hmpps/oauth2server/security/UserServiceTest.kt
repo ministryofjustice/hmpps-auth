@@ -681,7 +681,7 @@ class UserServiceTest {
     @Test
     fun `test search user with multiple auth sources `() {
       val unpaged = Pageable.unpaged()
-      whenever(authUserService.findAuthUsers(anyString(), anyOrNull(), anyOrNull(), any(), anyString(), anyList(), any(), anyOrNull()))
+      whenever(authUserService.findAuthUsers(anyString(), anyOrNull(), anyOrNull(), any(), anyString(), anyList(), any(), any()))
         .thenReturn(Page.empty())
 
       userService.searchUsersInMultipleSourceSystems(
@@ -689,14 +689,14 @@ class UserServiceTest {
       )
 
       verify(authUserService).findAuthUsers(
-        "test", null, null, unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, listOf(nomis, auth)
+        "test", emptyList(), emptyList(), unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, listOf(nomis, auth)
       )
     }
 
     @Test
-    fun `test search user with default auth source`() {
+    fun `test search user with default auth source when not provided`() {
       val unpaged = Pageable.unpaged()
-      whenever(authUserService.findAuthUsers(anyString(), anyOrNull(), anyOrNull(), any(), anyString(), anyList(), any(), anyOrNull()))
+      whenever(authUserService.findAuthUsers(anyString(), anyOrNull(), anyOrNull(), any(), anyString(), anyList(), any(), any()))
         .thenReturn(Page.empty())
 
       userService.searchUsersInMultipleSourceSystems(
@@ -704,7 +704,7 @@ class UserServiceTest {
       )
 
       verify(authUserService).findAuthUsers(
-        "test", null, null, unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, null
+        "test", emptyList(), emptyList(), unpaged, "bob", AUTHORITY_INTEL_ADMIN, UserFilter.Status.ALL, listOf(AuthSource.auth)
       )
     }
   }

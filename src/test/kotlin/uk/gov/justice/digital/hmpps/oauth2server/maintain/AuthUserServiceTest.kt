@@ -1450,7 +1450,6 @@ class AuthUserServiceTest {
         "bob",
         GRANTED_AUTHORITY_SUPER_USER,
         Status.ALL,
-        null,
       )
       verify(userRepository).findAll(
         check {
@@ -1462,7 +1461,7 @@ class AuthUserServiceTest {
     }
 
     @Test
-    fun `passes multiple auth sources to the user filter`() {
+    fun `passes multiple auth sources to the repository specification`() {
       whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
       val unpaged = Pageable.unpaged()
       authUserService.findAuthUsers(
@@ -1484,7 +1483,7 @@ class AuthUserServiceTest {
     }
 
     @Test
-    fun `defaults the auth source to auth in the user filter when no value provided`() {
+    fun `passes a default auth source through to the repository specification`() {
       whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
       val unpaged = Pageable.unpaged()
       authUserService.findAuthUsers(
@@ -1495,7 +1494,6 @@ class AuthUserServiceTest {
         "bob",
         GRANTED_AUTHORITY_SUPER_USER,
         Status.ACTIVE,
-        null,
       )
       verify(userRepository).findAll(
         check {
@@ -1517,7 +1515,6 @@ class AuthUserServiceTest {
         "bob",
         GRANTED_AUTHORITY_SUPER_USER,
         Status.ACTIVE,
-        null,
       )
       verify(userRepository).findAll(
         check {
@@ -1545,7 +1542,6 @@ class AuthUserServiceTest {
         "bob",
         GROUP_MANAGER,
         Status.ALL,
-        null,
       )
       verify(userRepository).findAll(
         check {
@@ -1574,7 +1570,6 @@ class AuthUserServiceTest {
         "bob",
         GROUP_MANAGER,
         Status.ALL,
-        null,
       )
       verify(userRepository).findAll(
         check {

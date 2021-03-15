@@ -150,7 +150,7 @@ class AuthUserController(
     @PageableDefault(sort = ["Person.lastName", "Person.firstName"], direction = Sort.Direction.ASC) pageable: Pageable,
     @ApiIgnore authentication: Authentication,
   ): Page<AuthUser> =
-    authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities, status, null)
+    authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities, status)
       .map { AuthUser.fromUser(it) }
 
   @GetMapping("/api/authuser/me/assignable-groups")

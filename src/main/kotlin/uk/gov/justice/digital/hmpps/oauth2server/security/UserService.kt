@@ -185,8 +185,19 @@ class UserService(
     authorities: Collection<GrantedAuthority>,
     status: UserFilter.Status,
     authSources: List<AuthSource>?,
-  ): Page<User> =
-    authUserService.findAuthUsers(name, null, null, pageable, searcher, authorities, status, authSources)
+  ): Page<User> {
+    val sources = if (authSources.isNullOrEmpty()) listOf(AuthSource.auth) else authSources
+    return authUserService.findAuthUsers(
+      name = name,
+      roleCodes = emptyList(),
+      groupCodes = emptyList(),
+      pageable = pageable,
+      searcher = searcher,
+      authorities = authorities,
+      status = status,
+      authSources = sources
+    )
+  }
 }
 
 data class PrisonUserDto(
