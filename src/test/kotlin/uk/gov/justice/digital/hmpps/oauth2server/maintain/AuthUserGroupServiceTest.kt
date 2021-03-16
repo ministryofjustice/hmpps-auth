@@ -1,12 +1,14 @@
 package uk.gov.justice.digital.hmpps.oauth2server.maintain
 
 import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito.doThrow
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
@@ -17,13 +19,16 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupManagerException
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import java.util.Optional
 
 class AuthUserGroupServiceTest {
   private val userRepository: UserRepository = mock()
   private val groupRepository: GroupRepository = mock()
+  private val maintainUserCheck: MaintainUserCheck = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val service = AuthUserGroupService(userRepository, groupRepository, telemetryClient)
+  private val service = AuthUserGroupService(userRepository, groupRepository, maintainUserCheck, telemetryClient)
 
   @Test
   fun addGroup_blank() {
@@ -119,6 +124,35 @@ class AuthUserGroupServiceTest {
       service.addGroup("user", "GROUP_LICENCE_VARY", "manager", GROUP_MANAGER_ROLE)
     }.isInstanceOf(AuthUserGroupManagerException::class.java)
       .hasMessage("Add group failed for field group with reason: managerNotMember")
+  }
+
+  @Test
+  fun addGroup_failure_GroupManagerNotAllowedToMaintainUser() {
+    val user = createSampleUser(username = "user")
+    whenever(userRepository.findByUsernameAndMasterIsTrue("user")).thenReturn(Optional.of(user))
+    val manager = createSampleUser(username = "user", groups = setOf(Group("GROUP_LICENCE_VARY", "desc")))
+    whenever(userRepository.findByUsernameAndMasterIsTrue("MANAGER")).thenReturn(Optional.of(manager))
+    val group = Group("GROUP_LICENCE_VARY", "desc")
+    val roleLicence = Authority("ROLE_LICENCE_VARY", "Role Licence Vary")
+    val roleJoe = Authority("JOE", "Role Joe")
+    group.assignableRoles.addAll(
+      setOf(
+        GroupAssignableRole(roleLicence, group, true),
+        GroupAssignableRole(roleJoe, group, false)
+      )
+    )
+    whenever(groupRepository.findByGroupCode(anyString())).thenReturn(group)
+    doThrow(AuthUserGroupRelationshipException("user", "User not with your groups")).whenever(maintainUserCheck)
+      .ensureUserLoggedInUserRelationship(
+        anyString(),
+        any(),
+        any()
+      )
+
+    assertThatThrownBy {
+      service.addGroup("user", "GROUP_LICENCE_VARY", "manager", GROUP_MANAGER_ROLE)
+    }.isInstanceOf(AuthUserGroupRelationshipException::class.java)
+      .hasMessage("Unable to maintain user: user with reason: User not with your groups")
   }
 
   @Test
