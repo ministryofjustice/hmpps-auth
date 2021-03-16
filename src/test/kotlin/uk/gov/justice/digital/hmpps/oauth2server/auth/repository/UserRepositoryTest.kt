@@ -353,6 +353,7 @@ class UserRepositoryTest {
         "AUTH_RO_USER_TEST2",
         "AUTH_RO_USER_TEST3",
         "AUTH_RO_USER_TEST4",
+        "AUTH_RO_USER_TEST5",
       )
   }
 
@@ -368,6 +369,7 @@ class UserRepositoryTest {
         "AUTH_RO_USER_TEST2",
         "AUTH_RO_USER_TEST3",
         "AUTH_RO_USER_TEST4",
+        "AUTH_RO_USER_TEST5",
       )
   }
 

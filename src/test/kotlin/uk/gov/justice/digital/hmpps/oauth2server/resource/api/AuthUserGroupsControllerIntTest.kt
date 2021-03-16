@@ -133,6 +133,23 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `Auth User Groups remove group endpoint does not remove group if group Manager and users last group`() {
+    callGetGroups(user = "AUTH_RO_USER_TEST5")
+      .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_1')]")
+      .isEqualTo(mapOf("groupCode" to "SITE_1_GROUP_1", "groupName" to "Site 1 - Group 1"))
+
+    webTestClient
+      .delete().uri("/api/authuser/AUTH_RO_USER_TEST5/groups/SITE_1_GROUP_1")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isForbidden
+
+    callGetGroups(user = "AUTH_RO_USER_TEST5")
+      .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_1')]")
+      .isEqualTo(mapOf("groupCode" to "SITE_1_GROUP_1", "groupName" to "Site 1 - Group 1"))
+  }
+
+  @Test
   fun `Auth User Groups endpoint returns user groups no children`() {
     webTestClient
       .get().uri("/api/authuser/auth_ro_vary_user/groups?children=false")
