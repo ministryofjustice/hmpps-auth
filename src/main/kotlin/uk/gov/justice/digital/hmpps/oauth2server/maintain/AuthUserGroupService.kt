@@ -29,7 +29,8 @@ class AuthUserGroupService(
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(
-    AuthUserGroupException::class, AuthUserGroupManagerException::class,
+    AuthUserGroupException::class,
+    AuthUserGroupManagerException::class,
     AuthUserGroupRelationshipException::class
   )
   fun addGroup(username: String, groupCode: String, modifier: String, authorities: Collection<GrantedAuthority>) {
@@ -61,7 +62,7 @@ class AuthUserGroupService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(AuthUserGroupException::class, AuthUserGroupManagerException::class)
+  @Throws(AuthUserGroupException::class, AuthUserGroupManagerException::class, AuthUserLastGroupException::class)
   fun removeGroup(username: String, groupCode: String, modifier: String, authorities: Collection<GrantedAuthority>) {
     val groupFormatted = formatGroup(groupCode)
     // already checked that user exists
@@ -73,6 +74,11 @@ class AuthUserGroupService(
     if (!checkGroupModifier(groupFormatted, authorities, modifier)) {
       throw AuthUserGroupManagerException("delete", "group", "managerNotMember")
     }
+
+    if (user.groups.count() == 1 && !canMaintainAuthUsers(authorities)) {
+      throw AuthUserLastGroupException("group", "last")
+    }
+
     log.info("Removing group {} from user {}", groupFormatted, username)
     user.groups.removeIf { a: Group -> a.groupCode == groupFormatted }
     telemetryClient.trackEvent(
@@ -119,4 +125,7 @@ class AuthUserGroupService(
 
   open class AuthUserGroupManagerException(val action: String = "add", val field: String, val errorCode: String) :
     Exception("$action group failed for field $field with reason: $errorCode")
+
+  open class AuthUserLastGroupException(val field: String, val errorCode: String) :
+    Exception("remove group failed for field $field with reason: $errorCode")
 }

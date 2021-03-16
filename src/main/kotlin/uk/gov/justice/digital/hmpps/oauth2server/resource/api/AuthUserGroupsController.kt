@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupExistsException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupManagerException
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserLastGroupException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
@@ -180,6 +181,14 @@ class AuthUserGroupsController(
       val usernameInDb = u.username
       try {
         authUserGroupService.removeGroup(usernameInDb, group, authentication.name, authentication.authorities)
+      } catch (e: AuthUserLastGroupException) {
+        return@map ResponseEntity.status(HttpStatus.FORBIDDEN).body<Any>(
+          ErrorDetail(
+            "group.lastGroupRestriction",
+            "Last group restriction, Group Manager not allowed to remove group: $group",
+            "group"
+          )
+        )
       } catch (e: AuthUserGroupManagerException) {
         return@map ResponseEntity.status(HttpStatus.BAD_REQUEST).body<Any>(
           ErrorDetail(
