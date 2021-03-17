@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
+import uk.gov.justice.digital.hmpps.oauth2server.utils.removeAllCrLf
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException
@@ -85,7 +86,7 @@ class ResetPasswordController(
           modelAndView.addObject("resetLink", resetLink.get())
         }
       } else {
-        log.info("Reset password request failed, no link provided for {}", usernameOrEmail)
+        log.info("Reset password request failed, no link provided for $usernameOrEmail".removeAllCrLf())
         telemetryClient.trackEvent(
           "ResetPasswordRequestFailure",
           mapOf("username" to usernameOrEmail, "error" to "nolink"),
