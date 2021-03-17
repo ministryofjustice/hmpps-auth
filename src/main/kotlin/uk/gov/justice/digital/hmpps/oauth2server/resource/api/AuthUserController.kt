@@ -39,7 +39,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
-import uk.gov.justice.digital.hmpps.oauth2server.utils.sanitise
+import uk.gov.justice.digital.hmpps.oauth2server.utils.removeAllCrLf
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
@@ -251,7 +251,7 @@ class AuthUserController(
         ResponseEntity.ok(resetLink)
       } else ResponseEntity.noContent().build()
     } catch (e: CreateUserException) {
-      log.info("Create user failed for user ${createUser.email} for field ${e.field} with reason ${e.errorCode}".sanitise())
+      log.info("Create user failed for user ${createUser.email} for field ${e.field} with reason ${e.errorCode}".removeAllCrLf())
       ResponseEntity.badRequest().body(
         ErrorDetail(
           "${e.field}.${e.errorCode}",
@@ -260,7 +260,7 @@ class AuthUserController(
         )
       )
     } catch (e: VerifyEmailException) {
-      log.info("Create user failed for user $email for field email with reason ${e.reason}".sanitise())
+      log.info("Create user failed for user $email for field email with reason ${e.reason}".removeAllCrLf())
       ResponseEntity.badRequest()
         .body(ErrorDetail("email.${e.reason}", "Email address failed validation", "email"))
     }
@@ -415,7 +415,7 @@ class AuthUserController(
         authentication.authorities,
         EmailType.PRIMARY
       )
-      log.info("Amend user succeeded for user $username".sanitise())
+      log.info("Amend user succeeded for user $username".removeAllCrLf())
       if (smokeTestEnabled) {
         ResponseEntity.ok(resetLink)
       } else ResponseEntity.noContent().build()
@@ -423,8 +423,7 @@ class AuthUserController(
       ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(ErrorDetail("username.notfound", "User not found", "username"))
     } catch (e: VerifyEmailException) {
-      val fred = "something\r\nweird"
-      log.info("Amend user failed for user $username for field email with reason ${e.reason}".sanitise())
+      log.info("Amend user failed for user $username for field email with reason ${e.reason}".removeAllCrLf())
       ResponseEntity.badRequest()
         .body(ErrorDetail("email.${e.reason}", "Email address failed validation", "email"))
     } catch (e: AuthUserGroupRelationshipException) {
