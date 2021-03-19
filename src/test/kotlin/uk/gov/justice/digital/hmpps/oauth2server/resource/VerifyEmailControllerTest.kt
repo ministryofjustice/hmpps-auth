@@ -336,8 +336,9 @@ class VerifyEmailControllerTest {
         request,
         response
       )
-    assertThat(modelAndView?.viewName).isEqualTo("redirect:/new-backup-email?token=$token")
+    assertThat(modelAndView?.viewName).isEqualTo("redirect:/new-backup-email")
     assertThat(modelAndView?.model).containsExactly(
+      entry("token", token),
       entry("email", "a@b.com"),
       entry("error", "other")
     )
@@ -515,8 +516,9 @@ class VerifyEmailControllerTest {
     )
     val modelAndView =
       verifyEmailController.secondaryEmailResend("71396b28-0c57-4efd-bc70-cc5992965aed", principal, request)
-    assertThat(modelAndView.viewName).isEqualTo("redirect:/new-backup-email?token=71396b28-0c57-4efd-bc70-cc5992965aed")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/new-backup-email")
     assertThat(modelAndView.model).containsExactly(
+      entry("token", "71396b28-0c57-4efd-bc70-cc5992965aed"),
       entry("email", null),
       entry("error", "reason")
     )
@@ -540,8 +542,9 @@ class VerifyEmailControllerTest {
     )
     val modelAndView =
       verifyEmailController.secondaryEmailResend("71396b28-0c57-4efd-bc70-cc5992965aed", principal, request)
-    assertThat(modelAndView.viewName).isEqualTo("redirect:/new-backup-email?token=71396b28-0c57-4efd-bc70-cc5992965aed")
+    assertThat(modelAndView.viewName).isEqualTo("redirect:/new-backup-email")
     assertThat(modelAndView.model).containsExactly(
+      entry("token", "71396b28-0c57-4efd-bc70-cc5992965aed"),
       entry("email", null),
       entry("error", "other")
     )

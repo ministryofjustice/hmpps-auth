@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import java.security.Principal
 import java.util.Optional
@@ -178,6 +179,15 @@ class AuthUserGroupsControllerTest {
     val responseEntity = authUserGroupsController.addGroup("someuser", "John", authenticationGroupManager)
     assertThat(responseEntity.statusCodeValue).isEqualTo(400)
     assertThat(responseEntity.body).isEqualTo(ErrorDetail("group.managerNotMember", "Group Manager is not a member of group", "group"))
+  }
+
+  @Test
+  fun addGroup_groupManagerNotAllowedToMaintainUser() {
+    whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.of(authUser))
+    doThrow(AuthUserGroupRelationshipException("someuser", "User not with your groups")).whenever(authUserGroupService)
+      .addGroup(anyString(), anyString(), anyString(), any())
+    val responseEntity = authUserGroupsController.addGroup("someuser", "joe", authenticationGroupManager)
+    assertThat(responseEntity.statusCodeValue).isEqualTo(403)
   }
 
   @Test

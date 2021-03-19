@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import java.time.LocalDateTime
@@ -138,7 +139,7 @@ class UserRepositoryTest {
     assertThat(retrievedEntity.username).isEqualTo("AUTH_ADM")
     assertThat(retrievedEntity.person!!.firstName).isEqualTo("Auth")
     assertThat(retrievedEntity.authorities).extracting<String> { obj: Authority -> obj.authority }
-      .containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS")
+      .containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_OAUTH_USERS")
     assertThat(retrievedEntity.email).isEqualTo("auth_test2@digital.justice.gov.uk")
     assertThat(retrievedEntity.verified).isTrue()
     assertThat(retrievedEntity.mfaPreference).isEqualTo(EMAIL)
@@ -351,6 +352,24 @@ class UserRepositoryTest {
         "AUTH_RO_USER_TEST",
         "AUTH_RO_USER_TEST2",
         "AUTH_RO_USER_TEST3",
+        "AUTH_RO_USER_TEST4",
+        "AUTH_RO_USER_TEST5",
+      )
+  }
+
+  @Test
+  fun findAll_UserFilter_ByAuthSourcesMultiple() {
+    assertThat(repository.findAll(UserFilter(name = "orton, r", authSources = listOf(auth, nomis))))
+      .extracting<String> { it.username }
+      .containsOnly(
+        "AUTH_RO_USER",
+        "AUTH_RO_VARY_USER",
+        "AUTH_RO_USER1@DIGITAL.JUSTICE.GOV.UK",
+        "AUTH_RO_USER_TEST",
+        "AUTH_RO_USER_TEST2",
+        "AUTH_RO_USER_TEST3",
+        "AUTH_RO_USER_TEST4",
+        "AUTH_RO_USER_TEST5",
       )
   }
 

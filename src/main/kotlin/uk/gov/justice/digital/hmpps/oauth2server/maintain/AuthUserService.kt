@@ -48,44 +48,6 @@ class AuthUserService(
   @Value("\${application.authentication.disable.login-days}") private val loginDaysTrigger: Int,
   @Value("\${application.authentication.password-age}") private val passwordAge: Long,
 ) {
-
-  @Transactional(transactionManager = "authTransactionManager")
-  @Throws(CreateUserException::class, NotificationClientException::class, VerifyEmailException::class)
-  fun createUser(
-    usernameInput: String?,
-    emailInput: String?,
-    firstName: String?,
-    lastName: String?,
-    groupCodes: Set<String>?,
-    url: String,
-    creator: String,
-    authorities: Collection<GrantedAuthority>,
-  ): String {
-    // ensure username always uppercase
-    val username = StringUtils.upperCase(usernameInput)
-    // and use email helper to format input email
-    val email = EmailHelper.format(emailInput)
-    // validate
-    validate(username, email, firstName, lastName, EmailType.PRIMARY)
-    // get the initial groups to assign to - only allowed to be empty if super user
-    val groups = getInitialGroups(groupCodes, creator, authorities)
-    // create the user
-    val person = Person(firstName!!.trim(), lastName!!.trim())
-    // obtain list of authorities that should be assigned for group
-    val roles = groups.flatMap { it.assignableRoles }.filter { it.automatic }.mapNotNull { it.role }.toSet()
-
-    val user = User(
-      username = username,
-      email = email,
-      enabled = true,
-      source = AuthSource.auth,
-      person = person,
-      authorities = roles,
-      groups = groups,
-    )
-    return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate", groups)
-  }
-
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(CreateUserException::class, NotificationClientException::class, VerifyEmailException::class)
   fun createUserByEmail(
@@ -133,14 +95,17 @@ class AuthUserService(
     searcher: String,
     authorities: Collection<GrantedAuthority>,
     status: UserFilter.Status,
+    authSources: List<AuthSource> = listOf(AuthSource.auth),
   ): Page<User> {
     val groupSearchCodes = if (authorities.any { it.authority == "ROLE_MAINTAIN_OAUTH_USERS" }) {
       groupCodes
-    } else {
+    } else if (authorities.any { it.authority == "ROLE_AUTH_GROUP_MANAGER" }) {
       val assignableGroupCodes = authUserGroupService.getAssignableGroups(searcher, authorities).map { it.groupCode }
       if (groupCodes.isNullOrEmpty()) assignableGroupCodes else groupCodes.filter { g -> assignableGroupCodes.any { it == g } }
+    } else {
+      emptyList()
     }
-    val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes, status)
+    val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes, status = status, authSources = authSources)
     return userRepository.findAll(userFilter, pageable)
   }
 
@@ -291,21 +256,6 @@ class AuthUserService(
       mapOf("username" to user.username, "enabled" to enabled.toString(), "admin" to admin),
       null
     )
-  }
-
-  // Old validate method.
-  @Throws(CreateUserException::class, VerifyEmailException::class)
-  private fun validate(username: String?, email: String?, firstName: String?, lastName: String?, emailType: EmailType) {
-    if (username.isNullOrBlank() || username.length < MIN_LENGTH_USERNAME) throw CreateUserException(
-      "username",
-      "length"
-    )
-
-    if (username.length > MAX_LENGTH_USERNAME) throw CreateUserException("username", "maxlength")
-    if (!username.matches("^[A-Z0-9_]*\$".toRegex())) throw CreateUserException("username", "format")
-
-    validate(firstName, lastName)
-    verifyEmailService.validateEmailAddress(email, emailType)
   }
 
   @Throws(CreateUserException::class, VerifyEmailException::class)

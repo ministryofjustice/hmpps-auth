@@ -23,9 +23,11 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupExistsException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserGroupManagerException
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserGroupService.AuthUserLastGroupException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 
 @RestController
 @Api(tags = ["/api/authuser/{username}/groups"])
@@ -94,6 +96,15 @@ class AuthUserGroupsController(
           authUserGroupService.addGroup(usernameInDb, group, authentication.name, authentication.authorities)
           log.info("Add group succeeded for user {} and group {}", usernameInDb, group)
           return@map ResponseEntity.noContent().build<Any>()
+        } catch (e: AuthUserGroupRelationshipException) {
+          log.info("enable user failed  with reason {}", e.errorCode)
+          return@map ResponseEntity.status(HttpStatus.FORBIDDEN).body<Any>(
+            ErrorDetail(
+              "unable to maintain user",
+              "Unable to enable user, the user is not within one of your groups",
+              "groups"
+            )
+          )
         } catch (e: AuthUserGroupExistsException) {
           log.info(
             "Add group failed for user {} for field {} with reason {}",
@@ -170,6 +181,14 @@ class AuthUserGroupsController(
       val usernameInDb = u.username
       try {
         authUserGroupService.removeGroup(usernameInDb, group, authentication.name, authentication.authorities)
+      } catch (e: AuthUserLastGroupException) {
+        return@map ResponseEntity.status(HttpStatus.FORBIDDEN).body<Any>(
+          ErrorDetail(
+            "group.lastGroupRestriction",
+            "Last group restriction, Group Manager not allowed to remove group: $group",
+            "group"
+          )
+        )
       } catch (e: AuthUserGroupManagerException) {
         return@map ResponseEntity.status(HttpStatus.BAD_REQUEST).body<Any>(
           ErrorDetail(

@@ -42,6 +42,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRep
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService.CreateUserException
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
+import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.delius
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.nomis
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
@@ -81,462 +83,6 @@ class AuthUserServiceTest {
   @BeforeEach
   fun setUp() {
     mockServiceOfNameWithSupportLink("NOMIS", "nomis_support_link")
-  }
-
-  @Nested
-  inner class createUser {
-    @Test
-    fun createUser_usernameLength() {
-      assertThatThrownBy {
-        authUserService.createUser(
-          "user",
-          "email",
-          "first",
-          "last",
-          null,
-          "url",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      }.isInstanceOf(CreateUserException::class.java)
-        .hasMessage("Create user failed for field username with reason: length")
-    }
-
-    @Test
-    fun createUser_usernameMaxLength() {
-      assertThatThrownBy {
-        authUserService.createUser(
-          "ThisIsLongerThanTheAllowedUsernameLength",
-          "email",
-          "first",
-          "last",
-          null,
-          "url",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      }.isInstanceOf(CreateUserException::class.java)
-        .hasMessage("Create user failed for field username with reason: maxlength")
-    }
-
-    @Test
-    fun createUser_usernameFormat() {
-      assertThatThrownBy {
-        authUserService.createUser(
-          "user-name",
-          "email",
-          "first",
-          "last",
-          null,
-          "url",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      }.isInstanceOf(CreateUserException::class.java)
-        .hasMessage("Create user failed for field username with reason: format")
-    }
-
-    @Test
-    fun createUser_firstNameLength() {
-      assertThatThrownBy {
-        authUserService.createUser(
-          "userme",
-          "email",
-          "s",
-          "last",
-          null,
-          "url",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      }.isInstanceOf(CreateUserException::class.java)
-        .hasMessage("Create user failed for field firstName with reason: length")
-    }
-
-    @Test
-    fun createUser_firstNameMaxLength() {
-      assertThatThrownBy {
-        authUserService.createUser(
-          "userme",
-          "email",
-          "ThisFirstNameIsMoreThanFiftyCharactersInLengthAndInvalid",
-          "last",
-          null,
-          "url",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      }.isInstanceOf(CreateUserException::class.java)
-        .hasMessage("Create user failed for field firstName with reason: maxlength")
-    }
-
-    @Test
-    fun createUser_lastNameLength() {
-      assertThatThrownBy {
-        authUserService.createUser(
-          "userme",
-          "email",
-          "se",
-          "x",
-          null,
-          "url",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      }.isInstanceOf(CreateUserException::class.java)
-        .hasMessage("Create user failed for field lastName with reason: length")
-    }
-
-    @Test
-    fun createUser_lastNameMaxLength() {
-      assertThatThrownBy {
-        authUserService.createUser(
-          "userme",
-          "email",
-          "se",
-          "ThisLastNameIsMoreThanFiftyCharactersInLengthAndInvalid",
-          null,
-          "url",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      }.isInstanceOf(CreateUserException::class.java)
-        .hasMessage("Create user failed for field lastName with reason: maxlength")
-    }
-
-    @Test
-    fun createUser_emailValidation() {
-      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService)
-        .validateEmailAddress(anyString(), eq(EmailType.PRIMARY))
-      assertThatThrownBy {
-        authUserService.createUser(
-          "userme",
-          "email",
-          "se",
-          "xx",
-          null,
-          "url",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      }.isInstanceOf(VerifyEmailException::class.java).hasMessage("Verify email failed with reason: reason")
-      verify(verifyEmailService).validateEmailAddress("email", EmailType.PRIMARY)
-    }
-
-    @Test
-    fun createUser_successLinkReturned() {
-      val link =
-        authUserService.createUser(
-          "userme",
-          "email",
-          "se",
-          "xx",
-          null,
-          "url?token=",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      assertThat(link).startsWith("url?token=").hasSize("url?token=".length + 36)
-    }
-
-    @Test
-    fun createUser_trackSuccess() {
-      authUserService.createUser("userme", "email", "se", "xx", null, "url?token=", "bob", GRANTED_AUTHORITY_SUPER_USER)
-      verify(telemetryClient).trackEvent("AuthUserCreateSuccess", mapOf("username" to "USERME", "admin" to "bob"), null)
-    }
-
-    @Test
-    fun createUser_saveUserRepository() {
-      val link =
-        authUserService.createUser(
-          "userme",
-          "email",
-          "se",
-          "xx",
-          null,
-          "url?token=",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      verify(userRepository).save<User>(
-        check {
-          val userToken = it.tokens.stream().findFirst().orElseThrow()
-          assertThat(userToken.tokenType).isEqualTo(RESET)
-          assertThat(userToken.token).isEqualTo(link.substring("url?token=".length))
-          assertThat(userToken.tokenExpiry).isBetween(LocalDateTime.now().plusDays(6), LocalDateTime.now().plusDays(8))
-        }
-      )
-    }
-
-    @Test
-    fun createUser_saveEmailRepository() {
-      authUserService.createUser(
-        "userMe",
-        "eMail",
-        "first",
-        "last",
-        null,
-        "url?token=",
-        "bob",
-        GRANTED_AUTHORITY_SUPER_USER
-      )
-      verify(userRepository).save<User>(
-        check {
-          with(it) {
-            assertThat(name).isEqualTo("first last")
-            assertThat(email).isEqualTo("email")
-            assertThat(username).isEqualTo("USERME")
-            assertThat(password).isNull()
-            assertThat(isMaster).isTrue
-            assertThat(verified).isFalse
-            assertThat(isCredentialsNonExpired).isFalse
-            assertThat(authorities).isEmpty()
-          }
-        }
-      )
-    }
-
-    @Test
-    fun createUser_trimName() {
-      authUserService.createUser(
-        "userMe",
-        "eMail",
-        "first  ",
-        "  last ",
-        null,
-        "url?token=",
-        "bob",
-        GRANTED_AUTHORITY_SUPER_USER
-      )
-      verify(userRepository).save<User>(
-        check {
-          assertThat(it.name).isEqualTo("first last")
-        }
-      )
-    }
-
-    @Test
-    fun createUser_formatEmailInput() {
-      authUserService.createUser(
-        "userMe",
-        "    SARAH.o’connor@gov.uk",
-        "first",
-        "last",
-        null,
-        "url?token=",
-        "bob",
-        GRANTED_AUTHORITY_SUPER_USER
-      )
-      verify(userRepository).save<User>(
-        check {
-          assertThat(it.email).isEqualTo("sarah.o'connor@gov.uk")
-        }
-      )
-    }
-
-    @Test
-    fun createUser_setGroup() {
-      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
-        listOf(
-          Group(
-            "SITE_1_GROUP_1",
-            "desc"
-          ),
-          Group(
-            "SITE_1_GROUP_2",
-            "desc"
-          ),
-        )
-      )
-      authUserService.createUser(
-        "userMe",
-        "eMail",
-        "first",
-        "last",
-        setOf("SITE_1_GROUP_1", "SITE_1_GROUP_2", "SITE_1_GROUP_3"),
-        "url?token=",
-        "bob",
-        GRANTED_AUTHORITY_SUPER_USER
-      )
-      verify(userRepository).save<User>(
-        check {
-          assertThat(it.groups).extracting<String> { it.groupCode }.containsOnly("SITE_1_GROUP_1", "SITE_1_GROUP_2")
-        }
-      )
-    }
-
-    @Test
-    fun createUser_noRoles() {
-      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
-        listOf(
-          Group(
-            "SITE_1_GROUP_1",
-            "desc"
-          )
-        )
-      )
-      authUserService.createUser(
-        "userMe",
-        "eMail",
-        "first",
-        "last",
-        setOf("SITE_1_GROUP_1"),
-        "url?token=",
-        "bob",
-        GRANTED_AUTHORITY_SUPER_USER
-      )
-      verify(userRepository).save<User>(
-        check {
-          assertThat(it.authorities).isEmpty()
-        }
-      )
-    }
-
-    @Test
-    fun createUser_setRoles() {
-      val group = Group("SITE_1_GROUP_1", "desc")
-      group.assignableRoles.add(GroupAssignableRole(Authority("AUTH_AUTO", "Auth Name"), group, true))
-      group.assignableRoles.add(GroupAssignableRole(Authority("AUTH_MANUAL", "Auth Name"), group, false))
-
-      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(listOf(group))
-      authUserService.createUser(
-        "userMe",
-        "eMail",
-        "first",
-        "last",
-        setOf("SITE_1_GROUP_1"),
-        "url?token=",
-        "bob",
-        GRANTED_AUTHORITY_SUPER_USER
-      )
-      verify(userRepository).save<User>(
-        check {
-          assertThat(it.authorities).extracting<String> { it.roleCode }.containsOnly("AUTH_AUTO")
-        }
-      )
-    }
-
-    @Test
-    fun createUser_wrongGroup() {
-      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
-        listOf(
-          Group(
-            "OTHER_GROUP",
-            "desc"
-          )
-        )
-      )
-      assertThatThrownBy {
-        authUserService.createUser(
-          "userMe",
-          "eMail",
-          "first",
-          "last",
-          setOf("SITE_2_GROUP_1"),
-          "url?token=",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
-      }
-        .isInstanceOf(CreateUserException::class.java)
-        .hasMessage("Create user failed for field groupCode with reason: notfound")
-    }
-
-    @Test
-    fun createUser_missingGroup() {
-      assertThatThrownBy {
-        authUserService.createUser(
-          "userMe",
-          "eMail",
-          "first",
-          "last",
-          emptySet(),
-          "url?token=",
-          "bob",
-          setOf()
-        )
-      }
-        .isInstanceOf(CreateUserException::class.java)
-        .hasMessage("Create user failed for field groupCode with reason: missing")
-    }
-
-    @Test
-    fun createUser_callNotify() {
-      val link = authUserService.createUser(
-        "userme",
-        "email",
-        "first",
-        "last",
-        null,
-        "url?token=",
-        "bob",
-        GRANTED_AUTHORITY_SUPER_USER
-      )
-      verify(notificationClient).sendEmail(
-        "licences",
-        "email",
-        mapOf(
-          "resetLink" to link,
-          "firstName" to "first last",
-          "fullName" to "first last",
-          "supportLink" to "nomis_support_link"
-        ),
-        null
-      )
-    }
-
-    @Test
-    fun createUser_pecsUserGroupSupportLink() {
-      mockServiceOfNameWithSupportLink("BOOK_MOVE", "book_move_support_link")
-      whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
-        listOf(
-          Group(
-            "PECS_GROUP",
-            "desc"
-          )
-        )
-      )
-      authUserService.createUser(
-        "userMe",
-        "eMail",
-        "first",
-        "last",
-        setOf("PECS_GROUP"),
-        "url?token=",
-        "bob",
-        GRANTED_AUTHORITY_SUPER_USER
-      )
-      verify(notificationClient).sendEmail(
-        anyString(),
-        anyString(),
-        check {
-          assertThat(it["supportLink"]).isEqualTo("book_move_support_link")
-        },
-        isNull()
-      )
-    }
-
-    @Test
-    fun createUser_noGroupsSupportLink() {
-      authUserService.createUser(
-        "userMe",
-        "eMail",
-        "first",
-        "last",
-        emptySet(),
-        "url?token=",
-        "bob",
-        GRANTED_AUTHORITY_SUPER_USER
-      )
-      verify(notificationClient).sendEmail(
-        anyString(),
-        anyString(),
-        check {
-          assertThat(it["supportLink"]).isEqualTo("nomis_support_link")
-        },
-        isNull()
-      )
-    }
   }
 
   @Nested
@@ -981,8 +527,7 @@ class AuthUserServiceTest {
 
     @Test
     fun `createUserByEmail support links for no groups`() {
-      authUserService.createUser(
-        "userMe",
+      authUserService.createUserByEmail(
         "eMail",
         "first",
         "last",
@@ -1453,6 +998,49 @@ class AuthUserServiceTest {
         check {
           assertThat(it).extracting("name", "roleCodes", "groupCodes")
             .containsExactly("somename", listOf("somerole"), listOf("somegroup"))
+        },
+        eq(unpaged)
+      )
+    }
+
+    @Test
+    fun `passes multiple auth sources to the repository specification`() {
+      whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
+      val unpaged = Pageable.unpaged()
+      authUserService.findAuthUsers(
+        "somename ",
+        null,
+        null,
+        unpaged,
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER,
+        Status.ACTIVE,
+        listOf(auth, nomis, delius),
+      )
+      verify(userRepository).findAll(
+        check {
+          assertThat(it).extracting("authSources").asList().containsAll(listOf(auth, nomis, delius))
+        },
+        eq(unpaged)
+      )
+    }
+
+    @Test
+    fun `passes a default auth source through to the repository specification`() {
+      whenever(userRepository.findAll(any(), any<Pageable>())).thenReturn(Page.empty())
+      val unpaged = Pageable.unpaged()
+      authUserService.findAuthUsers(
+        "somename ",
+        null,
+        null,
+        unpaged,
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER,
+        Status.ACTIVE,
+      )
+      verify(userRepository).findAll(
+        check {
+          assertThat(it).extracting("authSources").asList().containsOnly(auth)
         },
         eq(unpaged)
       )

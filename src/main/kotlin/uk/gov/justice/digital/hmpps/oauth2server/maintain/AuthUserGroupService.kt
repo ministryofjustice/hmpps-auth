@@ -10,6 +10,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
+import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Companion.canMaintainAuthUsers
 
 @Service
@@ -17,6 +19,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Comp
 class AuthUserGroupService(
   private val userRepository: UserRepository,
   private val groupRepository: GroupRepository,
+  private val maintainUserCheck: MaintainUserCheck,
   private val telemetryClient: TelemetryClient
 ) {
 
@@ -25,7 +28,11 @@ class AuthUserGroupService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(AuthUserGroupException::class, AuthUserGroupManagerException::class)
+  @Throws(
+    AuthUserGroupException::class,
+    AuthUserGroupManagerException::class,
+    AuthUserGroupRelationshipException::class
+  )
   fun addGroup(username: String, groupCode: String, modifier: String, authorities: Collection<GrantedAuthority>) {
     // already checked that user exists
     val user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow()
@@ -37,10 +44,13 @@ class AuthUserGroupService(
     if (user.groups.contains(group)) {
       throw AuthUserGroupExistsException()
     }
-
+    // check that modifier is able to add user to group
     if (!checkGroupModifier(groupCode, authorities, modifier)) {
       throw AuthUserGroupManagerException("Add", "group", "managerNotMember")
     }
+    // check that modifier is able to maintain the user
+    maintainUserCheck.ensureUserLoggedInUserRelationship(modifier, authorities, user)
+
     log.info("Adding group {} to user {}", groupFormatted, username)
     user.groups.add(group)
     user.authorities.addAll(group.assignableRoles.filter { it.automatic }.map { it.role })
@@ -52,7 +62,7 @@ class AuthUserGroupService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(AuthUserGroupException::class, AuthUserGroupManagerException::class)
+  @Throws(AuthUserGroupException::class, AuthUserGroupManagerException::class, AuthUserLastGroupException::class)
   fun removeGroup(username: String, groupCode: String, modifier: String, authorities: Collection<GrantedAuthority>) {
     val groupFormatted = formatGroup(groupCode)
     // already checked that user exists
@@ -64,6 +74,11 @@ class AuthUserGroupService(
     if (!checkGroupModifier(groupFormatted, authorities, modifier)) {
       throw AuthUserGroupManagerException("delete", "group", "managerNotMember")
     }
+
+    if (user.groups.count() == 1 && !canMaintainAuthUsers(authorities)) {
+      throw AuthUserLastGroupException("group", "last")
+    }
+
     log.info("Removing group {} from user {}", groupFormatted, username)
     user.groups.removeIf { a: Group -> a.groupCode == groupFormatted }
     telemetryClient.trackEvent(
@@ -110,4 +125,7 @@ class AuthUserGroupService(
 
   open class AuthUserGroupManagerException(val action: String = "add", val field: String, val errorCode: String) :
     Exception("$action group failed for field $field with reason: $errorCode")
+
+  open class AuthUserLastGroupException(val field: String, val errorCode: String) :
+    Exception("remove group failed for field $field with reason: $errorCode")
 }
