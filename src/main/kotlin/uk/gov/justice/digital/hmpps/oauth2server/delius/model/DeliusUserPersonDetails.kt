@@ -10,7 +10,7 @@ data class DeliusUserPersonDetails(
   private val username: String,
   override val userId: String,
   override val firstName: String,
-  private val surname: String,
+  val surname: String,
   val email: String,
   private val enabled: Boolean = false,
   private val locked: Boolean = false,

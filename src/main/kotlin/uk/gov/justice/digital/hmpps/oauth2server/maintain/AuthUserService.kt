@@ -319,7 +319,7 @@ class AuthUserService(
     // will always be a user at this stage since we're retrieved it from the authentication
     val user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow()
     user.person!!.firstName = firstName!!.trim()
-    user.person.lastName = lastName!!.trim()
+    user.person!!.lastName = lastName!!.trim()
     userRepository.save(user)
   }
 

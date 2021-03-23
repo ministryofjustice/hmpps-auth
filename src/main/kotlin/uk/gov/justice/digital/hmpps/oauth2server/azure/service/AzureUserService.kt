@@ -23,7 +23,7 @@ class AzureUserService(private val userRepository: UserRepository) {
           true,
           it.username,
           it.person!!.firstName,
-          it.person.lastName,
+          it.person!!.lastName,
           it.email!!,
           credentialsNonExpired = true,
           accountNonExpired = true,
