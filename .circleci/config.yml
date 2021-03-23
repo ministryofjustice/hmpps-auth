@@ -157,4 +157,7 @@ workflows:
       - hmpps/veracode_pipeline_scan:
           context:
             - hmpps-common-vars
+      - hmpps/veracode_pipeline_scan:
+          context:
+            - hmpps-common-vars
 
