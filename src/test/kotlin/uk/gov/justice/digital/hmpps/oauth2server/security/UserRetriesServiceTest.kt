@@ -51,7 +51,7 @@ class UserRetriesServiceTest {
     }
 
     @Test
-    fun `resetRetriesAndRecordLogin save delius email address existing user`() {
+    fun `resetRetriesAndRecordLogin save delius email address and name for existing user`() {
       val user = createSampleUser(username = "joe", lastLoggedIn = LocalDateTime.now().minusDays(1))
       whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
       service.resetRetriesAndRecordLogin(
@@ -68,6 +68,9 @@ class UserRetriesServiceTest {
       )
       assertThat(user.email).isEqualTo("newemail@bob.com")
       assertThat(user.verified).isTrue
+      assertThat(user.person?.firstName).isEqualTo("Delius")
+      assertThat(user.person?.lastName).isEqualTo("Smith")
+      assertThat(user.name).isEqualTo("Delius Smith")
     }
 
     @Test
@@ -91,7 +94,7 @@ class UserRetriesServiceTest {
     }
 
     @Test
-    fun `resetRetriesAndRecordLogin save delius email address new user`() {
+    fun `resetRetriesAndRecordLogin save delius email address and name for new user`() {
       service.resetRetriesAndRecordLogin(
         DeliusUserPersonDetails(
           "deliusUser",
@@ -108,6 +111,8 @@ class UserRetriesServiceTest {
         check { user ->
           assertThat(user.email).isEqualTo("newemail@bob.com")
           assertThat(user.verified).isTrue()
+          assertThat(user.person?.firstName).isEqualTo("Delius")
+          assertThat(user.person?.lastName).isEqualTo("Smith")
         }
       )
     }
@@ -134,6 +139,38 @@ class UserRetriesServiceTest {
         check {
           assertThat(it.username).isEqualTo("bob")
           assertThat(it.verified).isFalse
+          assertThat(it.lastLoggedIn).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now())
+        }
+      )
+    }
+
+    @Test
+    fun resetRetriesAndRecordLogin_SaveNewNomisUserWithFirstAndLastNames() {
+      whenever(userService.getEmailAddressFromNomis(anyString())).thenReturn(Optional.empty())
+      service.resetRetriesAndRecordLogin(userPersonDetailsForBob)
+      verify(userRepository).save<User>(
+        check {
+          assertThat(it.username).isEqualTo("bob")
+          assertThat(it.verified).isFalse
+          assertThat(it.person?.firstName).isEqualTo("Bob")
+          assertThat(it.person?.lastName).isEqualTo("bloggs")
+          assertThat(it.lastLoggedIn).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now())
+        }
+      )
+    }
+
+    @Test
+    fun resetRetriesAndRecordLogin_UpdateExistingNomisUserWithFirstAndLastNames() {
+      val user = createSampleUser(username = "bob", lastLoggedIn = LocalDateTime.now())
+      whenever(userService.getEmailAddressFromNomis(anyString())).thenReturn(Optional.empty())
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+      service.resetRetriesAndRecordLogin(userPersonDetailsForBob)
+      verify(userRepository).save<User>(
+        check {
+          assertThat(it.username).isEqualTo("bob")
+          assertThat(it.verified).isFalse
+          assertThat(it.person?.firstName).isEqualTo("Bob")
+          assertThat(it.person?.lastName).isEqualTo("bloggs")
           assertThat(it.lastLoggedIn).isBetween(LocalDateTime.now().plusMinutes(-1), LocalDateTime.now())
         }
       )

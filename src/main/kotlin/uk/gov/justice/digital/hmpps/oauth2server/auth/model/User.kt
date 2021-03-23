@@ -34,7 +34,7 @@ class User(
   private var username: String,
 
   @Embedded
-  val person: Person? = null,
+  var person: Person? = null,
 
   @Column(name = "email")
   var email: String? = null,

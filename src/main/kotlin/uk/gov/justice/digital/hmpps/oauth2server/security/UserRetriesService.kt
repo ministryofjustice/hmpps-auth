@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.security
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Person
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserRetries
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
@@ -26,28 +27,38 @@ class UserRetriesService(
   fun resetRetriesAndRecordLogin(userPersonDetails: UserPersonDetails) {
     val username = userPersonDetails.username
     resetRetries(username)
-    // and record last logged in as now too (doing for all users to prevent confusion)
+
+    // Find by username in the auth repository - if not found then attempt to add the Nomis email address.
     val userOptional = userRepository.findByUsername(username)
     val user = userOptional.orElseGet {
       (userPersonDetails as? NomisUserPersonDetails)?.let { addNomisEmail(it, username) } ?: userPersonDetails.toUser()
     }
-    user.lastLoggedIn = LocalDateTime.now()
-    // copy across email address for delius user on each successful login to keep up to date
-    if (userPersonDetails is DeliusUserPersonDetails) {
-      user.email = userPersonDetails.email
-      user.verified = true
-    }
 
-    if (userPersonDetails is AzureUserPersonDetails) {
-      user.email = userPersonDetails.email
-      user.verified = true
-    } else if (userPersonDetails is DeliusUserPersonDetails) {
-      user.email = userPersonDetails.email
-      user.verified = true
+    // Record last logged in for all auth sources
+    user.lastLoggedIn = LocalDateTime.now()
+
+    // On successful login sync selected details from the source systems
+    when (userPersonDetails) {
+      // Copy verified email address for Azure users
+      is AzureUserPersonDetails -> {
+        user.email = userPersonDetails.email
+        user.verified = true
+      }
+      is DeliusUserPersonDetails -> {
+        // Copy verified email address, first name and surname for Delius users
+        user.email = userPersonDetails.email
+        user.verified = true
+        user.person = Person(userPersonDetails.firstName, userPersonDetails.surname)
+      }
+      is NomisUserPersonDetails -> {
+        // Copy the staff first name and last name for Nomis users (don't overwrite email address)
+        user.person = Person(userPersonDetails.staff.getFirstName(), userPersonDetails.staff.lastName)
+      }
     }
 
     // update source of authentication too
     user.source = AuthSource.fromNullableString(userPersonDetails.authSource)
+
     userRepository.save(user)
   }
 
