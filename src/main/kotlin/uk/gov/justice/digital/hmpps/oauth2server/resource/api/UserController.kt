@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
@@ -96,6 +97,31 @@ class UserController(private val userService: UserService) {
       .map { ResponseEntity.ok(it) }.orElse(notFoundResponse(username))
   }
 
+  @GetMapping("/api/user/{username}/roles")
+  @ApiOperation(
+    value = "List of roles for user.",
+    notes = "List of roles for user.",
+    nickname = "userRoles",
+    consumes = "application/json",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 200, message = "OK", response = UserRole::class, responseContainer = "List"),
+      ApiResponse(code = 401, message = "Unauthorized", response = ErrorDetail::class)
+    ]
+  )
+  @PreAuthorize(
+    "hasAnyRole('ROLE_INTEL_ADMIN', 'ROLE_PPM_USER_ADMIN')"
+  )
+  fun userRoles(
+    @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
+  ): Collection<UserRole> {
+    val user = userService.findMasterUserPersonDetails(username)
+      .orElseThrow { UsernameNotFoundException("Account for username $username not found") }
+    return user.authorities.map { UserRole(it!!.authority.substring(5)) }.toSet() // remove ROLE_
+  }
+
   @GetMapping("/api/user/{username}/email")
   @ApiOperation(
     value = "Email address for user",
@@ -169,7 +195,7 @@ class UserController(private val userService: UserService) {
     )
   )
   @PreAuthorize(
-    "hasAnyRole('ROLE_INTEL_ADMIN', 'ROLE_PPM_GLOBAL_ADMIN')"
+    "hasAnyRole('ROLE_INTEL_ADMIN', 'ROLE_PPM_USER_ADMIN')"
   )
   fun searchForUsersInMultipleSourceSystems(
     @ApiParam(value = "The username, email or name of the user.", example = "j smith") @RequestParam(required = false) name: String?,
