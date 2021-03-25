@@ -99,16 +99,15 @@ class UserController(private val userService: UserService) {
 
   @GetMapping("/api/user/{username}/roles")
   @ApiOperation(
-    value = "List of roles for user.",
-    notes = "List of roles for user.",
+    value = "List of roles for user. Currently restricted to service specific roles: ROLE_INTEL_ADMIN or ROLE_PPM_USER_ADMIN.",
     nickname = "userRoles",
     consumes = "application/json",
     produces = "application/json"
   )
   @ApiResponses(
     value = [
-      ApiResponse(code = 200, message = "OK", response = UserRole::class, responseContainer = "List"),
-      ApiResponse(code = 401, message = "Unauthorized", response = ErrorDetail::class)
+      ApiResponse(code = 401, message = "Unauthorized", response = ErrorDetail::class),
+      ApiResponse(code = 404, message = "User not found.", response = ErrorDetail::class)
     ]
   )
   @PreAuthorize(
