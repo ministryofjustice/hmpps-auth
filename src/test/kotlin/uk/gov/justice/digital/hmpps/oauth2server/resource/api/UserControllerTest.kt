@@ -6,6 +6,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.data.domain.PageImpl
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Pageable
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.userdetails.UsernameNotFoundException
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserFilter
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
@@ -174,6 +177,26 @@ class UserControllerTest {
   }
 
   @Test
+  fun userRoles_authUser() {
+    setupFindUserCallForAuth()
+    assertThat(userController.userRoles("JOE")).contains(UserRole("TEST_1"), UserRole("TEST_2"))
+  }
+
+  @Test
+  fun userRoles_nomisUser() {
+    setupFindUserCallForNomis()
+    assertThat(userController.userRoles("JOE")).contains(UserRole("PRISON"))
+  }
+
+  @Test
+  fun userRoles_notFound() {
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.empty())
+    assertThatThrownBy { userController.userRoles("JOE") }
+      .isInstanceOf(UsernameNotFoundException::class.java)
+      .hasMessage("Account for username JOE not found")
+  }
+
+  @Test
   fun userEmail_found() {
     whenever(userService.getOrCreateUser(anyString())).thenReturn(
       Optional.of(
@@ -313,6 +336,10 @@ class UserControllerTest {
       lastName = "Bloggs",
       enabled = true,
       source = AuthSource.auth,
+      authorities = setOf(
+        Authority(roleCode = "ROLE_TEST_1", roleName = "Test 1"),
+        Authority(roleCode = "ROLE_TEST_2", roleName = "Test 2"),
+      ),
     )
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
   }

@@ -204,7 +204,7 @@ class UserControllerIntTest : IntegrationTest() {
   }
 
   @Test
-  fun `User Roles endpoint returns principal user data`() {
+  fun `User Me Roles endpoint returns principal user data`() {
     webTestClient
       .get().uri("/api/user/me/roles")
       .headers(setAuthorisation("ITAG_USER", listOf("ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS", "ROLE_OAUTH_ADMIN")))
@@ -218,7 +218,7 @@ class UserControllerIntTest : IntegrationTest() {
   }
 
   @Test
-  fun `User Roles endpoint returns principal user data for auth user`() {
+  fun `User Me Roles endpoint returns principal user data for auth user`() {
     webTestClient
       .get().uri("/api/user/me/roles")
       .headers(setAuthorisation("AUTH_ADM", listOf("ROLE_GLOBAL_SEARCH")))
@@ -231,7 +231,7 @@ class UserControllerIntTest : IntegrationTest() {
   }
 
   @Test
-  fun `User Roles endpoint returns principal user data for delius user`() {
+  fun `User Me Roles endpoint returns principal user data for delius user`() {
     webTestClient
       .get().uri("/api/user/me/roles")
       .headers(setAuthorisation("DELIUS", listOf("ROLE_PROBATION")))
@@ -241,6 +241,58 @@ class UserControllerIntTest : IntegrationTest() {
       .jsonPath(".[*].roleCode").value<List<String>> {
         assertThat(it).contains("PROBATION")
       }
+  }
+
+  @Test
+  fun `User Roles endpoint returns roles for nomis user`() {
+    webTestClient
+      .get().uri("/api/user/ITAG_USER/roles")
+      .headers(setAuthorisation("ITAG_USER", listOf("ROLE_PPM_USER_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath(".[*].roleCode").value<List<String>> {
+        assertThat(it).contains("PRISON")
+        assertThat(it).contains("GLOBAL_SEARCH")
+      }
+  }
+
+  @Test
+  fun `User Roles endpoint returns roles for auth user`() {
+    webTestClient
+      .get().uri("/api/user/AUTH_ADM/roles")
+      .headers(setAuthorisation("ITAG_USER", listOf("ROLE_PPM_USER_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath(".[*].roleCode").value<List<String>> {
+        assertThat(it).contains("OAUTH_ADMIN")
+        assertThat(it).contains("MAINTAIN_OAUTH_USERS")
+      }
+  }
+
+  @Test
+  fun `User Roles endpoint returns roles for delius user`() {
+    webTestClient
+      .get().uri("/api/user/DELIUS/roles")
+      .headers(setAuthorisation("ITAG_USER", listOf("ROLE_PPM_USER_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath(".[*].roleCode").value<List<String>> {
+        assertThat(it).contains("LICENCE_RO")
+        assertThat(it).contains("PROBATION")
+        assertThat(it).contains("GLOBAL_SEARCH")
+      }
+  }
+
+  @Test
+  fun `User Roles endpoint returns not found for unknown username`() {
+    webTestClient
+      .get().uri("/api/user/UNKNOWN/roles")
+      .headers(setAuthorisation("ITAG_USER", listOf("ROLE_PPM_USER_ADMIN")))
+      .exchange()
+      .expectStatus().isNotFound
   }
 
   @Test
@@ -255,6 +307,14 @@ class UserControllerIntTest : IntegrationTest() {
   fun `User Me Roles endpoint not accessible without valid token`() {
     webTestClient
       .get().uri("/api/user/me/roles")
+      .exchange()
+      .expectStatus().isUnauthorized
+  }
+
+  @Test
+  fun `User Roles endpoint not accessible without valid token`() {
+    webTestClient
+      .get().uri("/api/user/ITAG_USER/roles")
       .exchange()
       .expectStatus().isUnauthorized
   }
