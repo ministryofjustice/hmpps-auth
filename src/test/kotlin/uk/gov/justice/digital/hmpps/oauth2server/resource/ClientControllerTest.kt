@@ -23,11 +23,13 @@ import org.springframework.ui.ExtendedModelMap
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ClientsController.AuthClientDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
+import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 
 class ClientControllerTest {
   private val clientDetailsService: JdbcClientDetailsService = mock()
+  private val clientService: ClientService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val controller = ClientsController(clientDetailsService, telemetryClient)
+  private val controller = ClientsController(clientDetailsService, clientService, telemetryClient)
   private val authentication = TestingAuthenticationToken(
     UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"),
     "pass"
@@ -124,6 +126,7 @@ class ClientControllerTest {
         mapOf("username" to "user", "clientId" to "client"),
         null
       )
+      verify(clientService).findAndUpdateDuplicates("client")
       assertThat(view).isEqualTo("redirect:/ui")
     }
 
