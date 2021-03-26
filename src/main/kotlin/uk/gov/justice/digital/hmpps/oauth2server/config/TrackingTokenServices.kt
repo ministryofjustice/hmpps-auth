@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.provider.TokenRequest
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
+import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper
 
 open class TrackingTokenServices(
   private val telemetryClient: TelemetryClient,
@@ -28,10 +29,14 @@ open class TrackingTokenServices(
     val username = retrieveUsernameFromToken(token)
     val clientId = authentication.oAuth2Request.clientId
 
-    // not interested in tracking events for client credentials tokens, only proper user access tokens
-    if (!authentication.isClientOnly) {
-      telemetryClient.trackEvent("CreateAccessToken", mapOf("username" to username, "clientId" to clientId), null)
-    }
+    val name = if (authentication.isClientOnly) "CreateSystemAccessToken" else "CreateAccessToken"
+    telemetryClient.trackEvent(
+      name,
+      mapOf(
+        "username" to username, "clientId" to clientId, "clientIpAddress" to IpAddressHelper.retrieveIpFromRequest()
+      ),
+      null
+    )
     if (tokenVerificationClientCredentials.clientId != clientId) {
       val jwtId = sendAuthJwtIdToTokenVerification(authentication, token)
       log.info("Created access token for {} and client {} with jwt id of {}", username, clientId, jwtId)
@@ -47,7 +52,13 @@ open class TrackingTokenServices(
       val jwtId = sendRefreshToTokenVerification(refreshTokenValue, token)
       log.info("Created refresh token for {} and client {} with jwt id of {}", username, clientId, jwtId)
     }
-    telemetryClient.trackEvent("RefreshAccessToken", mapOf("username" to username, "clientId" to clientId), null)
+    telemetryClient.trackEvent(
+      "RefreshAccessToken",
+      mapOf(
+        "username" to username, "clientId" to clientId, "clientIpAddress" to IpAddressHelper.retrieveIpFromRequest()
+      ),
+      null
+    )
     return token
   }
 

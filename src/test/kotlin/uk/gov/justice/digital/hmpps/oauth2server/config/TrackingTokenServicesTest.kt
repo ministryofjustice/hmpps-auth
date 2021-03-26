@@ -6,9 +6,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.eq
-import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
@@ -16,8 +14,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.ArgumentMatchers.anyString
+import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.common.DefaultOAuth2RefreshToken
@@ -29,6 +27,8 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
@@ -43,6 +43,7 @@ internal class TrackingTokenServicesTest {
     TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, true)
   private val tokenServicesVerificationDisabled =
     TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, false)
+  private val request = MockHttpServletRequest()
 
   @BeforeEach
   fun setUp() {
@@ -56,6 +57,8 @@ internal class TrackingTokenServicesTest {
     tokenServices.setTokenEnhancer(tokenEnhancer)
     tokenServicesVerificationDisabled.setTokenEnhancer(tokenEnhancer)
     whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
+    request.remoteAddr = "12.21.23.24"
+    RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request, null))
   }
 
   @Nested
@@ -66,7 +69,7 @@ internal class TrackingTokenServicesTest {
       tokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_REQUEST, userAuthentication))
       verify(telemetryClient).trackEvent(
         "CreateAccessToken",
-        mapOf("username" to "authenticateduser", "clientId" to "client"),
+        mapOf("username" to "authenticateduser", "clientId" to "client", "clientIpAddress" to "12.21.23.24"),
         null
       )
     }
@@ -94,13 +97,21 @@ internal class TrackingTokenServicesTest {
     @Test
     fun createAccessToken_ClientOnly() {
       tokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_REQUEST, null))
-      verify(telemetryClient, never()).trackEvent(any(), anyMap(), isNull())
+      verify(telemetryClient).trackEvent(
+        "CreateSystemAccessToken",
+        mapOf("username" to "client", "clientId" to "client", "clientIpAddress" to "12.21.23.24"),
+        null
+      )
     }
 
     @Test
     fun createAccessToken_ClientOnlyProxyUser() {
       tokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_SCOPE_REQUEST, null))
-      verify(telemetryClient, never()).trackEvent(any(), anyMap(), isNull())
+      verify(telemetryClient).trackEvent(
+        "CreateSystemAccessToken",
+        mapOf("username" to "community-api-client", "clientId" to "community-api-client", "clientIpAddress" to "12.21.23.24"),
+        null
+      )
     }
   }
 
@@ -121,7 +132,7 @@ internal class TrackingTokenServicesTest {
       tokenServices.refreshAccessToken(refreshToken, TokenRequest(emptyMap(), "client", emptySet(), "refresh"))
       verify(telemetryClient).trackEvent(
         "RefreshAccessToken",
-        mapOf("username" to "authenticateduser", "clientId" to "client"),
+        mapOf("username" to "authenticateduser", "clientId" to "client", "clientIpAddress" to "12.21.23.24"),
         null
       )
     }
