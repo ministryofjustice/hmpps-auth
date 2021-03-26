@@ -16,8 +16,8 @@ class ClientService(
 
   fun findAndUpdateDuplicates(clientId: String) {
     val clientDetails = clientsDetailsService.loadClientByClientId(clientId)
-    find(clientId).filter { it.clientId != clientId }
-      .map { copyClient(it.clientId, clientDetails as BaseClientDetails) }
+    find(clientId).filter { it.id != clientId }
+      .map { copyClient(it.id, clientDetails as BaseClientDetails) }
       .forEach { clientsDetailsService.updateClientDetails(it) }
   }
 
