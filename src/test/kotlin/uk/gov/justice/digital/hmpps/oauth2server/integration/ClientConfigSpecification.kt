@@ -86,6 +86,60 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `I can edit a client and new details are copied over to the duplicate`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    clientMaintenancePage.isAtPage()
+      .edit("registeredRedirectUri", "http://a_url:3003")
+      .edit("accessTokenValiditySeconds", "1234")
+      .edit("scopes", "read,bob")
+      .save()
+    clientSummaryPage.isAtPage()
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    with(clientMaintenancePage) {
+      isAtPage()
+      assertThat(el("#registeredRedirectUri").value()).isEqualTo("http://a_url:3003")
+      assertThat(el("#accessTokenValiditySeconds").value()).isEqualTo("1234")
+      assertThat(el("#scopes").value()).isEqualTo("read,bob")
+    }
+    goTo(clientSummaryPage).editClient("rotation-test-client-2")
+    with(clientMaintenancePage) {
+      isAtPage()
+      assertThat(el("#registeredRedirectUri").value()).isEqualTo("http://a_url:3003")
+      assertThat(el("#accessTokenValiditySeconds").value()).isEqualTo("1234")
+      assertThat(el("#scopes").value()).isEqualTo("read,bob")
+    }
+  }
+
+  @Test
+  fun `I can edit a client duplicate and new details are copied over to the original`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("rotation-test-client-2")
+    clientMaintenancePage.isAtPage()
+      .edit("resourceIds", "some_resource")
+      .edit("refreshTokenValiditySeconds", "2345")
+      .edit("authorities", "ROLE_BOB,ROLE_JOE")
+      .save()
+    clientSummaryPage.isAtPage()
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    with(clientMaintenancePage) {
+      isAtPage()
+      assertThat(el("#resourceIds").value()).isEqualTo("some_resource")
+      assertThat(el("#refreshTokenValiditySeconds").value()).isEqualTo("2345")
+      assertThat(el("#authorities").value()).isEqualTo("ROLE_BOB,ROLE_JOE")
+    }
+    goTo(clientSummaryPage).editClient("rotation-test-client-2")
+    with(clientMaintenancePage) {
+      isAtPage()
+      assertThat(el("#resourceIds").value()).isEqualTo("some_resource")
+      assertThat(el("#refreshTokenValiditySeconds").value()).isEqualTo("2345")
+      assertThat(el("#authorities").value()).isEqualTo("ROLE_BOB,ROLE_JOE")
+    }
+  }
+
+  @Test
   fun `I can create and remove client credential`() {
     goTo(loginPage).loginAs("ITAG_USER_ADM", "password123456")
 
