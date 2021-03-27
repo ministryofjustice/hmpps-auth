@@ -22,11 +22,13 @@ import org.springframework.web.bind.annotation.RequestParam
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthorityPropertyEditor
 import uk.gov.justice.digital.hmpps.oauth2server.config.SplitCollectionEditor
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 
 @Controller
 @RequestMapping("ui/clients")
 class ClientsController(
   private val clientsDetailsService: JdbcClientDetailsService,
+  private val clientService: ClientService,
   private val telemetryClient: TelemetryClient,
 ) {
   @InitBinder
@@ -60,6 +62,7 @@ class ClientsController(
     if (newClient == null) {
       clientsDetailsService.updateClientDetails(clientDetails)
       telemetryClient.trackEvent("AuthClientDetailsUpdate", telemetryMap, null)
+      clientService.findAndUpdateDuplicates(clientDetails.clientId)
     } else {
       clientsDetailsService.addClientDetails(clientDetails)
       telemetryClient.trackEvent("AuthClientDetailsAdd", telemetryMap, null)
