@@ -154,7 +154,7 @@ class ClientControllerTest {
         mapOf("username" to "user", "clientId" to "client-1"),
         null
       )
-      assertThat(mandv.viewName).isEqualTo("ui/duplicateClientSuccess")
+      assertThat(mandv.viewName).isEqualTo("redirect:/ui/clients/duplicate-client-success")
       assertThat(mandv.model).containsOnly(
         entry("clientId", "client-1"),
         entry("clientSecret", ""),
