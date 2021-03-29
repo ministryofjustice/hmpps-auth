@@ -24,9 +24,14 @@ class ClientService(
       .forEach { clientsDetailsService.updateClientDetails(it) }
   }
 
+  fun loadClientWithCopies(clientId: String): ClientDetailsWithCopies {
+    val clients = find(clientId).filter { it.id != clientId }
+    return ClientDetailsWithCopies(clientsDetailsService.loadClientByClientId(clientId), clients.map { it.id })
+  }
+
   private fun find(clientId: String): List<Client> {
     val searchClientId = baseClientId(clientId)
-    return clientRepository.findByIdStartsWith(searchClientId)
+    return clientRepository.findByIdStartsWithOrderById(searchClientId)
   }
 
   private fun copyClient(clientId: String, clientDetails: BaseClientDetails): BaseClientDetails {
@@ -67,6 +72,8 @@ class ClientService(
   private fun baseClientId(clientId: String): String = clientId.replace(regex = "-[0-9]*$".toRegex(), replacement = "")
   private fun clientNumber(clientId: String): Int = clientId.substringAfterLast("-").toIntOrNull() ?: 0
 }
+
+data class ClientDetailsWithCopies(val clientDetails: ClientDetails, val duplicates: List<String>)
 
 open class DuplicateClientsException(clientId: String, errorCode: String) :
   Exception("Duplicate clientId failed for $clientId with reason: $errorCode")

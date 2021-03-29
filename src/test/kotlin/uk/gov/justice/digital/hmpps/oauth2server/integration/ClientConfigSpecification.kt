@@ -119,6 +119,22 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `I can navigate between duplicate clients`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    with(clientMaintenancePage) {
+      isAtPage()
+      assertThat(el("[data-qa='other-clients']").text()).isEqualTo("Other clients")
+      assertThat(el("#clientId").value()).isEqualTo("rotation-test-client")
+      el("#edit-rotation-test-client-2").click()
+      assertThat(el("#clientId").value()).isEqualTo("rotation-test-client-2")
+      el("#edit-rotation-test-client").click()
+      assertThat(el("#clientId").value()).isEqualTo("rotation-test-client")
+    }
+  }
+
+  @Test
   fun `I can edit a client duplicate and new details are copied over to the original`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
