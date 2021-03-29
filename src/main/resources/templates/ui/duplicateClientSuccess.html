@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head lang="en">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <title>Maintain Client Configuration</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-full">
+  <div class="govuk-panel govuk-panel--confirmation">
+    <h1 class="govuk-panel__title">
+      <span th:text="${clientId}"> client </span>
+    </h1>
+    <h3> Client secret </h3>
+    <h3 th:text="${clientSecret}">secret</h3>
+  </div>
+
+  <a class="govuk-button" th:href="@{/ui}" id="continue">Continue</a>
+</div>
+</div>
+</body>
+</html>

@@ -9,6 +9,7 @@ import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -52,6 +53,69 @@ internal class ClientServiceTest {
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createAuthClientDetails())
       clientService.findAndUpdateDuplicates("some-client-24-id")
       verify(clientRepository).findByIdStartsWith("some-client-24-id")
+    }
+  }
+
+  @Nested
+  inner class duplicateClient {
+    @Test
+    internal fun `duplicate original client`() {
+      val authClientDetails = createAuthClientDetails()
+      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
+      whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client")))
+
+      clientService.duplicateClient("some-client")
+
+      verify(clientDetailsService).addClientDetails(
+        check {
+          assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret").isEqualTo(createBaseClientDetails(authClientDetails))
+          assertThat(it.clientId).isEqualTo("some-client-1")
+          assertThat(it.clientSecret.length).isEqualTo(25)
+        }
+      )
+    }
+
+    @Test
+    internal fun `duplicate client incrementing number correctly`() {
+      val authClientDetails = createAuthClientDetails()
+      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
+      whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client"), Client("some-client-1")))
+
+      clientService.duplicateClient("some-client-1")
+
+      verify(clientDetailsService).addClientDetails(
+        check {
+          assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret").isEqualTo(createBaseClientDetails(authClientDetails))
+          assertThat(it.clientId).isEqualTo("some-client-2")
+          assertThat(it.clientSecret.length).isEqualTo(25)
+        }
+      )
+    }
+    @Test
+    internal fun `duplicate client incrementing number correctly when original client duplicated`() {
+      val authClientDetails = createAuthClientDetails()
+      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
+      whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client"), Client("some-client-4")))
+
+      clientService.duplicateClient("some-client")
+
+      verify(clientDetailsService).addClientDetails(
+        check {
+          assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret").isEqualTo(createBaseClientDetails(authClientDetails))
+          assertThat(it.clientId).isEqualTo("some-client-5")
+          assertThat(it.clientSecret.length).isEqualTo(25)
+        }
+      )
+    }
+
+    @Test
+    internal fun `will throw error if 3 clients already exist for base client id`() {
+      val authClientDetails = createAuthClientDetails()
+      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
+      whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client"), Client("some-client-1"), Client("some-client-2")))
+
+      assertThatThrownBy { clientService.duplicateClient("some-client") }
+        .isInstanceOf(DuplicateClientsException::class.java).hasMessage("Duplicate clientId failed for some-client with reason: MaxReached")
     }
   }
 

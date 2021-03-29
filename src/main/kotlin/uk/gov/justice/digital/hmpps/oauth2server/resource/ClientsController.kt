@@ -19,10 +19,12 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthorityPropertyEditor
 import uk.gov.justice.digital.hmpps.oauth2server.config.SplitCollectionEditor
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
+import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
 
 @Controller
 @RequestMapping("ui/clients")
@@ -84,6 +86,26 @@ class ClientsController(
     return "redirect:/ui"
   }
 
+  @PostMapping("/duplicate")
+  @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
+  fun duplicateClient(
+    authentication: Authentication,
+    @RequestParam(value = "clientIdDuplicate", required = true) clientId: String,
+  ): ModelAndView {
+
+    return try {
+      val duplicatedClientDetails: ClientDetails = clientService.duplicateClient(clientId)
+      val userDetails = authentication.principal as UserPersonDetails
+      val telemetryMap = mapOf("username" to userDetails.username, "clientId" to duplicatedClientDetails.clientId)
+      telemetryClient.trackEvent("AuthClientDetailsDuplicated", telemetryMap, null)
+      ModelAndView("ui/duplicateClientSuccess", "clientId", duplicatedClientDetails.clientId)
+        .addObject("clientSecret", duplicatedClientDetails.clientSecret)
+    } catch (e: DuplicateClientsException) {
+      ModelAndView("redirect:/ui/clients/form", "client", clientId)
+        .addObject("error", "maxDuplicates")
+    }
+  }
+
   // Unfortunately the getAdditionalInformation getter creates an unmodifiable map, so can't be used with web binder.
   // Have to therefore extend and create our own accessor instead.
   class AuthClientDetails : BaseClientDetails() {
@@ -115,6 +137,7 @@ class ClientsController(
       }
   }
 }
+
 enum class MfaAccess {
   none, untrusted, all
 }

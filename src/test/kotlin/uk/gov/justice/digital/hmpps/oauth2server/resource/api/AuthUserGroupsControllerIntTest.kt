@@ -109,6 +109,12 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
       .expectStatus().isForbidden
+      .expectBody()
+      .json(
+        """
+      {"error":"unable to maintain user","error_description":"Unable to enable user, the user is not within one of your groups","field":"groups"}
+        """.trimIndent()
+      )
 
     callGetGroups(user = "AUTH_RO_USER_TEST4")
       .jsonPath(".[?(@.groupCode == 'SITE_1_GROUP_1')]")
