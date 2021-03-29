@@ -98,13 +98,21 @@ class ClientsController(
       val userDetails = authentication.principal as UserPersonDetails
       val telemetryMap = mapOf("username" to userDetails.username, "clientId" to duplicatedClientDetails.clientId)
       telemetryClient.trackEvent("AuthClientDetailsDuplicated", telemetryMap, null)
-      ModelAndView("ui/duplicateClientSuccess", "clientId", duplicatedClientDetails.clientId)
+      ModelAndView("redirect:/ui/clients/duplicate-client-success", "clientId", duplicatedClientDetails.clientId)
         .addObject("clientSecret", duplicatedClientDetails.clientSecret)
     } catch (e: DuplicateClientsException) {
       ModelAndView("redirect:/ui/clients/form", "client", clientId)
         .addObject("error", "maxDuplicates")
     }
   }
+
+  @GetMapping("/duplicate-client-success")
+  fun duplicateClientSuccess(
+    @RequestParam(value = "clientId", required = true) clientId: String,
+    @RequestParam(value = "clientSecret", required = true) clientSecret: String,
+  ): ModelAndView =
+    ModelAndView("ui/duplicateClientSuccess", "clientId", clientId)
+      .addObject("clientSecret", clientSecret)
 
   // Unfortunately the getAdditionalInformation getter creates an unmodifiable map, so can't be used with web binder.
   // Have to therefore extend and create our own accessor instead.
