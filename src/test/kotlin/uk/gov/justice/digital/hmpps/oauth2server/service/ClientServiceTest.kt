@@ -18,11 +18,13 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientRepository
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ClientsController.AuthClientDetails
+import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordGenerator
 
 internal class ClientServiceTest {
   private val clientRepository: ClientRepository = mock()
   private val clientDetailsService: JdbcClientDetailsService = mock()
-  private val clientService = ClientService(clientDetailsService, clientRepository)
+  private val passwordGenerator: PasswordGenerator = mock()
+  private val clientService = ClientService(clientDetailsService, passwordGenerator, clientRepository)
 
   @Nested
   inner class findAndUpdateDuplicates {
@@ -63,6 +65,7 @@ internal class ClientServiceTest {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
       whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client")))
+      whenever(passwordGenerator.generatePassword()).thenReturn("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
 
       clientService.duplicateClient("some-client")
 
@@ -70,7 +73,7 @@ internal class ClientServiceTest {
         check {
           assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret").isEqualTo(createBaseClientDetails(authClientDetails))
           assertThat(it.clientId).isEqualTo("some-client-1")
-          assertThat(it.clientSecret.length).isEqualTo(25)
+          assertThat(it.clientSecret).isEqualTo("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
         }
       )
     }
@@ -80,6 +83,7 @@ internal class ClientServiceTest {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
       whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client"), Client("some-client-1")))
+      whenever(passwordGenerator.generatePassword()).thenReturn("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
 
       clientService.duplicateClient("some-client-1")
 
@@ -87,7 +91,7 @@ internal class ClientServiceTest {
         check {
           assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret").isEqualTo(createBaseClientDetails(authClientDetails))
           assertThat(it.clientId).isEqualTo("some-client-2")
-          assertThat(it.clientSecret.length).isEqualTo(25)
+          assertThat(it.clientSecret).isEqualTo("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
         }
       )
     }
@@ -96,6 +100,7 @@ internal class ClientServiceTest {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
       whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client"), Client("some-client-4")))
+      whenever(passwordGenerator.generatePassword()).thenReturn("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
 
       clientService.duplicateClient("some-client")
 
@@ -103,7 +108,7 @@ internal class ClientServiceTest {
         check {
           assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret").isEqualTo(createBaseClientDetails(authClientDetails))
           assertThat(it.clientId).isEqualTo("some-client-5")
-          assertThat(it.clientSecret.length).isEqualTo(25)
+          assertThat(it.clientSecret).isEqualTo("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
         }
       )
     }
