@@ -18,6 +18,12 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   @Page
   private lateinit var clientMaintenanceAddPage: ClientMaintenanceAddPage
 
+  @Page
+  private lateinit var duplicateClientSuccessPage: DuplicateClientSuccessPage
+
+  @Page
+  private lateinit var clientMaintenancePageWithError: ClientMaintenancePageWithError
+
   @Test
   fun `View Client Dashboard once logged in`() {
     goTo("/ui")
@@ -174,6 +180,47 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     clientSummaryPage.isAtPage()
       .checkClientDoesntExist("new-client")
   }
+
+  @Test
+  fun `I can duplicate a client`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("rotation-test-client-2")
+    clientMaintenancePage.isAtPage()
+      .duplicate()
+
+    duplicateClientSuccessPage.isAtPage()
+      .continueToClientUiPage()
+
+    // now remove so test is re-runnable
+    goTo("/ui/clients/rotation-test-client-3/delete")
+    clientSummaryPage.isAtPage()
+      .checkClientDoesntExist("rotation-test-client-3")
+  }
+
+  @Test
+  fun `I receive error if I try to have more than 3 of a client`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("rotation-test-client-2")
+    clientMaintenancePage.isAtPage()
+      .duplicate()
+
+    duplicateClientSuccessPage.isAtPage()
+      .continueToClientUiPage()
+
+    goTo(clientSummaryPage).editClient("rotation-test-client-3")
+    clientMaintenancePage.isAtPage()
+      .duplicate()
+
+    clientMaintenancePageWithError
+      .checkError("You are only allowed 3 versions of this client at one time. You will need to delete one to be able to duplicate it again.")
+
+    // now remove so test is re-runnable
+    goTo("/ui/clients/rotation-test-client-3/delete")
+    clientSummaryPage.isAtPage()
+      .checkClientDoesntExist("rotation-test-client-3")
+  }
 }
 
 @PageUrl("/ui")
@@ -216,6 +263,11 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
     heading,
     headingStartsWith
   ) {
+  @FindBy(css = "input[type='submit']")
+  private lateinit var save: FluentWebElement
+
+  @FindBy(name = "duplicate-client")
+  private lateinit var duplicate: FluentWebElement
 
   fun checkDetails(): ClientMaintenancePage {
     assertThat(el("#clientId").value()).isEqualTo("apireporting")
@@ -238,9 +290,32 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
   }
 
   fun save() {
-    el("input[type='submit']").click()
+    save.click()
+  }
+
+  fun duplicate(): ClientMaintenancePage {
+    duplicate.click()
+    return this
   }
 }
 
 @PageUrl("/ui/clients/form")
 class ClientMaintenanceAddPage : ClientMaintenancePage("Add client", false)
+
+@PageUrl("/ui/clients/form")
+class ClientMaintenancePageWithError : ClientMaintenancePage("Edit client 'rotation-test-client-3'", false)
+
+@PageUrl("ui/clients/duplicate-client-success")
+open class DuplicateClientSuccessPage : AuthPage<DuplicateClientSuccessPage>(
+  "HMPPS Digital Services - Duplicate Client Configuration",
+  "rotation-test-client-3"
+) {
+  @FindBy(css = "#continue")
+  private lateinit var continueButton: FluentWebElement
+
+  fun continueToClientUiPage(): DuplicateClientSuccessPage {
+    assertThat(continueButton.text()).isEqualTo("Continue")
+    continueButton.click()
+    return this
+  }
+}

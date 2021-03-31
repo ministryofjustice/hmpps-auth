@@ -11,6 +11,7 @@ import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.entry
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
@@ -24,6 +25,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.ClientsController.Auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
+import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
 
 class ClientControllerTest {
   private val clientDetailsService: JdbcClientDetailsService = mock()
@@ -133,6 +135,54 @@ class ClientControllerTest {
     private fun createAuthClientDetails(): AuthClientDetails {
       val authClientDetails = AuthClientDetails()
       authClientDetails.clientId = "client"
+      authClientDetails.setAuthorizedGrantTypes(listOf("client_credentials"))
+      authClientDetails.authorities = mutableListOf(GrantedAuthority { "ROLE_CLIENT" })
+      authClientDetails.clientSecret = ""
+      return authClientDetails
+    }
+  }
+
+  @Nested
+  inner class DuplicateClientRequest {
+
+    @Test
+    fun `Duplicate client`() {
+      whenever(clientService.duplicateClient(anyString())).thenReturn(createAuthClientDetails())
+      val mandv = controller.duplicateClient(authentication, "client")
+      verify(telemetryClient).trackEvent(
+        "AuthClientDetailsDuplicated",
+        mapOf("username" to "user", "clientId" to "client-1"),
+        null
+      )
+      assertThat(mandv.viewName).isEqualTo("redirect:/ui/clients/duplicate-client-success")
+      assertThat(mandv.model).containsOnly(
+        entry("clientId", "client-1"),
+        entry("clientSecret", ""),
+      )
+    }
+
+    @Test
+    fun `Duplicate client throw exception max duplicated`() {
+      doThrow(
+        DuplicateClientsException(
+          "client",
+          "Duplicate clientId failed for some-client with reason: MaxReached"
+        )
+      ).whenever(clientService).duplicateClient(anyString())
+
+      val mandv = controller.duplicateClient(authentication, "client")
+
+      verifyZeroInteractions(telemetryClient)
+      assertThat(mandv.viewName).isEqualTo("redirect:/ui/clients/form")
+      assertThat(mandv.model).containsOnly(
+        entry("client", "client"),
+        entry("error", "maxDuplicates"),
+      )
+    }
+
+    private fun createAuthClientDetails(): AuthClientDetails {
+      val authClientDetails = AuthClientDetails()
+      authClientDetails.clientId = "client-1"
       authClientDetails.setAuthorizedGrantTypes(listOf("client_credentials"))
       authClientDetails.authorities = mutableListOf(GrantedAuthority { "ROLE_CLIENT" })
       authClientDetails.clientSecret = ""
