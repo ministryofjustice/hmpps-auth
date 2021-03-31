@@ -1,9 +1,12 @@
+@file:Suppress("DEPRECATION")
+
 package uk.gov.justice.digital.hmpps.oauth2server.config
 
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException
@@ -14,6 +17,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupNot
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
+import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
 
 @RestControllerAdvice
 class AuthExceptionHandler {
@@ -79,6 +83,22 @@ class AuthExceptionHandler {
     return ResponseEntity
       .status(HttpStatus.CONFLICT)
       .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", "group"))
+  }
+
+  @ExceptionHandler(DuplicateClientsException::class)
+  fun handleDuplicateClientsExceptionn(e: DuplicateClientsException): ResponseEntity<ErrorDetail> {
+    log.debug("Duplicate client exception caught: {}", e.message)
+    return ResponseEntity
+      .status(HttpStatus.CONFLICT)
+      .body(ErrorDetail("MaxDuplicateReached", e.message ?: "Error message not set", "client"))
+  }
+
+  @ExceptionHandler(NoSuchClientException::class)
+  fun handleNoSuchClientException(e: NoSuchClientException): ResponseEntity<ErrorDetail> {
+    log.debug("No such client exception caught: {}", e.message)
+    return ResponseEntity
+      .status(HttpStatus.NOT_FOUND)
+      .body(ErrorDetail(HttpStatus.NOT_FOUND.reasonPhrase, e.message ?: "No client with requested id", "client"))
   }
 
   companion object {
