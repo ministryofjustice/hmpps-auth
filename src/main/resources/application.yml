@@ -120,6 +120,8 @@ application:
     mfa:
       allowlist: 172.16.0.0/12
       roles: ROLE_MFA
+    generated-password:
+      length: 35
 
 jwt:
   keystore:

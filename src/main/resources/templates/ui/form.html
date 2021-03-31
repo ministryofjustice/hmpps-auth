@@ -7,8 +7,21 @@
   <title>Maintain Client Configuration</title>
 </head>
 <body>
-
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
+<div th:if="${param.error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
+     data-module="govuk-error-summary">
+  <h2 class="govuk-error-summary__title" id="error-summary">
+    There is a problem
+  </h2>
+  <div class="govuk-error-summary__body" id="error-detail">
+    <ul class="govuk-list govuk-error-summary__list">
+      <li>
+        <p th:text="#{${'client.maxDuplicated'}}">Max duplicate clients message</p>
+      </li>
+    </ul>
+  </div>
+</div>
+
   <h1 th:unless="${param.client}" class="govuk-heading-l">Add client</h1>
   <h1 th:if="${param.client}" class="govuk-heading-l">Edit client '<span th:text="${param.client[0]}"></span>'</h1>
 
@@ -174,6 +187,12 @@
 
     <input type="submit" class="govuk-button" name="client-submit" value="Save">
   </form>
+
+  <form th:action="@{/ui/clients/duplicate}" method="post" th:if="${param.client}">
+    <input type="hidden"  id="clientIdDuplicate" name="clientIdDuplicate" th:value="${clientDetails.clientId}"/>
+    <input type="submit" class="govuk-button" name="duplicate-client" value="Duplicate">
+  </form>
+
 </div>
 </body>
 </html>
