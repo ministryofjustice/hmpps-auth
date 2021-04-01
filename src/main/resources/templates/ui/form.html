@@ -31,6 +31,16 @@
     <input type="hidden" th:unless="${param.client}" name="newClient" value="true"/>
 
     <div class="govuk-form-group">
+      <div class="govuk-form-group" th:if="${param.client}">
+        <h2 class="govuk-heading-m" data-qa="other-clients" th:unless="${#lists.isEmpty(clients)}">Other clients</h2>
+        <ul class="govuk-list" th:each="client: ${clients}">
+          <li>
+            <a th:id="'edit-' + ${client}" th:text="${client}" class="govuk-link"
+               th:href="@{/ui/clients/form?client=__${client}__}">Client ID</a>
+          </li>
+        </ul>
+        <h2 class="govuk-heading-m">Client details</h2>
+      </div>
       <div class="govuk-form-group" th:unless="${param.client}">
         <label class="govuk-label" for="clientId">Client ID</label>
         <input class="govuk-input" id="clientId" type="text" name="clientId" th:value="${clientDetails.clientId}"/>

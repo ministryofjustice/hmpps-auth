@@ -6,7 +6,6 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.stereotype.Controller
@@ -23,6 +22,7 @@ import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthorityPropertyEditor
 import uk.gov.justice.digital.hmpps.oauth2server.config.SplitCollectionEditor
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
+import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDetailsWithCopies
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
 
@@ -42,12 +42,13 @@ class ClientsController(
   @GetMapping("/form")
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
   fun showEditForm(@RequestParam(value = "client", required = false) clientId: String?, model: Model): String {
-    val clientDetails: ClientDetails = if (clientId != null) {
-      clientsDetailsService.loadClientByClientId(clientId)
+    val (clientDetails, clients) = if (clientId != null) {
+      clientService.loadClientWithCopies(clientId)
     } else {
-      BaseClientDetails()
+      ClientDetailsWithCopies(BaseClientDetails(), emptyList())
     }
     model.addAttribute("clientDetails", clientDetails)
+      .addAttribute("clients", clients)
     return "ui/form"
   }
 
@@ -94,7 +95,7 @@ class ClientsController(
   ): ModelAndView {
 
     return try {
-      val duplicatedClientDetails: ClientDetails = clientService.duplicateClient(clientId)
+      val duplicatedClientDetails = clientService.duplicateClient(clientId)
       val userDetails = authentication.principal as UserPersonDetails
       val telemetryMap = mapOf("username" to userDetails.username, "clientId" to duplicatedClientDetails.clientId)
       telemetryClient.trackEvent("AuthClientDetailsDuplicated", telemetryMap, null)

@@ -32,7 +32,7 @@ internal class ClientServiceTest {
     internal fun `no replacement`() {
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createAuthClientDetails())
       clientService.findAndUpdateDuplicates("some-client")
-      verify(clientRepository).findByIdStartsWith("some-client")
+      verify(clientRepository).findByIdStartsWithOrderById("some-client")
       verify(clientDetailsService, never()).updateClientDetails(any())
     }
 
@@ -40,9 +40,9 @@ internal class ClientServiceTest {
     internal fun duplicate() {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
-      whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client-24"), Client("copy-2")))
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(listOf(Client("some-client-24"), Client("copy-2")))
       clientService.findAndUpdateDuplicates("some-client-24")
-      verify(clientRepository).findByIdStartsWith("some-client")
+      verify(clientRepository).findByIdStartsWithOrderById("some-client")
       verify(clientDetailsService).updateClientDetails(
         check {
           assertThat(it).usingRecursiveComparison().isEqualTo(createBaseClientDetails(authClientDetails))
@@ -54,7 +54,20 @@ internal class ClientServiceTest {
     internal fun `other-client-with-numbers`() {
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createAuthClientDetails())
       clientService.findAndUpdateDuplicates("some-client-24-id")
-      verify(clientRepository).findByIdStartsWith("some-client-24-id")
+      verify(clientRepository).findByIdStartsWithOrderById("some-client-24-id")
+    }
+  }
+
+  @Nested
+  inner class loadClientWithCopies {
+    @Test
+    internal fun `filters out current client`() {
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(listOf(Client("some-client-24"), Client("copy-2")))
+      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
+      val client = clientService.loadClientWithCopies("some-client-24")
+      assertThat(client.duplicates).containsOnly("copy-2")
+      verify(clientRepository).findByIdStartsWithOrderById("some-client")
+      verify(clientDetailsService).loadClientByClientId("some-client-24")
     }
   }
 
@@ -64,7 +77,7 @@ internal class ClientServiceTest {
     internal fun `duplicate original client`() {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
-      whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client")))
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(listOf(Client("some-client")))
       whenever(passwordGenerator.generatePassword()).thenReturn("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
 
       clientService.duplicateClient("some-client")
@@ -82,7 +95,7 @@ internal class ClientServiceTest {
     internal fun `duplicate client incrementing number correctly`() {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
-      whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client"), Client("some-client-1")))
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(listOf(Client("some-client"), Client("some-client-1")))
       whenever(passwordGenerator.generatePassword()).thenReturn("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
 
       clientService.duplicateClient("some-client-1")
@@ -99,7 +112,7 @@ internal class ClientServiceTest {
     internal fun `duplicate client incrementing number correctly when original client duplicated`() {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
-      whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client"), Client("some-client-4")))
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(listOf(Client("some-client"), Client("some-client-4")))
       whenever(passwordGenerator.generatePassword()).thenReturn("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
 
       clientService.duplicateClient("some-client")
@@ -117,7 +130,7 @@ internal class ClientServiceTest {
     internal fun `will throw error if 3 clients already exist for base client id`() {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
-      whenever(clientRepository.findByIdStartsWith(any())).thenReturn(listOf(Client("some-client"), Client("some-client-1"), Client("some-client-2")))
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(listOf(Client("some-client"), Client("some-client-1"), Client("some-client-2")))
 
       assertThatThrownBy { clientService.duplicateClient("some-client") }
         .isInstanceOf(DuplicateClientsException::class.java).hasMessage("Duplicate clientId failed for some-client with reason: MaxReached")
