@@ -95,7 +95,7 @@ class ClientsController(
   ): ModelAndView {
 
     return try {
-      val duplicatedClientDetails: ClientDetails = clientService.duplicateClient(clientId)
+      val duplicatedClientDetails = clientService.duplicateClient(clientId)
       val userDetails = authentication.principal as UserPersonDetails
       val telemetryMap = mapOf("username" to userDetails.username, "clientId" to duplicatedClientDetails.clientId)
       telemetryClient.trackEvent("AuthClientDetailsDuplicated", telemetryMap, null)
