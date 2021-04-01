@@ -38,7 +38,7 @@ data class Client(
   val scope: List<String> = emptyList(),
 
   @Column(name = "access_token_validity")
-  val accessTokenValidity: Int = 0,
+  val accessTokenValidity: Int? = 0,
 ) {
   val mfa: MfaAccess
     get() = MfaAccess.valueOf(additionalInformation["mfa"] as? String ?: "none")
@@ -56,13 +56,15 @@ class JsonToMapConverter : AttributeConverter<Map<String, Any>, String?> {
   }
 
   @Suppress("JpaAttributeTypeInspection", "UNCHECKED_CAST")
-  override fun convertToEntityAttribute(customerInfoJSON: String?): Map<String, Any> = try {
-    objectMapper.readValue(customerInfoJSON, Map::class.java)
-  } catch (e: IOException) {
-    @Suppress("JpaAttributeTypeInspection")
-    log.error("JSON reading error", e)
-    emptyMap<String, Any>()
-  } as Map<String, Any>
+  override fun convertToEntityAttribute(customerInfoJSON: String?): Map<String, Any> =
+    if (customerInfoJSON.isNullOrEmpty()) emptyMap()
+    else try {
+      objectMapper.readValue(customerInfoJSON, Map::class.java)
+    } catch (e: IOException) {
+      @Suppress("JpaAttributeTypeInspection")
+      log.error("JSON reading error", e)
+      emptyMap<String, Any>()
+    } as Map<String, Any>
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -72,8 +74,8 @@ class JsonToMapConverter : AttributeConverter<Map<String, Any>, String?> {
 @Converter
 class StringListConverter : AttributeConverter<List<String>, String?> {
   override fun convertToDatabaseColumn(stringList: List<String>): String =
-    stringList.joinToString(",") { it.trim() }
+    stringList.filter { it.isNotEmpty() }.joinToString(",") { it.trim() }
 
   override fun convertToEntityAttribute(string: String?): List<String> =
-    string?.split(",")?.map { it.trim() } ?: emptyList()
+    string?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
 }
