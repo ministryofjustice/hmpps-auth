@@ -31,7 +31,7 @@ class ClientRepositoryTest {
   }
 
   @Test
-  fun testMapping() {
+  fun `test mapping`() {
     val client = repository.findById("deliusnewtech").orElseThrow()
     assertThat(client.id).isEqualTo("deliusnewtech")
     assertThat(client.accessTokenValidity).isEqualTo(3600)
@@ -39,5 +39,16 @@ class ClientRepositoryTest {
     assertThat(client.authorizedGrantTypes).containsExactly("client_credentials")
     assertThat(client.scope).containsExactly("reporting")
     assertThat(client.mfa).isEqualTo(MfaAccess.untrusted)
+  }
+
+  @Test
+  fun `test null values`() {
+    val client = repository.findById("null-test-client").orElseThrow()
+    assertThat(client.id).isEqualTo("null-test-client")
+    assertThat(client.accessTokenValidity).isNull()
+    assertThat(client.authorities).isEmpty()
+    assertThat(client.authorizedGrantTypes).isEmpty()
+    assertThat(client.scope).isEmpty()
+    assertThat(client.mfa).isEqualTo(MfaAccess.none)
   }
 }
