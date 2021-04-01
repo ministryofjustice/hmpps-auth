@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig
+import uk.gov.justice.digital.hmpps.oauth2server.resource.MfaAccess
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -27,5 +28,16 @@ class ClientRepositoryTest {
     assertThat(repository.findByIdStartsWithOrderById("rotation-test-client"))
       .extracting<String> { it.id }
       .contains("rotation-test-client", "rotation-test-client-2")
+  }
+
+  @Test
+  fun testMapping() {
+    val client = repository.findById("deliusnewtech").orElseThrow()
+    assertThat(client.id).isEqualTo("deliusnewtech")
+    assertThat(client.accessTokenValidity).isEqualTo(3600)
+    assertThat(client.authorities).containsExactly("SYSTEM_READ_ONLY")
+    assertThat(client.authorizedGrantTypes).containsExactly("client_credentials")
+    assertThat(client.scope).containsExactly("reporting")
+    assertThat(client.mfa).isEqualTo(MfaAccess.untrusted)
   }
 }

@@ -24,6 +24,9 @@ class ClientService(
       .forEach { clientsDetailsService.updateClientDetails(it) }
   }
 
+  fun listUniqueClients(): List<Client> =
+    clientRepository.findAll().sortedBy { it.id }.distinctBy { baseClientId(it.id) }
+
   fun loadClientWithCopies(clientId: String): ClientDetailsWithCopies {
     val clients = find(clientId).filter { it.id != clientId }
     return ClientDetailsWithCopies(clientsDetailsService.loadClientByClientId(clientId), clients.map { it.id })

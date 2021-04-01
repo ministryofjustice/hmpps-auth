@@ -40,7 +40,12 @@ internal class ClientServiceTest {
     internal fun duplicate() {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
-      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(listOf(Client("some-client-24"), Client("copy-2")))
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
+        listOf(
+          Client("some-client-24"),
+          Client("copy-2")
+        )
+      )
       clientService.findAndUpdateDuplicates("some-client-24")
       verify(clientRepository).findByIdStartsWithOrderById("some-client")
       verify(clientDetailsService).updateClientDetails(
@@ -62,7 +67,12 @@ internal class ClientServiceTest {
   inner class loadClientWithCopies {
     @Test
     internal fun `filters out current client`() {
-      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(listOf(Client("some-client-24"), Client("copy-2")))
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
+        listOf(
+          Client("some-client-24"),
+          Client("copy-2")
+        )
+      )
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
       val client = clientService.loadClientWithCopies("some-client-24")
       assertThat(client.duplicates).containsOnly("copy-2")
@@ -134,6 +144,22 @@ internal class ClientServiceTest {
 
       assertThatThrownBy { clientService.duplicateClient("some-client") }
         .isInstanceOf(DuplicateClientsException::class.java).hasMessage("Duplicate clientId failed for some-client with reason: MaxReached")
+    }
+  }
+
+  @Nested
+  inner class listUniqueClients {
+    @Test
+    internal fun `filters out duplicates of a client`() {
+      val aClient = Client("a-client")
+      val duplicateClient = Client("duplicate")
+      whenever(clientRepository.findAll()).thenReturn(
+        listOf(
+          aClient, Client("duplicate-2"), duplicateClient, Client("duplicate-59")
+        )
+      )
+      val clients = clientService.listUniqueClients()
+      assertThat(clients).containsOnly(aClient, duplicateClient)
     }
   }
 
