@@ -196,8 +196,9 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `I can duplicate a client`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client-2")
+    goTo(clientSummaryPage).editClient("rotation-test-client")
     clientMaintenancePage.isAtPage()
+      .editClient("rotation-test-client-2")
       .duplicate()
 
     duplicateClientSuccessPage.isAtPage()
@@ -213,15 +214,17 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `I receive error if I try to have more than 3 of a client`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client-2")
+    goTo(clientSummaryPage).editClient("rotation-test-client")
     clientMaintenancePage.isAtPage()
+      .editClient("rotation-test-client-2")
       .duplicate()
 
     duplicateClientSuccessPage.isAtPage()
       .continueToClientUiPage()
 
-    goTo(clientSummaryPage).editClient("rotation-test-client-3")
+    goTo(clientSummaryPage).editClient("rotation-test-client")
     clientMaintenancePage.isAtPage()
+      .editClient("rotation-test-client-3")
       .duplicate()
 
     clientMaintenancePageWithError
