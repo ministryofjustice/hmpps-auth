@@ -28,8 +28,8 @@ class ClientService(
     clientRepository.findAll().sortedBy { it.id }.distinctBy { baseClientId(it.id) }
 
   fun loadClientWithCopies(clientId: String): ClientDetailsWithCopies {
-    val clients = find(clientId).filter { it.id != clientId }
-    return ClientDetailsWithCopies(clientsDetailsService.loadClientByClientId(clientId), clients.map { it.id })
+    val clients = find(clientId)
+    return ClientDetailsWithCopies(clientsDetailsService.loadClientByClientId(clientId), clients)
   }
 
   private fun find(clientId: String): List<Client> {
@@ -76,7 +76,7 @@ class ClientService(
   private fun clientNumber(clientId: String): Int = clientId.substringAfterLast("-").toIntOrNull() ?: 0
 }
 
-data class ClientDetailsWithCopies(val clientDetails: ClientDetails, val duplicates: List<String>)
+data class ClientDetailsWithCopies(val clientDetails: ClientDetails, val duplicates: List<Client>)
 
 open class DuplicateClientsException(clientId: String, errorCode: String) :
   Exception("Duplicate clientId failed for $clientId with reason: $errorCode")

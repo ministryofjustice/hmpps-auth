@@ -66,7 +66,7 @@ open class AbstractAuthSpecification : FluentTest() {
     return state
   }
 
-  fun getAccessToken(authCode: String, clientId: String): WebTestClient.BodyContentSpec {
+  fun getAccessToken(authCode: String, clientId: String = "elite2apiclient"): WebTestClient.BodyContentSpec {
     val auth = Base64.getEncoder().encodeToString("$clientId:clientsecret".toByteArray())
     return webTestClient
       .post().uri("/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=${RemoteClientMockServer.clientBaseUrl}")

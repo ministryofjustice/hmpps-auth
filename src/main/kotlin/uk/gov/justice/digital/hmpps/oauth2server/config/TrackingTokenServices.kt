@@ -5,17 +5,21 @@ package uk.gov.justice.digital.hmpps.oauth2server.config
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nimbusds.jwt.JWTParser
 import org.slf4j.LoggerFactory
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.oauth2.common.OAuth2AccessToken
 import org.springframework.security.oauth2.provider.OAuth2Authentication
 import org.springframework.security.oauth2.provider.TokenRequest
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestTemplate
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper
 
 open class TrackingTokenServices(
   private val telemetryClient: TelemetryClient,
   private val restTemplate: RestTemplate,
+  private val clientRepository: ClientRepository,
   private val tokenVerificationClientCredentials: TokenVerificationClientCredentials,
   private val tokenVerificationEnabled: Boolean,
 ) : DefaultTokenServices() {
@@ -24,6 +28,7 @@ open class TrackingTokenServices(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
+  @Transactional(transactionManager = "authTransactionManager")
   override fun createAccessToken(authentication: OAuth2Authentication): OAuth2AccessToken {
     val token = super.createAccessToken(authentication)
     val username = retrieveUsernameFromToken(token)
@@ -37,6 +42,10 @@ open class TrackingTokenServices(
       ),
       null
     )
+
+    clientRepository.findByIdOrNull(clientId)?.resetLastAccessed()
+      ?: throw RuntimeException("Unable to find client $clientId")
+
     if (tokenVerificationClientCredentials.clientId != clientId) {
       val jwtId = sendAuthJwtIdToTokenVerification(authentication, token)
       log.info("Created access token for {} and client {} with jwt id of {}", username, clientId, jwtId)

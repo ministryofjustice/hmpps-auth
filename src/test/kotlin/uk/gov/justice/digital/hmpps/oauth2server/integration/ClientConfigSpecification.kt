@@ -7,6 +7,7 @@ import org.fluentlenium.core.domain.FluentList
 import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
+import java.time.LocalDateTime
 
 class ClientConfigSpecification : AbstractAuthSpecification() {
   @Page
@@ -122,7 +123,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     goTo(clientSummaryPage).editClient("rotation-test-client")
     with(clientMaintenancePage) {
       isAtPage()
-      assertThat(el("[data-qa='other-clients']").text()).isEqualTo("Other clients")
+      assertThat(el("[data-qa='other-clients']").text()).isEqualTo("All clients")
       assertThat(el("#clientId").value()).isEqualTo("rotation-test-client")
       editClient("rotation-test-client-2")
       assertThat(el("#clientId").value()).isEqualTo("rotation-test-client-2")
@@ -208,6 +209,18 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     goTo("/ui/clients/rotation-test-client-3/delete")
     clientSummaryPage.isAtPage()
       .checkClientDoesntExist("rotation-test-client-3")
+  }
+
+  @Test
+  fun `Display last accessed`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    with(clientMaintenancePage) {
+      isAtPage()
+      assertThat(el("#rotation-test-client-last-accessed").text()).isEqualTo("2013-01-28T13:23:19")
+      assertThat(LocalDateTime.parse(el("#rotation-test-client-2-last-accessed").text())).isAfter(LocalDateTime.now().minusDays(1))
+    }
   }
 
   @Test

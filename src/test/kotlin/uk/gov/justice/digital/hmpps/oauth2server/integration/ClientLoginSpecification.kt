@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.AzureOIDCExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientMockServer.Companion.clientBaseUrl
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
+import java.time.LocalDateTime
 
 /**
  * Verify clients can login, be redirected back to their system and then logout again.
@@ -30,6 +31,13 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExten
  */
 @ExtendWith(RemoteClientExtension::class)
 class ClientLoginSpecification : AbstractDeliusAuthSpecification() {
+
+  @Page
+  private lateinit var clientSummaryPage: ClientSummaryPage
+
+  @Page
+  private lateinit var clientMaintenancePage: ClientMaintenancePage
+
   @Page
   internal lateinit var selectUserPage: SelectUserPage
 
@@ -111,6 +119,21 @@ class ClientLoginSpecification : AbstractDeliusAuthSpecification() {
       .jsonPath(".user_id").isEqualTo("608955ae-52ed-44cc-884c-011597a77949")
       .jsonPath(".sub").isEqualTo("AUTH_USER")
       .jsonPath(".auth_source").isEqualTo("auth")
+  }
+
+  @Test
+  fun `Sign in updates last accessed`() {
+    val now = LocalDateTime.now()
+    clientSignIn("AUTH_USER")
+      .jsonPath(".user_name").isEqualTo("AUTH_USER")
+
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("elite2apiclient")
+    with(clientMaintenancePage) {
+      isAtPage()
+      assertThat(LocalDateTime.parse(el("#elite2apiclient-last-accessed").text())).isAfterOrEqualTo(now)
+    }
   }
 
   @Test

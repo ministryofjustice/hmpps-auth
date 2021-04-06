@@ -66,7 +66,7 @@ internal class ClientServiceTest {
   @Nested
   inner class loadClientWithCopies {
     @Test
-    internal fun `filters out current client`() {
+    internal fun `returns all clients`() {
       whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
         listOf(
           Client("some-client-24"),
@@ -75,7 +75,7 @@ internal class ClientServiceTest {
       )
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
       val client = clientService.loadClientWithCopies("some-client-24")
-      assertThat(client.duplicates).containsOnly("copy-2")
+      assertThat(client.duplicates).extracting("id").containsOnly("copy-2", "some-client-24")
       verify(clientRepository).findByIdStartsWithOrderById("some-client")
       verify(clientDetailsService).loadClientByClientId("some-client-24")
     }

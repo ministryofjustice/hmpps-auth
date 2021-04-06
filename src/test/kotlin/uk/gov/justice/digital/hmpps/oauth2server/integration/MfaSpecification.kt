@@ -1,17 +1,13 @@
 package uk.gov.justice.digital.hmpps.oauth2server.integration
 
 import com.microsoft.applicationinsights.boot.dependencies.apachecommons.lang3.RandomStringUtils
-import groovy.json.JsonSlurper
 import org.assertj.core.api.Assertions.assertThat
 import org.fluentlenium.core.annotation.Page
 import org.fluentlenium.core.annotation.PageUrl
 import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
 import org.springframework.util.MultiValueMap
-import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientMockServer.Companion.clientBaseUrl
 
@@ -523,9 +519,9 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     val authCode = splitQuery(url)["code"]?.first()
     assertThat(authCode).isNotNull
 
-    val response = getAccessToken(authCode!!)
-    assertThat(response["user_name"]).isEqualTo("AUTH_MFA_PREF_EMAIL4")
-    assertThat(response["auth_source"]).isEqualTo("auth")
+    getAccessToken(authCode!!)
+      .jsonPath(".user_name").isEqualTo("AUTH_MFA_PREF_EMAIL4")
+      .jsonPath(".auth_source").isEqualTo("auth")
   }
 
   @Test
@@ -545,9 +541,9 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     val authCode = splitQuery(url)["code"]?.first()
     assertThat(authCode).isNotNull
 
-    val response = getAccessToken(authCode!!)
-    assertThat(response["user_name"]).isEqualTo("AUTH_MFA_PREF_TEXT4")
-    assertThat(response["auth_source"]).isEqualTo("auth")
+    getAccessToken(authCode!!)
+      .jsonPath(".user_name").isEqualTo("AUTH_MFA_PREF_TEXT4")
+      .jsonPath(".auth_source").isEqualTo("auth")
   }
 
   private fun splitQuery(url: String): MultiValueMap<String, String> {
@@ -571,26 +567,9 @@ class MfaSpecification : AbstractDeliusAuthSpecification() {
     val authCode = splitQuery(url)["code"]?.first()
     assertThat(authCode).isNotNull
 
-    val response = getAccessToken(authCode!!)
-    assertThat(response["user_name"]).isEqualTo("AUTH_MFA_PREF_2ND_EMAIL4")
-    assertThat(response["auth_source"]).isEqualTo("auth")
-  }
-
-  private fun getAccessToken(authCode: String): Map<String, String> {
-
-    val headers = HttpHeaders()
-    headers.set("Authorization", listOf("Basic ZWxpdGUyYXBpY2xpZW50OmNsaWVudHNlY3JldA=="))
-
-    val entity = HttpEntity("", headers)
-
-    val response = RestTemplate().postForEntity(
-      "$baseUrl/oauth/token?grant_type=authorization_code&code=$authCode&redirect_uri=$clientBaseUrl",
-      entity,
-      String::class.java
-    ).body
-
-    @Suppress("UNCHECKED_CAST")
-    return JsonSlurper().parseText(response) as Map<String, String>
+    getAccessToken(authCode!!)
+      .jsonPath(".user_name").isEqualTo("AUTH_MFA_PREF_2ND_EMAIL4")
+      .jsonPath(".auth_source").isEqualTo("auth")
   }
 }
 

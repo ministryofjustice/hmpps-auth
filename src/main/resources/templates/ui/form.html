@@ -8,19 +8,19 @@
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
-<div th:if="${param.error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
-     data-module="govuk-error-summary">
-  <h2 class="govuk-error-summary__title" id="error-summary">
-    There is a problem
-  </h2>
-  <div class="govuk-error-summary__body" id="error-detail">
-    <ul class="govuk-list govuk-error-summary__list">
-      <li>
-        <p th:text="#{${'client.maxDuplicated'}}">Max duplicate clients message</p>
-      </li>
-    </ul>
+  <div th:if="${param.error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
+       data-module="govuk-error-summary">
+    <h2 class="govuk-error-summary__title" id="error-summary">
+      There is a problem
+    </h2>
+    <div class="govuk-error-summary__body" id="error-detail">
+      <ul class="govuk-list govuk-error-summary__list">
+        <li>
+          <p th:text="#{${'client.maxDuplicated'}}">Max duplicate clients message</p>
+        </li>
+      </ul>
+    </div>
   </div>
-</div>
 
   <h1 th:unless="${param.client}" class="govuk-heading-l">Add client</h1>
   <h1 th:if="${param.client}" class="govuk-heading-l">Edit client '<span th:text="${param.client[0]}"></span>'</h1>
@@ -32,13 +32,26 @@
 
     <div class="govuk-form-group">
       <div class="govuk-form-group" th:if="${param.client}">
-        <h2 class="govuk-heading-m" data-qa="other-clients" th:unless="${#lists.isEmpty(clients)}">Other clients</h2>
-        <ul class="govuk-list" th:each="client: ${clients}">
-          <li>
-            <a th:id="'edit-' + ${client}" th:text="${client}" class="govuk-link"
-               th:href="@{/ui/clients/form?client=__${client}__}">Client ID</a>
-          </li>
-        </ul>
+        <h2 class="govuk-heading-m" data-qa="other-clients" th:unless="${#lists.isEmpty(clients)}">All clients</h2>
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Client ID</th>
+            <th scope="col" class="govuk-table__header">Last accessed</th>
+          </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+          <tr class="govuk-table__row" th:each="client: ${clients}">
+            <td class="govuk-table__cell">
+              <a th:id="'edit-' + ${client.id}" th:text="${client.id}" class="govuk-link"
+                 th:href="@{/ui/clients/form?client=__${client.id}__}">Client ID</a>
+            </td>
+            <td class="govuk-table__cell" th:text="${client.lastAccessed}" th:id="${client.id + '-last-accessed'}">
+              a date
+            </td>
+          </tr>
+          </tbody>
+        </table>
         <h2 class="govuk-heading-m">Client details</h2>
       </div>
       <div class="govuk-form-group" th:unless="${param.client}">
@@ -46,7 +59,7 @@
         <input class="govuk-input" id="clientId" type="text" name="clientId" th:value="${clientDetails.clientId}"/>
       </div>
       <div class="govuk-form-group">
-        <label class="govuk-label" for="clientSecret">Client Secret</label>
+        <label class="govuk-label" for="clientSecret">Client secret</label>
         <input class="govuk-input" id="clientSecret" type="password" name="clientSecret" readonly="readonly"
                onfocus="this.removeAttribute('readonly');"/>
       </div>
@@ -199,7 +212,7 @@
   </form>
 
   <form th:action="@{/ui/clients/duplicate}" method="post" th:if="${param.client}">
-    <input type="hidden"  id="clientIdDuplicate" name="clientIdDuplicate" th:value="${clientDetails.clientId}"/>
+    <input type="hidden" id="clientIdDuplicate" name="clientIdDuplicate" th:value="${clientDetails.clientId}"/>
     <input type="submit" class="govuk-button" name="duplicate-client" value="Duplicate">
   </form>
 
