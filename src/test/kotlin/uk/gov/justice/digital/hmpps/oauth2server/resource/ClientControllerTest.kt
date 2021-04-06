@@ -18,12 +18,15 @@ import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.provider.ClientAlreadyExistsException
+import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.NoSuchClientException
+import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.ui.ExtendedModelMap
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ClientsController.AuthClientDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
+import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDetailsWithCopies
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
 
@@ -40,11 +43,25 @@ class ClientControllerTest {
   @Nested
   inner class EditFormRequest {
     @Test
-    fun `show edit form request view`() {
+    fun `show edit form new client`() {
       val model = ExtendedModelMap()
       val view = controller.showEditForm(null, model)
 
       assertThat(view).isEqualTo("ui/form")
+      assertThat(model["clients"] as List<*>).isEmpty()
+      assertThat(model["clientDetails"] as ClientDetails).isNotNull
+    }
+    @Test
+    fun `show edit form existing client`() {
+      val model = ExtendedModelMap()
+      whenever(clientService.loadClientWithCopies(anyString())).thenReturn(
+        ClientDetailsWithCopies(BaseClientDetails(), listOf("client-1"))
+      )
+      val view = controller.showEditForm("client-id", model)
+
+      assertThat(view).isEqualTo("ui/form")
+      assertThat(model["clients"] as List<*>).containsOnly("client-1")
+      assertThat(model["clientDetails"] as ClientDetails).isNotNull
     }
   }
 

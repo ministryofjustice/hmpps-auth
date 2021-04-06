@@ -108,10 +108,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       assertThat(el("#registeredRedirectUri").value()).isEqualTo("http://a_url:3003")
       assertThat(el("#accessTokenValiditySeconds").value()).isEqualTo("1234")
       assertThat(el("#scopes").value()).isEqualTo("read,bob")
-    }
-    goTo(clientSummaryPage).editClient("rotation-test-client-2")
-    with(clientMaintenancePage) {
-      isAtPage()
+      editClient("rotation-test-client-2")
       assertThat(el("#registeredRedirectUri").value()).isEqualTo("http://a_url:3003")
       assertThat(el("#accessTokenValiditySeconds").value()).isEqualTo("1234")
       assertThat(el("#scopes").value()).isEqualTo("read,bob")
@@ -119,11 +116,28 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `I can navigate between duplicate clients`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    with(clientMaintenancePage) {
+      isAtPage()
+      assertThat(el("[data-qa='other-clients']").text()).isEqualTo("Other clients")
+      assertThat(el("#clientId").value()).isEqualTo("rotation-test-client")
+      editClient("rotation-test-client-2")
+      assertThat(el("#clientId").value()).isEqualTo("rotation-test-client-2")
+      editClient("rotation-test-client")
+      assertThat(el("#clientId").value()).isEqualTo("rotation-test-client")
+    }
+  }
+
+  @Test
   fun `I can edit a client duplicate and new details are copied over to the original`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client-2")
+    goTo(clientSummaryPage).editClient("rotation-test-client")
     clientMaintenancePage.isAtPage()
+      .editClient("rotation-test-client-2")
       .edit("resourceIds", "some_resource")
       .edit("refreshTokenValiditySeconds", "2345")
       .edit("authorities", "ROLE_BOB,ROLE_JOE")
@@ -135,10 +149,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       assertThat(el("#resourceIds").value()).isEqualTo("some_resource")
       assertThat(el("#refreshTokenValiditySeconds").value()).isEqualTo("2345")
       assertThat(el("#authorities").value()).isEqualTo("ROLE_BOB,ROLE_JOE")
-    }
-    goTo(clientSummaryPage).editClient("rotation-test-client-2")
-    with(clientMaintenancePage) {
-      isAtPage()
+      editClient("rotation-test-client-2")
       assertThat(el("#resourceIds").value()).isEqualTo("some_resource")
       assertThat(el("#refreshTokenValiditySeconds").value()).isEqualTo("2345")
       assertThat(el("#authorities").value()).isEqualTo("ROLE_BOB,ROLE_JOE")
@@ -185,8 +196,9 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `I can duplicate a client`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client-2")
+    goTo(clientSummaryPage).editClient("rotation-test-client")
     clientMaintenancePage.isAtPage()
+      .editClient("rotation-test-client-2")
       .duplicate()
 
     duplicateClientSuccessPage.isAtPage()
@@ -202,15 +214,17 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `I receive error if I try to have more than 3 of a client`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client-2")
+    goTo(clientSummaryPage).editClient("rotation-test-client")
     clientMaintenancePage.isAtPage()
+      .editClient("rotation-test-client-2")
       .duplicate()
 
     duplicateClientSuccessPage.isAtPage()
       .continueToClientUiPage()
 
-    goTo(clientSummaryPage).editClient("rotation-test-client-3")
+    goTo(clientSummaryPage).editClient("rotation-test-client")
     clientMaintenancePage.isAtPage()
+      .editClient("rotation-test-client-3")
       .duplicate()
 
     clientMaintenancePageWithError
@@ -276,6 +290,11 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
     assertThat(el("#authorities").value()).isEqualTo("ROLE_REPORTING")
     assertThat(el("#jwtFields").value()).isBlank()
     assertThat(el("#databaseUsernameField").value()).isBlank()
+    return this
+  }
+
+  fun editClient(client: String = "apireporting"): ClientMaintenancePage {
+    el("#edit-$client").click()
     return this
   }
 

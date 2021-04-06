@@ -67,6 +67,8 @@ WHERE client_id != 'omicuser' and client_id != 'service-mfa-test-client' and aut
 UPDATE oauth_client_details
 SET autoapprove = scope;
 
+INSERT INTO oauth_client_details (client_id, authorized_grant_types, client_secret) VALUES ('null-test-client','','');
+
 INSERT INTO oauth_service (code, name, description, authorised_roles, url, enabled, email)
 VALUES ('BOOK_MOVE', 'Book a secure move', 'Book a secure move', 'ROLE_PECS_SUPPLIER,ROLE_PECS_POLICE,', 'https://bookasecuremove.service.justice.gov.uk', 1, 'bookasecuremove@digital.justice.gov.uk'),
        ('CATTOOL', 'Digital Categorisation Service', 'Service to support categorisation of prisoners providing a consistent workflow and risk indicators.', 'ROLE_CREATE_CATEGORISATION,ROLE_APPROVE_CATEGORISATION,ROLE_CATEGORISATION_SECURITY,ROLE_CREATE_RECATEGORISATION', 'https://offender-categorisation.service.justice.gov.uk', 1, 'categorisation@justice.gov.uk'),
@@ -294,6 +296,7 @@ VALUES
 ('ABD94E71-0047-43F1-842B-5BEF234AEB10', 'JPC_USER', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'auth.intel@digital.justice.gov.uk', 'JPC', 'User', 1, 0, 1, 0, '2020-05-01 15:07:34.5466667', '2040-04-26 16:17:28.4953990', '2020-05-18 14:16:21.7349800', 'auth', 'EMAIL');
 
 INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'JPC_USER' and role_code = 'PECS_JPC';
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'JPC_USER' and role_code = 'PECS_MAINTAIN_PRICE';
 
 -- auth user for interventions service provider journeys
 INSERT INTO users (user_id, username, password, email, first_name, last_name, verified, locked, enabled, master, create_datetime, password_expiry, last_logged_in, source, mfa_preference)
