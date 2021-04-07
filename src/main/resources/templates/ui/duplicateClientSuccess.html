@@ -7,14 +7,51 @@
   <title>Duplicate Client Configuration</title>
 </head>
 <body>
-<div layout:fragment="content" class="govuk-grid-column-full">
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
   <div class="govuk-panel govuk-panel--confirmation">
     <h1 class="govuk-panel__title">
-      <span th:text="${clientId}"> client </span>
+      Client has been duplicated
     </h1>
-    <h3> Client secret </h3>
-    <table><tr><td th:utext="${clientSecret}">secret</td></tr></table>
+
   </div>
+
+  <dl class="govuk-summary-list">
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        new clientId
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="clientId" th:text="${clientId}">
+        clientId
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+         new clientSecret
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="clientSecret" th:text="${clientSecret}">
+        clientSecret
+      </dd>
+    </div>
+  </dl>
+  <dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        base64 clientId
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="base64ClientId" th:text="${base64ClientId}">
+        base64 clientId
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        base64 clientSecret
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="base64ClientSecret" th:text="${base64ClientSecret}">
+        base64 clientSecret
+      </dd>
+    </div>
+  </dl>
 
   <a class="govuk-button" th:href="@{/ui}" id="continue">Continue</a>
 </div>

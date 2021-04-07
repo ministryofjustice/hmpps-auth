@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDetailsWithCopies
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
+import java.util.Base64.getEncoder
 
 @Controller
 @RequestMapping("ui/clients")
@@ -92,28 +93,31 @@ class ClientsController(
   fun duplicateClient(
     authentication: Authentication,
     @RequestParam(value = "clientIdDuplicate", required = true) clientId: String,
-  ): ModelAndView {
-
-    return try {
-      val duplicatedClientDetails = clientService.duplicateClient(clientId)
-      val userDetails = authentication.principal as UserPersonDetails
-      val telemetryMap = mapOf("username" to userDetails.username, "clientId" to duplicatedClientDetails.clientId)
-      telemetryClient.trackEvent("AuthClientDetailsDuplicated", telemetryMap, null)
-      ModelAndView("redirect:/ui/clients/duplicate-client-success", "clientId", duplicatedClientDetails.clientId)
-        .addObject("clientSecret", duplicatedClientDetails.clientSecret)
-    } catch (e: DuplicateClientsException) {
-      ModelAndView("redirect:/ui/clients/form", "client", clientId)
-        .addObject("error", "maxDuplicates")
-    }
+  ): ModelAndView = try {
+    val duplicatedClientDetails = clientService.duplicateClient(clientId)
+    val userDetails = authentication.principal as UserPersonDetails
+    val telemetryMap = mapOf("username" to userDetails.username, "clientId" to duplicatedClientDetails.clientId)
+    telemetryClient.trackEvent("AuthClientDetailsDuplicated", telemetryMap, null)
+    ModelAndView("redirect:/ui/clients/duplicate-client-success", "clientId", duplicatedClientDetails.clientId)
+      .addObject("clientSecret", duplicatedClientDetails.clientSecret)
+      .addObject("base64ClientId", getEncoder().encodeToString(duplicatedClientDetails.clientId.toByteArray()))
+      .addObject("base64ClientSecret", getEncoder().encodeToString(duplicatedClientDetails.clientSecret.toByteArray()))
+  } catch (e: DuplicateClientsException) {
+    ModelAndView("redirect:/ui/clients/form", "client", clientId)
+      .addObject("error", "maxDuplicates")
   }
 
   @GetMapping("/duplicate-client-success")
   fun duplicateClientSuccess(
     @RequestParam(value = "clientId", required = true) clientId: String,
     @RequestParam(value = "clientSecret", required = true) clientSecret: String,
+    @RequestParam(value = "base64ClientId", required = true) base64ClientId: String,
+    @RequestParam(value = "base64ClientSecret", required = true) base64ClientSecret: String,
   ): ModelAndView =
     ModelAndView("ui/duplicateClientSuccess", "clientId", clientId)
       .addObject("clientSecret", clientSecret)
+      .addObject("base64ClientId", base64ClientId)
+      .addObject("base64ClientSecret", base64ClientSecret)
 
   // Unfortunately the getAdditionalInformation getter creates an unmodifiable map, so can't be used with web binder.
   // Have to therefore extend and create our own accessor instead.
