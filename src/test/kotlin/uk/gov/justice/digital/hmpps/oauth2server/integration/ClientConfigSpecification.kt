@@ -202,6 +202,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .duplicate()
 
     duplicateClientSuccessPage.isAtPage()
+      .checkClientSuccessDetails()
       .continueToClientUiPage()
 
     // now remove so test is re-runnable
@@ -327,10 +328,18 @@ class ClientMaintenancePageWithError : ClientMaintenancePage("Edit client 'rotat
 @PageUrl("ui/clients/duplicate-client-success")
 open class DuplicateClientSuccessPage : AuthPage<DuplicateClientSuccessPage>(
   "HMPPS Digital Services - Duplicate Client Configuration",
-  "rotation-test-client-3"
+  "Client has been duplicated"
 ) {
   @FindBy(css = "#continue")
   private lateinit var continueButton: FluentWebElement
+
+  fun checkClientSuccessDetails(): DuplicateClientSuccessPage {
+    assertThat(el("[data-qa='clientId']").text()).isEqualTo("rotation-test-client-3")
+    assertThat(el("[data-qa='clientSecret']").text()).isNotBlank
+    assertThat(el("[data-qa='base64ClientId']").text()).isEqualTo("cm90YXRpb24tdGVzdC1jbGllbnQtMw==")
+    assertThat(el("[data-qa='base64ClientSecret']").text()).isNotBlank
+    return this
+  }
 
   fun continueToClientUiPage(): DuplicateClientSuccessPage {
     assertThat(continueButton.text()).isEqualTo("Continue")

@@ -31,11 +31,15 @@ class DuplicateClientControllerTest {
       "client-1", null,
       "read,write", "client_credentials", "ROLE_"
     )
-    client.clientSecret = "SOME-RANDOM_STRING"
+    client.clientSecret = "SOME-RANDOM-STRING"
     whenever(clientService.duplicateClient(anyString())).thenReturn(client)
-    val bob = duplicateClientController.duplicateClient(authentication, "client")
+    val newDuplicateClient = duplicateClientController.duplicateClient(authentication, "client")
 
-    assertThat(bob).isEqualTo(DuplicateClientDetail(clientId = "client-1", ClientSecret = "SOME-RANDOM_STRING"))
+    assertThat(newDuplicateClient).isEqualTo(DuplicateClientDetail(client))
+    assertThat(newDuplicateClient.clientId).isEqualTo("client-1")
+    assertThat(newDuplicateClient.clientSecret).isEqualTo("SOME-RANDOM-STRING")
+    assertThat(newDuplicateClient.base64ClientId).isEqualTo("Y2xpZW50LTE=")
+    assertThat(newDuplicateClient.base64ClientSecret).isEqualTo("U09NRS1SQU5ET00tU1RSSU5H")
   }
 
   @Test
