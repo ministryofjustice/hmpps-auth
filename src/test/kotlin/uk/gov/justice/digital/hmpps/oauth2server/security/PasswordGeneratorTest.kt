@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 internal class PasswordGeneratorTest() {
-  private val passwordGenerator = PasswordGenerator(35)
+  private val passwordGenerator = PasswordGenerator(60)
 
   private val generatedPassword = passwordGenerator.generatePassword()
   private val generatedPasswordCountMap = checkString(generatedPassword)
@@ -30,8 +30,8 @@ internal class PasswordGeneratorTest() {
   }
 
   @Test
-  fun `password should be 35 characters long`() {
-    assertThat(generatedPassword.length).isEqualTo(35)
+  fun `password should be 60 characters long`() {
+    assertThat(generatedPassword.length).isEqualTo(60)
   }
 
   private fun checkString(input: String): Map<String, Int> {

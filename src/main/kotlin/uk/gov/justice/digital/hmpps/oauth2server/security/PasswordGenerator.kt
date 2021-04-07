@@ -6,7 +6,7 @@ import java.security.SecureRandom
 
 @Component
 class PasswordGenerator(
-  @Value("\${application.authentication.generated-password.length:35}") private val passwordLength: Int,
+  @Value("\${application.authentication.generated-password.length:60}") private val passwordLength: Int,
 ) {
 
   private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9') + ('!'..'>')

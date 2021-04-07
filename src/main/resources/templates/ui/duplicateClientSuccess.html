@@ -13,7 +13,7 @@
       <span th:text="${clientId}"> client </span>
     </h1>
     <h3> Client secret </h3>
-    <h3 th:text="${clientSecret}">secret</h3>
+    <table><tr><td th:utext="${clientSecret}">secret</td></tr></table>
   </div>
 
   <a class="govuk-button" th:href="@{/ui}" id="continue">Continue</a>
