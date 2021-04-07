@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 internal class PasswordGeneratorTest() {
-  private val passwordGenerator = PasswordGenerator(35)
+  private val passwordGenerator = PasswordGenerator(80)
 
   private val generatedPassword = passwordGenerator.generatePassword()
   private val generatedPasswordCountMap = checkString(generatedPassword)
@@ -25,13 +25,13 @@ internal class PasswordGeneratorTest() {
   }
 
   @Test
-  fun `password should be generated with at least 4 special characters`() {
-    assertThat(generatedPasswordCountMap["specialCharacterCount"]).isGreaterThan(2)
+  fun `password does not contain any special characters`() {
+    assertThat(generatedPasswordCountMap["specialCharacterCount"]).isEqualTo(0)
   }
 
   @Test
-  fun `password should be 35 characters long`() {
-    assertThat(generatedPassword.length).isEqualTo(35)
+  fun `password should be 80 characters long`() {
+    assertThat(generatedPassword.length).isEqualTo(80)
   }
 
   private fun checkString(input: String): Map<String, Int> {
