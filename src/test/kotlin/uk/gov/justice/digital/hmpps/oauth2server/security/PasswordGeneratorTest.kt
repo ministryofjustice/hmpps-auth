@@ -30,7 +30,7 @@ internal class PasswordGeneratorTest() {
   }
 
   @Test
-  fun `password should be 80 characters long`() {
+  fun `password should be 60 characters long`() {
     assertThat(generatedPassword.length).isEqualTo(60)
   }
 
