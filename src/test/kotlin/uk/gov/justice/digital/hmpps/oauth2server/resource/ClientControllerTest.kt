@@ -23,6 +23,7 @@ import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.ui.ExtendedModelMap
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ClientsController.AuthClientDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
@@ -55,12 +56,12 @@ class ClientControllerTest {
     fun `show edit form existing client`() {
       val model = ExtendedModelMap()
       whenever(clientService.loadClientWithCopies(anyString())).thenReturn(
-        ClientDetailsWithCopies(BaseClientDetails(), listOf("client-1"))
+        ClientDetailsWithCopies(BaseClientDetails(), listOf(Client("client-1")))
       )
       val view = controller.showEditForm("client-id", model)
 
       assertThat(view).isEqualTo("ui/form")
-      assertThat(model["clients"] as List<*>).containsOnly("client-1")
+      assertThat(model["clients"] as List<*>).extracting("id").containsOnly("client-1")
       assertThat(model["clientDetails"] as ClientDetails).isNotNull
     }
   }

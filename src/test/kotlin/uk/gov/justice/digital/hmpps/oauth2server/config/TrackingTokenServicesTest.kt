@@ -29,20 +29,25 @@ import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
+import java.time.LocalDateTime
+import java.util.Optional
 
 internal class TrackingTokenServicesTest {
   private val telemetryClient: TelemetryClient = mock()
   private val tokenStore: TokenStore = mock()
   private val clientDetailsService: JdbcClientDetailsService = mock()
+  private val clientRepository: ClientRepository = mock()
   private val restTemplate: RestTemplate = mock()
   private val tokenVerificationClientCredentials = TokenVerificationClientCredentials()
   private val tokenServices =
-    TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, true)
+    TrackingTokenServices(telemetryClient, restTemplate, clientRepository, tokenVerificationClientCredentials, true)
   private val tokenServicesVerificationDisabled =
-    TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, false)
+    TrackingTokenServices(telemetryClient, restTemplate, clientRepository, tokenVerificationClientCredentials, false)
   private val request = MockHttpServletRequest()
 
   @BeforeEach
@@ -65,6 +70,7 @@ internal class TrackingTokenServicesTest {
   inner class `create access token` {
     @Test
     fun createAccessToken() {
+      whenever(clientRepository.findById(anyString())).thenReturn(Optional.of(Client("id")))
       val userAuthentication = UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")
       tokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_REQUEST, userAuthentication))
       verify(telemetryClient).trackEvent(
@@ -76,6 +82,7 @@ internal class TrackingTokenServicesTest {
 
     @Test
     fun `create access token calls token verification service`() {
+      whenever(clientRepository.findById(anyString())).thenReturn(Optional.of(Client("id")))
       val userAuthentication = UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")
       tokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_REQUEST, userAuthentication))
       verify(restTemplate).postForLocation(
@@ -89,6 +96,7 @@ internal class TrackingTokenServicesTest {
 
     @Test
     fun `create access token ignores token verification service if disabled`() {
+      whenever(clientRepository.findById(anyString())).thenReturn(Optional.of(Client("id")))
       val userAuthentication = UsernamePasswordAuthenticationToken(USER_DETAILS, "credentials")
       tokenServicesVerificationDisabled.createAccessToken(OAuth2Authentication(OAUTH_2_REQUEST, userAuthentication))
       verifyZeroInteractions(restTemplate)
@@ -96,6 +104,7 @@ internal class TrackingTokenServicesTest {
 
     @Test
     fun createAccessToken_ClientOnly() {
+      whenever(clientRepository.findById(anyString())).thenReturn(Optional.of(Client("id")))
       tokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_REQUEST, null))
       verify(telemetryClient).trackEvent(
         "CreateSystemAccessToken",
@@ -105,13 +114,14 @@ internal class TrackingTokenServicesTest {
     }
 
     @Test
-    fun createAccessToken_ClientOnlyProxyUser() {
+    fun `updates last accessed for client`() {
+      val client = Client("id")
+      // reset to past date
+      client.lastAccessed = LocalDateTime.now().minusDays(1)
+      whenever(clientRepository.findById(anyString())).thenReturn(Optional.of(client))
       tokenServices.createAccessToken(OAuth2Authentication(OAUTH_2_SCOPE_REQUEST, null))
-      verify(telemetryClient).trackEvent(
-        "CreateSystemAccessToken",
-        mapOf("username" to "community-api-client", "clientId" to "community-api-client", "clientIpAddress" to "12.21.23.24"),
-        null
-      )
+      // then assert has been updated
+      assertThat(client.lastAccessed).isAfter(LocalDateTime.now().minusMinutes(5))
     }
   }
 

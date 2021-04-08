@@ -38,6 +38,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory
 import org.springframework.web.client.RestTemplate
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserContextApprovalHandler
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaClientNetworkService
 import uk.gov.justice.digital.hmpps.oauth2server.service.MfaClientService
@@ -63,6 +64,7 @@ class OAuth2AuthorizationServerConfig(
   private val tokenVerificationClientCredentials: TokenVerificationClientCredentials,
   private val userContextService: UserContextService,
   private val mfaClientNetworkService: MfaClientNetworkService,
+  private val clientRepository: ClientRepository,
 ) : AuthorizationServerConfigurerAdapter() {
 
   private val privateKeyPair: Resource = ByteArrayResource(Base64.decodeBase64(privateKeyPair))
@@ -159,7 +161,7 @@ class OAuth2AuthorizationServerConfig(
   @Primary
   fun tokenServices(): DefaultTokenServices {
     val tokenServices =
-      TrackingTokenServices(telemetryClient, restTemplate, tokenVerificationClientCredentials, tokenVerificationEnabled)
+      TrackingTokenServices(telemetryClient, restTemplate, clientRepository, tokenVerificationClientCredentials, tokenVerificationEnabled)
     tokenServices.setTokenEnhancer(tokenEnhancerChain())
     tokenServices.setTokenStore(tokenStore())
     tokenServices.setReuseRefreshToken(true)

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import uk.gov.justice.digital.hmpps.oauth2server.resource.MfaAccess
 import java.io.IOException
+import java.time.LocalDateTime
 import javax.persistence.AttributeConverter
 import javax.persistence.Column
 import javax.persistence.Convert
@@ -39,7 +40,14 @@ data class Client(
 
   @Column(name = "access_token_validity")
   val accessTokenValidity: Int? = 0,
+
+  @Column(name = "last_accessed")
+  var lastAccessed: LocalDateTime = LocalDateTime.now()
 ) {
+  fun resetLastAccessed() {
+    lastAccessed = LocalDateTime.now()
+  }
+
   val mfa: MfaAccess
     get() = MfaAccess.valueOf(additionalInformation["mfa"] as? String ?: "none")
 }
