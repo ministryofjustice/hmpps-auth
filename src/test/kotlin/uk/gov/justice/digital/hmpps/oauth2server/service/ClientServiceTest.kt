@@ -43,7 +43,7 @@ internal class ClientServiceTest {
       whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
         listOf(
           Client("some-client-24"),
-          Client("copy-2")
+          Client("some-client-25")
         )
       )
       clientService.findAndUpdateDuplicates("some-client-24")
@@ -70,14 +70,29 @@ internal class ClientServiceTest {
       whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
         listOf(
           Client("some-client-24"),
-          Client("copy-2")
+          Client("some-client-25")
         )
       )
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
       val client = clientService.loadClientWithCopies("some-client-24")
-      assertThat(client.duplicates).extracting("id").containsOnly("copy-2", "some-client-24")
+      assertThat(client.duplicates).extracting("id").containsOnly("some-client-24", "some-client-25")
       verify(clientRepository).findByIdStartsWithOrderById("some-client")
       verify(clientDetailsService).loadClientByClientId("some-client-24")
+    }
+
+    @Test
+    internal fun `hides incorrect duplicates`() {
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
+        listOf(
+          Client("hub-24"),
+          Client("hub-12345"),
+          Client("hub-ui"),
+          Client("hub-ui-2")
+        )
+      )
+      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
+      val client = clientService.loadClientWithCopies("hub-1")
+      assertThat(client.duplicates).extracting("id").containsOnly("hub-24", "hub-12345")
     }
   }
 
@@ -181,7 +196,7 @@ internal class ClientServiceTest {
 
   private fun createBaseClientDetails(authClientDetails: AuthClientDetails): BaseClientDetails {
     val baseClientDetails = BaseClientDetails()
-    baseClientDetails.clientId = "copy-2"
+    baseClientDetails.clientId = "some-client-25"
     with(authClientDetails) {
       baseClientDetails.clientSecret = clientSecret
       baseClientDetails.setScope(scope)
