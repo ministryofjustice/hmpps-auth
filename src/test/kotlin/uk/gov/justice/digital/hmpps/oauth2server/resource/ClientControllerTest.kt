@@ -175,7 +175,9 @@ class ClientControllerTest {
       assertThat(mandv.viewName).isEqualTo("redirect:/ui/clients/duplicate-client-success")
       assertThat(mandv.model).containsOnly(
         entry("clientId", "client-1"),
-        entry("clientSecret", ""),
+        entry("clientSecret", "Some-Secret"),
+        entry("base64ClientId", "Y2xpZW50LTE="),
+        entry("base64ClientSecret", "U29tZS1TZWNyZXQ="),
       )
     }
 
@@ -203,7 +205,7 @@ class ClientControllerTest {
       authClientDetails.clientId = "client-1"
       authClientDetails.setAuthorizedGrantTypes(listOf("client_credentials"))
       authClientDetails.authorities = mutableListOf(GrantedAuthority { "ROLE_CLIENT" })
-      authClientDetails.clientSecret = ""
+      authClientDetails.clientSecret = "Some-Secret"
       return authClientDetails
     }
   }
