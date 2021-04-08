@@ -35,6 +35,7 @@ class ClientService(
   private fun find(clientId: String): List<Client> {
     val searchClientId = baseClientId(clientId)
     return clientRepository.findByIdStartsWithOrderById(searchClientId)
+      .filter { it.id == searchClientId || it.id.substringAfter(searchClientId).matches(clientIdSuffixRegex) }
   }
 
   private fun copyClient(clientId: String, clientDetails: BaseClientDetails): BaseClientDetails {
@@ -71,9 +72,10 @@ class ClientService(
 
     return "$baseClientId-$increment"
   }
-
-  private fun baseClientId(clientId: String): String = clientId.replace(regex = "-[0-9]*$".toRegex(), replacement = "")
+  private fun baseClientId(clientId: String): String = clientId.replace(regex = clientIdSuffixRegex, replacement = "")
   private fun clientNumber(clientId: String): Int = clientId.substringAfterLast("-").toIntOrNull() ?: 0
+
+  private val clientIdSuffixRegex = "-[0-9]*$".toRegex()
 }
 
 data class ClientDetailsWithCopies(val clientDetails: ClientDetails, val duplicates: List<Client>)
