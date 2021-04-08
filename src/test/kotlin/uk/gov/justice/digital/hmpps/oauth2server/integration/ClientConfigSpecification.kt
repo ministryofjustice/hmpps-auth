@@ -20,6 +20,9 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   private lateinit var clientMaintenanceAddPage: ClientMaintenanceAddPage
 
   @Page
+  private lateinit var clientSuccessPage: ClientSuccessPage
+
+  @Page
   private lateinit var duplicateClientSuccessPage: DuplicateClientSuccessPage
 
   @Page
@@ -173,6 +176,8 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .edit("jwtFields", "-name")
       .selectCheckboxOption("mfa-3")
       .save()
+    clientSuccessPage.isAtPage()
+      .continueToClientUiPage()
     clientSummaryPage.isAtPage()
       .checkClientSummary(
         client = "new-client",
@@ -337,6 +342,29 @@ class ClientMaintenanceAddPage : ClientMaintenancePage("Add client", false)
 
 @PageUrl("/ui/clients/form")
 class ClientMaintenancePageWithError : ClientMaintenancePage("Edit client 'rotation-test-client-3'", false)
+
+@PageUrl("ui/clients/client-success")
+open class ClientSuccessPage : AuthPage<ClientSuccessPage>(
+  "HMPPS Digital Services - Client Configuration",
+  "Client has been created"
+) {
+  @FindBy(css = "#continue")
+  private lateinit var continueButton: FluentWebElement
+
+  fun checkClientSuccessDetails(): ClientSuccessPage {
+    assertThat(el("[data-qa='clientId']").text()).isEqualTo("rotation-test-client-3")
+    assertThat(el("[data-qa='clientSecret']").text()).isNotBlank
+    assertThat(el("[data-qa='base64ClientId']").text()).isEqualTo("cm90YXRpb24tdGVzdC1jbGllbnQtMw==")
+    assertThat(el("[data-qa='base64ClientSecret']").text()).isNotBlank
+    return this
+  }
+
+  fun continueToClientUiPage(): ClientSuccessPage {
+    assertThat(continueButton.text()).isEqualTo("Continue")
+    continueButton.click()
+    return this
+  }
+}
 
 @PageUrl("ui/clients/duplicate-client-success")
 open class DuplicateClientSuccessPage : AuthPage<DuplicateClientSuccessPage>(

@@ -59,7 +59,7 @@ class ClientsController(
     authentication: Authentication,
     @ModelAttribute clientDetails: AuthClientDetails,
     @RequestParam(value = "newClient", required = false) newClient: String?,
-  ): String {
+  ): ModelAndView {
     val userDetails = authentication.principal as UserPersonDetails
     val telemetryMap = mapOf("username" to userDetails.username, "clientId" to clientDetails.clientId)
 
@@ -71,12 +71,36 @@ class ClientsController(
       clientsDetailsService.addClientDetails(clientDetails)
       telemetryClient.trackEvent("AuthClientDetailsAdd", telemetryMap, null)
     }
-    if (clientDetails.clientSecret.isNotEmpty()) {
-      clientsDetailsService.updateClientSecret(clientDetails.clientId, clientDetails.clientSecret)
-      telemetryClient.trackEvent("AuthClientSecretUpdated", telemetryMap, null)
+    return when {
+      clientDetails.clientSecret.isNotEmpty() -> {
+        clientsDetailsService.updateClientSecret(clientDetails.clientId, clientDetails.clientSecret)
+        telemetryClient.trackEvent("AuthClientSecretUpdated", telemetryMap, null)
+
+        ModelAndView("redirect:/ui/clients/client-success", "newClient", newClient ?: "false")
+          .addObject("clientId", clientDetails.clientId)
+          .addObject("clientSecret", clientDetails.clientSecret)
+          .addObject("base64ClientId", getEncoder().encodeToString(clientDetails.clientId.toByteArray()))
+          .addObject("base64ClientSecret", getEncoder().encodeToString(clientDetails.clientSecret.toByteArray()))
+      }
+      else -> {
+        ModelAndView("redirect:/ui")
+      }
     }
-    return "redirect:/ui"
   }
+
+  @GetMapping("/client-success")
+  fun clientSuccess(
+    @RequestParam(value = "newClient", required = true) newClient: String,
+    @RequestParam(value = "clientId", required = true) clientId: String,
+    @RequestParam(value = "clientSecret", required = true) clientSecret: String,
+    @RequestParam(value = "base64ClientId", required = true) base64ClientId: String,
+    @RequestParam(value = "base64ClientSecret", required = true) base64ClientSecret: String,
+  ): ModelAndView =
+    ModelAndView("ui/clientSuccess", "newClient", newClient)
+      .addObject("clientId", clientId)
+      .addObject("clientSecret", clientSecret)
+      .addObject("base64ClientId", base64ClientId)
+      .addObject("base64ClientSecret", base64ClientSecret)
 
   @GetMapping("/{clientId}/delete")
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
