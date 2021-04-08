@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head lang="en">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <title>Client Configuration</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <div class="govuk-panel govuk-panel--confirmation">
+    <h1 class="govuk-panel__title"  th:text="${#strings.equals(newClient, 'true')} ? 'Client has been created' : 'Client has been updated'">
+      Client has been created
+    </h1>
+
+  </div>
+
+  <dl class="govuk-summary-list">
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key" th:text="${#strings.equals(newClient, 'true')} ? 'new clientId' : 'clientId'">>
+        clientId
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="clientId" th:text="${clientId}">
+        clientId
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+         new clientSecret
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="clientSecret" th:text="${clientSecret}">
+        clientSecret
+      </dd>
+    </div>
+  </dl>
+  <dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        base64 clientId
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="base64ClientId" th:text="${base64ClientId}">
+        base64 clientId
+      </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        base64 clientSecret
+      </dt>
+      <dd class="govuk-summary-list__value" data-qa="base64ClientSecret" th:text="${base64ClientSecret}">
+        base64 clientSecret
+      </dd>
+    </div>
+  </dl>
+
+  <a class="govuk-button" th:href="@{/ui}" id="continue">Continue</a>
+</div>
+</div>
+</body>
+</html>

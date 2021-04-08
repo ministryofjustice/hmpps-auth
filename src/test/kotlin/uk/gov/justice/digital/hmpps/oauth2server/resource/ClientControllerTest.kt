@@ -73,7 +73,7 @@ class ClientControllerTest {
     fun `edit client request - add client`() {
       val authClientDetails: AuthClientDetails = createAuthClientDetails()
       authClientDetails.clientSecret = "bob"
-      val view = controller.editClient(authentication, authClientDetails, "true")
+      val modelAndView = controller.editClient(authentication, authClientDetails, "true")
       verify(clientDetailsService).addClientDetails(authClientDetails)
       verify(telemetryClient).trackEvent(
         "AuthClientDetailsAdd",
@@ -86,7 +86,14 @@ class ClientControllerTest {
         null
       )
 
-      assertThat(view).isEqualTo("redirect:/ui")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui/clients/client-success")
+      assertThat(modelAndView.model).containsOnly(
+        entry("newClient", "true"),
+        entry("clientId", "client"),
+        entry("clientSecret", "bob"),
+        entry("base64ClientId", "Y2xpZW50",),
+        entry("base64ClientSecret", "Ym9i"),
+      )
     }
 
     @Test
@@ -104,7 +111,7 @@ class ClientControllerTest {
     @Test
     fun `edit client request - update existing client`() {
       val authClientDetails: AuthClientDetails = createAuthClientDetails()
-      val view = controller.editClient(authentication, authClientDetails, null)
+      val modelAndView = controller.editClient(authentication, authClientDetails, null)
       verify(clientDetailsService).updateClientDetails(authClientDetails)
       verify(telemetryClient).trackEvent(
         "AuthClientDetailsUpdate",
@@ -116,7 +123,7 @@ class ClientControllerTest {
         mapOf("username" to "user", "clientId" to "client"),
         null
       )
-      assertThat(view).isEqualTo("redirect:/ui")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui")
     }
 
     @Test
@@ -134,7 +141,7 @@ class ClientControllerTest {
     fun `edit client request - update existing client secret`() {
       val authClientDetails: AuthClientDetails = createAuthClientDetails()
       authClientDetails.clientSecret = "bob"
-      val view = controller.editClient(authentication, authClientDetails, null)
+      val modelAndView = controller.editClient(authentication, authClientDetails, null)
       verify(clientDetailsService).updateClientDetails(authClientDetails)
       verify(telemetryClient).trackEvent(
         "AuthClientDetailsUpdate",
@@ -147,7 +154,14 @@ class ClientControllerTest {
         null
       )
       verify(clientService).findAndUpdateDuplicates("client")
-      assertThat(view).isEqualTo("redirect:/ui")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui/clients/client-success")
+      assertThat(modelAndView.model).containsOnly(
+        entry("newClient", "false"),
+        entry("clientId", "client"),
+        entry("clientSecret", "bob"),
+        entry("base64ClientId", "Y2xpZW50",),
+        entry("base64ClientSecret", "Ym9i"),
+      )
     }
 
     private fun createAuthClientDetails(): AuthClientDetails {
