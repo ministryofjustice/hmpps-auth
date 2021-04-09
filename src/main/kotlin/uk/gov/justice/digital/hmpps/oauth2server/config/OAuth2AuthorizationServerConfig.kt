@@ -108,6 +108,7 @@ class OAuth2AuthorizationServerConfig(
   }
 
   override fun configure(oauthServer: AuthorizationServerSecurityConfigurer) {
+    oauthServer.addAuthenticationProvider(LoggingDaoAuthenticationProvider(telemetryClient, jdbcClientDetailsService(), passwordEncoder))
     oauthServer.tokenKeyAccess("permitAll()")
       .checkTokenAccess("isAuthenticated()")
   }
