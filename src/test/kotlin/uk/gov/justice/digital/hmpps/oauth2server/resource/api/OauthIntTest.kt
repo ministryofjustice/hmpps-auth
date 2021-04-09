@@ -1,11 +1,14 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
 import com.auth0.jwt.JWT
+import com.microsoft.applicationinsights.TelemetryClient
+import com.nhaarman.mockitokotlin2.verify
 import net.minidev.json.JSONArray
 import org.assertj.core.api.Assertions.assertThat
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.oauth2server.resource.DeliusExtension
@@ -15,6 +18,8 @@ import java.util.Base64
 @Suppress("DEPRECATION")
 @ExtendWith(DeliusExtension::class)
 class OauthIntTest : IntegrationTest() {
+  @MockBean
+  private lateinit var telemetryClient: TelemetryClient
 
   @Test
   fun `Existing auth code stored in database can be redeemed for access token`() {
@@ -47,9 +52,25 @@ class OauthIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it).containsKey("expires_in")
-        assertThat(it["expires_in"]as Int).isLessThan(3600)
+        assertThat(it["expires_in"] as Int).isLessThan(3600)
         assertThat(it).doesNotContainKey("refreshToken")
       }
+  }
+
+  @Test
+  fun `Client Credentials incorrect login creates telemetry event`() {
+    val encodedClientAndSecret = convertToBase64("delisnewtech", "clientsecret")
+    webTestClient
+      .post().uri("/oauth/token?grant_type=client_credentials")
+      .header("Authorization", "Basic $encodedClientAndSecret")
+      .exchange()
+      .expectStatus().isUnauthorized
+
+    verify(telemetryClient).trackEvent(
+      "CreateAccessTokenFailure",
+      mapOf("clientId" to "delisnewtech", "clientIpAddress" to "127.0.0.1"),
+      null
+    )
   }
 
   @Test
@@ -98,7 +119,7 @@ class OauthIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it).containsKey("expires_in")
-        assertThat(it["expires_in"]as Int).isLessThan(3600)
+        assertThat(it["expires_in"] as Int).isLessThan(3600)
         assertThat(it).doesNotContainKey("refreshToken")
         assertThat(it["auth_source"]).isEqualTo("none")
       }
@@ -116,7 +137,7 @@ class OauthIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it).containsKey("expires_in")
-        assertThat(it["expires_in"]as Int).isLessThan(3600)
+        assertThat(it["expires_in"] as Int).isLessThan(3600)
         assertThat(it).doesNotContainKey("refreshToken")
         assertThat(it["auth_source"]).isEqualTo("none")
       }
@@ -134,7 +155,7 @@ class OauthIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it).containsKey("expires_in")
-        assertThat(it["expires_in"]as Int).isLessThan(3600)
+        assertThat(it["expires_in"] as Int).isLessThan(3600)
         assertThat(it).doesNotContainKey("refreshToken")
         assertThat(it["auth_source"]).isEqualTo("delius")
       }
@@ -152,7 +173,7 @@ class OauthIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it).containsKey("expires_in")
-        assertThat(it["expires_in"]as Int).isLessThan(3600)
+        assertThat(it["expires_in"] as Int).isLessThan(3600)
         assertThat(it).doesNotContainKey("refreshToken")
         assertThat(it["auth_source"]).isEqualTo("none")
       }
@@ -191,7 +212,7 @@ class OauthIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it).containsKey("expires_in")
-        assertThat(it["expires_in"]as Int).isLessThan(28800)
+        assertThat(it["expires_in"] as Int).isLessThan(28800)
         assertThat(it["refresh_token"]).isNotNull
         assertThat(it["auth_source"]).isEqualTo("nomis")
         assertThat(it["sub"]).isEqualTo("ITAG_USER")
@@ -210,7 +231,7 @@ class OauthIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it).containsKey("expires_in")
-        assertThat(it["expires_in"]as Int).isLessThan(28800)
+        assertThat(it["expires_in"] as Int).isLessThan(28800)
         assertThat(it["refresh_token"]).isNotNull
         assertThat(it["auth_source"]).isEqualTo("auth")
         assertThat(it["sub"]).isEqualTo("AUTH_USER")
@@ -229,7 +250,7 @@ class OauthIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it).containsKey("expires_in")
-        assertThat(it["expires_in"]as Int).isLessThan(28800)
+        assertThat(it["expires_in"] as Int).isLessThan(28800)
         assertThat(it["refresh_token"]).isNotNull
         assertThat(it["auth_source"]).isEqualTo("delius")
         assertThat(it["sub"]).isEqualTo("DELIUS")
@@ -490,7 +511,11 @@ class OauthIntTest : IntegrationTest() {
     return JSONObject(result.responseBody).get("access_token") as String
   }
 
-  private fun getAccessAndRefreshTokens(encodedClientAndSecret: String, username: String, password: String): Pair<String, String> {
+  private fun getAccessAndRefreshTokens(
+    encodedClientAndSecret: String,
+    username: String,
+    password: String
+  ): Pair<String, String> {
     val result =
       webTestClient
         .post().uri("/oauth/token?grant_type=password&username=$username&password=$password")
@@ -500,7 +525,7 @@ class OauthIntTest : IntegrationTest() {
         .expectBody<String>().returnResult()
 
     val accessToken = JSONObject(result.responseBody).get("access_token") as String
-    val refreshToken = JSONObject(result.responseBody).get("refresh_token")as String
+    val refreshToken = JSONObject(result.responseBody).get("refresh_token") as String
     return Pair(accessToken, refreshToken)
   }
 }
