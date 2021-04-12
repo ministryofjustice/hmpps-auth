@@ -28,7 +28,8 @@ class UserControllerIntTest : IntegrationTest() {
             "staffId" to 1,
             "activeCaseLoadId" to "MDI",
             "authSource" to "nomis",
-            "userId" to "1"
+            "userId" to "1",
+            "uuid" to "a04c70ee-51c9-4852-8d0d-130da5c85c42",
           )
         )
       }
@@ -50,6 +51,7 @@ class UserControllerIntTest : IntegrationTest() {
             "name" to "Auth Only",
             "authSource" to "auth",
             "userId" to "608955ae-52ed-44cc-884c-011597a77949",
+            "uuid" to "608955ae-52ed-44cc-884c-011597a77949",
           )
         )
       }
@@ -64,7 +66,7 @@ class UserControllerIntTest : IntegrationTest() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
-        assertThat(it).containsExactlyInAnyOrderEntriesOf(
+        assertThat(it).containsAllEntriesOf(
           mapOf(
             "username" to "DELIUS",
             "active" to true,
@@ -85,7 +87,7 @@ class UserControllerIntTest : IntegrationTest() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
-        assertThat(it).containsExactlyInAnyOrderEntriesOf(
+        assertThat(it).containsAllEntriesOf(
           mapOf(
             "username" to "RO_USER",
             "active" to true,
@@ -97,6 +99,18 @@ class UserControllerIntTest : IntegrationTest() {
           )
         )
       }
+  }
+
+  @Test
+  fun `User Me endpoint returns principal user data`() {
+    webTestClient
+      .get().uri("/api/user/ITAG_USER")
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("user_data.json".readFile())
   }
 
   @Test
@@ -115,6 +129,7 @@ class UserControllerIntTest : IntegrationTest() {
             "name" to "Auth Only",
             "authSource" to "auth",
             "userId" to "608955ae-52ed-44cc-884c-011597a77949",
+            "uuid" to "608955ae-52ed-44cc-884c-011597a77949",
           )
         )
       }
@@ -129,7 +144,7 @@ class UserControllerIntTest : IntegrationTest() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
-        assertThat(it).containsExactlyInAnyOrderEntriesOf(
+        assertThat(it).containsAllEntriesOf(
           mapOf(
             "username" to "DELIUS",
             "active" to true,
@@ -238,7 +253,12 @@ class UserControllerIntTest : IntegrationTest() {
   fun `User Me Roles endpoint returns principal user data`() {
     webTestClient
       .get().uri("/api/user/me/roles")
-      .headers(setAuthorisation("ITAG_USER", listOf("ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS", "ROLE_OAUTH_ADMIN")))
+      .headers(
+        setAuthorisation(
+          "ITAG_USER",
+          listOf("ROLE_MAINTAIN_ACCESS_ROLES", "ROLE_MAINTAIN_OAUTH_USERS", "ROLE_OAUTH_ADMIN")
+        )
+      )
       .exchange()
       .expectStatus().isOk
       .expectBody()

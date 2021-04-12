@@ -30,7 +30,7 @@ class AuthUserIntTest : IntegrationTest() {
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
-        assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
+        assertThat(it.filter { it.key != "userId" }).containsAllEntriesOf(
           mapOf("username" to user.email.toUpperCase(), "active" to true, "name" to "Bob Smith", "authSource" to "auth")
         )
       }

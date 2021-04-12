@@ -3,10 +3,12 @@ package uk.gov.justice.digital.hmpps.oauth2server.model
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.Companion.fromNullableString
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
+import java.util.UUID
 
 @Suppress("DEPRECATION")
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -59,7 +61,7 @@ data class UserDetail(
   @Deprecated("")
   @ApiModelProperty(
     value = "Current Active Caseload",
-    notes = "Deprecated, retrieve from elite2 API rather than auth",
+    notes = "Deprecated, retrieve from prison API rather than auth",
     example = "MDI",
     position = 6
   )
@@ -74,6 +76,14 @@ data class UserDetail(
   )
   var userId: String? = null
 
+  @ApiModelProperty(
+    value = "Unique Id",
+    notes = "Universally unique identifier for user, generated and stored in auth database for all users",
+    example = "5105a589-75b3-4ca0-9433-b96228c1c8f3",
+    position = 8
+  )
+  var uuid: UUID? = null
+
   constructor(
     username: String,
     active: Boolean?,
@@ -81,7 +91,8 @@ data class UserDetail(
     authSource: AuthSource?,
     staffId: Long?,
     activeCaseLoadId: String?,
-    userId: String?
+    userId: String?,
+    uuid: UUID?,
   ) : this(username) {
     this.active = active
     this.name = name
@@ -89,16 +100,17 @@ data class UserDetail(
     this.staffId = staffId
     this.activeCaseLoadId = activeCaseLoadId
     this.userId = userId
+    this.uuid = uuid
   }
 
   companion object {
-    fun fromPerson(u: UserPersonDetails): UserDetail {
+    fun fromPerson(upd: UserPersonDetails, u: User): UserDetail {
 
-      val authSource = fromNullableString(u.authSource)
+      val authSource = fromNullableString(upd.authSource)
       val staffId: Long?
       val activeCaseLoadId: String?
       if (authSource === AuthSource.nomis) {
-        val staffUserAccount = u as NomisUserPersonDetails
+        val staffUserAccount = upd as NomisUserPersonDetails
         staffId = staffUserAccount.staff.staffId
         activeCaseLoadId = staffUserAccount.activeCaseLoadId
       } else {
@@ -106,13 +118,14 @@ data class UserDetail(
         activeCaseLoadId = null
       }
       return UserDetail(
-        username = u.username,
-        active = u.isEnabled,
-        name = u.name,
+        username = upd.username,
+        active = upd.isEnabled,
+        name = upd.name,
         authSource = authSource,
-        userId = u.userId,
+        userId = upd.userId,
         staffId = staffId,
-        activeCaseLoadId = activeCaseLoadId
+        activeCaseLoadId = activeCaseLoadId,
+        uuid = u.id,
       )
     }
 

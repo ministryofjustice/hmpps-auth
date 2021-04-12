@@ -48,7 +48,7 @@ class BulkAmendUserEmailIntTest : IntegrationTest() {
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
-        assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
+        assertThat(it).containsAllEntriesOf(
           mapOf("username" to "AUTH_BULK_AMEND_EMAIL", "active" to true, "name" to "User Change Test", "authSource" to "auth")
         )
       }
@@ -62,7 +62,7 @@ class BulkAmendUserEmailIntTest : IntegrationTest() {
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
-        assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
+        assertThat(it).containsAllEntriesOf(
           mapOf("username" to "AUTH_BULK_AMEND_EMAIL2@DIGITAL.JUSTICE.GOV.UK", "active" to true, "name" to "User Change Test", "authSource" to "auth")
         )
       }
