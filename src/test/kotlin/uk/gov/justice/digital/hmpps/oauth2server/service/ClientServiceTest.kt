@@ -4,6 +4,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.service
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.check
+import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
@@ -12,7 +13,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
@@ -64,6 +67,28 @@ internal class ClientServiceTest {
   }
 
   @Nested
+  inner class generateNewClientSecret {
+    @Test
+    internal fun `generate new secret`() {
+      whenever(passwordGenerator.generatePassword()).thenReturn("Some-Secret")
+      clientService.generateClientSecret("client")
+      verify(clientDetailsService).updateClientSecret("client", "Some-Secret")
+    }
+
+    @Test
+    internal fun `no such client return when client not found`() {
+      whenever(passwordGenerator.generatePassword()).thenReturn("Some-Secret")
+      val exception = NoSuchClientException("No client found with id = ")
+      doThrow(exception).whenever(clientDetailsService).updateClientSecret(
+        anyString(),
+        anyString()
+      )
+
+      assertThatThrownBy { clientService.generateClientSecret("not-client") }.isEqualTo(exception)
+    }
+  }
+
+  @Nested
   inner class loadClientWithCopies {
     @Test
     internal fun `returns all clients`() {
@@ -109,7 +134,8 @@ internal class ClientServiceTest {
 
       verify(clientDetailsService).addClientDetails(
         check {
-          assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret").isEqualTo(createBaseClientDetails(authClientDetails))
+          assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret")
+            .isEqualTo(createBaseClientDetails(authClientDetails))
           assertThat(it.clientId).isEqualTo("some-client-1")
           assertThat(it.clientSecret).isEqualTo("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
         }
@@ -120,31 +146,44 @@ internal class ClientServiceTest {
     internal fun `duplicate client incrementing number correctly`() {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
-      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(listOf(Client("some-client"), Client("some-client-1")))
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
+        listOf(
+          Client("some-client"),
+          Client("some-client-1")
+        )
+      )
       whenever(passwordGenerator.generatePassword()).thenReturn("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
 
       clientService.duplicateClient("some-client-1")
 
       verify(clientDetailsService).addClientDetails(
         check {
-          assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret").isEqualTo(createBaseClientDetails(authClientDetails))
+          assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret")
+            .isEqualTo(createBaseClientDetails(authClientDetails))
           assertThat(it.clientId).isEqualTo("some-client-2")
           assertThat(it.clientSecret).isEqualTo("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
         }
       )
     }
+
     @Test
     internal fun `duplicate client incrementing number correctly when original client duplicated`() {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
-      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(listOf(Client("some-client"), Client("some-client-4")))
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
+        listOf(
+          Client("some-client"),
+          Client("some-client-4")
+        )
+      )
       whenever(passwordGenerator.generatePassword()).thenReturn("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
 
       clientService.duplicateClient("some-client")
 
       verify(clientDetailsService).addClientDetails(
         check {
-          assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret").isEqualTo(createBaseClientDetails(authClientDetails))
+          assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret")
+            .isEqualTo(createBaseClientDetails(authClientDetails))
           assertThat(it.clientId).isEqualTo("some-client-5")
           assertThat(it.clientSecret).isEqualTo("O)Xbqg6F–Q7211cj&jUL)oC=E;s9^pFZ:3#")
         }
@@ -155,10 +194,17 @@ internal class ClientServiceTest {
     internal fun `will throw error if 3 clients already exist for base client id`() {
       val authClientDetails = createAuthClientDetails()
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
-      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(listOf(Client("some-client"), Client("some-client-1"), Client("some-client-2")))
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
+        listOf(
+          Client("some-client"),
+          Client("some-client-1"),
+          Client("some-client-2")
+        )
+      )
 
       assertThatThrownBy { clientService.duplicateClient("some-client") }
-        .isInstanceOf(DuplicateClientsException::class.java).hasMessage("Duplicate clientId failed for some-client with reason: MaxReached")
+        .isInstanceOf(DuplicateClientsException::class.java)
+        .hasMessage("Duplicate clientId failed for some-client with reason: MaxReached")
     }
   }
 
