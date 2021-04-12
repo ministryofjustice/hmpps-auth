@@ -48,7 +48,7 @@ class BulkUserLoadIntTest : IntegrationTest() {
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
-        assertThat(it.filter { it.key != "userId" }).containsExactlyInAnyOrderEntriesOf(
+        assertThat(it).containsAllEntriesOf(
           mapOf(
             "username" to "LOAD_SUCCESS@DIGITAL.JUSTICE.GOV.UK",
             "active" to true,

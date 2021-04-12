@@ -54,8 +54,11 @@ class UserController(private val userService: UserService) {
     ]
   )
   fun me(@ApiIgnore principal: Principal): UserDetail {
-    val user = userService.findMasterUserPersonDetails(principal.name)
-    return user.map { UserDetail.fromPerson(it) }.orElse(UserDetail.fromUsername(principal.name))
+    val upd = userService.findMasterUserPersonDetails(principal.name)
+    return upd.map {
+      val user = userService.getOrCreateUser(principal.name).orElseThrow()
+      UserDetail.fromPerson(it, user)
+    }.orElse(UserDetail.fromUsername(principal.name))
   }
 
   @GetMapping("/api/user/me/roles")
@@ -92,11 +95,11 @@ class UserController(private val userService: UserService) {
   )
   fun user(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
-  ): ResponseEntity<Any> {
-    val user = userService.findMasterUserPersonDetails(username)
-    return user.map { UserDetail.fromPerson(it) }
-      .map { Any::class.java.cast(it) }
-      .map { ResponseEntity.ok(it) }.orElse(notFoundResponse(username))
+  ): UserDetail {
+    val upd = userService.findMasterUserPersonDetails(username)
+      .orElseThrow { UsernameNotFoundException("Account for username $username not found") }
+    val user = userService.getOrCreateUser(username).orElseThrow()
+    return UserDetail.fromPerson(upd, user)
   }
 
   @GetMapping("/api/user/{username}/roles")

@@ -38,24 +38,10 @@ class UserControllerTest {
   private val authentication = UsernamePasswordAuthenticationToken("bob", "pass", listOf())
 
   @Test
-  fun user_userNotFound() {
-    val responseEntity = userController.user("bob")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(404)
-    assertThat(responseEntity.body).isEqualTo(
-      ErrorDetail(
-        "Not Found",
-        "Account for username bob not found",
-        "username"
-      )
-    )
-  }
-
-  @Test
   fun user_nomisUserNoCaseload() {
     setupFindUserCallForNomis()
-    val responseEntity = userController.user("joe")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body).isEqualTo(
+    val user = userController.user("joe")
+    assertThat(user).usingRecursiveComparison().isEqualTo(
       UserDetail(
         "principal",
         false,
@@ -63,7 +49,8 @@ class UserControllerTest {
         AuthSource.nomis,
         5L,
         null,
-        "5"
+        "5",
+        UUID.fromString(USER_ID),
       )
     )
   }
@@ -72,9 +59,8 @@ class UserControllerTest {
   fun user_nomisUser() {
     val staffUserAccount = setupFindUserCallForNomis()
     staffUserAccount.activeCaseLoadId = "somecase"
-    val responseEntity = userController.user("joe")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body).isEqualTo(
+    val user = userController.user("joe")
+    assertThat(user).usingRecursiveComparison().isEqualTo(
       UserDetail(
         "principal",
         false,
@@ -82,7 +68,8 @@ class UserControllerTest {
         AuthSource.nomis,
         5L,
         "somecase",
-        "5"
+        "5",
+        UUID.fromString(USER_ID),
       )
     )
   }
@@ -90,9 +77,8 @@ class UserControllerTest {
   @Test
   fun user_authUser() {
     setupFindUserCallForAuth()
-    val responseEntity = userController.user("joe")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body).isEqualTo(
+    val user = userController.user("joe")
+    assertThat(user).usingRecursiveComparison().isEqualTo(
       UserDetail(
         "principal",
         true,
@@ -100,7 +86,8 @@ class UserControllerTest {
         AuthSource.auth,
         null,
         null,
-        USER_ID
+        USER_ID,
+        UUID.fromString(USER_ID),
       )
     )
   }
@@ -108,14 +95,14 @@ class UserControllerTest {
   @Test
   fun me_userNotFound() {
     val principal = TestingAuthenticationToken("principal", "credentials")
-    assertThat(userController.me(principal)).isEqualTo(UserDetail.fromUsername("principal"))
+    assertThat(userController.me(principal)).usingRecursiveComparison().isEqualTo(UserDetail.fromUsername("principal"))
   }
 
   @Test
   fun me_nomisUserNoCaseload() {
     setupFindUserCallForNomis()
     val principal = TestingAuthenticationToken("principal", "credentials")
-    assertThat(userController.me(principal)).isEqualTo(
+    assertThat(userController.me(principal)).usingRecursiveComparison().isEqualTo(
       UserDetail(
         "principal",
         false,
@@ -123,7 +110,8 @@ class UserControllerTest {
         AuthSource.nomis,
         5L,
         null,
-        "5"
+        "5",
+        UUID.fromString(USER_ID),
       )
     )
   }
@@ -133,7 +121,7 @@ class UserControllerTest {
     val staffUserAccount = setupFindUserCallForNomis()
     staffUserAccount.activeCaseLoadId = "somecase"
     val principal = TestingAuthenticationToken("principal", "credentials")
-    assertThat(userController.me(principal)).isEqualTo(
+    assertThat(userController.me(principal)).usingRecursiveComparison().isEqualTo(
       UserDetail(
         "principal",
         false,
@@ -141,7 +129,8 @@ class UserControllerTest {
         AuthSource.nomis,
         5L,
         "somecase",
-        "5"
+        "5",
+        UUID.fromString(USER_ID),
       )
     )
   }
@@ -150,7 +139,7 @@ class UserControllerTest {
   fun me_authUser() {
     setupFindUserCallForAuth()
     val principal = TestingAuthenticationToken("principal", "credentials")
-    assertThat(userController.me(principal)).isEqualTo(
+    assertThat(userController.me(principal)).usingRecursiveComparison().isEqualTo(
       UserDetail(
         "principal",
         true,
@@ -158,7 +147,8 @@ class UserControllerTest {
         AuthSource.auth,
         null,
         null,
-        USER_ID
+        USER_ID,
+        UUID.fromString(USER_ID),
       )
     )
   }
@@ -204,16 +194,16 @@ class UserControllerTest {
       )
     )
     val responseEntity = userController.getUserEmail("joe")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
-    assertThat(responseEntity.body).isEqualTo(EmailAddress("JOE", "someemail"))
+    assertThat(responseEntity.statusCodeValue).usingRecursiveComparison().isEqualTo(200)
+    assertThat(responseEntity.body).usingRecursiveComparison().isEqualTo(EmailAddress("JOE", "someemail"))
   }
 
   @Test
   fun userEmail_notFound() {
     whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.empty())
     val responseEntity = userController.getUserEmail("joe")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(404)
-    assertThat(responseEntity.body).isEqualTo(
+    assertThat(responseEntity.statusCodeValue).usingRecursiveComparison().isEqualTo(404)
+    assertThat(responseEntity.body).usingRecursiveComparison().isEqualTo(
       ErrorDetail(
         "Not Found",
         "Account for username joe not found",
@@ -226,7 +216,7 @@ class UserControllerTest {
   fun userEmail_notVerified() {
     whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(createSampleUser("JOE")))
     val responseEntity = userController.getUserEmail("joe")
-    assertThat(responseEntity.statusCodeValue).isEqualTo(204)
+    assertThat(responseEntity.statusCodeValue).usingRecursiveComparison().isEqualTo(204)
     assertThat(responseEntity.body).isNull()
   }
 
@@ -321,28 +311,35 @@ class UserControllerTest {
   }
 
   private fun setupFindUserCallForNomis(): NomisUserPersonDetails {
-    val user = createSampleNomisUser(staff = Staff(firstName = "JOE", status = "INACTIVE", lastName = "bloggs", staffId = 5), username = "principal", accountStatus = "EXPIRED & LOCKED")
+    val user = createSampleNomisUser(
+      staff = Staff(firstName = "JOE", status = "INACTIVE", lastName = "bloggs", staffId = 5),
+      username = "principal",
+      accountStatus = "EXPIRED & LOCKED"
+    )
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(createSampleUser()))
     return user
   }
 
   private fun setupFindUserCallForAuth() {
-    val user = createSampleUser(
-      id = UUID.fromString(USER_ID),
-      username = "principal",
-      email = "email",
-      verified = true,
-      firstName = "Joe",
-      lastName = "Bloggs",
-      enabled = true,
-      source = AuthSource.auth,
-      authorities = setOf(
-        Authority(roleCode = "ROLE_TEST_1", roleName = "Test 1"),
-        Authority(roleCode = "ROLE_TEST_2", roleName = "Test 2"),
-      ),
-    )
-    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
+    whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(createSampleUser()))
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(createSampleUser()))
   }
+
+  private fun createSampleUser() = createSampleUser(
+    id = UUID.fromString(USER_ID),
+    username = "principal",
+    email = "email",
+    verified = true,
+    firstName = "Joe",
+    lastName = "Bloggs",
+    enabled = true,
+    source = AuthSource.auth,
+    authorities = setOf(
+      Authority(roleCode = "ROLE_TEST_1", roleName = "Test 1"),
+      Authority(roleCode = "ROLE_TEST_2", roleName = "Test 2"),
+    ),
+  )
 
   companion object {
     private const val USER_ID = "07395ef9-53ec-4d6c-8bb1-0dc96cd4bd2f"

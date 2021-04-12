@@ -5,5 +5,6 @@
   "staffId": 1,
   "activeCaseLoadId": "MDI",
   "authSource": "nomis",
-  "userId": "1"
+  "userId": "1",
+  "uuid": "a04c70ee-51c9-4852-8d0d-130da5c85c42"
 }
