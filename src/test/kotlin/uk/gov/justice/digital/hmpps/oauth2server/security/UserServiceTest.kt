@@ -223,6 +223,32 @@ class UserServiceTest {
   }
 
   @Nested
+  inner class GetOrCreateUsers {
+
+    @Test
+    fun `user exists and other not found`() {
+      val user = createSampleUser("joe")
+      whenever(userRepository.findByUsername("JOE")).thenReturn(Optional.of(user))
+      val newUserOpt = userService.getOrCreateUsers(listOf("joe", "fred"))
+      assertThat(newUserOpt).containsExactly(user)
+    }
+
+    @Test
+    fun `migrate from NOMIS`() {
+      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.empty())
+      whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(Optional.empty())
+      whenever(nomisUserService.getNomisUserByUsername("joe")).thenReturn(
+        Optional.of(createSampleNomisUser(username = "joe"))
+      )
+      whenever(verifyEmailService.getExistingEmailAddressesForUsername(anyString())).thenReturn(listOf())
+      whenever(userRepository.save<User>(any())).thenAnswer { it.arguments[0] }
+
+      val newUser = userService.getOrCreateUsers(listOf("joe"))
+      assertThat(newUser).hasSize(1)
+    }
+  }
+
+  @Nested
   inner class FindUser {
     @Test
     fun findUser() {
