@@ -112,6 +112,35 @@ class ClientsController(
     return "redirect:/ui"
   }
 
+  @GetMapping("/generate")
+  @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
+  fun newClientSecretPrompt(
+    authentication: Authentication,
+    @RequestParam(value = "client", required = true) clientId: String,
+    @RequestParam(value = "last", required = true) lastAccessed: String,
+  ):
+    ModelAndView = ModelAndView("ui/generateSecretPrompt", "clientId", clientId)
+      .addObject("lastAccessed", lastAccessed)
+
+  @PostMapping("/generate")
+  @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
+  fun generateNewClientSecret(
+    authentication: Authentication,
+    @RequestParam clientId: String,
+  ):
+    ModelAndView {
+      val userDetails = authentication.principal as UserPersonDetails
+      val telemetryMap = mapOf("username" to userDetails.username, "clientId" to clientId)
+
+      val clientSecret = clientService.generateClientSecret(clientId)
+      telemetryClient.trackEvent("AuthClientSecretUpdated", telemetryMap, null)
+      return ModelAndView("redirect:/ui/clients/client-success", "newClient", "false")
+        .addObject("clientId", clientId)
+        .addObject("clientSecret", clientSecret)
+        .addObject("base64ClientId", getEncoder().encodeToString(clientId.toByteArray()))
+        .addObject("base64ClientSecret", getEncoder().encodeToString(clientSecret.toByteArray()))
+    }
+
   @PostMapping("/duplicate")
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
   fun duplicateClient(

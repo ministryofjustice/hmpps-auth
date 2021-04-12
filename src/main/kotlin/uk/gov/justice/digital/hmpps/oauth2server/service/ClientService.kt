@@ -3,6 +3,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
 import org.springframework.security.oauth2.provider.ClientDetails
+import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.stereotype.Service
@@ -36,6 +37,13 @@ class ClientService(
     val searchClientId = baseClientId(clientId)
     return clientRepository.findByIdStartsWithOrderById(searchClientId)
       .filter { it.id == searchClientId || it.id.substringAfter(searchClientId).matches(clientIdSuffixRegex) }
+  }
+
+  @Throws(NoSuchClientException::class)
+  fun generateClientSecret(clientId: String): String {
+    val clientSecret = passwordGenerator.generatePassword()
+    clientsDetailsService.updateClientSecret(clientId, clientSecret)
+    return clientSecret
   }
 
   private fun copyClient(clientId: String, clientDetails: BaseClientDetails): BaseClientDetails {
@@ -72,6 +80,7 @@ class ClientService(
 
     return "$baseClientId-$increment"
   }
+
   private fun baseClientId(clientId: String): String = clientId.replace(regex = clientIdSuffixRegex, replacement = "")
   private fun clientNumber(clientId: String): Int = clientId.substringAfterLast("-").toIntOrNull() ?: 0
 
