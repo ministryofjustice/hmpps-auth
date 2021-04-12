@@ -52,6 +52,7 @@ class ClientControllerTest {
       assertThat(model["clients"] as List<*>).isEmpty()
       assertThat(model["clientDetails"] as ClientDetails).isNotNull
     }
+
     @Test
     fun `show edit form existing client`() {
       val model = ExtendedModelMap()
@@ -91,7 +92,7 @@ class ClientControllerTest {
         entry("newClient", "true"),
         entry("clientId", "client"),
         entry("clientSecret", "bob"),
-        entry("base64ClientId", "Y2xpZW50",),
+        entry("base64ClientId", "Y2xpZW50"),
         entry("base64ClientSecret", "Ym9i"),
       )
     }
@@ -159,7 +160,7 @@ class ClientControllerTest {
         entry("newClient", "false"),
         entry("clientId", "client"),
         entry("clientSecret", "bob"),
-        entry("base64ClientId", "Y2xpZW50",),
+        entry("base64ClientId", "Y2xpZW50"),
         entry("base64ClientSecret", "Ym9i"),
       )
     }
@@ -171,6 +172,38 @@ class ClientControllerTest {
       authClientDetails.authorities = mutableListOf(GrantedAuthority { "ROLE_CLIENT" })
       authClientDetails.clientSecret = ""
       return authClientDetails
+    }
+  }
+
+  @Nested
+  inner class GenerateNewClientSecretPrompt {
+
+    @Test
+    fun `new client secret prompt`() {
+      val modelAndView = controller.newClientSecretPrompt(authentication, "client", "2021-01-01T12:12:12.482760")
+      assertThat(modelAndView.viewName).isEqualTo("ui/generateSecretPrompt")
+      assertThat(modelAndView.model).containsOnly(
+        entry("clientId", "client"),
+        entry("lastAccessed", "2021-01-01T12:12:12.482760"),
+      )
+    }
+  }
+
+  @Nested
+  inner class GenerateNewClientSecret {
+
+    @Test
+    fun `new client secret`() {
+      whenever(clientService.generateClientSecret(anyString())).thenReturn("Some-Secret")
+      val modelAndView = controller.generateNewClientSecret(authentication, "client")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui/clients/client-success")
+      assertThat(modelAndView.model).containsOnly(
+        entry("newClient", "false"),
+        entry("clientId", "client"),
+        entry("clientSecret", "Some-Secret"),
+        entry("base64ClientId", "Y2xpZW50"),
+        entry("base64ClientSecret", "U29tZS1TZWNyZXQ="),
+      )
     }
   }
 

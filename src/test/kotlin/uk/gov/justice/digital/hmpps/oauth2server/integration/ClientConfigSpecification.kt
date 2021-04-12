@@ -20,7 +20,13 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   private lateinit var clientMaintenanceAddPage: ClientMaintenanceAddPage
 
   @Page
-  private lateinit var clientSuccessPage: ClientSuccessPage
+  private lateinit var clientCreatedSuccessPage: ClientCreatedSuccessPage
+
+  @Page
+  private lateinit var clientUpdatedSuccessPage: ClientUpdatedSuccessPage
+
+  @Page
+  private lateinit var clientGenerateNewSecret: ClientGenerateNewSecret
 
   @Page
   private lateinit var duplicateClientSuccessPage: DuplicateClientSuccessPage
@@ -112,7 +118,9 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       assertThat(el("#registeredRedirectUri").value()).isEqualTo("http://a_url:3003")
       assertThat(el("#accessTokenValiditySeconds").value()).isEqualTo("1234")
       assertThat(el("#scopes").value()).isEqualTo("read,bob")
-      editClient("rotation-test-client-2")
+    }
+    goTo("/ui/clients/form?client=rotation-test-client-2")
+    with(clientMaintenancePage) {
       assertThat(el("#registeredRedirectUri").value()).isEqualTo("http://a_url:3003")
       assertThat(el("#accessTokenValiditySeconds").value()).isEqualTo("1234")
       assertThat(el("#scopes").value()).isEqualTo("read,bob")
@@ -120,28 +128,11 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `I can navigate between duplicate clients`() {
-    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
-
-    goTo(clientSummaryPage).editClient("rotation-test-client")
-    with(clientMaintenancePage) {
-      isAtPage()
-      assertThat(el("[data-qa='other-clients']").text()).isEqualTo("All clients")
-      assertThat(el("#clientId").value()).isEqualTo("rotation-test-client")
-      editClient("rotation-test-client-2")
-      assertThat(el("#clientId").value()).isEqualTo("rotation-test-client-2")
-      editClient("rotation-test-client")
-      assertThat(el("#clientId").value()).isEqualTo("rotation-test-client")
-    }
-  }
-
-  @Test
   fun `I can edit a client duplicate and new details are copied over to the original`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo("/ui/clients/form?client=rotation-test-client-2")
     clientMaintenancePage.isAtPage()
-      .editClient("rotation-test-client-2")
       .edit("resourceIds", "some_resource")
       .edit("refreshTokenValiditySeconds", "2345")
       .edit("authorities", "ROLE_BOB,ROLE_JOE")
@@ -153,11 +144,72 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       assertThat(el("#resourceIds").value()).isEqualTo("some_resource")
       assertThat(el("#refreshTokenValiditySeconds").value()).isEqualTo("2345")
       assertThat(el("#authorities").value()).isEqualTo("ROLE_BOB,ROLE_JOE")
-      editClient("rotation-test-client-2")
+    }
+    goTo("/ui/clients/form?client=rotation-test-client-2")
+    with(clientMaintenancePage) {
       assertThat(el("#resourceIds").value()).isEqualTo("some_resource")
       assertThat(el("#refreshTokenValiditySeconds").value()).isEqualTo("2345")
       assertThat(el("#authorities").value()).isEqualTo("ROLE_BOB,ROLE_JOE")
     }
+  }
+
+  @Test
+  fun `I can generate a new client secret for client`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    clientMaintenancePage.isAtPage()
+      .generateClientSecret("rotation-test-client")
+
+    clientGenerateNewSecret.cancelToClientMaintenancePage()
+
+    clientMaintenancePage.isAtPage()
+      .generateClientSecret("rotation-test-client")
+
+    clientGenerateNewSecret.continueToGenerateClientSecret()
+
+    clientUpdatedSuccessPage.isAtPage()
+      .continueToClientUiPage()
+  }
+
+  @Test
+  fun `I can generate a new client secret for each duplicate client`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    clientMaintenancePage.isAtPage()
+      .generateClientSecret("rotation-test-client")
+
+    clientGenerateNewSecret.continueToGenerateClientSecret()
+
+    clientUpdatedSuccessPage.isAtPage()
+      .continueToClientUiPage()
+
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    clientMaintenancePage.isAtPage()
+      .generateClientSecret("rotation-test-client-2")
+
+    clientGenerateNewSecret.continueToGenerateClientSecret()
+
+    clientUpdatedSuccessPage.isAtPage()
+      .continueToClientUiPage()
+
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    clientMaintenancePage.isAtPage()
+      .duplicate()
+
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    clientMaintenancePage.isAtPage()
+      .generateClientSecret("rotation-test-client-3")
+
+    clientGenerateNewSecret.continueToGenerateClientSecret()
+
+    clientUpdatedSuccessPage.isAtPage()
+      .continueToClientUiPage()
+
+    goTo("/ui/clients/rotation-test-client-3/delete")
+    clientSummaryPage.isAtPage()
+      .checkClientDoesntExist("rotation-test-client-3")
   }
 
   @Test
@@ -176,7 +228,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .edit("jwtFields", "-name")
       .selectCheckboxOption("mfa-3")
       .save()
-    clientSuccessPage.isAtPage()
+    clientCreatedSuccessPage.isAtPage()
       .continueToClientUiPage()
     clientSummaryPage.isAtPage()
       .checkClientSummary(
@@ -204,7 +256,6 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
 
     goTo(clientSummaryPage).editClient("rotation-test-client")
     clientMaintenancePage.isAtPage()
-      .editClient("rotation-test-client-2")
       .duplicate()
 
     duplicateClientSuccessPage.isAtPage()
@@ -225,7 +276,9 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     with(clientMaintenancePage) {
       isAtPage()
       assertThat(el("#rotation-test-client-last-accessed").text()).isEqualTo("2013-01-28T13:23:19")
-      assertThat(LocalDateTime.parse(el("#rotation-test-client-2-last-accessed").text())).isAfter(LocalDateTime.now().minusDays(1))
+      assertThat(LocalDateTime.parse(el("#rotation-test-client-2-last-accessed").text())).isAfter(
+        LocalDateTime.now().minusDays(1)
+      )
     }
   }
 
@@ -235,7 +288,6 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
 
     goTo(clientSummaryPage).editClient("rotation-test-client")
     clientMaintenancePage.isAtPage()
-      .editClient("rotation-test-client-2")
       .duplicate()
 
     duplicateClientSuccessPage.isAtPage()
@@ -243,7 +295,6 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
 
     goTo(clientSummaryPage).editClient("rotation-test-client")
     clientMaintenancePage.isAtPage()
-      .editClient("rotation-test-client-3")
       .duplicate()
 
     clientMaintenancePageWithError
@@ -296,7 +347,7 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
     heading,
     headingStartsWith
   ) {
-  @FindBy(css = "input[type='submit']")
+  @FindBy(name = "client-submit")
   private lateinit var save: FluentWebElement
 
   @FindBy(name = "duplicate-client")
@@ -335,23 +386,50 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
     duplicate.click()
     return this
   }
+
+  fun generateClientSecret(client: String) {
+    el("#generate-secret-$client").click()
+  }
 }
 
 @PageUrl("/ui/clients/form")
 class ClientMaintenanceAddPage : ClientMaintenancePage("Add client", false)
 
 @PageUrl("/ui/clients/form")
-class ClientMaintenancePageWithError : ClientMaintenancePage("Edit client 'rotation-test-client-3'", false)
+class ClientMaintenancePageWithError : ClientMaintenancePage("Edit client 'rotation-test-client'", false)
+
+@PageUrl("/ui/clients/generate")
+open class ClientGenerateNewSecret : AuthPage<ClientGenerateNewSecret>(
+  "HMPPS Digital Services - Client Configuration",
+  "Generate new client secret"
+) {
+  @FindBy(css = "#submit")
+  private lateinit var continueButton: FluentWebElement
+
+  @FindBy(css = "#cancel")
+  private lateinit var cancelButton: FluentWebElement
+
+  fun continueToGenerateClientSecret(): ClientGenerateNewSecret {
+    continueButton.click()
+    return this
+  }
+
+  fun cancelToClientMaintenancePage(): ClientGenerateNewSecret {
+    assertThat(cancelButton.text()).isEqualTo("Cancel")
+    cancelButton.click()
+    return this
+  }
+}
 
 @PageUrl("ui/clients/client-success")
-open class ClientSuccessPage : AuthPage<ClientSuccessPage>(
+open class ClientCreatedSuccessPage : AuthPage<ClientCreatedSuccessPage>(
   "HMPPS Digital Services - Client Configuration",
   "Client has been created"
 ) {
   @FindBy(css = "#continue")
   private lateinit var continueButton: FluentWebElement
 
-  fun checkClientSuccessDetails(): ClientSuccessPage {
+  fun checkClientSuccessDetails(): ClientCreatedSuccessPage {
     assertThat(el("[data-qa='clientId']").text()).isEqualTo("rotation-test-client-3")
     assertThat(el("[data-qa='clientSecret']").text()).isNotBlank
     assertThat(el("[data-qa='base64ClientId']").text()).isEqualTo("cm90YXRpb24tdGVzdC1jbGllbnQtMw==")
@@ -359,7 +437,30 @@ open class ClientSuccessPage : AuthPage<ClientSuccessPage>(
     return this
   }
 
-  fun continueToClientUiPage(): ClientSuccessPage {
+  fun continueToClientUiPage(): ClientCreatedSuccessPage {
+    assertThat(continueButton.text()).isEqualTo("Continue")
+    continueButton.click()
+    return this
+  }
+}
+
+@PageUrl("ui/clients/client-success")
+open class ClientUpdatedSuccessPage : AuthPage<ClientUpdatedSuccessPage>(
+  "HMPPS Digital Services - Client Configuration",
+  "Client has been updated"
+) {
+  @FindBy(css = "#continue")
+  private lateinit var continueButton: FluentWebElement
+
+  fun checkClientSuccessDetails(): ClientUpdatedSuccessPage {
+    assertThat(el("[data-qa='clientId']").text()).isEqualTo("rotation-test-client-3")
+    assertThat(el("[data-qa='clientSecret']").text()).isNotBlank
+    assertThat(el("[data-qa='base64ClientId']").text()).isEqualTo("cm90YXRpb24tdGVzdC1jbGllbnQtMw==")
+    assertThat(el("[data-qa='base64ClientSecret']").text()).isNotBlank
+    return this
+  }
+
+  fun continueToClientUiPage(): ClientUpdatedSuccessPage {
     assertThat(continueButton.text()).isEqualTo("Continue")
     continueButton.click()
     return this
