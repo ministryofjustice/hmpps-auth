@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.MediaType
+import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.oauth2server.resource.DeliusExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 
@@ -192,6 +193,36 @@ class UserControllerIntTest : IntegrationTest() {
           )
         )
       }
+  }
+
+  @Test
+  fun `User emails endpoint returns user data`() {
+    webTestClient
+      .post().uri("/api/user/email")
+      .body(BodyInserters.fromValue(listOf("AUTH_USER", "ITAG_USER", "delius_email", "DM_USER", "nobody")))
+      .headers(setAuthorisation("ITAG_USER", listOf("ROLE_MAINTAIN_ACCESS_ROLES")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$[*].email").value<List<String>> {
+        assertThat(it).containsExactlyInAnyOrderElementsOf(
+          listOf(
+            "auth_user@digital.justice.gov.uk",
+            "itag_user@digital.justice.gov.uk",
+            "delius_user@digital.justice.gov.uk",
+          )
+        )
+      }
+  }
+
+  @Test
+  fun `User emails endpoint returns user data forbidden`() {
+    webTestClient
+      .post().uri("/api/user/email")
+      .body(BodyInserters.fromValue(listOf("AUTH_USER", "ITAG_USER", "delius_email", "DM_USER", "nobody")))
+      .headers(setAuthorisation("ITAG_USER"))
+      .exchange()
+      .expectStatus().isForbidden
   }
 
   @Test

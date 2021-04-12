@@ -186,7 +186,7 @@ class UserService(
     status: UserFilter.Status,
     authSources: List<AuthSource>?,
   ): Page<User> {
-    val sources = if (authSources.isNullOrEmpty()) listOf(AuthSource.auth) else authSources
+    val sources = if (authSources.isNullOrEmpty()) listOf(auth) else authSources
     return authUserService.findAuthUsers(
       name = name,
       roleCodes = emptyList(),
@@ -197,6 +197,11 @@ class UserService(
       status = status,
       authSources = sources
     )
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  fun getOrCreateUsers(usernames: List<String>): List<User> = usernames.mapNotNull {
+    getOrCreateUser(it).orElse(null)
   }
 }
 

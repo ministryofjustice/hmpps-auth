@@ -5,10 +5,6 @@ plugins {
   id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
 }
 
-repositories {
-  maven("https://dl.bintray.com/gov-uk-notify/maven")
-}
-
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
@@ -39,7 +35,7 @@ dependencies {
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.2")
   implementation("uk.gov.service.notify:notifications-java-client:3.17.0-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:7.7.2")
+  implementation("org.flywaydb:flyway-core:7.7.3")
   implementation("com.zaxxer:HikariCP:4.0.3")
   implementation("org.apache.commons:commons-text:1.9")
   implementation("com.microsoft.sqlserver:mssql-jdbc:9.2.1.jre11")

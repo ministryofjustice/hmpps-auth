@@ -19,6 +19,8 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
@@ -142,14 +144,29 @@ class UserController(private val userService: UserService) {
   )
   fun getUserEmail(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
-  ): ResponseEntity<*> {
-    return userService
-      .getOrCreateUser(username)
-      .map { user: User ->
-        if (user.verified) ResponseEntity.ok(EmailAddress(user)) else ResponseEntity.noContent().build<Any>()
-      }
-      .orElseGet { notFoundResponse(username) }
-  }
+  ): ResponseEntity<*> = userService
+    .getOrCreateUser(username)
+    .map { user: User ->
+      if (user.verified) ResponseEntity.ok(EmailAddress(user)) else ResponseEntity.noContent().build<Any>()
+    }
+    .orElseGet { notFoundResponse(username) }
+
+  @PostMapping("/api/user/email")
+  @ApiOperation(
+    value = "Email address for users",
+    notes = """Verified email address for users.  Post version that accepts multiple email addresses.
+        Requires ROLE_MAINTAIN_ACCESS_ROLES or ROLE_MAINTAIN_ACCESS_ROLES_ADMIN.""",
+    nickname = "getUserEmails",
+    consumes = "application/json",
+    produces = "application/json"
+  )
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_ACCESS_ROLES', 'ROLE_MAINTAIN_ACCESS_ROLES_ADMIN')")
+  fun getUserEmails(
+    @ApiParam(value = "List of usernames.", required = true) @RequestBody usernames: List<String>,
+  ): List<EmailAddress> = userService
+    .getOrCreateUsers(usernames)
+    .filter { it.verified }
+    .map { EmailAddress(it) }
 
   private fun notFoundResponse(username: String): ResponseEntity<Any?> = ResponseEntity.status(HttpStatus.NOT_FOUND)
     .body(ErrorDetail("Not Found", "Account for username $username not found", "username"))
@@ -197,13 +214,28 @@ class UserController(private val userService: UserService) {
     "hasAnyRole('ROLE_INTEL_ADMIN', 'ROLE_PPM_USER_ADMIN')"
   )
   fun searchForUsersInMultipleSourceSystems(
-    @ApiParam(value = "The username, email or name of the user.", example = "j smith") @RequestParam(required = false) name: String?,
-    @ApiParam(value = "User status to find ACTIVE, INACTIVE or ALL. Defaults to ALL if omitted.") @RequestParam(required = false, defaultValue = "ALL") status: UserFilter.Status,
-    @ApiParam(value = "List of auth sources to search [nomis|delius|auth|azuread]. Defaults to auth if omitted.") @RequestParam(required = false) authSources: List<AuthSource>?,
+    @ApiParam(
+      value = "The username, email or name of the user.",
+      example = "j smith"
+    ) @RequestParam(required = false) name: String?,
+    @ApiParam(value = "User status to find ACTIVE, INACTIVE or ALL. Defaults to ALL if omitted.") @RequestParam(
+      required = false,
+      defaultValue = "ALL"
+    ) status: UserFilter.Status,
+    @ApiParam(value = "List of auth sources to search [nomis|delius|auth|azuread]. Defaults to auth if omitted.") @RequestParam(
+      required = false
+    ) authSources: List<AuthSource>?,
     @PageableDefault(sort = ["Person.lastName", "Person.firstName"], direction = Sort.Direction.ASC) pageable: Pageable,
     @ApiIgnore authentication: Authentication,
   ): Page<AuthUserWithSource> =
-    userService.searchUsersInMultipleSourceSystems(name, pageable, authentication.name, authentication.authorities, status, authSources)
+    userService.searchUsersInMultipleSourceSystems(
+      name,
+      pageable,
+      authentication.name,
+      authentication.authorities,
+      status,
+      authSources
+    )
       .map { AuthUserWithSource.fromUser(it) }
 }
 
