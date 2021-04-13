@@ -2,6 +2,7 @@
 
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
+import org.springframework.security.oauth2.provider.ClientAlreadyExistsException
 import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
@@ -17,6 +18,14 @@ class ClientService(
   private val passwordGenerator: PasswordGenerator,
   private val clientRepository: ClientRepository,
 ) {
+
+  @Throws(ClientAlreadyExistsException::class)
+  fun addClient(clientDetails: ClientDetails): String {
+    clientsDetailsService.addClientDetails(clientDetails)
+    val clientSecret = passwordGenerator.generatePassword()
+    clientsDetailsService.updateClientSecret(clientDetails.clientId, clientSecret)
+    return clientSecret
+  }
 
   fun findAndUpdateDuplicates(clientId: String) {
     val clientDetails = clientsDetailsService.loadClientByClientId(clientId)

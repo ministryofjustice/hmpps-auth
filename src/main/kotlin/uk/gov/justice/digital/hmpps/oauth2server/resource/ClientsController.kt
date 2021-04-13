@@ -53,6 +53,26 @@ class ClientsController(
     return "ui/form"
   }
 
+  @PostMapping("/add")
+  @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
+  fun addClient(
+    authentication: Authentication,
+    @ModelAttribute clientDetails: AuthClientDetails,
+    @RequestParam(value = "newClient", required = false) newClient: String?,
+  ): ModelAndView {
+    val userDetails = authentication.principal as UserPersonDetails
+    val telemetryMap = mapOf("username" to userDetails.username, "clientId" to clientDetails.clientId)
+
+    val clientSecret = clientService.addClient(clientDetails)
+
+    telemetryClient.trackEvent("AuthClientDetailsAdd", telemetryMap, null)
+    return ModelAndView("redirect:/ui/clients/client-success", "newClient", newClient ?: "false")
+      .addObject("clientId", clientDetails.clientId)
+      .addObject("clientSecret", clientSecret)
+      .addObject("base64ClientId", getEncoder().encodeToString(clientDetails.clientId.toByteArray()))
+      .addObject("base64ClientSecret", getEncoder().encodeToString(clientSecret.toByteArray()))
+  }
+
   @PostMapping("/edit")
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
   fun editClient(
@@ -63,29 +83,11 @@ class ClientsController(
     val userDetails = authentication.principal as UserPersonDetails
     val telemetryMap = mapOf("username" to userDetails.username, "clientId" to clientDetails.clientId)
 
-    if (newClient == null) {
-      clientsDetailsService.updateClientDetails(clientDetails)
-      telemetryClient.trackEvent("AuthClientDetailsUpdate", telemetryMap, null)
-      clientService.findAndUpdateDuplicates(clientDetails.clientId)
-    } else {
-      clientsDetailsService.addClientDetails(clientDetails)
-      telemetryClient.trackEvent("AuthClientDetailsAdd", telemetryMap, null)
-    }
-    return when {
-      clientDetails.clientSecret.isNotEmpty() -> {
-        clientsDetailsService.updateClientSecret(clientDetails.clientId, clientDetails.clientSecret)
-        telemetryClient.trackEvent("AuthClientSecretUpdated", telemetryMap, null)
+    clientsDetailsService.updateClientDetails(clientDetails)
+    telemetryClient.trackEvent("AuthClientDetailsUpdate", telemetryMap, null)
+    clientService.findAndUpdateDuplicates(clientDetails.clientId)
 
-        ModelAndView("redirect:/ui/clients/client-success", "newClient", newClient ?: "false")
-          .addObject("clientId", clientDetails.clientId)
-          .addObject("clientSecret", clientDetails.clientSecret)
-          .addObject("base64ClientId", getEncoder().encodeToString(clientDetails.clientId.toByteArray()))
-          .addObject("base64ClientSecret", getEncoder().encodeToString(clientDetails.clientSecret.toByteArray()))
-      }
-      else -> {
-        ModelAndView("redirect:/ui")
-      }
-    }
+    return ModelAndView("redirect:/ui")
   }
 
   @GetMapping("/client-success")

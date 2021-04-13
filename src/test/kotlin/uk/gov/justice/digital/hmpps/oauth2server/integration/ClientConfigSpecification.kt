@@ -169,6 +169,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     clientGenerateNewSecret.continueToGenerateClientSecret()
 
     clientUpdatedSuccessPage.isAtPage()
+      .checkClientSuccessDetails()
       .continueToClientUiPage()
   }
 
@@ -219,7 +220,6 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     goTo(clientSummaryPage).editClient(client = "client")
     clientMaintenanceAddPage.isAtPage()
       .edit("clientId", "new-client")
-      .edit("clientSecret", "a-new-secret")
       .edit("registeredRedirectUri", "http://a_url:3003")
       .edit("accessTokenValiditySeconds", "1200")
       .edit("scopes", "read")
@@ -229,6 +229,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .selectCheckboxOption("mfa-3")
       .save()
     clientCreatedSuccessPage.isAtPage()
+      .checkClientSuccessDetails()
       .continueToClientUiPage()
     clientSummaryPage.isAtPage()
       .checkClientSummary(
@@ -430,9 +431,9 @@ open class ClientCreatedSuccessPage : AuthPage<ClientCreatedSuccessPage>(
   private lateinit var continueButton: FluentWebElement
 
   fun checkClientSuccessDetails(): ClientCreatedSuccessPage {
-    assertThat(el("[data-qa='clientId']").text()).isEqualTo("rotation-test-client-3")
+    assertThat(el("[data-qa='clientId']").text()).isEqualTo("new-client")
     assertThat(el("[data-qa='clientSecret']").text()).isNotBlank
-    assertThat(el("[data-qa='base64ClientId']").text()).isEqualTo("cm90YXRpb24tdGVzdC1jbGllbnQtMw==")
+    assertThat(el("[data-qa='base64ClientId']").text()).isEqualTo("bmV3LWNsaWVudA==")
     assertThat(el("[data-qa='base64ClientSecret']").text()).isNotBlank
     return this
   }
@@ -447,15 +448,15 @@ open class ClientCreatedSuccessPage : AuthPage<ClientCreatedSuccessPage>(
 @PageUrl("ui/clients/client-success")
 open class ClientUpdatedSuccessPage : AuthPage<ClientUpdatedSuccessPage>(
   "HMPPS Digital Services - Client Configuration",
-  "Client has been updated"
+  "Client secret has been updated"
 ) {
   @FindBy(css = "#continue")
   private lateinit var continueButton: FluentWebElement
 
   fun checkClientSuccessDetails(): ClientUpdatedSuccessPage {
-    assertThat(el("[data-qa='clientId']").text()).isEqualTo("rotation-test-client-3")
+    assertThat(el("[data-qa='clientId']").text()).isEqualTo("rotation-test-client")
     assertThat(el("[data-qa='clientSecret']").text()).isNotBlank
-    assertThat(el("[data-qa='base64ClientId']").text()).isEqualTo("cm90YXRpb24tdGVzdC1jbGllbnQtMw==")
+    assertThat(el("[data-qa='base64ClientId']").text()).isEqualTo("cm90YXRpb24tdGVzdC1jbGllbnQ=")
     assertThat(el("[data-qa='base64ClientSecret']").text()).isNotBlank
     return this
   }

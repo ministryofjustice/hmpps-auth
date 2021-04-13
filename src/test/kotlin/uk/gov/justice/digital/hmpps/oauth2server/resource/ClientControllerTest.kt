@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.oauth2.provider.ClientAlreadyExistsException
 import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
@@ -68,21 +67,15 @@ class ClientControllerTest {
   }
 
   @Nested
-  inner class EditClient {
-
+  inner class AddClient {
     @Test
-    fun `edit client request - add client`() {
+    fun `add client request - add client`() {
       val authClientDetails: AuthClientDetails = createAuthClientDetails()
-      authClientDetails.clientSecret = "bob"
-      val modelAndView = controller.editClient(authentication, authClientDetails, "true")
-      verify(clientDetailsService).addClientDetails(authClientDetails)
+      whenever(clientService.addClient(authClientDetails)).thenReturn("bob")
+      val modelAndView = controller.addClient(authentication, authClientDetails, "true")
+      verify(clientService).addClient(authClientDetails)
       verify(telemetryClient).trackEvent(
         "AuthClientDetailsAdd",
-        mapOf("username" to "user", "clientId" to "client"),
-        null
-      )
-      verify(telemetryClient).trackEvent(
-        "AuthClientSecretUpdated",
         mapOf("username" to "user", "clientId" to "client"),
         null
       )
@@ -97,17 +90,18 @@ class ClientControllerTest {
       )
     }
 
-    @Test
-    fun `edit client request - add client throws ClientAlreadyExistsException`() {
-      val authClientDetails: AuthClientDetails = createAuthClientDetails()
-      authClientDetails.clientSecret = "bob"
-      val exception = ClientAlreadyExistsException("Client already exists: ")
-      doThrow(exception).whenever(clientDetailsService).addClientDetails(authClientDetails)
-
-      assertThatThrownBy { controller.editClient(authentication, authClientDetails, "true") }.isEqualTo(exception)
-
-      verifyZeroInteractions(telemetryClient)
+    private fun createAuthClientDetails(): AuthClientDetails {
+      val authClientDetails = AuthClientDetails()
+      authClientDetails.clientId = "client"
+      authClientDetails.setAuthorizedGrantTypes(listOf("client_credentials"))
+      authClientDetails.authorities = mutableListOf(GrantedAuthority { "ROLE_CLIENT" })
+      authClientDetails.clientSecret = ""
+      return authClientDetails
     }
+  }
+
+  @Nested
+  inner class EditClient {
 
     @Test
     fun `edit client request - update existing client`() {
@@ -116,11 +110,6 @@ class ClientControllerTest {
       verify(clientDetailsService).updateClientDetails(authClientDetails)
       verify(telemetryClient).trackEvent(
         "AuthClientDetailsUpdate",
-        mapOf("username" to "user", "clientId" to "client"),
-        null
-      )
-      verify(telemetryClient, times(0)).trackEvent(
-        "AuthClientSecretUpdated",
         mapOf("username" to "user", "clientId" to "client"),
         null
       )
@@ -136,33 +125,6 @@ class ClientControllerTest {
       assertThatThrownBy { controller.editClient(authentication, authClientDetails, null) }.isEqualTo(exception)
 
       verifyZeroInteractions(telemetryClient)
-    }
-
-    @Test
-    fun `edit client request - update existing client secret`() {
-      val authClientDetails: AuthClientDetails = createAuthClientDetails()
-      authClientDetails.clientSecret = "bob"
-      val modelAndView = controller.editClient(authentication, authClientDetails, null)
-      verify(clientDetailsService).updateClientDetails(authClientDetails)
-      verify(telemetryClient).trackEvent(
-        "AuthClientDetailsUpdate",
-        mapOf("username" to "user", "clientId" to "client"),
-        null
-      )
-      verify(telemetryClient).trackEvent(
-        "AuthClientSecretUpdated",
-        mapOf("username" to "user", "clientId" to "client"),
-        null
-      )
-      verify(clientService).findAndUpdateDuplicates("client")
-      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui/clients/client-success")
-      assertThat(modelAndView.model).containsOnly(
-        entry("newClient", "false"),
-        entry("clientId", "client"),
-        entry("clientSecret", "bob"),
-        entry("base64ClientId", "Y2xpZW50"),
-        entry("base64ClientSecret", "Ym9i"),
-      )
     }
 
     private fun createAuthClientDetails(): AuthClientDetails {
@@ -203,6 +165,12 @@ class ClientControllerTest {
         entry("clientSecret", "Some-Secret"),
         entry("base64ClientId", "Y2xpZW50"),
         entry("base64ClientSecret", "U29tZS1TZWNyZXQ="),
+      )
+
+      verify(telemetryClient, times(1)).trackEvent(
+        "AuthClientSecretUpdated",
+        mapOf("username" to "user", "clientId" to "client"),
+        null
       )
     }
   }
