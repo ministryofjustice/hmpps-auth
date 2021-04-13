@@ -42,8 +42,8 @@
           <td class="govuk-table__cell" th:id="${client.id}" th:text="${client.id}">
             clientId
           </td>
-          <td class="govuk-table__cell" th:text="${client.lastAccessed}" th:id="${client.id + '-last-accessed'}">
-            a date
+          <td class="govuk-table__cell" th:text="${#temporals.format(client.lastAccessed,'dd-MM-yyyy HH:mm')}" th:id="${client.id + '-last-accessed'}">
+            a date$
           </td>
           <td class="govuk-table__cell">
             <a class="govuk-button--secondary govuk-button" role="button" th:id="${'generate-secret-' + client.id}"
@@ -55,12 +55,12 @@
       </table>
     </div>
 
-    <h2 class="govuk-heading-m">Client details</h2>
-
     <form th:action="@{/ui/clients/duplicate}" method="post" th:if="${param.client}">
       <input type="hidden" id="clientIdDuplicate" name="clientIdDuplicate" th:value="${clientDetails.clientId}"/>
       <input type="submit" class="govuk-button" name="duplicate-client" value="Duplicate">
     </form>
+
+    <h2 class="govuk-heading-m">Client details</h2>
 
     <form th:with="bob=${param.client != null} ? 'edit' : 'add'" th:action="@{'/ui/clients/'+ ${bob}}" method="post">
 
