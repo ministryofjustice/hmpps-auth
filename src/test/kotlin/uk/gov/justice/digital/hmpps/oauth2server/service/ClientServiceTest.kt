@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.oauth2.provider.ClientAlreadyExistsException
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
@@ -28,6 +29,31 @@ internal class ClientServiceTest {
   private val clientDetailsService: JdbcClientDetailsService = mock()
   private val passwordGenerator: PasswordGenerator = mock()
   private val clientService = ClientService(clientDetailsService, passwordGenerator, clientRepository)
+
+  @Nested
+  inner class addClient {
+    @Test
+    internal fun `add client`() {
+      whenever(passwordGenerator.generatePassword()).thenReturn("Some-Secret")
+      val authClientDetails = createAuthClientDetails()
+      clientService.addClient(authClientDetails)
+      verify(clientDetailsService).addClientDetails(
+        check {
+          assertThat(it).usingRecursiveComparison().isEqualTo((authClientDetails))
+        }
+      )
+    }
+
+    @Test
+    internal fun `add client throws ClientAlreadyExistsException`() {
+      val authClientDetails = createAuthClientDetails()
+
+      val exception = ClientAlreadyExistsException("Client already exists: ")
+      doThrow(exception).whenever(clientDetailsService).addClientDetails(authClientDetails)
+
+      assertThatThrownBy { clientService.addClient(authClientDetails) }.isEqualTo(exception)
+    }
+  }
 
   @Nested
   inner class findAndUpdateDuplicates {
