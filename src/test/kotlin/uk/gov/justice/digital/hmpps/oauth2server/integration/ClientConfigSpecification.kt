@@ -8,6 +8,7 @@ import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class ClientConfigSpecification : AbstractAuthSpecification() {
   @Page
@@ -276,10 +277,9 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     goTo(clientSummaryPage).editClient("rotation-test-client")
     with(clientMaintenancePage) {
       isAtPage()
-      assertThat(el("#rotation-test-client-last-accessed").text()).isEqualTo("2013-01-28T13:23:19")
-      assertThat(LocalDateTime.parse(el("#rotation-test-client-2-last-accessed").text())).isAfter(
-        LocalDateTime.now().minusDays(1)
-      )
+      assertThat(el("#rotation-test-client-last-accessed").text()).isEqualTo("28-01-2013 13:23")
+      val dateTime = LocalDateTime.parse(el("#rotation-test-client-2-last-accessed").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      assertThat(dateTime).isAfter(LocalDateTime.now().minusDays(1))
     }
   }
 

@@ -22,6 +22,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientMockServer.Companion.clientBaseUrl
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 /**
  * Verify clients can login, be redirected back to their system and then logout again.
@@ -132,7 +134,8 @@ class ClientLoginSpecification : AbstractDeliusAuthSpecification() {
     goTo(clientSummaryPage).editClient("elite2apiclient")
     with(clientMaintenancePage) {
       isAtPage()
-      assertThat(LocalDateTime.parse(el("#elite2apiclient-last-accessed").text())).isAfterOrEqualTo(now)
+      val dateTime = LocalDateTime.parse(el("#elite2apiclient-last-accessed").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      assertThat(dateTime).isAfterOrEqualTo(now.truncatedTo(ChronoUnit.MINUTES))
     }
   }
 
