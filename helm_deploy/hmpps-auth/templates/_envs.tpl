@@ -77,7 +77,7 @@ env:
     value: "ROLE_PF_APPROVAL"
 
   - name: DELIUS_ROLES_MAPPINGS_CTRBT003
-    value: "ROLE_PF_STD_PROBATION_RO"
+    value: "ROLE_PF_NATIONAL_READER"
 
   - name: DELIUS_ROLES_MAPPINGS_CTRBT004
     value: "ROLE_PF_HQ"
