@@ -111,14 +111,17 @@ class GroupsService(
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(ChildGroupExistsException::class, GroupNotFoundException::class)
   fun createChildGroup(username: String, createChildGroup: CreateChildGroup) {
-    val childGroupFromDB = childGroupRepository.findByGroupCode(createChildGroup.groupCode)
+    val groupCode = createChildGroup.groupCode.trim().toUpperCase()
+    val childGroupFromDB = childGroupRepository.findByGroupCode(groupCode)
     if (childGroupFromDB != null) {
-      throw ChildGroupExistsException(createChildGroup.groupCode, "group code already exists")
+      throw ChildGroupExistsException(groupCode, "group code already exists")
     }
-    val parentGroupDetails = groupRepository.findByGroupCode(createChildGroup.parentGroupCode) ?: throw
-    GroupNotFoundException("create", createChildGroup.parentGroupCode, "ParentGroupNotFound")
+    val parentGroupCode = createChildGroup.parentGroupCode.trim().toUpperCase()
+    val parentGroupDetails = groupRepository.findByGroupCode(parentGroupCode) ?: throw
+    GroupNotFoundException("create", parentGroupCode, "ParentGroupNotFound")
 
-    val child = ChildGroup(groupCode = createChildGroup.groupCode, groupName = createChildGroup.groupName)
+    val groupName = createChildGroup.groupName.trim()
+    val child = ChildGroup(groupCode = createChildGroup.groupCode, groupName = groupName)
     child.group = parentGroupDetails
 
     childGroupRepository.save(child)
@@ -128,8 +131,8 @@ class GroupsService(
       mapOf(
         "username" to username,
         "groupCode" to parentGroupDetails.groupCode,
-        "childGroupCode" to createChildGroup.groupCode,
-        "childGroupName" to createChildGroup.groupName
+        "childGroupCode" to groupCode,
+        "childGroupName" to groupName
       ),
       null
     )
@@ -148,17 +151,19 @@ class GroupsService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(GroupExistsException::class, GroupNotFoundException::class)
+  @Throws(GroupExistsException::class)
   fun createGroup(username: String, createGroup: CreateGroup) {
-    val groupFromDb = groupRepository.findByGroupCode(createGroup.groupCode)
-    groupFromDb?.let { throw GroupExistsException(createGroup.groupCode, "group code already exists") }
+    val groupCode = createGroup.groupCode.trim().toUpperCase()
+    val groupFromDb = groupRepository.findByGroupCode(groupCode)
+    groupFromDb?.let { throw GroupExistsException(groupCode, "group code already exists") }
 
-    val group = Group(groupCode = createGroup.groupCode, groupName = createGroup.groupName)
+    val groupName = createGroup.groupName.trim()
+    val group = Group(groupCode = groupCode, groupName = groupName)
     groupRepository.save(group)
 
     telemetryClient.trackEvent(
       "GroupCreateSuccess",
-      mapOf("username" to username, "groupCode" to createGroup.groupCode, "groupName" to createGroup.groupName),
+      mapOf("username" to username, "groupCode" to groupCode, "groupName" to groupName),
       null
     )
   }

@@ -1,3 +1,5 @@
+@file:Suppress("ClassName")
+
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
 import org.assertj.core.api.Assertions.assertThat
@@ -361,7 +363,7 @@ class GroupsControllerIntTest : IntegrationTest() {
           assertThat(it).containsExactlyInAnyOrderEntriesOf(
             mapOf(
               "error" to "Not Found",
-              "error_description" to "Unable to create group: pg with reason: ParentGroupNotFound",
+              "error_description" to "Unable to create group: PG with reason: ParentGroupNotFound",
               "field" to "group"
             )
           )
@@ -410,6 +412,98 @@ class GroupsControllerIntTest : IntegrationTest() {
         )
         .exchange()
         .expectStatus().isBadRequest
+        .expectBody()
+        .jsonPath("$").value<Map<String, Any>> {
+          assertThat(it).containsAllEntriesOf(
+            mapOf(
+              "error" to "Bad Request",
+              "field" to "createGroup"
+            )
+          )
+          assertThat(it["error_description"] as String).contains("default message [groupCode],30,2]")
+          assertThat(it["error_description"] as String).contains("default message [groupName],100,4]")
+        }
+    }
+
+    @Test
+    fun `Create group length too long`() {
+      webTestClient
+        .post().uri("/api/groups")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .body(
+          BodyInserters.fromValue(
+            mapOf(
+              "groupCode" to "12345".repeat(6) + "x", "groupName" to "12345".repeat(20) + "y",
+            )
+          )
+        )
+        .exchange()
+        .expectStatus().isBadRequest
+        .expectBody()
+        .jsonPath("$").value<Map<String, Any>> {
+          assertThat(it).containsAllEntriesOf(
+            mapOf(
+              "error" to "Bad Request",
+              "field" to "createGroup"
+            )
+          )
+          assertThat(it["error_description"] as String).contains("default message [groupCode],30,2]")
+          assertThat(it["error_description"] as String).contains("default message [groupName],100,4]")
+        }
+    }
+
+    @Test
+    fun `Create group length too short`() {
+      webTestClient
+        .post().uri("/api/groups")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .body(
+          BodyInserters.fromValue(
+            mapOf(
+              "groupCode" to "x", "groupName" to "123",
+            )
+          )
+        )
+        .exchange()
+        .expectStatus().isBadRequest
+        .expectBody()
+        .jsonPath("$").value<Map<String, Any>> {
+          assertThat(it).containsAllEntriesOf(
+            mapOf(
+              "error" to "Bad Request",
+              "field" to "createGroup"
+            )
+          )
+          assertThat(it["error_description"] as String).contains("default message [groupCode],30,2]")
+          assertThat(it["error_description"] as String).contains("default message [groupName],100,4]")
+        }
+    }
+
+    @Test
+    fun `Create group failed regex`() {
+      webTestClient
+        .post().uri("/api/groups")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .body(
+          BodyInserters.fromValue(
+            mapOf(
+              "groupCode" to "a-b", "groupName" to "a\$here",
+            )
+          )
+        )
+        .exchange()
+        .expectStatus().isBadRequest
+        .expectBody()
+        .jsonPath("$").value<Map<String, Any>> {
+          assertThat(it).containsAllEntriesOf(
+            mapOf(
+              "error" to "Bad Request",
+              "field" to "createGroup"
+            )
+          )
+          assertThat(it["error_description"] as String).contains("default message [groupCode],[Ljavax.validation.constraints.Pattern")
+          assertThat(it["error_description"] as String).contains("default message [groupName],[Ljavax.validation.constraints.Pattern")
+        }
     }
 
     @Test
@@ -476,6 +570,7 @@ class GroupsControllerIntTest : IntegrationTest() {
           )
         }
     }
+
     @Test
     fun `Create group endpoint not accessible without valid token`() {
       webTestClient.post().uri("/api/groups")
