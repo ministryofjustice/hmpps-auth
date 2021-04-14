@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ChildGroup
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.ChildGroupExistsException
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupExistsException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupHasChildGroupException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserAssignableRole
@@ -153,6 +154,28 @@ class GroupsController(
     groupsService.updateChildGroup(authentication.name, group, groupAmendment)
   }
 
+  @PostMapping("/api/groups")
+  @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
+  @ApiOperation(
+    value = "Create group.",
+    nickname = "CreateGroup",
+    consumes = "application/json",
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 409, message = "Group already exists.", response = ErrorDetail::class)
+    ]
+  )
+  @Throws(GroupExistsException::class, GroupNotFoundException::class)
+  fun createGroup(
+    @ApiIgnore authentication: Authentication,
+    @ApiParam(value = "Details of the group to be created.", required = true)
+    @Valid @RequestBody createGroup: CreateGroup,
+  ) {
+    groupsService.createGroup(authentication.name, createGroup)
+  }
+
   @PostMapping("/api/groups/child")
   @PreAuthorize("hasRole('ROLE_MAINTAIN_OAUTH_USERS')")
   @ApiOperation(
@@ -239,6 +262,16 @@ data class ChildGroupDetails(
     g.groupName,
   )
 }
+
+data class CreateGroup(
+  @ApiModelProperty(required = true, value = "Group Code", example = "HDC_NPS_NE", position = 1)
+  @field:NotBlank(message = "group code must be supplied")
+  val groupCode: String,
+
+  @ApiModelProperty(required = true, value = "groupName", example = "HDC NPS North East", position = 2)
+  @field:NotBlank(message = "group name must be supplied")
+  val groupName: String,
+)
 
 data class CreateChildGroup(
   @ApiModelProperty(required = true, value = "Parent Group Code", example = "HNC_NPS", position = 1)

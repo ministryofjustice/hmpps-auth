@@ -377,6 +377,114 @@ class GroupsControllerIntTest : IntegrationTest() {
   }
 
   @Nested
+  inner class createGroup {
+    @Test
+    fun `Create group`() {
+      webTestClient
+        .post().uri("/api/groups")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .body(
+          BodyInserters.fromValue(
+            mapOf(
+              "groupCode" to "CG",
+              "groupName" to " groupie"
+            )
+          )
+        )
+        .exchange()
+        .expectStatus().isOk
+    }
+
+    @Test
+    fun `Create group error`() {
+      webTestClient
+        .post().uri("/api/groups")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .body(
+          BodyInserters.fromValue(
+            mapOf(
+              "groupCode" to "",
+              "groupName" to ""
+            )
+          )
+        )
+        .exchange()
+        .expectStatus().isBadRequest
+    }
+
+    @Test
+    fun `Create group endpoint returns forbidden when dose not have admin role `() {
+      webTestClient
+        .post().uri("/api/groups")
+        .headers(setAuthorisation("bob"))
+        .body(
+          BodyInserters.fromValue(
+            mapOf(
+              "groupCode" to "CG3",
+              "groupName" to " groupie 3"
+            )
+          )
+        )
+        .exchange()
+        .expectStatus().isForbidden
+        .expectBody()
+        .json(
+          """
+      {"error":"access_denied","error_description":"Access is denied"}
+          """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `Create group - group already exists`() {
+      webTestClient
+        .post().uri("/api/groups")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .body(
+          BodyInserters.fromValue(
+            mapOf(
+              "groupCode" to "CG1",
+              "groupName" to " groupie 1"
+            )
+          )
+        )
+        .exchange()
+        .expectStatus().isOk
+
+      webTestClient
+        .post().uri("/api/groups")
+        .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+        .body(
+          BodyInserters.fromValue(
+            mapOf(
+              "groupCode" to "CG1",
+              "groupName" to " groupie 1"
+            )
+          )
+        )
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody()
+        .jsonPath("$").value<Map<String, Any>> {
+          assertThat(it).containsExactlyInAnyOrderEntriesOf(
+            mapOf(
+              "error" to "group code already exists",
+              "error_description" to "Unable to create group: CG1 with reason: group code already exists",
+              "field" to "group"
+            )
+          )
+        }
+    }
+    @Test
+    fun `Create group endpoint not accessible without valid token`() {
+      webTestClient.post().uri("/api/groups")
+        .exchange()
+        .expectStatus().isUnauthorized
+    }
+  }
+
+  @Nested
   inner class ChildGroupDetails {
     @Test
     fun `Child Group details endpoint returns details of child group when user has ROLE_MAINTAIN_OAUTH_USERS`() {

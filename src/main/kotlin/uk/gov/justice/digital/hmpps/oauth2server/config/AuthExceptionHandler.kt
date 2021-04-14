@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService.AuthUserRoleExistsException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.ChildGroupExistsException
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupExistsException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupHasChildGroupException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
@@ -84,6 +85,13 @@ class AuthExceptionHandler {
       .status(HttpStatus.CONFLICT)
       .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", "group"))
   }
+  @ExceptionHandler(GroupExistsException::class)
+  fun handleGroupExistsException(e: GroupExistsException): ResponseEntity<ErrorDetail> {
+    log.debug("Group exists exception caught: {}", e.message)
+    return ResponseEntity
+      .status(HttpStatus.CONFLICT)
+      .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", "group"))
+  }
 
   @ExceptionHandler(DuplicateClientsException::class)
   fun handleDuplicateClientsExceptionn(e: DuplicateClientsException): ResponseEntity<ErrorDetail> {
@@ -102,6 +110,6 @@ class AuthExceptionHandler {
   }
 
   companion object {
-    private val log = LoggerFactory.getLogger(AuthExceptionHandler::class.java)
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }

@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ChildGroupRepos
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.CreateChildGroup
+import uk.gov.justice.digital.hmpps.oauth2server.resource.api.CreateGroup
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.GroupAmendment
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
 
@@ -146,6 +147,22 @@ class GroupsService(
     )
   }
 
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(GroupExistsException::class, GroupNotFoundException::class)
+  fun createGroup(username: String, createGroup: CreateGroup) {
+    val groupFromDb = groupRepository.findByGroupCode(createGroup.groupCode)
+    groupFromDb?.let { throw GroupExistsException(createGroup.groupCode, "group code already exists") }
+
+    val group = Group(groupCode = createGroup.groupCode, groupName = createGroup.groupName)
+    groupRepository.save(group)
+
+    telemetryClient.trackEvent(
+      "GroupCreateSuccess",
+      mapOf("username" to username, "groupCode" to createGroup.groupCode, "groupName" to createGroup.groupName),
+      null
+    )
+  }
+
   class GroupNotFoundException(val action: String, val group: String, val errorCode: String) :
     Exception("Unable to $action group: $group with reason: $errorCode")
 
@@ -157,4 +174,7 @@ class GroupsService(
 
   class ChildGroupExistsException(val group: String, val errorCode: String) :
     Exception("Unable to create child group: $group with reason: $errorCode")
+
+  class GroupExistsException(val group: String, val errorCode: String) :
+    Exception("Unable to create group: $group with reason: $errorCode")
 }

@@ -7,6 +7,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.GroupAssignableRole
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.ChildGroupExistsException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.ChildGroupNotFoundException
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupExistsException
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserAssignableRole
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
@@ -34,40 +36,67 @@ class GroupsControllerTest {
       "ROLE_AUTH_GROUP_MANAGER"
     )
   private val groupsController = GroupsController(groupsService)
+  @Nested
+  inner class `create group` {
+    @Test
+    fun create() {
+      val childGroup = CreateGroup("CG", "Group")
+      groupsController.createGroup(authentication, childGroup)
+      verify(groupsService).createGroup("user", childGroup)
+    }
 
-  @Test
-  fun `create child group`() {
-    val childGroup = CreateChildGroup("PG", "CG", "Group")
-    groupsController.createChildGroup(authentication, childGroup)
-    verify(groupsService).createChildGroup("user", childGroup)
+    @Test
+    fun `create - group already exist exception`() {
+      doThrow(GroupExistsException("_code", "group code already exists")).whenever(groupsService)
+        .createGroup(
+          anyString(),
+          any()
+        )
+
+      @Suppress("ClassName") val Group = CreateGroup("_code", " group")
+      assertThatThrownBy { groupsController.createGroup(authentication, Group) }
+        .isInstanceOf(GroupExistsException::class.java)
+        .withFailMessage("Unable to maintain group: code with reason: group code already exists")
+    }
   }
 
-  @Test
-  fun `create child group - group already exist exception`() {
-    doThrow(ChildGroupExistsException("child_code", "group code already exists")).whenever(groupsService)
-      .createChildGroup(
-        anyString(),
-        any()
-      )
+  @Nested
+  inner class `create child group` {
+    @Test
+    fun create() {
+      val childGroup = CreateChildGroup("PG", "CG", "Group")
+      groupsController.createChildGroup(authentication, childGroup)
+      verify(groupsService).createChildGroup("user", childGroup)
+    }
 
-    val childGroup = CreateChildGroup("parent_code", "child_code", "Child group")
-    assertThatThrownBy { groupsController.createChildGroup(authentication, childGroup) }
-      .isInstanceOf(ChildGroupExistsException::class.java)
-      .withFailMessage("Unable to maintain group: code with reason: group code already exists")
-  }
+    @Test
+    fun `create - group already exist exception`() {
+      doThrow(ChildGroupExistsException("child_code", "group code already exists")).whenever(groupsService)
+        .createChildGroup(
+          anyString(),
+          any()
+        )
 
-  @Test
-  fun `create child group - parent group not found exception`() {
-    doThrow(GroupNotFoundException("create", "NotGroup", "ParentGroupNotFound")).whenever(groupsService).createChildGroup(
-      anyString(),
-      any()
-    )
+      val childGroup = CreateChildGroup("parent_code", "child_code", "Child group")
+      assertThatThrownBy { groupsController.createChildGroup(authentication, childGroup) }
+        .isInstanceOf(ChildGroupExistsException::class.java)
+        .withFailMessage("Unable to maintain group: code with reason: group code already exists")
+    }
 
-    val childGroup = CreateChildGroup("parent_code", "child_code", "Child group")
+    @Test
+    fun `create - parent group not found exception`() {
+      doThrow(GroupNotFoundException("create", "NotGroup", "ParentGroupNotFound")).whenever(groupsService)
+        .createChildGroup(
+          anyString(),
+          any()
+        )
 
-    assertThatThrownBy { groupsController.createChildGroup(authentication, childGroup) }
-      .isInstanceOf(GroupNotFoundException::class.java)
-      .withFailMessage("Unable to maintain group: NotGroup with reason: not found")
+      val childGroup = CreateChildGroup("parent_code", "child_code", "Child group")
+
+      assertThatThrownBy { groupsController.createChildGroup(authentication, childGroup) }
+        .isInstanceOf(GroupNotFoundException::class.java)
+        .withFailMessage("Unable to maintain group: NotGroup with reason: not found")
+    }
   }
 
   @Test

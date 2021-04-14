@@ -9,6 +9,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.GrantedAuthority
@@ -19,7 +20,9 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ChildGroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.GroupRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
+import uk.gov.justice.digital.hmpps.oauth2server.maintain.GroupsService.GroupExistsException
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.CreateChildGroup
+import uk.gov.justice.digital.hmpps.oauth2server.resource.api.CreateGroup
 import uk.gov.justice.digital.hmpps.oauth2server.resource.api.GroupAmendment
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthGroupRelationshipException
@@ -113,6 +116,36 @@ class GroupsServiceTest {
       mapOf("username" to "user", "groupCode" to "PG", "childGroupCode" to "CG", "childGroupName" to "Child Group"),
       null
     )
+  }
+
+  @Nested
+  inner class createGroup {
+    @Test
+    fun `Create group`() {
+      val createGroup = CreateGroup(groupCode = "CG", groupName = "Group")
+      whenever(groupRepository.findByGroupCode(anyString())).thenReturn(null)
+
+      groupsService.createGroup("user", createGroup)
+      val cg = Group("CG", " Group")
+      verify(groupRepository).findByGroupCode("CG")
+      verify(groupRepository).save(cg)
+      verify(telemetryClient).trackEvent(
+        "GroupCreateSuccess",
+        mapOf("username" to "user", "groupCode" to "CG", "groupName" to "Group"),
+        null
+      )
+    }
+
+    @Test
+    fun `Create group exists`() {
+      val createGroup = CreateGroup(groupCode = "CG", groupName = "Group")
+      whenever(groupRepository.findByGroupCode(anyString())).thenReturn(Group("code", "name"))
+
+      assertThatThrownBy {
+        groupsService.createGroup("user", createGroup)
+      }.isInstanceOf(GroupExistsException::class.java)
+        .hasMessage("Unable to create group: CG with reason: group code already exists")
+    }
   }
 
   @Test
