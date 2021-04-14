@@ -29,6 +29,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserGroup
 import uk.gov.justice.digital.hmpps.oauth2server.model.ErrorDetail
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
+import javax.validation.constraints.Pattern
+import javax.validation.constraints.Size
 
 @Validated
 @RestController
@@ -257,32 +259,38 @@ data class ChildGroupDetails(
   @ApiModelProperty(required = true, value = "Group Name", example = "HDC NPS North East")
   val groupName: String,
 ) {
-  constructor(g: ChildGroup) : this(
-    g.groupCode,
-    g.groupName,
-  )
+  constructor(g: ChildGroup) : this(g.groupCode, g.groupName,)
 }
 
 data class CreateGroup(
   @ApiModelProperty(required = true, value = "Group Code", example = "HDC_NPS_NE", position = 1)
   @field:NotBlank(message = "group code must be supplied")
+  @field:Size(min = 2, max = 30)
+  @field:Pattern(regexp = "^[0-9A-Za-z_]*")
   val groupCode: String,
 
   @ApiModelProperty(required = true, value = "groupName", example = "HDC NPS North East", position = 2)
   @field:NotBlank(message = "group name must be supplied")
+  @field:Size(min = 4, max = 100)
+  @field:Pattern(regexp = "^[0-9A-Za-z- ,.()'&]*\$")
   val groupName: String,
 )
 
 data class CreateChildGroup(
   @ApiModelProperty(required = true, value = "Parent Group Code", example = "HNC_NPS", position = 1)
   @field:NotBlank(message = "parent group code must be supplied")
-  val parentGroupCode: String,
+  @field:Size(min = 2, max = 30)
+  @field:Pattern(regexp = "^[0-9A-Za-z_]*") val parentGroupCode: String,
 
   @ApiModelProperty(required = true, value = "Group Code", example = "HDC_NPS_NE", position = 2)
   @field:NotBlank(message = "group code must be supplied")
+  @field:Size(min = 2, max = 30)
+  @field:Pattern(regexp = "^[0-9A-Za-z_]*")
   val groupCode: String,
 
   @ApiModelProperty(required = true, value = "groupName", example = "HDC NPS North East", position = 3)
   @field:NotBlank(message = "group name must be supplied")
+  @field:Size(min = 4, max = 100)
+  @field:Pattern(regexp = "^[0-9A-Za-z- ,.()'&]*\$")
   val groupName: String,
 )
