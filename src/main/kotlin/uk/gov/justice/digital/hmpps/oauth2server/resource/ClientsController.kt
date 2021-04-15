@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDetailsWithCopies
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
+import java.time.LocalDateTime
 import java.util.Base64.getEncoder
 
 @Controller
@@ -122,7 +123,7 @@ class ClientsController(
     @RequestParam(value = "last", required = true) lastAccessed: String,
   ):
     ModelAndView = ModelAndView("ui/generateSecretPrompt", "clientId", clientId)
-      .addObject("lastAccessed", lastAccessed)
+      .addObject("lastAccessed", LocalDateTime.parse(lastAccessed))
 
   @PostMapping("/generate")
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
