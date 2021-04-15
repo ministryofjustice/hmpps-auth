@@ -299,10 +299,12 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     with(clientMaintenancePage) {
       isAtPage()
       assertThat(el("#rotation-test-client-last-accessed").text()).isEqualTo("28-01-2013 13:23")
-      assertThat(el("#rotation-test-client-secret-updated").text()).isEqualTo("27-01-2013 13:23")
+      val secretDateTime = LocalDateTime.parse(el("#rotation-test-client-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      assertThat(secretDateTime).isAfter(LocalDateTime.now().minusDays(1))
       assertThat(el("#rotation-test-client-created").text()).isEqualTo("26-01-2013 13:23")
       assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
-      assertThat(el("#rotation-test-client-2-secret-updated").text()).isEqualTo("25-12-2018 01:03")
+      val secretDateTime2 = LocalDateTime.parse(el("#rotation-test-client-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      assertThat(secretDateTime2).isAfter(LocalDateTime.now().minusDays(1))
       assertThat(el("#rotation-test-client-2-created").text()).isEqualTo("25-12-2018 01:03")
     }
   }
