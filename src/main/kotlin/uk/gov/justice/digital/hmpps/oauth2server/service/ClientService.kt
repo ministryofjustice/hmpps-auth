@@ -2,12 +2,14 @@
 
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.oauth2.provider.ClientAlreadyExistsException
 import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordGenerator
@@ -48,10 +50,12 @@ class ClientService(
       .filter { it.id == searchClientId || it.id.substringAfter(searchClientId).matches(clientIdSuffixRegex) }
   }
 
+  @Transactional(transactionManager = "authTransactionManager")
   @Throws(NoSuchClientException::class)
   fun generateClientSecret(clientId: String): String {
     val clientSecret = passwordGenerator.generatePassword()
     clientsDetailsService.updateClientSecret(clientId, clientSecret)
+    clientRepository.findByIdOrNull(clientId)?.resetSecretUpdated()
     return clientSecret
   }
 

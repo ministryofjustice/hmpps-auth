@@ -7,7 +7,7 @@
   <title>Maintain Client Configuration</title>
 </head>
 <body>
-<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+<div layout:fragment="content" class="govuk-grid-column-three-quarters">
   <div th:if="${param.error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
        data-module="govuk-error-summary">
     <h2 class="govuk-error-summary__title" id="error-summary">
@@ -33,6 +33,8 @@
         <thead class="govuk-table__head">
         <tr class="govuk-table__row">
           <th scope="col" class="govuk-table__header">Client ID</th>
+          <th scope="col" class="govuk-table__header">Created</th>
+          <th scope="col" class="govuk-table__header">Secret updated</th>
           <th scope="col" class="govuk-table__header">Last accessed</th>
           <th scope="col" class="govuk-table__header">Client secret</th>
         </tr>
@@ -42,8 +44,14 @@
           <td class="govuk-table__cell" th:id="${client.id}" th:text="${client.id}">
             clientId
           </td>
+          <td class="govuk-table__cell" th:text="${#temporals.format(client.created,'dd-MM-yyyy HH:mm')}" th:id="${client.id + '-created'}">
+            a date
+          </td>
+          <td class="govuk-table__cell" th:text="${#temporals.format(client.secretUpdated,'dd-MM-yyyy HH:mm')}" th:id="${client.id + '-secret-updated'}">
+            a date
+          </td>
           <td class="govuk-table__cell" th:text="${#temporals.format(client.lastAccessed,'dd-MM-yyyy HH:mm')}" th:id="${client.id + '-last-accessed'}">
-            a date$
+            a date
           </td>
           <td class="govuk-table__cell">
             <a class="govuk-button--secondary govuk-button" role="button" th:id="${'generate-secret-' + client.id}"

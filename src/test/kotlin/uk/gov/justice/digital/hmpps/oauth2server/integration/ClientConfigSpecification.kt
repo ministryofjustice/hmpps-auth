@@ -209,6 +209,27 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     clientUpdatedSuccessPage.isAtPage()
       .continueToClientUiPage()
 
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    with(clientMaintenancePage) {
+      isAtPage()
+      assertThat(el("#rotation-test-client-last-accessed").text()).isEqualTo("28-01-2013 13:23")
+      val secretDateTime = LocalDateTime.parse(el("#rotation-test-client-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      assertThat(secretDateTime).isAfter(LocalDateTime.now().minusMinutes(2))
+      assertThat(el("#rotation-test-client-created").text()).isEqualTo("26-01-2013 13:23")
+
+      assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
+      val secretDateTime2 = LocalDateTime.parse(el("#rotation-test-client-2-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      assertThat(secretDateTime2).isAfter(LocalDateTime.now().minusMinutes(2))
+      assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
+
+      val accessedDateTime3 = LocalDateTime.parse(el("#rotation-test-client-3-last-accessed").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      assertThat(accessedDateTime3).isAfter(LocalDateTime.now().minusMinutes(2))
+      val secretDateTime3 = LocalDateTime.parse(el("#rotation-test-client-3-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      assertThat(secretDateTime3).isAfter(LocalDateTime.now().minusMinutes(2))
+      val createdDateTime3 = LocalDateTime.parse(el("#rotation-test-client-3-created").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      assertThat(createdDateTime3).isAfter(LocalDateTime.now().minusMinutes(2))
+    }
+
     goTo("/ui/clients/rotation-test-client-3/delete")
     clientSummaryPage.isAtPage()
       .checkClientDoesntExist("rotation-test-client-3")
@@ -271,15 +292,20 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `Display last accessed`() {
+  fun `Display last accessed, created and secret updated`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
     goTo(clientSummaryPage).editClient("rotation-test-client")
     with(clientMaintenancePage) {
       isAtPage()
       assertThat(el("#rotation-test-client-last-accessed").text()).isEqualTo("28-01-2013 13:23")
-      val dateTime = LocalDateTime.parse(el("#rotation-test-client-2-last-accessed").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
-      assertThat(dateTime).isAfter(LocalDateTime.now().minusDays(1))
+      val secretDateTime = LocalDateTime.parse(el("#rotation-test-client-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      assertThat(secretDateTime).isAfter(LocalDateTime.now().minusDays(1))
+      assertThat(el("#rotation-test-client-created").text()).isEqualTo("26-01-2013 13:23")
+      assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
+      val secretDateTime2 = LocalDateTime.parse(el("#rotation-test-client-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      assertThat(secretDateTime2).isAfter(LocalDateTime.now().minusDays(1))
+      assertThat(el("#rotation-test-client-2-created").text()).isEqualTo("25-12-2018 01:03")
     }
   }
 

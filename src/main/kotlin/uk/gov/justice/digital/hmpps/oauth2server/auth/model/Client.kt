@@ -42,10 +42,20 @@ data class Client(
   val accessTokenValidity: Int? = 0,
 
   @Column(name = "last_accessed")
-  var lastAccessed: LocalDateTime = LocalDateTime.now()
+  var lastAccessed: LocalDateTime = LocalDateTime.now(),
+
+  @Column
+  var created: LocalDateTime = LocalDateTime.now(),
+
+  @Column(name = "secret_updated")
+  var secretUpdated: LocalDateTime = LocalDateTime.now()
 ) {
   fun resetLastAccessed() {
     lastAccessed = LocalDateTime.now()
+  }
+
+  fun resetSecretUpdated() {
+    secretUpdated = LocalDateTime.now()
   }
 
   val mfa: MfaAccess
