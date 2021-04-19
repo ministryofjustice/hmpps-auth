@@ -11,7 +11,7 @@ import java.util.Base64
 class DuplicateClientControllerIntTest : IntegrationTest() {
 
   @Test
-  fun `duplicate client endpoint returns new clientId and clientSecret when request has ROLE_OAUTH_ADMIN`() {
+  fun `duplicate client endpoint returns new clientId and clientSecret when request has ROLE_CLIENT_ROTATION_ADMIN`() {
     val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
     val token = getClientCredentialsToken(encodedClientAndSecret)
 
@@ -27,7 +27,7 @@ class DuplicateClientControllerIntTest : IntegrationTest() {
   }
 
   @Test
-  fun `duplicate client endpoint returns error when client not found request has ROLE_OAUTH_ADMIN`() {
+  fun `duplicate client endpoint returns error when client not found request has ROLE_CLIENT_ROTATION_ADMIN`() {
     val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
     val token = getClientCredentialsToken(encodedClientAndSecret)
 
@@ -42,7 +42,7 @@ class DuplicateClientControllerIntTest : IntegrationTest() {
   }
 
   @Test
-  fun `duplicate client endpoint returns not found when client not found request has ROLE_OAUTH_ADMIN`() {
+  fun `duplicate client endpoint returns not found when client not found request has ROLE_CLIENT_ROTATION_ADMIN`() {
     val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
     val token = getClientCredentialsToken(encodedClientAndSecret)
 
@@ -63,6 +63,48 @@ class DuplicateClientControllerIntTest : IntegrationTest() {
 
     webTestClient
       .put().uri("/api/client/not-a-client")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isForbidden
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("""{"error":"access_denied","error_description":"Access is denied"}""")
+  }
+
+  @Test
+  fun `delete client when request has ROLE_CLIENT_ROTATION_ADMIN`() {
+    val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
+    val token = getClientCredentialsToken(encodedClientAndSecret)
+
+    webTestClient
+      .delete().uri("/api/client/delete-test-client")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isOk
+  }
+
+  @Test
+  fun `delete client endpoint returns not found when client not found request has ROLE_CLIENT_ROTATION_ADMIN`() {
+    val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
+    val token = getClientCredentialsToken(encodedClientAndSecret)
+
+    webTestClient
+      .delete().uri("/api/client/not-a-client")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isNotFound
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("""{"error":"Not Found","error_description":"No client found with id = not-a-client","field":"client"}""")
+  }
+
+  @Test
+  fun `delete client endpoint requires role`() {
+    val encodedClientAndSecret = convertToBase64("max-duplicate-client", "clientsecret")
+    val token = getClientCredentialsToken(encodedClientAndSecret)
+
+    webTestClient
+      .delete().uri("/api/client/not-a-client")
       .header("Authorization", "Bearer $token")
       .exchange()
       .expectStatus().isForbidden

@@ -4,6 +4,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
 import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
@@ -12,18 +13,20 @@ import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
+import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
 
 class DuplicateClientControllerTest {
 
   private val clientService: ClientService = mock()
+  private val clientDetailsService: JdbcClientDetailsService = mock()
   private val authentication = TestingAuthenticationToken(
     "duplicate",
     "pass",
     "ROLE_OAUTH_ADMIN"
   )
-  private val duplicateClientController = DuplicateClientController(clientService)
+  private val duplicateClientController = DuplicateClientController(clientService, clientDetailsService)
 
   @Test
   fun `Duplicate client`() {
@@ -59,5 +62,21 @@ class DuplicateClientControllerTest {
     assertThatThrownBy { duplicateClientController.duplicateClient(authentication, "non-client") }
       .isInstanceOf(NoSuchClientException::class.java)
       .withFailMessage("No client with requested id: non-client")
+  }
+
+  @Test
+  fun `Delete client`() {
+    duplicateClientController.deleteClient(authentication, "client")
+
+    verify(clientDetailsService).removeClientDetails("client")
+  }
+
+  @Test
+  fun `delete Client Request - delete client throws NoSuchClientException`() {
+
+    val exception = NoSuchClientException("No client found with id = ")
+    doThrow(exception).whenever(clientDetailsService).removeClientDetails(anyString())
+
+    assertThatThrownBy { duplicateClientController.deleteClient(authentication, "client") }.isEqualTo(exception)
   }
 }
