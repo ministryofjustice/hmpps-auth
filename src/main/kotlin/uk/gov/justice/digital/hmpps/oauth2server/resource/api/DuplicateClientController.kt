@@ -6,7 +6,9 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.NoSuchClientException
+import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RestController
@@ -18,11 +20,12 @@ import java.util.Base64.getEncoder
 @Validated
 @RestController
 class DuplicateClientController(
-  private val clientService: ClientService
+  private val clientService: ClientService,
+  private val clientsDetailsService: JdbcClientDetailsService,
 ) {
 
   @PutMapping("/api/client/{clientId}")
-  @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
+  @PreAuthorize("hasRole('ROLE_CLIENT_ROTATION_ADMIN')")
   // @ApiOperation(
   //   value = "Duplicate Client",
   //   nickname = "DuplicateClient",
@@ -42,6 +45,26 @@ class DuplicateClientController(
     val client = clientService.duplicateClient(clientId)
 
     return DuplicateClientDetail(client)
+  }
+
+  @DeleteMapping("/api/client/{clientId}")
+  @PreAuthorize("hasRole('ROLE_CLIENT_ROTATION_ADMIN')")
+  // @ApiOperation(
+  //   value = "Delete Client",
+  //   nickname = "Delete"
+  // )
+  // @ApiResponses(
+  //   value = [
+  //     ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+  //     ApiResponse(code = 404, message = "client not found.", response = ErrorDetail::class)
+  //   ]
+  // )
+  @Throws(NoSuchClientException::class)
+  fun deleteClient(
+    @ApiIgnore authentication: Authentication,
+    @PathVariable clientId: String,
+  ) {
+    clientsDetailsService.removeClientDetails(clientId)
   }
 }
 
