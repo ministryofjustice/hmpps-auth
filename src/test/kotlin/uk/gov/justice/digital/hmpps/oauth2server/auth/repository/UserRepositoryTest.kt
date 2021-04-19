@@ -101,9 +101,9 @@ class UserRepositoryTest {
     val retrievedEntity = repository.findByUsername(transientEntity.username).orElseThrow()
 
     // equals only compares the business key columns
-    assertThat(retrievedEntity).usingRecursiveComparison().ignoringFields("authorities").isEqualTo(transientEntity)
-    assertThat(retrievedEntity.username).isEqualTo(transientEntity.username)
-    assertThat(retrievedEntity.email).isEqualTo(transientEntity.email)
+    assertThat(retrievedEntity).usingRecursiveComparison().ignoringFields("authorities", "passwordExpiry", "lastLoggedIn").isEqualTo(transientEntity)
+    assertThat(retrievedEntity.passwordExpiry).isEqualToIgnoringNanos(transientEntity.passwordExpiry)
+    assertThat(retrievedEntity.lastLoggedIn).isEqualToIgnoringNanos(transientEntity.lastLoggedIn)
     assertThat(retrievedEntity.name).isEqualTo("first last")
     assertThat(retrievedEntity.authorities).extracting<String> { obj: Authority -> obj.authority }
       .containsOnly("ROLE_LICENCE_VARY", "ROLE_GLOBAL_SEARCH")

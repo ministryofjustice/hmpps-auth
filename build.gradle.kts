@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.1.6"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.1.7"
   kotlin("plugin.spring") version "1.4.32"
   kotlin("plugin.jpa") version "1.4.32"
   id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
@@ -9,7 +9,7 @@ dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
   implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
-  implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.0.RELEASE")
+  implementation("org.springframework.security.oauth:spring-security-oauth2:2.5.1.RELEASE")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
 
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -32,10 +32,10 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
-  implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.2")
+  implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.3")
   implementation("uk.gov.service.notify:notifications-java-client:3.17.0-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:7.7.3")
+  implementation("org.flywaydb:flyway-core:7.8.1")
   implementation("com.zaxxer:HikariCP:4.0.3")
   implementation("org.apache.commons:commons-text:1.9")
   implementation("com.microsoft.sqlserver:mssql-jdbc:9.2.1.jre11")
@@ -66,6 +66,7 @@ tasks {
   compileKotlin {
     kotlinOptions {
       freeCompilerArgs = listOf("-Xjvm-default=all")
+      jvmTarget = "15"
     }
   }
   test {

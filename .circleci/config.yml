@@ -1,11 +1,14 @@
 version: 2.1
 
 orbs:
-  hmpps: ministryofjustice/hmpps@3.0
+  hmpps: ministryofjustice/hmpps@3.1
+  browser-tools: circleci/browser-tools@1.1
 
 jobs:
   validate:
-    executor: hmpps/java
+    executor:
+      name: hmpps/java
+      tag: "16.0"
     environment:
       _JAVA_OPTIONS: -Xmx800m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false
 
@@ -16,7 +19,7 @@ jobs:
             - gradle-{{ checksum "build.gradle.kts" }}
             - gradle-
       - run:
-          command: ./gradlew build
+          command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" build
       - save_cache:
           paths:
             - ~/.gradle
@@ -34,13 +37,14 @@ jobs:
   integration_tests:
     executor:
       name: hmpps/java
-      tag: 11-jdk-browsers
+      tag: 16.0-browsers
     environment:
       _JAVA_OPTIONS: -Xmx512m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false
     steps:
       - checkout
       - attach_workspace:
           at: ~/app
+      - browser-tools/install-browser-tools
       - run:
           name: Run the java app.
           command: env spring.profiles.active=dev,token-verification,delius,azure-oidc-int-test java -Xmx256m -jar build/libs/hmpps-auth-*.jar
@@ -54,7 +58,7 @@ jobs:
           key: gradle-cache-{{ checksum "build.gradle.kts" }}
       - run:
           name: Run Fluent Integration Tests
-          command: ./gradlew testIntegration
+          command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" testIntegration
       - save_cache:
           key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:
