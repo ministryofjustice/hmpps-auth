@@ -66,6 +66,7 @@ tasks {
   compileKotlin {
     kotlinOptions {
       freeCompilerArgs = listOf("-Xjvm-default=all")
+      jvmTarget = "15"
     }
   }
   test {
