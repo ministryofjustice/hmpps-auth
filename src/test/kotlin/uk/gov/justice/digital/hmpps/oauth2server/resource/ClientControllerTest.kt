@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDetailsWithCopies
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
+import java.time.LocalDateTime
 
 class ClientControllerTest {
   private val clientDetailsService: JdbcClientDetailsService = mock()
@@ -142,11 +143,11 @@ class ClientControllerTest {
 
     @Test
     fun `new client secret prompt`() {
-      val modelAndView = controller.newClientSecretPrompt(authentication, "client", "2021-01-01T12:12:12.482760")
+      val modelAndView = controller.newClientSecretPrompt(authentication, "client", "2021-01-01T12:12:12.000482760")
       assertThat(modelAndView.viewName).isEqualTo("ui/generateSecretPrompt")
       assertThat(modelAndView.model).containsOnly(
         entry("clientId", "client"),
-        entry("lastAccessed", "2021-01-01T12:12:12.482760"),
+        entry("lastAccessed", LocalDateTime.of(2021, 1, 1, 12, 12, 12, 482760))
       )
     }
   }
