@@ -8,19 +8,6 @@
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-three-quarters">
-  <div th:if="${param.error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
-       data-module="govuk-error-summary">
-    <h2 class="govuk-error-summary__title" id="error-summary">
-      There is a problem
-    </h2>
-    <div class="govuk-error-summary__body" id="error-detail">
-      <ul class="govuk-list govuk-error-summary__list">
-        <li>
-          <p th:text="#{${'client.maxDuplicated'}}">Max duplicate clients message</p>
-        </li>
-      </ul>
-    </div>
-  </div>
 
   <h1 class="govuk-heading-l">Client deployment information</h1>
 

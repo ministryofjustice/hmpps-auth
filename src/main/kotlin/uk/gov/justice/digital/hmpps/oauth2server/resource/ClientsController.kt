@@ -54,7 +54,6 @@ class ClientsController(
       val (clientDetails, clients) = ClientDetailsWithCopies(BaseClientDetails(), emptyList())
       ModelAndView("ui/form", "clientDetails", clientDetails)
         .addObject("clients", clients)
-        .addObject("deployment", "empty")
     }
   }
 
