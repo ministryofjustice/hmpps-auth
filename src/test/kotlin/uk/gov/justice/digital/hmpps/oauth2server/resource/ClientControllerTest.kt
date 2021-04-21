@@ -290,7 +290,7 @@ class ClientControllerTest {
       )
       val modelAndView = controller.showDeploymentForm("client-id-1")
 
-      assertThat(modelAndView.viewName).isEqualTo("/ui/deploymentForm")
+      assertThat(modelAndView.viewName).isEqualTo("ui/deploymentForm")
       assertThat(modelAndView.model["baseClientId"]).isEqualTo("client-id")
       assertThat(modelAndView.model["clientDeployment"] as ClientDeployment).isNotNull
     }
@@ -302,7 +302,7 @@ class ClientControllerTest {
       )
       val modelAndView = controller.showDeploymentForm("client-id-1")
 
-      assertThat(modelAndView.viewName).isEqualTo("/ui/deploymentForm")
+      assertThat(modelAndView.viewName).isEqualTo("ui/deploymentForm")
       assertThat(modelAndView.model["baseClientId"]).isEqualTo("client-id")
       assertThat(modelAndView.model["clientDeployment"] as ClientDeployment).isNotNull
     }
