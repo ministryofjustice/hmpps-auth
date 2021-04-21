@@ -358,7 +358,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `Client deployment details are displayed for hosting - cloud platform`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("service-client")
     clientMaintenancePage.isAtPage()
       .checkDeploymentDetailsCloudPlatform()
   }
@@ -435,9 +435,9 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
     assertThat(el("#teamContact").text()).isEqualTo("A Team contact")
     assertThat(el("#teamSlack").text()).isEqualTo("A team slack")
     assertThat(el("#hosting").text()).isEqualTo("CLOUDPLATFORM")
-    assertThat(el("#namespace").text()).isEqualTo("rotation-dev")
-    assertThat(el("#deployment").text()).isEqualTo("rotation")
-    assertThat(el("#secretName").text()).isEqualTo("rotation")
+    assertThat(el("#namespace").text()).isEqualTo("service-dev")
+    assertThat(el("#deployment").text()).isEqualTo("service-deployment")
+    assertThat(el("#secretName").text()).isEqualTo("service-secret")
     assertThat(el("#clientIdKey").text()).isEqualTo("API_CLIENT_ID")
     assertThat(el("#secretKey").text()).isEqualTo("API_CLIENT_SECRET")
     return this

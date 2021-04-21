@@ -26,7 +26,7 @@ class ClientDeploymentSpecification : AbstractAuthSpecification() {
       .deploymentChange()
 
     clientDeploymentMaintenancePage.isAtPage()
-      .addClientDeploymentDetails("A Team", "A Team contact", "A team slack", "rotation-dev", "rotation", "rotation", "API_CLIENT_ID", "API_CLIENT_SECRET")
+      .addClientDeploymentDetails("A Team", "A Team contact", "A team slack", "service-dev", "service-deployment", "service-secret", "API_CLIENT_ID", "API_CLIENT_SECRET")
 
     clientSummaryPage.isAtPage()
       .editClient("max-duplicate-client")
@@ -43,7 +43,7 @@ class ClientDeploymentSpecification : AbstractAuthSpecification() {
       .deploymentChange()
 
     clientDeploymentMaintenancePage.isAtPage()
-      .addClientDeploymentDetails("A Team", "A Team contact", "A team slack", "rotation-dev", "rotation", "rotation", "API_CLIENT_ID", "API_CLIENT_SECRET")
+      .addClientDeploymentDetails("A Team", "A Team contact", "A team slack", "service-dev", "service-deployment", "service-secret", "API_CLIENT_ID", "API_CLIENT_SECRET")
 
     clientSummaryPage.isAtPage()
       .editClient("max-duplicate-client")
