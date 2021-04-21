@@ -213,20 +213,35 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     with(clientMaintenancePage) {
       isAtPage()
       assertThat(el("#rotation-test-client-last-accessed").text()).isEqualTo("28-01-2013 13:23")
-      val secretDateTime = LocalDateTime.parse(el("#rotation-test-client-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      val secretDateTime = LocalDateTime.parse(
+        el("#rotation-test-client-secret-updated").text(),
+        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+      )
       assertThat(secretDateTime).isAfter(LocalDateTime.now().minusMinutes(2))
       assertThat(el("#rotation-test-client-created").text()).isEqualTo("26-01-2013 13:23")
 
       assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
-      val secretDateTime2 = LocalDateTime.parse(el("#rotation-test-client-2-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      val secretDateTime2 = LocalDateTime.parse(
+        el("#rotation-test-client-2-secret-updated").text(),
+        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+      )
       assertThat(secretDateTime2).isAfter(LocalDateTime.now().minusMinutes(2))
       assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
 
-      val accessedDateTime3 = LocalDateTime.parse(el("#rotation-test-client-3-last-accessed").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      val accessedDateTime3 = LocalDateTime.parse(
+        el("#rotation-test-client-3-last-accessed").text(),
+        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+      )
       assertThat(accessedDateTime3).isAfter(LocalDateTime.now().minusMinutes(2))
-      val secretDateTime3 = LocalDateTime.parse(el("#rotation-test-client-3-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      val secretDateTime3 = LocalDateTime.parse(
+        el("#rotation-test-client-3-secret-updated").text(),
+        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+      )
       assertThat(secretDateTime3).isAfter(LocalDateTime.now().minusMinutes(2))
-      val createdDateTime3 = LocalDateTime.parse(el("#rotation-test-client-3-created").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      val createdDateTime3 = LocalDateTime.parse(
+        el("#rotation-test-client-3-created").text(),
+        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+      )
       assertThat(createdDateTime3).isAfter(LocalDateTime.now().minusMinutes(2))
     }
 
@@ -299,11 +314,17 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     with(clientMaintenancePage) {
       isAtPage()
       assertThat(el("#rotation-test-client-last-accessed").text()).isEqualTo("28-01-2013 13:23")
-      val secretDateTime = LocalDateTime.parse(el("#rotation-test-client-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      val secretDateTime = LocalDateTime.parse(
+        el("#rotation-test-client-secret-updated").text(),
+        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+      )
       assertThat(secretDateTime).isAfter(LocalDateTime.now().minusDays(1))
       assertThat(el("#rotation-test-client-created").text()).isEqualTo("26-01-2013 13:23")
       assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
-      val secretDateTime2 = LocalDateTime.parse(el("#rotation-test-client-secret-updated").text(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+      val secretDateTime2 = LocalDateTime.parse(
+        el("#rotation-test-client-secret-updated").text(),
+        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+      )
       assertThat(secretDateTime2).isAfter(LocalDateTime.now().minusDays(1))
       assertThat(el("#rotation-test-client-2-created").text()).isEqualTo("25-12-2018 01:03")
     }
@@ -331,6 +352,24 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     goTo("/ui/clients/rotation-test-client-3/delete")
     clientSummaryPage.isAtPage()
       .checkClientDoesntExist("rotation-test-client-3")
+  }
+
+  @Test
+  fun `Client deployment details are displayed for hosting - cloud platform`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("rotation-test-client")
+    clientMaintenancePage.isAtPage()
+      .checkDeploymentDetailsCloudPlatform()
+  }
+
+  @Test
+  fun `Client deployment details are displayed for hosting - other`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("individual-client")
+    clientMaintenancePage.isAtPage()
+      .checkDeploymentDetailsOther()
   }
 }
 
@@ -390,6 +429,35 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
     return this
   }
 
+  fun checkDeploymentDetailsCloudPlatform(team: String = "A Team"): ClientMaintenancePage {
+    assertThat(el("#clientType").text()).isEqualTo("SERVICE")
+    assertThat(el("#team").text()).isEqualTo(team)
+    assertThat(el("#teamContact").text()).isEqualTo("A Team contact")
+    assertThat(el("#teamSlack").text()).isEqualTo("A team slack")
+    assertThat(el("#hosting").text()).isEqualTo("CLOUDPLATFORM")
+    assertThat(el("#namespace").text()).isEqualTo("rotation-dev")
+    assertThat(el("#deployment").text()).isEqualTo("rotation")
+    assertThat(el("#secretName").text()).isEqualTo("rotation")
+    assertThat(el("#clientIdKey").text()).isEqualTo("API_CLIENT_ID")
+    assertThat(el("#secretKey").text()).isEqualTo("API_CLIENT_SECRET")
+    return this
+  }
+
+  fun checkDeploymentDetailsOther(): ClientMaintenancePage {
+    assertThat(el("#clientType").text()).isEqualTo("PERSONAL")
+    assertThat(el("#team").text()).isEqualTo("Bob")
+    assertThat(el("#teamContact").text()).isEqualTo("Bob@digital.justice.gov.uk")
+    assertThat(el("#teamSlack").text()).isEqualTo("bob slack")
+    assertThat(el("#hosting").text()).isEqualTo("OTHER")
+
+    assertThat(el("#namespace").displayed()).isFalse
+    assertThat(el("#deployment").displayed()).isFalse
+    assertThat(el("#secretName").displayed()).isFalse
+    assertThat(el("#clientIdKey").displayed()).isFalse
+    assertThat(el("#secretKey").displayed()).isFalse
+    return this
+  }
+
   fun editClient(client: String = "apireporting"): ClientMaintenancePage {
     el("#edit-$client").click()
     return this
@@ -412,6 +480,10 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
   fun duplicate(): ClientMaintenancePage {
     duplicate.click()
     return this
+  }
+
+  fun deploymentChange() {
+    el("#deploymentChange").click()
   }
 
   fun generateClientSecret(client: String) {

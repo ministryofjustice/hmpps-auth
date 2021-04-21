@@ -20,15 +20,20 @@ import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Hosting
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientDeploymentRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientRepository
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ClientsController.AuthClientDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordGenerator
 
 internal class ClientServiceTest {
   private val clientRepository: ClientRepository = mock()
+  private val clientDeploymentRepository: ClientDeploymentRepository = mock()
   private val clientDetailsService: JdbcClientDetailsService = mock()
   private val passwordGenerator: PasswordGenerator = mock()
-  private val clientService = ClientService(clientDetailsService, passwordGenerator, clientRepository)
+  private val clientService = ClientService(clientDetailsService, passwordGenerator, clientRepository, clientDeploymentRepository)
 
   @Nested
   inner class addClient {
@@ -250,6 +255,58 @@ internal class ClientServiceTest {
     }
   }
 
+  @Nested
+  inner class clientDeployment {
+
+    @Test
+    internal fun `load client deployment details`() {
+      val clientDeploymentDetails = createClientDeploymentDetails()
+      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(clientDeploymentDetails)
+      val clientDeployment = clientService.loadClientDeploymentDetails("client")
+
+      assertThat(clientDeployment).isEqualTo(clientDeploymentDetails)
+    }
+
+    @Test
+    internal fun `load client deployment details - no details held`() {
+      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(null)
+      val clientDeployment = clientService.loadClientDeploymentDetails("client")
+
+      assertThat(clientDeployment).isNull()
+    }
+
+    @Test
+    internal fun `get client deployment details and baseClientId`() {
+      val clientDeploymentDetails = createClientDeploymentDetails()
+
+      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(clientDeploymentDetails)
+      val (clientDeployment, baseClientId) = clientService.getClientDeploymentDetailsAndBaseClientId("client-1")
+
+      assertThat(clientDeployment).isEqualTo(clientDeploymentDetails)
+      assertThat(baseClientId).isEqualTo("client")
+    }
+
+    @Test
+    internal fun `load client deployment details and baseClientId- no details held`() {
+      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(null)
+      val clientDeployment = clientService.getClientDeploymentDetailsAndBaseClientId("client")
+
+      assertThat(clientDeployment).isEqualTo(Pair(null, "client"))
+    }
+
+    @Test
+    internal fun `save client deployment details`() {
+      val clientDeploymentDetails = createClientDeploymentDetails()
+      clientService.saveClientDeploymentDetails(clientDeploymentDetails)
+
+      verify(clientDeploymentRepository).save(
+        check {
+          assertThat(it).usingRecursiveComparison().isEqualTo((clientDeploymentDetails))
+        }
+      )
+    }
+  }
+
   private fun createAuthClientDetails(): AuthClientDetails {
     val authClientDetails = AuthClientDetails()
     authClientDetails.clientId = "client"
@@ -283,4 +340,18 @@ internal class ClientServiceTest {
     }
     return baseClientDetails
   }
+
+  private fun createClientDeploymentDetails(): ClientDeployment = ClientDeployment(
+    baseClientId = "client",
+    type = ClientType.SERVICE,
+    team = "A-Team",
+    teamContact = "bob@Ateam",
+    teamSlack = "slack",
+    hosting = Hosting.CLOUDPLATFORM,
+    namespace = "namespace",
+    deployment = "deployment",
+    secretName = "secret-name",
+    clientIdKey = "client-id-key",
+    secretKey = "secret-key",
+  )
 }

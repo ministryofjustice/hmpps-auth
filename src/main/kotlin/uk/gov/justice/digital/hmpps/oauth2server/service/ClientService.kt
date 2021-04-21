@@ -11,6 +11,8 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
+import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientDeploymentRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordGenerator
 
@@ -19,6 +21,7 @@ class ClientService(
   private val clientsDetailsService: JdbcClientDetailsService,
   private val passwordGenerator: PasswordGenerator,
   private val clientRepository: ClientRepository,
+  private val clientDeploymentRepository: ClientDeploymentRepository,
 ) {
 
   @Throws(ClientAlreadyExistsException::class)
@@ -48,6 +51,21 @@ class ClientService(
     val searchClientId = baseClientId(clientId)
     return clientRepository.findByIdStartsWithOrderById(searchClientId)
       .filter { it.id == searchClientId || it.id.substringAfter(searchClientId).matches(clientIdSuffixRegex) }
+  }
+
+  fun loadClientDeploymentDetails(clientId: String): ClientDeployment? {
+    val searchClientId = baseClientId(clientId)
+    return clientDeploymentRepository.findByBaseClientId(searchClientId)
+  }
+
+  fun getClientDeploymentDetailsAndBaseClientId(clientId: String): Pair<ClientDeployment?, String> {
+    val baseClientId = baseClientId(clientId)
+    return Pair(clientDeploymentRepository.findByBaseClientId(baseClientId), baseClientId)
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  fun saveClientDeploymentDetails(clientDeployment: ClientDeployment) {
+    clientDeploymentRepository.save(clientDeployment)
   }
 
   @Transactional(transactionManager = "authTransactionManager")

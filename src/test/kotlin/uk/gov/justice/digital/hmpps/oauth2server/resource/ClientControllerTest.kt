@@ -21,8 +21,10 @@ import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
-import org.springframework.ui.ExtendedModelMap
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Hosting
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ClientsController.AuthClientDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
@@ -45,25 +47,28 @@ class ClientControllerTest {
   inner class EditFormRequest {
     @Test
     fun `show edit form new client`() {
-      val model = ExtendedModelMap()
-      val view = controller.showEditForm(null, model)
+      val modelAndView = controller.showEditForm(null)
 
-      assertThat(view).isEqualTo("ui/form")
-      assertThat(model["clients"] as List<*>).isEmpty()
-      assertThat(model["clientDetails"] as ClientDetails).isNotNull
+      assertThat(modelAndView.viewName).isEqualTo("ui/form")
+      assertThat(modelAndView.model["clients"] as List<*>).isEmpty()
+      assertThat(modelAndView.model["clientDetails"] as ClientDetails).isNotNull
+      assertThat(modelAndView.model["deployment"]).isEqualTo("empty")
     }
 
     @Test
     fun `show edit form existing client`() {
-      val model = ExtendedModelMap()
       whenever(clientService.loadClientWithCopies(anyString())).thenReturn(
         ClientDetailsWithCopies(BaseClientDetails(), listOf(Client("client-1")))
       )
-      val view = controller.showEditForm("client-id", model)
+      whenever(clientService.loadClientDeploymentDetails(anyString())).thenReturn(
+        ClientDeployment(baseClientId = "client-id")
+      )
+      val modelAndView = controller.showEditForm("client-id")
 
-      assertThat(view).isEqualTo("ui/form")
-      assertThat(model["clients"] as List<*>).extracting("id").containsOnly("client-1")
-      assertThat(model["clientDetails"] as ClientDetails).isNotNull
+      assertThat(modelAndView.viewName).isEqualTo("ui/form")
+      assertThat(modelAndView.model["clients"] as List<*>).extracting("id").containsOnly("client-1")
+      assertThat(modelAndView.model["clientDetails"] as ClientDetails).isNotNull
+      assertThat(modelAndView.model["deployment"] as ClientDeployment).isNotNull
     }
   }
 
@@ -274,5 +279,62 @@ class ClientControllerTest {
       val authClientDetails = AuthClientDetails()
       assertThat(authClientDetails.mfa).isNull()
     }
+  }
+
+  @Nested
+  inner class ClientDeploymentFormRequest {
+    @Test
+    fun `show add client deployment details form`() {
+      whenever(clientService.getClientDeploymentDetailsAndBaseClientId(anyString())).thenReturn(
+        Pair(null, "client-id")
+      )
+      val modelAndView = controller.showDeploymentForm("client-id-1")
+
+      assertThat(modelAndView.viewName).isEqualTo("/ui/deploymentForm")
+      assertThat(modelAndView.model["baseClientId"]).isEqualTo("client-id")
+      assertThat(modelAndView.model["clientDeployment"] as ClientDeployment).isNotNull
+    }
+
+    @Test
+    fun `show edit client deployment details form`() {
+      whenever(clientService.getClientDeploymentDetailsAndBaseClientId(anyString())).thenReturn(
+        Pair(ClientDeployment(baseClientId = "client-id"), "client-id")
+      )
+      val modelAndView = controller.showDeploymentForm("client-id-1")
+
+      assertThat(modelAndView.viewName).isEqualTo("/ui/deploymentForm")
+      assertThat(modelAndView.model["baseClientId"]).isEqualTo("client-id")
+      assertThat(modelAndView.model["clientDeployment"] as ClientDeployment).isNotNull
+    }
+  }
+
+  @Nested
+  inner class EditClientDeployment {
+    @Test
+    fun `edit client deployment request - update existing client`() {
+      val clientDeployment: ClientDeployment = createClientDeploymentDetails()
+      val modelAndView = controller.addClientDeploymentDetails(authentication, clientDeployment)
+      verify(clientService).saveClientDeploymentDetails(clientDeployment)
+      // verify(telemetryClient).trackEvent(
+      //   "AuthClientDeploymentDetailsUpdate",
+      //   mapOf("username" to "user", "clientId" to "client"),
+      //   null
+      // )
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui")
+    }
+
+    private fun createClientDeploymentDetails(): ClientDeployment = ClientDeployment(
+      baseClientId = "client",
+      type = ClientType.SERVICE,
+      team = "A-Team",
+      teamContact = "bob@Ateam",
+      teamSlack = "slack",
+      hosting = Hosting.CLOUDPLATFORM,
+      namespace = "namespace",
+      deployment = "deployment",
+      secretName = "secret-name",
+      clientIdKey = "client-id-key",
+      secretKey = "secret-key",
+    )
   }
 }
