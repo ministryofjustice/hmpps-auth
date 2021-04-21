@@ -76,7 +76,7 @@ class ClientDeploymentSpecification : AbstractAuthSpecification() {
   fun `client deployment details are displayed in input field for client with existing deployment details`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("service-client")
     clientMaintenancePage.isAtPage()
       .deploymentChange()
 
@@ -157,9 +157,9 @@ class ClientDeploymentMaintenancePage : AuthPage<ClientDeploymentMaintenancePage
     assertThat(el("#team").value()).isEqualTo("A Team")
     assertThat(el("#teamContact").value()).isEqualTo("A Team contact")
     assertThat(el("#teamSlack").value()).isEqualTo("A team slack")
-    assertThat(el("#namespace").value()).isEqualTo("rotation-dev")
-    assertThat(el("#deployment").value()).isEqualTo("rotation")
-    assertThat(el("#secretName").value()).isEqualTo("rotation")
+    assertThat(el("#namespace").value()).isEqualTo("service-dev")
+    assertThat(el("#deployment").value()).isEqualTo("service-deployment")
+    assertThat(el("#secretName").value()).isEqualTo("service-secret")
     assertThat(el("#clientIdKey").value()).isEqualTo("API_CLIENT_ID")
     assertThat(el("#secretKey").value()).isEqualTo("API_CLIENT_SECRET")
     return this
