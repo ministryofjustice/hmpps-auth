@@ -60,6 +60,10 @@ class ClientDeploymentSpecification : AbstractAuthSpecification() {
 
     clientMaintenancePage.isAtPage()
       .checkDeploymentDetailsCloudPlatform("Changed Team")
+      .deploymentChange()
+
+    clientDeploymentMaintenancePage.isAtPage()
+      .changeTeamName()
 
     clientSummaryPage.isAtPage()
       .editClient("max-duplicate-client")
