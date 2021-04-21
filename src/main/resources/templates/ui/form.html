@@ -73,7 +73,7 @@
   </div>
 
   <div class="govuk-form-group govuk-grid-column-three-quarters">
-    <div class="govuk-form-group" th:if="${param.client}" th:unless="${#strings.equals(clientDetails, 'empty')}">
+    <div class="govuk-form-group" th:if="${param.client}">
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
           <h2 class="govuk-heading-m">Deployment details</h2>

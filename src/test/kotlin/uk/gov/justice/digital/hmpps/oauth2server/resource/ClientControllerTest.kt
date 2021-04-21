@@ -52,7 +52,6 @@ class ClientControllerTest {
       assertThat(modelAndView.viewName).isEqualTo("ui/form")
       assertThat(modelAndView.model["clients"] as List<*>).isEmpty()
       assertThat(modelAndView.model["clientDetails"] as ClientDetails).isNotNull
-      assertThat(modelAndView.model["deployment"]).isEqualTo("empty")
     }
 
     @Test
