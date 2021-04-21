@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns="http://www.w3.org/1999/html" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}">
+<head lang="en">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <title>Maintain Client Deployment Configuration</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-three-quarters">
+  <div th:if="${param.error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
+       data-module="govuk-error-summary">
+    <h2 class="govuk-error-summary__title" id="error-summary">
+      There is a problem
+    </h2>
+    <div class="govuk-error-summary__body" id="error-detail">
+      <ul class="govuk-list govuk-error-summary__list">
+        <li>
+          <p th:text="#{${'client.maxDuplicated'}}">Max duplicate clients message</p>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <h1 class="govuk-heading-l">Client deployment information</h1>
+
+  <dl class="govuk-summary-list">
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">
+        Base client id
+      </dt>
+      <dd class="govuk-summary-list__value" id="baseClientIdTitle" th:text="${baseClientId}">
+        Base client id
+      </dd>
+    </div>
+  </dl>
+
+
+  <form th:action="@{/ui/clients/deployment}" method="post">
+    <input type="hidden" id="baseClientId" name="baseClientId" th:value="${baseClientId}"/>
+
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset" aria-describedby="client-type">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+          <p class="govuk-fieldset__heading">
+            Client type
+          </p>
+        </legend>
+        <div class="govuk-radios govuk-radios--inline">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="type" name="type" type="radio" value="SERVICE"
+                   th:attr="checked=${#strings.equals(clientDeployment.type, 'SERVICE')} ? 'checked' ">
+            <label class="govuk-label govuk-radios__label" for="type">
+              Service
+            </label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="type-2" name="type" type="radio" value="PERSONAL"
+                   th:attr="checked=${#strings.equals(clientDeployment.type, 'PERSONAL')} ? 'checked' ">
+            <label class="govuk-label govuk-radios__label" for="type-2">
+              Personal
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="team">Team</label>
+        <input class="govuk-input govuk-!-width-one-half" id="team" name="team" type="text"
+               th:value="${clientDeployment.team ?:''}"/>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="teamContact">Team contact</label>
+        <input class="govuk-input govuk-!-width-one-half" id="teamContact" name="teamContact" type="text"
+               th:value="${clientDeployment.teamContact ?:''}"/>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="teamSlack">Team slack channel</label>
+        <input class="govuk-input govuk-!-width-one-half" id="teamSlack" name="teamSlack" type="text"
+               th:value="${clientDeployment.teamSlack ?:''}"/>
+      </div>
+
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset" aria-describedby="Hosting-hint">
+          <label class="govuk-label">
+            Hosting
+          </label>
+          <div class="govuk-radios govuk-radios--conditional" data-module="govuk-radios">
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="hosting" name="hosting" type="radio" value="CLOUDPLATFORM"
+                     data-aria-controls="conditional-contact"
+                     th:attr="checked=${#strings.equals(clientDeployment.hosting, 'CLOUDPLATFORM')} ? 'checked' ">
+              <label class="govuk-label govuk-radios__label" for="hosting">
+                Cloud Platform
+              </label>
+            </div>
+            <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-contact">
+
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="namespace">Namespace</label>
+                <input class="govuk-input govuk-!-width-one-half" id="namespace" name="namespace" type="text"
+                       th:value="${clientDeployment.namespace ?:''}"/>
+              </div>
+
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="deployment">Deployment</label>
+                <input class="govuk-input govuk-!-width-one-half" id="deployment" name="deployment" type="text"
+                       th:value="${clientDeployment.deployment ?:''}"/>
+              </div>
+
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="secretName">Secret name</label>
+                <input class="govuk-input govuk-!-width-one-half" id="secretName" name="secretName" type="text"
+                       th:value="${clientDeployment.secretName ?:''}"/>
+              </div>
+
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="clientIdKey">Client id key</label>
+                <input class="govuk-input govuk-!-width-one-half" id="clientIdKey" name="clientIdKey" type="text"
+                       th:value="${clientDeployment.clientIdKey ?:''}"/>
+              </div>
+
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="secretKey">Secret key</label>
+                <input class="govuk-input govuk-!-width-one-half" id="secretKey" name="secretKey" type="text"
+                       th:value="${clientDeployment.secretKey ?:''}"/>
+              </div>
+            </div>
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="hosting-2" name="hosting" type="radio" value="OTHER"
+                     data-aria-controls="conditional-contact-2"
+                     th:attr="checked=${#strings.equals(clientDeployment.hosting, 'OTHER')} ? 'checked' ">
+              <label class="govuk-label govuk-radios__label" for="hosting-2">
+                Other
+              </label>
+            </div>
+          </div>
+
+        </fieldset>
+      </div>
+      <div class="govuk-form-group">
+        <input type="submit" class="govuk-button" name="client-submit" value="Save">
+
+        <a class="govuk-button" role="button" id="cancel" th:href="@{/ui}">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+</body>
+</html>

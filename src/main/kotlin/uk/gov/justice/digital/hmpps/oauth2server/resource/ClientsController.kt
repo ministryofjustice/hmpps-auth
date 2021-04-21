@@ -9,7 +9,6 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.stereotype.Controller
-import org.springframework.ui.Model
 import org.springframework.web.bind.WebDataBinder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.InitBinder
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthorityPropertyEditor
 import uk.gov.justice.digital.hmpps.oauth2server.config.SplitCollectionEditor
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
@@ -43,15 +43,39 @@ class ClientsController(
 
   @GetMapping("/form")
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
-  fun showEditForm(@RequestParam(value = "client", required = false) clientId: String?, model: Model): String {
-    val (clientDetails, clients) = if (clientId != null) {
-      clientService.loadClientWithCopies(clientId)
+  fun showEditForm(@RequestParam(value = "client", required = false) clientId: String?): ModelAndView {
+    return if (clientId != null) {
+      val (clientDetails, clients) = clientService.loadClientWithCopies(clientId)
+      val clientDeployment = clientService.loadClientDeploymentDetails(clientId) ?: ClientDeployment(baseClientId = clientId)
+      ModelAndView("ui/form", "clientDetails", clientDetails)
+        .addObject("clients", clients)
+        .addObject("deployment", clientDeployment)
     } else {
-      ClientDetailsWithCopies(BaseClientDetails(), emptyList())
+      val (clientDetails, clients) = ClientDetailsWithCopies(BaseClientDetails(), emptyList())
+      ModelAndView("ui/form", "clientDetails", clientDetails)
+        .addObject("clients", clients)
+        .addObject("deployment", "empty")
     }
-    model.addAttribute("clientDetails", clientDetails)
-      .addAttribute("clients", clients)
-    return "ui/form"
+  }
+
+  @GetMapping("deployment")
+  @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
+  fun showDeploymentForm(@RequestParam(value = "client", required = true) clientId: String): ModelAndView {
+    val (clientDeployment, baseClientId) = clientService.getClientDeploymentDetailsAndBaseClientId(clientId)
+    return ModelAndView("ui/deploymentForm", "baseClientId", baseClientId)
+      .addObject("clientDeployment", clientDeployment ?: ClientDeployment(baseClientId = clientId))
+  }
+
+  @PostMapping("/deployment")
+  @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
+  fun addClientDeploymentDetails(
+    authentication: Authentication,
+    @ModelAttribute clientDeployment: ClientDeployment,
+  ): ModelAndView {
+
+    clientService.saveClientDeploymentDetails(clientDeployment)
+
+    return ModelAndView("redirect:/ui")
   }
 
   @PostMapping("/add")
