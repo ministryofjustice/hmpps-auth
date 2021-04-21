@@ -62,7 +62,7 @@ class ClientsController(
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
   fun showDeploymentForm(@RequestParam(value = "client", required = true) clientId: String): ModelAndView {
     val (clientDeployment, baseClientId) = clientService.getClientDeploymentDetailsAndBaseClientId(clientId)
-    return ModelAndView("/ui/deploymentForm", "baseClientId", baseClientId)
+    return ModelAndView("ui/deploymentForm", "baseClientId", baseClientId)
       .addObject("clientDeployment", clientDeployment ?: ClientDeployment(baseClientId = clientId))
   }
 
