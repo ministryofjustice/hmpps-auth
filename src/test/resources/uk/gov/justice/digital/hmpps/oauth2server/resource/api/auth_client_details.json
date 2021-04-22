@@ -1,0 +1,76 @@
+{
+  "clientDetails": {
+    "scope": [
+      "read"
+    ],
+    "client_id": "another-test-client-3",
+    "client_secret": "$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm",
+    "authorized_grant_types": [
+      "client_credentials"
+    ],
+    "autoapprove": [
+      "read"
+    ],
+    "access_token_validity": 1200
+  },
+  "duplicates": [
+    {
+      "id": "another-test-client-2",
+      "authorities": [],
+      "authorizedGrantTypes": [
+        "client_credentials"
+      ],
+      "scope": [
+        "read"
+      ],
+      "accessTokenValidity": 1200,
+      "lastAccessed": "2019-12-25T01:03:50.123457",
+      "created": "2018-12-25T01:03:50.123457",
+      "secretUpdated": "2018-12-25T01:03:50.123457",
+      "mfa": "none"
+    },
+    {
+      "id": "another-test-client-3",
+      "authorities": [],
+      "authorizedGrantTypes": [
+        "client_credentials"
+      ],
+      "scope": [
+        "read"
+      ],
+      "accessTokenValidity": 1200,
+      "lastAccessed": "2020-01-25T01:03:50.123457",
+      "created": "2019-01-25T01:03:50.123457",
+      "secretUpdated": "2019-01-25T01:03:50.123457",
+      "mfa": "none"
+    },
+    {
+      "id": "another-test-client-4",
+      "authorities": [],
+      "authorizedGrantTypes": [
+        "client_credentials"
+      ],
+      "scope": [
+        "read"
+      ],
+      "accessTokenValidity": 1200,
+      "lastAccessed": "2020-02-25T02:08:45.123457",
+      "created": "2020-02-25T02:08:45.123457",
+      "secretUpdated": "2020-02-25T02:08:45.123457",
+      "mfa": "none"
+    }
+  ],
+  "clientDeployment": {
+    "baseClientId": "another-test-client",
+    "type": "SERVICE",
+    "team": "A Team",
+    "teamContact": "A Team contact",
+    "teamSlack": "A team slack",
+    "hosting": "CLOUDPLATFORM",
+    "namespace": "duplicate-dev",
+    "deployment": "duplicate-deployment",
+    "secretName": "duplicate-secret",
+    "clientIdKey": "API_CLIENT_ID",
+    "secretKey": "API_CLIENT_SECRET"
+  }
+}

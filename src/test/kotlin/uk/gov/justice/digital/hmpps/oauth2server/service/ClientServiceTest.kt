@@ -153,6 +153,49 @@ internal class ClientServiceTest {
   }
 
   @Nested
+  inner class loadClientWithCopiesAndDeployment {
+    @Test
+    internal fun `returns all clients and deployment details`() {
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
+        listOf(
+          Client("some-client-24"),
+          Client("some-client-25")
+        )
+      )
+      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
+      val clientDeploymentDetails = createClientDeploymentDetails()
+      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(clientDeploymentDetails)
+
+      val client = clientService.loadClientAndDeployment("some-client-24")
+      assertThat(client.duplicates).extracting("id").containsOnly("some-client-24", "some-client-25")
+      assertThat(client.clientDeployment).isEqualTo(clientDeploymentDetails)
+      verify(clientRepository).findByIdStartsWithOrderById("some-client")
+      verify(clientDetailsService).loadClientByClientId("some-client-24")
+      verify(clientDeploymentRepository).findByBaseClientId("some-client")
+    }
+
+    @Test
+    internal fun `returns all clients no deployment details held`() {
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
+        listOf(
+          Client("some-client-24"),
+          Client("some-client-25")
+        )
+      )
+      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
+      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(null)
+      val clientDeployment = clientService.loadClientDeploymentDetails("client")
+
+      val client = clientService.loadClientAndDeployment("some-client-24")
+      assertThat(client.duplicates).extracting("id").containsOnly("some-client-24", "some-client-25")
+      assertThat(client.clientDeployment).isNull()
+      verify(clientRepository).findByIdStartsWithOrderById("some-client")
+      verify(clientDetailsService).loadClientByClientId("some-client-24")
+      verify(clientDeploymentRepository).findByBaseClientId("some-client")
+    }
+  }
+
+  @Nested
   inner class duplicateClient {
     @Test
     internal fun `duplicate original client`() {
