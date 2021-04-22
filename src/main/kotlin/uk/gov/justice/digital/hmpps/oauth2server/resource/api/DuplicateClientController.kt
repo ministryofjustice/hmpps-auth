@@ -9,10 +9,12 @@ import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
+import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDuplicateIdsAndDeployment
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
 import java.util.Base64.getEncoder
@@ -23,6 +25,27 @@ class DuplicateClientController(
   private val clientService: ClientService,
   private val clientsDetailsService: JdbcClientDetailsService,
 ) {
+
+  @GetMapping("/api/client/{clientId}")
+  @PreAuthorize("hasRole('ROLE_CLIENT_ROTATION_ADMIN')")
+  // @ApiOperation(
+  //   value = "get Client",
+  //   nickname = "GetClient"
+  //   produces = "application/json"
+  // )
+  // @ApiResponses(
+  //   value = [
+  //     ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+  //     ApiResponse(code = 404, message = "client not found.", response = ErrorDetail::class)
+  //   ]
+  // )
+  @Throws(NoSuchClientException::class)
+  fun getClientIdsAndDeployment(
+    @ApiIgnore authentication: Authentication,
+    @PathVariable clientId: String,
+  ): ClientDuplicateIdsAndDeployment {
+    return clientService.loadClientAndDeployment(clientId)
+  }
 
   @PutMapping("/api/client/{clientId}")
   @PreAuthorize("hasRole('ROLE_CLIENT_ROTATION_ADMIN')")

@@ -14,6 +14,8 @@ import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
+import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDuplicateIdsAndDeployment
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
 
@@ -27,6 +29,27 @@ class DuplicateClientControllerTest {
     "ROLE_OAUTH_ADMIN"
   )
   private val duplicateClientController = DuplicateClientController(clientService, clientDetailsService)
+
+  @Test
+  fun `get client request`() {
+    val clientDetails = ClientDuplicateIdsAndDeployment(
+      "client", listOf("client-1"),
+      ClientDeployment(baseClientId = "client")
+    )
+    whenever(clientService.loadClientAndDeployment(anyString())).thenReturn(clientDetails)
+    val returnedClientDetails = duplicateClientController.getClientIdsAndDeployment(authentication, "client")
+
+    assertThat(returnedClientDetails).isEqualTo(clientDetails)
+  }
+
+  @Test
+  fun `get Client Request - delete client throws NoSuchClientException`() {
+
+    val exception = NoSuchClientException("No client found with id = ")
+    doThrow(exception).whenever(clientService).loadClientAndDeployment(anyString())
+
+    assertThatThrownBy { duplicateClientController.getClientIdsAndDeployment(authentication, "client") }.isEqualTo(exception)
+  }
 
   @Test
   fun `Duplicate client`() {

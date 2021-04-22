@@ -11,6 +11,51 @@ import java.util.Base64
 class DuplicateClientControllerIntTest : IntegrationTest() {
 
   @Test
+  fun `get client details request has ROLE_CLIENT_ROTATION_ADMIN`() {
+    val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
+    val token = getClientCredentialsToken(encodedClientAndSecret)
+
+    webTestClient
+      .get().uri("/api/client/another-test-client-3")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("auth_client_details.json".readFile())
+  }
+
+  @Test
+  fun `get client endpoint returns not found when client not found request has ROLE_CLIENT_ROTATION_ADMIN`() {
+    val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
+    val token = getClientCredentialsToken(encodedClientAndSecret)
+
+    webTestClient
+      .get().uri("/api/client/not-a-client")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isNotFound
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("""{"error":"Not Found","error_description":"No client with requested id: not-a-client","field":"client"}""")
+  }
+
+  @Test
+  fun `get client details endpoint requires role`() {
+    val encodedClientAndSecret = convertToBase64("max-duplicate-client", "clientsecret")
+    val token = getClientCredentialsToken(encodedClientAndSecret)
+
+    webTestClient
+      .get().uri("/api/client/not-a-client")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isForbidden
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("""{"error":"access_denied","error_description":"Access is denied"}""")
+  }
+
+  @Test
   fun `duplicate client endpoint returns new clientId and clientSecret when request has ROLE_CLIENT_ROTATION_ADMIN`() {
     val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
     val token = getClientCredentialsToken(encodedClientAndSecret)
