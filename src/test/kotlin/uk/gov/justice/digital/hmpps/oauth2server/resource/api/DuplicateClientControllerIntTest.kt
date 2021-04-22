@@ -2,12 +2,13 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 import java.util.Base64
-
+@AutoConfigureWebTestClient(timeout = "136000")
 class DuplicateClientControllerIntTest : IntegrationTest() {
 
   @Test

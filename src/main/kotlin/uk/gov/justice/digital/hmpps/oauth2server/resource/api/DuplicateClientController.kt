@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
-import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDetailsWithCopiesAndDeployment
+import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDuplicateIdsAndDeployment
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
 import java.util.Base64.getEncoder
@@ -40,10 +40,10 @@ class DuplicateClientController(
   //   ]
   // )
   @Throws(NoSuchClientException::class)
-  fun getClient(
+  fun getClientIdsAndDeployment(
     @ApiIgnore authentication: Authentication,
     @PathVariable clientId: String,
-  ): ClientDetailsWithCopiesAndDeployment {
+  ): ClientDuplicateIdsAndDeployment {
     return clientService.loadClientAndDeployment(clientId)
   }
 

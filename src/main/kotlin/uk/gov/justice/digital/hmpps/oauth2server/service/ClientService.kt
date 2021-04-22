@@ -47,8 +47,15 @@ class ClientService(
     return ClientDetailsWithCopies(clientsDetailsService.loadClientByClientId(clientId), clients)
   }
 
-  fun loadClientAndDeployment(clientId: String): ClientDetailsWithCopiesAndDeployment {
-    return ClientDetailsWithCopiesAndDeployment(clientsDetailsService.loadClientByClientId(clientId), find(clientId), loadClientDeploymentDetails(clientId))
+  fun loadClientAndDeployment(clientId: String): ClientDuplicateIdsAndDeployment {
+
+    val clientDetailId = clientsDetailsService.loadClientByClientId(clientId).clientId
+
+    val clientIds = find(clientId).map { it.id }
+
+    return ClientDuplicateIdsAndDeployment(
+      clientDetailId, clientIds, loadClientDeploymentDetails(clientId)
+    )
   }
 
   private fun find(clientId: String): List<Client> {
@@ -123,7 +130,7 @@ class ClientService(
 }
 
 data class ClientDetailsWithCopies(val clientDetails: ClientDetails, val duplicates: List<Client>)
-data class ClientDetailsWithCopiesAndDeployment(val clientDetails: ClientDetails, val duplicates: List<Client>, val clientDeployment: ClientDeployment?)
+data class ClientDuplicateIdsAndDeployment(val requestedClientId: String, val duplicates: List<String>, val clientDeployment: ClientDeployment?)
 
 open class DuplicateClientsException(clientId: String, errorCode: String) :
   Exception("Duplicate clientId failed for $clientId with reason: $errorCode")

@@ -155,43 +155,49 @@ internal class ClientServiceTest {
   @Nested
   inner class loadClientWithCopiesAndDeployment {
     @Test
-    internal fun `returns all clients and deployment details`() {
+    internal fun `returns all client ids and deployment details`() {
       whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
         listOf(
-          Client("some-client-24"),
-          Client("some-client-25")
+          Client("client"),
+          Client("client-1"),
+          Client("client-2")
         )
       )
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
+
+      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createAuthClientDetails())
       val clientDeploymentDetails = createClientDeploymentDetails()
       whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(clientDeploymentDetails)
 
-      val client = clientService.loadClientAndDeployment("some-client-24")
-      assertThat(client.duplicates).extracting("id").containsOnly("some-client-24", "some-client-25")
+      val client = clientService.loadClientAndDeployment("client")
+
+      assertThat(client.requestedClientId).isEqualTo("client")
+      assertThat(client.duplicates).containsOnly("client", "client-1", "client-2")
       assertThat(client.clientDeployment).isEqualTo(clientDeploymentDetails)
-      verify(clientRepository).findByIdStartsWithOrderById("some-client")
-      verify(clientDetailsService).loadClientByClientId("some-client-24")
-      verify(clientDeploymentRepository).findByBaseClientId("some-client")
+      verify(clientRepository).findByIdStartsWithOrderById("client")
+      verify(clientDetailsService).loadClientByClientId("client")
+      verify(clientDeploymentRepository).findByBaseClientId("client")
     }
 
     @Test
-    internal fun `returns all clients no deployment details held`() {
+    internal fun `returns all clients ids no deployment details held`() {
       whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
         listOf(
-          Client("some-client-24"),
-          Client("some-client-25")
+          Client("client"),
+          Client("client-1"),
+          Client("client-2")
         )
       )
-      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(BaseClientDetails())
+      whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createAuthClientDetails())
       whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(null)
-      val clientDeployment = clientService.loadClientDeploymentDetails("client")
 
-      val client = clientService.loadClientAndDeployment("some-client-24")
-      assertThat(client.duplicates).extracting("id").containsOnly("some-client-24", "some-client-25")
+      val client = clientService.loadClientAndDeployment("client")
+
+      assertThat(client.requestedClientId).isEqualTo("client")
+      assertThat(client.duplicates).containsOnly("client", "client-1", "client-2")
       assertThat(client.clientDeployment).isNull()
-      verify(clientRepository).findByIdStartsWithOrderById("some-client")
-      verify(clientDetailsService).loadClientByClientId("some-client-24")
-      verify(clientDeploymentRepository).findByBaseClientId("some-client")
+      verify(clientRepository).findByIdStartsWithOrderById("client")
+      verify(clientDetailsService).loadClientByClientId("client")
+      verify(clientDeploymentRepository).findByBaseClientId("client")
     }
   }
 
