@@ -91,14 +91,14 @@ class DuplicateClientControllerTest {
   fun `Delete client`() {
     duplicateClientController.deleteClient(authentication, "client")
 
-    verify(clientDetailsService).removeClientDetails("client")
+    verify(clientService).removeClient("client")
   }
 
   @Test
   fun `delete Client Request - delete client throws NoSuchClientException`() {
 
     val exception = NoSuchClientException("No client found with id = ")
-    doThrow(exception).whenever(clientDetailsService).removeClientDetails(anyString())
+    doThrow(exception).whenever(clientService).removeClient(anyString())
 
     assertThatThrownBy { duplicateClientController.deleteClient(authentication, "client") }.isEqualTo(exception)
   }
