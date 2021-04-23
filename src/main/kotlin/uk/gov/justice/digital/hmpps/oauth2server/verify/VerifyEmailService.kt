@@ -19,8 +19,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
 import java.sql.ResultSet
-import java.util.HashMap
-import java.util.HashSet
 import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
@@ -44,23 +42,13 @@ class VerifyEmailService(
 
   fun getExistingEmailAddressesForUsername(username: String): List<String> =
     jdbcTemplate.queryForList(EXISTING_EMAIL_SQL, mapOf("username" to username), String::class.java)
+      .map { it.toLowerCase() }
 
-  fun getExistingEmailAddressesForUsernames(usernames: List<String>): Map<String, MutableSet<String>> {
-    val emailsByUsername: MutableMap<String, MutableSet<String>> = HashMap()
-    if (usernames.isEmpty()) {
-      return emailsByUsername
-    }
-    jdbcTemplate.query(
-      EXISTING_EMAIL_FOR_USERNAMES_SQL,
-      mapOf("usernames" to usernames)
-    ) { rs: ResultSet ->
-      val username = rs.getString("USERNAME")
-      val email = rs.getString("EMAIL")
-      emailsByUsername
-        .computeIfAbsent(username) { HashSet() }
-        .add(email)
-    }
-    return emailsByUsername
+  fun getExistingEmailAddressesForUsernames(usernames: List<String>): Map<String, Set<String>> {
+    if (usernames.isEmpty()) return emptyMap()
+
+    return jdbcTemplate.query(EXISTING_EMAIL_FOR_USERNAMES_SQL, mapOf("usernames" to usernames)) { rs: ResultSet, _: Int -> rs.getString("USERNAME") to rs.getString("EMAIL") }
+      .groupBy { it.first }.mapValues { it.value.map { p -> p.second.toLowerCase() }.toSet() }
   }
 
   @Transactional(transactionManager = "authTransactionManager")
