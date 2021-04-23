@@ -72,13 +72,13 @@ class OidcJwtAuthenticationSuccessHandler(
     }
 
     return AzureUserPersonDetails(
-      ArrayList(),
-      true,
-      principal.getClaim<String>("oid").toUpperCase(),
-      givenName,
-      familyName,
-      principal.preferredUsername.toLowerCase(),
-      true,
+      authorities = ArrayList(),
+      enabled = true,
+      username = principal.getClaim<String>("oid").toUpperCase(),
+      firstName = givenName,
+      surname = familyName,
+      email = principal.preferredUsername.toLowerCase(),
+      credentialsNonExpired = true,
       accountNonExpired = true,
       accountNonLocked = true
     )
