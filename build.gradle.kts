@@ -33,7 +33,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.3")
-  implementation("uk.gov.service.notify:notifications-java-client:3.17.0-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:3.17.2-RELEASE")
 
   implementation("org.flywaydb:flyway-core:7.8.1")
   implementation("com.zaxxer:HikariCP:4.0.3")
