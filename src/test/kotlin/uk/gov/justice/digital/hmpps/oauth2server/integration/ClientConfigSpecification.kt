@@ -371,6 +371,22 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     clientMaintenancePage.isAtPage()
       .checkDeploymentDetailsOther()
   }
+
+  @Test
+  fun `Client deployment detail are not deleted when client is delete but duplicated exist`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("service-client")
+    clientMaintenancePage.isAtPage()
+      .checkDeploymentDetailsCloudPlatform()
+      .duplicate()
+
+    goTo("/ui/clients/service-client-1/delete")
+
+    goTo(clientSummaryPage).editClient("service-client")
+    clientMaintenancePage.isAtPage()
+      .checkDeploymentDetailsCloudPlatform()
+  }
 }
 
 @PageUrl("/ui")
@@ -421,11 +437,11 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
 
   fun checkDetails(): ClientMaintenancePage {
     assertThat(el("#clientId").value()).isEqualTo("apireporting")
-    assertThat(el("#clientSecret").value()).isBlank()
+    assertThat(el("#clientSecret").value()).isBlank
     assertThat(el("#accessTokenValiditySeconds").value()).isEqualTo("3600")
     assertThat(el("#authorities").value()).isEqualTo("ROLE_REPORTING")
-    assertThat(el("#jwtFields").value()).isBlank()
-    assertThat(el("#databaseUsernameField").value()).isBlank()
+    assertThat(el("#jwtFields").value()).isBlank
+    assertThat(el("#databaseUsernameField").value()).isBlank
     return this
   }
 

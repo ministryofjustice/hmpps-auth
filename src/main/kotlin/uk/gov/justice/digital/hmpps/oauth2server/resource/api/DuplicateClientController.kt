@@ -87,7 +87,7 @@ class DuplicateClientController(
     @ApiIgnore authentication: Authentication,
     @PathVariable clientId: String,
   ) {
-    clientsDetailsService.removeClientDetails(clientId)
+    clientService.removeClient(clientId)
   }
 }
 

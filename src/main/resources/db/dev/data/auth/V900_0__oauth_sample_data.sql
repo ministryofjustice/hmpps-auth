@@ -59,7 +59,8 @@ VALUES ('omicuser','1200','{"jwtFields":"-user_name"}','SYSTEM_READ_ONLY','passw
        ('max-duplicate-client-2','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
        ('delete-test-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
        ('service-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
-       ('individual-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null);
+       ('individual-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
+       ('another-delete-test-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null);
 
 INSERT INTO oauth_client_details (client_id, access_token_validity, additional_information, authorities, authorized_grant_types, autoapprove, client_secret, refresh_token_validity, resource_ids, scope, web_server_redirect_uri, last_accessed, created, secret_updated)
 VALUES ('rotation-test-client','3600','{"mfa":"all"}',null,'authorization_code',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read','http://localhost:8081/login', '2013-01-28 13:23:19.0000000', '2013-01-26 13:23:19.1234567', '2013-01-27 13:23:19.7654321'),
@@ -464,6 +465,7 @@ VALUES ('5bDHCW',
 
 INSERT INTO oauth_client_deployment_details (base_client_id,client_type, team, team_contact, team_slack, hosting, namespace, deployment, secret_name, client_id_key, secret_key)
 VALUES ('service-client','SERVICE','A Team', 'A Team contact', 'A team slack', 'CLOUDPLATFORM','service-dev','service-deployment','service-secret','API_CLIENT_ID','API_CLIENT_SECRET'),
+       ('another-delete-test-client','SERVICE','A Team', 'A Team contact', 'A team slack', 'CLOUDPLATFORM','another-delete-test-dev','another-delete-test-deployment','another-delete-test-secret','API_CLIENT_ID','API_CLIENT_SECRET'),
        ('another-test-client','SERVICE','A Team', 'A Team contact', 'A team slack', 'CLOUDPLATFORM','duplicate-dev','duplicate-deployment','duplicate-secret','API_CLIENT_ID','API_CLIENT_SECRET');
 INSERT INTO oauth_client_deployment_details (base_client_id,client_type, team, team_contact, team_slack, hosting)
 VALUES ('individual-client','PERSONAL','Bob', 'Bob@digital.justice.gov.uk', 'bob slack', 'OTHER');

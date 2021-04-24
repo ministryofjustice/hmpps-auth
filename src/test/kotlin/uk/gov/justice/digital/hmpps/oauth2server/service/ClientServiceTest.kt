@@ -8,6 +8,7 @@ import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -353,6 +354,39 @@ internal class ClientServiceTest {
           assertThat(it).usingRecursiveComparison().isEqualTo((clientDeploymentDetails))
         }
       )
+    }
+  }
+
+  @Nested
+  inner class removeClientAndDeployment {
+
+    @Test
+    internal fun `remove client not duplicates and deployment`() {
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
+        listOf(
+          Client("client"),
+        )
+      )
+
+      clientService.removeClient("client")
+
+      verify(clientDeploymentRepository).deleteByBaseClientId("client")
+      verify(clientDetailsService).removeClientDetails("client")
+    }
+
+    @Test
+    internal fun `remove client duplicates exist no call to delete deployment `() {
+      whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
+        listOf(
+          Client("client"),
+          Client("client-1"),
+        )
+      )
+
+      clientService.removeClient("client")
+
+      verifyZeroInteractions(clientDeploymentRepository)
+      verify(clientDetailsService).removeClientDetails("client")
     }
   }
 

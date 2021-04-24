@@ -248,7 +248,7 @@ class ClientControllerTest {
     fun `delete Client Request - delete client throws NoSuchClientException`() {
 
       val exception = NoSuchClientException("No client found with id = ")
-      doThrow(exception).whenever(clientDetailsService).removeClientDetails(anyString())
+      doThrow(exception).whenever(clientService).removeClient(anyString())
 
       assertThatThrownBy { controller.deleteClient(authentication, "client") }.isEqualTo(exception)
 

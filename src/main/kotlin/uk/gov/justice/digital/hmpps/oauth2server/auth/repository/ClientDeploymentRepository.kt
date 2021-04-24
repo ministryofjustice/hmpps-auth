@@ -6,4 +6,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
 interface ClientDeploymentRepository : CrudRepository<ClientDeployment, String> {
 
   fun findByBaseClientId(baseClientId: String): ClientDeployment?
+
+  fun deleteByBaseClientId(baseClientId: String)
 }

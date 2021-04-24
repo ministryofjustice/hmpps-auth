@@ -88,6 +88,17 @@ class ClientService(
     return clientSecret
   }
 
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(NoSuchClientException::class)
+  fun removeClient(clientId: String) {
+    val clients = find(clientId)
+    if (clients.size == 1) {
+      val baseClientId = baseClientId(clientId)
+      clientDeploymentRepository.deleteByBaseClientId(baseClientId)
+    }
+    clientsDetailsService.removeClientDetails(clientId)
+  }
+
   private fun copyClient(clientId: String, clientDetails: BaseClientDetails): BaseClientDetails {
     val client = BaseClientDetails(clientDetails)
     client.clientId = clientId
@@ -130,7 +141,11 @@ class ClientService(
 }
 
 data class ClientDetailsWithCopies(val clientDetails: ClientDetails, val duplicates: List<Client>)
-data class ClientDuplicateIdsAndDeployment(val requestedClientId: String, val duplicates: List<String>, val clientDeployment: ClientDeployment?)
+data class ClientDuplicateIdsAndDeployment(
+  val requestedClientId: String,
+  val duplicates: List<String>,
+  val clientDeployment: ClientDeployment?
+)
 
 open class DuplicateClientsException(clientId: String, errorCode: String) :
   Exception("Duplicate clientId failed for $clientId with reason: $errorCode")

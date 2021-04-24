@@ -133,7 +133,7 @@ class ClientsController(
   fun deleteClient(authentication: Authentication, @PathVariable clientId: String): String {
     val userDetails = authentication.principal as UserPersonDetails
     val telemetryMap = mapOf("username" to userDetails.username, "clientId" to clientId)
-    clientsDetailsService.removeClientDetails(clientId)
+    clientService.removeClient(clientId)
     telemetryClient.trackEvent("AuthClientDetailsDeleted", telemetryMap, null)
     return "redirect:/ui"
   }
