@@ -190,7 +190,6 @@ internal class ClientServiceTest {
         )
       )
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createAuthClientDetails())
-      whenever(clientDeploymentRepository.findById(anyString())).thenReturn(Optional.ofNullable(null))
 
       val client = clientService.loadClientAndDeployment("client")
 
@@ -320,7 +319,6 @@ internal class ClientServiceTest {
 
     @Test
     internal fun `load client deployment details - no details held`() {
-      whenever(clientDeploymentRepository.findById(anyString())).thenReturn(Optional.ofNullable(null))
       val clientDeployment = clientService.loadClientDeploymentDetails("client")
 
       assertThat(clientDeployment).isNull()
@@ -339,7 +337,6 @@ internal class ClientServiceTest {
 
     @Test
     internal fun `load client deployment details and baseClientId- no details held`() {
-      // whenever(clientDeploymentRepository.findByIdOrNull(anyString())).thenReturn(null)
       val clientDeployment = clientService.getClientDeploymentDetailsAndBaseClientId("client")
 
       assertThat(clientDeployment).isEqualTo(Pair(null, "client"))
