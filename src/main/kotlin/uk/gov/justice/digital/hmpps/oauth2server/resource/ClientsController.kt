@@ -84,6 +84,7 @@ class ClientsController(
     @ModelAttribute clientDetails: AuthClientDetails,
     @RequestParam(value = "newClient", required = false) newClient: String?,
   ): ModelAndView {
+    clientDetails.clientId = clientDetails.clientId.trim()
     val userDetails = authentication.principal as UserPersonDetails
     val telemetryMap = mapOf("username" to userDetails.username, "clientId" to clientDetails.clientId)
 

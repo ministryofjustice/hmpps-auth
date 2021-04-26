@@ -66,12 +66,12 @@ class ClientService(
 
   fun loadClientDeploymentDetails(clientId: String): ClientDeployment? {
     val searchClientId = baseClientId(clientId)
-    return clientDeploymentRepository.findByBaseClientId(searchClientId)
+    return clientDeploymentRepository.findByIdOrNull(searchClientId)
   }
 
   fun getClientDeploymentDetailsAndBaseClientId(clientId: String): Pair<ClientDeployment?, String> {
     val baseClientId = baseClientId(clientId)
-    return Pair(clientDeploymentRepository.findByBaseClientId(baseClientId), baseClientId)
+    return Pair(clientDeploymentRepository.findByIdOrNull(baseClientId), baseClientId)
   }
 
   @Transactional(transactionManager = "authTransactionManager")
