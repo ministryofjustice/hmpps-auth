@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientDeploymen
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientRepository
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ClientsController.AuthClientDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordGenerator
+import java.util.Optional
 
 internal class ClientServiceTest {
   private val clientRepository: ClientRepository = mock()
@@ -167,7 +168,7 @@ internal class ClientServiceTest {
 
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createAuthClientDetails())
       val clientDeploymentDetails = createClientDeploymentDetails()
-      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(clientDeploymentDetails)
+      whenever(clientDeploymentRepository.findById(anyString())).thenReturn(Optional.of(clientDeploymentDetails))
 
       val client = clientService.loadClientAndDeployment("client")
 
@@ -176,7 +177,7 @@ internal class ClientServiceTest {
       assertThat(client.clientDeployment).isEqualTo(clientDeploymentDetails)
       verify(clientRepository).findByIdStartsWithOrderById("client")
       verify(clientDetailsService).loadClientByClientId("client")
-      verify(clientDeploymentRepository).findByBaseClientId("client")
+      verify(clientDeploymentRepository).findById("client")
     }
 
     @Test
@@ -189,7 +190,7 @@ internal class ClientServiceTest {
         )
       )
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createAuthClientDetails())
-      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(null)
+      whenever(clientDeploymentRepository.findById(anyString())).thenReturn(Optional.ofNullable(null))
 
       val client = clientService.loadClientAndDeployment("client")
 
@@ -198,7 +199,7 @@ internal class ClientServiceTest {
       assertThat(client.clientDeployment).isNull()
       verify(clientRepository).findByIdStartsWithOrderById("client")
       verify(clientDetailsService).loadClientByClientId("client")
-      verify(clientDeploymentRepository).findByBaseClientId("client")
+      verify(clientDeploymentRepository).findById("client")
     }
   }
 
@@ -311,7 +312,7 @@ internal class ClientServiceTest {
     @Test
     internal fun `load client deployment details`() {
       val clientDeploymentDetails = createClientDeploymentDetails()
-      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(clientDeploymentDetails)
+      whenever(clientDeploymentRepository.findById(anyString())).thenReturn(Optional.of(clientDeploymentDetails))
       val clientDeployment = clientService.loadClientDeploymentDetails("client")
 
       assertThat(clientDeployment).isEqualTo(clientDeploymentDetails)
@@ -319,7 +320,7 @@ internal class ClientServiceTest {
 
     @Test
     internal fun `load client deployment details - no details held`() {
-      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(null)
+      whenever(clientDeploymentRepository.findById(anyString())).thenReturn(Optional.ofNullable(null))
       val clientDeployment = clientService.loadClientDeploymentDetails("client")
 
       assertThat(clientDeployment).isNull()
@@ -329,7 +330,7 @@ internal class ClientServiceTest {
     internal fun `get client deployment details and baseClientId`() {
       val clientDeploymentDetails = createClientDeploymentDetails()
 
-      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(clientDeploymentDetails)
+      whenever(clientDeploymentRepository.findById(anyString())).thenReturn(Optional.of(clientDeploymentDetails))
       val (clientDeployment, baseClientId) = clientService.getClientDeploymentDetailsAndBaseClientId("client-1")
 
       assertThat(clientDeployment).isEqualTo(clientDeploymentDetails)
@@ -338,7 +339,7 @@ internal class ClientServiceTest {
 
     @Test
     internal fun `load client deployment details and baseClientId- no details held`() {
-      whenever(clientDeploymentRepository.findByBaseClientId(anyString())).thenReturn(null)
+      // whenever(clientDeploymentRepository.findByIdOrNull(anyString())).thenReturn(null)
       val clientDeployment = clientService.getClientDeploymentDetailsAndBaseClientId("client")
 
       assertThat(clientDeployment).isEqualTo(Pair(null, "client"))

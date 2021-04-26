@@ -95,6 +95,29 @@ class ClientControllerTest {
       )
     }
 
+    @Test
+    fun `add client request - add client trailing white spare removed`() {
+      val authClientDetails: AuthClientDetails = createAuthClientDetails()
+      authClientDetails.clientId = "client "
+      whenever(clientService.addClient(authClientDetails)).thenReturn("bob")
+      val modelAndView = controller.addClient(authentication, authClientDetails, "true")
+      verify(clientService).addClient(authClientDetails)
+      verify(telemetryClient).trackEvent(
+        "AuthClientDetailsAdd",
+        mapOf("username" to "user", "clientId" to "client"),
+        null
+      )
+
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui/clients/client-success")
+      assertThat(modelAndView.model).containsOnly(
+        entry("newClient", "true"),
+        entry("clientId", "client"),
+        entry("clientSecret", "bob"),
+        entry("base64ClientId", "Y2xpZW50"),
+        entry("base64ClientSecret", "Ym9i"),
+      )
+    }
+
     private fun createAuthClientDetails(): AuthClientDetails {
       val authClientDetails = AuthClientDetails()
       authClientDetails.clientId = "client"

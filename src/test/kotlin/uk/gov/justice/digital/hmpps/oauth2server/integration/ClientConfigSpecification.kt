@@ -289,6 +289,44 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `I can create and remove client credential - create clientId ends with whitespace`() {
+    goTo(loginPage).loginAs("ITAG_USER_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient(client = "client")
+    clientMaintenanceAddPage.isAtPage()
+      .edit("clientId", "new-client  ")
+      .edit("registeredRedirectUri", "http://a_url:3003")
+      .edit("accessTokenValiditySeconds", "1200")
+      .edit("scopes", "read")
+      .edit("authorities", "ROLE_BOB,ROLE_FRED")
+      .selectCheckboxOption("client_credentials")
+      .edit("jwtFields", "-name")
+      .selectCheckboxOption("mfa-3")
+      .save()
+    clientCreatedSuccessPage.isAtPage()
+      .checkClientSuccessDetails()
+      .continueToClientUiPage()
+    clientSummaryPage.isAtPage()
+      .checkClientSummary(
+        client = "new-client",
+        text =
+        """
+          new-client 
+          [read] 
+          [client_credentials] 
+          [ROLE_BOB, ROLE_FRED] 
+          1200 
+          MFA ALL
+      """
+      )
+
+    // now remove so test is re-runnable
+    goTo("/ui/clients/new-client/delete")
+    clientSummaryPage.isAtPage()
+      .checkClientDoesntExist("new-client")
+  }
+
+  @Test
   fun `I can duplicate a client`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
