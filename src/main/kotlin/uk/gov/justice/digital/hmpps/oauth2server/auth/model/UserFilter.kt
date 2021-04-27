@@ -31,18 +31,14 @@ class UserFilter(
     andBuilder.add(buildSourcesPredicate(root, cb, authSources))
 
     if (!roleCodes.isNullOrEmpty()) {
-      val roleBuilder = ImmutableList.builder<Predicate>()
-      roleCodes.forEach {
-        roleBuilder.add(cb.equal(root.join<Any, Any>("authorities").get<Any>("roleCode"), it.trim().toUpperCase()))
-      }
-      andBuilder.add(cb.or(*roleBuilder.build().toTypedArray()))
+      val rolePredicate =
+        root.join<Any, Any>("authorities").get<Any>("roleCode").`in`(roleCodes.map { it.trim().toUpperCase() })
+      andBuilder.add(rolePredicate)
     }
     if (!groupCodes.isNullOrEmpty()) {
-      val groupBuilder = ImmutableList.builder<Predicate>()
-      groupCodes.forEach {
-        groupBuilder.add(cb.equal(root.join<Any, Any>("groups").get<Any>("groupCode"), it.trim().toUpperCase()))
-      }
-      andBuilder.add(cb.or(*groupBuilder.build().toTypedArray()))
+      val groupPredicate =
+        root.join<Any, Any>("groups").get<Any>("groupCode").`in`(groupCodes.map { it.trim().toUpperCase() })
+      andBuilder.add(groupPredicate)
     }
     if (!name.isNullOrBlank()) {
       andBuilder.add(buildNamePredicate(root, cb))
