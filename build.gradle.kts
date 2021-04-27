@@ -38,7 +38,7 @@ dependencies {
   implementation("org.flywaydb:flyway-core:7.8.1")
   implementation("com.zaxxer:HikariCP:4.0.3")
   implementation("org.apache.commons:commons-text:1.9")
-  implementation("com.microsoft.sqlserver:mssql-jdbc:9.2.1.jre11")
+  implementation("com.microsoft.sqlserver:mssql-jdbc:9.2.1.jre15")
 
   runtimeOnly("com.h2database:h2:1.4.200")
   developmentOnly("org.springframework.boot:spring-boot-devtools")
