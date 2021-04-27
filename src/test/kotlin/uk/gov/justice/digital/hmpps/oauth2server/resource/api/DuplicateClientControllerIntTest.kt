@@ -26,6 +26,21 @@ class DuplicateClientControllerIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `get client details with baseClientId request has ROLE_CLIENT_ROTATION_ADMIN`() {
+    val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
+    val token = getClientCredentialsToken(encodedClientAndSecret)
+
+    webTestClient
+      .get().uri("/api/client/another-test-client")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("auth_client_details_base.json".readFile())
+  }
+
+  @Test
   fun `get client endpoint returns not found when client not found request has ROLE_CLIENT_ROTATION_ADMIN`() {
     val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
     val token = getClientCredentialsToken(encodedClientAndSecret)

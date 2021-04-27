@@ -176,7 +176,6 @@ internal class ClientServiceTest {
       assertThat(client.duplicates).containsOnly("client", "client-1", "client-2")
       assertThat(client.clientDeployment).isEqualTo(clientDeploymentDetails)
       verify(clientRepository).findByIdStartsWithOrderById("client")
-      verify(clientDetailsService).loadClientByClientId("client")
       verify(clientDeploymentRepository).findById("client")
     }
 
@@ -197,7 +196,6 @@ internal class ClientServiceTest {
       assertThat(client.duplicates).containsOnly("client", "client-1", "client-2")
       assertThat(client.clientDeployment).isNull()
       verify(clientRepository).findByIdStartsWithOrderById("client")
-      verify(clientDetailsService).loadClientByClientId("client")
       verify(clientDeploymentRepository).findById("client")
     }
   }
@@ -310,6 +308,15 @@ internal class ClientServiceTest {
 
     @Test
     internal fun `load client deployment details`() {
+      val clientDeploymentDetails = createClientDeploymentDetails()
+      whenever(clientDeploymentRepository.findById(anyString())).thenReturn(Optional.of(clientDeploymentDetails))
+      val clientDeployment = clientService.loadClientDeploymentDetails("client-1")
+
+      assertThat(clientDeployment).isEqualTo(clientDeploymentDetails)
+    }
+
+    @Test
+    internal fun `load client deployment details - baseClientId`() {
       val clientDeploymentDetails = createClientDeploymentDetails()
       whenever(clientDeploymentRepository.findById(anyString())).thenReturn(Optional.of(clientDeploymentDetails))
       val clientDeployment = clientService.loadClientDeploymentDetails("client")
