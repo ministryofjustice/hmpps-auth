@@ -60,7 +60,7 @@ class VerifyEmailService(
     fullname: String?,
     url: String,
     emailType: EmailType,
-  ): LinkAndEmail {
+  ): LinkEmailAndUsername {
     val user = userRepository.findByUsername(username).orElseThrow()
     val verifyLink =
       url + user.createToken(if (emailType == EmailType.PRIMARY) UserToken.TokenType.VERIFIED else UserToken.TokenType.SECONDARY).token
@@ -106,7 +106,7 @@ class VerifyEmailService(
     }
     userRepository.save(user)
 
-    return LinkAndEmail(verifyLink, email!!)
+    return LinkEmailAndUsername(verifyLink, email!!, user.username)
   }
 
   @Transactional(transactionManager = "authTransactionManager")
@@ -279,7 +279,7 @@ class VerifyEmailService(
 
   class VerifyEmailException(val reason: String?) : Exception("Verify email failed with reason: $reason")
 
-  data class LinkAndEmail(val link: String, val email: String)
+  data class LinkEmailAndUsername(val link: String, val email: String, val username: String)
 
   @Suppress("SqlResolve")
   companion object {

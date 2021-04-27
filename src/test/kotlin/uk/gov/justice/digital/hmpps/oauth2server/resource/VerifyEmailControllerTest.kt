@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSucce
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkAndEmail
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkEmailAndUsername
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.util.Optional
@@ -147,7 +147,7 @@ class VerifyEmailControllerTest {
         anyString(),
         eq(EmailType.PRIMARY)
       )
-    ).thenReturn(LinkAndEmail("link", "newemail@justice.gov.uk"))
+    ).thenReturn(LinkEmailAndUsername("link", "newemail@justice.gov.uk", "USER"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"
@@ -190,7 +190,7 @@ class VerifyEmailControllerTest {
         anyString(),
         eq(EmailType.PRIMARY)
       )
-    ).thenReturn(LinkAndEmail("link", "newemail@justice.gov.uk"))
+    ).thenReturn(LinkEmailAndUsername("link", "newemail@justice.gov.uk", "USER"))
     val user = getUserPersonalDetails()
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
@@ -228,7 +228,7 @@ class VerifyEmailControllerTest {
         anyString(),
         eq(EmailType.PRIMARY)
       )
-    ).thenReturn(LinkAndEmail("link", "newemail@justice.gov.uk"))
+    ).thenReturn(LinkEmailAndUsername("link", "newemail@justice.gov.uk", "USER"))
     val user = getUserPersonalDetails()
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(user))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
@@ -391,7 +391,7 @@ class VerifyEmailControllerTest {
         anyString(),
         eq(EmailType.SECONDARY)
       )
-    ).thenReturn(LinkAndEmail("link", "newemail@justice.gov.uk"))
+    ).thenReturn(LinkEmailAndUsername("link", "newemail@justice.gov.uk", "USER"))
     whenever(userService.findMasterUserPersonDetails(anyString())).thenReturn(Optional.of(getUserPersonalDetails()))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     val email = "o'there+bob@b-c.d"

@@ -50,7 +50,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkAndEmail
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkEmailAndUsername
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientApi
 import java.time.LocalDateTime
@@ -262,7 +262,11 @@ class AuthUserServiceTest {
         "bob",
         GRANTED_AUTHORITY_SUPER_USER
       )
-      verify(telemetryClient).trackEvent("AuthUserCreateSuccess", mapOf("username" to "EXAMPLE@JUSTICE.GOV.UK", "admin" to "bob"), null)
+      verify(telemetryClient).trackEvent(
+        "AuthUserCreateSuccess",
+        mapOf("username" to "EXAMPLE@JUSTICE.GOV.UK", "admin" to "bob"),
+        null
+      )
     }
 
     @Test
@@ -711,7 +715,7 @@ class AuthUserServiceTest {
           anyString(),
           any(),
         )
-      ).thenReturn(LinkAndEmail("SOME_VERIFY_LINK", "newemail@justice.gov.uk"))
+      ).thenReturn(LinkEmailAndUsername("SOME_VERIFY_LINK", "newemail@justice.gov.uk", "SOME_USER_NAME"))
       authUserService.amendUserEmail(
         "SOME_user_NAME",
         "some_user_email@gov.uk",
@@ -742,7 +746,7 @@ class AuthUserServiceTest {
           anyString(),
           any(),
         )
-      ).thenReturn(LinkAndEmail("SOME_VERIFY_LINK", "newemail@justice.gov.uk"))
+      ).thenReturn(LinkEmailAndUsername("SOME_VERIFY_LINK", "newemail@justice.gov.uk", "SOME_EXISTING_EMAIL@GOV.UK"))
       val userVerifiedEmail =
         createSampleUser(username = "SOME_EXISTING_EMAIL@GOV.UK", verified = true, email = "some_existing_email@gov.uk")
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail))
@@ -770,7 +774,7 @@ class AuthUserServiceTest {
           anyString(),
           any(),
         )
-      ).thenReturn(LinkAndEmail("SOME_VERIFY_LINK", "newemail@justice.gov.uk"))
+      ).thenReturn(LinkEmailAndUsername("SOME_VERIFY_LINK", "newemail@justice.gov.uk", "SOME_EXISTING_EMAIL@GOV.UK"))
       val userVerifiedEmail =
         createSampleUser(username = "SOME_EXISTING_EMAIL@GOV.UK", verified = true, email = "some_existing_email@gov.uk")
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userVerifiedEmail))
@@ -1319,7 +1323,13 @@ class AuthUserServiceTest {
 
     @Test
     fun lastNameLength() {
-      assertThatThrownBy { authUserService.amendUser("userme", "se", "x") }.isInstanceOf(CreateUserException::class.java)
+      assertThatThrownBy {
+        authUserService.amendUser(
+          "userme",
+          "se",
+          "x"
+        )
+      }.isInstanceOf(CreateUserException::class.java)
         .hasMessage("Create user failed for field lastName with reason: length")
     }
 

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import javax.sql.DataSource
 
 @Service
@@ -16,8 +17,9 @@ class NomisH2AlterUserService(
   @Qualifier("dataSource") dataSource: DataSource,
   private val passwordEncoder: PasswordEncoder,
   staffUserAccountRepository: StaffUserAccountRepository,
+  verifyEmailService: VerifyEmailService,
   userRepository: UserRepository
-) : NomisUserService(staffUserAccountRepository, userRepository) {
+) : NomisUserService(staffUserAccountRepository, userRepository, verifyEmailService) {
 
   private val jdbcTemplate: JdbcTemplate = JdbcTemplate(dataSource)
 

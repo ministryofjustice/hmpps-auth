@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.repository.StaffUserAccountRepository
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.sql.SQLException
 import javax.sql.DataSource
 
@@ -17,8 +18,9 @@ import javax.sql.DataSource
 class NomisOracleAlterUserService(
   @Qualifier("dataSource") dataSource: DataSource,
   staffUserAccountRepository: StaffUserAccountRepository,
-  userRepository: UserRepository
-) : NomisUserService(staffUserAccountRepository, userRepository) {
+  userRepository: UserRepository,
+  verifyEmailService: VerifyEmailService,
+) : NomisUserService(staffUserAccountRepository, userRepository, verifyEmailService) {
 
   companion object {
     private const val CHANGE_PASSWORD_SQL = "ALTER USER %s IDENTIFIED BY \"%s\""

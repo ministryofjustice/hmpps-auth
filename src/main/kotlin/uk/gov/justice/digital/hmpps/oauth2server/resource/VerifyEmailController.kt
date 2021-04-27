@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.JwtAuthenticationSucce
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkAndEmail
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkEmailAndUsername
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.security.Principal
@@ -218,7 +218,7 @@ class VerifyEmailController(
     emailInput: String,
     url: String,
     emailType: EmailType
-  ): LinkAndEmail {
+  ): LinkEmailAndUsername {
     val userPersonDetails = userService.findMasterUserPersonDetails(username).orElseThrow()
     val firstName = userPersonDetails.firstName
     val fullName = userPersonDetails.name
