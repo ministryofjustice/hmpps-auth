@@ -5,9 +5,10 @@ package uk.gov.justice.digital.hmpps.oauth2server.service
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.oauth2.provider.ClientAlreadyExistsException
 import org.springframework.security.oauth2.provider.ClientDetails
+import org.springframework.security.oauth2.provider.ClientDetailsService
+import org.springframework.security.oauth2.provider.ClientRegistrationService
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
@@ -18,7 +19,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordGenerator
 
 @Service
 class ClientService(
-  private val clientsDetailsService: JdbcClientDetailsService,
+  private val clientsDetailsService: ClientDetailsService,
+  private val clientRegistrationService: ClientRegistrationService,
   private val passwordGenerator: PasswordGenerator,
   private val clientRepository: ClientRepository,
   private val clientDeploymentRepository: ClientDeploymentRepository,
@@ -26,9 +28,9 @@ class ClientService(
 
   @Throws(ClientAlreadyExistsException::class)
   fun addClient(clientDetails: ClientDetails): String {
-    clientsDetailsService.addClientDetails(clientDetails)
+    clientRegistrationService.addClientDetails(clientDetails)
     val clientSecret = passwordGenerator.generatePassword()
-    clientsDetailsService.updateClientSecret(clientDetails.clientId, clientSecret)
+    clientRegistrationService.updateClientSecret(clientDetails.clientId, clientSecret)
     return clientSecret
   }
 
@@ -36,7 +38,7 @@ class ClientService(
     val clientDetails = clientsDetailsService.loadClientByClientId(clientId)
     find(clientId).filter { it.id != clientId }
       .map { copyClient(it.id, clientDetails as BaseClientDetails) }
-      .forEach { clientsDetailsService.updateClientDetails(it) }
+      .forEach { clientRegistrationService.updateClientDetails(it) }
   }
 
   fun listUniqueClients(): List<Client> =
@@ -83,7 +85,7 @@ class ClientService(
   @Throws(NoSuchClientException::class)
   fun generateClientSecret(clientId: String): String {
     val clientSecret = passwordGenerator.generatePassword()
-    clientsDetailsService.updateClientSecret(clientId, clientSecret)
+    clientRegistrationService.updateClientSecret(clientId, clientSecret)
     clientRepository.findByIdOrNull(clientId)?.resetSecretUpdated()
     return clientSecret
   }
@@ -96,7 +98,7 @@ class ClientService(
       val baseClientId = baseClientId(clientId)
       clientDeploymentRepository.deleteByBaseClientId(baseClientId)
     }
-    clientsDetailsService.removeClientDetails(clientId)
+    clientRegistrationService.removeClientDetails(clientId)
   }
 
   private fun copyClient(clientId: String, clientDetails: BaseClientDetails): BaseClientDetails {
@@ -113,7 +115,7 @@ class ClientService(
     val clientDetails = clientsDetailsService.loadClientByClientId(clientId)
     val duplicateClientDetails = copyClient(incrementClientId(clientId), clientDetails as BaseClientDetails)
     duplicateClientDetails.clientSecret = passwordGenerator.generatePassword()
-    clientsDetailsService.addClientDetails(duplicateClientDetails)
+    clientRegistrationService.addClientDetails(duplicateClientDetails)
     return duplicateClientDetails
   }
 

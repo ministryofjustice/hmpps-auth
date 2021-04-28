@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken
 import org.springframework.security.oauth2.common.OAuth2AccessToken
 import org.springframework.security.oauth2.provider.ClientDetails
+import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.OAuth2Authentication
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.security.oauth2.provider.token.TokenEnhancer
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.Companion.fromNullableString
@@ -17,7 +17,7 @@ import java.util.Optional
 
 class JWTTokenEnhancer : TokenEnhancer {
   @Autowired
-  private lateinit var clientsDetailsService: JdbcClientDetailsService
+  private lateinit var clientsDetailsService: ClientDetailsService
 
   companion object {
     private const val ADD_INFO_AUTH_SOURCE = "auth_source"

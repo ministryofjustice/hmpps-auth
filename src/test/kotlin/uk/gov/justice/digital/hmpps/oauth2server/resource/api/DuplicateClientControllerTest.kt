@@ -11,9 +11,9 @@ import org.assertj.core.api.Java6Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
+import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDuplicateIdsAndDeployment
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsExcepti
 class DuplicateClientControllerTest {
 
   private val clientService: ClientService = mock()
-  private val clientDetailsService: JdbcClientDetailsService = mock()
+  private val clientDetailsService: ClientDetailsService = mock()
   private val authentication = TestingAuthenticationToken(
     "duplicate",
     "pass",
