@@ -7,18 +7,18 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.client.ClientDetailsUserDetailsService
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import uk.gov.justice.digital.hmpps.oauth2server.utils.IpAddressHelper
 
 class LoggingDaoAuthenticationProvider(
   private val telemetryClient: TelemetryClient,
-  jdbcClientDetailsService: JdbcClientDetailsService,
+  clientDetailsService: ClientDetailsService,
   passwordEncoder: PasswordEncoder,
 ) : DaoAuthenticationProvider() {
 
   init {
-    val clientDetailsUserDetailsService = ClientDetailsUserDetailsService(jdbcClientDetailsService)
+    val clientDetailsUserDetailsService = ClientDetailsUserDetailsService(clientDetailsService)
     clientDetailsUserDetailsService.setPasswordEncoder(passwordEncoder)
     this.passwordEncoder = passwordEncoder
     this.userDetailsService = clientDetailsUserDetailsService

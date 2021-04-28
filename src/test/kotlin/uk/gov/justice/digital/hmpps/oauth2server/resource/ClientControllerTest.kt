@@ -18,9 +18,9 @@ import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.provider.ClientDetails
+import org.springframework.security.oauth2.provider.ClientRegistrationService
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientType
@@ -34,10 +34,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsExcepti
 import java.time.LocalDateTime
 
 class ClientControllerTest {
-  private val clientDetailsService: JdbcClientDetailsService = mock()
+  private val clientRegistrationService: ClientRegistrationService = mock()
   private val clientService: ClientService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val controller = ClientsController(clientDetailsService, clientService, telemetryClient)
+  private val controller = ClientsController(clientRegistrationService, clientService, telemetryClient)
   private val authentication = TestingAuthenticationToken(
     UserDetailsImpl("user", "name", setOf(), AuthSource.auth.name, "userid", "jwtId"),
     "pass"
@@ -135,7 +135,7 @@ class ClientControllerTest {
     fun `edit client request - update existing client`() {
       val authClientDetails: AuthClientDetails = createAuthClientDetails()
       val modelAndView = controller.editClient(authentication, authClientDetails, null)
-      verify(clientDetailsService).updateClientDetails(authClientDetails)
+      verify(clientRegistrationService).updateClientDetails(authClientDetails)
       verify(telemetryClient).trackEvent(
         "AuthClientDetailsUpdate",
         mapOf("username" to "user", "clientId" to "client"),
@@ -148,7 +148,7 @@ class ClientControllerTest {
     fun `edit client request - update client throws NoSuchClientException`() {
       val authClientDetails: AuthClientDetails = createAuthClientDetails()
       val exception = NoSuchClientException("No client found with id = ")
-      doThrow(exception).whenever(clientDetailsService).updateClientDetails(authClientDetails)
+      doThrow(exception).whenever(clientRegistrationService).updateClientDetails(authClientDetails)
 
       assertThatThrownBy { controller.editClient(authentication, authClientDetails, null) }.isEqualTo(exception)
 

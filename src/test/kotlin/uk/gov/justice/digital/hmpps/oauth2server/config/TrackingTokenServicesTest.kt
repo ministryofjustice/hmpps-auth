@@ -19,11 +19,11 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.common.DefaultOAuth2RefreshToken
+import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.OAuth2Authentication
 import org.springframework.security.oauth2.provider.OAuth2Request
 import org.springframework.security.oauth2.provider.TokenRequest
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.client.RestTemplate
@@ -40,7 +40,7 @@ import java.util.Optional
 internal class TrackingTokenServicesTest {
   private val telemetryClient: TelemetryClient = mock()
   private val tokenStore: TokenStore = mock()
-  private val clientDetailsService: JdbcClientDetailsService = mock()
+  private val clientDetailsService: ClientDetailsService = mock()
   private val clientRepository: ClientRepository = mock()
   private val restTemplate: RestTemplate = mock()
   private val tokenVerificationClientCredentials = TokenVerificationClientCredentials()
