@@ -169,6 +169,35 @@ class UserControllerIntTest : IntegrationTest() {
           mapOf(
             "username" to "AUTH_USER",
             "email" to "auth_user@digital.justice.gov.uk",
+            "verified" to true,
+          )
+        )
+      }
+  }
+
+  @Test
+  fun `User email endpoint returns no content for unverified auth user`() {
+    webTestClient
+      .get().uri("/api/user/AUTH_UNVERIFIED/email")
+      .headers(setAuthorisation("ITAG_USER"))
+      .exchange()
+      .expectStatus().isNoContent
+  }
+
+  @Test
+  fun `User email endpoint returns unverified auth user email`() {
+    webTestClient
+      .get().uri("/api/user/AUTH_UNVERIFIED/email?unverified=true")
+      .headers(setAuthorisation("ITAG_USER"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it).containsExactlyInAnyOrderEntriesOf(
+          mapOf(
+            "username" to "AUTH_UNVERIFIED",
+            "email" to "auth_unverified@digital.justice.gov.uk",
+            "verified" to false,
           )
         )
       }
@@ -187,6 +216,7 @@ class UserControllerIntTest : IntegrationTest() {
           mapOf(
             "username" to "ITAG_USER",
             "email" to "itag_user@digital.justice.gov.uk",
+            "verified" to true,
           )
         )
       }
@@ -205,6 +235,7 @@ class UserControllerIntTest : IntegrationTest() {
           mapOf(
             "username" to "DELIUS_EMAIL",
             "email" to "delius_user@digital.justice.gov.uk",
+            "verified" to true,
           )
         )
       }
