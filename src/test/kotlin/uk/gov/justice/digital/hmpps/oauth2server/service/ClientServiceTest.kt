@@ -277,15 +277,15 @@ internal class ClientServiceTest {
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(authClientDetails)
       whenever(clientRepository.findByIdStartsWithOrderById(any())).thenReturn(
         listOf(
-          Client("some-client"),
-          Client("some-client-1"),
-          Client("some-client-2")
+          Client("some-client-3"),
+          Client("some-client-4"),
+          Client("some-client-5")
         )
       )
 
       assertThatThrownBy { clientService.duplicateClient("some-client") }
         .isInstanceOf(DuplicateClientsException::class.java)
-        .hasMessage("Duplicate clientId failed for some-client with reason: MaxReached")
+        .hasMessage("Duplicate clientId failed for baseClientId: some-client with reason: MaxReached")
     }
   }
 

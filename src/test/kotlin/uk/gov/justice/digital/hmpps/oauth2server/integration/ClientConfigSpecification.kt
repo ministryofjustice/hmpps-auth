@@ -106,14 +106,14 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `I can edit a client and new details are copied over to the duplicate`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     clientMaintenancePage.isAtPage()
       .edit("registeredRedirectUri", "http://a_url:3003")
       .edit("accessTokenValiditySeconds", "1234")
       .edit("scopes", "read,bob")
       .save()
     clientSummaryPage.isAtPage()
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     with(clientMaintenancePage) {
       isAtPage()
       assertThat(el("#registeredRedirectUri").value()).isEqualTo("http://a_url:3003")
@@ -139,7 +139,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .edit("authorities", "ROLE_BOB,ROLE_JOE")
       .save()
     clientSummaryPage.isAtPage()
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     with(clientMaintenancePage) {
       isAtPage()
       assertThat(el("#resourceIds").value()).isEqualTo("some_resource")
@@ -158,14 +158,14 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `I can generate a new client secret for client`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     clientMaintenancePage.isAtPage()
-      .generateClientSecret("rotation-test-client")
+      .generateClientSecret("rotation-test-client-1")
 
     clientGenerateNewSecret.cancelToClientMaintenancePage()
 
     clientMaintenancePage.isAtPage()
-      .generateClientSecret("rotation-test-client")
+      .generateClientSecret("rotation-test-client-1")
 
     clientGenerateNewSecret.continueToGenerateClientSecret()
 
@@ -178,16 +178,16 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `I can generate a new client secret for each duplicate client`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     clientMaintenancePage.isAtPage()
-      .generateClientSecret("rotation-test-client")
+      .generateClientSecret("rotation-test-client-1")
 
     clientGenerateNewSecret.continueToGenerateClientSecret()
 
     clientUpdatedSuccessPage.isAtPage()
       .continueToClientUiPage()
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     clientMaintenancePage.isAtPage()
       .generateClientSecret("rotation-test-client-2")
 
@@ -196,11 +196,11 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     clientUpdatedSuccessPage.isAtPage()
       .continueToClientUiPage()
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     clientMaintenancePage.isAtPage()
       .duplicate()
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     clientMaintenancePage.isAtPage()
       .generateClientSecret("rotation-test-client-3")
 
@@ -209,16 +209,16 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     clientUpdatedSuccessPage.isAtPage()
       .continueToClientUiPage()
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     with(clientMaintenancePage) {
       isAtPage()
-      assertThat(el("#rotation-test-client-last-accessed").text()).isEqualTo("28-01-2013 13:23")
+      assertThat(el("#rotation-test-client-1-last-accessed").text()).isEqualTo("28-01-2013 13:23")
       val secretDateTime = LocalDateTime.parse(
-        el("#rotation-test-client-secret-updated").text(),
+        el("#rotation-test-client-1-secret-updated").text(),
         DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
       )
       assertThat(secretDateTime).isAfter(LocalDateTime.now().minusMinutes(2))
-      assertThat(el("#rotation-test-client-created").text()).isEqualTo("26-01-2013 13:23")
+      assertThat(el("#rotation-test-client-1-created").text()).isEqualTo("26-01-2013 13:23")
 
       assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
       val secretDateTime2 = LocalDateTime.parse(
@@ -330,7 +330,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `I can duplicate a client`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     clientMaintenancePage.isAtPage()
       .duplicate()
 
@@ -348,19 +348,19 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `Display last accessed, created and secret updated`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     with(clientMaintenancePage) {
       isAtPage()
-      assertThat(el("#rotation-test-client-last-accessed").text()).isEqualTo("28-01-2013 13:23")
+      assertThat(el("#rotation-test-client-1-last-accessed").text()).isEqualTo("28-01-2013 13:23")
       val secretDateTime = LocalDateTime.parse(
-        el("#rotation-test-client-secret-updated").text(),
+        el("#rotation-test-client-1-secret-updated").text(),
         DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
       )
       assertThat(secretDateTime).isAfter(LocalDateTime.now().minusDays(1))
-      assertThat(el("#rotation-test-client-created").text()).isEqualTo("26-01-2013 13:23")
+      assertThat(el("#rotation-test-client-1-created").text()).isEqualTo("26-01-2013 13:23")
       assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
       val secretDateTime2 = LocalDateTime.parse(
-        el("#rotation-test-client-secret-updated").text(),
+        el("#rotation-test-client-1-secret-updated").text(),
         DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
       )
       assertThat(secretDateTime2).isAfter(LocalDateTime.now().minusDays(1))
@@ -372,14 +372,14 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `I receive error if I try to have more than 3 of a client`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     clientMaintenancePage.isAtPage()
       .duplicate()
 
     duplicateClientSuccessPage.isAtPage()
       .continueToClientUiPage()
 
-    goTo(clientSummaryPage).editClient("rotation-test-client")
+    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     clientMaintenancePage.isAtPage()
       .duplicate()
 
@@ -549,7 +549,7 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
 class ClientMaintenanceAddPage : ClientMaintenancePage("Add client", false)
 
 @PageUrl("/ui/clients/form")
-class ClientMaintenancePageWithError : ClientMaintenancePage("Edit client 'rotation-test-client'", false)
+class ClientMaintenancePageWithError : ClientMaintenancePage("Edit client 'rotation-test-client-1'", false)
 
 @PageUrl("/ui/clients/generate")
 open class ClientGenerateNewSecret : AuthPage<ClientGenerateNewSecret>(
@@ -606,9 +606,9 @@ open class ClientUpdatedSuccessPage : AuthPage<ClientUpdatedSuccessPage>(
   private lateinit var continueButton: FluentWebElement
 
   fun checkClientSuccessDetails(): ClientUpdatedSuccessPage {
-    assertThat(el("[data-qa='clientId']").text()).isEqualTo("rotation-test-client")
+    assertThat(el("[data-qa='clientId']").text()).isEqualTo("rotation-test-client-1")
     assertThat(el("[data-qa='clientSecret']").text()).isNotBlank
-    assertThat(el("[data-qa='base64ClientId']").text()).isEqualTo("cm90YXRpb24tdGVzdC1jbGllbnQ=")
+    assertThat(el("[data-qa='base64ClientId']").text()).isEqualTo("cm90YXRpb24tdGVzdC1jbGllbnQtMQ==")
     assertThat(el("[data-qa='base64ClientSecret']").text()).isNotBlank
     return this
   }
