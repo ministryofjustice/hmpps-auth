@@ -194,15 +194,27 @@ class UserControllerTest {
       )
     )
     val responseEntity = userController.getUserEmail("joe")
-    assertThat(responseEntity.statusCodeValue).usingRecursiveComparison().isEqualTo(200)
-    assertThat(responseEntity.body).usingRecursiveComparison().isEqualTo(EmailAddress("JOE", "someemail"))
+    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
+    assertThat(responseEntity.body).usingRecursiveComparison().isEqualTo(EmailAddress("JOE", "someemail", true))
+  }
+
+  @Test
+  fun userEmail_found_unverified() {
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(
+      Optional.of(
+        createSampleUser(username = "JOE", verified = false, email = "someemail")
+      )
+    )
+    val responseEntity = userController.getUserEmail("joe", unverified = true)
+    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
+    assertThat(responseEntity.body).usingRecursiveComparison().isEqualTo(EmailAddress("JOE", "someemail", false))
   }
 
   @Test
   fun userEmail_notFound() {
     whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.empty())
     val responseEntity = userController.getUserEmail("joe")
-    assertThat(responseEntity.statusCodeValue).usingRecursiveComparison().isEqualTo(404)
+    assertThat(responseEntity.statusCodeValue).isEqualTo(404)
     assertThat(responseEntity.body).usingRecursiveComparison().isEqualTo(
       ErrorDetail(
         "Not Found",
@@ -216,7 +228,7 @@ class UserControllerTest {
   fun userEmail_notVerified() {
     whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(createSampleUser("JOE")))
     val responseEntity = userController.getUserEmail("joe")
-    assertThat(responseEntity.statusCodeValue).usingRecursiveComparison().isEqualTo(204)
+    assertThat(responseEntity.statusCodeValue).isEqualTo(204)
     assertThat(responseEntity.body).isNull()
   }
 

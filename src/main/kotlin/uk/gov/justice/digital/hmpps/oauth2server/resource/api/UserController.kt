@@ -136,21 +136,22 @@ class UserController(private val userService: UserService) {
   )
   @ApiResponses(
     value = [
-      ApiResponse(code = 200, message = "OK", response = EmailAddress::class),
       ApiResponse(code = 204, message = "No content.  No verified email address found for user"),
       ApiResponse(
         code = 404,
         message = "User not found.  The user doesn't exist in auth so could have never logged in",
-        response = ErrorDetail::class
+        response = ErrorDetail::class,
       )
     ]
   )
   fun getUserEmail(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String,
+    @ApiParam(value = "Return unverified email addresses.", required = false)
+    @RequestParam unverified: Boolean = false,
   ): ResponseEntity<*> = userService
     .getOrCreateUser(username)
     .map { user: User ->
-      if (user.verified) ResponseEntity.ok(EmailAddress(user)) else ResponseEntity.noContent().build<Any>()
+      if (user.verified || unverified) ResponseEntity.ok(EmailAddress(user)) else ResponseEntity.noContent().build<Any>()
     }
     .orElseGet { notFoundResponse(username) }
 
