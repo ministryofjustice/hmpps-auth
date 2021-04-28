@@ -46,6 +46,10 @@ spring:
 
   thymeleaf.render-hidden-markers-before-checkboxes: true
 
+  cache:
+    cache-names: loadClientByClientId
+    caffeine.spec: maximumSize=500,expireAfterWrite=5m
+
 # SQL Server DB - "auth"
 auth:
   datasource:

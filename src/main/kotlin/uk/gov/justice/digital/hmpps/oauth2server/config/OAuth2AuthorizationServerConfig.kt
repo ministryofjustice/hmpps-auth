@@ -26,7 +26,6 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer
 import org.springframework.security.oauth2.provider.OAuth2RequestFactory
 import org.springframework.security.oauth2.provider.approval.UserApprovalHandler
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices
 import org.springframework.security.oauth2.provider.endpoint.RedirectResolver
 import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory
@@ -69,7 +68,7 @@ class OAuth2AuthorizationServerConfig(
 
   private val privateKeyPair: Resource = ByteArrayResource(Base64.decodeBase64(privateKeyPair))
 
-  private var jdbcClientDetailsService: JdbcClientDetailsService? = null
+  private var jdbcClientDetailsService: CachingClientDetailsService? = null
   private var tokenStore: JwtTokenStore? = null
   private var oAuth2RequestFactory: DefaultOAuth2RequestFactory? = null
   private var mfaClientService: MfaClientService? = null
@@ -88,10 +87,9 @@ class OAuth2AuthorizationServerConfig(
 
   @Bean
   @Primary
-  fun jdbcClientDetailsService(): JdbcClientDetailsService {
+  fun jdbcClientDetailsService(): CachingClientDetailsService {
     if (jdbcClientDetailsService == null) {
-      jdbcClientDetailsService = JdbcClientDetailsService(dataSource)
-      jdbcClientDetailsService!!.setPasswordEncoder(passwordEncoder)
+      jdbcClientDetailsService = CachingClientDetailsService(dataSource, passwordEncoder)
     }
     return jdbcClientDetailsService!!
   }

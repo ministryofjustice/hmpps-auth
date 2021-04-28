@@ -16,12 +16,13 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
+  implementation("org.springframework.boot:spring-boot-starter-cache")
   implementation("org.springframework.session:spring-session-jdbc")
 
   implementation("javax.annotation:javax.annotation-api:1.3.2")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
-  implementation("com.sun.xml.bind:jaxb-impl:2.3.3")
-  implementation("com.sun.xml.bind:jaxb-core:2.3.0.1")
+  implementation("com.sun.xml.bind:jaxb-impl:3.0.1")
+  implementation("com.sun.xml.bind:jaxb-core:3.0.1")
   implementation("javax.activation:activation:1.1.1")
 
   implementation("javax.transaction:javax.transaction-api:1.3")
@@ -35,10 +36,11 @@ dependencies {
   implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.3")
   implementation("uk.gov.service.notify:notifications-java-client:3.17.2-RELEASE")
 
-  implementation("org.flywaydb:flyway-core:7.8.1")
+  implementation("org.flywaydb:flyway-core:7.8.2")
   implementation("com.zaxxer:HikariCP:4.0.3")
   implementation("org.apache.commons:commons-text:1.9")
   implementation("com.microsoft.sqlserver:mssql-jdbc:9.2.1.jre15")
+  implementation("com.github.ben-manes.caffeine:caffeine:3.0.1")
 
   runtimeOnly("com.h2database:h2:1.4.200")
   developmentOnly("org.springframework.boot:spring-boot-devtools")
