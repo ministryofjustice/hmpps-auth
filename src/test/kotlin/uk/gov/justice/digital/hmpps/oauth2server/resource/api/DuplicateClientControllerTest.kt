@@ -40,10 +40,11 @@ class DuplicateClientControllerTest {
     val returnedClientDetails = duplicateClientController.getClientIdsAndDeployment(authentication, "client")
 
     assertThat(returnedClientDetails).isEqualTo(clientDetails)
+    verify(clientService).loadClientAndDeployment("client")
   }
 
   @Test
-  fun `get Client Request - delete client throws NoSuchClientException`() {
+  fun `get Client Request - get client throws NoSuchClientException`() {
 
     val exception = NoSuchClientException("No client found with id = ")
     doThrow(exception).whenever(clientService).loadClientAndDeployment(anyString())

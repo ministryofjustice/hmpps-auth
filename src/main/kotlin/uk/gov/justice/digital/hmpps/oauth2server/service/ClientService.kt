@@ -51,12 +51,12 @@ class ClientService(
 
   fun loadClientAndDeployment(clientId: String): ClientDuplicateIdsAndDeployment {
 
-    val clientDetailId = clientsDetailsService.loadClientByClientId(clientId).clientId
-
     val clientIds = find(clientId).map { it.id }
 
+    if (clientIds.isEmpty()) { throw NoSuchClientException("No client with requested id: $clientId") }
+
     return ClientDuplicateIdsAndDeployment(
-      clientDetailId, clientIds, loadClientDeploymentDetails(clientId)
+      clientId, clientIds, loadClientDeploymentDetails(baseClientId(clientId))
     )
   }
 
@@ -67,8 +67,7 @@ class ClientService(
   }
 
   fun loadClientDeploymentDetails(clientId: String): ClientDeployment? {
-    val searchClientId = baseClientId(clientId)
-    return clientDeploymentRepository.findByIdOrNull(searchClientId)
+    return clientDeploymentRepository.findByIdOrNull(clientId)
   }
 
   fun getClientDeploymentDetailsAndBaseClientId(clientId: String): Pair<ClientDeployment?, String> {
