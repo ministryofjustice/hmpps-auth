@@ -27,7 +27,7 @@ class ClientRepositoryTest {
   fun findAllByEnabledTrueOrderByName() {
     assertThat(repository.findByIdStartsWithOrderById("rotation-test-client"))
       .extracting<String> { it.id }
-      .contains("rotation-test-client", "rotation-test-client-2")
+      .contains("rotation-test-client-1", "rotation-test-client-2")
   }
 
   @Test

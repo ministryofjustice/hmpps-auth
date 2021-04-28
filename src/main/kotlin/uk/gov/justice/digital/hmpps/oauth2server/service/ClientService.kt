@@ -111,8 +111,11 @@ class ClientService(
 
   @Throws(DuplicateClientsException::class)
   fun duplicateClient(clientId: String): ClientDetails {
-    val clientDetails = clientsDetailsService.loadClientByClientId(clientId)
-    val duplicateClientDetails = copyClient(incrementClientId(clientId), clientDetails as BaseClientDetails)
+    val clientIdFromDB = find(clientId).map { it.id }
+    if (clientIdFromDB.isEmpty()) { throw NoSuchClientException("No client with requested id: $clientId") }
+
+    val clientDetails = clientsDetailsService.loadClientByClientId(clientIdFromDB.last())
+    val duplicateClientDetails = copyClient(incrementClientId(clientIdFromDB.last()), clientDetails as BaseClientDetails)
     duplicateClientDetails.clientSecret = passwordGenerator.generatePassword()
     clientRegistrationService.addClientDetails(duplicateClientDetails)
     return duplicateClientDetails
@@ -121,11 +124,11 @@ class ClientService(
   @Throws(DuplicateClientsException::class)
   private fun incrementClientId(clientId: String): String {
     val clients = find(clientId)
+    val baseClientId = baseClientId(clientId)
     if (clients.size > 2) {
-      throw DuplicateClientsException(clientId, "MaxReached")
+      throw DuplicateClientsException(baseClientId, "MaxReached")
     }
 
-    val baseClientId = baseClientId(clientId)
     val ids = clients.map {
       clientNumber(it.id)
     }
@@ -148,5 +151,5 @@ data class ClientDuplicateIdsAndDeployment(
   val clientDeployment: ClientDeployment?
 )
 
-open class DuplicateClientsException(clientId: String, errorCode: String) :
-  Exception("Duplicate clientId failed for $clientId with reason: $errorCode")
+open class DuplicateClientsException(baseClientId: String, errorCode: String) :
+  Exception("Duplicate clientId failed for baseClientId: $baseClientId with reason: $errorCode")

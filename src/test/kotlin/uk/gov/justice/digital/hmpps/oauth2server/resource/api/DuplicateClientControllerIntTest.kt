@@ -84,6 +84,34 @@ class DuplicateClientControllerIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$.clientId").isEqualTo("rotation-test-client-3")
       .jsonPath("$.clientSecret").isNotEmpty
+
+    webTestClient
+      .delete().uri("/api/client/rotation-test-client-3")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isOk
+  }
+
+  @Test
+  fun `duplicate client endpoint using baseClientId returns new clientId and clientSecret when request has ROLE_CLIENT_ROTATION_ADMIN`() {
+    val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
+    val token = getClientCredentialsToken(encodedClientAndSecret)
+
+    webTestClient
+      .put().uri("/api/client/rotation-test-client")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$.clientId").isEqualTo("rotation-test-client-3")
+      .jsonPath("$.clientSecret").isNotEmpty
+
+    webTestClient
+      .delete().uri("/api/client/rotation-test-client-3")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isOk
   }
 
   @Test
@@ -92,13 +120,29 @@ class DuplicateClientControllerIntTest : IntegrationTest() {
     val token = getClientCredentialsToken(encodedClientAndSecret)
 
     webTestClient
+      .put().uri("/api/client/rotation-test-client")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$.clientId").isEqualTo("rotation-test-client-3")
+      .jsonPath("$.clientSecret").isNotEmpty
+
+    webTestClient
       .put().uri("/api/client/max-duplicate-client-2")
       .header("Authorization", "Bearer $token")
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.CONFLICT)
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
-      .json("""{"error":"MaxDuplicateReached","error_description":"Duplicate clientId failed for max-duplicate-client-2 with reason: MaxReached","field":"client"}""")
+      .json("""{"error":"MaxDuplicateReached","error_description":"Duplicate clientId failed for baseClientId: max-duplicate-client with reason: MaxReached","field":"client"}""")
+
+    webTestClient
+      .delete().uri("/api/client/rotation-test-client-3")
+      .header("Authorization", "Bearer $token")
+      .exchange()
+      .expectStatus().isOk
   }
 
   @Test
