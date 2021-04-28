@@ -17,9 +17,10 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.provider.ClientAlreadyExistsException
+import org.springframework.security.oauth2.provider.ClientDetailsService
+import org.springframework.security.oauth2.provider.ClientRegistrationService
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientType
@@ -33,9 +34,10 @@ import java.util.Optional
 internal class ClientServiceTest {
   private val clientRepository: ClientRepository = mock()
   private val clientDeploymentRepository: ClientDeploymentRepository = mock()
-  private val clientDetailsService: JdbcClientDetailsService = mock()
+  private val clientDetailsService: ClientDetailsService = mock()
+  private val clientRegistrationService: ClientRegistrationService = mock()
   private val passwordGenerator: PasswordGenerator = mock()
-  private val clientService = ClientService(clientDetailsService, passwordGenerator, clientRepository, clientDeploymentRepository)
+  private val clientService = ClientService(clientDetailsService, clientRegistrationService, passwordGenerator, clientRepository, clientDeploymentRepository)
 
   @Nested
   inner class addClient {
@@ -44,7 +46,7 @@ internal class ClientServiceTest {
       whenever(passwordGenerator.generatePassword()).thenReturn("Some-Secret")
       val authClientDetails = createAuthClientDetails()
       clientService.addClient(authClientDetails)
-      verify(clientDetailsService).addClientDetails(
+      verify(clientRegistrationService).addClientDetails(
         check {
           assertThat(it).usingRecursiveComparison().isEqualTo((authClientDetails))
         }
@@ -56,7 +58,7 @@ internal class ClientServiceTest {
       val authClientDetails = createAuthClientDetails()
 
       val exception = ClientAlreadyExistsException("Client already exists: ")
-      doThrow(exception).whenever(clientDetailsService).addClientDetails(authClientDetails)
+      doThrow(exception).whenever(clientRegistrationService).addClientDetails(authClientDetails)
 
       assertThatThrownBy { clientService.addClient(authClientDetails) }.isEqualTo(exception)
     }
@@ -69,7 +71,7 @@ internal class ClientServiceTest {
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createAuthClientDetails())
       clientService.findAndUpdateDuplicates("some-client")
       verify(clientRepository).findByIdStartsWithOrderById("some-client")
-      verify(clientDetailsService, never()).updateClientDetails(any())
+      verify(clientRegistrationService, never()).updateClientDetails(any())
     }
 
     @Test
@@ -84,7 +86,7 @@ internal class ClientServiceTest {
       )
       clientService.findAndUpdateDuplicates("some-client-24")
       verify(clientRepository).findByIdStartsWithOrderById("some-client")
-      verify(clientDetailsService).updateClientDetails(
+      verify(clientRegistrationService).updateClientDetails(
         check {
           assertThat(it).usingRecursiveComparison().isEqualTo(createBaseClientDetails(authClientDetails))
         }
@@ -105,14 +107,14 @@ internal class ClientServiceTest {
     internal fun `generate new secret`() {
       whenever(passwordGenerator.generatePassword()).thenReturn("Some-Secret")
       clientService.generateClientSecret("client")
-      verify(clientDetailsService).updateClientSecret("client", "Some-Secret")
+      verify(clientRegistrationService).updateClientSecret("client", "Some-Secret")
     }
 
     @Test
     internal fun `no such client return when client not found`() {
       whenever(passwordGenerator.generatePassword()).thenReturn("Some-Secret")
       val exception = NoSuchClientException("No client found with id = ")
-      doThrow(exception).whenever(clientDetailsService).updateClientSecret(
+      doThrow(exception).whenever(clientRegistrationService).updateClientSecret(
         anyString(),
         anyString()
       )
@@ -213,7 +215,7 @@ internal class ClientServiceTest {
 
       clientService.duplicateClient("some-client")
 
-      verify(clientDetailsService).addClientDetails(
+      verify(clientRegistrationService).addClientDetails(
         check {
           assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret")
             .isEqualTo(createBaseClientDetails(authClientDetails))
@@ -237,7 +239,7 @@ internal class ClientServiceTest {
 
       clientService.duplicateClient("some-client-1")
 
-      verify(clientDetailsService).addClientDetails(
+      verify(clientRegistrationService).addClientDetails(
         check {
           assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret")
             .isEqualTo(createBaseClientDetails(authClientDetails))
@@ -261,7 +263,7 @@ internal class ClientServiceTest {
 
       clientService.duplicateClient("some-client")
 
-      verify(clientDetailsService).addClientDetails(
+      verify(clientRegistrationService).addClientDetails(
         check {
           assertThat(it).usingRecursiveComparison().ignoringFields("clientId", "clientSecret")
             .isEqualTo(createBaseClientDetails(authClientDetails))
@@ -369,7 +371,7 @@ internal class ClientServiceTest {
       clientService.removeClient("client")
 
       verify(clientDeploymentRepository).deleteByBaseClientId("client")
-      verify(clientDetailsService).removeClientDetails("client")
+      verify(clientRegistrationService).removeClientDetails("client")
     }
 
     @Test
@@ -384,7 +386,7 @@ internal class ClientServiceTest {
       clientService.removeClient("client")
 
       verifyZeroInteractions(clientDeploymentRepository)
-      verify(clientDetailsService).removeClientDetails("client")
+      verify(clientRegistrationService).removeClientDetails("client")
     }
   }
 
@@ -395,7 +397,7 @@ internal class ClientServiceTest {
     authClientDetails.setScope(listOf("read", "write"))
     authClientDetails.setResourceIds(listOf("resourceId"))
     authClientDetails.setAuthorizedGrantTypes(listOf("token", "client"))
-    authClientDetails.setRegisteredRedirectUri(setOf("some://url"))
+    authClientDetails.registeredRedirectUri = setOf("some://url")
     authClientDetails.setAutoApproveScopes(listOf("read", "delius"))
     authClientDetails.authorities = listOf(SimpleGrantedAuthority("role1"), SimpleGrantedAuthority("role2"))
     authClientDetails.accessTokenValiditySeconds = 10

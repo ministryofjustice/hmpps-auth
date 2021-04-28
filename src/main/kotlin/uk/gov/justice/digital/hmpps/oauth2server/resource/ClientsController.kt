@@ -6,8 +6,8 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.oauth2.provider.ClientRegistrationService
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.WebDataBinder
 import org.springframework.web.bind.annotation.GetMapping
@@ -31,7 +31,7 @@ import java.util.Base64.getEncoder
 @Controller
 @RequestMapping("ui/clients")
 class ClientsController(
-  private val clientsDetailsService: JdbcClientDetailsService,
+  private val clientRegistrationService: ClientRegistrationService,
   private val clientService: ClientService,
   private val telemetryClient: TelemetryClient,
 ) {
@@ -108,7 +108,7 @@ class ClientsController(
     val userDetails = authentication.principal as UserPersonDetails
     val telemetryMap = mapOf("username" to userDetails.username, "clientId" to clientDetails.clientId)
 
-    clientsDetailsService.updateClientDetails(clientDetails)
+    clientRegistrationService.updateClientDetails(clientDetails)
     telemetryClient.trackEvent("AuthClientDetailsUpdate", telemetryMap, null)
     clientService.findAndUpdateDuplicates(clientDetails.clientId)
 

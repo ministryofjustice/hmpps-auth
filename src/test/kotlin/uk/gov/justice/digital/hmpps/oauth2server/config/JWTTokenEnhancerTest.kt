@@ -13,10 +13,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken
 import org.springframework.security.oauth2.common.OAuth2AccessToken
 import org.springframework.security.oauth2.provider.ClientDetails
+import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.OAuth2Authentication
 import org.springframework.security.oauth2.provider.OAuth2Request
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
@@ -25,7 +25,7 @@ import java.util.UUID
 
 internal class JWTTokenEnhancerTest {
   private val authentication: OAuth2Authentication = mock()
-  private val clientDetailsService: JdbcClientDetailsService = mock()
+  private val clientDetailsService: ClientDetailsService = mock()
   private val jwtTokenEnhancer = JWTTokenEnhancer()
 
   @BeforeEach

@@ -5,8 +5,8 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.provider.ClientDetails
+import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.NoSuchClientException
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,7 +23,7 @@ import java.util.Base64.getEncoder
 @RestController
 class DuplicateClientController(
   private val clientService: ClientService,
-  private val clientsDetailsService: JdbcClientDetailsService,
+  private val clientsDetailsService: ClientDetailsService,
 ) {
 
   @GetMapping("/api/client/{clientId}")
