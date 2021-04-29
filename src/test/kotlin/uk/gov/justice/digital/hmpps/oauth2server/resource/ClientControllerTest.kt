@@ -66,6 +66,8 @@ class ClientControllerTest {
 
       assertThat(modelAndView.viewName).isEqualTo("ui/form")
       assertThat(modelAndView.model["clients"] as List<*>).extracting("id").containsOnly("client-1")
+      val client = (modelAndView.model["clients"] as List<*>)[0] as Client
+      assertThat(client.baseClientId).isEqualTo("client")
       assertThat(modelAndView.model["clientDetails"] as ClientDetails).isNotNull
       assertThat(modelAndView.model["deployment"] as ClientDeployment).isNotNull
     }

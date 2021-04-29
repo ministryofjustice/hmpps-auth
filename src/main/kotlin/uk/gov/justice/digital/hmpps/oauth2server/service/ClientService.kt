@@ -44,9 +44,9 @@ class ClientService(
   fun listUniqueClients(): List<Client> =
     clientRepository.findAll().sortedBy { it.id }.distinctBy { baseClientId(it.id) }
 
-  fun loadClientWithCopies(clientId: String): ClientDetailsWithCopies {
-    val clients = find(clientId)
-    return ClientDetailsWithCopies(clientsDetailsService.loadClientByClientId(clientId), clients)
+  fun loadClientWithCopies(baseClientId: String): ClientDetailsWithCopies {
+    val clients = find(baseClientId)
+    return ClientDetailsWithCopies(clientsDetailsService.loadClientByClientId(clients.first().id), clients)
   }
 
   fun loadClientAndDeployment(clientId: String): ClientDuplicateIdsAndDeployment {
@@ -67,7 +67,8 @@ class ClientService(
   }
 
   fun loadClientDeploymentDetails(clientId: String): ClientDeployment? {
-    return clientDeploymentRepository.findByIdOrNull(clientId)
+    val searchClientId = baseClientId(clientId)
+    return clientDeploymentRepository.findByIdOrNull(searchClientId)
   }
 
   fun getClientDeploymentDetailsAndBaseClientId(clientId: String): Pair<ClientDeployment?, String> {

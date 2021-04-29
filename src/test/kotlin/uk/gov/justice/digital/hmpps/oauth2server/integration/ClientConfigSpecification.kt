@@ -411,7 +411,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `Client deployment detail are not deleted when client is delete but duplicated exist`() {
+  fun `Client deployment detail are not deleted when duplicate client is delete but duplicated exist`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
     goTo(clientSummaryPage).editClient("service-client")
@@ -420,6 +420,22 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .duplicate()
 
     goTo("/ui/clients/service-client-1/delete")
+
+    goTo(clientSummaryPage).editClient("service-client")
+    clientMaintenancePage.isAtPage()
+      .checkDeploymentDetailsCloudPlatform()
+  }
+
+  @Test
+  fun `Client deployment detail are not deleted when original client is delete but duplicated exist`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("service-client")
+    clientMaintenancePage.isAtPage()
+      .checkDeploymentDetailsCloudPlatform()
+      .duplicate()
+
+    goTo("/ui/clients/service-client/delete")
 
     goTo(clientSummaryPage).editClient("service-client")
     clientMaintenancePage.isAtPage()
@@ -456,7 +472,8 @@ class ClientSummaryPage : AuthPage<ClientSummaryPage>(
   }
 
   fun editClient(client: String = "apireporting") {
-    el("#edit-$client").click()
+    val baseClient = client.replace(regex = "-[0-9]*$".toRegex(), replacement = "")
+    el("#edit-$baseClient").click()
   }
 }
 
