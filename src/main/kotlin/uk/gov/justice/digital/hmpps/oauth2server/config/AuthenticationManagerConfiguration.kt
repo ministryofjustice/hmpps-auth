@@ -77,7 +77,6 @@ class AuthenticationManagerConfiguration(
       .antMatchers(HttpMethod.GET, "/login").permitAll()
       .antMatchers(HttpMethod.POST, "/login").permitAll()
       .antMatchers("/ui/**").access("isAuthenticated() and @authIpSecurity.check(request)")
-      .antMatchers("/api/client/**").access("isAuthenticated() and @authIpSecurity.check(request)")
       .anyRequest().authenticated()
       .and()
       .formLogin()

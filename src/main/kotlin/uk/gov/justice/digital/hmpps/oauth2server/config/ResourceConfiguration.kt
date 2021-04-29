@@ -24,7 +24,8 @@ class ResourceConfiguration(private val tokenServices: ResourceServerTokenServic
     http {
       securityMatcher(AntPathRequestMatcher("/api/**"))
       authorizeRequests {
-        authorize(access = authenticated)
+        authorize(pattern = "/api/client/**", access = "isAuthenticated() and @authIpSecurity.check(request)")
+        authorize(pattern = "/api/**")
       }
     }
   }
