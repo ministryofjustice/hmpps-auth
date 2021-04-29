@@ -25,8 +25,8 @@
       <tbody class="govuk-table__body">
       <tr th:each="client : ${clientDetails}" class="govuk-table__row" th:attr="data-qa=${client.id}">
         <td class="govuk-table__cell">
-          <a th:id="'edit-' + ${client.id}" th:text="${client.id}" class="govuk-link"
-             th:href="@{/ui/clients/form?client=__${client.id}__}">Client ID</a>
+          <a th:id="'edit-' + ${client.id}" th:text="${client.baseClientId}" class="govuk-link"
+             th:href="@{/ui/clients/form?client=__${client.baseClientId}__}">Client ID</a>
         </td>
         <td th:text="${client.scope}" class="govuk-table__cell"></td>
         <td th:text="${client.authorizedGrantTypes}" class="govuk-table__cell"></td>

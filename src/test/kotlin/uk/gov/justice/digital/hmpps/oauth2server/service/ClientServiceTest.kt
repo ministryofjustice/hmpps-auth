@@ -315,6 +315,7 @@ internal class ClientServiceTest {
       val clientDeployment = clientService.loadClientDeploymentDetails("client-1")
 
       assertThat(clientDeployment).isEqualTo(clientDeploymentDetails)
+      verify(clientDeploymentRepository).findById("client")
     }
 
     @Test
@@ -324,6 +325,7 @@ internal class ClientServiceTest {
       val clientDeployment = clientService.loadClientDeploymentDetails("client")
 
       assertThat(clientDeployment).isEqualTo(clientDeploymentDetails)
+      verify(clientDeploymentRepository).findById("client")
     }
 
     @Test
@@ -331,6 +333,7 @@ internal class ClientServiceTest {
       val clientDeployment = clientService.loadClientDeploymentDetails("client")
 
       assertThat(clientDeployment).isNull()
+      verify(clientDeploymentRepository).findById("client")
     }
 
     @Test
@@ -342,6 +345,7 @@ internal class ClientServiceTest {
 
       assertThat(clientDeployment).isEqualTo(clientDeploymentDetails)
       assertThat(baseClientId).isEqualTo("client")
+      verify(clientDeploymentRepository).findById("client")
     }
 
     @Test
@@ -349,6 +353,7 @@ internal class ClientServiceTest {
       val clientDeployment = clientService.getClientDeploymentDetailsAndBaseClientId("client")
 
       assertThat(clientDeployment).isEqualTo(Pair(null, "client"))
+      verify(clientDeploymentRepository).findById("client")
     }
 
     @Test

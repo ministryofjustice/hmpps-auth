@@ -43,10 +43,10 @@ class ClientsController(
 
   @GetMapping("/form")
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
-  fun showEditForm(@RequestParam(value = "client", required = false) clientId: String?): ModelAndView {
-    return if (clientId != null) {
-      val (clientDetails, clients) = clientService.loadClientWithCopies(clientId)
-      val clientDeployment = clientService.loadClientDeploymentDetails(clientId) ?: ClientDeployment(baseClientId = clientId)
+  fun showEditForm(@RequestParam(value = "client", required = false) baseClientId: String?): ModelAndView {
+    return if (baseClientId != null) {
+      val (clientDetails, clients) = clientService.loadClientWithCopies(baseClientId)
+      val clientDeployment = clientService.loadClientDeploymentDetails(baseClientId) ?: ClientDeployment(baseClientId = baseClientId)
       ModelAndView("ui/form", "clientDetails", clientDetails)
         .addObject("clients", clients)
         .addObject("deployment", clientDeployment)

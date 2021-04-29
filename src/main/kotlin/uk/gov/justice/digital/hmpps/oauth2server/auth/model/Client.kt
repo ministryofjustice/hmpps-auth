@@ -60,6 +60,9 @@ data class Client(
 
   val mfa: MfaAccess
     get() = MfaAccess.valueOf(additionalInformation["mfa"] as? String ?: "none")
+
+  val baseClientId: String
+    get() = id.replace(regex = "-[0-9]*$".toRegex(), replacement = "")
 }
 
 @Converter
