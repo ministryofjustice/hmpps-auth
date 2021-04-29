@@ -66,8 +66,8 @@ class ClientService(
       .filter { it.id == searchClientId || it.id.substringAfter(searchClientId).matches(clientIdSuffixRegex) }
   }
 
-  fun loadClientDeploymentDetails(baseClientId: String): ClientDeployment? {
-    val searchClientId = baseClientId(baseClientId)
+  fun loadClientDeploymentDetails(clientId: String): ClientDeployment? {
+    val searchClientId = baseClientId(clientId)
     return clientDeploymentRepository.findByIdOrNull(searchClientId)
   }
 
