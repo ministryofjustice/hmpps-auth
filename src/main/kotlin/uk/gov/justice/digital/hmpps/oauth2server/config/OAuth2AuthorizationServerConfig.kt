@@ -10,6 +10,7 @@ import com.nimbusds.jose.jwk.RSAKey
 import org.apache.commons.codec.binary.Base64
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
@@ -29,6 +30,7 @@ import org.springframework.security.oauth2.provider.approval.UserApprovalHandler
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService
 import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices
 import org.springframework.security.oauth2.provider.endpoint.RedirectResolver
+import org.springframework.security.oauth2.provider.expression.OAuth2WebSecurityExpressionHandler
 import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.security.oauth2.provider.token.TokenEnhancer
@@ -182,5 +184,12 @@ class OAuth2AuthorizationServerConfig(
       .algorithm(JWSAlgorithm.RS256)
       .keyID(keyId)
     return JWKSet(builder.build())
+  }
+
+  @Bean
+  fun authExpressionHandler(applicationContext: ApplicationContext): OAuth2WebSecurityExpressionHandler {
+    val expressionHandler = OAuth2WebSecurityExpressionHandler()
+    expressionHandler.setApplicationContext(applicationContext)
+    return expressionHandler
   }
 }
