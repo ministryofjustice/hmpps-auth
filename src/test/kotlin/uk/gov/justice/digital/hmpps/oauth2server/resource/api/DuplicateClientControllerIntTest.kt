@@ -2,12 +2,14 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 import java.util.Base64
 
+@AutoConfigureWebTestClient(timeout = "P2D")
 class DuplicateClientControllerIntTest : IntegrationTest() {
 
   @Test
@@ -38,6 +40,19 @@ class DuplicateClientControllerIntTest : IntegrationTest() {
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
       .json("auth_client_details_base.json".readFile())
+  }
+
+  @Test
+  fun `get client details disallowed outside trusted network`() {
+    val encodedClientAndSecret = convertToBase64("duplicate-client-client", "clientsecret")
+    val token = getClientCredentialsToken(encodedClientAndSecret)
+
+    webTestClient
+      .get().uri("/api/client/another-test-client")
+      .header("Authorization", "Bearer $token")
+      .header("x-forwarded-for", "10.20.30.40")
+      .exchange()
+      .expectStatus().isForbidden
   }
 
   @Test

@@ -10,6 +10,7 @@ import org.springframework.security.config.web.servlet.invoke
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer
+import org.springframework.security.oauth2.provider.expression.OAuth2WebSecurityExpressionHandler
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
@@ -17,9 +18,10 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 @Order(1)
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @EnableResourceServer
-class ResourceConfiguration(private val tokenServices: ResourceServerTokenServices) :
-  ResourceServerConfigurerAdapter() {
-  @Throws(Exception::class)
+class ResourceConfiguration(
+  private val tokenServices: ResourceServerTokenServices,
+  private val authExpressionHandler: OAuth2WebSecurityExpressionHandler,
+) : ResourceServerConfigurerAdapter() {
   override fun configure(http: HttpSecurity) {
     http {
       securityMatcher(AntPathRequestMatcher("/api/**"))
@@ -31,6 +33,7 @@ class ResourceConfiguration(private val tokenServices: ResourceServerTokenServic
   }
 
   override fun configure(config: ResourceServerSecurityConfigurer) {
+    config.expressionHandler(authExpressionHandler)
     config.tokenServices(tokenServices)
   }
 }
