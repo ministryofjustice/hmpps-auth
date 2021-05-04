@@ -28,8 +28,6 @@ class ClientDeploymentSpecification : AbstractAuthSpecification() {
     clientDeploymentMaintenancePage.isAtPage()
       .addClientDeploymentDetails("A Team", "A Team contact", "A team slack", "service-dev", "service-deployment", "service-secret", "API_CLIENT_ID", "API_CLIENT_SECRET")
 
-    clientSummaryPage.isAtPage()
-      .editClient("max-duplicate-client")
     clientMaintenancePage.isAtPage()
       .checkDeploymentDetailsCloudPlatform()
   }
@@ -45,9 +43,6 @@ class ClientDeploymentSpecification : AbstractAuthSpecification() {
     clientDeploymentMaintenancePage.isAtPage()
       .addClientDeploymentDetails("A Team", "A Team contact", "A team slack", "service-dev", "service-deployment", "service-secret", "API_CLIENT_ID", "API_CLIENT_SECRET")
 
-    clientSummaryPage.isAtPage()
-      .editClient("max-duplicate-client")
-
     clientMaintenancePage.isAtPage()
       .checkDeploymentDetailsCloudPlatform()
       .deploymentChange()
@@ -55,18 +50,12 @@ class ClientDeploymentSpecification : AbstractAuthSpecification() {
     clientDeploymentMaintenancePage.isAtPage()
       .changeTeamName("Changed Team")
 
-    clientSummaryPage.isAtPage()
-      .editClient("max-duplicate-client")
-
     clientMaintenancePage.isAtPage()
       .checkDeploymentDetailsCloudPlatform("Changed Team")
       .deploymentChange()
 
     clientDeploymentMaintenancePage.isAtPage()
       .changeTeamName()
-
-    clientSummaryPage.isAtPage()
-      .editClient("max-duplicate-client")
 
     clientMaintenancePage.isAtPage()
       .checkDeploymentDetailsCloudPlatform()
