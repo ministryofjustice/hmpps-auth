@@ -5,7 +5,11 @@
 
 Spring Boot 2.1, Java 11 OAUTH2 Server integrating with NOMIS database, DELIUS (via community api) and an auth database for storing external users.
 
-Please raise any questions on the server on the #dps_tech_team channel in slack - https://mojdt.slack.com/archives/CK0QLCQ1G.
+Ministry of Justice users - please raise any questions on the server on the #dps_tech_team channel in the MoJ slack channel - https://mojdt.slack.com/archives/CK0QLCQ1G.
+
+Non Ministry of Justice users - please raise any questions as a github issue.
+
+For any security concerns / issues please see our [Vulnerability Disclosure Policy](https://mojdigital.blog.gov.uk/vulnerability-disclosure-policy/)
 
 ### What is HMPPS Auth?
 The HMPPS Authentication (HMPPS Auth) product for accessing HMPPS digital services which includes Digital Prison Services (DPS) and probation services. This product can be used to authenticate end users / consumers who wish to use any of the suite of digital products and legacy applications such as Delius. The HMPPS Auth service will authenticate the user and will issue a token to allow them to navigate across multiple services without the need to log on to each of individual services separately. This token contains the user details such as username and the roles that a user has when accessing a service.
