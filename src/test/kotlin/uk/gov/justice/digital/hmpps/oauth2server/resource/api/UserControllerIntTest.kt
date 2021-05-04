@@ -223,6 +223,24 @@ class UserControllerIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `User email endpoint returns empty for nomis user without email`() {
+    webTestClient
+      .get().uri("/api/user/IEP_USER/email?unverified=true")
+      .headers(setAuthorisation("ITAG_USER"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it).containsExactlyInAnyOrderEntriesOf(
+          mapOf(
+            "username" to "IEP_USER",
+            "verified" to false,
+          )
+        )
+      }
+  }
+
+  @Test
   fun `User email endpoint returns user data for delius user`() {
     webTestClient
       .get().uri("/api/user/delius_email/email")

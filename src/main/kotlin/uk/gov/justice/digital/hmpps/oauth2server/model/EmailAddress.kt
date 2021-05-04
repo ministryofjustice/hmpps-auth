@@ -12,12 +12,12 @@ data class EmailAddress(
   @ApiModelProperty(required = true, value = "Username", example = "DEMO_USER1", position = 1)
   val username: String,
 
-  @ApiModelProperty(required = true, value = "Email", example = "john.smith@digital.justice.gov.uk", position = 2)
-  val email: String,
+  @ApiModelProperty(required = false, value = "Email", example = "john.smith@digital.justice.gov.uk", position = 2)
+  val email: String?,
 
   @ApiModelProperty(required = true, value = "Verified email", example = "true", position = 3)
   val verified: Boolean,
 ) {
 
-  constructor(u: User) : this(u.username, u.email!!, u.verified)
+  constructor(u: User) : this(u.username, u.email, u.verified)
 }

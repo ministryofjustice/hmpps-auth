@@ -232,6 +232,14 @@ class UserControllerTest {
     assertThat(responseEntity.body).isNull()
   }
 
+  @Test
+  fun userEmail_null() {
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(Optional.of(createSampleUser("JOE")))
+    val responseEntity = userController.getUserEmail("joe", unverified = true)
+    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
+    assertThat(responseEntity.body).usingRecursiveComparison().isEqualTo(EmailAddress("JOE", null, false))
+  }
+
   private val fakeUser: User
     get() = createSampleUser(
       id = UUID.fromString(USER_ID),
