@@ -187,6 +187,7 @@ class ClientControllerTest {
     @Test
     fun `new client secret`() {
       whenever(clientService.generateClientSecret(anyString())).thenReturn("Some-Secret")
+      whenever(clientService.baseClientId(anyString())).thenReturn("client")
       val modelAndView = controller.generateNewClientSecret(authentication, "client")
       assertThat(modelAndView.viewName).isEqualTo("redirect:/ui/clients/client-success")
       assertThat(modelAndView.model).containsOnly(
@@ -195,6 +196,7 @@ class ClientControllerTest {
         entry("clientSecret", "Some-Secret"),
         entry("base64ClientId", "Y2xpZW50"),
         entry("base64ClientSecret", "U29tZS1TZWNyZXQ="),
+        entry("baseClientId", "client")
       )
 
       verify(telemetryClient, times(1)).trackEvent(
@@ -344,7 +346,7 @@ class ClientControllerTest {
       //   mapOf("username" to "user", "clientId" to "client"),
       //   null
       // )
-      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui/clients/form?client=client")
     }
 
     private fun createClientDeploymentDetails(): ClientDeployment = ClientDeployment(

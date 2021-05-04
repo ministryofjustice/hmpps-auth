@@ -402,6 +402,34 @@ internal class ClientServiceTest {
     }
   }
 
+  @Nested
+  inner class baseClientId {
+
+    @Test
+    fun `baseClientId returns client when hyphen and digit are not present at end of clientId`() {
+      val clientId = "client"
+      assertThat(clientService.baseClientId(clientId)).isEqualTo("client")
+    }
+
+    @Test
+    fun `baseClientId does not remove hyphen and character from end of clientId`() {
+      val clientId = "client-id"
+      assertThat(clientService.baseClientId(clientId)).isEqualTo("client-id")
+    }
+
+    @Test
+    fun `baseClientId removes hyphen and digit from end of clientId`() {
+      val clientId = "client-id-1"
+      assertThat(clientService.baseClientId(clientId)).isEqualTo("client-id")
+    }
+
+    @Test
+    fun `baseClientId removes hyphen and digits from end of clientId`() {
+      val clientId = "client-id-12345"
+      assertThat(clientService.baseClientId(clientId)).isEqualTo("client-id")
+    }
+  }
+
   private fun createAuthClientDetails(): AuthClientDetails {
     val authClientDetails = AuthClientDetails()
     authClientDetails.clientId = "client"

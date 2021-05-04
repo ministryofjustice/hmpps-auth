@@ -139,7 +139,7 @@ class ClientService(
     return "$baseClientId-$increment"
   }
 
-  private fun baseClientId(clientId: String): String = clientId.replace(regex = clientIdSuffixRegex, replacement = "")
+  fun baseClientId(clientId: String): String = clientId.replace(regex = clientIdSuffixRegex, replacement = "")
   private fun clientNumber(clientId: String): Int = clientId.substringAfterLast("-").toIntOrNull() ?: 0
 
   private val clientIdSuffixRegex = "-[0-9]*$".toRegex()
