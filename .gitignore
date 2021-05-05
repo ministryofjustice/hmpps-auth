@@ -23,3 +23,6 @@
 dps-gradle-spring-boot-suppressions.xml
 .editorconfig
 sonar-project.properties
+
+.env*
+.httpie*
