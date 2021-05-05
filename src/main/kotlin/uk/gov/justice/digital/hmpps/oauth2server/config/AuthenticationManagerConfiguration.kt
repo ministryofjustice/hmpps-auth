@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.builders.WebSecurity
@@ -79,6 +78,10 @@ class AuthenticationManagerConfiguration(
       .antMatchers("/ui/**").access("isAuthenticated() and @authIpSecurity.check(request)")
       .anyRequest().authenticated()
       .and()
+      .exceptionHandling()
+      .accessDeniedHandler(accessDeniedHandler)
+      .authenticationEntryPoint(RedirectingLoginUrlAuthenticationEntryPoint("/login"))
+      .and()
       .formLogin()
       .loginPage("/login")
       .successHandler(jwtAuthenticationSuccessHandler)
@@ -94,15 +97,12 @@ class AuthenticationManagerConfiguration(
       .logoutSuccessHandler(logoutSuccessHandler)
       .permitAll()
       .and()
-      .exceptionHandling()
-      .accessDeniedHandler(accessDeniedHandler)
-      .and()
       .addFilterAfter(jwtCookieAuthenticationFilter, BasicAuthenticationFilter::class.java)
       .requestCache().requestCache(cookieRequestCache)
 
     if (clientRegistrationRepository.isPresent) {
       http.oauth2Login()
-        .userInfoEndpoint(Customizer { it.oidcUserService(oidcUserService()) })
+        .userInfoEndpoint { it.oidcUserService(oidcUserService()) }
         .loginPage("/login")
         .successHandler(oidcJwtAuthenticationSuccessHandler)
         .failureHandler(userStateAuthenticationFailureHandler)

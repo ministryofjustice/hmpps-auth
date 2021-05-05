@@ -12,21 +12,13 @@ import javax.servlet.http.HttpServletResponse
 class LoggingAccessDeniedHandler : AccessDeniedHandler {
 
   companion object {
-    private val log = LoggerFactory.getLogger(LoggingAccessDeniedHandler::class.java)
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  override fun handle(
-    request: HttpServletRequest,
-    response: HttpServletResponse,
-    ex: AccessDeniedException
-  ) {
+  override fun handle(request: HttpServletRequest, response: HttpServletResponse, ex: AccessDeniedException) {
     val auth = SecurityContextHolder.getContext().authentication
     if (auth != null) {
-      log.info(
-        auth.name +
-          " was trying to access protected resource: " +
-          request.requestURI
-      )
+      log.info("{} was trying to access protected resource: {}", auth.name, request.requestURI)
     }
     response.sendRedirect(request.contextPath + "/access-denied")
   }
