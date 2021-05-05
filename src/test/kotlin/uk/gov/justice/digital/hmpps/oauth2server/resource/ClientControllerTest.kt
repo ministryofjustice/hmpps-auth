@@ -346,7 +346,8 @@ class ClientControllerTest {
       //   mapOf("username" to "user", "clientId" to "client"),
       //   null
       // )
-      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui/clients/form?client=client")
+      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui/clients/form")
+      assertThat(modelAndView.model["client"]).isEqualTo("client")
     }
 
     private fun createClientDeploymentDetails(): ClientDeployment = ClientDeployment(

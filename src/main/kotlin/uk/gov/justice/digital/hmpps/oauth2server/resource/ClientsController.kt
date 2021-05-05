@@ -75,7 +75,7 @@ class ClientsController(
 
     clientService.saveClientDeploymentDetails(clientDeployment)
 
-    return ModelAndView("redirect:/ui/clients/form?client=${clientDeployment.baseClientId}")
+    return ModelAndView("redirect:/ui/clients/form", "client", clientDeployment.baseClientId)
   }
 
   @PostMapping("/add")

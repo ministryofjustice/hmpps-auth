@@ -20,7 +20,6 @@
 
     <div class="govuk-summary-list__row">
       <dt class="govuk-summary-list__key" th:text="${#strings.equals(newClient, 'true')} ? 'new clientId' : 'clientId'">
-        >
         clientId
       </dt>
       <dd class="govuk-summary-list__value" data-qa="clientId" th:text="${clientId}">
