@@ -267,7 +267,9 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .save()
     clientCreatedSuccessPage.isAtPage()
       .checkClientSuccessDetails()
-      .continueToClientUiPage()
+      .continueToClientPage()
+    clientMaintenancePage.isAtPage()
+      .cancelBackToUI()
     clientSummaryPage.isAtPage()
       .checkClientSummary(
         client = "new-client",
@@ -305,7 +307,9 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .save()
     clientCreatedSuccessPage.isAtPage()
       .checkClientSuccessDetails()
-      .continueToClientUiPage()
+      .continueToClientPage()
+    clientMaintenancePage.isAtPage()
+      .cancelBackToUI()
     clientSummaryPage.isAtPage()
       .checkClientSummary(
         client = "new-client",
@@ -372,14 +376,13 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   fun `I receive error if I try to have more than 3 of a client`() {
     goTo(loginPage).loginAs("AUTH_ADM", "password123456")
 
-    goTo(clientSummaryPage).editClient("rotation-test-client-1")
+    goTo(clientSummaryPage).editClient("rotation-test-client")
     clientMaintenancePage.isAtPage()
       .duplicate()
 
     duplicateClientSuccessPage.isAtPage()
       .continueToClientUiPage()
 
-    goTo(clientSummaryPage).editClient("rotation-test-client-1")
     clientMaintenancePage.isAtPage()
       .duplicate()
 
@@ -490,6 +493,9 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
   @FindBy(name = "duplicate-client")
   private lateinit var duplicate: FluentWebElement
 
+  @FindBy(css = "#cancel")
+  private lateinit var cancelButton: FluentWebElement
+
   fun checkDetails(): ClientMaintenancePage {
     assertThat(el("#clientId").value()).isEqualTo("apireporting")
     assertThat(el("#clientSecret").value()).isBlank
@@ -553,6 +559,11 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
     return this
   }
 
+  fun cancelBackToUI(): ClientMaintenancePage {
+    cancelButton.click()
+    return this
+  }
+
   fun deploymentChange() {
     el("#deploymentChange").click()
   }
@@ -566,7 +577,7 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
 class ClientMaintenanceAddPage : ClientMaintenancePage("Add client", false)
 
 @PageUrl("/ui/clients/form")
-class ClientMaintenancePageWithError : ClientMaintenancePage("Edit client 'rotation-test-client-1'", false)
+class ClientMaintenancePageWithError : ClientMaintenancePage("Edit client 'rotation-test-client'", false)
 
 @PageUrl("/ui/clients/generate")
 open class ClientGenerateNewSecret : AuthPage<ClientGenerateNewSecret>(
@@ -607,7 +618,7 @@ open class ClientCreatedSuccessPage : AuthPage<ClientCreatedSuccessPage>(
     return this
   }
 
-  fun continueToClientUiPage(): ClientCreatedSuccessPage {
+  fun continueToClientPage(): ClientCreatedSuccessPage {
     assertThat(continueButton.text()).isEqualTo("Continue")
     continueButton.click()
     return this

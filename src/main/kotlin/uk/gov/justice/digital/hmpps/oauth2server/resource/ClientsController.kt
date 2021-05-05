@@ -50,6 +50,7 @@ class ClientsController(
       ModelAndView("ui/form", "clientDetails", clientDetails)
         .addObject("clients", clients)
         .addObject("deployment", clientDeployment)
+        .addObject("baseClientId", clientService.baseClientId(baseClientId))
     } else {
       val (clientDetails, clients) = ClientDetailsWithCopies(BaseClientDetails(), emptyList())
       ModelAndView("ui/form", "clientDetails", clientDetails)
@@ -74,7 +75,7 @@ class ClientsController(
 
     clientService.saveClientDeploymentDetails(clientDeployment)
 
-    return ModelAndView("redirect:/ui")
+    return ModelAndView("redirect:/ui/clients/form", "client", clientDeployment.baseClientId)
   }
 
   @PostMapping("/add")
@@ -128,6 +129,7 @@ class ClientsController(
       .addObject("clientSecret", clientSecret)
       .addObject("base64ClientId", base64ClientId)
       .addObject("base64ClientSecret", base64ClientSecret)
+      .addObject("baseClientId", clientService.baseClientId(clientId))
 
   @GetMapping("/{clientId}/delete")
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
@@ -166,6 +168,7 @@ class ClientsController(
         .addObject("clientSecret", clientSecret)
         .addObject("base64ClientId", getEncoder().encodeToString(clientId.toByteArray()))
         .addObject("base64ClientSecret", getEncoder().encodeToString(clientSecret.toByteArray()))
+        .addObject("baseClientId", clientService.baseClientId(clientId))
     }
 
   @PostMapping("/duplicate")
@@ -198,6 +201,7 @@ class ClientsController(
       .addObject("clientSecret", clientSecret)
       .addObject("base64ClientId", base64ClientId)
       .addObject("base64ClientSecret", base64ClientSecret)
+      .addObject("baseClientId", clientService.baseClientId(clientId))
 
   // Unfortunately the getAdditionalInformation getter creates an unmodifiable map, so can't be used with web binder.
   // Have to therefore extend and create our own accessor instead.

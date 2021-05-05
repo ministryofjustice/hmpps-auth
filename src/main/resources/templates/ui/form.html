@@ -23,7 +23,7 @@
   </div>
 
   <h1 th:unless="${param.client}" class="govuk-heading-l">Add client</h1>
-  <h1 th:if="${param.client}" class="govuk-heading-l">Edit client '<span th:text="${param.client[0]}"></span>'</h1>
+  <h1 th:if="${param.client}" class="govuk-heading-l">Edit client '<span th:text="${baseClientId}"></span>'</h1>
 
 
   <div class="govuk-form-group">
