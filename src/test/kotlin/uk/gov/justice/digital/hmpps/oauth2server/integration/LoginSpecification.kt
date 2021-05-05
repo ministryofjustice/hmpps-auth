@@ -83,6 +83,12 @@ class LoginSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `Visiting protected resources will add redirect_uri to page url so can be bookmarked`() {
+    goTo("/joe?redirect_uri=http://localhost/joe")
+    assertThat(loginPage.isAtPage().url()).isEqualTo("login?redirect_uri=http://localhost/joe")
+  }
+
+  @Test
   fun `I can logout once logged in`() {
     val homePage = goTo(loginPage).loginAs("itag_user", "password")
 

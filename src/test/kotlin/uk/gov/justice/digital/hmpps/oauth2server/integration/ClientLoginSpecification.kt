@@ -124,6 +124,15 @@ class ClientLoginSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `Sign in from another client adds redirect url to login page`() {
+    clientAccess {
+      assertThat(loginPage.isAtPage().url()).isEqualTo("login?redirect_uri=$clientBaseUrl")
+      loginPage.submitLogin(username = "AUTH_USER")
+    }
+      .jsonPath(".user_name").isEqualTo("AUTH_USER")
+  }
+
+  @Test
   fun `Sign in updates last accessed`() {
     val now = LocalDateTime.now()
     clientSignIn("AUTH_USER")
