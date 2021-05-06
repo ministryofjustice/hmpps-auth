@@ -63,6 +63,7 @@
   </div>
   <form th:action="@{/login}" method="POST" id="loginForm" class="govuk-grid-column-two-thirds">
     <h1 class="govuk-heading-l">Sign in</h1>
+    <input type="hidden" name="redirect_uri" th:value="${param.redirect_uri}" />
 
     <div>
       <div th:with="missinguser=${param.error != null and #arrays.contains(param.error, 'missinguser')}"

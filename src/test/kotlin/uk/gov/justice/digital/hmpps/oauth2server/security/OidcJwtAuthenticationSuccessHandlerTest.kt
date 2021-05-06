@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.azure.AzureUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
+import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.time.Instant
 import java.util.ArrayList
@@ -24,6 +25,7 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
   private val mockJwtAuthenticationHelper: JwtAuthenticationHelper = mock()
   private val cookieRequestCache: CookieRequestCache = mock()
   private val verifyEmailService: VerifyEmailService = mock()
+  private val clientService: ClientService = mock()
   private val restTemplate: RestTemplate = mock()
   private val userRetriesService: UserRetriesService = mock()
   private val telemetryClient: TelemetryClient = mock()
@@ -36,6 +38,7 @@ internal class OidcJwtAuthenticationSuccessHandlerTest {
     mockJwtAuthenticationHelper,
     cookieRequestCache,
     verifyEmailService,
+    clientService,
     restTemplate,
     tokenVerificationEnabled = false,
     userRetriesService,

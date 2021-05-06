@@ -430,6 +430,45 @@ internal class ClientServiceTest {
     }
   }
 
+  @Nested
+  inner class isValid {
+    @Test
+    fun `empty string`() {
+      whenever(clientRepository.findAll()).thenReturn(
+        listOf(Client("one"), Client("two", webServerRedirectUri = listOf("one", "two")))
+      )
+      assertThat(clientService.isValid("")).isFalse
+    }
+    @Test
+    fun `url not found`() {
+      whenever(clientRepository.findAll()).thenReturn(
+        listOf(Client("one"), Client("two", webServerRedirectUri = listOf("one", "two")))
+      )
+      assertThat(clientService.isValid("some_url")).isFalse
+    }
+    @Test
+    fun `url found`() {
+      whenever(clientRepository.findAll()).thenReturn(
+        listOf(Client("one"), Client("two", webServerRedirectUri = listOf("one", "two")))
+      )
+      assertThat(clientService.isValid("two")).isTrue
+    }
+    @Test
+    fun `url found with slash added`() {
+      whenever(clientRepository.findAll()).thenReturn(
+        listOf(Client("one"), Client("two", webServerRedirectUri = listOf("one", "two")))
+      )
+      assertThat(clientService.isValid("two/")).isTrue
+    }
+    @Test
+    fun `url found with slash added in repository`() {
+      whenever(clientRepository.findAll()).thenReturn(
+        listOf(Client("one"), Client("two", webServerRedirectUri = listOf("one", "two/", "three")))
+      )
+      assertThat(clientService.isValid("two")).isTrue
+    }
+  }
+
   private fun createAuthClientDetails(): AuthClientDetails {
     val authClientDetails = AuthClientDetails()
     authClientDetails.clientId = "client"

@@ -64,7 +64,7 @@ class JWTTokenEnhancer : TokenEnhancer {
     val fieldsToRemove = entries.filterNot { it.value }.map { it.key }.toMutableSet()
 
     // for field addition, just remove from deprecated fields
-    fieldsToRemove.remove(fieldsToKeep)
+    fieldsToRemove.removeAll(fieldsToKeep)
     return info.entries.filterNot { fieldsToRemove.contains(it.key) }.associateBy({ it.key }, { it.value })
   }
 

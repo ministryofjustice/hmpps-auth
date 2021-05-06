@@ -47,6 +47,10 @@ data class Client(
   @Column
   var created: LocalDateTime = LocalDateTime.now(),
 
+  @Column(name = "web_server_redirect_uri")
+  @Convert(converter = StringListConverter::class)
+  val webServerRedirectUri: List<String> = emptyList(),
+
   @Column(name = "secret_updated")
   var secretUpdated: LocalDateTime = LocalDateTime.now()
 ) {
