@@ -5,10 +5,12 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
+import org.springframework.security.web.savedrequest.SavedRequest
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
+import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.io.IOException
 import javax.servlet.ServletException
@@ -20,16 +22,17 @@ import javax.servlet.http.HttpServletResponse
 class JwtAuthenticationSuccessHandler(
   private val jwtCookieHelper: JwtCookieHelper,
   private val jwtAuthenticationHelper: JwtAuthenticationHelper,
-  cookieRequestCache: CookieRequestCache,
+  private val requestCache: CookieRequestCache,
   private val verifyEmailService: VerifyEmailService,
+  private val clientService: ClientService,
   @Qualifier("tokenVerificationApiRestTemplate") private val restTemplate: RestTemplate,
   @Value("\${tokenverification.enabled:false}") private val tokenVerificationEnabled: Boolean
-) : SavedRequestAwareAuthenticationSuccessHandler() {
+) : SimpleUrlAuthenticationSuccessHandler() {
 
   init {
     @Suppress("LeakingThis")
-    setRequestCache(cookieRequestCache)
     defaultTargetUrl = "/"
+    targetUrlParameter = "redirect_uri"
   }
 
   companion object {
@@ -87,7 +90,13 @@ class JwtAuthenticationSuccessHandler(
 
   @Throws(ServletException::class, IOException::class)
   fun proceed(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication) {
-    super.onAuthenticationSuccess(request, response, authentication)
+    val savedRequest: SavedRequest? = requestCache.getRequest(request, response)
+    if (savedRequest == null) {
+      super.onAuthenticationSuccess(request, response, authentication)
+      return
+    }
+    clearAuthenticationAttributes(request)
+    redirectStrategy.sendRedirect(request, response, savedRequest.redirectUrl)
   }
 
   fun updateMfaInRequest(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication) {
@@ -98,5 +107,12 @@ class JwtAuthenticationSuccessHandler(
     // also need to update current authentication in security context
     jwtAuthenticationHelper.readAuthenticationFromJwt(jwt)
       .ifPresent { SecurityContextHolder.getContext().authentication = it }
+  }
+
+  override fun determineTargetUrl(request: HttpServletRequest, response: HttpServletResponse): String {
+    val targetUrl = super.determineTargetUrl(request, response)
+
+    // only allow the targetUrl to be used if it matches a url for one of our clients
+    return if (targetUrl != defaultTargetUrl && clientService.isValid(targetUrl)) targetUrl else defaultTargetUrl
   }
 }

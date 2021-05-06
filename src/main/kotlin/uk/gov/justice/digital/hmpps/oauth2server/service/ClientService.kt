@@ -44,6 +44,16 @@ class ClientService(
   fun listUniqueClients(): List<Client> =
     clientRepository.findAll().sortedBy { it.id }.distinctBy { baseClientId(it.id) }
 
+  fun isValid(url: String): Boolean {
+    val (urlWithSlash, urlWithoutSlash) =
+      if (url.endsWith("/")) url to url.subSequence(0, url.length - 1)
+      else "$url/" to url
+
+    return clientRepository.findAll()
+      .flatMap { it.webServerRedirectUri }
+      .any { it == urlWithSlash || it == urlWithoutSlash }
+  }
+
   fun loadClientWithCopies(baseClientId: String): ClientDetailsWithCopies {
     val clients = find(baseClientId)
     return ClientDetailsWithCopies(clientsDetailsService.loadClientByClientId(clients.first().id), clients)
@@ -53,7 +63,9 @@ class ClientService(
 
     val clientIds = find(clientId).map { it.id }
 
-    if (clientIds.isEmpty()) { throw NoSuchClientException("No client with requested id: $clientId") }
+    if (clientIds.isEmpty()) {
+      throw NoSuchClientException("No client with requested id: $clientId")
+    }
 
     return ClientDuplicateIdsAndDeployment(
       clientId, clientIds, loadClientDeploymentDetails(baseClientId(clientId))
@@ -113,10 +125,13 @@ class ClientService(
   @Throws(DuplicateClientsException::class)
   fun duplicateClient(clientId: String): ClientDetails {
     val clientIdFromDB = find(clientId).map { it.id }
-    if (clientIdFromDB.isEmpty()) { throw NoSuchClientException("No client with requested id: $clientId") }
+    if (clientIdFromDB.isEmpty()) {
+      throw NoSuchClientException("No client with requested id: $clientId")
+    }
 
     val clientDetails = clientsDetailsService.loadClientByClientId(clientIdFromDB.last())
-    val duplicateClientDetails = copyClient(incrementClientId(clientIdFromDB.last()), clientDetails as BaseClientDetails)
+    val duplicateClientDetails =
+      copyClient(incrementClientId(clientIdFromDB.last()), clientDetails as BaseClientDetails)
     duplicateClientDetails.clientSecret = passwordGenerator.generatePassword()
     clientRegistrationService.addClientDetails(duplicateClientDetails)
     return duplicateClientDetails

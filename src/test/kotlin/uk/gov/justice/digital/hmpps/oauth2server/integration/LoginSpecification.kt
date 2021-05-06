@@ -9,6 +9,7 @@ import org.fluentlenium.core.annotation.PageUrl
 import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
+import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientMockServer.Companion.clientBaseUrl
 import uk.gov.justice.digital.hmpps.oauth2server.resource.TokenVerificationExtension.Companion.tokenVerificationApi
 
 class LoginSpecification : AbstractDeliusAuthSpecification() {
@@ -86,6 +87,22 @@ class LoginSpecification : AbstractDeliusAuthSpecification() {
   fun `Visiting protected resources will add redirect_uri to page url so can be bookmarked`() {
     goTo("/joe?redirect_uri=http://localhost/joe")
     assertThat(loginPage.isAtPage().url()).isEqualTo("login?redirect_uri=http://localhost/joe")
+  }
+
+  @Test
+  fun `Honour redirect url after login`() {
+    goTo("/login?redirect_uri=$clientBaseUrl")
+    assertThat(loginPage.isAtPage().url()).isEqualTo("login?redirect_uri=$clientBaseUrl")
+    loginPage.submitLogin("AUTH_ADM")
+    assertThat(driver.currentUrl).startsWith(clientBaseUrl)
+  }
+
+  @Test
+  fun `Don't honour redirect url that aren't matched to a client after login`() {
+    goTo("/login?redirect_uri=https://malicious_user/url")
+    assertThat(loginPage.isAtPage().url()).isEqualTo("login?redirect_uri=https://malicious_user/url")
+    loginPage.submitLogin("AUTH_ADM")
+    homePage.isAt()
   }
 
   @Test

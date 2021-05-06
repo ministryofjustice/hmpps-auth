@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import uk.gov.justice.digital.hmpps.oauth2server.azure.AzureUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
+import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.io.IOException
 import java.util.ArrayList
@@ -23,6 +24,7 @@ class OidcJwtAuthenticationSuccessHandler(
   jwtAuthenticationHelper: JwtAuthenticationHelper,
   cookieRequestCache: CookieRequestCache,
   verifyEmailService: VerifyEmailService,
+  clientService: ClientService,
   @Qualifier("tokenVerificationApiRestTemplate") restTemplate: RestTemplate,
   @Value("\${tokenverification.enabled:false}") tokenVerificationEnabled: Boolean,
   private val userRetriesService: UserRetriesService,
@@ -32,6 +34,7 @@ class OidcJwtAuthenticationSuccessHandler(
   jwtAuthenticationHelper,
   cookieRequestCache,
   verifyEmailService,
+  clientService,
   restTemplate,
   tokenVerificationEnabled
 ) {
