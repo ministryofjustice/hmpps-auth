@@ -187,6 +187,19 @@ class UserControllerTest {
   }
 
   @Test
+  fun myEmail() {
+    whenever(userService.getOrCreateUser(anyString())).thenReturn(
+      Optional.of(
+        createSampleUser(username = "JOE", verified = true, email = "someemail")
+      )
+    )
+    val principal = TestingAuthenticationToken("joe", "credentials")
+    val responseEntity = userController.myEmail(principal = principal)
+    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
+    assertThat(responseEntity.body).usingRecursiveComparison().isEqualTo(EmailAddress("JOE", "someemail", true))
+  }
+
+  @Test
   fun userEmail_found() {
     whenever(userService.getOrCreateUser(anyString())).thenReturn(
       Optional.of(

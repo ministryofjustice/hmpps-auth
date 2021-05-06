@@ -78,6 +78,28 @@ class UserController(private val userService: UserService) {
   fun myRoles(@ApiIgnore authentication: Authentication): Collection<UserRole> =
     authentication.authorities.map { UserRole(it!!.authority.substring(5)) } // remove ROLE_
 
+  @GetMapping("/api/me/email")
+  @ApiOperation(
+    value = "Email address for current user",
+    notes = "Verified email address for current user",
+    nickname = "myEmail",
+    consumes = "application/json",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        code = 204,
+        message = "No content.  No verified email address found for user.  Only if unverified not supplied or set to false"
+      ),
+    ]
+  )
+  fun myEmail(
+    @ApiParam(value = "Return unverified email addresses.", required = false)
+    @RequestParam unverified: Boolean = false,
+    @ApiIgnore principal: Principal,
+  ): ResponseEntity<*> = getUserEmail(username = principal.name, unverified = unverified)
+
   @GetMapping("/api/user/{username}")
   @ApiOperation(
     value = "User detail.",
@@ -151,7 +173,8 @@ class UserController(private val userService: UserService) {
   ): ResponseEntity<*> = userService
     .getOrCreateUser(username)
     .map { user: User ->
-      if (user.verified || unverified) ResponseEntity.ok(EmailAddress(user)) else ResponseEntity.noContent().build<Any>()
+      if (user.verified || unverified) ResponseEntity.ok(EmailAddress(user)) else ResponseEntity.noContent()
+        .build<Any>()
     }
     .orElseGet { notFoundResponse(username) }
 
