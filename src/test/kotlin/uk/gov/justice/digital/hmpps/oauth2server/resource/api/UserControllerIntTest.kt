@@ -157,6 +157,25 @@ class UserControllerIntTest : IntegrationTest() {
   }
 
   @Test
+  fun `My email endpoint returns user data for auth user`() {
+    webTestClient
+      .get().uri("/api/me/email")
+      .headers(setAuthorisation("AUTH_USER"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it).containsExactlyInAnyOrderEntriesOf(
+          mapOf(
+            "username" to "AUTH_USER",
+            "email" to "auth_user@digital.justice.gov.uk",
+            "verified" to true,
+          )
+        )
+      }
+  }
+
+  @Test
   fun `User email endpoint returns user data for auth user`() {
     webTestClient
       .get().uri("/api/user/AUTH_USER/email")
@@ -189,6 +208,25 @@ class UserControllerIntTest : IntegrationTest() {
     webTestClient
       .get().uri("/api/user/AUTH_UNVERIFIED/email?unverified=true")
       .headers(setAuthorisation("ITAG_USER"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it).containsExactlyInAnyOrderEntriesOf(
+          mapOf(
+            "username" to "AUTH_UNVERIFIED",
+            "email" to "auth_unverified@digital.justice.gov.uk",
+            "verified" to false,
+          )
+        )
+      }
+  }
+
+  @Test
+  fun `My email endpoint returns unverified auth user email`() {
+    webTestClient
+      .get().uri("/api/me/email?unverified=true")
+      .headers(setAuthorisation("AUTH_UNVERIFIED"))
       .exchange()
       .expectStatus().isOk
       .expectBody()
