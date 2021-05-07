@@ -72,9 +72,11 @@ class ClientsController(
     authentication: Authentication,
     @ModelAttribute clientDeployment: ClientDeployment,
   ): ModelAndView {
+    val userDetails = authentication.principal as UserPersonDetails
+    val telemetryMap = mapOf("username" to userDetails.username, "baseClientId" to clientDeployment.baseClientId)
 
     clientService.saveClientDeploymentDetails(clientDeployment)
-
+    telemetryClient.trackEvent("AuthClientDeploymentDetailsUpdated", telemetryMap, null)
     return ModelAndView("redirect:/ui/clients/form", "client", clientDeployment.baseClientId)
   }
 

@@ -341,11 +341,11 @@ class ClientControllerTest {
       val clientDeployment: ClientDeployment = createClientDeploymentDetails()
       val modelAndView = controller.addClientDeploymentDetails(authentication, clientDeployment)
       verify(clientService).saveClientDeploymentDetails(clientDeployment)
-      // verify(telemetryClient).trackEvent(
-      //   "AuthClientDeploymentDetailsUpdate",
-      //   mapOf("username" to "user", "clientId" to "client"),
-      //   null
-      // )
+      verify(telemetryClient).trackEvent(
+        "AuthClientDeploymentDetailsUpdated",
+        mapOf("username" to "user", "baseClientId" to "client"),
+        null
+      )
       assertThat(modelAndView.viewName).isEqualTo("redirect:/ui/clients/form")
       assertThat(modelAndView.model["client"]).isEqualTo("client")
     }

@@ -2,6 +2,7 @@
 
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
+import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -11,7 +12,6 @@ import org.assertj.core.api.Java6Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
-import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
@@ -22,13 +22,13 @@ import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsExcepti
 class DuplicateClientControllerTest {
 
   private val clientService: ClientService = mock()
-  private val clientDetailsService: ClientDetailsService = mock()
+  private val telemetryClient: TelemetryClient = mock()
   private val authentication = TestingAuthenticationToken(
     "duplicate",
     "pass",
     "ROLE_OAUTH_ADMIN"
   )
-  private val duplicateClientController = DuplicateClientController(clientService, clientDetailsService)
+  private val duplicateClientController = DuplicateClientController(clientService, telemetryClient)
 
   @Test
   fun `get client request`() {
@@ -49,7 +49,9 @@ class DuplicateClientControllerTest {
     val exception = NoSuchClientException("No client found with id = ")
     doThrow(exception).whenever(clientService).loadClientAndDeployment(anyString())
 
-    assertThatThrownBy { duplicateClientController.getClientIdsAndDeployment(authentication, "client") }.isEqualTo(exception)
+    assertThatThrownBy { duplicateClientController.getClientIdsAndDeployment(authentication, "client") }.isEqualTo(
+      exception
+    )
   }
 
   @Test
@@ -67,6 +69,12 @@ class DuplicateClientControllerTest {
     assertThat(newDuplicateClient.clientSecret).isEqualTo("SOME-RANDOM-STRING")
     assertThat(newDuplicateClient.base64ClientId).isEqualTo("Y2xpZW50LTE=")
     assertThat(newDuplicateClient.base64ClientSecret).isEqualTo("U09NRS1SQU5ET00tU1RSSU5H")
+
+    verify(telemetryClient).trackEvent(
+      "AuthClientDetailsApiDuplicated",
+      mapOf("username" to "duplicate", "clientId" to "client"),
+      null
+    )
   }
 
   @Test
@@ -93,6 +101,12 @@ class DuplicateClientControllerTest {
     duplicateClientController.deleteClient(authentication, "client")
 
     verify(clientService).removeClient("client")
+
+    verify(telemetryClient).trackEvent(
+      "AuthClientDetailsApiDeleted",
+      mapOf("username" to "duplicate", "clientId" to "client"),
+      null
+    )
   }
 
   @Test
