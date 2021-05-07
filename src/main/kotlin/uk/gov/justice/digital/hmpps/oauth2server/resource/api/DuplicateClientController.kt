@@ -2,10 +2,10 @@
 
 package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.provider.ClientDetails
-import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -23,7 +23,7 @@ import java.util.Base64.getEncoder
 @RestController
 class DuplicateClientController(
   private val clientService: ClientService,
-  private val clientsDetailsService: ClientDetailsService,
+  private val telemetryClient: TelemetryClient,
 ) {
 
   @GetMapping("/api/client/{clientId}")
@@ -65,8 +65,11 @@ class DuplicateClientController(
     @ApiIgnore authentication: Authentication,
     @PathVariable clientId: String,
   ): DuplicateClientDetail {
+    val username = authentication.principal
+    val telemetryMap = mapOf("username" to username.toString(), "clientId" to clientId)
     val client = clientService.duplicateClient(clientId)
 
+    telemetryClient.trackEvent("AuthClientDetailsApiDuplicated", telemetryMap, null)
     return DuplicateClientDetail(client)
   }
 
@@ -87,7 +90,11 @@ class DuplicateClientController(
     @ApiIgnore authentication: Authentication,
     @PathVariable clientId: String,
   ) {
+    val username = authentication.principal
+    val telemetryMap = mapOf("username" to username.toString(), "clientId" to clientId)
     clientService.removeClient(clientId)
+
+    telemetryClient.trackEvent("AuthClientDetailsApiDeleted", telemetryMap, null)
   }
 }
 
