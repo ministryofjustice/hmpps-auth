@@ -7,8 +7,6 @@ import org.fluentlenium.core.domain.FluentList
 import org.fluentlenium.core.domain.FluentWebElement
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.support.FindBy
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class ClientConfigSpecification : AbstractAuthSpecification() {
   @Page
@@ -22,12 +20,6 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
 
   @Page
   private lateinit var clientCreatedSuccessPage: ClientCreatedSuccessPage
-
-  @Page
-  private lateinit var clientUpdatedSuccessPage: ClientUpdatedSuccessPage
-
-  @Page
-  private lateinit var clientGenerateNewSecret: ClientGenerateNewSecret
 
   @Page
   private lateinit var duplicateClientSuccessPage: DuplicateClientSuccessPage
@@ -155,102 +147,6 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
-  fun `I can generate a new client secret for client`() {
-    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
-
-    goTo(clientSummaryPage).editClient("rotation-test-client-1")
-    clientMaintenancePage.isAtPage()
-      .generateClientSecret("rotation-test-client-1")
-
-    clientGenerateNewSecret.cancelToClientMaintenancePage()
-
-    clientMaintenancePage.isAtPage()
-      .generateClientSecret("rotation-test-client-1")
-
-    clientGenerateNewSecret.continueToGenerateClientSecret()
-
-    clientUpdatedSuccessPage.isAtPage()
-      .checkClientSuccessDetails()
-      .continueToClientUiPage()
-  }
-
-  @Test
-  fun `I can generate a new client secret for each duplicate client`() {
-    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
-
-    goTo(clientSummaryPage).editClient("rotation-test-client-1")
-    clientMaintenancePage.isAtPage()
-      .generateClientSecret("rotation-test-client-1")
-
-    clientGenerateNewSecret.continueToGenerateClientSecret()
-
-    clientUpdatedSuccessPage.isAtPage()
-      .continueToClientUiPage()
-
-    goTo(clientSummaryPage).editClient("rotation-test-client-1")
-    clientMaintenancePage.isAtPage()
-      .generateClientSecret("rotation-test-client-2")
-
-    clientGenerateNewSecret.continueToGenerateClientSecret()
-
-    clientUpdatedSuccessPage.isAtPage()
-      .continueToClientUiPage()
-
-    goTo(clientSummaryPage).editClient("rotation-test-client-1")
-    clientMaintenancePage.isAtPage()
-      .duplicate()
-
-    goTo(clientSummaryPage).editClient("rotation-test-client-1")
-    clientMaintenancePage.isAtPage()
-      .generateClientSecret("rotation-test-client-3")
-
-    clientGenerateNewSecret.continueToGenerateClientSecret()
-
-    clientUpdatedSuccessPage.isAtPage()
-      .continueToClientUiPage()
-
-    goTo(clientSummaryPage).editClient("rotation-test-client-1")
-    with(clientMaintenancePage) {
-      isAtPage()
-      assertThat(el("#rotation-test-client-1-last-accessed").text()).isEqualTo("28-01-2013 13:23")
-      val secretDateTime = LocalDateTime.parse(
-        el("#rotation-test-client-1-secret-updated").text(),
-        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
-      )
-      assertThat(secretDateTime).isAfter(LocalDateTime.now().minusMinutes(2))
-      assertThat(el("#rotation-test-client-1-created").text()).isEqualTo("26-01-2013 13:23")
-
-      assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
-      val secretDateTime2 = LocalDateTime.parse(
-        el("#rotation-test-client-2-secret-updated").text(),
-        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
-      )
-      assertThat(secretDateTime2).isAfter(LocalDateTime.now().minusMinutes(2))
-      assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
-
-      val accessedDateTime3 = LocalDateTime.parse(
-        el("#rotation-test-client-3-last-accessed").text(),
-        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
-      )
-      assertThat(accessedDateTime3).isAfter(LocalDateTime.now().minusMinutes(2))
-      val secretDateTime3 = LocalDateTime.parse(
-        el("#rotation-test-client-3-secret-updated").text(),
-        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
-      )
-      assertThat(secretDateTime3).isAfter(LocalDateTime.now().minusMinutes(2))
-      val createdDateTime3 = LocalDateTime.parse(
-        el("#rotation-test-client-3-created").text(),
-        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
-      )
-      assertThat(createdDateTime3).isAfter(LocalDateTime.now().minusMinutes(2))
-    }
-
-    goTo("/ui/clients/rotation-test-client-3/delete")
-    clientSummaryPage.isAtPage()
-      .checkClientDoesntExist("rotation-test-client-3")
-  }
-
-  @Test
   fun `I can create and remove client credential`() {
     goTo(loginPage).loginAs("ITAG_USER_ADM", "password123456")
 
@@ -356,18 +252,10 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     with(clientMaintenancePage) {
       isAtPage()
       assertThat(el("#rotation-test-client-1-last-accessed").text()).isEqualTo("28-01-2013 13:23")
-      val secretDateTime = LocalDateTime.parse(
-        el("#rotation-test-client-1-secret-updated").text(),
-        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
-      )
-      assertThat(secretDateTime).isAfter(LocalDateTime.now().minusDays(1))
+      assertThat(el("#rotation-test-client-1-secret-updated").text()).isEqualTo("27-01-2013 13:23")
       assertThat(el("#rotation-test-client-1-created").text()).isEqualTo("26-01-2013 13:23")
       assertThat(el("#rotation-test-client-2-last-accessed").text()).isEqualTo("25-12-2018 01:03")
-      val secretDateTime2 = LocalDateTime.parse(
-        el("#rotation-test-client-1-secret-updated").text(),
-        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
-      )
-      assertThat(secretDateTime2).isAfter(LocalDateTime.now().minusDays(1))
+      assertThat(el("#rotation-test-client-1-secret-updated").text()).isEqualTo("27-01-2013 13:23")
       assertThat(el("#rotation-test-client-2-created").text()).isEqualTo("25-12-2018 01:03")
     }
   }
@@ -579,29 +467,6 @@ class ClientMaintenanceAddPage : ClientMaintenancePage("Add client", false)
 @PageUrl("/ui/clients/form")
 class ClientMaintenancePageWithError : ClientMaintenancePage("Edit client 'rotation-test-client'", false)
 
-@PageUrl("/ui/clients/generate")
-open class ClientGenerateNewSecret : AuthPage<ClientGenerateNewSecret>(
-  "HMPPS Digital Services - Client Configuration",
-  "Generate new client secret"
-) {
-  @FindBy(css = "#submit")
-  private lateinit var continueButton: FluentWebElement
-
-  @FindBy(css = "#cancel")
-  private lateinit var cancelButton: FluentWebElement
-
-  fun continueToGenerateClientSecret(): ClientGenerateNewSecret {
-    continueButton.click()
-    return this
-  }
-
-  fun cancelToClientMaintenancePage(): ClientGenerateNewSecret {
-    assertThat(cancelButton.text()).isEqualTo("Cancel")
-    cancelButton.click()
-    return this
-  }
-}
-
 @PageUrl("ui/clients/client-success")
 open class ClientCreatedSuccessPage : AuthPage<ClientCreatedSuccessPage>(
   "HMPPS Digital Services - Client Configuration",
@@ -619,29 +484,6 @@ open class ClientCreatedSuccessPage : AuthPage<ClientCreatedSuccessPage>(
   }
 
   fun continueToClientPage(): ClientCreatedSuccessPage {
-    assertThat(continueButton.text()).isEqualTo("Continue")
-    continueButton.click()
-    return this
-  }
-}
-
-@PageUrl("ui/clients/client-success")
-open class ClientUpdatedSuccessPage : AuthPage<ClientUpdatedSuccessPage>(
-  "HMPPS Digital Services - Client Configuration",
-  "Client secret has been updated"
-) {
-  @FindBy(css = "#continue")
-  private lateinit var continueButton: FluentWebElement
-
-  fun checkClientSuccessDetails(): ClientUpdatedSuccessPage {
-    assertThat(el("[data-qa='clientId']").text()).isEqualTo("rotation-test-client-1")
-    assertThat(el("[data-qa='clientSecret']").text()).isNotBlank
-    assertThat(el("[data-qa='base64ClientId']").text()).isEqualTo("cm90YXRpb24tdGVzdC1jbGllbnQtMQ==")
-    assertThat(el("[data-qa='base64ClientSecret']").text()).isNotBlank
-    return this
-  }
-
-  fun continueToClientUiPage(): ClientUpdatedSuccessPage {
     assertThat(continueButton.text()).isEqualTo("Continue")
     continueButton.click()
     return this

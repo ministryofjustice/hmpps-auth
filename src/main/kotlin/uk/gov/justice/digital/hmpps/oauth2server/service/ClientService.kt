@@ -95,15 +95,6 @@ class ClientService(
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(NoSuchClientException::class)
-  fun generateClientSecret(clientId: String): String {
-    val clientSecret = passwordGenerator.generatePassword()
-    clientRegistrationService.updateClientSecret(clientId, clientSecret)
-    clientRepository.findByIdOrNull(clientId)?.resetSecretUpdated()
-    return clientSecret
-  }
-
-  @Transactional(transactionManager = "authTransactionManager")
-  @Throws(NoSuchClientException::class)
   fun removeClient(clientId: String) {
     val clients = find(clientId)
     if (clients.size == 1) {

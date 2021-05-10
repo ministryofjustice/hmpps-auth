@@ -5,7 +5,6 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
@@ -31,7 +30,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDetailsWithCopies
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
-import java.time.LocalDateTime
 
 class ClientControllerTest {
   private val clientRegistrationService: ClientRegistrationService = mock()
@@ -164,46 +162,6 @@ class ClientControllerTest {
       authClientDetails.authorities = mutableListOf(GrantedAuthority { "ROLE_CLIENT" })
       authClientDetails.clientSecret = ""
       return authClientDetails
-    }
-  }
-
-  @Nested
-  inner class GenerateNewClientSecretPrompt {
-
-    @Test
-    fun `new client secret prompt`() {
-      val modelAndView = controller.newClientSecretPrompt(authentication, "client", "2021-01-01T12:12:12.000482760")
-      assertThat(modelAndView.viewName).isEqualTo("ui/generateSecretPrompt")
-      assertThat(modelAndView.model).containsOnly(
-        entry("clientId", "client"),
-        entry("lastAccessed", LocalDateTime.of(2021, 1, 1, 12, 12, 12, 482760))
-      )
-    }
-  }
-
-  @Nested
-  inner class GenerateNewClientSecret {
-
-    @Test
-    fun `new client secret`() {
-      whenever(clientService.generateClientSecret(anyString())).thenReturn("Some-Secret")
-      whenever(clientService.baseClientId(anyString())).thenReturn("client")
-      val modelAndView = controller.generateNewClientSecret(authentication, "client")
-      assertThat(modelAndView.viewName).isEqualTo("redirect:/ui/clients/client-success")
-      assertThat(modelAndView.model).containsOnly(
-        entry("newClient", "false"),
-        entry("clientId", "client"),
-        entry("clientSecret", "Some-Secret"),
-        entry("base64ClientId", "Y2xpZW50"),
-        entry("base64ClientSecret", "U29tZS1TZWNyZXQ="),
-        entry("baseClientId", "client")
-      )
-
-      verify(telemetryClient, times(1)).trackEvent(
-        "AuthClientSecretUpdated",
-        mapOf("username" to "user", "clientId" to "client"),
-        null
-      )
     }
   }
 

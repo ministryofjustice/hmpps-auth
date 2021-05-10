@@ -19,7 +19,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.provider.ClientAlreadyExistsException
 import org.springframework.security.oauth2.provider.ClientDetailsService
 import org.springframework.security.oauth2.provider.ClientRegistrationService
-import org.springframework.security.oauth2.provider.NoSuchClientException
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
@@ -98,28 +97,6 @@ internal class ClientServiceTest {
       whenever(clientDetailsService.loadClientByClientId(any())).thenReturn(createAuthClientDetails())
       clientService.findAndUpdateDuplicates("some-client-24-id")
       verify(clientRepository).findByIdStartsWithOrderById("some-client-24-id")
-    }
-  }
-
-  @Nested
-  inner class generateNewClientSecret {
-    @Test
-    internal fun `generate new secret`() {
-      whenever(passwordGenerator.generatePassword()).thenReturn("Some-Secret")
-      clientService.generateClientSecret("client")
-      verify(clientRegistrationService).updateClientSecret("client", "Some-Secret")
-    }
-
-    @Test
-    internal fun `no such client return when client not found`() {
-      whenever(passwordGenerator.generatePassword()).thenReturn("Some-Secret")
-      val exception = NoSuchClientException("No client found with id = ")
-      doThrow(exception).whenever(clientRegistrationService).updateClientSecret(
-        anyString(),
-        anyString()
-      )
-
-      assertThatThrownBy { clientService.generateClientSecret("not-client") }.isEqualTo(exception)
     }
   }
 
