@@ -25,7 +25,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientDetailsWithCopies
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DuplicateClientsException
-import java.time.LocalDateTime
 import java.util.Base64.getEncoder
 
 @Controller
@@ -142,36 +141,6 @@ class ClientsController(
     telemetryClient.trackEvent("AuthClientDetailsDeleted", telemetryMap, null)
     return "redirect:/ui"
   }
-
-  @GetMapping("/generate")
-  @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
-  fun newClientSecretPrompt(
-    authentication: Authentication,
-    @RequestParam(value = "client", required = true) clientId: String,
-    @RequestParam(value = "last", required = true) lastAccessed: String,
-  ):
-    ModelAndView = ModelAndView("ui/generateSecretPrompt", "clientId", clientId)
-      .addObject("lastAccessed", LocalDateTime.parse(lastAccessed))
-
-  @PostMapping("/generate")
-  @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")
-  fun generateNewClientSecret(
-    authentication: Authentication,
-    @RequestParam clientId: String,
-  ):
-    ModelAndView {
-      val userDetails = authentication.principal as UserPersonDetails
-      val telemetryMap = mapOf("username" to userDetails.username, "clientId" to clientId)
-
-      val clientSecret = clientService.generateClientSecret(clientId)
-      telemetryClient.trackEvent("AuthClientSecretUpdated", telemetryMap, null)
-      return ModelAndView("redirect:/ui/clients/client-success", "newClient", "false")
-        .addObject("clientId", clientId)
-        .addObject("clientSecret", clientSecret)
-        .addObject("base64ClientId", getEncoder().encodeToString(clientId.toByteArray()))
-        .addObject("base64ClientSecret", getEncoder().encodeToString(clientSecret.toByteArray()))
-        .addObject("baseClientId", clientService.baseClientId(clientId))
-    }
 
   @PostMapping("/duplicate")
   @PreAuthorize("hasRole('ROLE_OAUTH_ADMIN')")

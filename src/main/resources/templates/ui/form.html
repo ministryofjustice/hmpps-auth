@@ -7,7 +7,7 @@
   <title>Maintain Client Configuration</title>
 </head>
 <body>
-<div layout:fragment="content" class="govuk-grid-column-full">
+<div layout:fragment="content" class="govuk-form-group govuk-grid-column-three-quarters">
   <div th:if="${param.error}" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert"
        data-module="govuk-error-summary">
     <h2 class="govuk-error-summary__title" id="error-summary">
@@ -36,7 +36,6 @@
           <th scope="col" class="govuk-table__header">Created</th>
           <th scope="col" class="govuk-table__header">Secret updated</th>
           <th scope="col" class="govuk-table__header">Last accessed</th>
-          <th scope="col" class="govuk-table__header">Client secret</th>
         </tr>
         </thead>
         <tbody class="govuk-table__body">
@@ -56,11 +55,6 @@
               th:id="${client.id + '-last-accessed'}">
             a date
           </td>
-          <td class="govuk-table__cell">
-            <a class="govuk-button--secondary govuk-button" role="button" th:id="${'generate-secret-' + client.id}"
-               th:href="@{/ui/clients/generate?client=__${client.id}__&last=__${client.lastAccessed}__}">Generate new
-              secret</a>
-          </td>
         </tr>
         </tbody>
       </table>
@@ -72,281 +66,279 @@
     </form>
   </div>
 
-  <div class="govuk-form-group govuk-grid-column-three-quarters">
-    <div class="govuk-form-group" th:if="${param.client}">
-      <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-          <h2 class="govuk-heading-m">Deployment details</h2>
-        </div>
-        <div class="govuk-grid-column-one-third">
-          <a class="govuk-link govuk-link--no-visited-state" id="deploymentChange" name="deploymentChange"
-             th:href="@{/ui/clients/deployment?client=__${clients[0].id}__}">Change deployment details</a>
-        </div>
+  <div class="govuk-form-group" th:if="${param.client}">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h2 class="govuk-heading-m">Deployment details</h2>
       </div>
-
-      <dl class="govuk-summary-list">
-
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">
-            Client type
-          </dt>
-          <dd class="govuk-summary-list__value" id="clientType" name="clientType"
-              th:text="${deployment.type != null} ? ${deployment.type} : ''">
-            Client type
-          </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">
-            Team
-          </dt>
-          <dd class="govuk-summary-list__value" id="team" name="team"
-              th:text="${deployment.team != null} ? ${deployment.team} : ''">
-            Team
-          </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">
-            Team contact
-          </dt>
-          <dd class="govuk-summary-list__value" id="teamContact" name="teamContact"
-              th:text="${deployment.teamContact != null} ? ${deployment.teamContact} : ''">
-            Team
-          </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">
-            Team slack channel
-          </dt>
-          <dd class="govuk-summary-list__value" id="teamSlack" name="teamSlack"
-              th:text="${deployment.teamSlack != null} ? ${deployment.teamSlack} : ''">
-            Team slack
-          </dd>
-        </div>
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">
-            Hosting
-          </dt>
-          <dd class="govuk-summary-list__value" id="hosting" name="hosting"
-              th:text="${deployment.hosting != null} ? ${deployment.hosting} : ''">
-            hosting
-          </dd>
-        </div>
-        <div class="govuk-summary-list__row" th:if="${#strings.equals(deployment.hosting, 'CLOUDPLATFORM')}">
-          <dt class="govuk-summary-list__key">
-            Namespace
-          </dt>
-          <dd class="govuk-summary-list__value" id="namespace" name="namespace"
-              th:text="${deployment.namespace != null} ? ${deployment.namespace} : ''">
-            namespace
-          </dd>
-        </div>
-        <div class="govuk-summary-list__row" th:if="${#strings.equals(deployment.hosting, 'CLOUDPLATFORM')}">
-          <dt class="govuk-summary-list__key">
-            Deployment
-          </dt>
-          <dd class="govuk-summary-list__value" id="deployment" name="deployment"
-              th:text="${deployment.deployment != null} ? ${deployment.deployment} : ''">
-            deployment
-          </dd>
-        </div>
-        <div class="govuk-summary-list__row" th:if="${#strings.equals(deployment.hosting, 'CLOUDPLATFORM')}">
-          <dt class="govuk-summary-list__key">
-            Secret name
-          </dt>
-          <dd class="govuk-summary-list__value" id="secretName" name="secretName"
-              th:text="${deployment.secretName != null} ? ${deployment.secretName} : ''">
-            Secret name
-          </dd>
-        </div>
-        <div class="govuk-summary-list__row" th:if="${#strings.equals(deployment.hosting, 'CLOUDPLATFORM')}">
-          <dt class="govuk-summary-list__key">
-            Client id key
-          </dt>
-          <dd class="govuk-summary-list__value" id="clientIdKey" name="clientIdKey"
-              th:text="${deployment.clientIdKey != null} ? ${deployment.clientIdKey} : ''">
-            Client id key
-          </dd>
-        </div>
-        <div class="govuk-summary-list__row" th:if="${#strings.equals(deployment.hosting, 'CLOUDPLATFORM')}">
-          <dt class="govuk-summary-list__key">
-            Secret key
-          </dt>
-          <dd class="govuk-summary-list__value" id="secretKey" name="secretKey"
-              th:text="${deployment.secretKey != null} ? ${deployment.secretKey} : ''">
-            Secret key
-          </dd>
-        </div>
-      </dl>
+      <div class="govuk-grid-column-one-third">
+        <a class="govuk-link govuk-link--no-visited-state" id="deploymentChange" name="deploymentChange"
+           th:href="@{/ui/clients/deployment?client=__${clients[0].id}__}">Change deployment details</a>
+      </div>
     </div>
-    <h2 class="govuk-heading-m">Client details</h2>
 
-    <form th:with="clientType=${param.client != null} ? 'edit' : 'add'" th:action="@{'/ui/clients/'+ ${clientType}}"
-          method="post">
+    <dl class="govuk-summary-list">
 
-      <input class="govuk-input govuk-!-width-one-half" type="hidden" th:if="${param.client}" id="clientId"
-             name="clientId"
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          Client type
+        </dt>
+        <dd class="govuk-summary-list__value" id="clientType" name="clientType"
+            th:text="${deployment.type != null} ? ${deployment.type} : ''">
+          Client type
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          Team
+        </dt>
+        <dd class="govuk-summary-list__value" id="team" name="team"
+            th:text="${deployment.team != null} ? ${deployment.team} : ''">
+          Team
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          Team contact
+        </dt>
+        <dd class="govuk-summary-list__value" id="teamContact" name="teamContact"
+            th:text="${deployment.teamContact != null} ? ${deployment.teamContact} : ''">
+          Team
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          Team slack channel
+        </dt>
+        <dd class="govuk-summary-list__value" id="teamSlack" name="teamSlack"
+            th:text="${deployment.teamSlack != null} ? ${deployment.teamSlack} : ''">
+          Team slack
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          Hosting
+        </dt>
+        <dd class="govuk-summary-list__value" id="hosting" name="hosting"
+            th:text="${deployment.hosting != null} ? ${deployment.hosting} : ''">
+          hosting
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row" th:if="${#strings.equals(deployment.hosting, 'CLOUDPLATFORM')}">
+        <dt class="govuk-summary-list__key">
+          Namespace
+        </dt>
+        <dd class="govuk-summary-list__value" id="namespace" name="namespace"
+            th:text="${deployment.namespace != null} ? ${deployment.namespace} : ''">
+          namespace
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row" th:if="${#strings.equals(deployment.hosting, 'CLOUDPLATFORM')}">
+        <dt class="govuk-summary-list__key">
+          Deployment
+        </dt>
+        <dd class="govuk-summary-list__value" id="deployment" name="deployment"
+            th:text="${deployment.deployment != null} ? ${deployment.deployment} : ''">
+          deployment
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row" th:if="${#strings.equals(deployment.hosting, 'CLOUDPLATFORM')}">
+        <dt class="govuk-summary-list__key">
+          Secret name
+        </dt>
+        <dd class="govuk-summary-list__value" id="secretName" name="secretName"
+            th:text="${deployment.secretName != null} ? ${deployment.secretName} : ''">
+          Secret name
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row" th:if="${#strings.equals(deployment.hosting, 'CLOUDPLATFORM')}">
+        <dt class="govuk-summary-list__key">
+          Client id key
+        </dt>
+        <dd class="govuk-summary-list__value" id="clientIdKey" name="clientIdKey"
+            th:text="${deployment.clientIdKey != null} ? ${deployment.clientIdKey} : ''">
+          Client id key
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row" th:if="${#strings.equals(deployment.hosting, 'CLOUDPLATFORM')}">
+        <dt class="govuk-summary-list__key">
+          Secret key
+        </dt>
+        <dd class="govuk-summary-list__value" id="secretKey" name="secretKey"
+            th:text="${deployment.secretKey != null} ? ${deployment.secretKey} : ''">
+          Secret key
+        </dd>
+      </div>
+    </dl>
+  </div>
+  <h2 class="govuk-heading-m">Client details</h2>
+
+  <form th:with="clientType=${param.client != null} ? 'edit' : 'add'" th:action="@{'/ui/clients/'+ ${clientType}}"
+        method="post">
+
+    <input class="govuk-input govuk-!-width-one-half" type="hidden" th:if="${param.client}" id="clientId"
+           name="clientId"
+           th:value="${clientDetails.clientId}"/>
+    <!-- signalize new client -->
+    <input class="govuk-input govuk-!-width-one-half" type="hidden" th:unless="${param.client}" name="newClient"
+           value="true"/>
+    <input class="govuk-input govuk-!-width-one-half" id="clientSecret" type="hidden" name="clientSecret"/>
+
+    <div class="govuk-form-group" th:unless="${param.client}">
+      <label class="govuk-label" for="clientId">Client ID</label>
+      <input class="govuk-input govuk-!-width-one-half" id="clientId" type="text" name="clientId"
              th:value="${clientDetails.clientId}"/>
-      <!-- signalize new client -->
-      <input class="govuk-input govuk-!-width-one-half" type="hidden" th:unless="${param.client}" name="newClient"
-             value="true"/>
-      <input class="govuk-input govuk-!-width-one-half" id="clientSecret" type="hidden" name="clientSecret"/>
+    </div>
 
-      <div class="govuk-form-group" th:unless="${param.client}">
-        <label class="govuk-label" for="clientId">Client ID</label>
-        <input class="govuk-input govuk-!-width-one-half" id="clientId" type="text" name="clientId"
-               th:value="${clientDetails.clientId}"/>
-      </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="registeredRedirectUri">Registered redirect URIs</label>
+      <input class="govuk-input" id="registeredRedirectUri" name="registeredRedirectUri" type="text"
+             th:value="${clientDetails.registeredRedirectUri} ? ${#strings.setJoin(clientDetails.registeredRedirectUri, ',')} : ''"/>
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="accessTokenValiditySeconds">Access token validity</label>
+      <input class="govuk-input govuk-!-width-one-half" id="accessTokenValiditySeconds"
+             name="accessTokenValiditySeconds" type="text"
+             th:value="${clientDetails.accessTokenValiditySeconds}"/>
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="refreshTokenValiditySeconds">Refresh token validity</label>
+      <input class="govuk-input govuk-!-width-one-half" id="refreshTokenValiditySeconds"
+             name="refreshTokenValiditySeconds" type="text"
+             th:value="${clientDetails.refreshTokenValiditySeconds}"/>
+    </div>
 
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="registeredRedirectUri">Registered redirect URIs</label>
-        <input class="govuk-input" id="registeredRedirectUri" name="registeredRedirectUri" type="text"
-               th:value="${clientDetails.registeredRedirectUri} ? ${#strings.setJoin(clientDetails.registeredRedirectUri, ',')} : ''"/>
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="accessTokenValiditySeconds">Access token validity</label>
-        <input class="govuk-input govuk-!-width-one-half" id="accessTokenValiditySeconds"
-               name="accessTokenValiditySeconds" type="text"
-               th:value="${clientDetails.accessTokenValiditySeconds}"/>
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="refreshTokenValiditySeconds">Refresh token validity</label>
-        <input class="govuk-input govuk-!-width-one-half" id="refreshTokenValiditySeconds"
-               name="refreshTokenValiditySeconds" type="text"
-               th:value="${clientDetails.refreshTokenValiditySeconds}"/>
-      </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="resourceIds">Resource IDs</label>
+      <input class="govuk-input govuk-!-width-one-half" id="resourceIds" type="text" name="resourceIds"
+             th:value="${#strings.setJoin(clientDetails.resourceIds, ',')}"/>
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="scopes">Approved Scopes</label>
+      <input class="govuk-input govuk-!-width-one-half" id="scopes" type="text" name="scope"
+             th:value="${#strings.setJoin(clientDetails.scope, ',')}"/>
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="authorities">Authorities</label>
+      <input class="govuk-input" id="authorities" type="text" name="authorities"
+             th:value="${#strings.setJoin(clientDetails.authorities, ',')}"/>
+    </div>
 
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="resourceIds">Resource IDs</label>
-        <input class="govuk-input govuk-!-width-one-half" id="resourceIds" type="text" name="resourceIds"
-               th:value="${#strings.setJoin(clientDetails.resourceIds, ',')}"/>
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="scopes">Approved Scopes</label>
-        <input class="govuk-input govuk-!-width-one-half" id="scopes" type="text" name="scope"
-               th:value="${#strings.setJoin(clientDetails.scope, ',')}"/>
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="authorities">Authorities</label>
-        <input class="govuk-input" id="authorities" type="text" name="authorities"
-               th:value="${#strings.setJoin(clientDetails.authorities, ',')}"/>
-      </div>
-
-      <div class="govuk-form-group">
-        <label class="govuk-label">Grant Types</label>
-        <div class="govuk-checkboxes">
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" type="checkbox" name="authorizedGrantTypes" id="client_credentials"
-                   value="client_credentials" th:field="*{clientDetails.authorizedGrantTypes}"/>
-            <label class="govuk-label govuk-checkboxes__label" for="client_credentials">client_credentials</label>
-          </div>
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" type="checkbox" name="authorizedGrantTypes" id="implicit"
-                   value="implicit" th:field="*{clientDetails.authorizedGrantTypes}"/>
-            <label class="govuk-label govuk-checkboxes__label" for="implicit">implicit</label>
-          </div>
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" type="checkbox" name="authorizedGrantTypes" id="authorization_code"
-                   value="authorization_code" th:field="*{clientDetails.authorizedGrantTypes}"/>
-            <label class="govuk-label govuk-checkboxes__label" for="authorization_code">
-              authorization_code
-            </label>
-          </div>
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" type="checkbox" name="authorizedGrantTypes" id="refresh_token"
-                   value="refresh_token" th:field="*{clientDetails.authorizedGrantTypes}"/>
-            <label class="govuk-label govuk-checkboxes__label" for="refresh_token">refresh_token</label>
-          </div>
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" type="checkbox" name="authorizedGrantTypes" id="password"
-                   value="password" th:field="*{clientDetails.authorizedGrantTypes}"/>
-            <label class="govuk-label govuk-checkboxes__label" for="password">password</label>
-          </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label">Grant Types</label>
+      <div class="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" type="checkbox" name="authorizedGrantTypes" id="client_credentials"
+                 value="client_credentials" th:field="*{clientDetails.authorizedGrantTypes}"/>
+          <label class="govuk-label govuk-checkboxes__label" for="client_credentials">client_credentials</label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" type="checkbox" name="authorizedGrantTypes" id="implicit"
+                 value="implicit" th:field="*{clientDetails.authorizedGrantTypes}"/>
+          <label class="govuk-label govuk-checkboxes__label" for="implicit">implicit</label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" type="checkbox" name="authorizedGrantTypes" id="authorization_code"
+                 value="authorization_code" th:field="*{clientDetails.authorizedGrantTypes}"/>
+          <label class="govuk-label govuk-checkboxes__label" for="authorization_code">
+            authorization_code
+          </label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" type="checkbox" name="authorizedGrantTypes" id="refresh_token"
+                 value="refresh_token" th:field="*{clientDetails.authorizedGrantTypes}"/>
+          <label class="govuk-label govuk-checkboxes__label" for="refresh_token">refresh_token</label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" type="checkbox" name="authorizedGrantTypes" id="password"
+                 value="password" th:field="*{clientDetails.authorizedGrantTypes}"/>
+          <label class="govuk-label govuk-checkboxes__label" for="password">password</label>
         </div>
       </div>
+    </div>
 
+    <div class="govuk-form-group">
       <div class="govuk-form-group">
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="jwtFields">JWT Fields Configuration</label>
-          <span class="govuk-hint">
+        <label class="govuk-label" for="jwtFields">JWT Fields Configuration</label>
+        <span class="govuk-hint">
           Comma separated list of fields, prefixed with + to add, - to remove e.g. +name,-user_id
         </span>
-          <input class="govuk-input govuk-!-width-one-half" id="jwtFields" type="text" name="jwtFields"
-                 readonly="readonly"
-                 onfocus="this.removeAttribute('readonly');"
-                 th:value="${clientDetails.additionalInformation['jwtFields']}"/>
-        </div>
+        <input class="govuk-input govuk-!-width-one-half" id="jwtFields" type="text" name="jwtFields"
+               readonly="readonly"
+               onfocus="this.removeAttribute('readonly');"
+               th:value="${clientDetails.additionalInformation['jwtFields']}"/>
       </div>
+    </div>
 
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="skipToAzureField">Azure Ad Login Flow</label>
-        <span class="govuk-hint">
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="skipToAzureField">Azure Ad Login Flow</label>
+      <span class="govuk-hint">
           Customize behaviour of Azure AD login
         </span>
-        <div class="govuk-checkboxes__item">
-          <input name="_skipToAzureField" type="hidden" value="on"/>
-          <input class="govuk-checkboxes__input" type="checkbox" name="skipToAzureField" id="skipToAzureField"
-                 th:checked="*{clientDetails.additionalInformation['skipToAzureField']}"/>
-          <label class="govuk-label govuk-checkboxes__label" for="skipToAzureField">Auto redirect</label>
-        </div>
+      <div class="govuk-checkboxes__item">
+        <input name="_skipToAzureField" type="hidden" value="on"/>
+        <input class="govuk-checkboxes__input" type="checkbox" name="skipToAzureField" id="skipToAzureField"
+               th:checked="*{clientDetails.additionalInformation['skipToAzureField']}"/>
+        <label class="govuk-label govuk-checkboxes__label" for="skipToAzureField">Auto redirect</label>
       </div>
-      <div class="govuk-form-group">
-        <fieldset class="govuk-fieldset">
-          <legend class="govuk-fieldset__legend govuk-fieldset__legend">
-            <h1 class="govuk-fieldset__heading">
-              Multi Factor Authentication
-            </h1>
-            <span class="govuk-hint">
+    </div>
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend">
+          <h1 class="govuk-fieldset__heading">
+            Multi Factor Authentication
+          </h1>
+          <span class="govuk-hint">
           Require additional verification to access this service
         </span>
 
-          </legend>
-          <div class="govuk-radios">
-            <div class="govuk-radios__item">
-              <input class="govuk-radios__input" id="mfa-1" name="mfa" type="radio" value="none"
-                     th:checked="${clientDetails.additionalInformation['mfa'] == 'none'}">
-              <label class="govuk-label govuk-radios__label" for="mfa-1">
-                None
-              </label>
-            </div>
-            <div class="govuk-radios__item">
-              <input class="govuk-radios__input" id="mfa-2" name="mfa" type="radio" value="untrusted"
-                     th:checked="${clientDetails.additionalInformation['mfa'] == 'untrusted'}">
-              <label class="govuk-label govuk-radios__label" for="mfa-2">
-                Access from untrusted networks
-              </label>
-            </div>
-            <div class="govuk-radios__item">
-              <input class="govuk-radios__input" id="mfa-3" name="mfa" type="radio" value="all"
-                     th:checked="${clientDetails.additionalInformation['mfa'] == 'all'}">
-              <label class="govuk-label govuk-radios__label" for="mfa-3">
-                Access from all networks
-              </label>
-            </div>
+        </legend>
+        <div class="govuk-radios">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="mfa-1" name="mfa" type="radio" value="none"
+                   th:checked="${clientDetails.additionalInformation['mfa'] == 'none'}">
+            <label class="govuk-label govuk-radios__label" for="mfa-1">
+              None
+            </label>
           </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="mfa-2" name="mfa" type="radio" value="untrusted"
+                   th:checked="${clientDetails.additionalInformation['mfa'] == 'untrusted'}">
+            <label class="govuk-label govuk-radios__label" for="mfa-2">
+              Access from untrusted networks
+            </label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="mfa-3" name="mfa" type="radio" value="all"
+                   th:checked="${clientDetails.additionalInformation['mfa'] == 'all'}">
+            <label class="govuk-label govuk-radios__label" for="mfa-3">
+              Access from all networks
+            </label>
+          </div>
+        </div>
 
-        </fieldset>
-      </div>
+      </fieldset>
+    </div>
+    <div class="govuk-form-group">
       <div class="govuk-form-group">
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="databaseUsernameField">Database Username</label>
-          <span class="govuk-hint">
+        <label class="govuk-label" for="databaseUsernameField">Database Username</label>
+        <span class="govuk-hint">
           For client credentials only, the username to "alias" in database when changing data e.g. API_USER
         </span>
-          <input class="govuk-input govuk-!-width-one-half" id="databaseUsernameField" type="text"
-                 name="databaseUsernameField"
-                 readonly="readonly"
-                 onfocus="this.removeAttribute('readonly');"
-                 th:value="${clientDetails.additionalInformation['databaseUsernameField']}"/>
-        </div>
+        <input class="govuk-input govuk-!-width-one-half" id="databaseUsernameField" type="text"
+               name="databaseUsernameField"
+               readonly="readonly"
+               onfocus="this.removeAttribute('readonly');"
+               th:value="${clientDetails.additionalInformation['databaseUsernameField']}"/>
       </div>
-      <div class="govuk-form-group">
-        <input type="submit" class="govuk-button" name="client-submit" value="Save">
+    </div>
+    <div class="govuk-form-group">
+      <input type="submit" class="govuk-button" name="client-submit" value="Save">
 
-        <a class="govuk-button" role="button" id="cancel" th:href="@{/ui}">Cancel</a>
-      </div>
-    </form>
-  </div>
-
+      <a class="govuk-button" role="button" id="cancel" th:href="@{/ui}">Cancel</a>
+    </div>
+  </form>
 </div>
+
 </body>
 </html>
