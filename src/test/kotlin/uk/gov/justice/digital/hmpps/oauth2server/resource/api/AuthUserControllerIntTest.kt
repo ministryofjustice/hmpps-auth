@@ -106,9 +106,11 @@ class AuthUserControllerIntTest : IntegrationTest() {
 
   @Test
   fun `Auth User Disable endpoint disables user`() {
+    val reason = DeactivateReason("left department")
     webTestClient
       .put().uri("/api/authuser/AUTH_STATUS/disable")
       .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .bodyValue(reason)
       .exchange()
       .expectStatus().isNoContent
 
@@ -148,9 +150,11 @@ class AuthUserControllerIntTest : IntegrationTest() {
       .exchange()
       .expectStatus().isNoContent
 
+    val reason = DeactivateReason("left department")
     webTestClient
       .put().uri("/api/authuser/AUTH_STATUS/disable")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .bodyValue(reason)
       .exchange()
       .expectStatus().isNoContent
 
@@ -178,9 +182,11 @@ class AuthUserControllerIntTest : IntegrationTest() {
 
   @Test
   fun `Group manager Disable endpoint fails user not in group manager group forbidden`() {
+    val reason = DeactivateReason("left department")
     webTestClient
       .put().uri("/api/authuser/AUTH_STATUS/disable")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .bodyValue(reason)
       .exchange()
       .expectStatus().isForbidden
       .expectBody()
@@ -193,9 +199,11 @@ class AuthUserControllerIntTest : IntegrationTest() {
 
   @Test
   fun `Auth User Disable endpoint fails is not an admin user`() {
+    val reason = DeactivateReason("left department")
     webTestClient
       .put().uri("/api/authuser/AUTH_STATUS/disable")
       .headers(setAuthorisation("ITAG_USER", listOf()))
+      .bodyValue(reason)
       .exchange()
       .expectStatus().isForbidden
       .expectBody()

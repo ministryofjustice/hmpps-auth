@@ -7,7 +7,6 @@ import org.springframework.security.core.CredentialsContainer
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import java.time.LocalDateTime
-import java.util.ArrayList
 import java.util.Optional
 import java.util.UUID
 import javax.persistence.CascadeType
@@ -98,6 +97,9 @@ class User(
   @Column(name = "mfa_preference")
   @Enumerated(EnumType.STRING)
   var mfaPreference = MfaPreferenceType.EMAIL
+
+  @Column(name = "inactive_reason")
+  var inactiveReason: String? = null
 
   @ElementCollection
   @CollectionTable(name = "USER_CONTACT", joinColumns = [JoinColumn(name = "user_id")])

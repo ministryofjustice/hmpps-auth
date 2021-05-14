@@ -927,7 +927,7 @@ class AuthUserServiceTest {
   fun disableUser_superUser() {
     val optionalUser = createOptionalSampleUser()
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.disableUser("user", "admin", SUPER_USER)
+    authUserService.disableUser("user", "admin", "A Reason", SUPER_USER)
     assertThat(optionalUser).get().extracting { it.isEnabled }.isEqualTo(false)
     verify(userRepository).save(optionalUser.orElseThrow())
   }
@@ -938,7 +938,7 @@ class AuthUserServiceTest {
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
     doThrow(AuthUserGroupRelationshipException("someuser", "User not with your groups")).whenever(maintainUserCheck)
       .ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any())
-    assertThatThrownBy { authUserService.disableUser("someuser", "admin", GROUP_MANAGER) }.isInstanceOf(
+    assertThatThrownBy { authUserService.disableUser("someuser", "admin", "A Reason", GROUP_MANAGER) }.isInstanceOf(
       AuthUserGroupRelationshipException::class.java
     ).hasMessage("Unable to maintain user: someuser with reason: User not with your groups")
   }
@@ -954,7 +954,7 @@ class AuthUserServiceTest {
     )
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
       .thenReturn(Optional.of(user))
-    authUserService.disableUser("user", "admin", GROUP_MANAGER)
+    authUserService.disableUser("user", "admin", "A Reason", GROUP_MANAGER)
     assertThat(user).extracting { it.isEnabled }.isEqualTo(false)
     verify(userRepository).save(user)
   }
@@ -963,7 +963,7 @@ class AuthUserServiceTest {
   fun disableUser_trackEvent() {
     val optionalUser = createOptionalSampleUser()
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.disableUser("someuser", "someadmin", SUPER_USER)
+    authUserService.disableUser("someuser", "someadmin", "A Reason", SUPER_USER)
     verify(telemetryClient).trackEvent(
       "AuthUserChangeEnabled",
       mapOf("username" to "someuser", "admin" to "someadmin", "enabled" to "false"),
@@ -978,6 +978,7 @@ class AuthUserServiceTest {
       authUserService.disableUser(
         "user",
         "admin",
+        "A Reason",
         SUPER_USER
       )
     }.isInstanceOf(EntityNotFoundException::class.java).hasMessageContaining("username user")
