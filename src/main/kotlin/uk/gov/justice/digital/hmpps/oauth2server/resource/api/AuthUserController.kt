@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.resource.api
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiImplicitParam
 import io.swagger.annotations.ApiImplicitParams
+import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
@@ -45,6 +46,8 @@ import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.servlet.http.HttpServletRequest
+import javax.validation.constraints.NotBlank
+import javax.validation.constraints.Size
 
 @RestController
 @Api(tags = ["/api/authuser"])
@@ -142,14 +145,28 @@ class AuthUserController(
     "hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')"
   )
   fun searchForUser(
-    @ApiParam(value = "The username, email or name of the user.", example = "j smith") @RequestParam(required = false) name: String?,
+    @ApiParam(
+      value = "The username, email or name of the user.",
+      example = "j smith"
+    ) @RequestParam(required = false) name: String?,
     @ApiParam(value = "The role codes of the user.") @RequestParam(required = false) roles: List<String>?,
     @ApiParam(value = "The group codes of the user.") @RequestParam(required = false) groups: List<String>?,
-    @ApiParam(value = "Limit to active / inactive / show all users.") @RequestParam(required = false, defaultValue = "ALL") status: Status,
+    @ApiParam(value = "Limit to active / inactive / show all users.") @RequestParam(
+      required = false,
+      defaultValue = "ALL"
+    ) status: Status,
     @PageableDefault(sort = ["Person.lastName", "Person.firstName"], direction = Sort.Direction.ASC) pageable: Pageable,
     @ApiIgnore authentication: Authentication,
   ): Page<AuthUser> =
-    authUserService.findAuthUsers(name, roles, groups, pageable, authentication.name, authentication.authorities, status)
+    authUserService.findAuthUsers(
+      name,
+      roles,
+      groups,
+      pageable,
+      authentication.name,
+      authentication.authorities,
+      status
+    )
       .map { AuthUser.fromUser(it) }
 
   @GetMapping("/api/authuser/me/assignable-groups")
@@ -345,13 +362,19 @@ class AuthUserController(
   )
   fun disableUser(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String?,
+    @ApiParam(value = "The reason user made inactive.", required = true) @RequestBody deactivateReason: DeactivateReason,
     @ApiIgnore authentication: Authentication,
   ): ResponseEntity<Any> {
     val userOptional = authUserService.getAuthUserByUsername(username)
     return userOptional.map { u: User ->
       val usernameInDb = u.username
       try {
-        authUserService.disableUser(usernameInDb, authentication.name, authentication.authorities)
+        authUserService.disableUser(
+          usernameInDb,
+          authentication.name,
+          deactivateReason.reason,
+          authentication.authorities
+        )
         return@map ResponseEntity.noContent().build<Any>()
       } catch (e: AuthUserGroupRelationshipException) {
         log.info("Disable user failed  with reason {}", e.errorCode)
@@ -525,6 +548,9 @@ class AuthUserController(
 
     @ApiModelProperty(required = true, value = "Last time user logged in", example = "01/01/2001", position = 9)
     val lastLoggedIn: LocalDateTime? = null,
+
+    @ApiModelProperty(required = true, value = "Inactive reason", example = "Left department", position = 10)
+    val inactiveReason: String? = null,
   ) {
     companion object {
       fun fromUser(user: User): AuthUser {
@@ -538,6 +564,7 @@ class AuthUserController(
           enabled = user.isEnabled,
           verified = user.verified,
           lastLoggedIn = user.lastLoggedIn,
+          inactiveReason = user.inactiveReason
         )
       }
     }
@@ -546,3 +573,9 @@ class AuthUserController(
   private fun notFoundBody(username: String): Any =
     ErrorDetail("Not Found", "Account for username $username not found", "username")
 }
+
+@ApiModel(description = "Deactivate Reason")
+data class DeactivateReason(
+  @ApiModelProperty(required = true, value = "Deactivate Reason", example = "User has left")
+  @field:Size(max = 100, min = 4, message = "Reason must be between 4 and 100 characters") @NotBlank val reason: String,
+)

@@ -228,17 +228,18 @@ class AuthUserService(
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(AuthUserGroupRelationshipException::class)
   fun enableUser(usernameInDb: String, admin: String, authorities: Collection<GrantedAuthority>) =
-    changeUserEnabled(usernameInDb, true, admin, authorities)
+    changeUserEnabled(usernameInDb, true, null, admin, authorities)
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(AuthUserGroupRelationshipException::class)
-  fun disableUser(usernameInDb: String, admin: String, authorities: Collection<GrantedAuthority>) =
-    changeUserEnabled(usernameInDb, false, admin, authorities)
+  fun disableUser(usernameInDb: String, admin: String, inactiveReason: String, authorities: Collection<GrantedAuthority>) =
+    changeUserEnabled(usernameInDb, false, inactiveReason, admin, authorities)
 
   @Throws(AuthUserGroupRelationshipException::class)
   private fun changeUserEnabled(
     username: String,
     enabled: Boolean,
+    inactiveReason: String?,
     admin: String,
     authorities: Collection<GrantedAuthority>,
   ) {
@@ -246,6 +247,7 @@ class AuthUserService(
       .orElseThrow { EntityNotFoundException("User not found with username $username") }
     maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
     user.isEnabled = enabled
+    user.inactiveReason = inactiveReason
     // give user 7 days grace if last logged in more than x days ago
     if (user.lastLoggedIn.isBefore(LocalDateTime.now().minusDays(loginDaysTrigger.toLong()))) {
       user.lastLoggedIn = LocalDateTime.now().minusDays(loginDaysTrigger - 7L)

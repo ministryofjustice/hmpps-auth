@@ -360,17 +360,17 @@ class AuthUserControllerTest {
   fun disableUser() {
     val user = createSampleUser(username = "USER", email = "email", verified = true)
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
-    val responseEntity = authUserController.disableUser("user", authentication)
+    val responseEntity = authUserController.disableUser("user", DeactivateReason("A Reason"), authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
-    verify(authUserService).disableUser("USER", "bob", authentication.authorities)
+    verify(authUserService).disableUser("USER", "bob", "A Reason", authentication.authorities)
   }
 
   @Test
   fun disableUser_notFound() {
     val user = createSampleUser(username = "USER", email = "email", verified = true)
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
-    doThrow(EntityNotFoundException("message")).whenever(authUserService).disableUser(anyString(), anyString(), any())
-    val responseEntity = authUserController.disableUser("user", authentication)
+    doThrow(EntityNotFoundException("message")).whenever(authUserService).disableUser(anyString(), anyString(), anyString(), any())
+    val responseEntity = authUserController.disableUser("user", DeactivateReason("A Reason"), authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(404)
   }
 
