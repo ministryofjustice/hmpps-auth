@@ -61,7 +61,9 @@ VALUES ('omicuser','1200','{"jwtFields":"-user_name"}','SYSTEM_READ_ONLY','passw
        ('service-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
        ('individual-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
        ('another-delete-test-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
-       ('hmpps-audit-api-client','3600','{}','ROLE_AUDIT','client_credentials','read,write','$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read,write',null);
+       ('hmpps-audit-api-client','3600','{}','ROLE_AUDIT','client_credentials','read,write','$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read,write',null),
+       ('hmpps-tier','3600','{}','ROLE_COMMUNITY,ROLE_OASYS_READ_ONLY','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
+       ('hmpps-tier-to-delius-update','3600','{}','ROLE_MANAGEMENT_TIER_UPDATE','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'write',null);
 
 INSERT INTO oauth_client_details (client_id, access_token_validity, additional_information, authorities, authorized_grant_types, autoapprove, client_secret, refresh_token_validity, resource_ids, scope, web_server_redirect_uri, last_accessed, created, secret_updated)
 VALUES ('rotation-test-client-1','3600','{"mfa":"all"}',null,'authorization_code',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read','http://localhost:8081/login', '2013-01-28 13:23:19.0000000', '2013-01-26 13:23:19.1234567', '2013-01-27 13:23:19.7654321'),
