@@ -313,8 +313,22 @@ INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, use
 -- auth user for interventions service provider journeys
 INSERT INTO users (user_id, username, password, email, first_name, last_name, verified, locked, enabled, master, create_datetime, password_expiry, last_logged_in, source, mfa_preference)
     VALUES ('6C4036B7-E87D-44FB-864F-5A06C1C492F3', 'TEST_INTERVENTIONS_SP_1', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'test.interventions.sp.1@digital.justice.gov.uk', 'Robin', 'Croswell', 1, 0, 1, 0, '2021-03-05 11:48:34.2723638', '2040-04-26 16:17:28.4953990', '2021-03-05 11:48:34.2723638', 'auth', 'EMAIL');
-INSERT INTO groups (group_id, group_code, group_name) values ('6B30BD55-8F75-4B0B-A647-42A34B0A383D', 'INT_SP_HARMONY_LIVING', 'Int SP Harmony Living');
+INSERT INTO groups (group_id, group_code, group_name)
+    values ('6B30BD55-8F75-4B0B-A647-42A34B0A383D', 'INT_SP_HARMONY_LIVING', 'Intervention Provider - Harmony Living'),
+           ('628EEE33-5BCD-41C8-97A5-F655E8689EAD', 'INT_SP_HOME_TRUST', 'Intervention Provider - Home Trust'),
+           ('83C3869B-696D-4A6E-8DA4-3D36666BAB9D', 'INT_CR_0001', 'Intervention Contract - 0001'),
+           ('05AC35B9-EF9D-47C3-9409-CBCF334ACD73', 'INT_CR_0002', 'Intervention Contract - 0002'),
+           ('FF76FC87-9D3F-4790-8B14-F67BE6DA724E', 'INT_CR_0003', 'Intervention Contract - 0003'),
+           ('24F36BE2-93D7-4608-B106-BDA9AA324523', 'INT_CR_0004', 'Intervention Contract - 0004'),
+           ('7D7C7F62-7D96-491F-B879-BD34182DAD69', 'INT_CR_0005', 'Intervention Contract - 0005'),
+           ('9872981C-2FB4-4BB6-BFBE-40E662A92A60', 'INT_CR_0006', 'Intervention Contract - 0006');
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'TEST_INTERVENTIONS_SP_1' and group_code = 'INT_SP_HARMONY_LIVING';
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'TEST_INTERVENTIONS_SP_1' and group_code = 'INT_CR_0001';
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'TEST_INTERVENTIONS_SP_1' and group_code = 'INT_CR_0002';
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'TEST_INTERVENTIONS_SP_1' and group_code = 'INT_CR_0003';
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'TEST_INTERVENTIONS_SP_1' and group_code = 'INT_CR_0004';
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'TEST_INTERVENTIONS_SP_1' and group_code = 'INT_CR_0005';
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'TEST_INTERVENTIONS_SP_1' and group_code = 'INT_CR_0006';
 
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'LOCKED_USER';
 INSERT INTO user_token (token, token_type, token_expiry, user_id) SELECT 'reset2', 'RESET', '2018-12-10 08:55:45.0000000', user_id from users where username = 'AUTH_DELETEALL';
