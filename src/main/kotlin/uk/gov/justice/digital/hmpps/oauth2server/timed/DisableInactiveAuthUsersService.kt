@@ -29,7 +29,7 @@ class DisableInactiveAuthUsersService(
     usersToDisable.forEach(
       Consumer { user: User ->
         user.isEnabled = false
-        user.inactiveReason = "INACTIVE FOR 90 DAYS"
+        user.inactiveReason = "INACTIVE FOR $loginDays DAYS"
         log.debug("Disabling auth user {} due to inactivity", user.username)
         telemetryClient.trackEvent("DisableInactiveAuthUsersProcessed", mapOf("username" to user.username), null)
       }
