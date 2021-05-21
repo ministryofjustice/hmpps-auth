@@ -105,6 +105,41 @@ class AddChangeSecondaryEmailSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `Add Secondary email mfa pref primary text flow and verify - username is email address`() {
+    goTo(loginPage)
+      .loginAs("AUTH_USER_EMAIL3_TEST@JUSTICE.GOV.UK")
+
+    homePage.navigateToAccountDetails()
+
+    accountDetailsPage.navigateToChangeSecondaryEmail()
+
+    val validMfaCode = accountMfaEmailPage.getCode()
+    accountMfaEmailPage
+      .assertEmailCodeDestination("auth_u******@******.gov.uk")
+      .submitCode(validMfaCode)
+
+    changeSecondaryEmailPage.updateSecondaryEmailAs("bob@gmail.com")
+
+    val verifyLink = verifyEmailSentPage.getVerifyLink()
+
+    verifyEmailSentPage.continueProcess()
+
+    homePage.navigateToAccountDetails()
+
+    accountDetailsPage
+      .isAtPage()
+      .checkSecondaryEmailAndIsNotVerified()
+
+    goTo(verifyLink)
+
+    verifySecondaryEmailConfirmPage.isAt()
+
+    goTo(accountDetailsPage)
+      .isAtPage()
+      .checkSecondaryEmailAndIsVerified()
+  }
+
+  @Test
   fun `Add Secondary email flow and verify`() {
     goTo(loginPage)
       .loginAs("AUTH_SECOND_EMAIL_UPDATE")

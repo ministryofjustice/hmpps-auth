@@ -135,7 +135,7 @@ class VerifyEmailController(
 
       // if we have changed the username, then need to update the token otherwise we won't be able to find the user
       // in subsequent requests
-      if (username != null && username.contains('@')) {
+      if (username != null && username.contains('@') && emailType == EmailType.PRIMARY) {
         val userPersonDetails = userService.findMasterUserPersonDetails(newEmail).orElseThrow()
         val successToken = UsernamePasswordAuthenticationToken(userPersonDetails, null, userPersonDetails.authorities)
         jwtAuthenticationSuccessHandler.updateAuthenticationInRequest(request, response, successToken)
