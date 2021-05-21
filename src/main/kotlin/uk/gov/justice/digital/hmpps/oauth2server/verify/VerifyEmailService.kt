@@ -70,16 +70,19 @@ class VerifyEmailService(
     when (emailType) {
       EmailType.PRIMARY -> {
         // if the user is configured so that the email address is their username, need to check it is unique
-        if (user.email == username.toLowerCase()) {
-          userRepository.findByUsername(email!!.toUpperCase()).ifPresent {
+        if (username.contains("@") && email!!.uppercase() != user.username) {
+          val userWithEmailInDatabase = userRepository.findByUsername(email.uppercase())
+          if (userWithEmailInDatabase.isPresent) {
+            // there's already a user in the database with that username
             throw VerifyEmailException("duplicate")
+          } else {
+            user.username = email
+            telemetryClient.trackEvent(
+              "AuthUserChangeUsername",
+              mapOf("username" to user.username, "previous" to username),
+              null
+            )
           }
-          user.username = email
-          telemetryClient.trackEvent(
-            "AuthUserChangeUsername",
-            mapOf("username" to user.username, "previous" to username),
-            null
-          )
         }
         user.email = email
         user.verified = false
