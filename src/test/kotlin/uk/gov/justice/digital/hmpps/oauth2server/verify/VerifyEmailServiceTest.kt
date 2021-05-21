@@ -190,19 +190,42 @@ class VerifyEmailServiceTest {
 
     @Test
     fun `save username duplicate`() {
-      val user = createSampleUser(username = "EXISTING@EMAIL.COM", email = "existing@email.com")
-      whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user))
+      val user = createSampleUser(username = "EMAIL@JOHN.COM", email = "email@john.com")
+      val existingUser = createSampleUser(username = "EXISTING@EMAIL.COM", email = "existing@email.com")
+      whenever(userRepository.findByUsername(anyString()))
+        .thenReturn(Optional.of(user))
+        .thenReturn(Optional.of(existingUser))
       whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
       assertThatThrownBy {
         verifyEmailService.changeEmailAndRequestVerification(
-          "existing@email.com",
           "eMail@john.COM",
+          "existing@email.com",
           "firstname",
           "full name",
           "url",
           User.EmailType.PRIMARY
         )
       }.hasMessage("Verify email failed with reason: duplicate")
+      verify(userRepository).findByUsername("eMail@john.COM")
+      verify(userRepository).findByUsername("EXISTING@EMAIL.COM")
+    }
+
+    @Test
+    fun `save username change existing email`() {
+      val user = createSampleUser(username = "EMAIL@JOHN.COM", email = "email@john.com")
+      whenever(userRepository.findByUsername(anyString()))
+        .thenReturn(Optional.of(user))
+      whenever(referenceCodesService.isValidEmailDomain(anyString())).thenReturn(true)
+      verifyEmailService.changeEmailAndRequestVerification(
+        "eMail@john.COM",
+        "email@john.com",
+        "firstname",
+        "full name",
+        "url",
+        User.EmailType.PRIMARY
+      )
+      verify(userRepository).save(user)
+      assertThat(user.username).isEqualTo("EMAIL@JOHN.COM")
     }
 
     @Test

@@ -58,6 +58,24 @@ class VerifyEmailSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `A user can verify their email when username is email address`() {
+    goTo(loginPage).loginAsWithUnverifiedEmail("auth_verify_email@justice.gov.uk")
+      .verifyExistingEmailAs("auth_verify_email@justice.gov.uk")
+
+    verifyEmailSentPage.isAt()
+    val verifyLink = verifyEmailSentPage.getVerifyLink()
+    verifyEmailSentPage.continueProcess()
+
+    newInstance(HomePage::class.java).isAt()
+
+    goTo(verifyLink)
+    verifyEmailConfirmPage.isAt()
+
+    goTo(verifyLink)
+    verifyEmailConfirmPage.isAt()
+  }
+
+  @Test
   fun `A user can verify an email that exists in pnomis`() {
     goTo(loginPage).loginAsWithUnverifiedEmail("RO_USER")
       .selectExistingEmailAs("phillips@bobjustice.gov.uk")
