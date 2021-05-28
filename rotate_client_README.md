@@ -3,6 +3,7 @@
 
 - Ensure you are using bash version 4 or 5
 - Have HTTPIE installed (https://httpie.io/docs#installation)
+- Access to the namespace where the application is running 
 - All necessary fields completed in the client deployment
 - Have a client which has the clientId rotate permissions
 
@@ -27,18 +28,6 @@ Now run
 
 
 ##Useful kubectl commands
-
-####Get Namespaces
-```kubectl get namespaces```
-
-####Get Pods
-```kubectl get pods -n <namespace>```
-
-####Get Secrets
-```kubectl get secrets -n <namespace>```
-
-####get/view specific secret
-```kubectl get secret <secret> -n <namespace> -o yaml```
 
 ####manually update secret
 ```kubectl edit secrets <secret> -n <namespace>```
