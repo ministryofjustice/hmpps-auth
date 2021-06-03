@@ -79,16 +79,16 @@ new_clientID_b64secret=$(echo "${results_json}" | jq -r .base64ClientSecret)
 echo "New clientID created '${new_clientID_name}'"
 
 # Check if $clientIdKey exists and is readable
-if ! kubectl -n "${namespace}" get secrets "${secretName}" -o json | jq -e "select(.data.${clientIdKey} != null)" &>/dev/null; then
+if ! kubectl -n "${namespace}" get secrets "${secretName}" -o json | jq -e "select(.data[\"${clientIdKey}\"] != null)" &>/dev/null; then
   echo "Unable to find k8s secret with key \"${secretKey}\" in \"${clientIdKey}\" for namespace \"${namespace}\""
   exit 1
 fi
 
 # Save current clientID for delete at the end.
-currentClientID=$(kubectl -n "${namespace}" get secrets "${secretName}" -o json | jq -r ".data.${clientIdKey} | @base64d")
+currentClientID=$(kubectl -n "${namespace}" get secrets "${secretName}" -o json | jq -r ".data[\"${clientIdKey}\"] | @base64d")
 
 # Check if $secretKey exists and is readable
-if ! kubectl -n "${namespace}" get secrets "${secretName}" -o json | jq -e "select(.data.${secretKey} != null)" &>/dev/null; then
+if ! kubectl -n "${namespace}" get secrets "${secretName}" -o json | jq -e "select(.data[\"${secretKey}\"] != null)" &>/dev/null; then
   echo "Unable to find k8s secret with key \"${secretKey}\" in \"${secretName}\" for namespace \"${namespace}\""
   exit 1
 fi
@@ -102,8 +102,8 @@ fi
 # Update k8s secret with new clientID and secret
 echo "Updating k8s secret \"${secretName}\" with new clientID and secret."
 kubectl -n "${namespace}" get secrets "${secretName}" -o json | \
-  jq ".data.${clientIdKey}=\"$(echo -n "$new_clientID_b64name")\"" | \
-  jq ".data.${secretKey}=\"$(echo -n "$new_clientID_b64secret")\"" | \
+  jq ".data[\"${clientIdKey}\"]=\"$(echo -n "$new_clientID_b64name")\"" | \
+  jq ".data[\"${secretKey}\"]=\"$(echo -n "$new_clientID_b64secret")\"" | \
   kubectl -n "${namespace}" apply -f -
 
 # Restart the app deployment
