@@ -139,7 +139,7 @@ class UserRepositoryTest {
     assertThat(retrievedEntity.username).isEqualTo("AUTH_ADM")
     assertThat(retrievedEntity.person!!.firstName).isEqualTo("Auth")
     assertThat(retrievedEntity.authorities).extracting<String> { obj: Authority -> obj.authority }
-      .containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_OAUTH_USERS")
+      .containsOnly("ROLE_OAUTH_ADMIN", "ROLE_MAINTAIN_OAUTH_USERS", "ROLE_AUDIT_VIEWER")
     assertThat(retrievedEntity.email).isEqualTo("auth_test2@digital.justice.gov.uk")
     assertThat(retrievedEntity.verified).isTrue()
     assertThat(retrievedEntity.mfaPreference).isEqualTo(EMAIL)
