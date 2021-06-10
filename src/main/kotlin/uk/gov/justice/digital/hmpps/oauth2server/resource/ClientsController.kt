@@ -187,7 +187,7 @@ class ClientsController(
 
     override fun setAuthorities(authorities: Collection<GrantedAuthority>?) {
       val rolePrefixedAuthorities = authorities
-        ?.map { it.authority.trim() }
+        ?.map { it.authority.trim().uppercase() }
         ?.map { if (it.startsWith("ROLE_")) it else "ROLE_$it" }
         ?.map { SimpleGrantedAuthority(it) }
       super.setAuthorities(rolePrefixedAuthorities)
