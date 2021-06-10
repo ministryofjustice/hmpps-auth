@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.provider.ClientDetails
 import org.springframework.security.oauth2.provider.ClientRegistrationService
 import org.springframework.security.oauth2.provider.NoSuchClientException
@@ -262,6 +263,15 @@ class ClientControllerTest {
     fun `get mfa not set`() {
       val authClientDetails = AuthClientDetails()
       assertThat(authClientDetails.mfa).isNull()
+    }
+
+    @Test
+    fun `setAuthorities adds ROLE_ prefix`() {
+      val authClientDetails = AuthClientDetails()
+      authClientDetails.authorities = listOf("joe", "ROLE_fred", "  harry")
+        .map { SimpleGrantedAuthority(it) }
+      assertThat(authClientDetails.authorities.map { it.authority })
+        .containsExactlyInAnyOrder("ROLE_joe", "ROLE_fred", "ROLE_harry")
     }
   }
 
