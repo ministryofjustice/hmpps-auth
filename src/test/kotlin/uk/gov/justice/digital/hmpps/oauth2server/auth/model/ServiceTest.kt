@@ -73,5 +73,12 @@ class ServiceTest {
       service.authorisedRolesWithNewlines = " \n \n "
       assertThat(service.authorisedRolesWithNewlines).isEqualTo("")
     }
+
+    @Test
+    fun `authorisedRolesWithNewlines add ROLE_ prefix`() {
+      val service = Service(code = "code", name = "", description = "", url = "")
+      service.authorisedRolesWithNewlines = "A \n joe \n role_harry"
+      assertThat(service.roles).containsExactlyInAnyOrder("ROLE_A", "ROLE_JOE", "ROLE_HARRY")
+    }
   }
 }

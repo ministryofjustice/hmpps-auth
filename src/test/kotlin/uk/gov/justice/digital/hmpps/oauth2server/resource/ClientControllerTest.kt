@@ -271,7 +271,7 @@ class ClientControllerTest {
       authClientDetails.authorities = listOf("joe", "ROLE_fred", "  harry")
         .map { SimpleGrantedAuthority(it) }
       assertThat(authClientDetails.authorities.map { it.authority })
-        .containsExactlyInAnyOrder("ROLE_joe", "ROLE_fred", "ROLE_harry")
+        .containsExactlyInAnyOrder("ROLE_JOE", "ROLE_FRED", "ROLE_HARRY")
     }
   }
 

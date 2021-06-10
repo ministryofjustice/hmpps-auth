@@ -40,6 +40,12 @@ data class Service(
   var authorisedRolesWithNewlines: String
     get() = authorisedRoles?.replace(",".toRegex(), "\n") ?: ""
     set(authorisedRolesWithNewlines) {
-      authorisedRoles = authorisedRolesWithNewlines.replace("\n".toRegex(), ",").split(',').mapNotNull { trimToNull(it) }.joinToString(",")
+      authorisedRoles = authorisedRolesWithNewlines
+        .replace("\n".toRegex(), ",")
+        .split(',')
+        .mapNotNull { trimToNull(it) }
+        .map { it.uppercase() }
+        .map { if (it.startsWith("ROLE_")) it else "ROLE_$it" }
+        .joinToString(",")
     }
 }
