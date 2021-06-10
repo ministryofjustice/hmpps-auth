@@ -6,6 +6,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.provider.ClientRegistrationService
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import org.springframework.stereotype.Controller
@@ -45,7 +46,8 @@ class ClientsController(
   fun showEditForm(@RequestParam(value = "client", required = false) baseClientId: String?): ModelAndView {
     return if (baseClientId != null) {
       val (clientDetails, clients) = clientService.loadClientWithCopies(baseClientId)
-      val clientDeployment = clientService.loadClientDeploymentDetails(baseClientId) ?: ClientDeployment(baseClientId = baseClientId)
+      val clientDeployment =
+        clientService.loadClientDeploymentDetails(baseClientId) ?: ClientDeployment(baseClientId = baseClientId)
       ModelAndView("ui/form", "clientDetails", clientDetails)
         .addObject("clients", clients)
         .addObject("deployment", clientDeployment)
@@ -181,6 +183,14 @@ class ClientsController(
       // always keep scopes and auto-approve scopes in sync.
       super.setScope(scope)
       super.setAutoApproveScopes(scope)
+    }
+
+    override fun setAuthorities(authorities: Collection<GrantedAuthority>?) {
+      val rolePrefixedAuthorities = authorities
+        ?.map { it.authority.trim() }
+        ?.map { if (it.startsWith("ROLE_")) it else "ROLE_$it" }
+        ?.map { SimpleGrantedAuthority(it) }
+      super.setAuthorities(rolePrefixedAuthorities)
     }
 
     var jwtFields: String?
