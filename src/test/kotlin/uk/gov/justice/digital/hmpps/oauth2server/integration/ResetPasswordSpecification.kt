@@ -144,6 +144,29 @@ class ResetPasswordSpecification : AbstractDeliusAuthSpecification() {
   }
 
   @Test
+  fun `A locked NOMIS user can reset their password`() {
+    goTo(loginPage)
+      .forgottenPasswordLink()
+
+    resetPasswordRequestPage
+      .submitUsernameOrEmail("LOCKED_NOMIS_USER")
+
+    resetPasswordLinkSentPage.isAtPage()
+    val resetLink = resetPasswordLinkSentPage.getResetLink()
+
+    goTo(resetLink)
+
+    resetPasswordPage
+      .inputAndConfirmNewPassword("helloworld2")
+
+    resetPasswordSuccessPage.isAtPage()
+
+    goTo(loginPage)
+      .loginAs("LOCKED_NOMIS_USER", "helloworld2")
+    homePage.isAt()
+  }
+
+  @Test
   fun `A DELIUS user can reset their password`() {
     goTo(loginPage)
       .forgottenPasswordLink()

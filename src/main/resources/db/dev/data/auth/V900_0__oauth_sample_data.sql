@@ -102,6 +102,7 @@ VALUES ('BOOK_MOVE', 'Book a secure move', 'Book a secure move', 'ROLE_PECS_SUPP
 
 INSERT INTO user_retries (username, retry_count)
 VALUES ('LOCKED_USER', 5),
+       ('LOCKED_NOMIS_USER', 3),
        ('AUTH_DELETEALL', 3),
        ('NOMIS_DELETE', 1);
 
@@ -121,6 +122,7 @@ INSERT INTO users (user_id, username, email, verified, source)
         ('E94B2E26-DC8A-4020-9533-A509807F68DF', 'EXPIRED_TEST3_USER', 'expired_test3_user@digital.justice.gov.uk', 1, 'nomis'),
         ('C0279EE3-76BF-487F-833C-AA47C5DF22F8', 'CA_USER', 'ca_user@digital.justice.gov.uk', 1, 'nomis'),
         ('6A3F0216-BBAB-49CD-BD6E-AC09C1762EE4', 'LOCKED_USER', 'locked@somewhere.com', 1, 'nomis'),
+        ('6A3F0216-BBAB-49CD-BD6E-AC09C1762EE5', 'LOCKED_NOMIS_USER', 'lockednomisuser@somewhere.com', 1, 'nomis'),
         ('79CDC23C-510F-4CE2-8C98-AC251296EC39', 'RO_DEMO', null, 0, 'nomis'),
         ('AB8DA2CA-3E79-42D3-883E-CEE6C3F693CA', 'RO_USER_TEST', 'ro_user_test@digital.justice.gov.uk', 1, 'nomis'),
         ('5C72B180-5211-454D-9605-CF29573B946F', 'UOF_REVIEWER_USER', 'uof_reviewer@digital.justice.gov.uk', 1, 'nomis'),
