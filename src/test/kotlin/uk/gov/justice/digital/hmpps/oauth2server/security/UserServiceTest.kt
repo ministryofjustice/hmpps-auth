@@ -84,9 +84,9 @@ class UserServiceTest {
   }
 
   @Nested
-  inner class FindEnabledMasterUserPersonDetails {
+  inner class FindEnabledOrNomisLockedUserPersonDetails {
     @Test
-    fun `findEnabledMasterUserPersonDetails auth user`() {
+    fun `findEnabledOrNomisLockedUserPersonDetails auth user`() {
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(
         Optional.of(
           createSampleUser(
@@ -95,36 +95,36 @@ class UserServiceTest {
           )
         )
       )
-      val user = userService.findEnabledMasterUserPersonDetails("   bob   ")
+      val user = userService.findEnabledOrNomisLockedUserPersonDetails("   bob   ")
       assertThat(user?.username).isEqualTo("someuser")
     }
 
     @Test
-    fun `findEnabledMasterUserPersonDetails nomis user`() {
+    fun `findEnabledOrNomisLockedUserPersonDetails nomis user`() {
       whenever(nomisUserService.getNomisUserByUsername(anyString())).thenReturn(staffUserAccountForBob)
-      val user = userService.findEnabledMasterUserPersonDetails("bob")
+      val user = userService.findEnabledOrNomisLockedUserPersonDetails("bob")
       assertThat(user?.username).isEqualTo("nomisuser")
     }
 
     @Test
-    fun `findEnabledMasterUserPersonDetails delius user`() {
+    fun `findEnabledOrNomisLockedUserPersonDetails delius user`() {
       whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(deliusUserAccountForBob)
-      val user = userService.findEnabledMasterUserPersonDetails("bob")
+      val user = userService.findEnabledOrNomisLockedUserPersonDetails("bob")
       assertThat(user?.username).isEqualTo("deliusUser")
     }
 
     @Test
-    fun `findEnabledMasterUserPersonDetails azure user`() {
+    fun `findEnabledOrNomisLockedUserPersonDetails azure user`() {
       whenever(azureUserService.getAzureUserByUsername(anyString())).thenReturn(azureUserAccount)
-      val user = userService.findEnabledMasterUserPersonDetails("bob")
+      val user = userService.findEnabledOrNomisLockedUserPersonDetails("bob")
       assertThat(user?.username).isEqualTo("D6165AD0-AED3-4146-9EF7-222876B57549")
     }
 
     @Test
-    fun `findEnabledMasterUserPersonDetails delius user auth user disabled`() {
+    fun `findEnabledOrNomisLockedUserPersonDetails delius user auth user disabled`() {
       whenever(authUserService.getAuthUserByUsername(anyString())).thenReturn(createUser())
       whenever(deliusUserService.getDeliusUserByUsername(anyString())).thenReturn(deliusUserAccountForBob)
-      val user = userService.findEnabledMasterUserPersonDetails("bob")
+      val user = userService.findEnabledOrNomisLockedUserPersonDetails("bob")
       assertThat(user?.username).isEqualTo("deliusUser")
     }
   }
