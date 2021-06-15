@@ -107,7 +107,7 @@ class ResetPasswordServiceImpl(
     user: User,
   ): TemplateAndParameters {
 
-    val userDetails = userService.findEnabledMasterUserPersonDetails(user.username)
+    val userDetails = userService.findEnabledOrNomisLockedUserPersonDetails(user.username)
       // can't find an enabled user in any system, so give up
       ?: return TemplateAndParameters(resetUnavailableTemplateId, user.firstName, user.name, user.authSource)
 
@@ -167,7 +167,7 @@ class ResetPasswordServiceImpl(
     val userToken = userTokenRepository.findById(token).orElseThrow()
     val user = userToken.user
 
-    val userPersonDetails = userService.findEnabledMasterUserPersonDetails(user.username)
+    val userPersonDetails = userService.findEnabledOrNomisLockedUserPersonDetails(user.username)
       ?: throw ResetPasswordException("Can't find an enabled account for the user")
 
     if (!passwordAllowedToBeReset(user, userPersonDetails)) {

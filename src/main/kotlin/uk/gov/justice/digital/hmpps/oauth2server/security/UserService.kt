@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.azure.service.AzureUserService
 import uk.gov.justice.digital.hmpps.oauth2server.delius.service.DeliusUserService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
+import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountStatus
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource.azuread
@@ -47,9 +48,9 @@ class UserService(
       .or { azureUserService.getAzureUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
       .or { deliusUserService.getDeliusUserByUsername(username).map { UserPersonDetails::class.java.cast(it) } }
 
-  fun findEnabledMasterUserPersonDetails(username: String): UserPersonDetails? =
+  fun findEnabledOrNomisLockedUserPersonDetails(username: String): UserPersonDetails? =
     authUserService.getAuthUserByUsername(username).filter { it.isEnabled }.map { UserPersonDetails::class.java.cast(it) }
-      .or { nomisUserService.getNomisUserByUsername(username).filter { it.isEnabled }.map { UserPersonDetails::class.java.cast(it) } }
+      .or { nomisUserService.getNomisUserByUsername(username).filter { it.isEnabled || it.accountDetail.status == AccountStatus.LOCKED }.map { UserPersonDetails::class.java.cast(it) } }
       .or { azureUserService.getAzureUserByUsername(username).filter { it.isEnabled }.map { UserPersonDetails::class.java.cast(it) } }
       .or { deliusUserService.getDeliusUserByUsername(username).filter { it.isEnabled }.map { UserPersonDetails::class.java.cast(it) } }
       .orElse(null)
