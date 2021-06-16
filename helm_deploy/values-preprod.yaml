@@ -56,3 +56,4 @@ env:
   JWT_COOKIE_EXPIRY_TIME: "12h"
   JWT_JWK_KEY_ID: "preprod-jwk-kid"
   TOKENVERIFICATION_ENDPOINT_URL: "https://token-verification-api-preprod.prison.service.justice.gov.uk"
+  APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
