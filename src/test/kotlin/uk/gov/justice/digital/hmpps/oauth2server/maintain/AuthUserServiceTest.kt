@@ -77,7 +77,8 @@ class AuthUserServiceTest {
     oauthServiceRepository,
     "licences",
     90,
-    10
+    10,
+    "enableUserTemplate"
   )
 
   @BeforeEach
@@ -847,9 +848,25 @@ class AuthUserServiceTest {
   fun enableUser_superUser() {
     val optionalUser = createOptionalSampleUser()
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.enableUser("user", "admin", SUPER_USER)
+    authUserService.enableUser("user", "admin", "some/auth/url", SUPER_USER)
     assertThat(optionalUser).get().extracting { it.isEnabled }.isEqualTo(true)
     verify(userRepository).save(optionalUser.orElseThrow())
+  }
+
+  @Test
+  fun `enable user sends email`() {
+    val optionalUser = Optional.of(createSampleUser(email = "email"))
+    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+    authUserService.enableUser("user", "admin", "some/auth/url", SUPER_USER)
+    verify(notificationClient).sendEmail(
+      "enableUserTemplate",
+      "email",
+      mapOf(
+        "firstName" to "first",
+        "signinUrl" to "some/auth/"
+      ),
+      null
+    )
   }
 
   @Test
@@ -858,7 +875,7 @@ class AuthUserServiceTest {
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
     doThrow(AuthUserGroupRelationshipException("someuser", "User not with your groups")).whenever(maintainUserCheck)
       .ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any())
-    assertThatThrownBy { authUserService.enableUser("someuser", "admin", GROUP_MANAGER) }.isInstanceOf(
+    assertThatThrownBy { authUserService.enableUser("someuser", "admin", "some/auth/url", GROUP_MANAGER) }.isInstanceOf(
       AuthUserGroupRelationshipException::class.java
     ).hasMessage("Unable to maintain user: someuser with reason: User not with your groups")
   }
@@ -872,7 +889,7 @@ class AuthUserServiceTest {
     )
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
       .thenReturn(Optional.of(user))
-    authUserService.enableUser("user", "admin", GROUP_MANAGER)
+    authUserService.enableUser("user", "admin", "some/auth/url", GROUP_MANAGER)
     assertThat(user).extracting { it.isEnabled }.isEqualTo(true)
     verify(userRepository).save(user)
   }
@@ -884,6 +901,7 @@ class AuthUserServiceTest {
       authUserService.enableUser(
         "user",
         "admin",
+        "some/auth/url",
         SUPER_USER
       )
     }.isInstanceOf(EntityNotFoundException::class.java).hasMessageContaining("username user")
@@ -893,10 +911,10 @@ class AuthUserServiceTest {
   fun enableUser_trackEvent() {
     val optionalUser = createOptionalSampleUser()
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.enableUser("someuser", "someadmin", SUPER_USER)
+    authUserService.enableUser("someuser", "someadmin", "some/auth/url", SUPER_USER)
     verify(telemetryClient).trackEvent(
-      "AuthUserChangeEnabled",
-      mapOf("username" to "someuser", "admin" to "someadmin", "enabled" to "true"),
+      "AuthUserEnabled",
+      mapOf("username" to "someuser", "admin" to "someadmin"),
       null
     )
   }
@@ -908,7 +926,7 @@ class AuthUserServiceTest {
     val tooLongAgo = LocalDateTime.now().minusDays(95)
     user.lastLoggedIn = tooLongAgo
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.enableUser("someuser", "someadmin", SUPER_USER)
+    authUserService.enableUser("someuser", "someadmin", "some/auth/url", SUPER_USER)
     assertThat(user.lastLoggedIn).isBetween(LocalDateTime.now().minusDays(84), LocalDateTime.now().minusDays(82))
   }
 
@@ -919,7 +937,7 @@ class AuthUserServiceTest {
     val fiveDaysAgo = LocalDateTime.now().minusDays(5)
     user.lastLoggedIn = fiveDaysAgo
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.enableUser("someuser", "someadmin", SUPER_USER)
+    authUserService.enableUser("someuser", "someadmin", "some/auth/url", SUPER_USER)
     assertThat(user.lastLoggedIn).isEqualTo(fiveDaysAgo)
   }
 
@@ -965,8 +983,8 @@ class AuthUserServiceTest {
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
     authUserService.disableUser("someuser", "someadmin", "A Reason", SUPER_USER)
     verify(telemetryClient).trackEvent(
-      "AuthUserChangeEnabled",
-      mapOf("username" to "someuser", "admin" to "someadmin", "enabled" to "false"),
+      "AuthUserDisabled",
+      mapOf("username" to "someuser", "admin" to "someadmin"),
       null
     )
   }
