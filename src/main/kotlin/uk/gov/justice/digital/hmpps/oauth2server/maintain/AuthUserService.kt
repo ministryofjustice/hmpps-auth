@@ -245,7 +245,7 @@ class AuthUserService(
       user.lastLoggedIn = LocalDateTime.now().minusDays(loginDaysTrigger - 7L)
     }
     userRepository.save(user)
-    sendEnableEmail(user = user, creator = admin, requestUrl = requestUrl)
+    user.email?.let { sendEnableEmail(user = user, creator = admin, requestUrl = requestUrl) }
     telemetryClient.trackEvent("AuthUserEnabled", mapOf("username" to user.username, "admin" to admin), null)
   }
 

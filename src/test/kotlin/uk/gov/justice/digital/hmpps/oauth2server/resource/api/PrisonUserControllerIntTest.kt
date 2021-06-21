@@ -11,14 +11,10 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
-import uk.gov.service.notify.NotificationClientApi
 
 class PrisonUserControllerIntTest : IntegrationTest() {
   @MockBean
   private lateinit var telemetryClient: TelemetryClient
-
-  @MockBean
-  private lateinit var notificationClient: NotificationClientApi
 
   @Test
   fun `Prison user end-point returns results`() {

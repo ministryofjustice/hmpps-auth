@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
@@ -17,6 +18,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.oauth2server.config.TokenVerificationClientCredentials
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.JwtAuthHelper.JwtParameters
+import uk.gov.service.notify.NotificationClientApi
 import java.time.Duration
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
@@ -36,6 +38,9 @@ abstract class IntegrationTest {
 
   @Autowired
   private lateinit var tokenVerificationApiRestTemplate: OAuth2RestTemplate
+
+  @MockBean
+  lateinit var notificationClient: NotificationClientApi
 
   @LocalServerPort
   internal var localServerPort: Int = 0

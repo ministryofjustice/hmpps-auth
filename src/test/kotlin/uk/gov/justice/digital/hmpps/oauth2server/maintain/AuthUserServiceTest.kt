@@ -870,6 +870,14 @@ class AuthUserServiceTest {
   }
 
   @Test
+  fun `enable user only sends email if email set`() {
+    val optionalUser = Optional.of(createSampleUser())
+    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+    authUserService.enableUser("user", "admin", "some/auth/url", SUPER_USER)
+    verifyZeroInteractions(notificationClient)
+  }
+
+  @Test
   fun enableUser_invalidGroup_GroupManager() {
     val optionalUser = createOptionalSampleUser()
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
