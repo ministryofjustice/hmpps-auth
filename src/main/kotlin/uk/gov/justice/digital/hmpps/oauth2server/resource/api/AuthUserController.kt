@@ -312,12 +312,13 @@ class AuthUserController(
   fun enableUser(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String?,
     @ApiIgnore authentication: Authentication,
+    @ApiIgnore request: HttpServletRequest,
   ): ResponseEntity<Any> {
     val userOptional = authUserService.getAuthUserByUsername(username)
     return userOptional.map { u: User ->
       val usernameInDb = u.username
       try {
-        authUserService.enableUser(usernameInDb, authentication.name, authentication.authorities)
+        authUserService.enableUser(usernameInDb, authentication.name, request.requestURL.toString(), authentication.authorities)
         return@map ResponseEntity.noContent().build<Any>()
       } catch (e: AuthUserGroupRelationshipException) {
         log.info("enable user failed  with reason {}", e.errorCode)

@@ -47,6 +47,7 @@ class AuthUserService(
   @Value("\${application.notify.create-initial-password.template}") private val initialPasswordTemplateId: String,
   @Value("\${application.authentication.disable.login-days}") private val loginDaysTrigger: Int,
   @Value("\${application.authentication.password-age}") private val passwordAge: Long,
+  @Value("\${application.notify.enable-user.template}") private val enableUserTemplateId: String,
 ) {
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(CreateUserException::class, NotificationClientException::class, VerifyEmailException::class)
@@ -60,7 +61,7 @@ class AuthUserService(
     authorities: Collection<GrantedAuthority>,
   ): String {
     val email = EmailHelper.format(emailInput)
-    validate(email, firstName, lastName, EmailType.PRIMARY)
+    validatePrimary(email, firstName, lastName)
     // get the initial groups to assign to - only allowed to be empty if super user
     val groups = getInitialGroups(groupCodes, creator, authorities)
     val person = Person(firstName!!.trim(), lastName!!.trim())
@@ -105,7 +106,13 @@ class AuthUserService(
     } else {
       emptyList()
     }
-    val userFilter = UserFilter(name = name, roleCodes = roleCodes, groupCodes = groupSearchCodes, status = status, authSources = authSources)
+    val userFilter = UserFilter(
+      name = name,
+      roleCodes = roleCodes,
+      groupCodes = groupSearchCodes,
+      status = status,
+      authSources = authSources
+    )
     return userRepository.findAll(userFilter, pageable)
   }
 
@@ -227,44 +234,66 @@ class AuthUserService(
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(AuthUserGroupRelationshipException::class)
-  fun enableUser(usernameInDb: String, admin: String, authorities: Collection<GrantedAuthority>) =
-    changeUserEnabled(usernameInDb, true, null, admin, authorities)
-
-  @Transactional(transactionManager = "authTransactionManager")
-  @Throws(AuthUserGroupRelationshipException::class)
-  fun disableUser(usernameInDb: String, admin: String, inactiveReason: String, authorities: Collection<GrantedAuthority>) =
-    changeUserEnabled(usernameInDb, false, inactiveReason, admin, authorities)
-
-  @Throws(AuthUserGroupRelationshipException::class)
-  private fun changeUserEnabled(
-    username: String,
-    enabled: Boolean,
-    inactiveReason: String?,
-    admin: String,
-    authorities: Collection<GrantedAuthority>,
-  ) {
+  fun enableUser(username: String, admin: String, requestUrl: String, authorities: Collection<GrantedAuthority>) {
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
       .orElseThrow { EntityNotFoundException("User not found with username $username") }
     maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
-    user.isEnabled = enabled
-    user.inactiveReason = inactiveReason
+    user.isEnabled = true
+    user.inactiveReason = null
     // give user 7 days grace if last logged in more than x days ago
     if (user.lastLoggedIn.isBefore(LocalDateTime.now().minusDays(loginDaysTrigger.toLong()))) {
       user.lastLoggedIn = LocalDateTime.now().minusDays(loginDaysTrigger - 7L)
     }
     userRepository.save(user)
-    telemetryClient.trackEvent(
-      "AuthUserChangeEnabled",
-      mapOf("username" to user.username, "enabled" to enabled.toString(), "admin" to admin),
-      null
+    user.email?.let { sendEnableEmail(user = user, creator = admin, requestUrl = requestUrl) }
+    telemetryClient.trackEvent("AuthUserEnabled", mapOf("username" to user.username, "admin" to admin), null)
+  }
+
+  private fun sendEnableEmail(user: User, creator: String, requestUrl: String) {
+    val username = user.username
+    val email = user.email
+    val parameters = mapOf(
+      "firstName" to user.firstName,
+      "signinUrl" to requestUrl.replaceAfter("/auth/", ""),
     )
+    // send the email
+    try {
+      log.info("Sending enable user email to notify for user {}", username)
+      notificationClient.sendEmail(enableUserTemplateId, email, parameters, null)
+    } catch (e: NotificationClientException) {
+      val reason = (e.cause?.let { e.cause } ?: e).javaClass.simpleName
+      log.warn("Failed to send enable user email for user {}", username, e)
+      telemetryClient.trackEvent(
+        "AuthUserEnabledEmailFailure",
+        mapOf("username" to username, "reason" to reason, "admin" to creator),
+        null
+      )
+      throw e
+    }
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(AuthUserGroupRelationshipException::class)
+  fun disableUser(
+    username: String,
+    admin: String,
+    inactiveReason: String,
+    authorities: Collection<GrantedAuthority>
+  ) {
+    val user = userRepository.findByUsernameAndMasterIsTrue(username)
+      .orElseThrow { EntityNotFoundException("User not found with username $username") }
+    maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
+    user.isEnabled = false
+    user.inactiveReason = inactiveReason
+    userRepository.save(user)
+    telemetryClient.trackEvent("AuthUserDisabled", mapOf("username" to user.username, "admin" to admin), null)
   }
 
   @Throws(CreateUserException::class, VerifyEmailException::class)
-  private fun validate(email: String?, firstName: String?, lastName: String?, emailType: EmailType) {
+  private fun validatePrimary(email: String?, firstName: String?, lastName: String?) {
     validate(firstName, lastName)
 
-    verifyEmailService.validateEmailAddress(email, emailType)
+    verifyEmailService.validateEmailAddress(email, EmailType.PRIMARY)
   }
 
   @Throws(CreateUserException::class)
@@ -355,10 +384,8 @@ class AuthUserService(
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
 
     // Data item field size validation checks
-    private const val MAX_LENGTH_USERNAME = 30
     private const val MAX_LENGTH_FIRST_NAME = 50
     private const val MAX_LENGTH_LAST_NAME = 50
-    private const val MIN_LENGTH_USERNAME = 6
     private const val MIN_LENGTH_FIRST_NAME = 2
     private const val MIN_LENGTH_LAST_NAME = 2
   }

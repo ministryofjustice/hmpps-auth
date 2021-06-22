@@ -342,17 +342,24 @@ class AuthUserControllerTest {
   fun enableUser() {
     val user = createSampleUser(username = "USER", email = "email", verified = true)
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
-    val responseEntity = authUserController.enableUser("user", authentication)
+    whenever(request.requestURL).thenReturn(StringBuffer("some/auth/url"))
+    val responseEntity = authUserController.enableUser("user", authentication, request)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
-    verify(authUserService).enableUser("USER", "bob", authentication.authorities)
+    verify(authUserService).enableUser("USER", "bob", "some/auth/url", authentication.authorities)
   }
 
   @Test
   fun enableUser_notFound() {
     val user = createSampleUser(username = "USER", email = "email", verified = true)
+    whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
     whenever(authUserService.getAuthUserByUsername("user")).thenReturn(Optional.of(user))
-    doThrow(EntityNotFoundException("message")).whenever(authUserService).enableUser(anyString(), anyString(), any())
-    val responseEntity = authUserController.enableUser("user", authentication)
+    doThrow(EntityNotFoundException("message")).whenever(authUserService).enableUser(
+      anyString(),
+      anyString(),
+      anyString(),
+      any()
+    )
+    val responseEntity = authUserController.enableUser("user", authentication, request)
     assertThat(responseEntity.statusCodeValue).isEqualTo(404)
   }
 
