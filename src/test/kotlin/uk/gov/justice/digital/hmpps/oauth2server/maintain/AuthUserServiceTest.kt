@@ -855,7 +855,7 @@ class AuthUserServiceTest {
 
   @Test
   fun `enable user sends email`() {
-    val optionalUser = Optional.of(createSampleUser(email = "email"))
+    val optionalUser = Optional.of(createSampleUser(username = "someuser", email = "email"))
     whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
     authUserService.enableUser("user", "admin", "some/auth/url", SUPER_USER)
     verify(notificationClient).sendEmail(
@@ -863,6 +863,7 @@ class AuthUserServiceTest {
       "email",
       mapOf(
         "firstName" to "first",
+        "username" to "someuser",
         "signinUrl" to "some/auth/"
       ),
       null

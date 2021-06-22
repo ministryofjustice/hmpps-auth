@@ -250,25 +250,26 @@ class AuthUserService(
   }
 
   private fun sendEnableEmail(user: User, creator: String, requestUrl: String) {
-    val username = user.username
-    val email = user.email
-    val parameters = mapOf(
-      "firstName" to user.firstName,
-      "signinUrl" to requestUrl.replaceAfter("/auth/", ""),
-    )
-    // send the email
-    try {
-      log.info("Sending enable user email to notify for user {}", username)
-      notificationClient.sendEmail(enableUserTemplateId, email, parameters, null)
-    } catch (e: NotificationClientException) {
-      val reason = (e.cause?.let { e.cause } ?: e).javaClass.simpleName
-      log.warn("Failed to send enable user email for user {}", username, e)
-      telemetryClient.trackEvent(
-        "AuthUserEnabledEmailFailure",
-        mapOf("username" to username, "reason" to reason, "admin" to creator),
-        null
+    with(user) {
+      val parameters = mapOf(
+        "firstName" to firstName,
+        "username" to username,
+        "signinUrl" to requestUrl.replaceAfter("/auth/", ""),
       )
-      throw e
+      // send the email
+      try {
+        log.info("Sending enable user email to notify for user {}", username)
+        notificationClient.sendEmail(enableUserTemplateId, email, parameters, null)
+      } catch (e: NotificationClientException) {
+        val reason = (e.cause?.let { e.cause } ?: e).javaClass.simpleName
+        log.warn("Failed to send enable user email for user {}", username, e)
+        telemetryClient.trackEvent(
+          "AuthUserEnabledEmailFailure",
+          mapOf("username" to username, "reason" to reason, "admin" to creator),
+          null
+        )
+        throw e
+      }
     }
   }
 
