@@ -86,7 +86,7 @@ class ForgottenUsernameServiceTest {
     val map = mapOf(
       "firstName" to "first",
       "username" to listOf("firstlast"),
-      "signinUrl" to "someurl/login",
+      "signinUrl" to "someurl/",
       "single" to "yes",
       "multiple" to "no"
     )
@@ -115,7 +115,7 @@ class ForgottenUsernameServiceTest {
     val map = mapOf(
       "firstName" to "Bob",
       "username" to listOf("username1"),
-      "signinUrl" to "someurl/login",
+      "signinUrl" to "someurl/",
       "single" to "yes",
       "multiple" to "no"
     )
@@ -136,7 +136,7 @@ class ForgottenUsernameServiceTest {
     val map = mapOf(
       "firstName" to "user",
       "username" to listOf("username2"),
-      "signinUrl" to "someurl/login",
+      "signinUrl" to "someurl/",
       "single" to "yes",
       "multiple" to "no"
     )
@@ -171,7 +171,7 @@ class ForgottenUsernameServiceTest {
     val map = mapOf(
       "firstName" to "first",
       "username" to listOf("user1", "user2"),
-      "signinUrl" to "someurl/login",
+      "signinUrl" to "someurl/",
       "single" to "no",
       "multiple" to "yes"
     )
@@ -206,7 +206,7 @@ class ForgottenUsernameServiceTest {
     val map = mapOf(
       "firstName" to "first",
       "username" to listOf("user1"),
-      "signinUrl" to "someurl/login",
+      "signinUrl" to "someurl/",
       "single" to "yes",
       "multiple" to "no"
     )
@@ -241,7 +241,7 @@ class ForgottenUsernameServiceTest {
     val map = mapOf(
       "firstName" to "first",
       "username" to listOf("user1"),
-      "signinUrl" to "someurl/login",
+      "signinUrl" to "someurl/",
       "single" to "yes",
       "multiple" to "no"
     )
@@ -291,7 +291,7 @@ class ForgottenUsernameServiceTest {
     val map = mapOf(
       "firstName" to "user",
       "username" to listOf("user1", "user2", "username1", "username2"),
-      "signinUrl" to "someurl/login",
+      "signinUrl" to "someurl/",
       "single" to "no",
       "multiple" to "yes"
     )
