@@ -27,28 +27,27 @@ class ForgottenUsernameService(
 
   @Throws(NotificationClientException::class)
   fun forgottenUsername(email: String, url: String): List<String> {
-    var username = listOf<String>()
     val userAccounts = setOf(AuthSource.auth, AuthSource.nomis, AuthSource.delius)
       .map { it -> findUsernamesForEmail(email, it).filter { it.isEnabled } }
       .filter { it.isNotEmpty() }
       .flatten()
 
-    if (userAccounts.isNotEmpty()) {
-      username = userAccounts.map { it.username }
-      val firstname = userAccounts[0].firstName
-      val signinUrl = url.replace("/forgotten-username", "/")
+    if (userAccounts.isEmpty()) return emptyList()
 
-      // create map for email
-      val parameters = mapOf(
-        "firstName" to firstname,
-        "username" to username,
-        "signinUrl" to signinUrl,
-        "single" to if (username.count() == 1) "yes" else "no",
-        "multiple" to if (username.count() > 1) "yes" else "no"
-      )
-      // send email
-      sendUsernameEmail(forgotTemplateId, parameters, email)
-    }
+    val username = userAccounts.map { it.username }
+    val firstname = userAccounts[0].firstName
+    val signinUrl = url.replace("/forgotten-username", "/")
+
+    // create map for email
+    val parameters = mapOf(
+      "firstName" to firstname,
+      "username" to username,
+      "signinUrl" to signinUrl,
+      "single" to if (username.count() == 1) "yes" else "no",
+      "multiple" to if (username.count() > 1) "yes" else "no"
+    )
+    // send email
+    sendUsernameEmail(forgotTemplateId, parameters, email)
 
     return username
   }
