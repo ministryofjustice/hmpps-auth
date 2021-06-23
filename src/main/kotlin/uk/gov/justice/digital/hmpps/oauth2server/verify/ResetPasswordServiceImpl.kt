@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.service.DelegatingUserService
+import uk.gov.justice.digital.hmpps.oauth2server.service.NotificationClientRuntimeException
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper.format
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
@@ -264,7 +265,5 @@ class ResetPasswordServiceImpl(
       get() = parameters["resetLink"] as String?
   }
 
-  // Throttling doesn't allow checked exceptions to be thrown, hence wrapped in a runtime exception
-  class NotificationClientRuntimeException(e: NotificationClientException?) : RuntimeException(e)
   class ResetPasswordException(val reason: String) : RuntimeException("Reset Password failed with reason: $reason")
 }
