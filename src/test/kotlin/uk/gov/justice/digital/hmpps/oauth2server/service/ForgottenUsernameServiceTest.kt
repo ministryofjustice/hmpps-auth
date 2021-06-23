@@ -289,7 +289,7 @@ class ForgottenUsernameServiceTest {
     val username = service.forgottenUsername("a@b.com", "someurl/forgotten-username")
 
     val map = mapOf(
-      "firstName" to "user",
+      "firstName" to "first",
       "username" to listOf("user1", "user2", "username1", "username2"),
       "signinUrl" to "someurl/",
       "single" to "no",

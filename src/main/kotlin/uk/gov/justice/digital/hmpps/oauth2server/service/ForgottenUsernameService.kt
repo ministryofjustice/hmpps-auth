@@ -25,30 +25,27 @@ class ForgottenUsernameService(
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  @Throws(NotificationClientRuntimeException::class)
+  @Throws(NotificationClientException::class)
   fun forgottenUsername(email: String, url: String): List<String> {
-    var firstname = ""
-    val username = mutableListOf<String>()
-    setOf(AuthSource.auth, AuthSource.nomis, AuthSource.delius)
+    var username = listOf<String>()
+    val userAccounts = setOf(AuthSource.auth, AuthSource.nomis, AuthSource.delius)
       .map { it -> findUsernamesForEmail(email, it).filter { it.isEnabled } }
       .filter { it.isNotEmpty() }
       .flatten()
-      .forEach {
-        username.plusAssign(it.username)
-        firstname = it.firstName
-      }
 
-    val signinUrl = url.replace("/forgotten-username", "/")
-    // create map for email
-    val parameters = mapOf(
-      "firstName" to firstname,
-      "username" to username,
-      "signinUrl" to signinUrl,
-      "single" to if (username.count() == 1) "yes" else "no",
-      "multiple" to if (username.count() > 1) "yes" else "no"
-    )
+    if (userAccounts.isNotEmpty()) {
+      username = userAccounts.map { it.username }
+      val firstname = userAccounts[0].firstName
+      val signinUrl = url.replace("/forgotten-username", "/")
 
-    if (username.isNotEmpty()) {
+      // create map for email
+      val parameters = mapOf(
+        "firstName" to firstname,
+        "username" to username,
+        "signinUrl" to signinUrl,
+        "single" to if (username.count() == 1) "yes" else "no",
+        "multiple" to if (username.count() > 1) "yes" else "no"
+      )
       // send email
       sendUsernameEmail(forgotTemplateId, parameters, email)
     }
