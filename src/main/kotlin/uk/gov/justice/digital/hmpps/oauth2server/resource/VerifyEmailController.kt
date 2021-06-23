@@ -43,7 +43,6 @@ class VerifyEmailController(
   }
 
   @GetMapping("/verify-email")
-
   fun verifyEmailRequest(
     principal: Principal,
     request: HttpServletRequest,

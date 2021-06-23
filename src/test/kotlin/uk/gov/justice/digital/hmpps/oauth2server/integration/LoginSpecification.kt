@@ -269,6 +269,9 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
   @FindBy(linkText = "I have forgotten my password")
   private lateinit var forgottenPassword: FluentWebElement
 
+  @FindBy(linkText = "I have forgotten my username")
+  private lateinit var forgottenUsername: FluentWebElement
+
   @FindBy(id = "oauth2-client-microsoft")
   private lateinit var azureOIDCLink: FluentWebElement
 
@@ -345,6 +348,10 @@ class LoginPage : AuthPage<LoginPage>("HMPPS Digital Services - Sign in", "Sign 
 
   fun forgottenPasswordLink() {
     forgottenPassword.click()
+  }
+
+  fun forgottenUsernameLink() {
+    forgottenUsername.click()
   }
 
   fun clickAzureOIDCLink() {
