@@ -322,6 +322,7 @@ INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, use
 -- auth user for interventions service provider journeys
 INSERT INTO users (user_id, username, password, email, first_name, last_name, verified, locked, enabled, master, create_datetime, password_expiry, last_logged_in, source, mfa_preference)
     VALUES ('6C4036B7-E87D-44FB-864F-5A06C1C492F3', 'TEST_INTERVENTIONS_SP_1', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', 'test.interventions.sp.1@digital.justice.gov.uk', 'Robin', 'Croswell', 1, 0, 1, 0, '2021-03-05 11:48:34.2723638', '2040-04-26 16:17:28.4953990', '2021-03-05 11:48:34.2723638', 'auth', 'EMAIL');
+INSERT INTO user_role (role_id, user_id) SELECT role_id, user_id from roles, users where username = 'TEST_INTERVENTIONS_SP_1' and role_code = 'CRS_PROVIDER';
 INSERT INTO groups (group_id, group_code, group_name)
     values ('6B30BD55-8F75-4B0B-A647-42A34B0A383D', 'INT_SP_HARMONY_LIVING', 'Intervention Provider - Harmony Living'),
            ('628EEE33-5BCD-41C8-97A5-F655E8689EAD', 'INT_SP_HOME_TRUST', 'Intervention Provider - Home Trust'),
