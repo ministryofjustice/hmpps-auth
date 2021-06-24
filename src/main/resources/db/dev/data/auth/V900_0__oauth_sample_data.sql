@@ -64,7 +64,7 @@ VALUES ('omicuser','1200','{"jwtFields":"-user_name"}','SYSTEM_READ_ONLY','passw
        ('hmpps-audit-api-client','3600','{}','ROLE_AUDIT','client_credentials','read,write','$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read,write',null),
        ('hmpps-tier','3600','{}','ROLE_COMMUNITY,ROLE_OASYS_READ_ONLY','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
        ('hmpps-tier-to-delius-update','3600','{}','ROLE_MANAGEMENT_TIER_UPDATE','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'write',null),
-       ('hmpps-assess-risks-and-needs-client','3600','{}','ROLE_RISK_SUMMARY,ROLE_OASYS_READ_ONLY','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read,write',null),
+       ('hmpps-assess-risks-and-needs-client','3600','{}','ROLE_PROBATION,ROLE_CRS_PROVIDER,ROLE_OASYS_READ_ONLY','client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read,write',null),
        ('ppud-api-client','3600','{}','ROLE_GLOBAL_SEARCH,ROLE_COMMUNITY','client_credentials','read,write','$2a$10$.95l4ENV1OEZ6qWd4R5QTOXZrjvTQmN402z1pjRUr2EwGFYdkDDnm',43200,null,'read',null),
        ('ppud-ui-client','3600','{}',null,'authorization_code,refresh_token','read,write','$2a$10$YRkR9FGSpZu3FAn5.Awtk.Yd0hg92y63VfVVAKhS6k66nMsc3/Hiy',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000'),
        ('hmpps-audit-ui','3600','{}',null,'authorization_code,refresh_token','read,write','$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',43200,null,'read,write','http://localhost:3000/login/callback,http://localhost:3000');
