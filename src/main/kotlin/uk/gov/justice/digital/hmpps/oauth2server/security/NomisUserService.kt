@@ -21,10 +21,10 @@ abstract class NomisUserService(
   private val verifyEmailService: VerifyEmailService,
 ) {
   fun getNomisUserByUsername(username: String): Optional<NomisUserPersonDetails> =
-    staffUserAccountRepository.findById(username.toUpperCase())
+    staffUserAccountRepository.findById(username.uppercase())
 
   fun getNomisUsersByEmail(email: String): List<NomisUserPersonDetails> {
-    val emailLowered = email.toLowerCase()
+    val emailLowered = email.lowercase()
 
     val allNomisInAuthUsernames = userRepository.findByEmailAndSourceOrderByUsername(emailLowered, nomis)
       .filter { it.verified }

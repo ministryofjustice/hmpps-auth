@@ -26,5 +26,5 @@ data class AccountDetail(
   val status: AccountStatus
     get() = AccountStatus.get(accountStatus)
   val accountProfile: AccountProfile
-    get() = AccountProfile.valueOf(profile.toUpperCase())
+    get() = AccountProfile.valueOf(profile.uppercase())
 }

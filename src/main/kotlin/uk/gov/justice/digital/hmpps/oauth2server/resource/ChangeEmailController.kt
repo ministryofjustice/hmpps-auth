@@ -34,7 +34,7 @@ class ChangeEmailController(private val tokenService: TokenService, private val 
       .addObject("email", currentEmail)
 
     if (AuthSource.fromNullableString(user.authSource) == AuthSource.auth &&
-      user.username.toLowerCase() == currentEmail
+      user.username.lowercase() == currentEmail
     ) {
       modelAndView.addObject("changingUsername", true)
     }

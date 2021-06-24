@@ -117,7 +117,7 @@ class AuthUserRoleService(
     } else roleRepository.findByGroupAssignableRolesForUsername(username)
 
   fun getAssignableRoles(username: String, authorities: Collection<GrantedAuthority>): List<Authority> {
-    val user = userRepository.findByUsernameAndMasterIsTrue(username.toUpperCase()).orElseThrow()
+    val user = userRepository.findByUsernameAndMasterIsTrue(username.uppercase()).orElseThrow()
     val userRoles = user.authorities
     val allAssignableRoles = getAllAssignableRoles(username, authorities)
     return Sets.difference(allAssignableRoles, userRoles)

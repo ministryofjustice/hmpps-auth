@@ -111,12 +111,12 @@ class GroupsService(
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(ChildGroupExistsException::class, GroupNotFoundException::class)
   fun createChildGroup(username: String, createChildGroup: CreateChildGroup) {
-    val groupCode = createChildGroup.groupCode.trim().toUpperCase()
+    val groupCode = createChildGroup.groupCode.trim().uppercase()
     val childGroupFromDB = childGroupRepository.findByGroupCode(groupCode)
     if (childGroupFromDB != null) {
       throw ChildGroupExistsException(groupCode, "group code already exists")
     }
-    val parentGroupCode = createChildGroup.parentGroupCode.trim().toUpperCase()
+    val parentGroupCode = createChildGroup.parentGroupCode.trim().uppercase()
     val parentGroupDetails = groupRepository.findByGroupCode(parentGroupCode) ?: throw
     GroupNotFoundException("create", parentGroupCode, "ParentGroupNotFound")
 
@@ -153,7 +153,7 @@ class GroupsService(
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(GroupExistsException::class)
   fun createGroup(username: String, createGroup: CreateGroup) {
-    val groupCode = createGroup.groupCode.trim().toUpperCase()
+    val groupCode = createGroup.groupCode.trim().uppercase()
     val groupFromDb = groupRepository.findByGroupCode(groupCode)
     groupFromDb?.let { throw GroupExistsException(groupCode, "group code already exists") }
 

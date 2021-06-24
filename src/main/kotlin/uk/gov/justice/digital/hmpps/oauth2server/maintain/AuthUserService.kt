@@ -210,8 +210,8 @@ class AuthUserService(
     }
     val email = EmailHelper.format(emailAddressInput)
     verifyEmailService.validateEmailAddress(email, emailType)
-    if (user.email == username.toLowerCase()) {
-      userRepository.findByUsername(email!!.toUpperCase()).ifPresent {
+    if (user.email == username.lowercase()) {
+      userRepository.findByUsername(email!!.uppercase()).ifPresent {
         throw VerifyEmailException("duplicate")
       }
       user.username = email
@@ -360,7 +360,7 @@ class AuthUserService(
     val user = userRepository.findByUsernameAndMasterIsTrue(username).orElseThrow()
 
     // double check can switch
-    val emailUpper = user.email?.toUpperCase()
+    val emailUpper = user.email?.uppercase()
     if (emailUpper != null && !user.username.contains('@') &&
       userRepository.findByUsernameAndMasterIsTrue(emailUpper).isEmpty
     ) {

@@ -40,7 +40,7 @@ class UserStateAuthenticationFailureHandler(
     response: HttpServletResponse,
     exception: AuthenticationException,
   ) {
-    val username = request.getParameter("username")?.trim()?.toUpperCase()
+    val username = request.getParameter("username")?.trim()?.uppercase()
     return onAuthenticationFailureForUsername(request, response, exception, username)
   }
 

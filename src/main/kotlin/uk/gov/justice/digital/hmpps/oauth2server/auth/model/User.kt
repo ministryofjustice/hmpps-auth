@@ -184,7 +184,7 @@ class User(
   override fun getUsername(): String = username
 
   fun setUsername(username: String) {
-    this.username = username.toUpperCase()
+    this.username = username.uppercase()
   }
 
   override fun getPassword(): String? = password

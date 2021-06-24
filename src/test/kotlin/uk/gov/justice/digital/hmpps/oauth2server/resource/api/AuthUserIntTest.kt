@@ -31,7 +31,7 @@ class AuthUserIntTest : IntegrationTest() {
       .expectBody()
       .jsonPath("$").value<Map<String, Any>> {
         assertThat(it.filter { it.key != "userId" }).containsAllEntriesOf(
-          mapOf("username" to user.email.toUpperCase(), "active" to true, "name" to "Bob Smith", "authSource" to "auth")
+          mapOf("username" to user.email.uppercase(), "active" to true, "name" to "Bob Smith", "authSource" to "auth")
         )
       }
   }
