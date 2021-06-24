@@ -90,5 +90,5 @@ class ChangePasswordController(
     "changePasswordSuccess"
 
   private fun authenticate(username: String, password: String) =
-    authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username.toUpperCase(), password))
+    authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username.uppercase(), password))
 }

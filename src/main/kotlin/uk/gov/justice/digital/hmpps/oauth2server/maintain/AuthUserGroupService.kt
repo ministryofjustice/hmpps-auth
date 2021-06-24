@@ -101,13 +101,13 @@ class AuthUserGroupService(
     }
   }
 
-  private fun formatGroup(group: String) = group.trim().toUpperCase()
+  private fun formatGroup(group: String) = group.trim().uppercase()
 
   val allGroups: List<Group>
     get() = groupRepository.findAllByOrderByGroupName()
 
   fun getAuthUserGroups(username: String): Set<Group>? {
-    val user = userRepository.findByUsernameAndMasterIsTrue(username.trim().toUpperCase())
+    val user = userRepository.findByUsernameAndMasterIsTrue(username.trim().uppercase())
     return user.map { u: User ->
       Hibernate.initialize(u.groups)
       u.groups.forEach { Hibernate.initialize(it.children) }

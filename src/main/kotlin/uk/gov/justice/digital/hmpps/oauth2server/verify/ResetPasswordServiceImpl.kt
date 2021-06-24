@@ -58,10 +58,10 @@ class ResetPasswordServiceImpl(
       optionalUser = Optional.of(matches[0])
     } else {
       multipleMatchesAndCanBeReset = false
-      optionalUser = userRepository.findByUsername(usernameOrEmailAddress.toUpperCase())
+      optionalUser = userRepository.findByUsername(usernameOrEmailAddress.uppercase())
         .or {
           // can't find the user in auth, so look in nomis or delius
-          userService.findMasterUserPersonDetails(usernameOrEmailAddress.toUpperCase())
+          userService.findMasterUserPersonDetails(usernameOrEmailAddress.uppercase())
             .flatMap { userPersonDetails: UserPersonDetails ->
               when (AuthSource.fromNullableString(userPersonDetails.authSource)) {
                 AuthSource.nomis -> saveNomisUser(userPersonDetails)
@@ -183,7 +183,7 @@ class ResetPasswordServiceImpl(
 
   private fun sendPasswordResetEmail(user: User) {
     // then the reset token
-    val username = if (user.username.contains("@")) user.username.toLowerCase() else user.username
+    val username = if (user.username.contains("@")) user.username.lowercase() else user.username
     val email = user.email
     val parameters = mapOf("firstName" to user.firstName, "fullName" to user.name, "username" to username)
 

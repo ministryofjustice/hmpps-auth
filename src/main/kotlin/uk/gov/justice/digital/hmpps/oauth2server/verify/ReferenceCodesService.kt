@@ -26,10 +26,10 @@ class ReferenceCodesService(referenceCodeRepository: ReferenceCodeRepository) {
     if (StringUtils.isBlank(domain)) {
       return false
     }
-    val domainLower = domain.toLowerCase()
+    val domainLower = domain.lowercase()
     return try {
       referenceCodesCache[ReferenceDomain.EMAIL_DOMAIN]
-        .map { it.replace("%".toRegex(), ".*").toLowerCase() }
+        .map { it.replace("%".toRegex(), ".*").lowercase() }
         .any { domainLower.matches(it.toRegex()) }
     } catch (e: ExecutionException) {
       // nothing we can do here, so throw toys out of pram

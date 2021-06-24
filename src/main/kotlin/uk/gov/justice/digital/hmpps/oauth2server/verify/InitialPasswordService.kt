@@ -35,7 +35,7 @@ class InitialPasswordService(
 
   @Transactional(transactionManager = "authTransactionManager")
   fun resendInitialPasswordLink(username: String, url: String): String {
-    val user: User = userRepository.findByUsername(username.toUpperCase())
+    val user: User = userRepository.findByUsername(username.uppercase())
       .orElseThrow { EntityNotFoundException(String.format("User not found with username %s", username)) }
     val userDetails: UserPersonDetails
     userDetails = if (user.isMaster) {

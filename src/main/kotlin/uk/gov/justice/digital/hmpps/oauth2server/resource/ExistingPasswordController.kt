@@ -88,7 +88,7 @@ class ExistingPasswordController(
     ModelAndView("user/existingPassword", "username", authentication.name)
 
   private fun authenticate(username: String, password: String) =
-    authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username.toUpperCase(), password))
+    authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username.uppercase(), password))
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

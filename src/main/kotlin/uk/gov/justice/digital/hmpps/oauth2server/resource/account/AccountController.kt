@@ -36,13 +36,13 @@ class AccountController(
       val user = userService.findMasterUserPersonDetails(username).orElseThrow()
       val userInAuth = userService.getUserWithContacts(username)
       val linkedAccounts = userContextService.discoverUsers(user)
-        .map { LinkedAccountModel(it.authSource.toUpperCase(), it.username) }
+        .map { LinkedAccountModel(it.authSource.uppercase(), it.username) }
 
       val email = userInAuth.email
       val canSwitchUsernameToEmail = userInAuth.source == AuthSource.auth && email != null &&
         !user.username.contains('@') && userService.findUser(email).isEmpty
 
-      val usernameNotEmail = email != username.toLowerCase()
+      val usernameNotEmail = email != username.lowercase()
 
       val redirectOk: Boolean = if (client != null && redirectUri != null) {
         backLinkHandler.validateRedirect(client, redirectUri)

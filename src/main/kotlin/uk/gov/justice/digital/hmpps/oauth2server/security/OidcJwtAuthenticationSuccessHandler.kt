@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.oauth2server.config.CookieRequestCache
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import java.io.IOException
-import java.util.ArrayList
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -77,10 +76,10 @@ class OidcJwtAuthenticationSuccessHandler(
     return AzureUserPersonDetails(
       authorities = ArrayList(),
       enabled = true,
-      username = principal.getClaim<String>("oid").toUpperCase(),
+      username = principal.getClaim<String>("oid").uppercase(),
       firstName = givenName,
       surname = familyName,
-      email = principal.preferredUsername.toLowerCase(),
+      email = principal.preferredUsername.lowercase(),
       credentialsNonExpired = true,
       accountNonExpired = true,
       accountNonLocked = true

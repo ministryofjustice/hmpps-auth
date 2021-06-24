@@ -28,7 +28,7 @@ class DeliusUserService(
   deliusRoleMappings: DeliusRoleMappings,
 ) {
   private val mappings: Map<String, List<String>> =
-    deliusRoleMappings.mappings.mapKeys { it.key.toUpperCase().replace('.', '_') }
+    deliusRoleMappings.mappings.mapKeys { it.key.uppercase().replace('.', '_') }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -158,11 +158,11 @@ class DeliusUserService(
 
   private fun mapUserDetailsToDeliusUser(userDetails: UserDetails): DeliusUserPersonDetails =
     DeliusUserPersonDetails(
-      username = userDetails.username.toUpperCase(),
+      username = userDetails.username.uppercase(),
       userId = userDetails.userId,
       firstName = userDetails.firstName,
       surname = userDetails.surname,
-      email = userDetails.email.toLowerCase(),
+      email = userDetails.email.lowercase(),
       enabled = userDetails.enabled,
       roles = mapUserRolesToAuthorities(userDetails.roles)
     )

@@ -42,13 +42,13 @@ class VerifyEmailService(
 
   fun getExistingEmailAddressesForUsername(username: String): List<String> =
     jdbcTemplate.queryForList(EXISTING_EMAIL_SQL, mapOf("username" to username), String::class.java)
-      .map { it.toLowerCase() }
+      .map { it.lowercase() }
 
   fun getExistingEmailAddressesForUsernames(usernames: List<String>): Map<String, Set<String>> {
     if (usernames.isEmpty()) return emptyMap()
 
     return jdbcTemplate.query(EXISTING_EMAIL_FOR_USERNAMES_SQL, mapOf("usernames" to usernames)) { rs: ResultSet, _: Int -> rs.getString("USERNAME") to rs.getString("EMAIL") }
-      .groupBy { it.first }.mapValues { it.value.map { p -> p.second.toLowerCase() }.toSet() }
+      .groupBy { it.first }.mapValues { it.value.map { p -> p.second.lowercase() }.toSet() }
   }
 
   @Transactional(transactionManager = "authTransactionManager")

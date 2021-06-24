@@ -11,7 +11,7 @@ enum class AuthSource {
   companion object {
     @JvmStatic
     fun fromNullableString(source: String?): AuthSource {
-      return source?.let { valueOf(source.toLowerCase()) } ?: none
+      return source?.let { valueOf(source.lowercase()) } ?: none
     }
   }
 }

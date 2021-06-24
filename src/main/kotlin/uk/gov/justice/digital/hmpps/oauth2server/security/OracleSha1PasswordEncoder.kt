@@ -28,7 +28,7 @@ class OracleSha1PasswordEncoder : PasswordEncoder {
 
   private fun digest(salt: String, rawPassword: CharSequence): String {
     val saltedPassword = Bytes.concat(rawPassword.toString().toByteArray(), Hex.decode(salt))
-    return "S:" + DigestUtils.sha1Hex(saltedPassword).toUpperCase() + salt
+    return "S:" + DigestUtils.sha1Hex(saltedPassword).uppercase() + salt
   }
 
   /**

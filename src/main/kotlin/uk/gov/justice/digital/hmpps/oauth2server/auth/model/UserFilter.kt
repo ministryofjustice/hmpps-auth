@@ -32,12 +32,12 @@ class UserFilter(
 
     if (!roleCodes.isNullOrEmpty()) {
       val rolePredicate =
-        root.join<Any, Any>("authorities").get<Any>("roleCode").`in`(roleCodes.map { it.trim().toUpperCase() })
+        root.join<Any, Any>("authorities").get<Any>("roleCode").`in`(roleCodes.map { it.trim().uppercase() })
       andBuilder.add(rolePredicate)
     }
     if (!groupCodes.isNullOrEmpty()) {
       val groupPredicate =
-        root.join<Any, Any>("groups").get<Any>("groupCode").`in`(groupCodes.map { it.trim().toUpperCase() })
+        root.join<Any, Any>("groups").get<Any>("groupCode").`in`(groupCodes.map { it.trim().uppercase() })
       andBuilder.add(groupPredicate)
     }
     if (!name.isNullOrBlank()) {
@@ -67,18 +67,18 @@ class UserFilter(
     val orBuilder = ImmutableList.builder<Predicate>()
     val pattern = "%" + name!!.replace(',', ' ').replace(" [ ]*".toRegex(), "% %") + "%"
     orBuilder.add(cb.like(root.get("email"), format(pattern)))
-    orBuilder.add(cb.like(root.get("username"), pattern.toUpperCase()))
+    orBuilder.add(cb.like(root.get("username"), pattern.uppercase()))
     val personJoin = root.join<Any, Any>("person", JoinType.INNER)
     orBuilder.add(
       cb.like(
         cb.lower(cb.concat(cb.concat(personJoin.get("firstName"), " "), personJoin.get("lastName"))),
-        pattern.toLowerCase()
+        pattern.lowercase()
       )
     )
     orBuilder.add(
       cb.like(
         cb.lower(cb.concat(cb.concat(personJoin.get("lastName"), " "), personJoin.get("firstName"))),
-        pattern.toLowerCase()
+        pattern.lowercase()
       )
     )
     return cb.or(*orBuilder.build().toTypedArray())

@@ -128,7 +128,7 @@ open class AbstractPasswordController(
     if (digits.length == newPassword.length) {
       builder.add("errornew", "alldigits")
     }
-    if (passwordDenylist.contains(newPassword.toLowerCase())) {
+    if (passwordDenylist.contains(newPassword.lowercase())) {
       builder.add("errornew", "denylist")
     }
     if (StringUtils.containsIgnoreCase(newPassword, username)) {

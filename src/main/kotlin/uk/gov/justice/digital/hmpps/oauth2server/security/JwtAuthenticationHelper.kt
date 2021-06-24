@@ -54,7 +54,7 @@ class JwtAuthenticationHelper(
 
   fun createJwtWithIdFromOidcAuthentication(authentication: OAuth2AuthenticationToken, jwtId: String): String {
     val userDetails = authentication.principal as DefaultOidcUser
-    val username = userDetails.name.toUpperCase()
+    val username = userDetails.name.uppercase()
     val authoritiesAsString = authentication.authorities?.joinToString(separator = ",") { it.authority } ?: ""
     return Jwts.builder()
       .setId(jwtId)
@@ -64,7 +64,7 @@ class JwtAuthenticationHelper(
           "authorities" to authoritiesAsString,
           "name" to userDetails.fullName,
           "auth_source" to AuthSource.azuread.source,
-          "user_id" to userDetails.preferredUsername.toLowerCase()
+          "user_id" to userDetails.preferredUsername.lowercase()
         )
       )
       .setExpiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
