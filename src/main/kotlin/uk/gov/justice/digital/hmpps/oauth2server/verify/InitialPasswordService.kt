@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.OauthServiceRep
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
-import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException
+import uk.gov.justice.digital.hmpps.oauth2server.service.NotificationClientRuntimeException
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
 import javax.persistence.EntityNotFoundException

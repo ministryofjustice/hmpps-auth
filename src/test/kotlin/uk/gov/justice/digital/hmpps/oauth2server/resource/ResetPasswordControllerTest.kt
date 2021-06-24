@@ -20,8 +20,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.AccountProfile
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.nomis.model.NomisUserPersonDetailsHelper.Companion.createSampleNomisUser
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.service.NotificationClientRuntimeException
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
-import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
