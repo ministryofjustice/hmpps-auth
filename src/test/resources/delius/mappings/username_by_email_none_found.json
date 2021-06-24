@@ -1,0 +1,17 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "GET",
+    "urlPattern": "(?i)/secure/users/search/email/mfa_user%40digital.justice.gov.uk/details"
+  },
+  "response": {
+    "transformers": [
+      "response-template"
+    ],
+    "status": 200,
+    "jsonBody": [],
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

@@ -138,7 +138,7 @@ class AuthenticationManagerConfiguration(
       .ignoring()
       .antMatchers(
         "/css/**", "/js/**", "/images/**", "/fonts/**", "/webjars/**", "/favicon.ico",
-        "/health/**", "/info", "/ping", "/error", "/terms", "/contact", "/change-password",
+        "/health/**", "/info", "/ping", "/error", "/terms", "/contact", "/change-password", "/forgotten-username",
         "/verify-email-confirm", "/verify-email-secondary-confirm", "/forgot-password", "/reset-password",
         "/set-password", "/reset-password-confirm", "/reset-password-success", "/reset-password-select",
         "/initial-password", "/initial-password-success", "/initial-password-expired", "/mfa-challenge",

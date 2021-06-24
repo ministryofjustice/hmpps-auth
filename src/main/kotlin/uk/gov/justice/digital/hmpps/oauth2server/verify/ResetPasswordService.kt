@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.verify
 
-import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException
+import uk.gov.justice.digital.hmpps.oauth2server.service.NotificationClientRuntimeException
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException
 import java.util.Optional
 

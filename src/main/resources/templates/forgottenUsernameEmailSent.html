@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{fragments/layout}" th:with="showBack=true">
+<head>
+  <title>Forgotten Username Email Sent</title>
+</head>
+<body>
+<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+  <h1 class="govuk-heading-l">Check your email</h1>
+  <div>
+    <h2 class="govuk-heading-m">What happens next</h2>
+    <p class="govuk-body">
+      If we have found an account for you with a verified email address we will have sent you an email.
+      The email will contain a list of all usernames associated with your account.
+    </p>
+    <p th:if="${usernames}" class="govuk-body">
+      <br>
+      <code>application.smoketest.enabled</code> environment variable is set.
+    <br>
+    these are the usernames sent in the email to the user - only displayed in smoketest
+    <table >
+      <tr th:each="username, iStat : ${usernames}">
+        <td><span th:id="'username' + ${iStat.index+1}" th:text="${username}"> username </span></td>
+      </tr>
+    </table>
+    </p>
+    <p th:if="${usernamesMissing}" class="govuk-body">
+      <br>
+      <code>application.smoketest.enabled</code> environment variable is set.
+      <br>No usernames were sent to the user.
+    </p>
+    <p class="govuk-body">You can now <a class="govuk-link" th:href="@{/login}">sign in</a> with your username.</p>
+  </div>
+</div>
+</body>
+</html>

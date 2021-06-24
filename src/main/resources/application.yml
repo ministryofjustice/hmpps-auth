@@ -93,6 +93,7 @@ application:
     mfa.template: a68a3c95-276a-4ca9-bac4-d6e34fd7bd6e
     mfa-text.template: 6a006b6d-25c0-4cca-936f-8e7f5b778a53
     enable-user.template: 440b362b-5fd1-4b0e-b962-382da6539402
+    forgotten-username.template: f100feec-8acb-4444-ad6a-839c0cf566de
 
   smoketest.enabled: false
 

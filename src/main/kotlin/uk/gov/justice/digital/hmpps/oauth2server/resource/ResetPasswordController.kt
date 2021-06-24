@@ -13,10 +13,10 @@ import org.springframework.web.servlet.ModelAndView
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
+import uk.gov.justice.digital.hmpps.oauth2server.service.NotificationClientRuntimeException
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.removeAllCrLf
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
-import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.NotificationClientRuntimeException
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
