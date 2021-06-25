@@ -192,8 +192,8 @@
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="registeredRedirectUri">Registered redirect URIs</label>
-      <input class="govuk-input" id="registeredRedirectUri" name="registeredRedirectUri" type="text"
-             th:value="${clientDetails.registeredRedirectUri} ? ${#strings.setJoin(clientDetails.registeredRedirectUri, ',')} : ''"/>
+      <textarea class="govuk-textarea" id="registeredRedirectUri" name="registeredRedirectUriWithNewlines" type="text" rows="6"
+                th:text="${clientDetails.registeredRedirectUriWithNewlines}">a redirect</textarea>
     </div>
     <div class="govuk-form-group">
       <label class="govuk-label" for="accessTokenValiditySeconds">Access token validity</label>
@@ -221,7 +221,7 @@
     <div class="govuk-form-group">
       <label class="govuk-label" for="authorities">Authorities</label>
       <textarea class="govuk-textarea" id="authorities" type="text" name="authoritiesWithNewlines" rows="6"
-                th:text="*{clientDetails.authoritiesWithNewlines}"></textarea>
+                th:text="*{clientDetails.authoritiesWithNewlines}">an authority</textarea>
     </div>
 
     <div class="govuk-form-group">

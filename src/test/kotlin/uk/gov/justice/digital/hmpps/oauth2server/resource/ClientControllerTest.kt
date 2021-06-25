@@ -291,6 +291,27 @@ class ClientControllerTest {
         listOf(SimpleGrantedAuthority("ROLE_JOE"), SimpleGrantedAuthority("ROLE_FRED"), SimpleGrantedAuthority("ROLE_HARRY"))
       )
     }
+
+    @Test
+    fun `registeredRedirectUriWithNewlines converts to Strings for null`() {
+      assertThat(AuthClientDetails().registeredRedirectUriWithNewlines).isNull()
+    }
+
+    @Test
+    fun `registeredRedirectUriWithNewlines converts from String for null`() {
+      val authClientDetails = AuthClientDetails()
+      authClientDetails.registeredRedirectUriWithNewlines = null
+      assertThat(authClientDetails.registeredRedirectUri).isNull()
+    }
+
+    @Test
+    fun `registeredRedirectUriWithNewlines converts to and from String`() {
+      val authClientDetails = AuthClientDetails()
+      authClientDetails.registeredRedirectUriWithNewlines = " http://some_url \n http://and_naother http://third"
+      assertThat(authClientDetails.registeredRedirectUri).containsExactlyInAnyOrder(
+        "http://some_url", "http://and_naother", "http://third"
+      )
+    }
   }
 
   @Nested
