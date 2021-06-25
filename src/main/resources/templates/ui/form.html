@@ -220,8 +220,8 @@
     </div>
     <div class="govuk-form-group">
       <label class="govuk-label" for="authorities">Authorities</label>
-      <input class="govuk-input" id="authorities" type="text" name="authorities"
-             th:value="${#strings.setJoin(clientDetails.authorities, ',')}"/>
+      <textarea class="govuk-textarea" id="authorities" type="text" name="authoritiesWithNewlines" rows="6"
+                th:text="*{clientDetails.authoritiesWithNewlines}"></textarea>
     </div>
 
     <div class="govuk-form-group">
@@ -266,7 +266,7 @@
         <input class="govuk-input govuk-!-width-one-half" id="jwtFields" type="text" name="jwtFields"
                readonly="readonly"
                onfocus="this.removeAttribute('readonly');"
-               th:value="${clientDetails.additionalInformation['jwtFields']}"/>
+               th:value="${clientDetails.jwtFields}"/>
       </div>
     </div>
 
@@ -278,7 +278,7 @@
       <div class="govuk-checkboxes__item">
         <input name="_skipToAzureField" type="hidden" value="on"/>
         <input class="govuk-checkboxes__input" type="checkbox" name="skipToAzureField" id="skipToAzureField"
-               th:checked="*{clientDetails.additionalInformation['skipToAzureField']}"/>
+               th:checked="*{clientDetails.skipToAzureField}"/>
         <label class="govuk-label govuk-checkboxes__label" for="skipToAzureField">Auto redirect</label>
       </div>
     </div>
@@ -296,21 +296,21 @@
         <div class="govuk-radios">
           <div class="govuk-radios__item">
             <input class="govuk-radios__input" id="mfa-1" name="mfa" type="radio" value="none"
-                   th:checked="${clientDetails.additionalInformation['mfa'] == 'none'}">
+                   th:checked="${clientDetails.mfa == T(uk.gov.justice.digital.hmpps.oauth2server.resource.MfaAccess).none}">
             <label class="govuk-label govuk-radios__label" for="mfa-1">
               None
             </label>
           </div>
           <div class="govuk-radios__item">
             <input class="govuk-radios__input" id="mfa-2" name="mfa" type="radio" value="untrusted"
-                   th:checked="${clientDetails.additionalInformation['mfa'] == 'untrusted'}">
+                   th:checked="${clientDetails.mfa == T(uk.gov.justice.digital.hmpps.oauth2server.resource.MfaAccess).untrusted}">
             <label class="govuk-label govuk-radios__label" for="mfa-2">
               Access from untrusted networks
             </label>
           </div>
           <div class="govuk-radios__item">
             <input class="govuk-radios__input" id="mfa-3" name="mfa" type="radio" value="all"
-                   th:checked="${clientDetails.additionalInformation['mfa'] == 'all'}">
+                   th:checked="${clientDetails.mfa == T(uk.gov.justice.digital.hmpps.oauth2server.resource.MfaAccess).all}">
             <label class="govuk-label govuk-radios__label" for="mfa-3">
               Access from all networks
             </label>
@@ -329,7 +329,7 @@
                name="databaseUsernameField"
                readonly="readonly"
                onfocus="this.removeAttribute('readonly');"
-               th:value="${clientDetails.additionalInformation['databaseUsernameField']}"/>
+               th:value="${clientDetails.databaseUsernameField}"/>
       </div>
     </div>
     <div class="govuk-form-group">

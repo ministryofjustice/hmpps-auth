@@ -128,7 +128,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     clientMaintenancePage.isAtPage()
       .edit("resourceIds", "some_resource")
       .edit("refreshTokenValiditySeconds", "2345")
-      .edit("authorities", "ROLE_BOB,ROLE_JOE")
+      .edit("authorities", "  BOB\n\n, role_joe \n")
       .save()
     clientSummaryPage.isAtPage()
     goTo(clientSummaryPage).editClient("rotation-test-client-1")
@@ -136,13 +136,13 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       isAtPage()
       assertThat(el("#resourceIds").value()).isEqualTo("some_resource")
       assertThat(el("#refreshTokenValiditySeconds").value()).isEqualTo("2345")
-      assertThat(el("#authorities").value()).isEqualTo("ROLE_BOB,ROLE_JOE")
+      assertThat(el("#authorities").value()).isEqualTo("BOB\nJOE")
     }
     goTo("/ui/clients/form?client=rotation-test-client-2")
     with(clientMaintenancePage) {
       assertThat(el("#resourceIds").value()).isEqualTo("some_resource")
       assertThat(el("#refreshTokenValiditySeconds").value()).isEqualTo("2345")
-      assertThat(el("#authorities").value()).isEqualTo("ROLE_BOB,ROLE_JOE")
+      assertThat(el("#authorities").value()).isEqualTo("BOB\nJOE")
     }
   }
 
@@ -156,7 +156,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .edit("registeredRedirectUri", "http://a_url:3003")
       .edit("accessTokenValiditySeconds", "1200")
       .edit("scopes", "read")
-      .edit("authorities", "ROLE_BOB,ROLE_FRED")
+      .edit("authorities", "  BOB\n\n, role_fred \n")
       .selectCheckboxOption("client_credentials")
       .edit("jwtFields", "-name")
       .selectCheckboxOption("mfa-3")
@@ -174,7 +174,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
           new-client 
           [read] 
           [client_credentials] 
-          [ROLE_BOB, ROLE_FRED] 
+          [BOB, FRED] 
           1200 
           MFA ALL
       """
@@ -196,7 +196,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .edit("registeredRedirectUri", "http://a_url:3003")
       .edit("accessTokenValiditySeconds", "1200")
       .edit("scopes", "read")
-      .edit("authorities", "ROLE_BOB,ROLE_FRED")
+      .edit("authorities", "  BOB\n\n, role_fred \n")
       .selectCheckboxOption("client_credentials")
       .edit("jwtFields", "-name")
       .selectCheckboxOption("mfa-3")
@@ -214,7 +214,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
           new-client 
           [read] 
           [client_credentials] 
-          [ROLE_BOB, ROLE_FRED] 
+          [BOB, FRED] 
           1200 
           MFA ALL
       """
@@ -350,7 +350,7 @@ class ClientSummaryPage : AuthPage<ClientSummaryPage>(
       apireporting 
       [reporting] 
       [client_credentials] 
-      [ROLE_REPORTING] 
+      [REPORTING] 
       3600""",
   ): ClientSummaryPage {
     assertThat(rows).hasSizeGreaterThan(10)
@@ -388,7 +388,7 @@ open class ClientMaintenancePage(heading: String = "Edit client", headingStartsW
     assertThat(el("#clientId").value()).isEqualTo("apireporting")
     assertThat(el("#clientSecret").value()).isBlank
     assertThat(el("#accessTokenValiditySeconds").value()).isEqualTo("3600")
-    assertThat(el("#authorities").value()).isEqualTo("ROLE_REPORTING")
+    assertThat(el("#authorities").value()).isEqualTo("REPORTING")
     assertThat(el("#jwtFields").value()).isBlank
     assertThat(el("#databaseUsernameField").value()).isBlank
     return this

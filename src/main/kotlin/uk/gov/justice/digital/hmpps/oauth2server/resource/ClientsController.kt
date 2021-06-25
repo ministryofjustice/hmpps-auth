@@ -3,6 +3,7 @@
 package uk.gov.justice.digital.hmpps.oauth2server.resource
 
 import com.microsoft.applicationinsights.TelemetryClient
+import org.apache.commons.lang3.StringUtils
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
@@ -48,12 +49,12 @@ class ClientsController(
       val (clientDetails, clients) = clientService.loadClientWithCopies(baseClientId)
       val clientDeployment =
         clientService.loadClientDeploymentDetails(baseClientId) ?: ClientDeployment(baseClientId = baseClientId)
-      ModelAndView("ui/form", "clientDetails", clientDetails)
+      ModelAndView("ui/form", "clientDetails", AuthClientDetails(clientDetails as BaseClientDetails))
         .addObject("clients", clients)
         .addObject("deployment", clientDeployment)
         .addObject("baseClientId", clientService.baseClientId(baseClientId))
     } else {
-      val (clientDetails, clients) = ClientDetailsWithCopies(BaseClientDetails(), emptyList())
+      val (clientDetails, clients) = ClientDetailsWithCopies(AuthClientDetails(), emptyList())
       ModelAndView("ui/form", "clientDetails", clientDetails)
         .addObject("clients", clients)
     }
@@ -178,7 +179,15 @@ class ClientsController(
 
   // Unfortunately the getAdditionalInformation getter creates an unmodifiable map, so can't be used with web binder.
   // Have to therefore extend and create our own accessor instead.
-  class AuthClientDetails : BaseClientDetails() {
+  class AuthClientDetails : BaseClientDetails {
+    constructor() : super()
+    constructor(clientDetails: BaseClientDetails) : super(clientDetails) {
+      // super constructor misses out additional information for some reason
+      additionalInformation = clientDetails.additionalInformation
+      // and mfa needs converting to enum
+      mfa = (additionalInformation["mfa"] as String?)?.let { MfaAccess.valueOf(it) }
+    }
+
     override fun setScope(scope: Collection<String>) {
       // always keep scopes and auto-approve scopes in sync.
       super.setScope(scope)
@@ -192,6 +201,17 @@ class ClientsController(
         ?.map { SimpleGrantedAuthority(it) }
       super.setAuthorities(rolePrefixedAuthorities)
     }
+
+    // used by thymeleaf in form.html
+    var authoritiesWithNewlines: String?
+      get() = authorities?.map { it.authority.substringAfter("ROLE_") }?.joinToString("\n")
+      set(authorisedRolesWithNewlines: String?) {
+        authorities = authorisedRolesWithNewlines
+          ?.replace("""\s+""".toRegex(), ",")
+          ?.split(',')
+          ?.mapNotNull { StringUtils.trimToNull(it) }
+          ?.map { SimpleGrantedAuthority(it) }
+      }
 
     var jwtFields: String?
       get() = additionalInformation["jwtFields"] as String?
