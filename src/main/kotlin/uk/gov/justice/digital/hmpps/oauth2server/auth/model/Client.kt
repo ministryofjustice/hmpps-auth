@@ -58,9 +58,8 @@ data class Client(
     lastAccessed = LocalDateTime.now()
   }
 
-  fun resetSecretUpdated() {
-    secretUpdated = LocalDateTime.now()
-  }
+  val authoritiesWithoutPrefix: List<String>
+    get() = authorities.map { it.substringAfter("ROLE_") }
 
   val mfa: MfaAccess
     get() = MfaAccess.valueOf(additionalInformation["mfa"] as? String ?: "none")

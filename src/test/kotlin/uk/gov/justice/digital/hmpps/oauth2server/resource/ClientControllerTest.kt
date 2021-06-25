@@ -273,6 +273,24 @@ class ClientControllerTest {
       assertThat(authClientDetails.authorities.map { it.authority })
         .containsExactlyInAnyOrder("ROLE_JOE", "ROLE_FRED", "ROLE_HARRY")
     }
+
+    @Test
+    fun `getAuthoritiesWithNewlines removes ROLE_ prefix and converts to newlines`() {
+      val authClientDetails = AuthClientDetails()
+      authClientDetails.authorities = listOf("joe", "ROLE_fred", "  harry")
+        .map { SimpleGrantedAuthority(it) }
+      assertThat(authClientDetails.authoritiesWithNewlines).isEqualTo("JOE\nFRED\nHARRY")
+    }
+
+    @Test
+    fun `setAuthoritiesWithNewlines adds ROLE_ prefix, removes newlines and separates roles`() {
+      val authClientDetails = AuthClientDetails()
+      authClientDetails.authoritiesWithNewlines = "joe ROLE_fred\n\n  harry "
+      assertThat(authClientDetails.authoritiesWithNewlines).isEqualTo("JOE\nFRED\nHARRY")
+      assertThat(authClientDetails.authorities).isEqualTo(
+        listOf(SimpleGrantedAuthority("ROLE_JOE"), SimpleGrantedAuthority("ROLE_FRED"), SimpleGrantedAuthority("ROLE_HARRY"))
+      )
+    }
   }
 
   @Nested

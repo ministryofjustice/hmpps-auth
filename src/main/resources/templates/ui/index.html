@@ -30,7 +30,7 @@
         </td>
         <td th:text="${client.scope}" class="govuk-table__cell"></td>
         <td th:text="${client.authorizedGrantTypes}" class="govuk-table__cell"></td>
-        <td th:text="${client.authorities}" class="govuk-table__cell"></td>
+        <td th:text="${client.authoritiesWithoutPrefix}" class="govuk-table__cell"></td>
         <td th:text="${client.accessTokenValidity}" class="govuk-table__cell"></td>
         <td class="govuk-table__cell">
           <strong class="govuk-tag govuk-tag--yellow" th:if="${client.mfa == T(uk.gov.justice.digital.hmpps.oauth2server.resource.MfaAccess).untrusted}">
