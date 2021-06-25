@@ -205,12 +205,21 @@ class ClientsController(
     // used by thymeleaf in form.html
     var authoritiesWithNewlines: String?
       get() = authorities?.map { it.authority.substringAfter("ROLE_") }?.joinToString("\n")
-      set(authorisedRolesWithNewlines: String?) {
+      set(authorisedRolesWithNewlines) {
         authorities = authorisedRolesWithNewlines
           ?.replace("""\s+""".toRegex(), ",")
           ?.split(',')
           ?.mapNotNull { StringUtils.trimToNull(it) }
           ?.map { SimpleGrantedAuthority(it) }
+      }
+    var registeredRedirectUriWithNewlines: String?
+      get() = registeredRedirectUri?.joinToString("\n")
+      set(registeredRedirectUriWithNewlines) {
+        registeredRedirectUri = registeredRedirectUriWithNewlines
+          ?.replace("""\s+""".toRegex(), ",")
+          ?.split(',')
+          ?.mapNotNull { StringUtils.trimToNull(it) }
+          ?.toSet()
       }
 
     var jwtFields: String?
