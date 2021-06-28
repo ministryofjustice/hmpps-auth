@@ -32,40 +32,40 @@ class AccountController(
     @CookieValue(value = "returnTo", defaultValue = "Lw==") returnToFromCookie: String
   ):
     ModelAndView {
-      val username = authentication.name
-      val user = userService.findMasterUserPersonDetails(username).orElseThrow()
-      val userInAuth = userService.getUserWithContacts(username)
-      val linkedAccounts = userContextService.discoverUsers(user)
-        .map { LinkedAccountModel(it.authSource.uppercase(), it.username) }
+    val username = authentication.name
+    val user = userService.findMasterUserPersonDetails(username).orElseThrow()
+    val userInAuth = userService.getUserWithContacts(username)
+    val linkedAccounts = userContextService.discoverUsers(user)
+      .map { LinkedAccountModel(it.authSource.uppercase(), it.username) }
 
-      val email = userInAuth.email
-      val canSwitchUsernameToEmail = userInAuth.source == AuthSource.auth && email != null &&
-        !user.username.contains('@') && userService.findUser(email).isEmpty
+    val email = userInAuth.email
+    val canSwitchUsernameToEmail = userInAuth.source == AuthSource.auth && email != null &&
+      !user.username.contains('@') && userService.findUser(email).isEmpty
 
-      val usernameNotEmail = email != username.lowercase()
+    val usernameNotEmail = email != username.lowercase()
 
-      val redirectOk: Boolean = if (client != null && redirectUri != null) {
-        backLinkHandler.validateRedirect(client, redirectUri)
-      } else false
+    val redirectOk: Boolean = if (client != null && redirectUri != null) {
+      backLinkHandler.validateRedirect(client, redirectUri)
+    } else false
 
-      val returnToUri =
-        when {
-          redirectUri.isNullOrEmpty() -> String(Base64Utils.decodeFromString(returnToFromCookie))
-          redirectOk -> redirectUri
-          else -> "/"
-        }
+    val returnToUri =
+      when {
+        redirectUri.isNullOrEmpty() -> String(Base64Utils.decodeFromString(returnToFromCookie))
+        redirectOk -> redirectUri
+        else -> "/"
+      }
 
-      addReturnCookie(returnToUri, request, response)
+    addReturnCookie(returnToUri, request, response)
 
-      return ModelAndView("account/accountDetails")
-        .addObject("returnTo", returnToUri)
-        .addObject("user", user)
-        .addObject("authUser", userInAuth)
-        .addObject("mfaPreferenceVerified", userInAuth.mfaPreferenceVerified())
-        .addObject("linkedAccounts", linkedAccounts)
-        .addObject("canSwitchUsernameToEmail", canSwitchUsernameToEmail)
-        .addObject("usernameNotEmail", usernameNotEmail)
-    }
+    return ModelAndView("account/accountDetails")
+      .addObject("returnTo", returnToUri)
+      .addObject("user", user)
+      .addObject("authUser", userInAuth)
+      .addObject("mfaPreferenceVerified", userInAuth.mfaPreferenceVerified())
+      .addObject("linkedAccounts", linkedAccounts)
+      .addObject("canSwitchUsernameToEmail", canSwitchUsernameToEmail)
+      .addObject("usernameNotEmail", usernameNotEmail)
+  }
 
   private fun addReturnCookie(
     returnToUrl: String,
