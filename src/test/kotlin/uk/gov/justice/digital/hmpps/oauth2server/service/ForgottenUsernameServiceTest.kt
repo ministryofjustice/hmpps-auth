@@ -1,9 +1,6 @@
 package uk.gov.justice.digital.hmpps.oauth2server.service
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
@@ -29,7 +26,8 @@ class ForgottenUsernameServiceTest {
     authUserService,
     nomisUserService,
     notificationClientApi,
-    "emailTemplate"
+    "emailTemplate",
+    "emailNotFoundTemplate"
   )
 
   @Test
@@ -42,12 +40,12 @@ class ForgottenUsernameServiceTest {
   }
 
   @Test
-  fun `when no username found for email address notify not called`() {
+  fun `Username not found for email address notify called with email not found template`() {
     service.forgottenUsername("a.user@justice.gov.uk", "someurl/forgotten-username")
     verify(deliusUserService).getDeliusUsersByEmail("a.user@justice.gov.uk")
     verify(authUserService).findAuthUsersByEmail("a.user@justice.gov.uk")
     verify(nomisUserService).getNomisUsersByEmail("a.user@justice.gov.uk")
-    verify(notificationClientApi, never()).sendEmail(anyString(), anyString(), any(), anyOrNull())
+    verify(notificationClientApi).sendEmail("emailNotFoundTemplate", "a.user@justice.gov.uk", mapOf<String, Any>(), null)
   }
 
   @Test
@@ -67,7 +65,7 @@ class ForgottenUsernameServiceTest {
     verify(deliusUserService).getDeliusUsersByEmail("a.user@justice.gov.uk")
     verify(authUserService).findAuthUsersByEmail("a.user@justice.gov.uk")
     verify(nomisUserService).getNomisUsersByEmail("a.user@justice.gov.uk")
-    verify(notificationClientApi, never()).sendEmail(anyString(), anyString(), any(), anyOrNull())
+    verify(notificationClientApi).sendEmail("emailNotFoundTemplate", "a.user@justice.gov.uk", mapOf<String, Any>(), null)
   }
 
   @Test

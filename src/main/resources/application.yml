@@ -94,6 +94,7 @@ application:
     mfa-text.template: 6a006b6d-25c0-4cca-936f-8e7f5b778a53
     enable-user.template: 440b362b-5fd1-4b0e-b962-382da6539402
     forgotten-username.template: f100feec-8acb-4444-ad6a-839c0cf566de
+    forgotten-username-email-not-found.template: f146fcf9-1637-47c2-bb84-d8dc769347df
 
   smoketest.enabled: false
 
