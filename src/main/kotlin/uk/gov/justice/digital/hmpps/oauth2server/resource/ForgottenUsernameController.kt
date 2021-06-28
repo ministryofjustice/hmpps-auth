@@ -66,7 +66,6 @@ class ForgottenUsernameController(
       }
       modelAndView
     } catch (e: ValidEmailException) {
-      log.error("Forgotten username email failed validation")
       telemetryClient.trackEvent(
         "AuthForgottenUsernameRequestFailure",
         mapOf("email" to email, "error" to "notValidPrimaryEmail"),
