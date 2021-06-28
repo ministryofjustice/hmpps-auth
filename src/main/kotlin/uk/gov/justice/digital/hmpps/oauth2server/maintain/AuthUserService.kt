@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordExceptio
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.ValidEmailException
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
@@ -50,7 +50,7 @@ class AuthUserService(
   @Value("\${application.notify.enable-user.template}") private val enableUserTemplateId: String,
 ) {
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(CreateUserException::class, NotificationClientException::class, VerifyEmailException::class)
+  @Throws(CreateUserException::class, NotificationClientException::class, ValidEmailException::class)
   fun createUserByEmail(
     emailInput: String?,
     firstName: String?,
@@ -185,7 +185,7 @@ class AuthUserService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(VerifyEmailException::class, NotificationClientException::class, AuthUserGroupRelationshipException::class)
+  @Throws(ValidEmailException::class, NotificationClientException::class, AuthUserGroupRelationshipException::class)
   fun amendUserEmail(
     usernameInput: String,
     emailAddressInput: String?,
@@ -212,7 +212,7 @@ class AuthUserService(
     verifyEmailService.validateEmailAddress(email, emailType)
     if (user.email == username.lowercase()) {
       userRepository.findByUsername(email!!.uppercase()).ifPresent {
-        throw VerifyEmailException("duplicate")
+        throw ValidEmailException("duplicate")
       }
       user.username = email
       telemetryClient.trackEvent(
@@ -290,7 +290,7 @@ class AuthUserService(
     telemetryClient.trackEvent("AuthUserDisabled", mapOf("username" to user.username, "admin" to admin), null)
   }
 
-  @Throws(CreateUserException::class, VerifyEmailException::class)
+  @Throws(CreateUserException::class, ValidEmailException::class)
   private fun validatePrimary(email: String?, firstName: String?, lastName: String?) {
     validate(firstName, lastName)
 

@@ -10,14 +10,18 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.service.ForgottenUsernameService
 import uk.gov.justice.digital.hmpps.oauth2server.service.NotificationClientRuntimeException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.ValidEmailException
 import javax.servlet.http.HttpServletRequest
 
 @Controller
 @Validated
 class ForgottenUsernameController(
   private val forgottenUsernameService: ForgottenUsernameService,
+  private val verifyEmailService: VerifyEmailService,
   private val telemetryClient: TelemetryClient,
   @param:Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
 ) {
@@ -40,6 +44,7 @@ class ForgottenUsernameController(
     }
 
     return try {
+      verifyEmailService.validateEmailAddress(email, User.EmailType.PRIMARY)
       val username = forgottenUsernameService.forgottenUsername(email, request.requestURL.toString())
       val modelAndView = ModelAndView("forgottenUsernameEmailSent")
       if (username.isNotEmpty()) {
@@ -60,6 +65,14 @@ class ForgottenUsernameController(
         }
       }
       modelAndView
+    } catch (e: ValidEmailException) {
+      log.error("Failed to send forgotten username email due to", e)
+      telemetryClient.trackEvent(
+        "ForgottenUsernameRequestFailure",
+        mapOf("email" to email, "error" to "notValidPrimaryEmail"),
+        null
+      )
+      ModelAndView("forgottenUsername", "error", "notValid")
     } catch (e: NotificationClientRuntimeException) {
       log.error("Failed to send forgotten username email due to", e)
       telemetryClient.trackEvent(

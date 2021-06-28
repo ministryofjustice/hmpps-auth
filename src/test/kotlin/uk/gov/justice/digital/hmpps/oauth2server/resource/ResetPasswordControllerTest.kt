@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.ValidEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.util.Map.entry
 import java.util.Optional
@@ -154,7 +154,7 @@ class ResetPasswordControllerTest {
 
     @Test
     fun resetPasswordRequest_emailfailed() {
-      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService)
+      doThrow(ValidEmailException("reason")).whenever(verifyEmailService)
         .validateEmailAddressExcludingGsi(anyString(), eq(User.EmailType.PRIMARY))
       val modelAndView = controller.resetPasswordRequest("user@somewhere", request)
       assertThat(modelAndView.viewName).isEqualTo("resetPassword")
@@ -173,7 +173,7 @@ class ResetPasswordControllerTest {
 
     @Test
     fun resetPasswordRequest_emailhelperapostrophe() {
-      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService)
+      doThrow(ValidEmailException("reason")).whenever(verifyEmailService)
         .validateEmailAddressExcludingGsi(anyString(), eq(User.EmailType.PRIMARY))
       val modelAndView = controller.resetPasswordRequest("us.o’er@someWHERE.com   ", request)
       assertThat(modelAndView.viewName).isEqualTo("resetPassword")

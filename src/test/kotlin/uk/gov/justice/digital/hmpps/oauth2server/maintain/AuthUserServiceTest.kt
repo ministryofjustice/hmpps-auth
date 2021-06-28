@@ -51,7 +51,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.ReusedPasswordExceptio
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserPersonDetails
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkEmailAndUsername
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.ValidEmailException
 import uk.gov.service.notify.NotificationClientApi
 import java.time.LocalDateTime
 import java.util.Optional
@@ -91,7 +91,7 @@ class AuthUserServiceTest {
     @Test
     fun emailValidation() {
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createOptionalSampleUser())
-      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService)
+      doThrow(ValidEmailException("reason")).whenever(verifyEmailService)
         .validateEmailAddress(anyString(), eq(EmailType.PRIMARY))
       assertThatThrownBy {
         authUserService.amendUserEmail(
@@ -102,7 +102,7 @@ class AuthUserServiceTest {
           PRINCIPAL.authorities,
           EmailType.PRIMARY
         )
-      }.isInstanceOf(VerifyEmailException::class.java).hasMessage("Verify email failed with reason: reason")
+      }.isInstanceOf(ValidEmailException::class.java).hasMessage("Validate email failed with reason: reason")
       verify(verifyEmailService).validateEmailAddress("email", EmailType.PRIMARY)
     }
 
@@ -221,7 +221,7 @@ class AuthUserServiceTest {
 
     @Test
     fun `createUserByEmail fails email validation`() {
-      doThrow(VerifyEmailException("reason")).whenever(verifyEmailService)
+      doThrow(ValidEmailException("reason")).whenever(verifyEmailService)
         .validateEmailAddress(anyString(), eq(EmailType.PRIMARY))
       assertThatThrownBy {
         authUserService.createUserByEmail(
@@ -233,7 +233,7 @@ class AuthUserServiceTest {
           "bob",
           GRANTED_AUTHORITY_SUPER_USER
         )
-      }.isInstanceOf(VerifyEmailException::class.java).hasMessage("Verify email failed with reason: reason")
+      }.isInstanceOf(ValidEmailException::class.java).hasMessage("Validate email failed with reason: reason")
       verify(verifyEmailService).validateEmailAddress("email", EmailType.PRIMARY)
     }
 
@@ -789,7 +789,7 @@ class AuthUserServiceTest {
           GRANTED_AUTHORITY_SUPER_USER,
           EmailType.PRIMARY
         )
-      }.hasMessage("Verify email failed with reason: duplicate")
+      }.hasMessage("Validate email failed with reason: duplicate")
     }
   }
 

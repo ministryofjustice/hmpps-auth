@@ -34,7 +34,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.AuthSource
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserDetailsImpl
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.ValidEmailException
 import java.time.LocalDateTime
 import java.util.Optional
 import java.util.UUID
@@ -238,7 +238,7 @@ class AuthUserControllerTest {
         anyString(),
         any()
       )
-    ).thenThrow(VerifyEmailException("reason"))
+    ).thenThrow(ValidEmailException("reason"))
     val responseEntity =
       authUserController.createUserByEmail(
         CreateUser("email", "first", "last", null, null),
@@ -432,7 +432,7 @@ class AuthUserControllerTest {
         any(),
         eq(EmailType.PRIMARY)
       )
-    ).thenThrow(VerifyEmailException("reason"))
+    ).thenThrow(ValidEmailException("reason"))
     val responseEntity = authUserController.amendUserEmail("user", AmendUser("a@b.com"), request, authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(400)
     assertThat(responseEntity.body).isEqualTo(ErrorDetail("email.reason", "Email address failed validation", "email"))
