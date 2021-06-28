@@ -18,6 +18,7 @@ class ForgottenUsernameService(
   private val nomisUserService: NomisUserService,
   private val notificationClient: NotificationClientApi,
   @Value("\${application.notify.forgotten-username.template}") private val forgotTemplateId: String,
+  @Value("\${application.notify.forgotten-username-email-not-found.template}") private val forgotNotFoundTemplateId: String,
 
 ) {
 
@@ -32,7 +33,10 @@ class ForgottenUsernameService(
       .filter { it.isNotEmpty() }
       .flatten()
 
-    if (userAccounts.isEmpty()) return emptyList()
+    if (userAccounts.isEmpty()) {
+      sendUsernameEmail(forgotNotFoundTemplateId, mapOf(), email)
+      return emptyList()
+    }
 
     val username = userAccounts.map { it.username }
     val firstname = userAccounts[0].firstName
