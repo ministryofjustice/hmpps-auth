@@ -10,14 +10,18 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.service.ForgottenUsernameService
 import uk.gov.justice.digital.hmpps.oauth2server.service.NotificationClientRuntimeException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.ValidEmailException
 import javax.servlet.http.HttpServletRequest
 
 @Controller
 @Validated
 class ForgottenUsernameController(
   private val forgottenUsernameService: ForgottenUsernameService,
+  private val verifyEmailService: VerifyEmailService,
   private val telemetryClient: TelemetryClient,
   @param:Value("\${application.smoketest.enabled}") private val smokeTestEnabled: Boolean,
 ) {
@@ -31,27 +35,28 @@ class ForgottenUsernameController(
     request: HttpServletRequest,
   ): ModelAndView {
     if (email.isNullOrBlank()) {
-      telemetryClient.trackEvent("ForgotUsernameRequestFailure", mapOf("error" to "missing email"), null)
+      telemetryClient.trackEvent("AuthForgotUsernameRequestFailure", mapOf("error" to "missing email"), null)
       return ModelAndView("forgottenUsername", "error", "missing")
     }
     if (!email.contains("@")) {
-      telemetryClient.trackEvent("ForgotUsernameRequestFailure", mapOf("error" to "not email"), null)
+      telemetryClient.trackEvent("AuthForgotUsernameRequestFailure", mapOf("error" to "not email"), null)
       return ModelAndView("forgottenUsername", "error", "notEmail")
     }
 
     return try {
+      verifyEmailService.validateEmailAddress(email, User.EmailType.PRIMARY)
       val username = forgottenUsernameService.forgottenUsername(email, request.requestURL.toString())
       val modelAndView = ModelAndView("forgottenUsernameEmailSent")
       if (username.isNotEmpty()) {
         log.info("Forgotten username request success for {}", email)
-        telemetryClient.trackEvent("ForgottenUsernameRequestSuccess", mapOf("email" to email), null)
+        telemetryClient.trackEvent("AuthForgottenUsernameRequestSuccess", mapOf("email" to email), null)
         if (smokeTestEnabled) {
           modelAndView.addObject("usernames", username)
         }
       } else {
         log.info("Forgotten username request failed for {}", email)
         telemetryClient.trackEvent(
-          "ForgottenUsernameRequestFailure",
+          "AuthForgottenUsernameRequestFailure",
           mapOf("email" to email, "error" to "no usernames found"),
           null
         )
@@ -60,10 +65,17 @@ class ForgottenUsernameController(
         }
       }
       modelAndView
+    } catch (e: ValidEmailException) {
+      telemetryClient.trackEvent(
+        "AuthForgottenUsernameRequestFailure",
+        mapOf("email" to email, "error" to "notValidPrimaryEmail"),
+        null
+      )
+      ModelAndView("forgottenUsername", "error", "notValid")
     } catch (e: NotificationClientRuntimeException) {
       log.error("Failed to send forgotten username email due to", e)
       telemetryClient.trackEvent(
-        "ForgottenUsernameRequestFailure",
+        "AuthForgottenUsernameRequestFailure",
         mapOf("email" to email, "error" to e.javaClass.simpleName),
         null
       )

@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkEmailAndUsername
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.ValidEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.security.Principal
 import javax.servlet.http.HttpServletRequest
@@ -140,7 +140,7 @@ class VerifyEmailController(
         jwtAuthenticationSuccessHandler.updateAuthenticationInRequest(request, response, successToken)
       }
       return modelAndView
-    } catch (e: VerifyEmailException) {
+    } catch (e: ValidEmailException) {
       log.info("Validation failed for email address due to {}", e.reason)
       telemetryClient.trackEvent("VerifyEmailRequestFailure", mapOf("username" to username, "reason" to e.reason), null)
       createChangeOrVerifyEmailError(token, chosenEmail, e.reason, candidate, emailType)
@@ -178,7 +178,7 @@ class VerifyEmailController(
     return try {
       val verifyCode = verifyEmailService.resendVerificationCodeSecondaryEmail(username, url)
       redirectToVerifyEmailWithVerifyCode(verifyCode.orElseThrow())
-    } catch (e: VerifyEmailException) {
+    } catch (e: ValidEmailException) {
       log.info("Validation failed for email address due to {}", e.reason)
       telemetryClient.trackEvent("VerifyEmailRequestFailure", mapOf("username" to username, "reason" to e.reason), null)
       createChangeOrVerifyEmailError(token, null, e.reason, "change", EmailType.SECONDARY)

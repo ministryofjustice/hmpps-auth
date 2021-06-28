@@ -52,7 +52,7 @@ class VerifyEmailService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(NotificationClientException::class, VerifyEmailException::class)
+  @Throws(NotificationClientException::class, ValidEmailException::class)
   fun changeEmailAndRequestVerification(
     username: String,
     emailInput: String?,
@@ -74,7 +74,7 @@ class VerifyEmailService(
           val userWithEmailInDatabase = userRepository.findByUsername(email.uppercase())
           if (userWithEmailInDatabase.isPresent) {
             // there's already a user in the database with that username
-            throw VerifyEmailException("duplicate")
+            throw ValidEmailException("duplicate")
           } else {
             user.username = email
             telemetryClient.trackEvent(
@@ -113,11 +113,11 @@ class VerifyEmailService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(NotificationClientException::class, VerifyEmailException::class)
+  @Throws(NotificationClientException::class, ValidEmailException::class)
   fun resendVerificationCodeEmail(username: String, url: String): Optional<String> {
     val user = userRepository.findByUsername(username).orElseThrow()
     if (user.email == null) {
-      throw VerifyEmailException("noemail")
+      throw ValidEmailException("noemail")
     }
     if (user.verified) {
       log.info("Verify email succeeded due to already verified")
@@ -135,11 +135,11 @@ class VerifyEmailService(
   }
 
   @Transactional(transactionManager = "authTransactionManager")
-  @Throws(NotificationClientException::class, VerifyEmailException::class)
+  @Throws(NotificationClientException::class, ValidEmailException::class)
   fun resendVerificationCodeSecondaryEmail(username: String, url: String): Optional<String> {
     val user = userRepository.findByUsername(username).orElseThrow()
     if (user.secondaryEmail == null) {
-      throw VerifyEmailException("nosecondaryemail")
+      throw ValidEmailException("nosecondaryemail")
     }
     if (user.isSecondaryEmailVerified) {
       log.info("Verify secondary email succeeded due to already verified")
@@ -160,41 +160,41 @@ class VerifyEmailService(
     .orElseThrow { EntityNotFoundException(String.format("User not found with username %s", username)) }
     .isSecondaryEmailVerified
 
-  @Throws(VerifyEmailException::class)
+  @Throws(ValidEmailException::class)
   fun validateEmailAddress(email: String?, emailType: EmailType) {
     if (email.isNullOrBlank()) {
-      throw VerifyEmailException("blank")
+      throw ValidEmailException("blank")
     }
-    if (email.length > MAX_LENGTH_EMAIL) throw VerifyEmailException("maxlength")
+    if (email.length > MAX_LENGTH_EMAIL) throw ValidEmailException("maxlength")
     validateEmailAddressExcludingGsi(email, emailType)
-    if (email.matches(Regex(".*@.*\\.gsi\\.gov\\.uk"))) throw VerifyEmailException("gsi")
+    if (email.matches(Regex(".*@.*\\.gsi\\.gov\\.uk"))) throw ValidEmailException("gsi")
   }
 
-  @Throws(VerifyEmailException::class)
+  @Throws(ValidEmailException::class)
   fun validateEmailAddressExcludingGsi(email: String, emailType: EmailType) {
     val atIndex = StringUtils.indexOf(email, '@'.toInt())
     if (atIndex == -1 || !email.matches(Regex(".*@.*\\..*"))) {
-      throw VerifyEmailException("format")
+      throw ValidEmailException("format")
     }
     val firstCharacter = email[0]
     val lastCharacter = email[email.length - 1]
     if (firstCharacter == '.' || firstCharacter == '@' || lastCharacter == '.' || lastCharacter == '@') {
-      throw VerifyEmailException("firstlast")
+      throw ValidEmailException("firstlast")
     }
     if (email.matches(Regex(".*\\.@.*")) || email.matches(Regex(".*@\\..*"))) {
-      throw VerifyEmailException("together")
+      throw ValidEmailException("together")
     }
     if (StringUtils.countMatches(email, '@') > 1) {
-      throw VerifyEmailException("at")
+      throw ValidEmailException("at")
     }
     if (StringUtils.containsWhitespace(email)) {
-      throw VerifyEmailException("white")
+      throw ValidEmailException("white")
     }
     if (!email.matches(Regex("[0-9A-Za-z@.'_\\-+]*"))) {
-      throw VerifyEmailException("characters")
+      throw ValidEmailException("characters")
     }
     if (emailType == EmailType.PRIMARY && !referenceCodesService.isValidEmailDomain(email.substring(atIndex + 1))) {
-      throw VerifyEmailException("domain")
+      throw ValidEmailException("domain")
     }
   }
 
@@ -280,7 +280,7 @@ class VerifyEmailService(
     return Optional.of("expired")
   }
 
-  class VerifyEmailException(val reason: String?) : Exception("Verify email failed with reason: $reason")
+  class ValidEmailException(val reason: String?) : Exception("Validate email failed with reason: $reason")
 
   data class LinkEmailAndUsername(val link: String, val email: String, val username: String)
 

@@ -41,7 +41,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Auth
 import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.utils.EmailHelper
 import uk.gov.justice.digital.hmpps.oauth2server.utils.removeAllCrLf
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.ValidEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -276,7 +276,7 @@ class AuthUserController(
           e.field
         )
       )
-    } catch (e: VerifyEmailException) {
+    } catch (e: ValidEmailException) {
       log.info("Create user failed for user $email for field email with reason ${e.reason}".removeAllCrLf())
       ResponseEntity.badRequest()
         .body(ErrorDetail("email.${e.reason}", "Email address failed validation", "email"))
@@ -446,7 +446,7 @@ class AuthUserController(
     } catch (e: EntityNotFoundException) {
       ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(ErrorDetail("username.notfound", "User not found", "username"))
-    } catch (e: VerifyEmailException) {
+    } catch (e: ValidEmailException) {
       log.info("Amend user failed for user $username for field email with reason ${e.reason}".removeAllCrLf())
       ResponseEntity.badRequest()
         .body(ErrorDetail("email.${e.reason}", "Email address failed validation", "email"))

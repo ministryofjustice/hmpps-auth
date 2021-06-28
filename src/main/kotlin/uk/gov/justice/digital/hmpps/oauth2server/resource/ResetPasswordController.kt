@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.ResetPasswordServiceImpl.ResetPasswordException
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.ValidEmailException
 import javax.servlet.http.HttpServletRequest
 
 @Controller
@@ -62,7 +62,7 @@ class ResetPasswordController(
     if (usernameOrEmail.contains("@")) {
       try {
         verifyEmailService.validateEmailAddressExcludingGsi(EmailHelper.format(usernameOrEmail)!!, User.EmailType.PRIMARY)
-      } catch (e: VerifyEmailException) {
+      } catch (e: ValidEmailException) {
         log.info("Validation failed for reset password email address due to {}", e.reason)
         telemetryClient.trackEvent(
           "ResetPasswordRequestFailure",

@@ -44,6 +44,18 @@ class ForgottenUsernameSpecification : AbstractDeliusAuthSpecification() {
       .checkMissingEmailError()
   }
 
+  @Test
+  fun `forgotten username - none work email entered`() {
+    goTo(loginPage)
+      .forgottenUsernameLink()
+
+    forgottenUsernameRequestPage
+      .isAtPage()
+      .enterEmailAndSubmit("bob@notvalid.com")
+      .isAtError()
+      .checkWorkEmailError()
+  }
+
   @PageUrl("/forgotten-username")
   open class ForgottenUsernameRequestPage : AuthPage<ForgottenUsernameRequestPage>(
     "HMPPS Digital Services - Forgotten Username",
@@ -63,6 +75,11 @@ class ForgottenUsernameSpecification : AbstractDeliusAuthSpecification() {
 
     fun checkMissingEmailError(): ForgottenUsernameRequestPage {
       checkError("Enter your email address")
+      return this
+    }
+
+    fun checkWorkEmailError(): ForgottenUsernameRequestPage {
+      checkError("Enter your work email address in the correct format")
       return this
     }
   }

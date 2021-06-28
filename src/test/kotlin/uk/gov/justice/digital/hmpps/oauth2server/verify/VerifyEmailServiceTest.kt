@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserToken.TokenType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserTokenRepository
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.ValidEmailException
 import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
@@ -205,7 +205,7 @@ class VerifyEmailServiceTest {
           "url",
           User.EmailType.PRIMARY
         )
-      }.hasMessage("Verify email failed with reason: duplicate")
+      }.hasMessage("Validate email failed with reason: duplicate")
       verify(userRepository).findByUsername("eMail@john.COM")
       verify(userRepository).findByUsername("EXISTING@EMAIL.COM")
     }
@@ -352,13 +352,13 @@ class VerifyEmailServiceTest {
 
   private fun verifyPrimaryEmailFailure(email: String, reason: String) {
     assertThatThrownBy { verifyEmailService.validateEmailAddress(email, User.EmailType.PRIMARY) }.isInstanceOf(
-      VerifyEmailException::class.java
+      ValidEmailException::class.java
     ).extracting("reason").isEqualTo(reason)
   }
 
   private fun verifySecondaryEmailFailure(email: String, reason: String) {
     assertThatThrownBy { verifyEmailService.validateEmailAddress(email, User.EmailType.SECONDARY) }.isInstanceOf(
-      VerifyEmailException::class.java
+      ValidEmailException::class.java
     ).extracting("reason").isEqualTo(reason)
   }
 
@@ -378,7 +378,7 @@ class VerifyEmailServiceTest {
   fun `resendVerificationCodeEmail no email`() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(createSampleUser()))
     assertThatThrownBy { verifyEmailService.resendVerificationCodeEmail("bob", "http://some.url") }
-      .isInstanceOf(VerifyEmailException::class.java).extracting("reason").isEqualTo("noemail")
+      .isInstanceOf(ValidEmailException::class.java).extracting("reason").isEqualTo("noemail")
   }
 
   @Test
@@ -409,7 +409,7 @@ class VerifyEmailServiceTest {
   fun `resendVerificationCodeSecondaryEmail no second email`() {
     whenever(userRepository.findByUsername(anyString())).thenReturn(Optional.of(createSampleUser()))
     assertThatThrownBy { verifyEmailService.resendVerificationCodeSecondaryEmail("bob", "http://some.url") }
-      .isInstanceOf(VerifyEmailException::class.java).extracting("reason").isEqualTo("nosecondaryemail")
+      .isInstanceOf(ValidEmailException::class.java).extracting("reason").isEqualTo("nosecondaryemail")
   }
 
   @Test
@@ -500,7 +500,7 @@ class VerifyEmailServiceTest {
         email,
         User.EmailType.PRIMARY
       )
-    }.isInstanceOf(VerifyEmailException::class.java)
-      .hasMessage("Verify email failed with reason: maxlength")
+    }.isInstanceOf(ValidEmailException::class.java)
+      .hasMessage("Validate email failed with reason: maxlength")
   }
 }

@@ -27,7 +27,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.security.UserService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.TokenService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService
 import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.LinkEmailAndUsername
-import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.VerifyEmailException
+import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.ValidEmailException
 import uk.gov.service.notify.NotificationClientException
 import java.util.Optional
 import java.util.UUID
@@ -512,7 +512,7 @@ class VerifyEmailControllerTest {
     )
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url"))
     whenever(verifyEmailService.resendVerificationCodeSecondaryEmail(anyString(), anyString())).thenThrow(
-      VerifyEmailException("reason")
+      ValidEmailException("reason")
     )
     val modelAndView =
       verifyEmailController.secondaryEmailResend("71396b28-0c57-4efd-bc70-cc5992965aed", principal, request)
