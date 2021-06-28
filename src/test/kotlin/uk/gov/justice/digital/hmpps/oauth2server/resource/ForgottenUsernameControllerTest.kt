@@ -39,7 +39,7 @@ class ForgottenUsernameControllerTest {
     assertThat(modelAndView.viewName).isEqualTo("forgottenUsername")
     assertThat(modelAndView.model).containsExactly(entry("error", "missing"))
     verify(telemetryClient).trackEvent(
-      "ForgotUsernameRequestFailure",
+      "AuthForgotUsernameRequestFailure",
       mapOf("error" to "missing email"),
       null
     )
@@ -51,7 +51,7 @@ class ForgottenUsernameControllerTest {
     assertThat(modelAndView.viewName).isEqualTo("forgottenUsername")
     assertThat(modelAndView.model).containsExactly(entry("error", "notEmail"))
     verify(telemetryClient).trackEvent(
-      "ForgotUsernameRequestFailure",
+      "AuthForgotUsernameRequestFailure",
       mapOf("error" to "not email"),
       null
     )
@@ -67,7 +67,7 @@ class ForgottenUsernameControllerTest {
     assertThat(modelAndView.viewName).isEqualTo("forgottenUsernameEmailSent")
     assertThat(modelAndView.model).containsExactly(entry("usernames", listOf("user1")))
     verify(telemetryClient).trackEvent(
-      "ForgottenUsernameRequestSuccess",
+      "AuthForgottenUsernameRequestSuccess",
       mapOf("email" to "bob@justice.gov.uk"),
       null
     )
@@ -83,7 +83,7 @@ class ForgottenUsernameControllerTest {
     assertThat(modelAndView.viewName).isEqualTo("forgottenUsernameEmailSent")
     assertThat(modelAndView.model).containsExactly(entry("usernamesMissing", true))
     verify(telemetryClient).trackEvent(
-      "ForgottenUsernameRequestFailure",
+      "AuthForgottenUsernameRequestFailure",
       mapOf("email" to "bob@justice.gov.uk", "error" to "no usernames found"),
       null
     )
@@ -101,7 +101,7 @@ class ForgottenUsernameControllerTest {
     assertThat(modelAndView.model).containsExactly(entry("error", "notValid"))
 
     verify(telemetryClient).trackEvent(
-      "ForgottenUsernameRequestFailure",
+      "AuthForgottenUsernameRequestFailure",
       mapOf("email" to "bob@notvalid.co.uk", "error" to "notValidPrimaryEmail"),
       null
     )
@@ -119,7 +119,7 @@ class ForgottenUsernameControllerTest {
     assertThat(modelAndView.model).containsExactly(entry("error", "other"))
 
     verify(telemetryClient).trackEvent(
-      "ForgottenUsernameRequestFailure",
+      "AuthForgottenUsernameRequestFailure",
       mapOf("email" to "bob@justice.gov.uk", "error" to "NotificationClientRuntimeException"),
       null
     )

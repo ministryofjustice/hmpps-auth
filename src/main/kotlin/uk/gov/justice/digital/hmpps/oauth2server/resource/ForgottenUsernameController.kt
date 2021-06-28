@@ -35,11 +35,11 @@ class ForgottenUsernameController(
     request: HttpServletRequest,
   ): ModelAndView {
     if (email.isNullOrBlank()) {
-      telemetryClient.trackEvent("ForgotUsernameRequestFailure", mapOf("error" to "missing email"), null)
+      telemetryClient.trackEvent("AuthForgotUsernameRequestFailure", mapOf("error" to "missing email"), null)
       return ModelAndView("forgottenUsername", "error", "missing")
     }
     if (!email.contains("@")) {
-      telemetryClient.trackEvent("ForgotUsernameRequestFailure", mapOf("error" to "not email"), null)
+      telemetryClient.trackEvent("AuthForgotUsernameRequestFailure", mapOf("error" to "not email"), null)
       return ModelAndView("forgottenUsername", "error", "notEmail")
     }
 
@@ -49,14 +49,14 @@ class ForgottenUsernameController(
       val modelAndView = ModelAndView("forgottenUsernameEmailSent")
       if (username.isNotEmpty()) {
         log.info("Forgotten username request success for {}", email)
-        telemetryClient.trackEvent("ForgottenUsernameRequestSuccess", mapOf("email" to email), null)
+        telemetryClient.trackEvent("AuthForgottenUsernameRequestSuccess", mapOf("email" to email), null)
         if (smokeTestEnabled) {
           modelAndView.addObject("usernames", username)
         }
       } else {
         log.info("Forgotten username request failed for {}", email)
         telemetryClient.trackEvent(
-          "ForgottenUsernameRequestFailure",
+          "AuthForgottenUsernameRequestFailure",
           mapOf("email" to email, "error" to "no usernames found"),
           null
         )
@@ -66,9 +66,9 @@ class ForgottenUsernameController(
       }
       modelAndView
     } catch (e: ValidEmailException) {
-      log.error("Failed to send forgotten username email due to", e)
+      log.error("Forgotten username email failed validation")
       telemetryClient.trackEvent(
-        "ForgottenUsernameRequestFailure",
+        "AuthForgottenUsernameRequestFailure",
         mapOf("email" to email, "error" to "notValidPrimaryEmail"),
         null
       )
@@ -76,7 +76,7 @@ class ForgottenUsernameController(
     } catch (e: NotificationClientRuntimeException) {
       log.error("Failed to send forgotten username email due to", e)
       telemetryClient.trackEvent(
-        "ForgottenUsernameRequestFailure",
+        "AuthForgottenUsernameRequestFailure",
         mapOf("email" to email, "error" to e.javaClass.simpleName),
         null
       )
