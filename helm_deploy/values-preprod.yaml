@@ -47,7 +47,7 @@ mfa_allowlist:
 
 env:
   SPRING_PROFILES_ACTIVE: "oracle,delius,token-verification"
-  APPLICATION_SIGNIN_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth/login"
+  APPLICATION_SIGNIN_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth/"
   APPLICATION_SUPPORT_URL: "https://support-preprod.hmpps.service.justice.gov.uk/feedback-and-support"
   APPLICATION_AUTHENTICATION_MATCH_SUBDOMAINS: "false"
   APPLICATION_AUTHENTICATION_UI_ALLOWLIST: "81.134.202.29,217.33.148.210"
