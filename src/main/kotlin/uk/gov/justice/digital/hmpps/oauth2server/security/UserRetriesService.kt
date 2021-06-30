@@ -37,6 +37,9 @@ class UserRetriesService(
     // Record last logged in for all auth sources
     user.lastLoggedIn = LocalDateTime.now()
 
+    // ensure flag is set to false so if user doesn't log in for 83 days warning email will be sent
+    user.preDisableWarning = false
+
     // On successful login sync selected details from the source systems
     when (userPersonDetails) {
       // Copy verified email address for Azure users

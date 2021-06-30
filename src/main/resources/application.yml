@@ -95,6 +95,7 @@ application:
     enable-user.template: 440b362b-5fd1-4b0e-b962-382da6539402
     forgotten-username.template: f100feec-8acb-4444-ad6a-839c0cf566de
     forgotten-username-email-not-found.template: f146fcf9-1637-47c2-bb84-d8dc769347df
+    pre-disable-warning.template: 13eb82b3-f5a0-4952-bccc-d67104dda223
 
   smoketest.enabled: false
 
@@ -106,6 +107,10 @@ application:
     ui.allowlist: 0:0:0:0:0:0:0:1,127.0.0.1/32,172.16.0.0/12
     lockout-count: 10
     password-age: 7300
+    # run warn pre-disable auth user job every 12 hours (specified in millis - 12 hours = 43200000 ms)
+    notify-pre-disable:
+      frequency: 43200000
+      login-days: 83
     # run disable and delete auth user job every hour (specified in millis)
     disable:
       frequency: 3600000

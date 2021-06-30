@@ -445,6 +445,45 @@ class UserRepositoryTest {
 
   @Suppress("UNCHECKED_CAST")
   @Test
+  fun findUsersPreDisableWarning() {
+    val preDisableWarning = repository.findByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndSourceOrderByLastLoggedIn(
+      LocalDateTime.parse("2020-12-01T12:00:00").plusMinutes(1), auth
+    )
+    val abstractListAssert = assertThat(preDisableWarning).extracting<String> { it.username }
+      .contains("AUTH_INACTIVE") as AbstractListAssert<*, MutableList<out String>, String, ObjectAssert<String>>
+    abstractListAssert.doesNotContain("AUTH_DISABLED", "ITAG_USER")
+    assertThat(preDisableWarning).hasSize(5)
+  }
+
+  @Test
+  fun findUsersPreDisableWarning_OrderByLastLoggedInOldestFirst() {
+    val preDisableWarning = repository.findByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndSourceOrderByLastLoggedIn(
+      LocalDateTime.now().plusMinutes(1),
+      auth
+    )
+    assertThat(preDisableWarning).extracting<String> { it.username }.first().isEqualTo("AUTH_USER_LAST_LOGIN")
+  }
+
+  @Test
+  fun findUsersPreDisableWarning_NoRows() {
+    val preDisableWarning = repository.findByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndSourceOrderByLastLoggedIn(
+      LocalDateTime.parse("2019-01-01T12:00:00").minusSeconds(1),
+      auth,
+    )
+    assertThat(preDisableWarning).isEmpty()
+  }
+
+  @Test
+  fun findUsersPreDisableWarning_SingleRow() {
+    val preDisableWarning = repository.findByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndSourceOrderByLastLoggedIn(
+      LocalDateTime.parse("2019-02-03T13:23:19").plusSeconds(1),
+      auth,
+    )
+    assertThat(preDisableWarning).extracting<String> { it.username }.containsExactly("AUTH_USER_LAST_LOGIN", "AUTH_INACTIVE")
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  @Test
   fun findDisabledUsers_First10() {
     val inactive =
       repository.findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(LocalDateTime.now().plusMinutes(1))
