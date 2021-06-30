@@ -6,6 +6,6 @@
   "lastName": "Login",
   "locked": false,
   "enabled": true,
-  "verified": true,
+  "verified": false,
   "lastLoggedIn": "2019-01-01T12:05:10"
 }
