@@ -157,6 +157,9 @@ env:
   - name: APPLICATION_SUPPORT_URL
     value: {{ .Values.env.APPLICATION_SUPPORT_URL | quote }}
 
+  - name: APPLICATION_SIGNIN_URL
+    value: {{ .Values.env.APPLICATION_SIGNIN_URL | quote }}
+
   - name: AUTH_AZUREOIDC_CLIENT_ID
     valueFrom:
       secretKeyRef:
