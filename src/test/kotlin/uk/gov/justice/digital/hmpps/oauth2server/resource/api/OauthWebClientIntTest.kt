@@ -17,7 +17,6 @@ import org.springframework.security.oauth2.client.registration.InMemoryClientReg
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.web.reactive.function.client.WebClient
-import uk.gov.justice.digital.hmpps.oauth2server.resource.DeliusExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientExtension
 import uk.gov.justice.digital.hmpps.oauth2server.resource.RemoteClientMockServer
