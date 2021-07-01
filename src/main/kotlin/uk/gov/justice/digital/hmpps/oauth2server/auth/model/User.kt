@@ -44,6 +44,9 @@ class User(
   @Column(name = "enabled", nullable = false)
   private var enabled: Boolean = false,
 
+  @Column(name = "pre_disable_warning", nullable = false)
+  var preDisableWarning: Boolean = false,
+
   /**
    * Source of last login information
    */

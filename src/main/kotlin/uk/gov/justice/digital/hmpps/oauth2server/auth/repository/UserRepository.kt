@@ -29,4 +29,9 @@ interface UserRepository : CrudRepository<User, UUID>, JpaSpecificationExecutor<
 
   fun findTop10ByLastLoggedInBeforeAndEnabledIsFalseOrderByLastLoggedIn(lastLoggedIn: LocalDateTime): List<User>
   fun findByUsernameIn(usernames: List<String>): List<User>
+
+  fun findByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndSourceOrderByLastLoggedIn(
+    lastLoggedIn: LocalDateTime,
+    source: AuthSource
+  ): List<User>
 }
