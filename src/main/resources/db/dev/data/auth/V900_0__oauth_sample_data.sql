@@ -58,6 +58,7 @@ VALUES ('omicuser','1200','{"jwtFields":"-user_name"}','SYSTEM_READ_ONLY','passw
        ('max-duplicate-client-1','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
        ('max-duplicate-client-2','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
        ('delete-test-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
+       ('special-chars-test-client','1200','{}',null,'client_credentials',null,'{bcrypt}$2a$10$1HCA2OQDpaM2RwVwKb1efOBYdKlgktFX6fr5KVJT4dl4l/AgmZT/C',null,null,'read',null),
        ('service-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
        ('individual-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
        ('another-delete-test-client','1200','{}',null,'client_credentials',null,'$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm',null,null,'read',null),
