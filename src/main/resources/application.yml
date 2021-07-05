@@ -111,6 +111,7 @@ application:
     notify-pre-disable:
       frequency: 43200000
       login-days: 83
+      enabled: false
     # run disable and delete auth user job every hour (specified in millis)
     disable:
       frequency: 3600000
