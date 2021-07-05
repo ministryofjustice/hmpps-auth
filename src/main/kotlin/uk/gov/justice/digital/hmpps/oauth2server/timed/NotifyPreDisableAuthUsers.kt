@@ -25,8 +25,7 @@ class NotifyPreDisableAuthUsers(
     fixedDelayString = "\${application.authentication.notify-pre-disable.frequency}",
     initialDelayString = "\${random.int[3600000,\${application.authentication.notify-pre-disable.frequency}]}"
   )
-  fun findAndNotifyPreDisableInactiveAuthUsers() {
-    // disabled in preprod so notification not sent
+  fun findAndNotifyPreDisableInactiveAuthUsers() = // disabled in preprod so notification not sent
     if (notificationEnabled) {
       log.info("Notify PreDisable inactive auth users started")
       val state = findAndProcessInBatches()
@@ -38,5 +37,4 @@ class NotifyPreDisableAuthUsers(
     } else {
       log.info("Notify PreDisable inactive auth users disabled in this environment")
     }
-  }
 }
