@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
 /**
- * Set users that haven't logged into the system for 90 days to be disabled
+ * notify users that haven't logged into the system for 83 days they will be disabled in 7 days
  */
 @Component
 class NotifyPreDisableAuthUsers(service: NotifyPreDisableAuthUsersService, telemetryClient: TelemetryClient) :
@@ -17,7 +17,7 @@ class NotifyPreDisableAuthUsers(service: NotifyPreDisableAuthUsersService, telem
   }
 
   @Scheduled(
-    fixedDelayString = "\${application.authentication.disable.frequency}",
+    fixedDelayString = "\${application.authentication.notify-pre-disable.frequency}",
     initialDelayString = "\${random.int[3600000,\${application.authentication.notify-pre-disable.frequency}]}"
   )
   fun findAndNotifyPreDisableInactiveAuthUsers() {
