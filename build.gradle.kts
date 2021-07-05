@@ -4,6 +4,8 @@ plugins {
   kotlin("plugin.jpa") version "1.5.20"
 }
 
+extra["spring-security.version"] = "5.5.1"
+
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
