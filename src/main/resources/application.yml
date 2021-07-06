@@ -109,7 +109,7 @@ application:
     password-age: 7300
     # run warn pre-disable auth user job every 12 hours (specified in millis - 12 hours = 43200000 ms)
     notify-pre-disable:
-      frequency: 1800000
+      frequency: 43200000
       login-days: 83
       enabled: false
     # run disable and delete auth user job every hour (specified in millis)
