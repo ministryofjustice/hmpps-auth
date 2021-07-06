@@ -171,10 +171,28 @@
       </div>
     </dl>
   </div>
-  <h2 class="govuk-heading-m">Client details</h2>
 
   <form th:with="clientType=${param.client != null} ? 'edit' : 'add'" th:action="@{'/ui/clients/'+ ${clientType}}"
         method="post">
+
+    <h2 class="govuk-heading-m">JIRA Number</h2>
+    <div class="govuk-form-group">
+    <span class="govuk-hint">
+          Jira Ticket number e.g. DT-2264 - ticket provides audit for client request/approvals
+        </span>
+      <input class="govuk-input govuk-!-width-one-quarter" id="jiraNo" type="text" name="jiraNo"
+             readonly="readonly"
+             onfocus="this.removeAttribute('readonly');"
+             th:value="${clientDetails.jiraNo}"/>
+
+      <a th:if="${clientDetails.jiraNo != null}"
+         th:href="@{https://dsdmoj.atlassian.net/browse/__${clientDetails.jiraNo}__}"
+         class="govuk-link"  id="jiraNoLink"> https://dsdmoj.atlassian.net/browse/<span
+        th:text="${clientDetails.jiraNo}">DT-2264</span></a>
+    </div>
+    <br>
+
+    <h2 class="govuk-heading-m">Client details</h2>
 
     <input class="govuk-input govuk-!-width-one-half" type="hidden" th:if="${param.client}" id="clientId"
            name="clientId"
@@ -192,7 +210,8 @@
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="registeredRedirectUri">Registered redirect URIs</label>
-      <textarea class="govuk-textarea" id="registeredRedirectUri" name="registeredRedirectUriWithNewlines" type="text" rows="6"
+      <textarea class="govuk-textarea" id="registeredRedirectUri" name="registeredRedirectUriWithNewlines" type="text"
+                rows="6"
                 th:text="${clientDetails.registeredRedirectUriWithNewlines}">a redirect</textarea>
     </div>
     <div class="govuk-form-group">
