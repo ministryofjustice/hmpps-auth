@@ -1,10 +1,8 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.3"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.4"
   kotlin("plugin.spring") version "1.5.20"
   kotlin("plugin.jpa") version "1.5.20"
 }
-
-extra["spring-security.version"] = "5.5.1"
 
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
