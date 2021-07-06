@@ -23,7 +23,7 @@ class NotifyPreDisableAuthUsers(
 
   @Scheduled(
     fixedDelayString = "\${application.authentication.notify-pre-disable.frequency}",
-    initialDelayString = "\${random.int[3600000,\${application.authentication.notify-pre-disable.frequency}]}"
+    initialDelayString = "\${random.int[60000,\${application.authentication.notify-pre-disable.frequency}]}"
   )
   fun findAndNotifyPreDisableInactiveAuthUsers() = // disabled in preprod so notification not sent
     if (notificationEnabled) {
