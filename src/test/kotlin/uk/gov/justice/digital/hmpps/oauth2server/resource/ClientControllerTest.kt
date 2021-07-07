@@ -266,6 +266,27 @@ class ClientControllerTest {
     }
 
     @Test
+    fun `set Jira`() {
+      val authClientDetails = AuthClientDetails()
+      authClientDetails.jiraNo = "DT-2264"
+      assertThat(authClientDetails.additionalInformation).containsExactlyEntriesOf(mapOf("jiraNo" to "DT-2264"))
+      assertThat(authClientDetails.jiraNo).isEqualTo("DT-2264")
+    }
+
+    @Test
+    fun `get Jira`() {
+      val authClientDetails = AuthClientDetails()
+      authClientDetails.addAdditionalInformation("jiraNo", "DT-2264")
+      assertThat(authClientDetails.jiraNo).isEqualTo("DT-2264")
+    }
+
+    @Test
+    fun `get Jira not set`() {
+      val authClientDetails = AuthClientDetails()
+      assertThat(authClientDetails.jiraNo).isNull()
+    }
+
+    @Test
     fun `setAuthorities adds ROLE_ prefix`() {
       val authClientDetails = AuthClientDetails()
       authClientDetails.authorities = listOf("joe", "ROLE_fred", "  harry")

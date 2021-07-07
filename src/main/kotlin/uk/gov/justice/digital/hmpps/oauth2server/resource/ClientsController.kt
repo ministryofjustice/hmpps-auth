@@ -222,6 +222,11 @@ class ClientsController(
           ?.toSet()
       }
 
+    var jiraNo: String?
+      get() = additionalInformation["jiraNo"] as String?
+      set(jiraNo) {
+        addAdditionalInformation("jiraNo", "$jiraNo")
+      }
     var jwtFields: String?
       get() = additionalInformation["jwtFields"] as String?
       set(jwtFields) {

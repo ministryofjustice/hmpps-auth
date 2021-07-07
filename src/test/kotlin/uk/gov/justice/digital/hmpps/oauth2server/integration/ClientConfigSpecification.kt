@@ -64,6 +64,25 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
   }
 
   @Test
+  fun `I can edit a client credential with Jira Ticket Number`() {
+    goTo(loginPage).loginAs("ITAG_USER_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("prison-to-probation-update-api-client")
+    clientMaintenancePage.isAtPage()
+    assertThat(el("#jiraNo").value()).isEqualTo("DT-2264")
+  }
+
+  @Test
+  fun `when Jira Tick number entered url to jira is displayed next to input box`() {
+    goTo(loginPage).loginAs("ITAG_USER_ADM", "password123456")
+
+    goTo(clientSummaryPage).editClient("prison-to-probation-update-api-client")
+    clientMaintenancePage.isAtPage()
+    assertThat(el("#jiraNo").value()).isEqualTo("DT-2264")
+    assertThat(el("#jiraNoLink").text()).isEqualTo("https://dsdmoj.atlassian.net/browse/DT-2264")
+  }
+
+  @Test
   fun `I can edit a client credential with an mfa field`() {
     goTo(loginPage).loginAs("ITAG_USER_ADM", "password123456")
 
@@ -159,6 +178,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       .edit("authorities", "  BOB\n\n, role_fred \n")
       .selectCheckboxOption("client_credentials")
       .edit("jwtFields", "-name")
+      .edit("jiraNo", "DT-2264")
       .selectCheckboxOption("mfa-3")
       .save()
     clientCreatedSuccessPage.isAtPage()
@@ -192,6 +212,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
 
     goTo(clientSummaryPage).editClient(client = "client")
     clientMaintenanceAddPage.isAtPage()
+      .edit("jiraNo", "DT-2264")
       .edit("clientId", "new-client  ")
       .edit("registeredRedirectUri", "http://a_url:3003")
       .edit("accessTokenValiditySeconds", "1200")
