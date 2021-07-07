@@ -15,7 +15,6 @@ import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.Captor
 import org.mockito.Mockito.eq
-import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.junit.jupiter.MockitoExtension
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.UserHelper.Companion.createSampleUser
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
@@ -41,24 +40,10 @@ class NotifyPreDisableAuthUsersServiceTest {
   private lateinit var mapCaptor: ArgumentCaptor<Map<String, String>>
 
   @Test
-  fun findAndWarnPreDisableInactiveAuthUsers_Processed() {
-    val users = listOf(createSampleUser(username = "user", enabled = true), createSampleUser(username = "joe", enabled = true))
-    whenever(
-      userRepository.findByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndSourceOrderByLastLoggedIn(
-        any(),
-        any()
-      )
-    )
-      .thenReturn(users)
-    assertThat(service.processInBatches()).isEqualTo(2)
-    verifyNoInteractions(notificationClient)
-  }
-
-  @Test
   fun findAndWarnPreDisableInactiveAuthUsers_deactivateWarningSent() {
     val users = listOf(createSampleUser(username = "user", email = "bob@justice.gov.uk", verified = true, enabled = true))
     whenever(
-      userRepository.findByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndSourceOrderByLastLoggedIn(
+      userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
         any(),
         any()
       )
@@ -83,7 +68,7 @@ class NotifyPreDisableAuthUsersServiceTest {
       createSampleUser(username = "joe", verified = true, enabled = true),
     )
     whenever(
-      userRepository.findByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndSourceOrderByLastLoggedIn(
+      userRepository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
         any(), any()
       )
     )
@@ -95,27 +80,5 @@ class NotifyPreDisableAuthUsersServiceTest {
       ArgumentMatchers.isNull()
     )
     assertThat(mapCaptor.allValues.map { it["username"] }).containsExactly("user", "joe")
-  }
-
-  @Test
-  fun findAndDisableInactiveAuthUsers_emailNotVerified_Telemetry() {
-    val users = listOf(
-      createSampleUser(username = "user", enabled = true),
-      createSampleUser(username = "joe", enabled = true),
-    )
-    whenever(
-      userRepository.findByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndSourceOrderByLastLoggedIn(
-        any(), any()
-      )
-    )
-      .thenReturn(users)
-    service.processInBatches()
-    verify(telemetryClient, times(2)).trackEvent(
-      ArgumentMatchers.eq("AuthNotifyPreDisableInactiveAuthUsersFailure"),
-      mapCaptor.capture(),
-      ArgumentMatchers.isNull()
-    )
-    assertThat(mapCaptor.allValues.map { it["username"] }).containsExactly("user", "joe")
-    assertThat(mapCaptor.allValues.map { it["reason"] }).containsExactly("Primary email not verified", "Primary email not verified")
   }
 }
