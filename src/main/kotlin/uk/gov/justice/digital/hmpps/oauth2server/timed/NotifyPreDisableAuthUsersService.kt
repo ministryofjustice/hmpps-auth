@@ -31,49 +31,37 @@ class NotifyPreDisableAuthUsersService(
   @Transactional(transactionManager = "authTransactionManager")
   override fun processInBatches(): Int {
     val usersToNotifyPreDisable =
-      repository.findByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndSourceOrderByLastLoggedIn(
+      repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
         LocalDateTime.now().minusDays(loginDays.toLong()).minusHours(1L),
         AuthSource.auth,
       )
     usersToNotifyPreDisable.forEach(
       Consumer { user: User ->
-        if (user.verified) {
-          try {
-            user.preDisableWarning = true
-            log.debug("Notifying auth user {} we will disable account in 7 days due to inactivity", user.username)
-            notificationClient.sendEmail(
-              preDisableTemplateId,
-              user.email,
-              mapOf(
-                "firstName" to user.firstName,
-                "username" to user.username,
-                "signinUrl" to signinUrl,
-                "support" to support,
-              ),
-              null
-            )
-            telemetryClient.trackEvent(
-              "AuthNotifyPreDisableInactiveAuthUsersProcessed",
-              mapOf("username" to user.username),
-              null
-            )
-          } catch (e: NotificationClientException) {
-            val reason = (e.cause?.let { e.cause } ?: e).javaClass.simpleName
-            log.warn("Failed to send pre disable waring for user {}", user.username, e)
-            telemetryClient.trackEvent(
-              "AuthNotifyPreDisableInactiveAuthUsersFailure",
-              mapOf("username" to user.username, "reason" to reason),
-              null
-            )
-          }
-        } else {
-          log.debug(
-            "unable to Notify auth user {} we will disable account in 7 days due to unverified primary email",
-            user.username
+        user.preDisableWarning = true
+        log.debug("Notifying auth user {} we will disable account in 7 days due to inactivity", user.username)
+        try {
+          notificationClient.sendEmail(
+            preDisableTemplateId,
+            user.email,
+            mapOf(
+              "firstName" to user.firstName,
+              "username" to user.username,
+              "signinUrl" to signinUrl,
+              "support" to support,
+            ),
+            null
           )
           telemetryClient.trackEvent(
+            "AuthNotifyPreDisableInactiveAuthUsersProcessed",
+            mapOf("username" to user.username),
+            null
+          )
+        } catch (e: NotificationClientException) {
+          val reason = (e.cause?.let { e.cause } ?: e).javaClass.simpleName
+          log.warn("Failed to send pre disable waring for user {}", user.username, e)
+          telemetryClient.trackEvent(
             "AuthNotifyPreDisableInactiveAuthUsersFailure",
-            mapOf("username" to user.username, "reason" to "Primary email not verified"),
+            mapOf("username" to user.username, "reason" to reason),
             null
           )
         }
