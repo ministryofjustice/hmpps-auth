@@ -96,6 +96,12 @@ secretName=$(echo "${clientInfo_json}" | jq -r .clientDeployment.secretName)
 clientIdKey=$(echo "${clientInfo_json}" | jq -r .clientDeployment.clientIdKey)
 secretKey=$(echo "${clientInfo_json}" | jq -r .clientDeployment.secretKey)
 
+# Check if $deployment exists and is readable
+if ! kubectl -n "${namespace}" get deployment "${deployment}" &>/dev/null; then
+  echo "Unable to find deployment \"${deployment}\" in namespace \"${namespace}\""
+  exit 1
+fi
+
 # Check if $secretName exists and is readable
 if ! kubectl -n "${namespace}" get secrets "${secretName}" -o json &>/dev/null; then
   echo "Unable to find k8s secret with name \"${secretName}\" for namespace \"${namespace}\""
@@ -117,12 +123,6 @@ fi
 if ! kubectl -n "${namespace}" get secrets "${secretName}" -o json | jq -e "select(.data[\"${secretKey}\"] != null)" &>/dev/null; then
   echo "Unable to find k8s secret with key \"${secretKey}\" in \"${secretName}\" for namespace \"${namespace}\""
   [[ -z "${create_keys_in_secret}" ]] && exit 1
-fi
-
-# Check if $deployment exists and is readable
-if ! kubectl -n "${namespace}" get deployment "${deployment}" &>/dev/null; then
-  echo "Unable to find deployment \"${deployment}\" in namespace \"${namespace}\""
-  exit 1
 fi
 
 # Duplicate clientID get new secret
