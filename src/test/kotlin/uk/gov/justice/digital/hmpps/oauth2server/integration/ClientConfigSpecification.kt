@@ -192,11 +192,8 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
         text =
         """
           new-client 
-          [read] 
-          [client_credentials] 
-          [BOB, FRED] 
-          1200 
-          MFA ALL
+          client_credentials 
+          BOB FRED 
       """
       )
 
@@ -233,11 +230,8 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
         text =
         """
           new-client 
-          [read] 
-          [client_credentials] 
-          [BOB, FRED] 
-          1200 
-          MFA ALL
+          client_credentials 
+          BOB FRED 
       """
       )
 
@@ -369,18 +363,16 @@ class ClientSummaryPage : AuthPage<ClientSummaryPage>(
     text: String =
       """
       apireporting 
-      [reporting] 
-      [client_credentials] 
-      [REPORTING] 
-      3600""",
+      client_credentials 
+      REPORTING""",
   ): ClientSummaryPage {
     assertThat(rows).hasSizeGreaterThan(10)
-    assertThat(el("tr[data-qa='$client']").text()).isEqualTo(text.replaceIndent().replace("\n", ""))
+    assertThat(el("tr[data-qa='$client']").text()).startsWith(text.replaceIndent().replace("\n", ""))
     return this
   }
 
   fun checkClientDoesntExist(client: String) {
-    assertThat(el("tr[data-qa='$client']").displayed()).isFalse()
+    assertThat(el("tr[data-qa='$client']").displayed()).isFalse
   }
 
   fun editClient(client: String = "apireporting") {

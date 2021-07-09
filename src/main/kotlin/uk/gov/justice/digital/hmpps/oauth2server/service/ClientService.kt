@@ -13,9 +13,16 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientType
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientDeploymentRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordGenerator
+import uk.gov.justice.digital.hmpps.oauth2server.service.SortBy.count
+import uk.gov.justice.digital.hmpps.oauth2server.service.SortBy.lastAccessed
+import uk.gov.justice.digital.hmpps.oauth2server.service.SortBy.secretUpdated
+import uk.gov.justice.digital.hmpps.oauth2server.service.SortBy.team
+import uk.gov.justice.digital.hmpps.oauth2server.service.SortBy.type
+import java.time.LocalDateTime
 
 @Service
 class ClientService(
@@ -41,8 +48,37 @@ class ClientService(
       .forEach { clientRegistrationService.updateClientDetails(it) }
   }
 
-  fun listUniqueClients(): List<Client> =
-    clientRepository.findAll().sortedBy { it.id }.distinctBy { baseClientId(it.id) }
+  fun listUniqueClients(sortBy: SortBy): List<ClientSummary> {
+    val baseClients = clientRepository.findAll().groupBy { baseClientId(it.id) }.toSortedMap()
+    val deployments = clientDeploymentRepository.findAll().associateBy { it.baseClientId }
+    return baseClients.toList().map {
+      val deployment: ClientDeployment? = deployments[it.first]
+      val firstClient = it.second[0]
+      val lastAccessed = it.second.map { it.lastAccessed }.maxOrNull()
+      val secretUpdated = it.second.map { it.secretUpdated }.maxOrNull()
+      ClientSummary(
+        baseClientId = it.first,
+        clientType = deployment?.type,
+        teamName = deployment?.team,
+        grantTypes = firstClient.authorizedGrantTypes.joinToString(" "),
+        roles = firstClient.authoritiesWithoutPrefix.joinToString(" "),
+        lastAccessed = lastAccessed,
+        secretUpdated = secretUpdated,
+        count = it.second.size
+      )
+    }.sortedWith(
+      compareBy {
+        when (sortBy) {
+          type -> it.clientType
+          team -> it.teamName
+          count -> it.count
+          lastAccessed -> it.lastAccessed
+          secretUpdated -> it.secretUpdated
+          else -> it.baseClientId
+        }
+      }
+    )
+  }
 
   fun isValid(url: String): Boolean {
     val (urlWithSlash, urlWithoutSlash) =
@@ -157,6 +193,21 @@ data class ClientDuplicateIdsAndDeployment(
   val duplicates: List<String>,
   val clientDeployment: ClientDeployment?
 )
+
+data class ClientSummary(
+  val baseClientId: String,
+  val clientType: ClientType?,
+  val teamName: String?,
+  val grantTypes: String,
+  val roles: String,
+  val lastAccessed: LocalDateTime?,
+  val secretUpdated: LocalDateTime?,
+  val count: Int,
+)
+
+enum class SortBy {
+  client, type, team, lastAccessed, secretUpdated, count
+}
 
 open class DuplicateClientsException(baseClientId: String, errorCode: String) :
   Exception("Duplicate clientId failed for baseClientId: $baseClientId with reason: $errorCode")
