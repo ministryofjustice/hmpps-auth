@@ -28,6 +28,8 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientDeploymen
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientRepository
 import uk.gov.justice.digital.hmpps.oauth2server.resource.ClientsController.AuthClientDetails
 import uk.gov.justice.digital.hmpps.oauth2server.security.PasswordGenerator
+import uk.gov.justice.digital.hmpps.oauth2server.service.SortBy.count
+import java.time.LocalDateTime
 import java.util.Optional
 
 internal class ClientServiceTest {
@@ -36,7 +38,13 @@ internal class ClientServiceTest {
   private val clientDetailsService: ClientDetailsService = mock()
   private val clientRegistrationService: ClientRegistrationService = mock()
   private val passwordGenerator: PasswordGenerator = mock()
-  private val clientService = ClientService(clientDetailsService, clientRegistrationService, passwordGenerator, clientRepository, clientDeploymentRepository)
+  private val clientService = ClientService(
+    clientDetailsService,
+    clientRegistrationService,
+    passwordGenerator,
+    clientRepository,
+    clientDeploymentRepository
+  )
 
   @Nested
   inner class addClient {
@@ -269,6 +277,63 @@ internal class ClientServiceTest {
   @Nested
   inner class listUniqueClients {
     @Test
+    internal fun `calculates roles and grants`() {
+      val lastAccessed = LocalDateTime.parse("2020-02-03T11:23")
+      val secretUpdated = LocalDateTime.parse("2020-03-04T12:24")
+      val aClient = Client(
+        "a-client",
+        authorities = listOf("ROLE_fred", "bob"),
+        authorizedGrantTypes = listOf("client_credentials", "password"),
+        lastAccessed = lastAccessed,
+        secretUpdated = secretUpdated,
+      )
+      whenever(clientRepository.findAll()).thenReturn(listOf(aClient))
+      val clients = clientService.listUniqueClients(count)
+      assertThat(clients.map { it.baseClientId }).containsOnly("a-client")
+      assertThat(clients).containsExactly(
+        ClientSummary(
+          baseClientId = "a-client",
+          grantTypes = "client_credentials password",
+          roles = "fred bob",
+          count = 1,
+          clientType = null,
+          teamName = null,
+          lastAccessed = lastAccessed,
+          secretUpdated = secretUpdated,
+        )
+      )
+    }
+    @Test
+    internal fun `calculates largest last accessed and secret updated`() {
+      val lastAccessedLatest = LocalDateTime.parse("2020-02-03T11:23")
+      val secretUpdatedLatest = LocalDateTime.parse("2020-03-04T12:24")
+      val aClient = Client(
+        "a-client",
+        lastAccessed = lastAccessedLatest,
+        secretUpdated = LocalDateTime.parse("2019-02-05T11:23"),
+      )
+      val aClient2 = Client(
+        "a-client-2",
+        lastAccessed = LocalDateTime.parse("2019-02-05T11:23"),
+        secretUpdated = secretUpdatedLatest,
+      )
+      whenever(clientRepository.findAll()).thenReturn(listOf(aClient, aClient2))
+      val clients = clientService.listUniqueClients(count)
+      assertThat(clients.map { it.baseClientId }).containsOnly("a-client")
+      assertThat(clients).containsExactly(
+        ClientSummary(
+          baseClientId = "a-client",
+          grantTypes = "",
+          roles = "",
+          count = 2,
+          clientType = null,
+          teamName = null,
+          lastAccessed = lastAccessedLatest,
+          secretUpdated = secretUpdatedLatest,
+        )
+      )
+    }
+    @Test
     internal fun `filters out duplicates of a client`() {
       val aClient = Client("a-client")
       val duplicateClient = Client("duplicate")
@@ -277,8 +342,38 @@ internal class ClientServiceTest {
           aClient, Client("duplicate-2"), duplicateClient, Client("duplicate-59")
         )
       )
-      val clients = clientService.listUniqueClients()
-      assertThat(clients).containsOnly(aClient, duplicateClient)
+      val clients = clientService.listUniqueClients(count)
+      assertThat(clients.map { it.baseClientId }).containsOnly("a-client", "duplicate")
+      assertThat(clients.filter { it.baseClientId == "duplicate" }.map { it.count }).containsOnly(3)
+    }
+
+    @Test
+    internal fun `retrieves deployment information too`() {
+      val lastAccessed = LocalDateTime.parse("2020-02-03T11:23")
+      val secretUpdated = LocalDateTime.parse("2020-03-04T12:24")
+      val aClient = Client(
+        "a-client",
+        lastAccessed = lastAccessed,
+        secretUpdated = secretUpdated,
+      )
+      whenever(clientRepository.findAll()).thenReturn(listOf(aClient))
+      whenever(clientDeploymentRepository.findAll()).thenReturn(
+        listOf(ClientDeployment("a-client", type = ClientType.PERSONAL, team = "name"), ClientDeployment("other"))
+      )
+      val clients = clientService.listUniqueClients(count)
+      assertThat(clients).hasSize(1)
+      assertThat(clients).containsExactly(
+        ClientSummary(
+          baseClientId = "a-client",
+          grantTypes = "",
+          roles = "",
+          count = 1,
+          clientType = ClientType.PERSONAL,
+          teamName = "name",
+          lastAccessed = lastAccessed,
+          secretUpdated = secretUpdated,
+        )
+      )
     }
   }
 
@@ -416,6 +511,7 @@ internal class ClientServiceTest {
       )
       assertThat(clientService.isValid("")).isFalse
     }
+
     @Test
     fun `url not found`() {
       whenever(clientRepository.findAll()).thenReturn(
@@ -423,6 +519,7 @@ internal class ClientServiceTest {
       )
       assertThat(clientService.isValid("some_url")).isFalse
     }
+
     @Test
     fun `url found`() {
       whenever(clientRepository.findAll()).thenReturn(
@@ -430,6 +527,7 @@ internal class ClientServiceTest {
       )
       assertThat(clientService.isValid("two")).isTrue
     }
+
     @Test
     fun `url found with slash added`() {
       whenever(clientRepository.findAll()).thenReturn(
@@ -437,6 +535,7 @@ internal class ClientServiceTest {
       )
       assertThat(clientService.isValid("two/")).isTrue
     }
+
     @Test
     fun `url found with slash added in repository`() {
       whenever(clientRepository.findAll()).thenReturn(

@@ -5,8 +5,8 @@
 <head>
   <title>Administration Dashboard</title>
 </head>
-<body>
-<div layout:fragment="content" class="govuk-grid-column-two-thirds">
+<body class="extra-wide">
+<div layout:fragment="content" class="govuk-grid-column-full">
   <h1 class="govuk-heading-l">OAuth server administration dashboard</h1>
 
   <div sec:authorize="hasRole('ROLE_OAUTH_ADMIN')">
@@ -14,32 +14,32 @@
     <table class="govuk-table">
       <thead class="govuk-table__head">
       <tr class="govuk-table__row">
-        <th class="govuk-table__header" scope="col">Client ID</th>
-        <th class="govuk-table__header" scope="col">Scopes</th>
+        <th class="govuk-table__header" scope="col">Client</th>
+        <th class="govuk-table__header" scope="col">Count</th>
+        <th class="govuk-table__header" scope="col">Client type</th>
+        <th class="govuk-table__header" scope="col">Team name</th>
         <th class="govuk-table__header" scope="col">Grant types</th>
         <th class="govuk-table__header" scope="col">Roles</th>
-        <th class="govuk-table__header" scope="col">Token duration</th>
-        <th class="govuk-table__header" scope="col">MFA</th>
+        <th class="govuk-table__header" scope="col">Secret&nbsp;updated</th>
+        <th class="govuk-table__header" scope="col">Last&nbsp;accessed</th>
       </tr>
       </thead>
       <tbody class="govuk-table__body">
-      <tr th:each="client : ${clientDetails}" class="govuk-table__row" th:attr="data-qa=${client.id}">
+      <tr th:each="client : ${clientDetails}" class="govuk-table__row" th:attr="data-qa=${client.baseClientId}">
         <td class="govuk-table__cell">
           <a th:id="'edit-' + ${client.baseClientId}" th:text="${client.baseClientId}" class="govuk-link"
              th:href="@{/ui/clients/form?client=__${client.baseClientId}__}">Client ID</a>
         </td>
-        <td th:text="${client.scope}" class="govuk-table__cell"></td>
-        <td th:text="${client.authorizedGrantTypes}" class="govuk-table__cell"></td>
-        <td th:text="${client.authoritiesWithoutPrefix}" class="govuk-table__cell"></td>
-        <td th:text="${client.accessTokenValidity}" class="govuk-table__cell"></td>
         <td class="govuk-table__cell">
-          <strong class="govuk-tag govuk-tag--yellow" th:if="${client.mfa == T(uk.gov.justice.digital.hmpps.oauth2server.resource.MfaAccess).untrusted}">
-            MFA
-          </strong>
-          <strong class="govuk-tag govuk-tag--red" th:if="${client.mfa == T(uk.gov.justice.digital.hmpps.oauth2server.resource.MfaAccess).all}">
-            MFA All
-          </strong>
+          <strong class="govuk-tag govuk-tag--yellow" th:if="${client.count == 2}">2</strong>
+          <strong class="govuk-tag govuk-tag--red" th:if="${client.count > 2}" th:text="${client.count}">3</strong>
         </td>
+        <td th:text="${client.clientType}" class="govuk-table__cell"></td>
+        <td th:text="${client.teamName}" class="govuk-table__cell"></td>
+        <td th:text="${client.grantTypes}" class="govuk-table__cell"></td>
+        <td th:text="${client.roles}" class="govuk-table__cell"></td>
+        <td th:text="${#temporals.format(client.secretUpdated, 'dd-MM-yyyy')}" class="govuk-table__cell"></td>
+        <td th:text="${#temporals.format(client.lastAccessed, 'dd-MM-yyyy')}" class="govuk-table__cell"></td>
       </tr>
       </tbody>
     </table>

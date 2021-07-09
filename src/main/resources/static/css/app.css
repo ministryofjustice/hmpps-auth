@@ -491,3 +491,7 @@
 .incomplete {
   background-color: #005EA5;
 }
+
+.extra-wide .govuk-width-container {
+  max-width: 1300px;
+}
