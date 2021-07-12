@@ -29,7 +29,7 @@ while getopts ":cke:u:n" arg; do
   c) # Specify whether to create the kubernetes secret
     create_secret=true
     ;;
-  k) # Specify whether to create the kubernetes secret
+  k) # Specify whether to create the keys in the kubernetes secret
     create_keys_in_secret=true
     ;;
   n) # Stop after creating secret i.e. don't restart deployment or delete old secret
