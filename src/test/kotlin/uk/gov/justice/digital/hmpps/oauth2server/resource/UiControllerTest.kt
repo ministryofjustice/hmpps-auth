@@ -7,6 +7,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientType
+import uk.gov.justice.digital.hmpps.oauth2server.service.ClientFilter
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientService
 import uk.gov.justice.digital.hmpps.oauth2server.service.ClientSummary
 import uk.gov.justice.digital.hmpps.oauth2server.service.SortBy.count
@@ -29,11 +30,12 @@ internal class UiControllerTest {
         secretUpdated = null
       )
     )
-    whenever(clientService.listUniqueClients(any())).thenReturn(clients)
-    val modelAndView = controller.userIndex(count)
+    val filterBy = ClientFilter(role = "bob")
+    whenever(clientService.listUniqueClients(any(), any())).thenReturn(clients)
+    val modelAndView = controller.userIndex(count, role = "bob")
     assertThat(modelAndView.viewName).isEqualTo("ui/index")
     assertThat(modelAndView.model["clientDetails"]).isEqualTo(clients)
 
-    verify(clientService).listUniqueClients(count)
+    verify(clientService).listUniqueClients(count, filterBy)
   }
 }
