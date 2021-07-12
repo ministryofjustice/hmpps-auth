@@ -48,7 +48,7 @@ class ClientService(
       .forEach { clientRegistrationService.updateClientDetails(it) }
   }
 
-  fun listUniqueClients(sortBy: SortBy): List<ClientSummary> {
+  fun listUniqueClients(sortBy: SortBy, filterBy: ClientFilter?): List<ClientSummary> {
     val baseClients = clientRepository.findAll().groupBy { baseClientId(it.id) }.toSortedMap()
     val deployments = clientDeploymentRepository.findAll().associateBy { it.baseClientId }
     return baseClients.toList().map {
@@ -66,18 +66,25 @@ class ClientService(
         secretUpdated = secretUpdated,
         count = it.second.size
       )
-    }.sortedWith(
-      compareBy {
-        when (sortBy) {
-          type -> it.clientType
-          team -> it.teamName
-          count -> it.count
-          lastAccessed -> it.lastAccessed
-          secretUpdated -> it.secretUpdated
-          else -> it.baseClientId
+    }.filter { cs ->
+      filterBy?.let { filter ->
+        (filter.clientType == null || filter.clientType == cs.clientType) &&
+          (filter.grantType.isNullOrBlank() || cs.grantTypes.contains(filter.grantType)) &&
+          (filter.role.isNullOrBlank() || cs.roles.contains(filter.role.uppercase()))
+      } ?: true
+    }
+      .sortedWith(
+        compareBy {
+          when (sortBy) {
+            type -> it.clientType
+            team -> it.teamName
+            count -> it.count
+            lastAccessed -> it.lastAccessed
+            secretUpdated -> it.secretUpdated
+            else -> it.baseClientId
+          }
         }
-      }
-    )
+      )
   }
 
   fun isValid(url: String): Boolean {
@@ -208,6 +215,12 @@ data class ClientSummary(
 enum class SortBy {
   client, type, team, lastAccessed, secretUpdated, count
 }
+
+data class ClientFilter(
+  val grantType: String? = null,
+  val role: String? = null,
+  val clientType: ClientType? = null,
+)
 
 open class DuplicateClientsException(baseClientId: String, errorCode: String) :
   Exception("Duplicate clientId failed for baseClientId: $baseClientId with reason: $errorCode")

@@ -22,7 +22,8 @@ import org.springframework.security.oauth2.provider.ClientRegistrationService
 import org.springframework.security.oauth2.provider.client.BaseClientDetails
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Client
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientDeployment
-import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientType
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientType.PERSONAL
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.ClientType.SERVICE
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Hosting
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientDeploymentRepository
 import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.ClientRepository
@@ -288,7 +289,7 @@ internal class ClientServiceTest {
         secretUpdated = secretUpdated,
       )
       whenever(clientRepository.findAll()).thenReturn(listOf(aClient))
-      val clients = clientService.listUniqueClients(count)
+      val clients = clientService.listUniqueClients(count, ClientFilter())
       assertThat(clients.map { it.baseClientId }).containsOnly("a-client")
       assertThat(clients).containsExactly(
         ClientSummary(
@@ -303,6 +304,7 @@ internal class ClientServiceTest {
         )
       )
     }
+
     @Test
     internal fun `calculates largest last accessed and secret updated`() {
       val lastAccessedLatest = LocalDateTime.parse("2020-02-03T11:23")
@@ -318,7 +320,7 @@ internal class ClientServiceTest {
         secretUpdated = secretUpdatedLatest,
       )
       whenever(clientRepository.findAll()).thenReturn(listOf(aClient, aClient2))
-      val clients = clientService.listUniqueClients(count)
+      val clients = clientService.listUniqueClients(count, ClientFilter())
       assertThat(clients.map { it.baseClientId }).containsOnly("a-client")
       assertThat(clients).containsExactly(
         ClientSummary(
@@ -333,6 +335,7 @@ internal class ClientServiceTest {
         )
       )
     }
+
     @Test
     internal fun `filters out duplicates of a client`() {
       val aClient = Client("a-client")
@@ -342,7 +345,7 @@ internal class ClientServiceTest {
           aClient, Client("duplicate-2"), duplicateClient, Client("duplicate-59")
         )
       )
-      val clients = clientService.listUniqueClients(count)
+      val clients = clientService.listUniqueClients(count, ClientFilter())
       assertThat(clients.map { it.baseClientId }).containsOnly("a-client", "duplicate")
       assertThat(clients.filter { it.baseClientId == "duplicate" }.map { it.count }).containsOnly(3)
     }
@@ -358,9 +361,9 @@ internal class ClientServiceTest {
       )
       whenever(clientRepository.findAll()).thenReturn(listOf(aClient))
       whenever(clientDeploymentRepository.findAll()).thenReturn(
-        listOf(ClientDeployment("a-client", type = ClientType.PERSONAL, team = "name"), ClientDeployment("other"))
+        listOf(ClientDeployment("a-client", type = PERSONAL, team = "name"), ClientDeployment("other"))
       )
-      val clients = clientService.listUniqueClients(count)
+      val clients = clientService.listUniqueClients(count, ClientFilter())
       assertThat(clients).hasSize(1)
       assertThat(clients).containsExactly(
         ClientSummary(
@@ -368,12 +371,54 @@ internal class ClientServiceTest {
           grantTypes = "",
           roles = "",
           count = 1,
-          clientType = ClientType.PERSONAL,
+          clientType = PERSONAL,
           teamName = "name",
           lastAccessed = lastAccessed,
           secretUpdated = secretUpdated,
         )
       )
+    }
+
+    @Test
+    internal fun `filter by role`() {
+      val aClient = Client("a-client", authorities = listOf("BOB", "FRED"))
+      val aClient2 = Client("a-second-client")
+      whenever(clientRepository.findAll()).thenReturn(listOf(aClient, aClient2))
+      val clients = clientService.listUniqueClients(count, ClientFilter(role = "bob"))
+      assertThat(clients.map { it.baseClientId }).containsOnly("a-client")
+    }
+
+    @Test
+    internal fun `filter by grant type`() {
+      val aClient = Client("a-client", authorizedGrantTypes = listOf("client", "pass"))
+      val aClient2 = Client("a-second-client")
+      whenever(clientRepository.findAll()).thenReturn(listOf(aClient, aClient2))
+      val clients = clientService.listUniqueClients(count, ClientFilter(grantType = "pass"))
+      assertThat(clients.map { it.baseClientId }).containsOnly("a-client")
+    }
+
+    @Test
+    internal fun `filter by client type`() {
+      val aClient = Client("a-client")
+      val aClient2 = Client("a-second-client")
+      whenever(clientDeploymentRepository.findAll()).thenReturn(
+        listOf(ClientDeployment("a-client", type = SERVICE, team = "name"), ClientDeployment("other"))
+      )
+      whenever(clientRepository.findAll()).thenReturn(listOf(aClient, aClient2))
+      val clients = clientService.listUniqueClients(count, ClientFilter(clientType = SERVICE))
+      assertThat(clients.map { it.baseClientId }).containsOnly("a-client")
+    }
+
+    @Test
+    internal fun `filter by all`() {
+      val aClient = Client("a-client", authorizedGrantTypes = listOf("client", "pass"), authorities = listOf("BOB", "FRED"))
+      val aClient2 = Client("a-second-client")
+      whenever(clientDeploymentRepository.findAll()).thenReturn(
+        listOf(ClientDeployment("a-client", type = SERVICE, team = "name"), ClientDeployment("other"))
+      )
+      whenever(clientRepository.findAll()).thenReturn(listOf(aClient, aClient2))
+      val clients = clientService.listUniqueClients(count, ClientFilter(clientType = SERVICE, role = "bob", grantType = "pass"))
+      assertThat(clients.map { it.baseClientId }).containsOnly("a-client")
     }
   }
 
@@ -581,7 +626,7 @@ internal class ClientServiceTest {
 
   private fun createClientDeploymentDetails(): ClientDeployment = ClientDeployment(
     baseClientId = "client",
-    type = ClientType.SERVICE,
+    type = SERVICE,
     team = "A-Team",
     teamContact = "bob@Ateam",
     teamSlack = "slack",

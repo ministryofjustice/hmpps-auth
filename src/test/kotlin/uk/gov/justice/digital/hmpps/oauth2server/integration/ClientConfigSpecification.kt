@@ -347,17 +347,98 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
     clientMaintenancePage.isAtPage()
       .checkDeploymentDetailsCloudPlatform()
   }
+
+  @Test
+  fun `I can filter by role`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).filterBy(role = "report")
+    clientSummaryPage.checkClientSummary(rowsMin = 2, rowsMax = 2)
+    clientSummaryPage.checkClientDoesntExist("azure-login-client")
+
+    val roleColumns = find("table tbody td[data-test='roles']").texts()
+    assertThat(roleColumns).hasSizeGreaterThanOrEqualTo(2).containsOnly("REPORTING")
+  }
+
+  @Test
+  fun `I can filter by grant type`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).filterBy(grantType = "client_credentials")
+    clientSummaryPage.checkClientSummary(rowsMin = 30)
+    clientSummaryPage.checkClientDoesntExist("azure-login-client")
+
+    val grantTypeColumns = find("table tbody td[data-test='grantTypes']").texts()
+    assertThat(grantTypeColumns).hasSizeGreaterThanOrEqualTo(2)
+    grantTypeColumns.forEach { assertThat(it).contains("client_credentials") }
+  }
+
+  @Test
+  fun `I can filter by client type`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).filterBy(clientType = "SERVICE")
+    clientSummaryPage.checkClientSummary(
+      rowsMin = 3, rowsMax = 20, client = "service-client", text = "service-client SERVICE A Team client_credentials"
+    )
+    clientSummaryPage.checkClientDoesntExist("apireporting")
+
+    val clientTypeColumns = find("table tbody td[data-test='clientTypes']").texts()
+    assertThat(clientTypeColumns).hasSizeGreaterThanOrEqualTo(2).containsOnly("SERVICE")
+  }
+
+  @Test
+  fun `I can filter by multiple criteria`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).filterBy(grantType = "client_credentials", role = "community_events")
+    clientSummaryPage.checkClientSummary(
+      rowsMin = 2,
+      rowsMax = 5,
+      client = "probation-offender-events-client",
+      text = "probation-offender-events-client client_credentials COMMUNITY_EVENTS COMMUNITY"
+    )
+    clientSummaryPage.checkClientDoesntExist("apireporting")
+  }
+
+  @Test
+  fun `I can clear search criteria`() {
+    goTo(loginPage).loginAs("AUTH_ADM", "password123456")
+
+    goTo(clientSummaryPage).filterBy(grantType = "client_credentials", role = "community_events")
+    clientSummaryPage.checkClientSummary(
+      rowsMin = 2,
+      rowsMax = 5,
+      client = "probation-offender-events-client",
+      text = "probation-offender-events-client client_credentials COMMUNITY_EVENTS COMMUNITY"
+    )
+    clientSummaryPage.checkClientDoesntExist("apireporting")
+    clientSummaryPage.clearFilter()
+    // clientSummaryPage.checkClientSummary(client = "apireporting")
+    newInstance(ClientSummaryPage::class.java).isAtPage().checkClientSummary("apireporting")
+  }
 }
 
 @PageUrl("/ui")
 class ClientSummaryPage : AuthPage<ClientSummaryPage>(
   "HMPPS Digital Services - Administration Dashboard",
-  "OAuth server administration dashboard"
+  "OAuth client details"
 ) {
-  @FindBy(css = "table tbody tr")
-  private lateinit var rows: FluentList<FluentWebElement>
+  @FindBy(css = "input[name='role']")
+  private lateinit var role: FluentWebElement
 
-  @Suppress("UsePropertyAccessSyntax")
+  @FindBy(css = "select[name='grantType']")
+  private lateinit var grantType: FluentWebElement
+
+  @FindBy(css = "select[name='clientType']")
+  private lateinit var clientType: FluentWebElement
+
+  @FindBy(css = "button[type='submit']")
+  private lateinit var searchButton: FluentWebElement
+
+  @FindBy(css = "a[data-test='clear-link']")
+  private lateinit var clearLink: FluentWebElement
+
   fun checkClientSummary(
     client: String = "apireporting",
     text: String =
@@ -365,11 +446,19 @@ class ClientSummaryPage : AuthPage<ClientSummaryPage>(
       apireporting 
       client_credentials 
       REPORTING""",
+    rowsMin: Int = 10,
+    rowsMax: Int = 200,
   ): ClientSummaryPage {
-    assertThat(rows).hasSizeGreaterThan(10)
+    find("table tbody tr")
+    this.role.text()
+    assertThat(rows).hasSizeGreaterThanOrEqualTo(rowsMin)
+    assertThat(rows).hasSizeLessThanOrEqualTo(rowsMax)
     assertThat(el("tr[data-qa='$client']").text()).startsWith(text.replaceIndent().replace("\n", ""))
     return this
   }
+
+  private val rows: FluentList<FluentWebElement>?
+    get() = find("table tbody tr")
 
   fun checkClientDoesntExist(client: String) {
     assertThat(el("tr[data-qa='$client']").displayed()).isFalse
@@ -378,6 +467,26 @@ class ClientSummaryPage : AuthPage<ClientSummaryPage>(
   fun editClient(client: String = "apireporting") {
     val baseClient = client.replace(regex = "-[0-9]*$".toRegex(), replacement = "")
     el("#edit-$baseClient").click()
+  }
+
+  fun filterBy(role: String? = null, grantType: String? = null, clientType: String? = null) {
+    role?.let { this.role.fill().withText(it) }
+    grantType?.let { this.grantType.fillSelect().withValue(it) }
+    clientType?.let { this.clientType.fillSelect().withValue(it) }
+    searchButton.submit()
+
+    // check that filter options are then saved
+    role?.let { assertThat(this.role.value()).isEqualTo(it) }
+    grantType?.let { assertThat(this.grantType.value()).isEqualTo(it) }
+    clientType?.let { assertThat(this.clientType.value()).isEqualTo(it) }
+  }
+
+  fun clearFilter() {
+    clearLink.click()
+
+    assertThat(this.role.value()).isEmpty()
+    assertThat(this.grantType.value()).isEqualTo("")
+    assertThat(this.clientType.value()).isEqualTo("")
   }
 }
 
