@@ -495,3 +495,43 @@
 .extra-wide .govuk-width-container {
   max-width: 1300px;
 }
+.horizontal-form * {
+  width: 100%
+}
+
+@media(min-width: 48.0625em) {
+  .horizontal-form {
+    display:flex;
+    flex-flow: row wrap
+  }
+
+  .horizontal-form * {
+    width: auto;
+    margin-bottom: 0
+  }
+
+  .horizontal-form>div {
+    margin-right: 15px
+  }
+
+  .horizontal-form .date-picker-container input {
+    width: 130px !important
+  }
+
+  .horizontal-form label {
+    margin-bottom: 5px
+  }
+
+  .horizontal-form button {
+    margin-right: 15px
+  }
+
+  .horizontal-form a {
+    margin-top: 15px
+  }
+
+  .horizontal-form button,.horizontal-form a {
+    align-self: flex-end;
+    margin-bottom: 2px
+  }
+}
