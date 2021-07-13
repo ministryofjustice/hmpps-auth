@@ -175,10 +175,10 @@
   <form th:with="clientType=${param.client != null} ? 'edit' : 'add'" th:action="@{'/ui/clients/'+ ${clientType}}"
         method="post">
 
-    <h2 class="govuk-heading-m">JIRA Number</h2>
+    <h2 class="govuk-heading-m">JIRA number</h2>
     <div class="govuk-form-group">
     <span class="govuk-hint">
-          Jira Ticket number e.g. DT-2264 - ticket provides audit for client request/approvals
+          Jira ticket number e.g. DT-2264 - ticket provides audit for client request/approvals
         </span>
       <input class="govuk-input govuk-!-width-one-quarter" id="jiraNo" type="text" name="jiraNo"
              readonly="readonly"

@@ -88,6 +88,33 @@ class AuthUserController(
       .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(username)))
   }
 
+  @GetMapping("/api/authuser/id/{userId}")
+  @ApiOperation(
+    value = "User detail.",
+    notes = "User detail.",
+    nickname = "getUserDetails",
+    consumes = "application/json",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 200, message = "OK", response = AuthUser::class),
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 404, message = "User not found.", response = ErrorDetail::class)
+    ]
+  )
+  fun getUserById(
+    @ApiParam(value = "The ID of the user.", required = true) @PathVariable userId: String,
+  ): ResponseEntity<Any?> {
+
+    val user = authUserService.getAuthUserByUserId(userId)
+    log.info("user found {}", user)
+    return user.map { AuthUser.fromUser(it) }
+      .map { Any::class.java.cast(it) }
+      .map { ResponseEntity.ok(it) }
+      .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(userId)))
+  }
+
   @GetMapping("/api/authuser")
   @ApiOperation(
     value = "Search for a user.",
@@ -254,7 +281,7 @@ class AuthUserController(
 
     return try {
       val setPasswordUrl = createInitialPasswordUrl(request)
-      val resetLink = authUserService.createUserByEmail(
+      val userId = authUserService.createUserByEmail(
         email,
         createUser.firstName,
         createUser.lastName,
@@ -264,9 +291,7 @@ class AuthUserController(
         authentication.authorities
       )
       log.info("Create user succeeded for user {}", createUser.email)
-      if (smokeTestEnabled) {
-        ResponseEntity.ok(resetLink)
-      } else ResponseEntity.noContent().build()
+      ResponseEntity.ok(userId)
     } catch (e: CreateUserException) {
       log.info("Create user failed for user ${createUser.email} for field ${e.field} with reason ${e.errorCode}".removeAllCrLf())
       ResponseEntity.badRequest().body(

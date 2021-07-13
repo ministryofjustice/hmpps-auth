@@ -15,11 +15,15 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyCollection
 import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Captor
 import org.mockito.Mockito.doThrow
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
+import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -55,8 +59,10 @@ import uk.gov.justice.digital.hmpps.oauth2server.verify.VerifyEmailService.Valid
 import uk.gov.service.notify.NotificationClientApi
 import java.time.LocalDateTime
 import java.util.Optional
+import java.util.UUID
 import javax.persistence.EntityNotFoundException
 
+@ExtendWith(MockitoExtension::class)
 class AuthUserServiceTest {
   private val userRepository: UserRepository = mock()
   private val notificationClient: NotificationClientApi = mock()
@@ -80,6 +86,9 @@ class AuthUserServiceTest {
     10,
     "enableUserTemplate"
   )
+
+  @Captor
+  private lateinit var mapCaptor: ArgumentCaptor<Map<String, String>>
 
   @BeforeEach
   fun setUp() {
@@ -126,6 +135,7 @@ class AuthUserServiceTest {
 
     @Test
     fun successLinkReturned() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createOptionalSampleUser())
       val link =
         authUserService.amendUserEmail("userme", "email", "url?token=", "bob", PRINCIPAL.authorities, EmailType.PRIMARY)
@@ -134,6 +144,7 @@ class AuthUserServiceTest {
 
     @Test
     fun trackSuccess() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createOptionalSampleUser())
       authUserService.amendUserEmail("userme", "email", "url?token=", "bob", PRINCIPAL.authorities, EmailType.PRIMARY)
       verify(telemetryClient).trackEvent(
@@ -146,6 +157,7 @@ class AuthUserServiceTest {
     @Test
     fun saveTokenRepository() {
       val user = createOptionalSampleUser()
+      whenever(userRepository.save(any())).thenReturn(user.get())
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(user)
       val link =
         authUserService.amendUserEmail("userme", "email", "url?token=", "bob", PRINCIPAL.authorities, EmailType.PRIMARY)
@@ -238,8 +250,9 @@ class AuthUserServiceTest {
     }
 
     @Test
-    fun `createUserByEmail returns success link`() {
-      val link =
+    fun `createUserByEmail returns success userId`() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
+      val userId =
         authUserService.createUserByEmail(
           "email",
           "se",
@@ -249,11 +262,12 @@ class AuthUserServiceTest {
           "bob",
           GRANTED_AUTHORITY_SUPER_USER
         )
-      assertThat(link).startsWith("url?token=").hasSize("url?token=".length + 36)
+      assertThat(userId).isEqualTo(UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a"))
     }
 
     @Test
     fun `createUserByEmail track success`() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       authUserService.createUserByEmail(
         "example@justice.gov.uk",
         "se",
@@ -272,6 +286,7 @@ class AuthUserServiceTest {
 
     @Test
     fun `createUserByEmail save user repository token`() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       val link =
         authUserService.createUserByEmail(
           "email",
@@ -286,7 +301,6 @@ class AuthUserServiceTest {
         check {
           val userToken = it.tokens.stream().findFirst().orElseThrow()
           assertThat(userToken.tokenType).isEqualTo(RESET)
-          assertThat(userToken.token).isEqualTo(link.substring("url?token=".length))
           assertThat(userToken.tokenExpiry).isBetween(LocalDateTime.now().plusDays(6), LocalDateTime.now().plusDays(8))
         }
       )
@@ -294,7 +308,8 @@ class AuthUserServiceTest {
 
     @Test
     fun `createUser save user repository`() {
-      authUserService.createUserByEmail(
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
+      val response = authUserService.createUserByEmail(
         "example@justice.gov.uk",
         "first",
         "last",
@@ -317,10 +332,12 @@ class AuthUserServiceTest {
           }
         }
       )
+      assertThat(response).isEqualTo(UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a"))
     }
 
     @Test
     fun `createUserByEmail trim name`() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       authUserService.createUserByEmail(
         "eMail",
         "first  ",
@@ -339,6 +356,7 @@ class AuthUserServiceTest {
 
     @Test
     fun `createUserByEmail email input is formatted`() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       authUserService.createUserByEmail(
         "    SARAH.o’connor@gov.uk",
         "first",
@@ -357,6 +375,7 @@ class AuthUserServiceTest {
 
     @Test
     fun `createUserByEmail groups are set`() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
         listOf(
           Group(
@@ -387,6 +406,7 @@ class AuthUserServiceTest {
 
     @Test
     fun `createUserByEmail has no roles`() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
         listOf(
           Group(
@@ -418,6 +438,7 @@ class AuthUserServiceTest {
       group.assignableRoles.add(GroupAssignableRole(Authority("AUTH_MANUAL", "Auth Name"), group, false))
 
       whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(listOf(group))
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       authUserService.createUserByEmail(
         "eMail",
         "first",
@@ -478,7 +499,8 @@ class AuthUserServiceTest {
 
     @Test
     fun `createUserByEmail calls Notify`() {
-      val link = authUserService.createUserByEmail(
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
+      authUserService.createUserByEmail(
         "email",
         "first",
         "last",
@@ -488,20 +510,21 @@ class AuthUserServiceTest {
         GRANTED_AUTHORITY_SUPER_USER
       )
       verify(notificationClient).sendEmail(
-        "licences",
-        "email",
-        mapOf(
-          "resetLink" to link,
-          "firstName" to "first last",
-          "fullName" to "first last",
-          "supportLink" to "nomis_support_link"
-        ),
-        null
+        eq("licences"),
+        eq("email"),
+        mapCaptor.capture(),
+        eq(null)
       )
+
+      assertThat(mapCaptor.allValues.map { it["resetLink"] }).isNotEmpty
+      assertThat(mapCaptor.allValues.map { it["firstName"] }).isEqualTo(listOf("first last"))
+      assertThat(mapCaptor.allValues.map { it["fullName"] }).isEqualTo(listOf("first last"))
+      assertThat(mapCaptor.allValues.map { it["supportLink"] }).isEqualTo(listOf("nomis_support_link"))
     }
 
     @Test
     fun `createUserByEmail pecs user group support link`() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       mockServiceOfNameWithSupportLink("BOOK_MOVE", "book_move_support_link")
       whenever(authUserGroupService.getAssignableGroups(anyString(), any())).thenReturn(
         listOf(
@@ -532,6 +555,7 @@ class AuthUserServiceTest {
 
     @Test
     fun `createUserByEmail support links for no groups`() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       authUserService.createUserByEmail(
         "eMail",
         "first",
@@ -553,6 +577,7 @@ class AuthUserServiceTest {
 
     @Test
     fun saveEmailRepository() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createOptionalSampleUser())
       authUserService.amendUserEmail("userMe", "eMail", "url?token=", "bob", PRINCIPAL.authorities, EmailType.PRIMARY)
       verify(userRepository).save<User>(
@@ -564,6 +589,7 @@ class AuthUserServiceTest {
 
     @Test
     fun formatEmailInput() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(createOptionalSampleUser())
       authUserService.amendUserEmail(
         "userMe",
@@ -582,6 +608,7 @@ class AuthUserServiceTest {
 
     @Test
     fun pecsUserGroupSupportLink() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("PECS_GROUP")))
       mockServiceOfNameWithSupportLink("BOOK_MOVE", "book_move_support_link")
       authUserService.amendUserEmail(
@@ -604,6 +631,8 @@ class AuthUserServiceTest {
 
     @Test
     fun nonPecsUserGroupSupportLink() {
+      val user = createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a"))
+      whenever(userRepository.save(any())).thenReturn(user)
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups("NON_PECS_GROUP")))
       authUserService.amendUserEmail(
         "ANY_USER_NAME",
@@ -625,6 +654,7 @@ class AuthUserServiceTest {
 
     @Test
     fun onePecsGroupOfManySupportLink() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(
         Optional.of(
           userOfGroups(
@@ -654,6 +684,7 @@ class AuthUserServiceTest {
 
     @Test
     fun noGroupSupportLink() {
+      whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userOfGroups()))
       authUserService.amendUserEmail(
         "ANY_USER_NAME",
@@ -675,7 +706,9 @@ class AuthUserServiceTest {
 
     @Test
     fun `never logged in sends initial email`() {
-      val userUnverifiedEmail = createSampleUser(username = "SOME_USER_NAME")
+      val userUnverifiedEmail =
+        createSampleUser(username = "SOME_USER_NAME", id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a"))
+      whenever(userRepository.save(any())).thenReturn(userUnverifiedEmail)
       whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.of(userUnverifiedEmail))
       authUserService.amendUserEmail(
         "SOME_USER_NAME",
@@ -738,6 +771,8 @@ class AuthUserServiceTest {
 
     @Test
     fun `never logged in changes email address if same as username`() {
+      val user = createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a"))
+      whenever(userRepository.save(any())).thenReturn(user)
       whenever(
         verifyEmailService.changeEmailAndRequestVerification(
           anyString(),
