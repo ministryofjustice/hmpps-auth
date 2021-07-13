@@ -60,8 +60,8 @@ class ClientService(
         baseClientId = it.first,
         clientType = deployment?.type,
         teamName = deployment?.team,
-        grantTypes = firstClient.authorizedGrantTypes.joinToString(" "),
-        roles = firstClient.authoritiesWithoutPrefix.joinToString(" "),
+        grantTypes = firstClient.authorizedGrantTypes.sorted().joinToString("\n"),
+        roles = firstClient.authoritiesWithoutPrefix.sorted().joinToString("\n"),
         lastAccessed = lastAccessed,
         secretUpdated = secretUpdated,
         count = it.second.size

@@ -495,6 +495,11 @@
 .extra-wide .govuk-width-container {
   max-width: 1300px;
 }
+
+.client-roles, .client-grant-types {
+  white-space: pre-line;
+}
+
 .horizontal-form * {
   width: 100%
 }

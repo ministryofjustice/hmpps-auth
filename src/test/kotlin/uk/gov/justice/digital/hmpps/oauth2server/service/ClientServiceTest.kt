@@ -294,8 +294,8 @@ internal class ClientServiceTest {
       assertThat(clients).containsExactly(
         ClientSummary(
           baseClientId = "a-client",
-          grantTypes = "client_credentials password",
-          roles = "fred bob",
+          grantTypes = "client_credentials\npassword",
+          roles = "bob\nfred",
           count = 1,
           clientType = null,
           teamName = null,
