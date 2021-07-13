@@ -396,7 +396,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       rowsMin = 2,
       rowsMax = 5,
       client = "probation-offender-events-client",
-      text = "probation-offender-events-client client_credentials COMMUNITY_EVENTS COMMUNITY"
+      text = "probation-offender-events-client client_credentials COMMUNITY COMMUNITY_EVENTS"
     )
     clientSummaryPage.checkClientDoesntExist("apireporting")
   }
@@ -410,7 +410,7 @@ class ClientConfigSpecification : AbstractAuthSpecification() {
       rowsMin = 2,
       rowsMax = 5,
       client = "probation-offender-events-client",
-      text = "probation-offender-events-client client_credentials COMMUNITY_EVENTS COMMUNITY"
+      text = "probation-offender-events-client client_credentials COMMUNITY COMMUNITY_EVENTS"
     )
     clientSummaryPage.checkClientDoesntExist("apireporting")
     clientSummaryPage.clearFilter()
@@ -453,7 +453,7 @@ class ClientSummaryPage : AuthPage<ClientSummaryPage>(
     this.role.text()
     assertThat(rows).hasSizeGreaterThanOrEqualTo(rowsMin)
     assertThat(rows).hasSizeLessThanOrEqualTo(rowsMax)
-    assertThat(el("tr[data-qa='$client']").text()).startsWith(text.replaceIndent().replace("\n", ""))
+    assertThat(el("tr[data-qa='$client']").text().replace("\n", " ")).startsWith(text.replaceIndent().replace("\n", ""))
     return this
   }
 

@@ -76,8 +76,8 @@
         </td>
         <td th:text="${client.clientType}" class="govuk-table__cell" data-test="clientTypes"></td>
         <td th:text="${client.teamName}" class="govuk-table__cell"></td>
-        <td th:text="${client.grantTypes}" class="govuk-table__cell" data-test="grantTypes"></td>
-        <td th:text="${client.roles}" class="govuk-table__cell" data-test="roles"></td>
+        <td th:text="${client.grantTypes}" class="govuk-table__cell client-grant-types" data-test="grantTypes"></td>
+        <td th:text="${client.roles}" class="govuk-table__cell client-roles" data-test="roles"></td>
         <td th:text="${#temporals.format(client.secretUpdated, 'dd-MM-yyyy')}" class="govuk-table__cell"></td>
         <td th:text="${#temporals.format(client.lastAccessed, 'dd-MM-yyyy')}" class="govuk-table__cell"></td>
       </tr>
