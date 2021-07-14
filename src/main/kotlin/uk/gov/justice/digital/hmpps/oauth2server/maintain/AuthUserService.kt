@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -235,7 +236,7 @@ class AuthUserService(
   fun getAuthUserByUsername(username: String?): Optional<User> =
     userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)))
 
-  fun getAuthUserByUserId(id: String): Optional<User> = userRepository.findById(UUID.fromString(id))
+  fun getAuthUserByUserId(id: String): User? = userRepository.findByIdOrNull(UUID.fromString(id))
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(AuthUserGroupRelationshipException::class)

@@ -287,16 +287,16 @@ class AuthUserServiceTest {
     @Test
     fun `createUserByEmail save user repository token`() {
       whenever(userRepository.save(any())).thenReturn(createSampleUser(id = UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")))
-      val link =
-        authUserService.createUserByEmail(
-          "email",
-          "se",
-          "xx",
-          null,
-          "url?token=",
-          "bob",
-          GRANTED_AUTHORITY_SUPER_USER
-        )
+
+      authUserService.createUserByEmail(
+        "email",
+        "se",
+        "xx",
+        null,
+        "url?token=",
+        "bob",
+        GRANTED_AUTHORITY_SUPER_USER
+      )
       verify(userRepository).save<User>(
         check {
           val userToken = it.tokens.stream().findFirst().orElseThrow()

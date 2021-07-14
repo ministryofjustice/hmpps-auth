@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -105,14 +106,10 @@ class AuthUserController(
   )
   fun getUserById(
     @ApiParam(value = "The ID of the user.", required = true) @PathVariable userId: String,
-  ): ResponseEntity<Any?> {
+  ): AuthUser {
 
-    val user = authUserService.getAuthUserByUserId(userId)
-    log.info("user found {}", user)
-    return user.map { AuthUser.fromUser(it) }
-      .map { Any::class.java.cast(it) }
-      .map { ResponseEntity.ok(it) }
-      .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(userId)))
+    return authUserService.getAuthUserByUserId(userId)?.let { AuthUser.fromUser(it) }
+      ?: throw UsernameNotFoundException("User $userId not found")
   }
 
   @GetMapping("/api/authuser")
@@ -343,7 +340,12 @@ class AuthUserController(
     return userOptional.map { u: User ->
       val usernameInDb = u.username
       try {
-        authUserService.enableUser(usernameInDb, authentication.name, request.requestURL.toString(), authentication.authorities)
+        authUserService.enableUser(
+          usernameInDb,
+          authentication.name,
+          request.requestURL.toString(),
+          authentication.authorities
+        )
         return@map ResponseEntity.noContent().build<Any>()
       } catch (e: AuthUserGroupRelationshipException) {
         log.info("enable user failed  with reason {}", e.errorCode)
@@ -388,7 +390,10 @@ class AuthUserController(
   )
   fun disableUser(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String?,
-    @ApiParam(value = "The reason user made inactive.", required = true) @RequestBody deactivateReason: DeactivateReason,
+    @ApiParam(
+      value = "The reason user made inactive.",
+      required = true
+    ) @RequestBody deactivateReason: DeactivateReason,
     @ApiIgnore authentication: Authentication,
   ): ResponseEntity<Any> {
     val userOptional = authUserService.getAuthUserByUsername(username)
