@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -86,6 +87,29 @@ class AuthUserController(
       .map { Any::class.java.cast(it) }
       .map { ResponseEntity.ok(it) }
       .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundBody(username)))
+  }
+
+  @GetMapping("/api/authuser/id/{userId}")
+  @ApiOperation(
+    value = "User detail.",
+    notes = "User detail.",
+    nickname = "getUserDetails",
+    consumes = "application/json",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 200, message = "OK", response = AuthUser::class),
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 404, message = "User not found.", response = ErrorDetail::class)
+    ]
+  )
+  fun getUserById(
+    @ApiParam(value = "The ID of the user.", required = true) @PathVariable userId: String,
+  ): AuthUser {
+
+    return authUserService.getAuthUserByUserId(userId)?.let { AuthUser.fromUser(it) }
+      ?: throw UsernameNotFoundException("User $userId not found")
   }
 
   @GetMapping("/api/authuser")
@@ -254,7 +278,7 @@ class AuthUserController(
 
     return try {
       val setPasswordUrl = createInitialPasswordUrl(request)
-      val resetLink = authUserService.createUserByEmail(
+      val userId = authUserService.createUserByEmail(
         email,
         createUser.firstName,
         createUser.lastName,
@@ -264,9 +288,7 @@ class AuthUserController(
         authentication.authorities
       )
       log.info("Create user succeeded for user {}", createUser.email)
-      if (smokeTestEnabled) {
-        ResponseEntity.ok(resetLink)
-      } else ResponseEntity.noContent().build()
+      ResponseEntity.ok(userId)
     } catch (e: CreateUserException) {
       log.info("Create user failed for user ${createUser.email} for field ${e.field} with reason ${e.errorCode}".removeAllCrLf())
       ResponseEntity.badRequest().body(
@@ -318,7 +340,12 @@ class AuthUserController(
     return userOptional.map { u: User ->
       val usernameInDb = u.username
       try {
-        authUserService.enableUser(usernameInDb, authentication.name, request.requestURL.toString(), authentication.authorities)
+        authUserService.enableUser(
+          usernameInDb,
+          authentication.name,
+          request.requestURL.toString(),
+          authentication.authorities
+        )
         return@map ResponseEntity.noContent().build<Any>()
       } catch (e: AuthUserGroupRelationshipException) {
         log.info("enable user failed  with reason {}", e.errorCode)
@@ -363,7 +390,10 @@ class AuthUserController(
   )
   fun disableUser(
     @ApiParam(value = "The username of the user.", required = true) @PathVariable username: String?,
-    @ApiParam(value = "The reason user made inactive.", required = true) @RequestBody deactivateReason: DeactivateReason,
+    @ApiParam(
+      value = "The reason user made inactive.",
+      required = true
+    ) @RequestBody deactivateReason: DeactivateReason,
     @ApiIgnore authentication: Authentication,
   ): ResponseEntity<Any> {
     val userOptional = authUserService.getAuthUserByUsername(username)

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -31,6 +32,7 @@ import uk.gov.service.notify.NotificationClientApi
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDateTime
 import java.util.Optional
+import java.util.UUID
 import javax.persistence.EntityNotFoundException
 
 @Service
@@ -59,7 +61,7 @@ class AuthUserService(
     url: String,
     creator: String,
     authorities: Collection<GrantedAuthority>,
-  ): String {
+  ): UUID? {
     val email = EmailHelper.format(emailInput)
     validatePrimary(email, firstName, lastName)
     // get the initial groups to assign to - only allowed to be empty if super user
@@ -80,7 +82,8 @@ class AuthUserService(
       authorities = roles,
       groups = groups,
     )
-    return saveAndSendInitialEmail(url, user, creator, "AuthUserCreate", groups)
+    val (resetLink, userId) = saveAndSendInitialEmail(url, user, creator, "AuthUserCreate", groups)
+    return userId
   }
 
   private fun getInitialEmailSupportLink(groups: Collection<Group>): String {
@@ -145,11 +148,11 @@ class AuthUserService(
     creator: String,
     eventPrefix: String,
     groups: Collection<Group>,
-  ): String { // then the reset token
+  ): Pair<String, UUID?> { // then the reset token
     val userToken = user.createToken(UserToken.TokenType.RESET)
     // give users more time to do the reset
     userToken.tokenExpiry = LocalDateTime.now().plusDays(7)
-    userRepository.save(user)
+    val savedUser = userRepository.save(user)
     // support link
     val supportLink = getInitialEmailSupportLink(groups)
     val setPasswordLink = url + userToken.token
@@ -180,8 +183,8 @@ class AuthUserService(
       }
       throw e
     }
-    // return the reset link to the controller
-    return setPasswordLink
+    // return the reset link and userId to the controller
+    return Pair(setPasswordLink, savedUser.id)
   }
 
   @Transactional(transactionManager = "authTransactionManager")
@@ -223,7 +226,8 @@ class AuthUserService(
     }
     user.email = email
     user.verified = false
-    return saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.groups)
+    val (resetLink, userId) = saveAndSendInitialEmail(url, user, admin, "AuthUserAmend", user.groups)
+    return resetLink
   }
 
   fun findAuthUsersByEmail(email: String?): List<User> =
@@ -231,6 +235,8 @@ class AuthUserService(
 
   fun getAuthUserByUsername(username: String?): Optional<User> =
     userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)))
+
+  fun getAuthUserByUserId(id: String): User? = userRepository.findByIdOrNull(UUID.fromString(id))
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(AuthUserGroupRelationshipException::class)

@@ -164,6 +164,7 @@ class AuthUserControllerTest {
 
   @Test
   fun `createUserByEmail success`() {
+    whenever(authUserService.createUserByEmail(any(), any(), any(), any(), any(), any(), any())).thenReturn(UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a"))
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/create"))
     val responseEntity =
       authUserController.createUserByEmail(
@@ -171,8 +172,8 @@ class AuthUserControllerTest {
         request,
         authentication
       )
-    assertThat(responseEntity.statusCodeValue).isEqualTo(204)
-    assertThat(responseEntity.body).isNull()
+    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
+    assertThat(responseEntity.body).isEqualTo(UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a"))
   }
 
   @Test
@@ -328,14 +329,15 @@ class AuthUserControllerTest {
   @Test
   fun `createUserByEmail handles group code as empty string`() {
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/api/authuser/"))
+    whenever(authUserService.createUserByEmail(any(), any(), any(), any(), any(), any(), any())).thenReturn(UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a"))
     val responseEntity =
       authUserController.createUserByEmail(
         CreateUser("email", "first", "last", "", null),
         request,
         authentication
       )
-    assertThat(responseEntity.statusCodeValue).isEqualTo(204)
-    assertThat(responseEntity.body).isNull()
+    assertThat(responseEntity.statusCodeValue).isEqualTo(200)
+    assertThat(responseEntity.body).isEqualTo(UUID.fromString("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a"))
   }
 
   @Test
