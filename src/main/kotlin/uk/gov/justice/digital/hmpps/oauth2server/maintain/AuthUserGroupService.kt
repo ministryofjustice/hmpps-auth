@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.oauth2server.maintain
 import com.microsoft.applicationinsights.TelemetryClient
 import org.hibernate.Hibernate
 import org.slf4j.LoggerFactory
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -13,6 +14,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.repository.UserRepository
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.AuthUserGroupRelationshipException
 import uk.gov.justice.digital.hmpps.oauth2server.security.MaintainUserCheck.Companion.canMaintainAuthUsers
+import java.util.UUID
 
 @Service
 @Transactional(transactionManager = "authTransactionManager", readOnly = true)
@@ -114,6 +116,13 @@ class AuthUserGroupService(
       u.groups
     }.orElse(null)
   }
+
+  fun getAuthUserGroupsByUserId(userId: String): Set<Group>? =
+    userRepository.findByIdOrNull(UUID.fromString(userId))?.let { u: User ->
+      Hibernate.initialize(u.groups)
+      u.groups.forEach { Hibernate.initialize(it.children) }
+      u.groups
+    }
 
   fun getAssignableGroups(username: String, authorities: Collection<GrantedAuthority>): List<Group> =
     if (canMaintainAuthUsers(authorities)) allGroups.toList()
