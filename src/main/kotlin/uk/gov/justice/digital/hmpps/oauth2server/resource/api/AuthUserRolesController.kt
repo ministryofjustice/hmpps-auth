@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
+import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserRoleService
 import uk.gov.justice.digital.hmpps.oauth2server.maintain.AuthUserService
 import uk.gov.justice.digital.hmpps.oauth2server.model.AuthUserRole
@@ -56,6 +57,29 @@ class AuthUserRolesController(
       .orElseThrow { UsernameNotFoundException("Account for username $username not found") }
     return user.authorities.map { AuthUserRole(it) }.toSet()
   }
+
+  @GetMapping("/api/authuser/id/{userId}/roles")
+  @ApiOperation(
+    value = "Get roles for user.",
+    notes = "Get roles for user.",
+    nickname = "roles",
+    consumes = "application/json",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 404, message = "User not found.", response = ErrorDetail::class)
+    ]
+  )
+  fun rolesByUserId(
+    @ApiParam(
+      value = "The userId of the user.",
+      required = true
+    ) @PathVariable userId: String,
+  ): Set<AuthUserRole> =
+    authUserService.getAuthUserByUserId(userId)?.let { u: User -> u.authorities.map { AuthUserRole(it) }.toSet() }
+      ?: throw UsernameNotFoundException("User $userId not found")
 
   @GetMapping("/api/authuser/{username}/assignable-roles")
   @ApiOperation(
