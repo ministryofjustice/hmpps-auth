@@ -176,9 +176,38 @@ class AuthUserRolesIntTest : IntegrationTest() {
     checkRolesForUser("AUTH_RO_USER", listOf("GLOBAL_SEARCH", "LICENCE_RO"))
   }
 
+  @Test
+  fun `Auth User Roles by userId endpoint returns user roles`() {
+    checkRolesForUserId("5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8", listOf("GLOBAL_SEARCH", "LICENCE_RO", "LICENCE_VARY"))
+  }
+
+  @Test
+  fun `Auth User Roles by userId endpoint returns user roles not allowed`() {
+    webTestClient
+      .get().uri("/api/authuser/id/5105A589-75B3-4CA0-9433-B96228C1C8F3/roles")
+      .exchange()
+      .expectStatus().isUnauthorized
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("""{error: "unauthorized", error_description: "Full authentication is required to access this resource"}""")
+  }
+
   private fun checkRolesForUser(user: String, roles: List<String>) {
     webTestClient
       .get().uri("/api/authuser/$user/roles")
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$.[*].roleCode").value<List<String>> {
+        assertThat(it).containsExactlyInAnyOrderElementsOf(roles)
+      }
+  }
+
+  private fun checkRolesForUserId(userId: String, roles: List<String>) {
+    webTestClient
+      .get().uri("/api/authuser/id/$userId/roles")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk
