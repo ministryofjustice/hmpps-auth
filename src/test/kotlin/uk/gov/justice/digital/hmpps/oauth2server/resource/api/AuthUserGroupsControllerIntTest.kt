@@ -227,8 +227,69 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
       .expectStatus().isUnauthorized
   }
 
+  @Test
+  fun `Auth User Groups by userId endpoint returns user groups no children`() {
+    webTestClient
+      .get().uri("/api/authuser/id/5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8/groups?children=false")
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .json(
+        """[
+          {"groupCode":"SITE_1_GROUP_1","groupName":"Site 1 - Group 1"},
+          {"groupCode":"SITE_1_GROUP_2","groupName":"Site 1 - Group 2"}       
+        ]
+        """.trimIndent()
+      )
+  }
+
+  @Test
+  fun `Auth User Groups by userId endpoint returns user groups with children by default`() {
+    webTestClient
+      .get().uri("/api/authuser/id/5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8/groups")
+      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .json(
+        """[
+          {"groupCode":"SITE_1_GROUP_1","groupName":"Site 1 - Group 1"},
+          {"groupCode":"CHILD_1","groupName":"Child - Site 1 - Group 2"}
+        ]
+        """.trimIndent()
+      )
+  }
+
+  @Test
+  fun `Auth User Groups by userId endpoint returns user groups with children`() {
+    callGetGroupsByUserId("5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8", children = true)
+      .json(
+        """[
+          {"groupCode":"SITE_1_GROUP_1","groupName":"Site 1 - Group 1"},
+          {"groupCode":"CHILD_1","groupName":"Child - Site 1 - Group 2"}
+        ]
+        """.trimIndent()
+      )
+  }
+
+  @Test
+  fun `Auth User Groups by userId endpoint not accessible without valid token`() {
+    webTestClient
+      .get().uri("/api/authuser/id/5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8/groups")
+      .exchange()
+      .expectStatus().isUnauthorized
+  }
+
   private fun callGetGroups(user: String = "AUTH_RO_USER", children: Boolean = false): BodyContentSpec = webTestClient
     .get().uri("/api/authuser/$user/groups?children=$children")
+    .headers(setAuthorisation("ITAG_USER_ADM"))
+    .exchange()
+    .expectStatus().isOk
+    .expectBody()
+
+  private fun callGetGroupsByUserId(userId: String = "AUTH_RO_USER", children: Boolean = false): BodyContentSpec = webTestClient
+    .get().uri("/api/authuser/id/$userId/groups?children=$children")
     .headers(setAuthorisation("ITAG_USER_ADM"))
     .exchange()
     .expectStatus().isOk

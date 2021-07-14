@@ -65,6 +65,31 @@ class AuthUserGroupsController(
     }
     ?: throw UsernameNotFoundException("User $username not found")
 
+  @GetMapping("/api/authuser/id/{userId}/groups")
+  @ApiOperation(
+    value = "Get groups for userId.",
+    nickname = "groups",
+    consumes = "application/json",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(code = 404, message = "User not found.", response = ErrorDetail::class)
+    ]
+  )
+  fun groupsByUserId(
+    @ApiParam(value = "The userId of the user.", required = true)
+    @PathVariable userId: String,
+    @ApiParam(value = "Whether groups are expanded into their children.", required = false)
+    @RequestParam(defaultValue = "true") children: Boolean = true,
+  ): List<AuthUserGroup> = authUserGroupService.getAuthUserGroupsByUserId(userId)
+    ?.flatMap { g ->
+      if (children && g.children.isNotEmpty()) g.children.map { AuthUserGroup(it) }
+      else listOf(AuthUserGroup(g))
+    }
+    ?: throw UsernameNotFoundException("User $userId not found")
+
   @PutMapping("/api/authuser/{username}/groups/{group}")
   @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
   @ApiOperation(
