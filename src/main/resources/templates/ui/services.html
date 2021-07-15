@@ -4,6 +4,8 @@
       layout:decorate="~{fragments/layout}">
 <head>
   <title>Services Dashboard</title>
+
+  <link rel="stylesheet" th:href="@{/css/moj-sortable-table.0.2.5.css}">
 </head>
 <body>
 <div layout:fragment="content" class="govuk-grid-column-two-thirds">
@@ -11,14 +13,14 @@
 
   <div sec:authorize="hasRole('ROLE_OAUTH_ADMIN')">
     <h2 class="govuk-heading-m">Services</h2>
-    <table class="govuk-table">
+    <table class="govuk-table" data-module="moj-sortable-table">
       <thead class="govuk-table__head">
       <tr class="govuk-table__row">
-        <th class="govuk-table__header" scope="col">Name</th>
-        <th class="govuk-table__header" scope="col">Description</th>
-        <th class="govuk-table__header" scope="col">Roles</th>
-        <th class="govuk-table__header" scope="col">Url / email</th>
-        <th class="govuk-table__header" scope="col">Enabled</th>
+        <th class="govuk-table__header" scope="col" aria-sort="ascending">Name</th>
+        <th class="govuk-table__header" scope="col" aria-sort="none">Description</th>
+        <th class="govuk-table__header" scope="col" aria-sort="none">Roles</th>
+        <th class="govuk-table__header" scope="col" aria-sort="none">Url / email</th>
+        <th class="govuk-table__header" scope="col" aria-sort="none">Enabled</th>
         <th class="govuk-table__header" scope="col"></th>
       </tr>
       </thead>
@@ -45,5 +47,23 @@
     </p>
   </div>
 </div>
+
+<th:block layout:fragment="script">
+  <!--[if !IE 8]><!-->
+  <script>
+    window.MOJFrontend = {}
+  </script>
+  <script th:src="@{/js/jquery.3.6.0.min.js}"></script>
+  <script th:src="@{/js/moj-sortable-table.0.2.5.min.js}"></script>
+  <script>
+    var SortableTable = window.MOJFrontend.SortableTable
+    var $sortableTable = document.querySelector('[data-module="moj-sortable-table"]')
+    if ($sortableTable) {
+      new SortableTable({table: $sortableTable})
+    }
+  </script>
+  <!--<![endif]-->
+</th:block>
+
 </body>
 </html>
