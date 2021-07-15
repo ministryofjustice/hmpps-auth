@@ -44,7 +44,7 @@ class GroupsControllerIntTest : IntegrationTest() {
         .get().uri("/api/groups/SITE_1_GROUP_2")
         .headers(setAuthorisation("AUTH_USER", listOf("ROLE_AUTH_GROUP_MANAGER")))
         .exchange()
-        .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN)
         .expectHeader().contentType(APPLICATION_JSON)
         .expectBody()
         .jsonPath("$").value<Map<String, Any>> {

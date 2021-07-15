@@ -30,6 +30,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
@@ -879,171 +880,364 @@ class AuthUserServiceTest {
     verify(userRepository).findByEmailAndMasterIsTrueOrderByUsername("some.u'ser@somewhere")
   }
 
-  @Test
-  fun enableUser_superUser() {
-    val optionalUser = createOptionalSampleUser()
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.enableUser("user", "admin", "some/auth/url", SUPER_USER)
-    assertThat(optionalUser).get().extracting { it.isEnabled }.isEqualTo(true)
-    verify(userRepository).save(optionalUser.orElseThrow())
-  }
+  @Nested
+  inner class enableUser {
+    @Test
+    fun enableUser_superUser() {
+      val optionalUser = createOptionalSampleUser()
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+      authUserService.enableUser("user", "admin", "some/auth/url", SUPER_USER)
+      assertThat(optionalUser).get().extracting { it.isEnabled }.isEqualTo(true)
+      verify(userRepository).save(optionalUser.orElseThrow())
+    }
 
-  @Test
-  fun `enable user sends email`() {
-    val optionalUser = Optional.of(createSampleUser(username = "someuser", email = "email"))
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.enableUser("user", "admin", "some/auth/url", SUPER_USER)
-    verify(notificationClient).sendEmail(
-      "enableUserTemplate",
-      "email",
-      mapOf(
-        "firstName" to "first",
-        "username" to "someuser",
-        "signinUrl" to "some/auth/"
-      ),
-      null
-    )
-  }
-
-  @Test
-  fun `enable user only sends email if email set`() {
-    val optionalUser = Optional.of(createSampleUser())
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.enableUser("user", "admin", "some/auth/url", SUPER_USER)
-    verifyZeroInteractions(notificationClient)
-  }
-
-  @Test
-  fun enableUser_invalidGroup_GroupManager() {
-    val optionalUser = createOptionalSampleUser()
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    doThrow(AuthUserGroupRelationshipException("someuser", "User not with your groups")).whenever(maintainUserCheck)
-      .ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any())
-    assertThatThrownBy { authUserService.enableUser("someuser", "admin", "some/auth/url", GROUP_MANAGER) }.isInstanceOf(
-      AuthUserGroupRelationshipException::class.java
-    ).hasMessage("Unable to maintain user: someuser with reason: User not with your groups")
-  }
-
-  @Test
-  fun enableUser_validGroup_groupManager() {
-    val user = createSampleUser(
-      username = "user",
-      groups = setOf(Group("group", "desc"), Group("group2", "desc")),
-      authorities = setOf(Authority("JOE", "bloggs"))
-    )
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
-      .thenReturn(Optional.of(user))
-    authUserService.enableUser("user", "admin", "some/auth/url", GROUP_MANAGER)
-    assertThat(user).extracting { it.isEnabled }.isEqualTo(true)
-    verify(userRepository).save(user)
-  }
-
-  @Test
-  fun enableUser_NotFound() {
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.empty())
-    assertThatThrownBy {
-      authUserService.enableUser(
-        "user",
-        "admin",
-        "some/auth/url",
-        SUPER_USER
+    @Test
+    fun `enable user sends email`() {
+      val optionalUser = Optional.of(createSampleUser(username = "someuser", email = "email"))
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+      authUserService.enableUser("user", "admin", "some/auth/url", SUPER_USER)
+      verify(notificationClient).sendEmail(
+        "enableUserTemplate",
+        "email",
+        mapOf(
+          "firstName" to "first",
+          "username" to "someuser",
+          "signinUrl" to "some/auth/"
+        ),
+        null
       )
-    }.isInstanceOf(EntityNotFoundException::class.java).hasMessageContaining("username user")
-  }
+    }
 
-  @Test
-  fun enableUser_trackEvent() {
-    val optionalUser = createOptionalSampleUser()
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.enableUser("someuser", "someadmin", "some/auth/url", SUPER_USER)
-    verify(telemetryClient).trackEvent(
-      "AuthUserEnabled",
-      mapOf("username" to "someuser", "admin" to "someadmin"),
-      null
-    )
-  }
+    @Test
+    fun `enable user only sends email if email set`() {
+      val optionalUser = Optional.of(createSampleUser())
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+      authUserService.enableUser("user", "admin", "some/auth/url", SUPER_USER)
+      verifyZeroInteractions(notificationClient)
+    }
 
-  @Test
-  fun enableUser_setLastLoggedIn() {
-    val optionalUser = createOptionalSampleUser()
-    val user = optionalUser.orElseThrow()
-    val tooLongAgo = LocalDateTime.now().minusDays(95)
-    user.lastLoggedIn = tooLongAgo
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.enableUser("someuser", "someadmin", "some/auth/url", SUPER_USER)
-    assertThat(user.lastLoggedIn).isBetween(LocalDateTime.now().minusDays(84), LocalDateTime.now().minusDays(82))
-  }
+    @Test
+    fun enableUser_invalidGroup_GroupManager() {
+      val optionalUser = createOptionalSampleUser()
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+      doThrow(AuthUserGroupRelationshipException("someuser", "User not with your groups")).whenever(maintainUserCheck)
+        .ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any())
+      assertThatThrownBy {
+        authUserService.enableUser(
+          "someuser",
+          "admin",
+          "some/auth/url",
+          GROUP_MANAGER
+        )
+      }.isInstanceOf(
+        AuthUserGroupRelationshipException::class.java
+      ).hasMessage("Unable to maintain user: someuser with reason: User not with your groups")
+    }
 
-  @Test
-  fun enableUser_leaveLastLoggedInAlone() {
-    val optionalUser = createOptionalSampleUser()
-    val user = optionalUser.orElseThrow()
-    val fiveDaysAgo = LocalDateTime.now().minusDays(5)
-    user.lastLoggedIn = fiveDaysAgo
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.enableUser("someuser", "someadmin", "some/auth/url", SUPER_USER)
-    assertThat(user.lastLoggedIn).isEqualTo(fiveDaysAgo)
-  }
-
-  @Test
-  fun disableUser_superUser() {
-    val optionalUser = createOptionalSampleUser()
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.disableUser("user", "admin", "A Reason", SUPER_USER)
-    assertThat(optionalUser).get().extracting { it.isEnabled }.isEqualTo(false)
-    verify(userRepository).save(optionalUser.orElseThrow())
-  }
-
-  @Test
-  fun disableUser_invalidGroup_GroupManager() {
-    val optionalUser = createOptionalSampleUser()
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    doThrow(AuthUserGroupRelationshipException("someuser", "User not with your groups")).whenever(maintainUserCheck)
-      .ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any())
-    assertThatThrownBy { authUserService.disableUser("someuser", "admin", "A Reason", GROUP_MANAGER) }.isInstanceOf(
-      AuthUserGroupRelationshipException::class.java
-    ).hasMessage("Unable to maintain user: someuser with reason: User not with your groups")
-  }
-
-  @Test
-  fun disableUser_validGroup_groupManager() {
-    val group1 = Group("group", "desc")
-    val user = createSampleUser(
-      username = "user",
-      groups = setOf(group1, Group("group2", "desc")),
-      enabled = true,
-      authorities = setOf(Authority("JOE", "bloggs"))
-    )
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
-      .thenReturn(Optional.of(user))
-    authUserService.disableUser("user", "admin", "A Reason", GROUP_MANAGER)
-    assertThat(user).extracting { it.isEnabled }.isEqualTo(false)
-    verify(userRepository).save(user)
-  }
-
-  @Test
-  fun disableUser_trackEvent() {
-    val optionalUser = createOptionalSampleUser()
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
-    authUserService.disableUser("someuser", "someadmin", "A Reason", SUPER_USER)
-    verify(telemetryClient).trackEvent(
-      "AuthUserDisabled",
-      mapOf("username" to "someuser", "admin" to "someadmin"),
-      null
-    )
-  }
-
-  @Test
-  fun disableUser_notFound() {
-    whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.empty())
-    assertThatThrownBy {
-      authUserService.disableUser(
-        "user",
-        "admin",
-        "A Reason",
-        SUPER_USER
+    @Test
+    fun enableUser_validGroup_groupManager() {
+      val user = createSampleUser(
+        username = "user",
+        groups = setOf(Group("group", "desc"), Group("group2", "desc")),
+        authorities = setOf(Authority("JOE", "bloggs"))
       )
-    }.isInstanceOf(EntityNotFoundException::class.java).hasMessageContaining("username user")
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
+        .thenReturn(Optional.of(user))
+      authUserService.enableUser("user", "admin", "some/auth/url", GROUP_MANAGER)
+      assertThat(user).extracting { it.isEnabled }.isEqualTo(true)
+      verify(userRepository).save(user)
+    }
+
+    @Test
+    fun enableUser_NotFound() {
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.empty())
+      assertThatThrownBy {
+        authUserService.enableUser(
+          "user",
+          "admin",
+          "some/auth/url",
+          SUPER_USER
+        )
+      }.isInstanceOf(UsernameNotFoundException::class.java).hasMessageContaining("username user")
+    }
+
+    @Test
+    fun enableUser_trackEvent() {
+      val optionalUser = createOptionalSampleUser()
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+      authUserService.enableUser("someuser", "someadmin", "some/auth/url", SUPER_USER)
+      verify(telemetryClient).trackEvent(
+        "AuthUserEnabled",
+        mapOf("username" to "someuser", "admin" to "someadmin"),
+        null
+      )
+    }
+
+    @Test
+    fun enableUser_setLastLoggedIn() {
+      val optionalUser = createOptionalSampleUser()
+      val user = optionalUser.orElseThrow()
+      val tooLongAgo = LocalDateTime.now().minusDays(95)
+      user.lastLoggedIn = tooLongAgo
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+      authUserService.enableUser("someuser", "someadmin", "some/auth/url", SUPER_USER)
+      assertThat(user.lastLoggedIn).isBetween(LocalDateTime.now().minusDays(84), LocalDateTime.now().minusDays(82))
+    }
+
+    @Test
+    fun enableUser_leaveLastLoggedInAlone() {
+      val optionalUser = createOptionalSampleUser()
+      val user = optionalUser.orElseThrow()
+      val fiveDaysAgo = LocalDateTime.now().minusDays(5)
+      user.lastLoggedIn = fiveDaysAgo
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+      authUserService.enableUser("someuser", "someadmin", "some/auth/url", SUPER_USER)
+      assertThat(user.lastLoggedIn).isEqualTo(fiveDaysAgo)
+    }
+  }
+
+  @Nested
+  inner class enableUserByUserId {
+    @Test
+    fun enableUserByUserId_superUser() {
+      val user = createOptionalSampleUser()
+      whenever(userRepository.findById(any())).thenReturn(user)
+      authUserService.enableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "admin", "some/auth/url", SUPER_USER)
+      assertThat(user).get().extracting { it.isEnabled }.isEqualTo(true)
+      verify(userRepository).save(user.orElseThrow())
+    }
+
+    @Test
+    fun `enable user by userId sends email`() {
+      val optionalUser = Optional.of(createSampleUser(username = "someuser", email = "email"))
+      whenever(userRepository.findById(any())).thenReturn(optionalUser)
+      authUserService.enableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "admin", "some/auth/url", SUPER_USER)
+      verify(notificationClient).sendEmail(
+        "enableUserTemplate",
+        "email",
+        mapOf(
+          "firstName" to "first",
+          "username" to "someuser",
+          "signinUrl" to "some/auth/"
+        ),
+        null
+      )
+    }
+
+    @Test
+    fun `enable user by userId only sends email if email set`() {
+      val optionalUser = Optional.of(createSampleUser())
+      whenever(userRepository.findById(any())).thenReturn(optionalUser)
+      authUserService.enableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "admin", "some/auth/url", SUPER_USER)
+      verifyZeroInteractions(notificationClient)
+    }
+
+    @Test
+    fun `enable User by userId invalidGroup_GroupManager`() {
+      val optionalUser = createOptionalSampleUser()
+      whenever(userRepository.findById(any())).thenReturn(optionalUser)
+      doThrow(AuthUserGroupRelationshipException("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "User not with your groups")).whenever(maintainUserCheck)
+        .ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any())
+      assertThatThrownBy {
+        authUserService.enableUserByUserId(
+          "00000000-aaaa-0000-aaaa-0a0a0a0a0a0a",
+          "admin",
+          "some/auth/url",
+          GROUP_MANAGER
+        )
+      }.isInstanceOf(
+        AuthUserGroupRelationshipException::class.java
+      ).hasMessage("Unable to maintain user: 00000000-aaaa-0000-aaaa-0a0a0a0a0a0a with reason: User not with your groups")
+    }
+
+    @Test
+    fun `enable User by userId validGroup_groupManager`() {
+      val user = createSampleUser(
+        username = "user",
+        groups = setOf(Group("group", "desc"), Group("group2", "desc")),
+        authorities = setOf(Authority("JOE", "bloggs"))
+      )
+      whenever(userRepository.findById(any()))
+        .thenReturn(Optional.of(user))
+      authUserService.enableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "admin", "some/auth/url", GROUP_MANAGER)
+      assertThat(user).extracting { it.isEnabled }.isEqualTo(true)
+      verify(userRepository).save(user)
+    }
+
+    @Test
+    fun `enable User By UserId_NotFound`() {
+      assertThatThrownBy {
+        authUserService.enableUserByUserId(
+          "00000000-aaaa-0000-aaaa-0a0a0a0a0a0a",
+          "admin",
+          "some/auth/url",
+          SUPER_USER
+        )
+      }.isInstanceOf(UsernameNotFoundException::class.java)
+        .withFailMessage("User 00000000-aaaa-0000-aaaa-0a0a0a0a0a0a not found")
+    }
+
+    @Test
+    fun `enable User by userId track event`() {
+      val optionalUser = createOptionalSampleUser()
+      whenever(userRepository.findById(any())).thenReturn(optionalUser)
+      authUserService.enableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "someadmin", "some/auth/url", SUPER_USER)
+      verify(telemetryClient).trackEvent(
+        "AuthUserEnabled",
+        mapOf("username" to "someuser", "admin" to "someadmin"),
+        null
+      )
+    }
+
+    @Test
+    fun `enable User by userId set LastLoggedIn`() {
+      val optionalUser = createOptionalSampleUser()
+      val user = optionalUser.orElseThrow()
+      val tooLongAgo = LocalDateTime.now().minusDays(95)
+      user.lastLoggedIn = tooLongAgo
+      whenever(userRepository.findById(any())).thenReturn(optionalUser)
+      authUserService.enableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "someadmin", "some/auth/url", SUPER_USER)
+      assertThat(user.lastLoggedIn).isBetween(LocalDateTime.now().minusDays(84), LocalDateTime.now().minusDays(82))
+    }
+
+    @Test
+    fun `enable User by userId leave LastLoggedIn alone`() {
+      val optionalUser = createOptionalSampleUser()
+      val user = optionalUser.orElseThrow()
+      val fiveDaysAgo = LocalDateTime.now().minusDays(5)
+      user.lastLoggedIn = fiveDaysAgo
+      whenever(userRepository.findById(any())).thenReturn(optionalUser)
+      authUserService.enableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "someadmin", "some/auth/url", SUPER_USER)
+      assertThat(user.lastLoggedIn).isEqualTo(fiveDaysAgo)
+    }
+  }
+
+  @Nested
+  inner class disableUser {
+    @Test
+    fun disableUser_superUser() {
+      val optionalUser = createOptionalSampleUser()
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+      authUserService.disableUser("user", "admin", "A Reason", SUPER_USER)
+      assertThat(optionalUser).get().extracting { it.isEnabled }.isEqualTo(false)
+      verify(userRepository).save(optionalUser.orElseThrow())
+    }
+
+    @Test
+    fun disableUser_invalidGroup_GroupManager() {
+      val optionalUser = createOptionalSampleUser()
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+      doThrow(AuthUserGroupRelationshipException("someuser", "User not with your groups")).whenever(maintainUserCheck)
+        .ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any())
+      assertThatThrownBy { authUserService.disableUser("someuser", "admin", "A Reason", GROUP_MANAGER) }.isInstanceOf(
+        AuthUserGroupRelationshipException::class.java
+      ).hasMessage("Unable to maintain user: someuser with reason: User not with your groups")
+    }
+
+    @Test
+    fun disableUser_validGroup_groupManager() {
+      val group1 = Group("group", "desc")
+      val user = createSampleUser(
+        username = "user",
+        groups = setOf(group1, Group("group2", "desc")),
+        enabled = true,
+        authorities = setOf(Authority("JOE", "bloggs"))
+      )
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString()))
+        .thenReturn(Optional.of(user))
+      authUserService.disableUser("user", "admin", "A Reason", GROUP_MANAGER)
+      assertThat(user).extracting { it.isEnabled }.isEqualTo(false)
+      verify(userRepository).save(user)
+    }
+
+    @Test
+    fun disableUser_trackEvent() {
+      val optionalUser = createOptionalSampleUser()
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(optionalUser)
+      authUserService.disableUser("someuser", "someadmin", "A Reason", SUPER_USER)
+      verify(telemetryClient).trackEvent(
+        "AuthUserDisabled",
+        mapOf("username" to "someuser", "admin" to "someadmin"),
+        null
+      )
+    }
+
+    @Test
+    fun disableUser_notFound() {
+      whenever(userRepository.findByUsernameAndMasterIsTrue(anyString())).thenReturn(Optional.empty())
+      assertThatThrownBy {
+        authUserService.disableUser(
+          "user",
+          "admin",
+          "A Reason",
+          SUPER_USER
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java).hasMessageContaining("username user")
+    }
+  }
+
+  @Nested
+  inner class disableUserByUserId {
+    @Test
+    fun `disable User by userId superUser`() {
+      val optionalUser = createOptionalSampleUser()
+      whenever(userRepository.findById(any())).thenReturn(optionalUser)
+      authUserService.disableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "admin", "A Reason", SUPER_USER)
+      assertThat(optionalUser).get().extracting { it.isEnabled }.isEqualTo(false)
+      verify(userRepository).save(optionalUser.orElseThrow())
+    }
+
+    @Test
+    fun `disable User by userId invalidGroup_GroupManager`() {
+      val optionalUser = createOptionalSampleUser()
+      whenever(userRepository.findById(any())).thenReturn(optionalUser)
+      doThrow(AuthUserGroupRelationshipException("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "User not with your groups")).whenever(maintainUserCheck)
+        .ensureUserLoggedInUserRelationship(anyString(), anyCollection(), any())
+      assertThatThrownBy { authUserService.disableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "admin", "A Reason", GROUP_MANAGER) }.isInstanceOf(
+        AuthUserGroupRelationshipException::class.java
+      ).hasMessage("Unable to maintain user: 00000000-aaaa-0000-aaaa-0a0a0a0a0a0a with reason: User not with your groups")
+    }
+
+    @Test
+    fun `disable User by userId validGroup_groupManager`() {
+      val group1 = Group("group", "desc")
+      val user = createSampleUser(
+        username = "user",
+        groups = setOf(group1, Group("group2", "desc")),
+        enabled = true,
+        authorities = setOf(Authority("JOE", "bloggs"))
+      )
+      whenever(userRepository.findById(any()))
+        .thenReturn(Optional.of(user))
+      authUserService.disableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "admin", "A Reason", GROUP_MANAGER)
+      assertThat(user).extracting { it.isEnabled }.isEqualTo(false)
+      verify(userRepository).save(user)
+    }
+
+    @Test
+    fun `disable user by userId track event`() {
+      val optionalUser = createOptionalSampleUser()
+      whenever(userRepository.findById(any())).thenReturn(optionalUser)
+      authUserService.disableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "someadmin", "A Reason", SUPER_USER)
+      verify(telemetryClient).trackEvent(
+        "AuthUserDisabled",
+        mapOf("username" to "someuser", "admin" to "someadmin"),
+        null
+      )
+    }
+
+    @Test
+    fun `disable user by userId notFound`() {
+      assertThatThrownBy {
+        authUserService.disableUserByUserId(
+          "00000000-aaaa-0000-aaaa-0a0a0a0a0a0a",
+          "admin",
+          "A Reason",
+          SUPER_USER
+        )
+      }.isInstanceOf(UsernameNotFoundException::class.java)
+        .withFailMessage("User 00000000-aaaa-0000-aaaa-0a0a0a0a0a0a not found")
+    }
   }
 
   @Nested

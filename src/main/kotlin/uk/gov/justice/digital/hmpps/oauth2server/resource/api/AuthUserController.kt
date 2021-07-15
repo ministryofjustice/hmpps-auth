@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
@@ -362,6 +363,39 @@ class AuthUserController(
     }.orElseThrow { EntityNotFoundException("User not found with username $username") }
   }
 
+  @PutMapping("/api/authuser/id/{userId}/enable")
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @ApiOperation(
+    value = "Enable a user.",
+    notes = "Enable a user.",
+    nickname = "enableUser",
+    consumes = "application/json",
+    produces = "application/json"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 204, message = "OK"),
+      ApiResponse(code = 401, message = "Unauthorized.", response = ErrorDetail::class),
+      ApiResponse(
+        code = 403,
+        message = "Unable to enable user, the user is not within one of your groups",
+        response = ErrorDetail::class
+      ),
+      ApiResponse(code = 404, message = "User not found.", response = ErrorDetail::class)
+    ]
+  )
+  fun enableUserByUserId(
+    @ApiParam(value = "The userId of the user.", required = true) @PathVariable userId: String,
+    @ApiIgnore authentication: Authentication,
+    @ApiIgnore request: HttpServletRequest,
+  ) = authUserService.enableUserByUserId(
+    userId,
+    authentication.name,
+    request.requestURL.toString(),
+    authentication.authorities
+  )
+
   @PutMapping("/api/authuser/{username}/disable")
   @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
   @ApiOperation(
@@ -421,6 +455,47 @@ class AuthUserController(
       }
     }.orElseThrow { EntityNotFoundException("User not found with username $username") }
   }
+
+  @PutMapping("/api/authuser/id/{userId}/disable")
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
+  @ApiOperation(
+    value = "Disable a user.",
+    notes = "Disable a user.",
+    nickname = "disableUser",
+    consumes = "application/json",
+    produces = "application/json"
+  )
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @ApiResponses(
+    value = [
+      ApiResponse(code = 204, message = "OK"), ApiResponse(
+        code = 401,
+        message = "Unauthorized.",
+        response = ErrorDetail::class
+      ), ApiResponse(
+        code = 403,
+        message = "Unable to disable user, the user is not within one of your groups",
+        response = ErrorDetail::class
+      ), ApiResponse(
+        code = 404,
+        message = "User not found.",
+        response = ErrorDetail::class
+      )
+    ]
+  )
+  fun disableUserByUserId(
+    @ApiParam(value = "The userId of the user.", required = true) @PathVariable userId: String,
+    @ApiParam(
+      value = "The reason user made inactive.",
+      required = true
+    ) @RequestBody deactivateReason: DeactivateReason,
+    @ApiIgnore authentication: Authentication,
+  ) = authUserService.disableUserByUserId(
+    userId,
+    authentication.name,
+    deactivateReason.reason,
+    authentication.authorities
+  )
 
   @PostMapping("/api/authuser/{username}")
   @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
