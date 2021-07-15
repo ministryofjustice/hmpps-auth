@@ -26,3 +26,5 @@ sonar-project.properties
 
 .env*
 .httpie*
+
+moj-sortable-table
