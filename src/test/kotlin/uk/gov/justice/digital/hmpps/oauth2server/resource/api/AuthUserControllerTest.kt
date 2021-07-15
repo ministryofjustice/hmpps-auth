@@ -351,6 +351,13 @@ class AuthUserControllerTest {
   }
 
   @Test
+  fun enableUserByUserId() {
+    whenever(request.requestURL).thenReturn(StringBuffer("some/auth/url"))
+    authUserController.enableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", authentication, request)
+    verify(authUserService).enableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "bob", "some/auth/url", authentication.authorities)
+  }
+
+  @Test
   fun enableUser_notFound() {
     val user = createSampleUser(username = "USER", email = "email", verified = true)
     whenever(request.requestURL).thenReturn(StringBuffer("http://some.url/auth/api/authuser/newusername"))
@@ -372,6 +379,12 @@ class AuthUserControllerTest {
     val responseEntity = authUserController.disableUser("user", DeactivateReason("A Reason"), authentication)
     assertThat(responseEntity.statusCodeValue).isEqualTo(204)
     verify(authUserService).disableUser("USER", "bob", "A Reason", authentication.authorities)
+  }
+
+  @Test
+  fun disableUserByUserId() {
+    authUserController.disableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", DeactivateReason("A Reason"), authentication)
+    verify(authUserService).disableUserByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "bob", "A Reason", authentication.authorities)
   }
 
   @Test

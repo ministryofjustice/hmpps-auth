@@ -43,12 +43,12 @@ class AuthExceptionHandler {
   fun handleAuthUserGroupRelationshipException(e: AuthUserGroupRelationshipException): ResponseEntity<ErrorDetail> {
     log.debug("Auth user group relationship exception caught: {}", e.message)
     return ResponseEntity
-      .status(HttpStatus.CONFLICT)
+      .status(HttpStatus.FORBIDDEN)
       .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", "username"))
   }
 
   @ExceptionHandler(GroupNotFoundException::class)
-  fun GroupNotFoundException(e: GroupNotFoundException): ResponseEntity<ErrorDetail> {
+  fun handleGroupNotFoundException(e: GroupNotFoundException): ResponseEntity<ErrorDetail> {
     log.debug("Username not found exception caught: {}", e.message)
     return ResponseEntity
       .status(HttpStatus.NOT_FOUND)
@@ -59,7 +59,7 @@ class AuthExceptionHandler {
   fun handleAuthGroupRelationshipException(e: AuthGroupRelationshipException): ResponseEntity<ErrorDetail> {
     log.debug("Auth maintain group relationship exception caught: {}", e.message)
     return ResponseEntity
-      .status(HttpStatus.CONFLICT)
+      .status(HttpStatus.FORBIDDEN)
       .body(ErrorDetail(e.errorCode, e.message ?: "Error message not set", "group"))
   }
 

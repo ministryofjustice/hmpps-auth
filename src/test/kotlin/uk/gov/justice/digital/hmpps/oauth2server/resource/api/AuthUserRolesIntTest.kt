@@ -39,7 +39,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
       .put().uri("/api/authuser/AUTH_ADM/roles/licence_vary")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
-      .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+      .expectStatus().isEqualTo(HttpStatus.FORBIDDEN)
       .expectBody()
       .json("""{error: "User not with your groups", error_description: "Unable to maintain user: Auth Adm with reason: User not with your groups", field: "username"}""")
   }
@@ -104,7 +104,7 @@ class AuthUserRolesIntTest : IntegrationTest() {
       .delete().uri("/api/authuser/AUTH_ADM/roles/licence_ro")
       .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
       .exchange()
-      .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+      .expectStatus().isEqualTo(HttpStatus.FORBIDDEN)
       .expectBody()
       .json("""{error: "User not with your groups", error_description: "Unable to maintain user: Auth Adm with reason: User not with your groups", field: "username"}""")
   }

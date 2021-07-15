@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -242,7 +243,7 @@ class AuthUserService(
   @Throws(AuthUserGroupRelationshipException::class)
   fun enableUser(username: String, admin: String, requestUrl: String, authorities: Collection<GrantedAuthority>) {
     val user = userRepository.findByUsernameAndMasterIsTrue(username)
-      .orElseThrow { EntityNotFoundException("User not found with username $username") }
+      .orElseThrow { UsernameNotFoundException("User not found with username $username") }
     maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
     user.isEnabled = true
     user.inactiveReason = null
@@ -253,6 +254,23 @@ class AuthUserService(
     userRepository.save(user)
     user.email?.let { sendEnableEmail(user = user, creator = admin, requestUrl = requestUrl) }
     telemetryClient.trackEvent("AuthUserEnabled", mapOf("username" to user.username, "admin" to admin), null)
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(AuthUserGroupRelationshipException::class)
+  fun enableUserByUserId(userId: String, admin: String, requestUrl: String, authorities: Collection<GrantedAuthority>) {
+    userRepository.findByIdOrNull(UUID.fromString(userId))?.let { user ->
+      maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
+      user.isEnabled = true
+      user.inactiveReason = null
+      // give user 7 days grace if last logged in more than x days ago
+      if (user.lastLoggedIn.isBefore(LocalDateTime.now().minusDays(loginDaysTrigger.toLong()))) {
+        user.lastLoggedIn = LocalDateTime.now().minusDays(loginDaysTrigger - 7L)
+      }
+      userRepository.save(user)
+      user.email?.let { sendEnableEmail(user = user, creator = admin, requestUrl = requestUrl) }
+      telemetryClient.trackEvent("AuthUserEnabled", mapOf("username" to user.username, "admin" to admin), null)
+    } ?: throw UsernameNotFoundException("User $userId not found")
   }
 
   private fun sendEnableEmail(user: User, creator: String, requestUrl: String) {
@@ -294,6 +312,18 @@ class AuthUserService(
     user.inactiveReason = inactiveReason
     userRepository.save(user)
     telemetryClient.trackEvent("AuthUserDisabled", mapOf("username" to user.username, "admin" to admin), null)
+  }
+
+  @Transactional(transactionManager = "authTransactionManager")
+  @Throws(AuthUserGroupRelationshipException::class)
+  fun disableUserByUserId(userId: String, admin: String, inactiveReason: String, authorities: Collection<GrantedAuthority>) {
+    userRepository.findByIdOrNull(UUID.fromString(userId))?.let { user ->
+      maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, user)
+      user.isEnabled = false
+      user.inactiveReason = inactiveReason
+      userRepository.save(user)
+      telemetryClient.trackEvent("AuthUserDisabled", mapOf("username" to user.username, "admin" to admin), null)
+    } ?: throw UsernameNotFoundException("User $userId not found")
   }
 
   @Throws(CreateUserException::class, ValidEmailException::class)
