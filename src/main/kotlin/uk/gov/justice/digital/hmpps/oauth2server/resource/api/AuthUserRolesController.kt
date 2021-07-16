@@ -72,13 +72,16 @@ class AuthUserRolesController(
       ApiResponse(code = 404, message = "User not found.", response = ErrorDetail::class)
     ]
   )
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
   fun rolesByUserId(
     @ApiParam(
       value = "The userId of the user.",
       required = true
     ) @PathVariable userId: String,
+    @ApiIgnore authentication: Authentication,
   ): Set<AuthUserRole> =
-    authUserService.getAuthUserByUserId(userId)?.let { u: User -> u.authorities.map { AuthUserRole(it) }.toSet() }
+    authUserService.getAuthUserByUserId(userId, authentication.name, authentication.authorities)
+      ?.let { u: User -> u.authorities.map { AuthUserRole(it) }.toSet() }
       ?: throw UsernameNotFoundException("User $userId not found")
 
   @GetMapping("/api/authuser/{username}/assignable-roles")

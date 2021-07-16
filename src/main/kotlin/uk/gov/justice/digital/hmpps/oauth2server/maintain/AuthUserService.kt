@@ -237,7 +237,12 @@ class AuthUserService(
   fun getAuthUserByUsername(username: String?): Optional<User> =
     userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)))
 
-  fun getAuthUserByUserId(id: String): User? = userRepository.findByIdOrNull(UUID.fromString(id))
+  fun getAuthUserByUserId(id: String, admin: String, authorities: Collection<GrantedAuthority>): User? {
+    return userRepository.findByIdOrNull(UUID.fromString(id))?.let {
+      maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, it)
+      it
+    }
+  }
 
   @Transactional(transactionManager = "authTransactionManager")
   @Throws(AuthUserGroupRelationshipException::class)

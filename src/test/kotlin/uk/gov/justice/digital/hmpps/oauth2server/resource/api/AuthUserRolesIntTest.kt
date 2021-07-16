@@ -177,8 +177,46 @@ class AuthUserRolesIntTest : IntegrationTest() {
   }
 
   @Test
-  fun `Auth User Roles by userId endpoint returns user roles`() {
-    checkRolesForUserId("5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8", listOf("GLOBAL_SEARCH", "LICENCE_RO", "LICENCE_VARY"))
+  fun `Get Roles by userId endpoint returns user roles - Auth Admin`() {
+    webTestClient
+      .get().uri("/api/authuser/id/5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8/roles")
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$.[*].roleCode").value<List<String>> {
+        assertThat(it).containsExactlyInAnyOrderElementsOf(listOf("GLOBAL_SEARCH", "LICENCE_RO", "LICENCE_VARY"))
+      }
+  }
+
+  @Test
+  fun `Get Roles by userId endpoint returns user roles - Group Manager`() {
+    webTestClient
+      .get().uri("/api/authuser/id/5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8/roles")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$.[*].roleCode").value<List<String>> {
+        assertThat(it).containsExactlyInAnyOrderElementsOf(listOf("GLOBAL_SEARCH", "LICENCE_RO", "LICENCE_VARY"))
+      }
+  }
+
+  @Test
+  fun `Get Roles by userId endpoint returns forbidden - user not in group manager group`() {
+    webTestClient
+      .get().uri("/api/authuser/id/9E84F1E4-59C8-4B10-927A-9CF9E9A30792/roles")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isForbidden
+      .expectBody()
+      .json(
+        """
+      {"error":"User not with your groups","error_description":"Unable to maintain user: Auth Expired with reason: User not with your groups","field":"username"}
+        """.trimIndent()
+      )
   }
 
   @Test
@@ -195,19 +233,6 @@ class AuthUserRolesIntTest : IntegrationTest() {
   private fun checkRolesForUser(user: String, roles: List<String>) {
     webTestClient
       .get().uri("/api/authuser/$user/roles")
-      .headers(setAuthorisation("ITAG_USER_ADM"))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.[*].roleCode").value<List<String>> {
-        assertThat(it).containsExactlyInAnyOrderElementsOf(roles)
-      }
-  }
-
-  private fun checkRolesForUserId(userId: String, roles: List<String>) {
-    webTestClient
-      .get().uri("/api/authuser/id/$userId/roles")
       .headers(setAuthorisation("ITAG_USER_ADM"))
       .exchange()
       .expectStatus().isOk

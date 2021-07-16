@@ -43,14 +43,14 @@ class AuthUserRolesControllerTest {
 
   @Test
   fun rolesByUserId_userNotFound() {
-    assertThatThrownBy { authUserRolesController.rolesByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a") }
+    assertThatThrownBy { authUserRolesController.rolesByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", principal) }
       .isInstanceOf(UsernameNotFoundException::class.java).withFailMessage("Account for username bob not found")
   }
 
   @Test
   fun rolesByUserId_success() {
-    whenever(authUserService.getAuthUserByUserId(anyString())).thenReturn(authUser)
-    val responseEntity = authUserRolesController.rolesByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")
+    whenever(authUserService.getAuthUserByUserId(anyString(), anyString(), any())).thenReturn(authUser)
+    val responseEntity = authUserRolesController.rolesByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", principal)
     assertThat(responseEntity).containsOnly(
       AuthUserRole(Authority("FRED", "FRED")),
       AuthUserRole(Authority("GLOBAL_SEARCH", "Global Search"))

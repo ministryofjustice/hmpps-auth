@@ -8,6 +8,84 @@ import uk.gov.justice.digital.hmpps.oauth2server.resource.IntegrationTest
 
 class AuthUserControllerIntTest : IntegrationTest() {
 
+  @Test
+  fun `Auth Admin can get users details by userId`() {
+    webTestClient
+      .get().uri("/api/authuser/id/fc494152-f9ad-48a0-a87c-9adc8bd75255")
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it).containsAllEntriesOf(
+          mapOf(
+            "userId" to "fc494152-f9ad-48a0-a87c-9adc8bd75255",
+            "username" to "AUTH_STATUS",
+            "email" to null,
+            "firstName" to "Auth",
+            "lastName" to "Status",
+            "locked" to false,
+            "enabled" to false,
+            "verified" to true,
+          )
+        )
+      }
+  }
+
+  @Test
+  fun `Group Manager can get users details by userId`() {
+    webTestClient
+      .get().uri("/api/authuser/id/fc494152-f9ad-48a0-a87c-9adc8bd75299")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$").value<Map<String, Any>> {
+        assertThat(it).containsAllEntriesOf(
+          mapOf(
+            "userId" to "fc494152-f9ad-48a0-a87c-9adc8bd75299",
+            "username" to "AUTH_STATUS5",
+            "email" to null,
+            "firstName" to "Auth",
+            "lastName" to "Status5",
+            "locked" to false,
+            "enabled" to false,
+            "verified" to true,
+          )
+        )
+      }
+  }
+
+  @Test
+  fun `Group manager get user by userId endpoint fails user not in group manager group forbidden`() {
+    webTestClient
+      .get().uri("/api/authuser/id/fc494152-f9ad-48a0-a87c-9adc8bd75255")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isForbidden
+      .expectBody()
+      .json(
+        """
+      {"error":"User not with your groups","error_description":"Unable to maintain user: Auth Status with reason: User not with your groups","field":"username"}
+        """.trimIndent()
+      )
+  }
+
+  @Test
+  fun `get user Details by userId endpoint fails is not an admin user`() {
+    webTestClient
+      .get().uri("/api/authuser/id/fc494152-f9ad-48a0-a87c-9adc8bd75255")
+      .headers(setAuthorisation("ITAG_USER", listOf()))
+      .exchange()
+      .expectStatus().isForbidden
+      .expectBody()
+      .json(
+        """
+      {"error":"access_denied","error_description":"Access is denied"}
+        """.trimIndent()
+      )
+  }
+
   @Nested
   inner class EnableUser {
 

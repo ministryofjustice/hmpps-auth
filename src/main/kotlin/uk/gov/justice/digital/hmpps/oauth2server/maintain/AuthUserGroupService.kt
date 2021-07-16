@@ -117,8 +117,9 @@ class AuthUserGroupService(
     }.orElse(null)
   }
 
-  fun getAuthUserGroupsByUserId(userId: String): Set<Group>? =
+  fun getAuthUserGroupsByUserId(userId: String, admin: String, authorities: Collection<GrantedAuthority>): Set<Group>? =
     userRepository.findByIdOrNull(UUID.fromString(userId))?.let { u: User ->
+      maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, u)
       Hibernate.initialize(u.groups)
       u.groups.forEach { Hibernate.initialize(it.children) }
       u.groups

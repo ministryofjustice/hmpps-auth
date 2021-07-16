@@ -95,8 +95,8 @@ class AuthUserGroupsControllerTest {
   inner class GroupsByUserId {
     @Test
     fun `groups userNotFound`() {
-      whenever(authUserGroupService.getAuthUserGroupsByUserId(anyString())).thenReturn(null)
-      assertThatThrownBy { authUserGroupsController.groupsByUserId(userId = "00000000-aaaa-0000-aaaa-0a0a0a0a0a0a") }
+      whenever(authUserGroupService.getAuthUserGroupsByUserId(anyString(), anyString(), any())).thenReturn(null)
+      assertThatThrownBy { authUserGroupsController.groupsByUserId(userId = "00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", authentication = authenticationSuperUser) }
         .isInstanceOf(UsernameNotFoundException::class.java)
     }
 
@@ -104,9 +104,9 @@ class AuthUserGroupsControllerTest {
     fun `groups no children`() {
       val group1 = Group("FRED", "desc")
       val group2 = Group("GLOBAL_SEARCH", "desc2")
-      whenever(authUserGroupService.getAuthUserGroupsByUserId(anyString())).thenReturn(setOf(group1, group2))
+      whenever(authUserGroupService.getAuthUserGroupsByUserId(anyString(), anyString(), any())).thenReturn(setOf(group1, group2))
       val responseEntity =
-        authUserGroupsController.groupsByUserId(userId = "00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", children = false)
+        authUserGroupsController.groupsByUserId(userId = "00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", children = false, authentication = authenticationSuperUser)
       assertThat(responseEntity).containsOnly(AuthUserGroup(group1), AuthUserGroup(group2))
     }
 
@@ -116,8 +116,8 @@ class AuthUserGroupsControllerTest {
       val group2 = Group("GLOBAL_SEARCH", "desc2")
       val childGroup = ChildGroup("CHILD_1", "child 1")
       group2.children.add(childGroup)
-      whenever(authUserGroupService.getAuthUserGroupsByUserId(anyString())).thenReturn(setOf(group1, group2))
-      val responseEntity = authUserGroupsController.groupsByUserId(userId = "00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")
+      whenever(authUserGroupService.getAuthUserGroupsByUserId(anyString(), anyString(), any())).thenReturn(setOf(group1, group2))
+      val responseEntity = authUserGroupsController.groupsByUserId(userId = "00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", authentication = authenticationSuperUser)
       assertThat(responseEntity).containsOnly(AuthUserGroup("FRED", "desc"), AuthUserGroup("CHILD_1", "child 1"))
     }
 
@@ -127,8 +127,8 @@ class AuthUserGroupsControllerTest {
       val group2 = Group("GLOBAL_SEARCH", "desc2")
       val childGroup = ChildGroup("CHILD_1", "child 1")
       group2.children.add(childGroup)
-      whenever(authUserGroupService.getAuthUserGroupsByUserId(anyString())).thenReturn(setOf(group1, group2))
-      val responseEntity = authUserGroupsController.groupsByUserId(userId = "00000000-aaaa-0000-aaaa-0a0a0a0a0a0a")
+      whenever(authUserGroupService.getAuthUserGroupsByUserId(anyString(), anyString(), any())).thenReturn(setOf(group1, group2))
+      val responseEntity = authUserGroupsController.groupsByUserId(userId = "00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", authentication = authenticationSuperUser)
       assertThat(responseEntity).containsOnly(AuthUserGroup("FRED", "desc"), AuthUserGroup("CHILD_1", "child 1"))
     }
   }
