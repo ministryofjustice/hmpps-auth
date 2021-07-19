@@ -238,9 +238,8 @@ class AuthUserService(
     userRepository.findByUsernameAndMasterIsTrue(StringUtils.upperCase(StringUtils.trim(username)))
 
   fun getAuthUserByUserId(id: String, admin: String, authorities: Collection<GrantedAuthority>): User? {
-    return userRepository.findByIdOrNull(UUID.fromString(id))?.let {
+    return userRepository.findByIdOrNull(UUID.fromString(id))?.also {
       maintainUserCheck.ensureUserLoggedInUserRelationship(admin, authorities, it)
-      it
     }
   }
 
