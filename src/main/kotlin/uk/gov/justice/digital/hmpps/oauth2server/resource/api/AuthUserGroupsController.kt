@@ -66,6 +66,7 @@ class AuthUserGroupsController(
     ?: throw UsernameNotFoundException("User $username not found")
 
   @GetMapping("/api/authuser/id/{userId}/groups")
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
   @ApiOperation(
     value = "Get groups for userId.",
     nickname = "groups",
@@ -83,12 +84,14 @@ class AuthUserGroupsController(
     @PathVariable userId: String,
     @ApiParam(value = "Whether groups are expanded into their children.", required = false)
     @RequestParam(defaultValue = "true") children: Boolean = true,
-  ): List<AuthUserGroup> = authUserGroupService.getAuthUserGroupsByUserId(userId)
-    ?.flatMap { g ->
-      if (children && g.children.isNotEmpty()) g.children.map { AuthUserGroup(it) }
-      else listOf(AuthUserGroup(g))
-    }
-    ?: throw UsernameNotFoundException("User $userId not found")
+    @ApiIgnore authentication: Authentication,
+  ): List<AuthUserGroup> =
+    authUserGroupService.getAuthUserGroupsByUserId(userId, authentication.name, authentication.authorities)
+      ?.flatMap { g ->
+        if (children && g.children.isNotEmpty()) g.children.map { AuthUserGroup(it) }
+        else listOf(AuthUserGroup(g))
+      }
+      ?: throw UsernameNotFoundException("User $userId not found")
 
   @PutMapping("/api/authuser/{username}/groups/{group}")
   @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")

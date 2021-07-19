@@ -169,6 +169,7 @@ INSERT INTO users (user_id, username, password, password_expiry, email, first_na
         ('FC494152-F9AD-48A0-A87C-9ADC8BD75266', 'AUTH_STATUS2', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Status2', 1, 0, 0, 'auth'),
         ('FC494152-F9AD-48A0-A87C-9ADC8BD75277', 'AUTH_STATUS3', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Status3', 1, 0, 0, 'auth'),
         ('FC494152-F9AD-48A0-A87C-9ADC8BD75288', 'AUTH_STATUS4', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Status4', 1, 0, 0, 'auth'),
+        ('FC494152-F9AD-48A0-A87C-9ADC8BD75299', 'AUTH_STATUS5', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', null, 'Auth', 'Status5', 1, 0, 0, 'auth'),
         ('9E84F1E4-59C8-4B10-927A-9CF9E9A30791', 'AUTH_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2013-01-28 13:23:19.0000000', 'auth_test2@digital.justice.gov.uk', 'Auth', 'Expired', 1, 1, 0, 'auth'),
         ('9E84F1E4-59C8-4B10-927A-9CF9E9A30792', 'AUTH_MFA_EXPIRED', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '2013-01-28 13:23:19.0000000', 'auth_test3@digital.justice.gov.uk', 'Auth', 'Expired', 1, 1, 0, 'auth'),
         ('5105A589-75B3-4CA0-9433-B96228C1C8F3', 'AUTH_ADM', '{bcrypt}$2a$10$Fmcp2KUKRW53US3EJfsxkOh.ekZhqz5.Baheb9E98QLwEFLb9csxy', '3013-01-28 13:23:19.0000000', 'auth_test2@digital.justice.gov.uk', 'Auth', 'Adm', 1, 1, 0, 'auth'),
@@ -437,6 +438,7 @@ INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups,
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_GROUP_MANAGER2' and group_code = 'PF_LONDON';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_CHANGE_TEST' and group_code = 'GC_DEL_2';
 INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_CHANGE_TEST' and group_code = 'GC_DEL_2';
+INSERT INTO user_group (group_id, user_id) SELECT group_id, user_id from groups, users where username = 'AUTH_STATUS5' and group_code = 'SITE_1_GROUP_1';
 
 INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'true' FROM groups g, roles r WHERE r.role_code = 'GLOBAL_SEARCH' AND g.group_code = 'SITE_1_GROUP_1';
 INSERT INTO group_assignable_role (role_id, group_id, automatic) SELECT role_id, group_id, 'true' FROM groups g, roles r WHERE r.role_code = 'LICENCE_RO' AND g.group_code = 'SITE_1_GROUP_1';

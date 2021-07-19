@@ -228,10 +228,10 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
   }
 
   @Test
-  fun `Auth User Groups by userId endpoint returns user groups no children`() {
+  fun `Auth User Groups by userId endpoint returns user groups no children - admin user`() {
     webTestClient
       .get().uri("/api/authuser/id/5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8/groups?children=false")
-      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
@@ -245,10 +245,27 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
   }
 
   @Test
-  fun `Auth User Groups by userId endpoint returns user groups with children by default`() {
+  fun `Auth User Groups by userId endpoint returns user groups no children - group manager`() {
+    webTestClient
+      .get().uri("/api/authuser/id/5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8/groups?children=false")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .json(
+        """[
+          {"groupCode":"SITE_1_GROUP_1","groupName":"Site 1 - Group 1"},
+          {"groupCode":"SITE_1_GROUP_2","groupName":"Site 1 - Group 2"}       
+        ]
+        """.trimIndent()
+      )
+  }
+
+  @Test
+  fun `Auth User Groups by userId endpoint returns user groups with children by default - admin user`() {
     webTestClient
       .get().uri("/api/authuser/id/5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8/groups")
-      .headers(setAuthorisation("ITAG_USER_ADM"))
+      .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
@@ -257,6 +274,38 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
           {"groupCode":"SITE_1_GROUP_1","groupName":"Site 1 - Group 1"},
           {"groupCode":"CHILD_1","groupName":"Child - Site 1 - Group 2"}
         ]
+        """.trimIndent()
+      )
+  }
+
+  @Test
+  fun `Auth User Groups by userId endpoint returns user groups with children by default - group manager`() {
+    webTestClient
+      .get().uri("/api/authuser/id/5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8/groups")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .json(
+        """[
+          {"groupCode":"SITE_1_GROUP_1","groupName":"Site 1 - Group 1"},
+          {"groupCode":"CHILD_1","groupName":"Child - Site 1 - Group 2"}
+        ]
+        """.trimIndent()
+      )
+  }
+
+  @Test
+  fun `Auth User Groups by userId endpoint returns forbidden - user not in group manager group`() {
+    webTestClient
+      .get().uri("/api/authuser/id/9E84F1E4-59C8-4B10-927A-9CF9E9A30792/groups")
+      .headers(setAuthorisation("AUTH_GROUP_MANAGER", listOf("ROLE_AUTH_GROUP_MANAGER")))
+      .exchange()
+      .expectStatus().isForbidden
+      .expectBody()
+      .json(
+        """
+      {"error":"User not with your groups","error_description":"Unable to maintain user: Auth Expired with reason: User not with your groups","field":"username"}
         """.trimIndent()
       )
   }
@@ -290,7 +339,7 @@ class AuthUserGroupsControllerIntTest : IntegrationTest() {
 
   private fun callGetGroupsByUserId(userId: String = "AUTH_RO_USER", children: Boolean = false): BodyContentSpec = webTestClient
     .get().uri("/api/authuser/id/$userId/groups?children=$children")
-    .headers(setAuthorisation("ITAG_USER_ADM"))
+    .headers(setAuthorisation("ITAG_USER_ADM", listOf("ROLE_MAINTAIN_OAUTH_USERS")))
     .exchange()
     .expectStatus().isOk
     .expectBody()

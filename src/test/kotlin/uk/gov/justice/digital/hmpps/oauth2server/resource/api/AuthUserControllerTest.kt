@@ -7,6 +7,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.ArgumentMatchers.anyString
@@ -14,6 +15,7 @@ import org.mockito.Mockito.doThrow
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Group
 import uk.gov.justice.digital.hmpps.oauth2server.auth.model.User
@@ -69,6 +71,30 @@ class AuthUserControllerTest {
     val responseEntity = authUserController.user("joe")
     assertThat(responseEntity.statusCodeValue).isEqualTo(200)
     assertThat(responseEntity.body).isEqualTo(
+      AuthUser(
+        USER_ID,
+        "authentication",
+        "email",
+        "Joe",
+        "Bloggs",
+        false,
+        true,
+        true,
+        LocalDateTime.of(2019, 1, 1, 12, 0)
+      )
+    )
+  }
+
+  @Test
+  fun userByUserId_userNotFound() {
+    assertThatThrownBy { authUserController.getUserById("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", authentication) }.isInstanceOf(UsernameNotFoundException::class.java)
+  }
+
+  @Test
+  fun userByUserId_success() {
+    whenever(authUserService.getAuthUserByUserId(anyString(), any(), any())).thenReturn(authUser)
+    val response = authUserController.getUserById("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", authentication)
+    assertThat(response).isEqualTo(
       AuthUser(
         USER_ID,
         "authentication",

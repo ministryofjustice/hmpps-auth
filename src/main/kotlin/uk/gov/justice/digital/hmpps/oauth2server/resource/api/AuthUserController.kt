@@ -105,11 +105,14 @@ class AuthUserController(
       ApiResponse(code = 404, message = "User not found.", response = ErrorDetail::class)
     ]
   )
+  @PreAuthorize("hasAnyRole('ROLE_MAINTAIN_OAUTH_USERS', 'ROLE_AUTH_GROUP_MANAGER')")
   fun getUserById(
     @ApiParam(value = "The ID of the user.", required = true) @PathVariable userId: String,
+    @ApiIgnore authentication: Authentication,
   ): AuthUser {
 
-    return authUserService.getAuthUserByUserId(userId)?.let { AuthUser.fromUser(it) }
+    return authUserService.getAuthUserByUserId(userId, authentication.name, authentication.authorities)
+      ?.let { AuthUser.fromUser(it) }
       ?: throw UsernameNotFoundException("User $userId not found")
   }
 
