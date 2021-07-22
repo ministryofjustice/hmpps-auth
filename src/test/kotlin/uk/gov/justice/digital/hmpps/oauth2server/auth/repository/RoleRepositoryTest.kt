@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.oauth2server.auth.model.Authority
 import uk.gov.justice.digital.hmpps.oauth2server.config.AuthDbConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.FlywayConfig
 import uk.gov.justice.digital.hmpps.oauth2server.config.NomisDbConfig
+import java.util.UUID
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -57,6 +58,16 @@ class RoleRepositoryTest {
   @Test
   fun findByGroupAssignableRolesForUsername() {
     assertThat(repository.findByGroupAssignableRolesForUsername("AUTH_RO_VARY_USER")).extracting<String> { obj: Authority -> obj.roleCode }
+      .containsExactly("GLOBAL_SEARCH", "LICENCE_RO", "LICENCE_VARY")
+  }
+
+  @Test
+  fun findByGroupAssignableRolesForUserId() {
+    assertThat(
+      repository.findByGroupAssignableRolesForUserId(
+        UUID.fromString("5E3850B9-9D6E-49D7-B8E7-42874D6CEEA8")
+      )
+    ).extracting<String> { obj: Authority -> obj.roleCode }
       .containsExactly("GLOBAL_SEARCH", "LICENCE_RO", "LICENCE_VARY")
   }
 
