@@ -29,6 +29,16 @@
       "locked": false,
       "enabled": true,
       "verified": true
+    },
+    {
+      "userId": "90f930e1-2195-4afd-92ce-0eb5672da02e",
+      "username": "AUTH_ADD_ROLE_TEST2",
+      "email": "auth_add_role2@digital.justice.gov.uk",
+      "firstName": "Add",
+      "lastName": "RoleTest2",
+      "locked": false,
+      "enabled": true,
+      "verified": true
     }
   ],
   "pageable": {
@@ -45,7 +55,7 @@
   },
   "last": true,
   "totalPages": 1,
-  "totalElements": 3,
+  "totalElements": 4,
   "number": 0,
   "sort": {
     "sorted": true,
@@ -54,6 +64,6 @@
   },
   "size": 10,
   "first": true,
-  "numberOfElements": 3,
+  "numberOfElements": 4,
   "empty": false
 }

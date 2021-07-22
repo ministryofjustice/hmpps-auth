@@ -44,7 +44,7 @@ class AuthUserRolesControllerTest {
   @Test
   fun rolesByUserId_userNotFound() {
     assertThatThrownBy { authUserRolesController.rolesByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", principal) }
-      .isInstanceOf(UsernameNotFoundException::class.java).withFailMessage("Account for username bob not found")
+      .isInstanceOf(UsernameNotFoundException::class.java).withFailMessage("Account for userId 00000000-aaaa-0000-aaaa-0a0a0a0a0a0a not found")
   }
 
   @Test
@@ -71,6 +71,12 @@ class AuthUserRolesControllerTest {
   }
 
   @Test
+  fun addRoleByUserId_success() {
+    authUserRolesController.addRoleByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "role", principal)
+    verify(authUserRoleService).addRolesByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", listOf("role"), "bob", principal.authorities)
+  }
+
+  @Test
   fun removeRole_userNotFound() {
     assertThatThrownBy { authUserRolesController.removeRole("bob", "role", principal) }
       .isInstanceOf(UsernameNotFoundException::class.java).withFailMessage("Account for username bob not found")
@@ -84,6 +90,12 @@ class AuthUserRolesControllerTest {
   }
 
   @Test
+  fun removeRoleByUserId_success() {
+    authUserRolesController.removeRoleByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "joe", principal)
+    verify(authUserRoleService).removeRoleByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", "joe", "bob", principal.authorities)
+  }
+
+  @Test
   fun assignableRoles() {
     whenever(authUserRoleService.getAssignableRoles(anyString(), any())).thenReturn(
       listOf(
@@ -92,6 +104,21 @@ class AuthUserRolesControllerTest {
       )
     )
     val response = authUserRolesController.assignableRoles("someuser", principal)
+    assertThat(response).containsOnly(
+      AuthUserRole(Authority("FRED", "FRED")),
+      AuthUserRole(Authority("GLOBAL_SEARCH", "Global Search"))
+    )
+  }
+
+  @Test
+  fun assignableRolesByUserId() {
+    whenever(authUserRoleService.getAssignableRolesByUserId(anyString(), any())).thenReturn(
+      listOf(
+        Authority("FRED", "FRED"),
+        Authority("GLOBAL_SEARCH", "Global Search")
+      )
+    )
+    val response = authUserRolesController.assignableRolesByUserId("00000000-aaaa-0000-aaaa-0a0a0a0a0a0a", principal)
     assertThat(response).containsOnly(
       AuthUserRole(Authority("FRED", "FRED")),
       AuthUserRole(Authority("GLOBAL_SEARCH", "Global Search"))

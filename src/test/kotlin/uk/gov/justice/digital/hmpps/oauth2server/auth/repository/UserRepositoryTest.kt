@@ -101,7 +101,8 @@ class UserRepositoryTest {
     val retrievedEntity = repository.findByUsername(transientEntity.username).orElseThrow()
 
     // equals only compares the business key columns
-    assertThat(retrievedEntity).usingRecursiveComparison().ignoringFields("authorities", "passwordExpiry", "lastLoggedIn").isEqualTo(transientEntity)
+    assertThat(retrievedEntity).usingRecursiveComparison()
+      .ignoringFields("authorities", "passwordExpiry", "lastLoggedIn").isEqualTo(transientEntity)
     assertThat(retrievedEntity.passwordExpiry).isEqualToIgnoringNanos(transientEntity.passwordExpiry)
     assertThat(retrievedEntity.lastLoggedIn).isEqualToIgnoringNanos(transientEntity.lastLoggedIn)
     assertThat(retrievedEntity.name).isEqualTo("first last")
@@ -295,7 +296,14 @@ class UserRepositoryTest {
   fun findAll_UserFilter_ByRoles() {
     assertThat(repository.findAll(UserFilter(roleCodes = listOf("  LICENCE_VARY", "  LICENCE_RO"))))
       .extracting<String> { it.username }
-      .containsExactly("AUTH_DELETEALL", "AUTH_RO_USER_TEST", "AUTH_RO_USER", "AUTH_RO_VARY_USER")
+      .containsExactly(
+        "AUTH_DELETEALL",
+        "AUTH_RO_USER_TEST",
+        "AUTH_RO_USER",
+        "AUTH_RO_USER2",
+        "AUTH_RO_USER_TEST6",
+        "AUTH_RO_VARY_USER",
+      )
   }
 
   @Test
@@ -347,6 +355,7 @@ class UserRepositoryTest {
       .extracting<String> { it.username }
       .containsOnly(
         "AUTH_RO_USER",
+        "AUTH_RO_USER2",
         "AUTH_RO_VARY_USER",
         "AUTH_RO_USER1@DIGITAL.JUSTICE.GOV.UK",
         "AUTH_RO_USER_TEST",
@@ -354,6 +363,7 @@ class UserRepositoryTest {
         "AUTH_RO_USER_TEST3",
         "AUTH_RO_USER_TEST4",
         "AUTH_RO_USER_TEST5",
+        "AUTH_RO_USER_TEST6",
       )
   }
 
@@ -363,13 +373,16 @@ class UserRepositoryTest {
       .extracting<String> { it.username }
       .containsOnly(
         "AUTH_RO_USER",
+        "AUTH_RO_USER2",
         "AUTH_RO_VARY_USER",
         "AUTH_RO_USER1@DIGITAL.JUSTICE.GOV.UK",
         "AUTH_RO_USER_TEST",
         "AUTH_RO_USER_TEST2",
+        "AUTH_RO_USER_TEST2",
         "AUTH_RO_USER_TEST3",
         "AUTH_RO_USER_TEST4",
         "AUTH_RO_USER_TEST5",
+        "AUTH_RO_USER_TEST6",
       )
   }
 
@@ -446,9 +459,10 @@ class UserRepositoryTest {
   @Suppress("UNCHECKED_CAST")
   @Test
   fun findUsersPreDisableWarning() {
-    val preDisableWarning = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
-      LocalDateTime.parse("2020-12-01T12:00:00").plusMinutes(1), auth
-    )
+    val preDisableWarning =
+      repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
+        LocalDateTime.parse("2020-12-01T12:00:00").plusMinutes(1), auth
+      )
     val abstractListAssert = assertThat(preDisableWarning).extracting<String> { it.username }
       .contains("AUTH_INTEL_LOCAL") as AbstractListAssert<*, MutableList<out String>, String, ObjectAssert<String>>
     abstractListAssert.doesNotContain("AUTH_DISABLED", "ITAG_USER", "AUTH_INACTIVE")
@@ -457,28 +471,31 @@ class UserRepositoryTest {
 
   @Test
   fun findUsersPreDisableWarning_OrderByUsername() {
-    val preDisableWarning = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
-      LocalDateTime.now().plusMinutes(1),
-      auth
-    )
+    val preDisableWarning =
+      repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
+        LocalDateTime.now().plusMinutes(1),
+        auth
+      )
     assertThat(preDisableWarning).extracting<String> { it.username }.first().isEqualTo("AUTH_ADD_ROLE_TEST")
   }
 
   @Test
   fun findUsersPreDisableWarning_NoRows() {
-    val preDisableWarning = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
-      LocalDateTime.parse("2019-01-01T12:00:00").minusSeconds(1),
-      auth,
-    )
+    val preDisableWarning =
+      repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
+        LocalDateTime.parse("2019-01-01T12:00:00").minusSeconds(1),
+        auth,
+      )
     assertThat(preDisableWarning).isEmpty()
   }
 
   @Test
   fun findUsersPreDisableWarning_SingleRow() {
-    val preDisableWarning = repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
-      LocalDateTime.parse("2019-05-18T14:16:21").plusSeconds(1),
-      auth,
-    )
+    val preDisableWarning =
+      repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
+        LocalDateTime.parse("2019-05-18T14:16:21").plusSeconds(1),
+        auth,
+      )
     assertThat(preDisableWarning).extracting<String> { it.username }.containsExactly("TEST_PF_POLICE_1")
   }
 
@@ -486,7 +503,10 @@ class UserRepositoryTest {
   @Test
   fun findUsersPreDisableWarning_First10() {
     val inactive =
-      repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(LocalDateTime.now().plusMinutes(1), auth)
+      repository.findTop10ByLastLoggedInBeforeAndEnabledIsTrueAndPreDisableWarningIsFalseAndVerifiedIsTrueAndSourceOrderByUsername(
+        LocalDateTime.now().plusMinutes(1),
+        auth
+      )
     val abstractListAssert = assertThat(inactive).extracting<String>(User::getUsername).contains(
       "AUTH_ADD_ROLE_TEST",
       "AUTH_ADM",
