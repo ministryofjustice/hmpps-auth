@@ -144,7 +144,7 @@ INSERT INTO users (user_id, username, email, verified, source)
         ('C3B15C4B-ADF5-493B-9424-DBCC65B3C4E2', 'PRISON_ANALYST_LOCAL', 'prison_analyst_local@digital.justice.gov.uk', 1, 'nomis'),
         ('C3B15C4B-ADF5-493B-9424-DBCC65B3C4E3', 'PPUD_USER', 'ppud.user.test@digital.justice.gov.uk', 1, 'nomis'),
         ('C3B15C4B-ADF5-493B-9424-DBCC65E7BAAA', 'CALCULATE_RELEASE_DATES_LOCAL', 'calculate_release_dates_local@digital.justice.gov.uk', 1, 'nomis'),
-        ('C3B15C4B-ADF5-493B-9424-DBCC65B3CAAB', 'CVL_OMU_LOCAL', 'create_vary_licence_local@digital.justice.gov.uk', 1, 'nomis');
+        ('C3B15C4B-ADF5-493B-9424-DBCC65B3CAAB', 'CVL_OMU_LOCAL', 'cvl_omu_local@digital.justice.gov.uk', 1, 'nomis');
 
 INSERT INTO users (user_id, username, email, verified, last_logged_in, source)
  VALUES ('A2B6E3C0-2CE4-4148-9DFB-42E94BC78D02', 'NOMIS_DELETE', 'locked@somewhere.com', 1, '2018-02-04 13:23:19.0000000', 'nomis');
